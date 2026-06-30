@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+        <testsuite name="Smoke">
+            <directory>tests/Feature/Smoke</directory>
+        </testsuite>
+        <testsuite name="Crud">
+            <directory>tests/Feature/Crud</directory>
+        </testsuite>
+        <testsuite name="Contract">
+            <directory>tests/Feature/Contract</directory>
+        </testsuite>
+        <testsuite name="Performance">
+            <directory>tests/Feature/Performance</directory>
+        </testsuite>
+        <testsuite name="Security">
+            <directory>tests/Feature/Security</directory>
+        </testsuite>
+        <testsuite name="TemplateDeterminism">
+            <!-- SAB: Junction-first + legacy karantina CI-blocking suite (SQLite) -->
+            <file>tests/Unit/Services/TemplateResolverTest.php</file>
+            <file>tests/Feature/Governance/ConstitutionDeterminismTest.php</file>
+            <file>tests/Feature/Governance/FeatureAssignmentObserverTest.php</file>
+            <file>tests/Feature/Governance/LegacyGeneratorFlagTest.php</file>
+            <file>tests/Feature/Wizard/WizardContextFallbackRemovalTest.php</file>
+        </testsuite>
+        <testsuite name="Governance">
+            <!-- H7 Problem Analyzer v1 — isolated unit suite -->
+            <directory>tests/Unit/Governance/Analyze</directory>
+        </testsuite>
+        <testsuite name="GovernanceTelemetry">
+            <!-- Phase 4C — Behavioral Telemetry Tests -->
+            <!-- Fail-open, performance budget, composite score, instrumentation safety -->
+            <directory>tests/Unit/Governance/Telemetry</directory>
+        </testsuite>
+    </testsuites>
+    <groups>
+        <exclude>
+            <group>skip-until-migration-complete</group>
+        </exclude>
+    </groups>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="AUTH_MODEL" value="App\Models\V2\User"/>
+    </php>
+</phpunit>

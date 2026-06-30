@@ -1,0 +1,13 @@
+# Service Locator Allowlist
+# Files where app()/resolve()/App::make() is legitimate
+# Format: partial path match (one per line)
+# Lines starting with # are comments
+
+# Service Providers (legitimate container binding)
+app/Providers/
+
+# Bootstrap
+bootstrap/
+
+# Test files
+tests/

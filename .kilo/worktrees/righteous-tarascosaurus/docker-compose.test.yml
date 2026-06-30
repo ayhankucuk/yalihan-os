@@ -1,0 +1,14 @@
+services:
+  mysql-test:
+    image: mysql:8.0
+    container_name: yalihan-test-mysql
+    environment:
+      MYSQL_DATABASE: yalihanai_test
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'false'
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 5

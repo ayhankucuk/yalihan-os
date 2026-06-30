@@ -1,0 +1,14 @@
+vendor/
+node_modules/
+storage/logs/
+storage/framework/
+bootstrap/cache/
+.git/
+*.log
+database/migrations/
+tests/
+public/
+resources/views/
+storage/
+*.blade.php
+.claude/

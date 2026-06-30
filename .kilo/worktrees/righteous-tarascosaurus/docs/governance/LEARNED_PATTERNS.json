@@ -1,0 +1,176 @@
+{
+    "version": "1.3.0",
+    "total_learned": 16,
+    "last_updated": "2026-06-11",
+    "patterns": [
+        {
+            "id": "LP-001",
+            "name": "Hardcoded Ngrok Tunnel",
+            "signature": "ngrok-free.app",
+            "first_detected": "2026-05-15",
+            "status": "ENFORCED",
+            "severity": "HIGH",
+            "description": "Captured during v2.1 development after manual leak cleanup."
+        },
+        {
+            "id": "LP-002",
+            "name": "Exception Swallow Protection",
+            "signature": "catch[[:space:]]*\\([^{]*\\)[[:space:]]*\\{[[:space:]]*\\}",
+            "first_detected": "2026-05-15",
+            "status": "ENFORCED",
+            "severity": "MEDIUM",
+            "description": "Enforces that all catch blocks must contain at least one operation (e.g., logging) to ensure system observability."
+        },
+        {
+            "id": "LP-003",
+            "name": "Tenant Fallback Silent Fail",
+            "signature": "tenant_id\\s*(\\?\\?|\\?:)\\s*0",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "CRITICAL",
+            "description": "Silent tenant_id fallback to 0 bypasses tenant isolation. Use TenantContextService instead.",
+            "fix": "$this->tenantResolver->resolve()->tenantId"
+        },
+        {
+            "id": "LP-004",
+            "name": "Direct Model Extend",
+            "signature": "extends\\s+Model(?!\\s*\\/\\/\\s*allowed)",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "MEDIUM",
+            "description": "Models should extend BaseModel for tenant scoping and audit trails.",
+            "fix": "extends BaseModel"
+        },
+        {
+            "id": "LP-005",
+            "name": "Hardcoded Admin URL",
+            "signature": "[\\'\\\"]\\/admin\\/",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "MEDIUM",
+            "description": "Hardcoded /admin/ URLs break route flexibility. Use route() helper.",
+            "fix": "route('admin.xxx')"
+        },
+        {
+            "id": "LP-006",
+            "name": "Hardcoded API Version URL",
+            "signature": "[\\'\\\"]\\/api\\/v\\d",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "MEDIUM",
+            "description": "Hardcoded /api/vN URLs break versioning strategy. Use route() helper.",
+            "fix": "route('api.xxx')"
+        },
+        {
+            "id": "LP-007",
+            "name": "Response JSON Direct Call",
+            "signature": "response\\(\\)->json\\(",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "LOW",
+            "description": "Direct response()->json() bypasses ResponseService standardization.",
+            "fix": "ResponseService::success() or ResponseService::error()"
+        },
+        {
+            "id": "LP-008",
+            "name": "Backslash Facade Import",
+            "signature": "\\\\\\\\(DB|Cache|Log)::",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "LOW",
+            "description": "Backslash facade calls (\\DB::) reduce readability. Use proper imports.",
+            "fix": "use Illuminate\\Support\\Facades\\DB; \u2192 DB::"
+        },
+        {
+            "id": "LP-009",
+            "name": "Non-Null-Safe Tenant Access",
+            "signature": "->user\\(\\)->tenant_id(?!\\s*\\?)",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "HIGH",
+            "description": "Non-null-safe auth()->user()->tenant_id can cause null pointer exceptions.",
+            "fix": "auth()->user()?->tenant_id"
+        },
+        {
+            "id": "LP-010",
+            "name": "Context7 Status Field",
+            "signature": "\\bstatus\\b(?!.*context7-ignore)",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "MEDIUM",
+            "description": "Generic 'status' field violates Context7 naming standards.",
+            "fix": "yayin_durumu / aktiflik_durumu / islem_durumu"
+        },
+        {
+            "id": "LP-011",
+            "name": "Context7 IsActive Field",
+            "signature": "\\bis_active\\b(?!.*context7-ignore)",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "MEDIUM",
+            "description": "Boolean 'is_active' field violates Context7 naming standards.",
+            "fix": "aktiflik_durumu"
+        },
+        {
+            "id": "LP-012",
+            "name": "KisiRepository Ownership Bypass",
+            "signature": "KisiRepository::(delete|restore|forceDelete).*(?!applyOwnershipScope)",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "CRITICAL",
+            "description": "Delete operations must use applyOwnershipScope to prevent cross-tenant data manipulation.",
+            "fix": "Use applyOwnershipScope() before delete/restore/forceDelete"
+        },
+        {
+            "id": "LP-013",
+            "name": "Duplicate Route Registration",
+            "signature": "Route::(get|post|put|patch|delete)\\(['\"].*['\"],.*\\)->name\\(['\"]([^'\"]+)['\"]\\)",
+            "first_detected": "2026-05-17",
+            "status": "ENFORCED",
+            "severity": "HIGH",
+            "description": "Duplicate route registration causes ambiguous routing behavior. Use Route::resource() as SSOT or ensure unique route names with different URL patterns.",
+            "fix": "Remove duplicate route or use URL namespace separation (e.g., /segments/ prefix)",
+            "examples": [
+                {
+                    "violation": "Route::post('/ilanlar', [IlanCrudController::class, 'store'])->name('ilanlar.store'); // Duplicate of resource route",
+                    "fix": "// Remove - Route::resource('/ilanlar') already provides admin.ilanlar.store"
+                }
+            ]
+        },
+        {
+            "id": "LP-041",
+            "name": "Session41_Global_Hardening_Wave",
+            "signature": "Session41_Global_Hardening_Wave_Complete",
+            "first_detected": "2026-05-25",
+            "status": "ENFORCED",
+            "description": "Oturum 41: K\u00fcresel M\u00fch\u00fcrleme Operasyonu - 15/15 koordinat s\u0131f\u0131r sapma ile tamamland\u0131. AIMATCH CORE dikey dilimi, vendor boundaries ve copilot engines tamamen sterilize edildi."
+        },
+        {
+            "id": "LP-014",
+            "name": "LogService Exception Handling",
+            "signature": "LogService::(error|warning|critical)",
+            "first_detected": "2026-06-05",
+            "status": "ENFORCED",
+            "description": "LogService:: cagrilari Log:: facade ile esdeger kabul edilmeli — ci-guard-exception-swallow icin gecerli log kaniti"
+        },
+        {
+            "id": "LP-042",
+            "name": "Unpersisted Entity Query Guard (Mock Policy)",
+            "signature": "assertTransition.*AutoContainmentPolicy.*GovernanceRiskScorer",
+            "first_detected": "2026-06-11",
+            "status": "ENFORCED",
+            "severity": "HIGH",
+            "description": "Aggregate Root nesneleri id=null statüsündeyken Policy veya RiskScorer tetiklenmesi 'Illegal operator and value combination' hatasina yol açar. VersionStateMachine::assertTransition() -> AutoContainmentPolicy::authorize() -> GovernanceRiskScorer::calculate() zincirinde PropertyConfigVersion.id=null oldugunda Builder.php:934 patlar. Unit testlerde dis policy/scorer bagımlılıkları mutlak suretle mock'lanmalıdır.",
+            "fix": "$this->app->instance(AutoContainmentPolicy::class, $mock) ile container'a Mockery mock'u enjekte et. makeVersion() unsaved entity ile calısır, DB'ye kayıt gerekmez.",
+            "related_commit": "d33c6ebb",
+            "pattern_tags": [
+                "unpersisted-entity",
+                "mock-policy",
+                "unit-test-isolation",
+                "state-machine",
+                "circuit-breaker",
+                "governance-risk-scorer"
+            ]
+        }
+    ]
+}

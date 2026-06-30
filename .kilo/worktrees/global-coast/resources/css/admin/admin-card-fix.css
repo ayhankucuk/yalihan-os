@@ -1,0 +1,47 @@
+/* Admin Card Fixes for Dashboard */
+
+.admin-card {
+    @apply bg-white overflow-hidden shadow rounded-lg;
+}
+
+.admin-card-header {
+    @apply px-4 py-5 sm:px-6 border-b border-gray-200;
+}
+
+.admin-card-body {
+    @apply px-4 py-5 sm:p-6;
+}
+
+/* Ensure compatibility with context7-sidebar-item */
+.context7-sidebar-item {
+    @apply flex items-center text-sm px-3 py-2 rounded-lg text-gray-300 hover:text-white transition-colors duration-150;
+    position: relative;
+}
+
+.context7-sidebar-item svg {
+    @apply flex-shrink-0 text-gray-400;
+}
+
+.context7-sidebar.w-16 .context7-sidebar-item svg {
+    @apply w-6 h-6;
+}
+
+.context7-sidebar-item:hover {
+    @apply bg-white/5;
+}
+
+.context7-sidebar-item.active {
+    @apply bg-white/10 text-white;
+}
+
+.context7-sidebar-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 4px;
+    background: var(--c7-primary);
+    border-top-right-radius: 9999px;
+    border-bottom-right-radius: 9999px;
+}

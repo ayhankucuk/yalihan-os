@@ -1,0 +1,13 @@
+# Cross Domain Import Allowlist
+# Imports that are intentionally cross-domain
+# Format: partial match against "file|controller_domain|import_domain|fqcn" lines
+# Lines starting with # are comments
+
+# Shared base classes used everywhere
+App\Models\User
+App\Models\Ilan
+App\Services\AI\YalihanCortex
+
+# Traits and contracts are intentionally cross-domain
+App\Traits\
+App\Contracts\

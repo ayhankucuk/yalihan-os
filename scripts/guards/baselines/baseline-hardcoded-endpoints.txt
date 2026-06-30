@@ -1,0 +1,363 @@
+public/js/admin/advanced-person-search.js:147:                : '/api/admin/persons/search';
+public/js/admin/advanced-site-search.js:10:        this.apiEndpoint = options.apiEndpoint || (window.APIConfig && window.APIConfig.admin && window.APIConfig.admin.sites && window.APIConfig.admin.sites.search ? window.APIConfig.admin.sites.search : '/api/admin/sites/search');
+public/js/admin/advanced-site-search.js:787:            apiEndpoint: '/api/admin/sites/search',
+public/js/admin/auto-save-manager.js:115:            const response = await fetch('/admin/ilanlar/save-draft', {
+public/js/admin/components/map-marker-auto-update.js:199:                : '/api/v1/geo/reverse-geocode';
+public/js/admin/components/ModernFormWizard.js:210:            const response = await fetch('/admin/validate-field', {
+public/js/admin/components/ModernFormWizard.js:625:            const response = await fetch('/admin/ilanlar/auto-save', {
+public/js/admin/consultant-dashboard.js:10:        this.apiEndpoint = options.apiEndpoint || (window.APIConfig && window.APIConfig.admin && window.APIConfig.admin.consultants && window.APIConfig.admin.consultants.dashboard ? window.APIConfig.admin.consultants.dashboard : '/api/admin/consultants/dashboard');
+public/js/admin/consultant-dashboard.js:830:            window.location.href = '/admin/ilanlar/create';
+public/js/admin/dashboard-widgets.js:387:                    <a href="/admin/kisiler/${opp.kisi_id}"
+public/js/admin/event-booking-manager.js:158:                    : (window.APIConfig ? window.APIConfig.admin.events.create : '/api/admin/events');
+public/js/admin/LocationManager.js:327:            const endpoint = window.APIConfig?.geo?.reverseGeocode || '/api/v1/geo/reverse-geocode';
+public/js/admin/LocationManager.js:398:            const endpoint = window.APIConfig?.geo?.geocode || '/api/v1/geo/geocode';
+public/js/admin/modern-category-workflow.js:18:            apiBase: '/api/v1',
+public/js/admin/modern-price-system.js:19:            currencyRatesEndpoint: window.APIConfig?.currency?.rates || '/api/currency/rates',
+public/js/admin/owner-portal.js:10:        this.apiEndpoint = options.apiEndpoint || (window.APIConfig && window.APIConfig.admin && window.APIConfig.admin.owner && window.APIConfig.admin.owner.dashboard ? window.APIConfig.admin.owner.dashboard : '/api/owner/dashboard');
+public/js/admin/quick-search.js:25:            : '/api/admin/search/unified');
+public/js/admin/quick-search.js:393:            const response = await fetch('/admin/api/search-stats');
+public/js/admin/quick-search.js:408:            const response = await fetch('/admin/api/search-clear-cache', {
+public/js/admin/real-time-notifications.js:170:                window.location.href = '/admin/notifications';
+public/js/admin/real-time-notifications.js:370:        fetch('/admin/notifications/test', {
+public/js/admin/route-config.js:23:                index: '/admin/dashboard',
+public/js/admin/route-config.js:27:                index: '/admin/kullanicilar',
+public/js/admin/route-config.js:28:                create: '/admin/kullanicilar/create',
+public/js/admin/route-config.js:36:                index: '/admin/ilanlar',
+public/js/admin/route-config.js:37:                create: '/admin/ilanlar/create',
+public/js/admin/route-config.js:42:                index: '/admin/kisiler',
+public/js/admin/route-config.js:43:                create: '/admin/kisiler/create',
+public/js/admin/route-config.js:49:                    index: '/admin/finans/islemler',
+public/js/admin/route-config.js:50:                    create: '/admin/finans/islemler/create',
+public/js/admin/route-config.js:56:                dashboard: '/admin/crm/dashboard',
+public/js/admin/route-config.js:58:                    index: '/admin/crm/customers',
+public/js/admin/route-config.js:63:                opportunities: '/admin/intelligence/opportunities',
+public/js/admin/site-selector.js:12:                : '/api/admin/sites/search',
+public/js/admin/site-selector.js:15:                : '/api/admin/sites/create',
+public/js/admin/smart-suggestions.js:106:                    : '/api/v1/ai/suggest';
+public/js/admin/smart-suggestions.js:116:                    : '/api/v1/ai/generate';
+public/js/admin/smart-suggestions.js:96:                    : '/api/admin/ai/analyze-property';
+public/js/admin/tkgm-integration.js:35:            const response = await fetch('/admin/tkgm/status');
+public/js/admin/tkgm-integration.js:74:            const response = await fetch('/admin/tkgm/sorgula', {
+public/js/admin/yayin-tipleri-drag-drop.js:228:        const response = await fetch('/admin/yayin-tipleri/reorder', {
+public/js/advanced-ai-integration.js:15:        this.apiBaseUrl = '/api/advanced-ai';
+public/js/ai-assistant.js:2:    const apiEndpoint = '/api/v1/ai/assistant/query';
+public/js/components/ilan/portal-manager.js:52:                const response = await fetch('/api/portals', {
+public/js/components/LocationManager.js:44:            apiBaseUrl: options.apiBaseUrl || (window.APIConfig && window.APIConfig.location ? window.APIConfig.apiV1Prefix + '/location' : '/api/v1/location'),
+public/js/components/LocationSystemTester.js:8:    baseUrl: (window.APIConfig && window.APIConfig.apiV1Prefix) ? `${window.APIConfig.apiV1Prefix}/location` : '/api/v1/location',
+public/js/context7-features-system.js:17:            baseUrl: (window.APIConfig && window.APIConfig.apiV1Prefix) ? `${window.APIConfig.apiV1Prefix}/admin` : '/api/v1/admin',
+public/js/context7-features-system.js:234:            : '/api/v1/admin/features/categories';
+public/js/context7-live-search-simple.js:83:            kisiler: '/api/v1/kisiler/search',
+public/js/context7-live-search-simple.js:84:            danismanlar: '/api/v1/users/search',
+public/js/context7-live-search-simple.js:85:            sites: '/api/v1/sites/search',
+public/js/context7-live-search-simple.js:86:            unified: '/api/v1/search/unified',
+public/js/context7-live-search.js:236:                kisiler: '/api/v1/kisiler/search',
+public/js/context7-live-search.js:237:                users: '/api/v1/users/search',
+public/js/context7-live-search.js:238:                sites: '/api/v1/sites/search',
+public/js/context7-live-search.js:239:                unified: '/api/v1/search/unified',
+public/js/context7-live-search.js:25:                        : '/api/v1/search/unified',
+public/js/context7-live-search.js:873:                        : '/api/location/provinces'
+public/js/frontend/dynamic-features.js:10:            apiBase: '/admin/api/kategori-ozellik',
+public/js/ilan-create-fixes.js:253:                    : '/api/admin/cevre-analizi/analyze';
+public/js/property-type-manager.js:37:        const response = await fetch('/admin/ilan-kategorileri/api/store', {
+public/js/utils/api-helper.js:66:     * @param {string} path - Config path (örn: 'admin.photos.upload') veya URL string (örn: '/api/v1/...')
+resources/js/__tests__/a11y.test.js:31:            endpoint: '/api/admin/api/v1/kisiler',
+resources/js/__tests__/a11y.test.js:6:    <div data-meta="true" data-list-id="kisiler" data-list-endpoint="/api/admin/api/v1/kisiler">
+resources/js/__tests__/ai-orchestrator.test.js:16:            base: '/api/admin/ai',
+resources/js/__tests__/ilan-wizard-page.test.ts:6:    <form id="ilan-wizard-form" action="/admin/ilanlar/store" method="POST">
+resources/js/__tests__/ilan-wizard-page.test.ts:61:      json: async () => ({ success: true, redirect: '/admin/ilanlar' })
+resources/js/__tests__/list-paginate.test.js:116:            endpoint: '/api/admin/api/v1/kisiler',
+resources/js/__tests__/list-paginate.test.js:157:            endpoint: '/api/admin/api/v1/kisiler',
+resources/js/__tests__/list-paginate.test.js:16:    <div data-meta="true" data-list-id="kisiler" data-list-endpoint="/api/admin/api/v1/kisiler">
+resources/js/__tests__/list-paginate.test.js:52:            endpoint: '/api/admin/api/v1/kisiler',
+resources/js/__tests__/list-paginate.test.js:75:            endpoint: '/api/admin/api/v1/kisiler',
+resources/js/__tests__/list-paginate.test.js:97:            endpoint: '/api/admin/api/v1/kisiler',
+resources/js/admin/ai-settings/test-message.js:69:            const response = await fetch('/admin/ai-settings/test-query', {
+resources/js/admin/components/DynamicFeaturesLoader.js:169:            const response = await fetch('/admin/ozellikler/load', {
+resources/js/admin/components/poi-widget.js:154:                        const url = new URL('/api/v1/environment/pois', window.location.origin);
+resources/js/admin/context7-ai-service.js:11:            apiBase: (window.APIConfig && window.APIConfig.ai) ? window.APIConfig.ai.analyze.replace('/analyze','') : '/api/v1/ai',
+resources/js/admin/context7-location-service.js:11:            apiBase: (window.APIConfig && window.APIConfig.apiV1Prefix) ? `${window.APIConfig.apiV1Prefix}/location` : '/api/v1/location',
+resources/js/admin/dashboard-modernization.js:249:                        : '/api/admin/ilanlar/kanban';
+resources/js/admin/dashboard/opportunity-board.js:48:                const response = await fetch('/admin/intelligence/opportunities?limit=5', {
+resources/js/admin/event-config.js:99:                    : '/api/admin/events/definitions',
+resources/js/admin/feature-list.js:5:    const FEATURE_BASE_URL = window.FEATURES_BASE_URL || '/admin/ozellikler';
+resources/js/admin/feature-list.js:6:    const FEATURE_BULK_URL = window.FEATURES_BULK_URL || '/admin/ozellikler/bulk-action';
+resources/js/admin/feature-list.js:7:    const FEATURE_ORDER_URL = window.FEATURES_ORDER_URL || '/admin/ozellikler/reorder';
+resources/js/admin/helpers/map-helper.js:45:                  : '/api/v1/location/reverse-geocode';
+resources/js/admin/helpers/map-helper.js:82:                  : '/api/v1/location/geocode';
+resources/js/admin/ilan-create/auto-save.js:63:            const response = await fetch('/admin/ilanlar/draft/active', {
+resources/js/admin/ilan-create/core.js:263:    fetch('/admin/ilanlar/draft', {
+resources/js/admin/ilan-create/core.js:305:                    window.location.href = data.redirect || '/admin/ilanlar';
+resources/js/admin/ilan-create/state-management.js:434:                    : '/admin/ilanlar';
+resources/js/admin/ilan-create/tkgm-autofill.js:94:                    : '/api/v1/properties/tkgm-lookup';
+resources/js/admin/ilan-kategorileri-page.js:249:                    window.APIConfig?.ilanKategorileri?.index || '/admin/ilan-kategorileri';
+resources/js/admin/ilan-kategorileri-page.js:60:                window.APIConfig?.ilanKategorileri?.index || '/admin/ilan-kategorileri';
+resources/js/admin/ilan-wizard-page.js:2946:                    return '/api/v1/analytics/benchmark?' + qs.join('&');
+resources/js/admin/ilan-wizard-page.js:3442:                            : '/api/v1/admin/ai/quality-check';
+resources/js/admin/ilan-wizard-page.js:3945:                '/api/v1/cortex/analyze-quality',
+resources/js/admin/location-wizard.js:333:                const response = await fetch('/api/v1/location/poi-distances', {
+resources/js/admin/my-listings-search.js:21:        : '/api/ilanlar/search';
+resources/js/admin/my-listings-search.js:39:    const url = new URL('/admin/ilanlar/by-portal', window.location.origin);
+resources/js/admin/property-type-manager-page.js:175:                        '/admin/property-type-manager/toggle-feature';
+resources/js/admin/property-type-manager-page.js:371:                                    '/admin/ozellikler/kategoriler/reorder';
+resources/js/admin/property-type-manager-page.js:86:                        '/admin/property-type-manager/toggle-field-dependency';
+resources/js/admin/route-config.js:23:                index: '/admin/dashboard',
+resources/js/admin/route-config.js:27:                index: '/admin/kullanicilar',
+resources/js/admin/route-config.js:28:                create: '/admin/kullanicilar/create',
+resources/js/admin/route-config.js:36:                index: '/admin/ilanlar',
+resources/js/admin/route-config.js:37:                create: '/admin/ilanlar/create',
+resources/js/admin/route-config.js:42:                index: '/admin/kisiler',
+resources/js/admin/route-config.js:43:                create: '/admin/kisiler/create',
+resources/js/admin/route-config.js:49:                    index: '/admin/finans/islemler',
+resources/js/admin/route-config.js:50:                    create: '/admin/finans/islemler/create',
+resources/js/admin/route-config.js:56:                dashboard: '/admin/crm/dashboard',
+resources/js/admin/route-config.js:58:                    index: '/admin/crm/customers',
+resources/js/admin/route-config.js:63:                opportunities: '/admin/intelligence/opportunities',
+resources/js/admin/services/AIService.js:108:                : '/admin/ai-settings/provider-' + S_T_A_T_U_S;
+resources/js/admin/services/AIService.js:213:                : '/admin/ai/property/suggest-template';
+resources/js/admin/services/AIService.js:250:                : '/admin/ai/property/analyze';
+resources/js/admin/services/AIService.js:30:                : '/admin/ai-settings/test-provider';
+resources/js/admin/services/AIService.js:326:                : '/api/admin/ai/suggest-feature';
+resources/js/admin/services/AIService.js:370:        const response = await fetch('/admin/ai-settings/update-locale', {
+resources/js/admin/services/AIService.js:379:        const response = await fetch('/admin/ai-settings/update-currency', {
+resources/js/admin/services/AIService.js:76:                : '/api/admin/ai/analytics';
+resources/js/admin/services/api-adapter.js:2:    const BASE = (window.APIConfig && window.APIConfig.apiPrefix) ? `${window.APIConfig.apiPrefix}/admin/api/v1` : '/api/admin/api/v1';
+resources/js/admin/services/AutoSaveManager.js:143:        const response = await fetch('/admin/ilanlar/auto-save', {
+resources/js/admin/smart-ilan-create.js:192:                : '/api/smart-ilan/search/persons';
+resources/js/admin/smart-ilan-create.js:223:                : '/api/smart-ilan/search/persons';
+resources/js/admin/smart-ilan-create.js:994:            const response = await fetch('/admin/ilanlar/save-draft', {
+resources/js/admin/template-integration.js:25:        this.apiBaseUrl = config.apiBaseUrl || '/api/v1';
+resources/js/admin/template-integration.js:355:        apiBaseUrl: '/api/v1',
+resources/js/admin/unified-search-engine.js:289:                : '/api/admin/search/unified';
+resources/js/admin/unified-search-engine.js:729:                    : '/api/admin/categories';
+resources/js/admin/unified-search-engine.js:746:                    : '/api/admin/locations';
+resources/js/ai.js:75:        this.baseUrl = '/api/ai';
+resources/js/components/AI/AIDashboard.vue:293:        // const response = await axios.get('/api/ai/dashboard-data');
+resources/js/components/AI/AIDashboard.vue:373:          : '/api/v1/ai/status';
+resources/js/components/AI/AIPricePrediction.vue:315:          : '/api/v1/location/provinces';
+resources/js/components/CortexObserver.js:119:                const response = await fetch('/admin/ai/quality-check', {
+resources/js/components/DynamicFormHandler.js:784:            const response = await fetch('/api/v1/market/valuation', {
+resources/js/components/ilan/portal-manager.js:54:                    : '/api/portals';
+resources/js/components/KisiArama.js:5:            : '/api/v1/kisiler/search',
+resources/js/components/LocationManager.js:44:            apiBaseUrl: options.apiBaseUrl || '/api/location',
+resources/js/components/LocationSystemTester.js:8:    baseUrl: '/api/location',
+resources/js/components/PoiSealedBadges.js:61:            const response = await fetch('/api/v1/location/poi-distances', {
+resources/js/components/WizardCategorySync.js:357:                const response = await fetch('/api/v1/location/poi-distances', {
+resources/js/components/WizardFormHandler.js:96:            const response = await fetch('/api/v1/wizard/validation-rules', {
+resources/js/copilot/copilot-actions.js:31:const COPILOT_ACTIONS_URL = '/admin/copilot/actions';
+resources/js/copilot/copilot-actions.js:32:const COPILOT_APPLY_URL = '/admin/copilot/actions/apply';
+resources/js/copilot/copilot-actions.js:33:const COPILOT_UNDO_URL = '/admin/copilot/actions/undo';
+resources/js/copilot/copilot-actions.js:34:const COPILOT_REJECT_URL = '/admin/copilot/actions/reject';
+resources/js/global.js:32:            fetch('/admin/telemetry', {
+resources/js/performance.js:318:            '/admin': ['/admin/ilanlar', '/admin/musteriler', '/admin/satislar'],
+resources/js/performance.js:319:            '/admin/ilanlar': ['/admin/ilanlar/create', '/admin/ilanlar/1'],
+resources/js/performance.js:320:            '/admin/musteriler': ['/admin/musteriler/create'],
+resources/js/performance.js:321:            '/admin/satislar': ['/admin/satislar/create'],
+resources/js/performance.js:374:            '/admin/analitik': () => import('./pages/analitik.js'),
+resources/js/performance.js:375:            '/admin/raporlar': () => import('./pages/raporlar.js'),
+resources/js/performance.js:376:            '/admin/ayarlar': () => import('./pages/ayarlar.js'),
+resources/js/performance.js:404:                : '/api/analytics/performance';
+resources/js/pwa.js:179:                : '/api/push-subscription';
+resources/js/valuation-dashboard.js:10:        this.tkgmApiUrl = (window.APIConfig && window.APIConfig.tkgm) ? window.APIConfig.tkgm.parselSorgu.replace('/parsel-sorgu','') : '/api/v1/tkgm';
+resources/js/valuation-dashboard.js:380:    window.location.href = '/admin/valuation/parcel-search';
+resources/js/valuation-dashboard.js:384:    window.location.href = '/admin/valuation/calculate';
+resources/js/valuation-dashboard.js:388:    window.location.href = '/admin/valuation/reports';
+resources/js/valuation-dashboard.js:392:    window.location.href = '/admin/valuation/analytics';
+resources/js/valuation-dashboard.js:396:    window.location.href = '/admin/valuation/history';
+resources/js/valuation-dashboard.js:400:    window.location.href = '/admin/valuation/market-trends';
+resources/js/valuation-dashboard.js:9:        this.apiBaseUrl = (window.APIConfig && window.APIConfig.valuation && window.APIConfig.valuation.base) ? window.APIConfig.valuation.base : '/api/valuation';
+resources/js/wizard/components/ai-description.js:134:                const response = await fetch('/api/ai/generate-description', {
+resources/js/wizard/components/ai-integration.js:9:        this.apiBaseUrl = '/api/v1/admin/ai';
+resources/js/wizard/features/ai-quality-check.js:19:    endpoint: '/api/v1/cortex/quality/analyze',
+resources/js/wizard/features/ai-title-generator.js:19:    endpoint: '/api/v1/cortex/title/generate',
+resources/js/wizard/features/poi-widget.js:19:    endpoint: '/api/v1/poi/nearby',
+resources/js/wizard/schema-field-renderer.js:156:                const response = await fetch('/api/v1/wizard/update-field', {
+resources/js/wizard/step1-ai.js:73:        const generateTitleUrl = window.APIConfig?.admin?.aiTitle || '/admin/ilanlar/ai/title';
+resources/js/wizard/step1-autosave.js:218:                    : '/api/v1/ai/health';
+resources/js/wizard/step1-autosave.js:305:                const draftUrl = window.APIConfig?.admin?.saveDraft || '/admin/ilanlar/draft';
+resources/js/wizard/step1-autosave.js:375:                const draftUrl = window.APIConfig?.admin?.loadDraft || '/admin/ilanlar/draft';
+resources/js/wizard/step1-autosave.js:582:                const draftUrl = window.APIConfig?.admin?.clearDraft || '/admin/ilanlar/draft';
+resources/js/wizard/step2-features.js:109:            const url = this.buildUrl('/api/v1/wizard/features', params);
+resources/js/wizard/step2-features.js:130:            const url = this.buildUrl('/api/v1/wizard/features-with-values', {
+resources/js/wizard/step3-ai.js:105:        const generateUrl = window.APIConfig?.admin?.aiDescription || '/admin/ai/description';
+resources/js/wizard/step3-ai.js:242:        await fetch('/api/v1/wizard/telemetry/feature-action', {
+resources/js/wizard/steps/step3-upload.js:23:    uploadEndpoint: '/api/v1/photos/upload',
+resources/js/wizard/steps/step3-upload.js:24:    qualityCheckEndpoint: '/api/v1/cortex/visual/analyze',
+resources/js/wizard/steps/step4-location.js:25:    coordinatesApiBase: '/api/v1/location',
+resources/views/admin/address-management/index.blade.php:393:                            const response = await fetch('/api/v1/admin/address/iller');
+resources/views/admin/address-management/index.blade.php:472:                            const response = await fetch('/api/v1/admin/address/update-coordinates', {
+resources/views/admin/address-management/index.blade.php:504:                            const response = await fetch('/api/v1/admin/address/bulk-sync', {
+resources/views/admin/adres-yonetimi/index.blade.php:293:                    const response = await fetch('/api/admin/address/provinces');
+resources/views/admin/adres-yonetimi/index.blade.php:384:                const response = await fetch('/api/admin/address/sync-all', {
+resources/views/admin/adres-yonetimi/index.blade.php:401:                const response = await fetch('/api/admin/address/fetch-from-turkiyeapi', {
+resources/views/admin/ai-category/index.blade.php:168:            const response = await fetch('/admin/ai-category/analyze', {
+resources/views/admin/ai-category/index.blade.php:208:            const response = await fetch('/admin/ai-category/suggestions', {
+resources/views/admin/ai-category/index.blade.php:240:            const response = await fetch('/admin/ai-category/hibrit-siralama', {
+resources/views/admin/ai-category/index.blade.php:284:            const response = await fetch('/admin/ai-category/teach', {
+resources/views/admin/ai-category/index.blade.php:317:            const response = await fetch('/admin/ai-category/analyze-all', {
+resources/views/admin/ai-settings/index.blade.php:756:            fetch('/admin/ai-settings/test-provider', {
+resources/views/admin/ai/advanced-dashboard.blade.php:269:        const response = await fetch('/api/ai/public/test');
+resources/views/admin/ai/advanced-dashboard.blade.php:313:        const response = await fetch('/api/ai/public/features');
+resources/views/admin/ai/advanced-dashboard.blade.php:337:                const response = await fetch('/admin/ai/dashboard', {
+resources/views/admin/ai/dashboard.blade.php:479:                const response = await fetch('/api/v1/ai/system-health');
+resources/views/admin/ai/dashboard.blade.php:646:                        fetch('/api/v1/ai/quick-action', {
+resources/views/admin/ai/dashboard.blade.php:659:                    window.location.href = '/admin/ai/logs';
+resources/views/admin/ai/dashboard.blade.php:662:                    window.location.href = '/admin/ai-settings';
+resources/views/admin/analytics/dashboard.blade.php:672:            fetch('/admin/analytics/alerts')
+resources/views/admin/analytics/dashboard.blade.php:704:            fetch('/admin/analytics/real-time')
+resources/views/admin/analytics/index.blade.php:190:    fetch('/admin/analytics/data?type=dashboard')
+resources/views/admin/analyzer/dashboard.blade.php:692:                            fetch('/admin/page-analyzer/metrics'),
+resources/views/admin/analyzer/dashboard.blade.php:693:                            fetch('/admin/page-analyzer/health')
+resources/views/admin/analyzer/dashboard.blade.php:735:                        const response = await fetch('/admin/page-analyzer/analyze', {
+resources/views/admin/bulk-kisi/index.blade.php:366:                        const response = await fetch('/admin/bulk-kisi/store', {
+resources/views/admin/bulk-kisi/index.blade.php:398:                        const response = await fetch('/admin/bulk-kisi/export?format=csv');
+resources/views/admin/components/ai-monitor-widget.blade.php:150:            const analyticsResponse = await fetch('/admin/ai-settings/analytics', {
+resources/views/admin/components/ai-monitor-widget.blade.php:230:            const response = await fetch('/api/admin/ai/field-dependency/get-matrix/konut', {
+resources/views/admin/components/ai-widget.blade.php:207:            const response = await fetch(this.endpoint || '/api/admin/ai/analyze', {
+resources/views/admin/components/copilot-widget.blade.php:494:                    const response = await fetch('/admin/copilot/insights', {
+resources/views/admin/components/copilot-widget.blade.php:600:                    const response = await fetch('/admin/copilot/actions', {
+resources/views/admin/crm/dashboard.blade.php:133:                                        <a :href="'/admin/crm/customers/' + c.id"
+resources/views/admin/crm/dashboard.blade.php:459:                            const res = await fetch('/api/ai/churn-risk/top', {
+resources/views/admin/crm/index.blade.php:316:                const response = await fetch('/admin/crm/fix-duplicates', {
+resources/views/admin/danisman-ai/index.blade.php:372:                const response = await fetch('/admin/api/danisman-ai/smart-search', {
+resources/views/admin/danisman-ai/index.blade.php:402:                const response = await fetch('/admin/api/danisman-ai/quick-suggestions', {
+resources/views/admin/danisman-ai/index.blade.php:436:                const response = await fetch('/admin/api/danisman-ai/batch-analysis', {
+resources/views/admin/danisman-ai/index.blade.php:499:                        <a href="/admin/ilanlar/${result.ilan_id}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm">
+resources/views/admin/danisman-ai/prompt-interface.blade.php:387:                const response = await fetch('/admin/api/danisman-ai/custom-prompt', {
+resources/views/admin/danisman-ai/prompt-interface.blade.php:586:                const response = await fetch('/admin/api/danisman-ai/active-talepler');
+resources/views/admin/danisman/index.blade.php:257:                    listId="danismanlar" listEndpoint="/api/admin/api/v1/danismanlar" />
+resources/views/admin/danisman/index.blade.php:669:                        '<td class="px-6 py-4"><a href="/admin/danisman/' + esc(it.id || '') +
+resources/views/admin/dashboard/danisman.blade.php:385:                            window.open('/admin/danisman/performance-report', '_blank');
+resources/views/admin/dashboard/danisman.blade.php:399:                            const response = await fetch('/admin/danisman-dashboard/stats');
+resources/views/admin/dashboard/index.blade.php:687:                        const result = await window.safeJsonFetch('/api/v1/admin/dashboard/actions');
+resources/views/admin/dashboard/investor.blade.php:242:            const { ok, data } = await ApiClient.get('/api/v1/dashboard/kpis');
+resources/views/admin/dashboard/investor.blade.php:255:            const { ok, data } = await ApiClient.get('/api/v1/dashboard/health');
+resources/views/admin/dashboard/investor.blade.php:264:            const { ok, data } = await ApiClient.get('/api/v1/dashboard/activity', { limit: 10 });
+resources/views/admin/dashboard/investor.blade.php:271:            const { ok, data } = await ApiClient.get('/api/v1/dashboard/leads-trend', { days: 7 });
+resources/views/admin/eslesmeler/create.blade.php:100:                                     data-endpoint="/api/admin/talepler/search"
+resources/views/admin/eslesmeler/create.blade.php:139:                                     data-endpoint="/api/admin/ilanlar/search"
+resources/views/admin/eslesmeler/create.blade.php:50:                                     data-endpoint="/api/admin/kisiler/search"
+resources/views/admin/field-mcp/dashboard.blade.php:266:                const response = await fetch('/api/v1/field-mcp/stats');
+resources/views/admin/ilan-kategorileri/feature-manager.blade.php:516:                                '/admin/ilan-kategorileri/{{ $kategori->id }}/ai-feature-suggestions', {
+resources/views/admin/ilanlar/components/ai-content.blade.php:21:                const response = await fetch('/api/admin/ai/suggest-title', {
+resources/views/admin/ilanlar/components/ai-content.blade.php:51:                const response = await fetch('/api/admin/ai/generate-description', {
+resources/views/admin/ilanlar/components/arsa-calculation.blade.php:151:    fetch('/admin/api/arsa/tkgm-query', {
+resources/views/admin/ilanlar/components/category-fields/arsa-fields.blade.php:56:            const endpoint = window.APIConfig?.ai?.analyzeConstruction || '/api/ai/analyze-construction';
+resources/views/admin/ilanlar/components/category-fields/kiralik-fields.blade.php:362:                        const endpoint = window.APIConfig?.ai?.calculateDistanceToSea || '/api/v1/ai/calculate-distance-to-sea';
+resources/views/admin/ilanlar/components/category-fields/kiralik-fields.blade.php:448:                    const geocodeEndpoint = window.APIConfig?.location?.geocode || '/api/v1/location/geocode';
+resources/views/admin/ilanlar/components/category-fields/kiralik-fields.blade.php:50:                const endpoint = window.APIConfig?.ai?.calculateSeasonalPrice || '/api/v1/ai/calculate-seasonal-price';
+resources/views/admin/ilanlar/components/category-fields/kiralik-fields.blade.php:540:                        const endpoint = window.APIConfig?.ai?.detectPool || '/api/v1/ai/detect-pool';
+resources/views/admin/ilanlar/components/cockpit/intelligence-map.blade.php:1066:                fetch('/api/v1/location/poi-distances', {
+resources/views/admin/ilanlar/components/features-dynamic.blade.php:344:                    const includeInactive = window.location.pathname.includes('/admin/ilanlar') || window
+resources/views/admin/ilanlar/components/features-dynamic.blade.php:345:                        .location.pathname.includes('/admin/ilanlarim');
+resources/views/admin/ilanlar/components/field-dependencies-dynamic.blade.php:1274:                        '/api/ai/fetch-tkgm';
+resources/views/admin/ilanlar/components/field-dependencies-dynamic.blade.php:1377:                        '/api/ai/calculate-m2-price';
+resources/views/admin/ilanlar/components/photo-upload-manager.blade.php:313:                const response = await fetch('/api/admin/photos/upload', {
+resources/views/admin/ilanlar/components/quick-client-modal.blade.php:19:            fetch('/api/v1/kisiler', {
+resources/views/admin/ilanlar/components/quick-selections.blade.php:36:                    const res = await fetch('/api/v1/wizard/quick-selections');
+resources/views/admin/ilanlar/components/site-apartman-context7.blade.php:366:        const response = await fetch('/api/v1/admin/site-ozellikleri/active', {
+resources/views/admin/ilanlar/create-wizard.blade.php:740:                        endpoint: '/api/v1/admin/api/kisi/search',
+resources/views/admin/ilanlar/create-wizard.blade.php:747:                        endpoint: '/api/v1/admin/api/kisi/search',
+resources/views/admin/ilanlar/create-wizard.blade.php:754:                        endpoint: '/api/v1/users?role=danisman',
+resources/views/admin/ilanlar/create-wizard.blade.php:761:                        endpoint: '/api/v1/admin/api/sites/search',
+resources/views/admin/ilanlar/edit.blade.php:997:                        const ilResponse = await fetch('/api/location/provinces');
+resources/views/admin/ilanlar/ilanlarim.blade.php:193:                            <a href="/admin/ilanlar/${listing.id}/edit" class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></a>
+resources/views/admin/ilanlar/ilanlarim.blade.php:219:                            <a href="/admin/ilanlar/${listing.id}/edit" class="flex-1 py-1.5 bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white text-[10px] font-bold rounded-lg text-center transition-all">DÜZENLE</a>
+resources/views/admin/ilanlar/ilanlarim.blade.php:220:                            <a href="/admin/ilanlar/${listing.id}" class="flex-1 py-1.5 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-gray-700 text-slate-700 dark:text-slate-200 text-[10px] font-bold rounded-lg text-center transition-all">DETAY GÖR</a>
+resources/views/admin/ilanlar/ilanlarim.blade.php:282:                const response = await fetch('/api/reference/generate', {
+resources/views/admin/ilanlar/index.blade.php:1299:                            '<td class="px-6 py-4"><a href="/admin/ilanlar/' + (it.id || '') +
+resources/views/admin/ilanlar/index.blade.php:368:                    listEndpoint="/api/admin/api/v1/ilanlar" />
+resources/views/admin/ilanlar/partials/stable/_kisi-secimi.blade.php:118:                 data-endpoint="/api/v1/users/search"
+resources/views/admin/ilanlar/partials/stable/_kisi-secimi.blade.php:46:                 data-endpoint="/api/v1/kisiler/search"
+resources/views/admin/ilanlar/partials/stable/_kisi-secimi.blade.php:82:                 data-endpoint="/api/v1/kisiler/search"
+resources/views/admin/ilanlar/wizard/components/tkgm-widget.blade.php:469:                    const url = window.APIConfig?.properties?.tkgmLookup || '/api/properties/tkgm-lookup';
+resources/views/admin/ilanlar/wizard/step-3-photos.blade.php:388:                    const response = await fetch('/api/v1/wizard/analyze-images', {
+resources/views/admin/ilanlar/wizard/step-3-photos.blade.php:468:                    await fetch('/api/v1/wizard/telemetry/feature-action', {
+resources/views/admin/ilanlar/wizard/step-5-preview.blade.php:105:                    data-placeholder="İsim veya telefon ile ara..." data-endpoint="/api/v1/kisiler/search"
+resources/views/admin/ilanlar/wizard/step-5-preview.blade.php:141:                    data-placeholder="Aracı, avukat vb. ara..." data-endpoint="/api/v1/kisiler/search" data-max-results="10"
+resources/views/admin/ilanlar/wizard/step-5-preview.blade.php:176:                    data-placeholder="Sistem kullanıcısı seçin..." data-endpoint="/api/v1/admin/list/danismanlar"
+resources/views/admin/ilanlar/wizard/step-5-preview.blade.php:218:                    data-placeholder="Site veya apartman ara..." data-endpoint="/api/v1/sites/search"
+resources/views/admin/intelligence/opportunity-board.blade.php:169:                        '/api/intelligence/opportunities?limit=10';
+resources/views/admin/kisiler/edit.blade.php:688:                        window.location.href = '/admin/kisiler';
+resources/views/admin/layouts/admin.blade.php:413:                            '/api/admin/events';
+resources/views/admin/layouts/sidebar-content.blade.php:59:                    <a href="{{ route('admin.listing-features.index') ?? '/admin/listing-features' }}"
+resources/views/admin/layouts/sidebar-optimized.blade.php:83:                    const response = await fetch('/api/v1/admin/menu-items', {
+resources/views/admin/market-intelligence/settings.blade.php:265:                const response = await fetch('/api/market-intelligence/settings', {
+resources/views/admin/notifications/index.blade.php:312:                fetch('/admin/notifications/mark-all-read', {
+resources/views/admin/notifications/show.blade.php:376:                                window.location.href = '/admin/notifications';
+resources/views/admin/page-analyzer/dashboard.blade.php:508:                const response = await fetch('/api/admin/page-analyzer/analyze', {
+resources/views/admin/property-hub/partials/keyboard-shortcuts.blade.php:163:                    <button @click="navigate('/admin/property-hub/features/create'); showSearch = false"
+resources/views/admin/property-hub/partials/keyboard-shortcuts.blade.php:172:                    <button @click="navigate('/admin/property-hub/templates'); showSearch = false"
+resources/views/admin/property-hub/partials/keyboard-shortcuts.blade.php:181:                    <button @click="navigate('/admin/property-hub/analytics'); showSearch = false"
+resources/views/admin/property-hub/partials/keyboard-shortcuts.blade.php:275:                    this.navigate('/admin/property-hub/features/create');
+resources/views/admin/property-hub/partials/keyboard-shortcuts.blade.php:298:                            this.navigate('/admin/property-hub');
+resources/views/admin/property-hub/partials/keyboard-shortcuts.blade.php:302:                            this.navigate('/admin/property-hub/features');
+resources/views/admin/property-hub/partials/keyboard-shortcuts.blade.php:306:                            this.navigate('/admin/property-hub/templates');
+resources/views/admin/property-hub/partials/keyboard-shortcuts.blade.php:310:                            this.navigate('/admin/property-hub/analytics');
+resources/views/admin/property-hub/partials/onboarding-wizard.blade.php:452:                    const templatesRes = await fetch('/admin/property-hub/templates/list');
+resources/views/admin/property-hub/partials/onboarding-wizard.blade.php:457:                    const featuresRes = await fetch('/admin/property-hub/features/grouped');
+resources/views/admin/property-hub/partials/onboarding-wizard.blade.php:545:                    const res = await fetch('/admin/property-hub/templates/apply-wizard', {
+resources/views/admin/property-hub/templates/edit.blade.php:1459:                        if (!window.location.pathname.includes('/admin/')) return;
+resources/views/admin/property-hub/templates/edit.blade.php:1462:                        fetch('/admin/telemetry', {
+resources/views/admin/property-hub/templates/index.blade.php:669:                            const response = await fetch('/admin/property-hub/templates/ai-import', {
+resources/views/admin/property-hub/templates/index.blade.php:730:                        if (!window.location.pathname.includes('/admin/')) return;
+resources/views/admin/property-hub/templates/index.blade.php:733:                        fetch('/admin/telemetry', {
+resources/views/admin/property-type-manager/field-dependencies.blade.php:172:                            '/admin/property-type-manager/toggle-feature-assignment', {
+resources/views/admin/property-type-manager/show.blade.php:1196:                    const url = '/admin/property-type-manager/{{ $kategori->id }}/yayin-tipi/' + yayinTipiId + (force ? '?force=1' : '');
+resources/views/admin/property-type-manager/show.blade.php:1233:                    const url = '/admin/property-type-manager/{{ $kategori->id }}/alt-kategori/' + altKategoriId;
+resources/views/admin/takim-yonetimi/takim/board.blade.php:140:                fetch(`{{ url('/admin/takim-yonetimi/gorevler') }}/${gorevId}/status-guncelle`, {
+resources/views/admin/takim-yonetimi/takim/performans.blade.php:622:            fetch('/api/context7/memory/performance', {
+resources/views/admin/takim-yonetimi/takim/performans.blade.php:754:            fetch('/api/context7/memory/track', {
+resources/views/admin/takim-yonetimi/takim/show.blade.php:851:                fetch('/admin/takim-yonetimi/takim/uye-cikar', {
+resources/views/admin/takim/gorevler/board.blade.php:182:                fetch(`{{ url('/admin/takim-yonetimi/gorevler') }}/${gorevId}/durum-guncelle`, {
+resources/views/admin/talepler/matches.blade.php:366:                            const response = await fetch('/admin/matching/feedback', {
+resources/views/admin/tkgm-parsel/index.blade.php:428:                        const response = await fetch('/admin/api/tkgm-parsel/query', {
+resources/views/admin/tkgm-parsel/index.blade.php:481:                        const response = await fetch('/admin/api/tkgm-parsel/bulk-query', {
+resources/views/admin/tkgm-parsel/index.blade.php:510:                        const response = await fetch('/admin/api/tkgm-parsel/history', {
+resources/views/admin/tkgm-parsel/index.blade.php:530:                        const response = await fetch('/admin/api/tkgm-parsel/stats', {
+resources/views/admin/ups/feature-packs/index.blade.php:257:                const response = await fetch('/admin/ups/templates/preview', {
+resources/views/admin/ups/feature-packs/index.blade.php:318:                const response = await fetch('/admin/ups/feature-packs/apply', {
+resources/views/admin/ups/features/dependencies.blade.php:273:                    fetch('/api/v1/admin/feature-dependencies'),
+resources/views/admin/ups/features/dependencies.blade.php:274:                    fetch('/api/v1/admin/features?per_page=500')
+resources/views/admin/ups/features/dependencies.blade.php:323:                    : '/api/v1/admin/feature-dependencies';
+resources/views/admin/ups/features/index.blade.php:394:                            '/admin/ups/features';
+resources/views/admin/ups/packs/index.blade.php:221:            fetch('/admin/ups/packs', {
+resources/views/admin/ups/policy/index.blade.php:131:            const response = await fetch(`{{ url('/admin/ups/policy') }}/${categoryId}`, {
+resources/views/admin/yalihan-bekci/dashboard.blade.php:324:        const response = await fetch('/admin/yalihan-bekci/run-check', {
+resources/views/admin/yalihan-bekci/dashboard.blade.php:350:        const response = await fetch('/admin/yalihan-bekci/auto-fix', {
+resources/views/admin/yazlik-kiralama/index.blade.php:472:                        const response = await fetch('/admin/yazlik-kiralama/reports/export', {
+resources/views/advisor/buyer-match-queue.blade.php:197:                                    <a :href="'/admin/kisiler/' + match.buyer_id"
+resources/views/advisor/copilot.blade.php:326:                const response = await fetch('/api/advisor/copilot', {
+resources/views/advisor/doctor/dashboard.blade.php:347:                            const summaryRes = await fetch('/api/v1/advisor/portfolio/doctor/summary');
+resources/views/advisor/doctor/dashboard.blade.php:352:                            const probRes = await fetch('/api/v1/advisor/portfolio/doctor/problematic');
+resources/views/advisor/doctor/diagnostics.blade.php:304:                            const res = await fetch('/api/advisor/portfolio/doctor/diagnostics/' + this.ilanId);
+resources/views/advisor/listing_buyers.blade.php:531:                        <button class="bm-act primary" onclick="event.stopPropagation(); window.location.href='/admin/kisiler/${m.buyer_id}'">👤 Profil</button>
+resources/views/advisor/opportunities.blade.php:531:        const API = '/api/advisor';
+resources/views/advisor/opportunities.blade.php:603:                <button class="oi-act primary" onclick="event.stopPropagation(); window.location.href='/admin/ilanlar/${o.ilan_id}'">📋 İlanı Gör</button>
+resources/views/advisor/opportunities.blade.php:605:                <button class="oi-act" onclick="event.stopPropagation(); window.location.href='/api/v1/ai/buyer-matches/${o.ilan_id}'">🤝 Alıcılar</button>
+resources/views/advisor/opportunity-inbox.blade.php:110:                                <a :href="'/admin/ilanlar/' + opp.listing_id"
+resources/views/advisor/opportunity-inbox.blade.php:140:                            <a :href="'/admin/ilanlar/' + opp.listing_id"
+resources/views/advisor/portfolio-doctor.blade.php:143:                                <a :href="'/admin/ilanlar/' + item.listing_id + '/edit'"
+resources/views/components/admin/exchange-rate-widget.blade.php:30:            const response = await fetch('/api/v1/exchange-rates');
+resources/views/components/admin/header/notification-dropdown.blade.php:129:                        const result = await window.safeJsonFetch('/api/v1/admin/notifications/unread');
+resources/views/components/admin/header/notification-dropdown.blade.php:187:                        const result = await window.safeJsonFetch('/api/v1/admin/notifications/mark-all-read', {
+resources/views/components/admin/ilanlar/components/kisi-secimi-elegant.blade.php:108:            <div class="context7-live-search relative" data-search-type="kisiler" data-endpoint="/api/kisiler/search">
+resources/views/components/admin/ilanlar/components/kisi-secimi-elegant.blade.php:26:                data-placeholder="İsim veya telefon ara..." data-endpoint="/api/v1/kisiler/search" data-max-results="15"
+resources/views/components/admin/market-competition-widget.blade.php:208:                        href="/admin/ilanlar/${analysis.our_listing?.id || ''}"
+resources/views/components/admin/market-competition-widget.blade.php:250:            const response = await fetch('/admin/dashboard/refresh', {
+resources/views/components/admin/opportunity-board-widget.blade.php:266:                        href="/admin/kisiler/${opp.kisi_id}"
+resources/views/components/admin/opportunity-board-widget.blade.php:275:                                    href="/admin/ilanlar/${opp.top_match.ilan_id}"
+resources/views/components/ai/smart-match-widget.blade.php:189:                        <a :href="'/admin/ilanlar/' + match.id"
+resources/views/components/ai/smart-match-widget.blade.php:253:                const response = await fetch('/api/v1/admin/ai/find-matches', {
+resources/views/components/cortex/recommendations.blade.php:32:                    <a href="/admin/ilanlar/{{ $match['ilan']->id }}"
+resources/views/components/feature-categories-modal.blade.php:230:                const response = await fetch('/api/admin/features/categories');
+resources/views/components/image-analysis-upload.blade.php:247:                const response = await fetch('/api/ai/image-analysis', {
+resources/views/components/impact-dashboard-widget.blade.php:214:                    const response = await fetch('/admin/analytics/impact-metrics');
+resources/views/components/impact-dashboard-widget.blade.php:282:                    const response = await fetch('/admin/ai/generate-ideas', {
+resources/views/components/impact-dashboard-widget.blade.php:329:                    const response = await fetch('/admin/ai/code-review', {
+resources/views/components/language-currency-selector.blade.php:172:                fetch('/api/change-language', {
+resources/views/components/language-currency-selector.blade.php:197:                fetch('/api/change-currency', {
+resources/views/components/seo/structured-data.blade.php:119:      "urlTemplate": "{{ url('/admin/ilanlar?search={search_term_string}') }}"
+resources/views/components/voice-search-button.blade.php:132:                    const response = await fetch('/api/ai/public/voice-test', {
+resources/views/frontend/dynamic-form/index.blade.php:220:                        const response = await fetch('/api/ai/status');
+resources/views/ilanlar/exports/investment-report.blade.php:131:            return '/api/v1/analytics/benchmark?'+qs.join('&');
+resources/views/villas/components/booking-form.blade.php:229:                const response = await fetch('/api/booking-request', {

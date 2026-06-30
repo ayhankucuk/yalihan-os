@@ -1,0 +1,47 @@
+# H7 Problem Analyzer — Coverage Summary
+# Generated: 2026-04-21T19:29:21Z
+# Git:       7a5fa94
+# Config:    phpunit.governance.xml
+# Scope:     app/Support/Governance/Analyze + GovernanceAnalyzeCommand.php
+
+## Test run
+OK (80 tests, 1613 assertions)
+
+## Coverage (from reports/coverage/governance/text.txt)
+ Summary:
+  Classes: 57.14% (8/14)
+  Methods: 55.77% (29/52)
+  Lines:   87.72% (507/578)
+
+
+## Per-class coverage
+  Methods: 55.77% (29/52)
+  Lines:   87.72% (507/578)
+App\Console\Commands\Governance\GovernanceAnalyzeCommand
+  Methods:   0.00% ( 0/ 5)   Lines:   0.00% (  0/ 43)
+App\Support\Governance\Analyze\AnalysisContext
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% (  3/  3)
+App\Support\Governance\Analyze\AnalysisResult
+  Methods: 100.00% ( 5/ 5)   Lines: 100.00% ( 31/ 31)
+App\Support\Governance\Analyze\AnalysisRunner
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 19/ 19)
+App\Support\Governance\Analyze\Detectors\Context7ForbiddenFieldDetector
+  Methods:  25.00% ( 1/ 4)   Lines:  94.20% ( 65/ 69)
+App\Support\Governance\Analyze\Detectors\DeprecatedSurfaceDetector
+  Methods:  37.50% ( 3/ 8)   Lines:  90.43% ( 85/ 94)
+App\Support\Governance\Analyze\Detectors\EnvironmentBlockerDetector
+  Methods:  50.00% ( 3/ 6)   Lines:  95.12% ( 78/ 82)
+App\Support\Governance\Analyze\Detectors\OrphanReferenceDetector
+  Methods:  42.86% ( 3/ 7)   Lines:  91.01% ( 81/ 89)
+App\Support\Governance\Analyze\Detectors\RouteAuthorityDetector
+  Methods:  40.00% ( 2/ 5)   Lines:  95.89% ( 70/ 73)
+App\Support\Governance\Analyze\Enums\RiskLevel
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  6/  6)
+App\Support\Governance\Analyze\Evidence
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% (  9/  9)
+App\Support\Governance\Analyze\Finding
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 17/ 17)
+App\Support\Governance\Analyze\Reporters\JsonReporter
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  4/  4)
+App\Support\Governance\Analyze\Reporters\TableReporter
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 39/ 39)

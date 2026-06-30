@@ -1,0 +1,22 @@
+# Context7 Linter Exemption File
+#
+# Test files ve documentation'da API method isimleri ve
+# educational purposes için forbidden keywords kullanılabilir
+
+# ── SAB Governance Definition Files ──
+# Bu dosyalar yasaklı alanları TANIMLAR, KULLANMAZ.
+# Scanner'ın kendi tanım dosyalarını taraması false positive üretir.
+.sab/**
+config/authority.json
+config/context7.json
+config/context7_guard.php
+
+# Test infrastructure
+tests/e2e/**/*.ts
+tests/e2e/**/*.md
+
+# Artifact documentation
+.gemini/**/*.md
+
+# README files (documentation)
+**/README.md

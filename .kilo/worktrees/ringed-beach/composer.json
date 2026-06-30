@@ -1,0 +1,162 @@
+{
+  "name": "emlakpro/emlakpro",
+  "type": "project",
+  "description": "EmlakPro - AI-First Emlak Yönetim Sistemi v4.4.0",
+  "keywords": [
+    "emlak",
+    "ai-first",
+    "context7",
+    "real-estate"
+  ],
+  "license": "proprietary",
+  "require": {
+    "php": "^8.1",
+    "barryvdh/laravel-dompdf": "^3.1",
+    "darkaonline/l5-swagger": "^8.6",
+    "doctrine/dbal": "^3.5.1",
+    "elasticsearch/elasticsearch": "^9.1",
+    "guzzlehttp/guzzle": "^7.2",
+    "hamzaemre/class.tkgm.php": "^1.1",
+    "intervention/image": "^3.11",
+    "laravel/framework": "^10.10",
+    "laravel/horizon": "^5.38",
+    "laravel/sanctum": "^3.3",
+    "laravel/tinker": "^2.8",
+    "livewire/livewire": "^2.0",
+    "maatwebsite/excel": "^3.1",
+    "masbug/flysystem-google-drive-ext": "^2.4",
+    "predis/predis": "^3.3",
+    "pusher/pusher-php-server": "^7.2",
+    "sentry/sentry-laravel": "^4.18",
+    "simplesoftwareio/simple-qrcode": "^4.2",
+    "spatie/laravel-activitylog": "^4.11",
+    "spatie/laravel-backup": "^9.3",
+    "spatie/laravel-permission": "^6.21",
+    "spatie/laravel-translatable": "^6.11"
+  },
+  "require-dev": {
+    "brianium/paratest": "^7.4",
+    "enlightn/security-checker": "^1.11",
+    "fakerphp/faker": "^1.24",
+    "friendsofphp/php-cs-fixer": "^3.89",
+    "icanhazstring/composer-unused": "^0.9.5",
+    "laravel/pint": "^1.0",
+    "laravel/sail": "^1.18",
+    "laravel/telescope": "^5.15",
+    "mockery/mockery": "^1.4.4",
+    "nunomaduro/collision": "^7.0",
+    "phpstan/phpstan": "^2.1",
+    "phpunit/phpunit": "^10.1",
+    "spatie/laravel-ignition": "^2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/",
+      "Database\\Factories\\": "database/factories/",
+      "Database\\Seeders\\": "database/seeders/",
+      "App\\Modules\\": "app/Modules/"
+    },
+    "files": [
+      "app/Helpers/settings_helper.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "post-autoload-dump": [
+      "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+      "@php artisan package:discover --ansi"
+    ],
+    "post-update-cmd": [
+      "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+    ],
+    "post-root-package-install": [
+      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+    ],
+    "post-create-project-cmd": [
+      "@php artisan key:generate --ansi"
+    ],
+    "app:setup": [
+      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+      "@php artisan key:generate --ansi",
+      "@php artisan storage:link || true"
+    ],
+    "app:cache": [
+      "@php artisan config:cache",
+      "@php artisan route:cache",
+      "@php artisan view:cache",
+      "@php artisan event:cache"
+    ],
+    "app:clear": [
+      "@php artisan optimize:clear"
+    ],
+    "app:migrate": [
+      "@php artisan migrate --force"
+    ],
+    "app:migrate-seed": [
+      "@php artisan migrate --force",
+      "@php artisan db:seed --force"
+    ],
+    "smoke": [
+      "bash scripts/smoke-gate.sh"
+    ],
+    "smoke-gate": [
+      "bash scripts/smoke-gate.sh"
+    ],
+    "app:test": [
+      "@php artisan test --parallel --no-interaction"
+    ],
+    "lint": [
+      "pint"
+    ],
+    "test": [
+      "@php artisan test"
+    ],
+    "test:smoke": [
+      "@php artisan test --testsuite=Smoke"
+    ],
+    "test:unit": [
+      "@php artisan test --testsuite=Unit"
+    ],
+    "test:feature": [
+      "@php artisan test --testsuite=Feature"
+    ],
+    "test:crud": [
+      "@php artisan test --testsuite=Crud"
+    ],
+    "test:contract": [
+      "@php artisan test --testsuite=Contract"
+    ],
+    "test:performance": [
+      "@php artisan test --testsuite=Performance"
+    ],
+    "test:security": [
+      "@php artisan test --testsuite=Security"
+    ],
+    "test:coverage": [
+      "@php artisan test --coverage --min=70"
+    ],
+    "bekci": [
+      "@php artisan bekci:integrity-scan --only-v2-core"
+    ]
+  },
+  "extra": {
+    "laravel": {
+      "dont-discover": []
+    }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true,
+      "php-http/discovery": true
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}

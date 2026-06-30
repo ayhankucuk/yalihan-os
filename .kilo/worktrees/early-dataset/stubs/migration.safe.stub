@@ -1,0 +1,90 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        // Güvenlik kontrolü: Foreign key kontrollerini geçici olarak devre dışı bırak
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        try {
+            Schema::create('{{ table }}', function (Blueprint $table) {
+                $table->id();
+
+                // Buraya tablo sütunlarınızı ekleyin
+                // Örnek:
+                // $table->string('name');
+                // $table->text('description')->nullable();
+
+                // Foreign key örneği (güvenli şekilde):
+                // $table->foreignId('user_id')
+                //       ->constrained('users')
+                //       ->onDelete('cascade')
+                //       ->onUpdate('cascade');
+
+                $table->timestamps();
+            });
+        } finally {
+            // Foreign key kontrollerini tekrar etkinleştir
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        // Güvenlik kontrolü: Foreign key kontrollerini geçici olarak devre dışı bırak
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        try {
+            // Önce bu tabloya referans veren foreign key'leri düşür
+            $this->dropRelatedForeignKeys();
+
+            // Sonra tabloyu düşür
+            Schema::dropIfExists('{{ table }}');
+        } finally {
+            // Foreign key kontrollerini tekrar etkinleştir
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
+    }
+
+    /**
+     * Bu tabloya referans veren foreign key'leri güvenli şekilde düşür
+     */
+    private function dropRelatedForeignKeys(): void
+    {
+        try {
+            // MySQL için foreign key'leri bul ve düşür
+            $database = config('database.connections.mysql.database');
+
+            $foreignKeys = DB::select("
+                SELECT
+                    TABLE_NAME,
+                    CONSTRAINT_NAME
+                FROM information_schema.KEY_COLUMN_USAGE
+                WHERE REFERENCED_TABLE_NAME = '{{ table }}'
+                    AND TABLE_SCHEMA = ?
+            ", [$database]);
+
+            foreach ($foreignKeys as $fk) {
+                try {
+                    DB::statement("ALTER TABLE `{$fk->TABLE_NAME}` DROP FOREIGN KEY `{$fk->CONSTRAINT_NAME}`");
+                } catch (Exception $e) {
+                    // Foreign key zaten düşürülmüş olabilir, devam et
+                }
+            }
+        } catch (Exception $e) {
+            // Hata durumunda sessizce devam et
+        }
+    }
+};

@@ -1,0 +1,47 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+/**
+ * Context7 Compliance Migration Template
+ *
+ * ⚠️ CONTEXT7 PERMANENT STANDARDS:
+ * - ALWAYS use 'display_order' field, NEVER use 'o-word'
+ * - ALWAYS use boolean 'aktif' field, NEVER use deprecated terms
+ * - Pre-commit hook will BLOCK migrations with forbidden patterns
+ * - This is a PERMANENT STANDARD - NO EXCEPTIONS
+ */
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('{{ table }}', function (Blueprint $table) {
+            $table->id();
+
+            // ✅ CONTEXT7 PERMANENT STANDARD: Display Order
+            // ❌ NEVER use 'o-word' → This will be BLOCKED by pre-commit hook
+            // ✅ ALWAYS use 'display_order' for sorting/ordering fields
+            $table->integer('display_order')->default(0)->comment('Sıralama (Context7: order → display_order)');
+
+            // ✅ CONTEXT7 PERMANENT STANDARD: Status field MUST be TINYINT(1) boolean
+            // ❌ NEVER use VARCHAR, ENUM, or Turkish values like 'Aktif'
+            // ❌ NEVER use 'state', 'status', 'is_active', 'aktif' → This will be BLOCKED by pre-commit hook
+            $table->tinyInteger('aktiflik_durumu')->default(1)->comment('0=inactive, 1=active (Context7 boolean - PERMANENT STANDARD)');
+
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('{{ table }}');
+    }
+};

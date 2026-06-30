@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Neo Admin Component Layer */
+@layer components {
+    .neo-nav-item {
+        @apply flex items-center gap-3 px-3 py-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-800;
+    }
+    .neo-nav-item svg {
+        @apply text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400;
+    }
+
+    .neo-icon-btn {
+        @apply p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-800;
+    }
+
+    .neo-input {
+        @apply h-9 rounded-md border border-gray-200 bg-white text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-800 dark:text-gray-100;
+    }
+
+    .neo-chip {
+        @apply inline-flex items-center gap-2 px-2 py-1 rounded-md border border-gray-200 bg-white hover:bg-gray-50 transition-colors dark:bg-gray-800 dark:border-gray-800 dark:hover:bg-gray-700;
+    }
+
+    .neo-menu-item {
+        @apply block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800;
+    }
+
+    .neo-card {
+        @apply rounded-xl border border-gray-200 bg-white/90 shadow-sm hover:shadow-md transition-all dark:border-gray-800 dark:bg-gray-800;
+    }
+
+    /* Compatibility: style legacy .card structures with Neo look */
+    .card {
+        @apply rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-800;
+    }
+    .card-header {
+        @apply border-b border-gray-200 dark:border-gray-800 bg-transparent px-4 py-3;
+    }
+    .card-body {
+        @apply p-4;
+    }
+
+    .neo-btn-primary {
+        @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-primary-500 text-white hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500;
+    }
+    .neo-btn-secondary {
+        @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-800 dark:text-gray-100 dark:hover:bg-gray-700;
+    }
+    .neo-btn-danger {
+        @apply inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 rounded-lg;
+    }
+
+    /* Light Bootstrap-compatibility for legacy views */
+    .row {
+        @apply grid grid-cols-1 gap-4;
+    }
+    @media (min-width: 768px) {
+        .row {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+    @media (min-width: 1024px) {
+        .row {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+    .col-12 {
+        @apply col-span-1;
+    }
+    .col-6 {
+        @apply col-span-1;
+    }
+    .col-md-6 {
+        @apply col-span-1;
+    }
+    .col-xl-4 {
+        @apply col-span-1;
+    }
+    .no-gutters {
+        /* no-op to avoid spacing issues */
+    }
+}
+
+/* Global analytics helpers */
+@layer components {
+    /* Progress bars (alias to support legacy analytics markup) */
+    .context7-progress {
+        @apply h-2 rounded-full bg-gray-200 dark:bg-gray-800;
+    }
+    .context7-progress-bar {
+        @apply bg-primary-500 rounded-full;
+    }
+
+    /* Simple badge variants (optional use) */
+    .neo-badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    }
+    .neo-badge-success {
+        @apply neo-badge bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+    }
+    .neo-badge-info {
+        @apply neo-badge bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
+    }
+    .neo-badge-warning {
+        @apply neo-badge bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+    }
+    .neo-badge-danger {
+        @apply neo-badge bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+    }
+    .neo-badge-secondary {
+        @apply neo-badge bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300;
+    }
+
+    /* Form Components - Admin Label */
+    .admin-label {
+        @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2;
+    }
+
+    /* Form field wrapper */
+    .form-field {
+        @apply space-y-2 relative;
+    }
+
+    /* Enhanced neo-input for better sizing */
+    .neo-input {
+        @apply w-full px-3 py-2 rounded-md border border-gray-200 bg-white text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-800 dark:text-gray-100 transition-colors;
+    }
+
+    /* Select styling */
+    .neo-input[type='select'],
+    select.neo-input {
+        @apply pr-10 appearance-none;
+        background-image:
+            linear-gradient(45deg, transparent 50%, #9ca3af 50%),
+            linear-gradient(135deg, #9ca3af 50%, transparent 50%);
+        background-position:
+            calc(100% - 20px) calc(50% - 2px),
+            calc(100% - 15px) calc(50% - 2px);
+        background-size:
+            5px 5px,
+            5px 5px;
+        background-repeat: no-repeat;
+    }
+
+    /* Textarea styling */
+    textarea.neo-input {
+        @apply resize-vertical min-h-[100px];
+    }
+
+    /* Form validation states */
+    .neo-input:invalid {
+        @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+    }
+
+    .neo-input:valid {
+        @apply border-green-300;
+    }
+
+    /* Form field focus */
+    .form-field:focus-within .admin-label {
+        @apply text-primary-600 dark:text-primary-400;
+    }
+}

@@ -1,0 +1,14 @@
+# Laravel .htaccess for root directory
+# Redirect all requests to public folder
+
+RewriteEngine On
+
+# Handle Angular and HTML5 History API
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /public/$1 [L]
+
+# Handle Laravel routes
+RewriteCond %{REQUEST_URI} ^/public/
+RewriteRule ^public/(.*)$ /public/index.php [L]

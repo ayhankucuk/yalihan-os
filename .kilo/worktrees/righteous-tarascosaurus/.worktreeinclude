@@ -1,0 +1,144 @@
+/.phpunit.cache
+/node_modules
+**/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+.env
+.env.backup
+.env.production
+.env.testing
+.env.testsprite
+.phpactor.json
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/auth.json
+/.fleet
+/.idea
+/.windsurf
+/.nova
+/.vscode/
+# /.cursor/
+/.context7/progress-report-*.txt
+/.context7/backups/**
+/.zed
+
+# Archived reports (Phase cleanup - 2026-01-09+)
+/docs/archive/**
+# IDE Helper files
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
+
+# Büyük dosyalar - GitHub limiti nedeniyle
+temp_structure.sql
+turkiye-il-ilce-sokak-mahalle-veri-tabani/
+*.sql
+!database/schema/*.sql
+*.tar.gz
+*.dump.rdb.zip
+
+# Temporary files
+storage/framework/sessions/*
+!storage/framework/sessions/.gitkeep
+
+# Phase 4C — araç dosyaları (proje kodu değil)
+storage/framework/cache/
+*.skill
+storage/framework/views/*
+!storage/framework/views/.gitkeep
+.DS_Store
+screenshots/*
+!.gitkeep
+
+# Cache and temporary files
+.php-cs-fixer.cache
+*.pid
+*.log
+.trae/
+.warp/workflows/
+
+# Archive and completed folders
+.context7/archive/
+.yalihan-bekci/archive/
+yalihan-bekci/archive/
+yalihan-bekci/archive-backup-*.tar.gz
+screenshots-backup-*.tar.gz
+.yalihan-bekci/completed/
+*.json
+!package.json
+!package-lock.json
+!composer.json
+!tsconfig.json
+!.sab/*.json
+!tests/Fixtures/**/*.json
+
+# Root artifact hygiene
+/$count,
+/$sc-
+/$yazlikId,
+/$ytId,
+/true,
+/fix_routes.php
+/routes.tmp
+/gate_output.txt
+/gate_full_output.txt
+/temp_*_output.txt
+/test_*.txt
+
+# macOS Icon files
+Icon?
+Icon
+
+# Cleanup additions (2026-03-29)
+/tmp/
+/playwright-report/
+/test-results/
+/test-screenshots/
+/testsprite_tests/tmp/
+/logs/mcp/*.log
+/logs/*.err
+nohup.out
+/tools/monitor/node_modules/
+
+# Release hygiene (2026-04-14)
+/storage/app/backups/
+/storage/app/private/public/qrcodes/
+/storage/framework/testing/
+/logs/mcp/*.out
+/tests/manual/
+/.ai/context/*.generated.md
+/preflight_output.txt
+/quality_gate.txt
+/scan_output.txt
+/scan_result.txt
+/scan_result_v2.txt
+/.agent/
+/.ai/events/
+/.ai/memory/
+/.ai/context/
+/.gemini/
+/GoogleDrive-*/
+.tmp.drivedownload/
+
+# H7 Governance Analyzer coverage reports (2026-04-21)
+# Only the directory + .gitkeep + baseline.txt are tracked;
+# HTML / clover / text artifacts are generated and must stay local.
+/reports/coverage/governance/*
+!/reports/coverage/governance/.gitkeep
+!/reports/coverage/governance/baseline.txt
+.tmp.driveupload/
+
+# Yalıhan Governance Audit & Baseline (2026-05-14)
+/docs/_reports/
+/.sab/markers/
+!/scripts/guards/baselines/
+!/storage/app/governance/generated/core.manifest.json
+docs/_reports/
+docs/API_CONTRACT.md

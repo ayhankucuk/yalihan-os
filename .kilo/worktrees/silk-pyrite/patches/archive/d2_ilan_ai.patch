@@ -1,0 +1,113 @@
+--- app/Http/Controllers/Api/IlanAIController.php
++++ app/Http/Controllers/Api/IlanAIController.php
+@@ -375,54 +375,69 @@
+      */
+     public function publicSearch(Request $request): JsonResponse
+     {
+         try {
+             $validated = $request->validate([
+                 'query' => 'required|string|max:500',
+                 'location' => 'nullable|string|max:100',
+                 'budget_min' => 'nullable|numeric|min:0',
+                 'budget_max' => 'nullable|numeric|min:0',
+             ]);
+ 
+-            $semanticService = app(\App\Services\AI\SemanticSearchService::class);
++            $semanticService = app(\App\Services\AI\SemanticSearchService::class);
+             $query = $validated['query'];
+ 
+             // 1. Semantik Arama (AI tabanlı)
+             $semanticResults = $semanticService->search($query, 15);
+             $semanticIds = collect($semanticResults)->pluck('ilan_id')->toArray();
+ 
+             // 2. Keyword/Filtre Tabanlı Arama (Geleneksel)
+-            // Context7: yayin_durumu -> aktiflik_durumu (1 = Aktif)
+-            $ilanlar = \App\Models\Ilan::where('aktiflik_durumu', 1)
+-                ->when($validated['location'] ?? null, function ($query, $location) {
+-                    return $query->where(function ($q) use ($location) {
+-                        $q->whereHas('city', function ($sq) use ($location) {
+-                            $sq->where('ad', 'like', "%{$location}%");
+-                        })->orWhereHas('ilce', function ($sq) use ($location) {
+-                            $sq->where('ilce_adi', 'like', "%{$location}%");
+-                        });
+-                    });
+-                })
+-                ->when($validated['budget_min'] ?? null, function ($query, $min) {
+-                    return $query->where('fiyat', '>=', $min);
+-                })
+-                ->when($validated['budget_max'] ?? null, function ($query, $max) {
+-                    return $query->where('fiyat', '<=', $max);
+-                })
+-                ->whereIn('id', $semanticIds)
+-                ->orderByRaw("FIELD(id, " . implode(',', $semanticIds) . ")") // context7-ignore
+-                ->take(10)
+-                ->get();
++            $ilanlar = \App\Models\Ilan::where('yayin_durumu', 'Aktif') // Context7 compliant
++                ->when($validated['location'] ?? null, function ($query, $location) {
++                    return $query->where(function($q) use ($location) {
++                        $q->whereHas('city', function ($sq) use ($location) {
++                            $sq->where('ad', 'like', "%{$location}%");
++                        })->orWhereHas('ilce', function ($sq) use ($location) {
++                            $sq->where('ad', 'like', "%{$location}%");
++                        });
++                    });
++                })
++                ->when($validated['budget_min'] ?? null, function ($query, $budget) {
++                    return $query->where('fiyat', '>=', $budget);
++                })
++                ->when($validated['budget_max'] ?? null, function ($query, $budget) {
++                    return $query->where('fiyat', '<=', $budget);
++                })
++                ->where(function ($q) use ($query, $semanticIds) {
++                    $q->where('baslik', 'like', "%{$query}%")
++                      ->orWhere('aciklama', 'like', "%{$query}%")
++                      ->orWhereIn('id', $semanticIds);
++                })
++                ->with(['il', 'ilce', 'kategori'])
++                ->limit(20)
++                ->get();
+ 
+-            return response()->json([
+-                'success' => true,
+-                'data' => $ilanlar,
+-                'semantic_scores' => $semanticResults
+-            ]);
++            // Sonuçları semantik skora göre sırala (eğer semantik sonuçlar varsa)
++            $scoresMap = collect($semanticResults)->pluck('score', 'ilan_id');
++            if (!empty($semanticResults)) {
++                $ilanlar = $ilanlar->sortByDesc(function($ilan) use ($scoresMap) {
++                    return $scoresMap->get($ilan->id, 0);
++                })->values();
++            }
++
++            return response()->json([
++                'success' => true,
++                'query' => $query,
++                'search_type' => !empty($semanticResults) ? 'semantic' : 'keyword',
++                'results' => $ilanlar->map(function ($ilan) use ($scoresMap) {
++                    return [
++                        'id' => $ilan->id,
++                        'title' => $ilan->baslik,
++                        'price' => $ilan->fiyat,
++                        'currency' => $ilan->para_birimi,
++                        'location' => [
++                            'city' => $ilan->il->ad ?? '',
++                            'district' => $ilan->ilce->ad ?? '',
++                        ],
++                        'category' => $ilan->kategori->name ?? '',
++                        'ai_score' => $scoresMap ? round($scoresMap->get($ilan->id, 0) * 100) : null
++                    ];
++                }),
++                'count' => $ilanlar->count(),
++                'timestamp' => now()->toISOString(),
++            ]);
+ 
+         } catch (\Exception $e) {
++            \App\Services\Logging\LogService::error('Public AI search failed', ['error' => $e->getMessage()]);
+             return response()->json([
+                 'success' => false,
+-                'message' => 'AI arama sırasında bir hata oluştu: ' . $e->getMessage()
++                'error' => 'Arama yapılamadı: ' . $e->getMessage(),
+             ], 500);
+         }
+     }

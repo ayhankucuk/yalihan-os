@@ -1,0 +1,105 @@
+# Yalıhan AI OS — Cursor Rules (.cursorrules)
+
+You are operating inside the Yalıhan AI Real Estate Operating System. This file enforces the architectural, frontend/backend, naming, and safeguard standards for all development tasks.
+
+---
+
+## 1. 🏛️ AUTHORITY ORDER (Non-Negotiable)
+
+Always resolve conflicts in this exact order:
+1. **Human (User)** → The absolute final authority.
+2. **Real Code & Schema** → The runtime truth (DB tables via `DESCRIBE`).
+3. **.sab/authority.json** → The governance SSOT.
+4. **Yalıhan Bekçi / SAB Guards** → CI compliance and static AST analysis.
+5. **Reference Docs** (`CLAUDE_MEMORY.md`, guides, brain) → Helpful context only.
+
+---
+
+## 2. 🧱 BACKEND & ARCHITECTURE INVARIANTS
+
+*   **Modular Monolith**: Code is organized into Domain/Module namespaces (e.g., `App\Modules\Emlak`, `App\Modules\Talep`).
+*   **Thin Controllers**: Controllers must contain zero business logic. They only handle HTTP inputs and delegate to Service classes.
+*   **Service Layer**: All business, calculation, and RAG/orchestration rules must live inside Services.
+*   **DB Write Authority**: Writing directly to the database via Eloquent models or raw SQL in Controllers is strictly forbidden. 
+    *   *Sole Write Authority for Listings*: **`IlanCrudService`**
+    *   All Eloquent models must extend `App\Models\BaseModel`, not the raw Eloquent `Model`.
+*   **No Facade Backslashes**: 
+    *   ❌ Avoid `\DB::table('ilanlar')` or `\Cache::get()`.
+    *   ✅ Use proper imports: `use Illuminate\Support\Facades\DB;` then call `DB::table(...)`.
+
+---
+
+## 3. 🎨 FRONTEND & UI AESTHETICS
+
+*   **Premium Visuals**: Wow the user with curated HSL color palettes, elegant dark modes, smooth gradients, and glassmorphism.
+*   **Aesthetics**: Use browser-native modern typography (Inter, Outfit, Roboto) and smooth CSS micro-animations.
+*   **Frameworks & Styling**: Blade templates + Alpine.js + Tailwind CSS + Vite assets compilation.
+*   **Blade Safety (Mandatory for new/modified code)**: Facades inside Blade views must be fully qualified to prevent "Class not found" errors when aliases are unloaded (e.g. `\Illuminate\Support\Facades\Route::has(...)`). Legacy views may contain raw aliases; refactor them to FQCN whenever you modify that file/block.
+*   **Dark Mode**: Adhere strictly to Tailwind dark mode styles (`dark:bg-slate-900`, `dark:text-slate-100`). Always verify contrast.
+
+---
+
+## 4. 🔤 CONTEXT7 NAMING CONVENTIONS (Türkçe Kanonik)
+
+Any database field or critical API parameter must strictly adhere to the following mapping. No legacy naming is tolerated:
+
+| ❌ FORBIDDEN (Legacy) | ✅ CANONICAL (Context7) | Description |
+| :--- | :--- | :--- |
+| `status` | `yayin_durumu` | Listing publication status |
+| `active`, `is_active` | `aktiflik_durumu` | Activation state |
+| `order`, `sort_order` | `display_order` | Visual ordering number |
+| `featured` | `one_cikan` | Highlighted/Featured status |
+| `latitude`, `enlem` | `lat` | Latitude coordinate |
+| `longitude`, `boylam`| `lng` | Longitude coordinate |
+| `city`, `sehir` | `il` / `il_adi` | City/Province name |
+| `featured_image` | `kapak_resmi` | Hero/Cover image |
+| `musteriler` | `kisiler` | CRM Persons/Contacts |
+
+---
+
+## 🛡️ 5. YALIHAN BEKÇİ & AST SAFEGUARDS (v2.1)
+
+Yalıhan Bekçi is the Abstract Syntax Tree (AST) scanning engine. If your code violates any rule, the CI/CD pipeline and local integrity scans will fail instantly.
+
+### AST Rules Taranan Hatalar:
+*   **`SilentCatchAST`**: Catch blocks must not be empty or swallow exceptions silently. They must re-throw, return, or log/report the exception properly.
+*   **`EnvUsageAST`**: Calling `env()` outside config files is strictly forbidden. Use `config('services.name')` instead.
+*   **`ForbiddenFieldAST`**: Detects forbidden field names (like `status`, `active`) unless bypassed.
+*   **`ForbiddenFunctionAST`**: Restricts system executers like `eval`, `exec`, `shell_exec`, `system`, `passthru`.
+
+### Bypass Markers (Use responsibly):
+*   **Catch Bypass**: Add `@sab-ignore-catch` within the catch block's Doc Comment:
+    ```php
+    try {
+        // ...
+    } catch (\Exception $e) {
+        /** @sab-ignore-catch */
+    }
+    ```
+*   **Naming/Field Bypass**: Add `// context7-ignore` on the exact line containing the canonical violation:
+    ```php
+    $data['status'] = $status; // context7-ignore
+    ```
+
+---
+
+## 🚀 6. USEFUL COMMANDS
+
+### SAB & Bekçi (Mevcut Artisan Komutları)
+*   `php artisan sab:integrity-scan` — Context7 uyumluluk ve SAB bütünlük taraması
+*   `php artisan sab:integrity-scan --auto-fix` — Otomatik düzeltme modunda tarama
+*   `php artisan bekci:health` — Yalıhan Bekçi genel sistem sağlığı kontrolü
+*   `php artisan bekci:wizard-contract` — Wizard kontrat doğrulama
+*   `php artisan system:env-drift-guard` — 12-check environment ve schema governance taraması
+*   `php artisan test` — Test coverage suite çalıştır
+
+### Antigravity Otonom Koruma Araçları (Oturum 14)
+*   `./scripts/tools/antigravity-preflight.sh` — ⭐ Değişen dosyalarda 10 Altın Kural taraması (FA yasağı, FQCN, URL, env, catch vb.)
+*   `./scripts/tools/antigravity-schema-check.sh <tablo> [kolon1 kolon2]` — Canlı DB'den tablo/kolon varlık doğrulama
+*   `./scripts/tools/antigravity-component-check.sh <view.name>` — Blade bileşen ve view referanslarını diskte doğrular
+*   `./scripts/tools/antigravity-route-check.sh --check <route.name>` — Named route varlık doğrulama
+*   `./scripts/tools/antigravity-route-check.sh --duplicates` — Duplicate route tespit
+*   `./scripts/tools/antigravity-layout-check.sh` — @extends() layout doğrulama (dizin bazlı)
+*   `./scripts/tools/antigravity-full-gate.sh` — ⭐ TÜM Antigravity araçlarını sıralı çalıştırır (master komut)
+*   `./scripts/tools/antigravity-full-gate.sh --quick` — Artisan komutları olmadan hızlı mod
+

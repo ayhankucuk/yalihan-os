@@ -1,0 +1,11 @@
+# Yalıhan Service Governance Whitelist
+# Format: relative path (supports * wildcards)
+# Açıklama: Bu dosyalar pre-existing technical debt olarak kayıtlıdır.
+# Sprint 3'te Repository pattern'e migrate edilecektir.
+
+# Direct model access — Repository migration bekliyor (Sprint 3)
+app/Services/CRM/KisiScoringService.php
+app/Services/CRM/AgentAssignmentService.php
+app/Services/CRM/ChurnRiskService.php
+app/Services/CRM/MatchingAuthorityService.php
+app/Services/CRM/TalepAuthorityService.php

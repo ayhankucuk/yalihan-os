@@ -1,0 +1,43 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-05-15",
+  "anti_patterns": [
+    {
+      "id": "AP-001",
+      "name": "Hardcoded Tunnel Leak",
+      "pattern": "ngrok-free.app",
+      "severity": "BLOCKING",
+      "path": "app/ config/ database/ resources/ .env",
+      "exclude": "CHANGELOG|REFACTORING_LOG|ANTI_PATTERNS"
+    },
+    {
+      "id": "AP-002",
+      "name": "Silent Exception Swallow",
+      "pattern": "catch[[:space:]]*\\([^{]*\\)[[:space:]]*\\{[[:space:]]*\\}",
+      "severity": "BLOCKING",
+      "path": "app/"
+    },
+    {
+      "id": "AP-003",
+      "name": "Forbidden Controller Env Usage",
+      "pattern": "env\\(",
+      "severity": "BLOCKING",
+      "path": "app/Http/Controllers/",
+      "exclude": "config\\("
+    },
+    {
+      "id": "AP-004",
+      "name": "Legacy Wizard Category Field",
+      "pattern": "kategori_id",
+      "severity": "BLOCKING",
+      "path": "resources/js/step1-cascade.js"
+    },
+    {
+      "id": "AP-005",
+      "name": "N8N Webhook Null Check",
+      "pattern": "N8N_WEBHOOK_URL=null",
+      "severity": "WARNING",
+      "path": ".env"
+    }
+  ]
+}

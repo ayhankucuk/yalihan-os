@@ -1,0 +1,17 @@
+# AI Telemetry and Data Hygiene
+.ai_telemetry/
+.cortex_cache/
+storage/logs/
+storage/framework/cache/*
+storage/framework/views/*
+node_modules/
+**/node_modules/
+vendor/
+.git/
+.gemini/
+.agent/
+.cache/
+dist/
+build/
+coverage/
+*.log

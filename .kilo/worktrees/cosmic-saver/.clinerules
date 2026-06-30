@@ -1,0 +1,184 @@
+# Yalıhan AI OS — Cline Rules (.clinerules)
+# Bu dosya Cline'ın her oturumda otomatik okuduğu kural dosyasıdır.
+# Kaynak: .cursorrules ile senkronize, Cline otonom davranışlarına göre genişletilmiştir.
+
+---
+
+## 1. 🏛️ OTORİTE SIRASI (Mutlak, Değiştirilemez)
+
+Her karar ve kod yazımında şu sıra izlenir:
+1. **İnsan (Kullanıcı)** → Mutlak ve nihai otorite.
+2. **Canlı Kod ve DB Şeması** → Runtime gerçeği (`php artisan db:table <tablo>` ile doğrula).
+3. **.sab/authority.json** → Yönetişim SSOT.
+4. **Yalıhan Bekçi / SAB Muhafızları** → CI/CD blocker ve statik AST koruması.
+5. **Referans Dokümanlar** → `.sab/ONBOARDING_AGENTS.md`, `docs/SAB.md`, `CONTRIBUTING.md`.
+
+---
+
+## 2. 🔰 HER GÖREVE BAŞLAMADAN ÖNCE (Cline Zorunlu Protokol)
+
+Cline otonom olarak çalıştığı için, herhangi bir dosya yazmadan önce şu adımları izle:
+
+```bash
+# 1. Referans edeceğin bileşenin/view'ın gerçekten var olduğunu doğrula
+./scripts/tools/antigravity-component-check.sh <component-name>
+
+# 2. Kullanacağın route'un varlığını doğrula
+./scripts/tools/antigravity-route-check.sh --check <route.name>
+
+# 3. Kullanacağın DB kolonunun gerçekten var olduğunu doğrula
+./scripts/tools/antigravity-schema-check.sh <tablo> <kolon>
+
+# 4. Layout seçiminin doğru olduğunu doğrula
+./scripts/tools/antigravity-layout-check.sh
+
+# 5. Değişikliklerden sonra tam gate çalıştır
+./scripts/tools/antigravity-full-gate.sh
+```
+
+Bu adımları atlamak Task 20-26 tipi hataların (phantom route, yanlış layout,
+var olmayan component) tekrarına yol açar. ATLANMAZ.
+
+---
+
+## 3. 🧱 BACKEND MİMARİ KURALLARI
+
+- **Thin Controller**: Controller'da sıfır iş mantığı. Sadece validate + delegate.
+- **Write Authority**: DB yazma işlemi → yalnızca `IlanCrudService` üzerinden.
+- **BaseModel**: Tüm Eloquent modeller `App\Models\BaseModel` extend etmeli.
+- **Facade Import**: PHP dosyalarında `use Illuminate\Support\Facades\DB;` ile import et, `\DB::` backslash kullanma.
+- **env() Yasağı**: `app/` dizininde `env()` çağrısı yasak. `config('key')` kullan.
+- **Silent Catch Yasağı**: Boş veya exception'ı yutan catch blokları yasak. Her catch: log + rethrow.
+- **Deterministik Query**: `->first()` çağrısı her zaman `->orderBy('id')` içermeli.
+
+```php
+// ❌ YASAK
+catch (\Exception $e) { }
+// ❌ YASAK
+$model = Model::where('aktiflik_durumu', 1)->first();
+// ❌ YASAK (app/ içinde)
+$key = env('APP_KEY');
+
+// ✅ ZORUNLU
+catch (\Exception $e) {
+    \Illuminate\Support\Facades\Log::error('Context: ' . $e->getMessage());
+    throw $e;
+}
+// ✅ ZORUNLU
+$model = Model::where('aktiflik_durumu', 1)->orderBy('id')->first();
+// ✅ ZORUNLU
+$key = config('app.key');
+```
+
+---
+
+## 4. 🎨 FRONTEND KURALLARI
+
+- **FA Yasağı (KESİN)**: `fa-`, `fas`, `far`, `fab` class'ları hiçbir koşulda kullanılmaz.
+  Ikon için → `<x-icon name="..." class="..." />` (kütüphane: `resources/views/components/icon.blade.php`)
+- **Mevcut ikonları önce kontrol et**: `grep -o "'[a-z-]*'" resources/views/components/icon.blade.php`
+- **Blade FQCN**: Blade dosyalarında facade çağrıları tam nitelikli olmalı:
+  ```blade
+  {{-- ❌ YASAK --}}
+  @if (Route::has('login'))
+  {{-- ✅ ZORUNLU --}}
+  @if (\Illuminate\Support\Facades\Route::has('login'))
+  ```
+- **Layout Seçimi**:
+  - `frontend/`, `public/` dizinleri → `@extends('layouts.frontend')`
+  - `admin/` dizini → `@extends('layouts.admin')`
+  - `auth/` dizini → `@extends('layouts.guest')`
+- **Dark Mode**: Tailwind `dark:` prefix'i eksiksiz kullan.
+- **Build**: Vite kullan. `MIX_` prefix yok, `VITE_` prefix kullan.
+
+---
+
+## 5. 🔤 CONTEXT7 TÜRKÇE KANONİK İSİMLENDİRME
+
+| ❌ Yasak (Legacy) | ✅ Kanonik (Context7) |
+| :--- | :--- |
+| `status` | `yayin_durumu` |
+| `active`, `is_active`, `aktif` | `aktiflik_durumu` |
+| `order`, `sort_order` | `display_order` |
+| `featured`, `is_featured` | `one_cikan` |
+| `featured_image` | `kapak_resmi` |
+| `latitude`, `enlem` | `lat` |
+| `longitude`, `boylam` | `lng` |
+| `city`, `sehir` | `il` / `il_adi` |
+| `musteriler` | `kisiler` |
+| `status_code` (ai_logs) | `aktiflik_kodu` |
+| `http_status_code` | `http_durum_kodu` |
+| `error` (telemetry) | `hata_mesaji` |
+| `property_type`, `emlak_tipi`, `gayrimenkul_tipi` | `ana_kategori_id` (FK) |
+| `property_category`, `gayrimenkul_kategorisi` | `alt_kategori_id` (FK) |
+
+Bypass gerekiyorsa: `$data['status'] = $x; // context7-ignore`
+
+---
+
+## 6. 🛡️ BEKÇI BYPASS İŞARETÇİLERİ
+
+```php
+// Silent catch bypass (meşru durumlarda):
+try {
+    // ...
+} catch (\Exception $e) {
+    /** @sab-ignore-catch */
+}
+
+// FA ikon kasıtlı kullanım (sadece JS template/Alpine dynamic):
+{{-- @sab-fa-intentional: Alpine dynamic class --}}
+```
+
+---
+
+## 7. 🚀 TEMEL KOMUTLAR
+
+```bash
+# SAB & Bekçi
+php artisan sab:integrity-scan          # Bütünlük taraması
+php artisan sab:integrity-scan --auto-fix  # Otomatik düzeltme
+php artisan bekci:health                # Sistem sağlığı (%33+ hedef: %70)
+php artisan bekci:audit --all           # Tam AST denetimi
+php artisan system:env-drift-guard      # Env/schema uyum taraması
+php artisan test                        # Test suite
+
+# Antigravity Otonom Araçlar
+./scripts/tools/antigravity-preflight.sh           # 10 Altın Kural (git-diff tabanlı)
+./scripts/tools/antigravity-component-check.sh <n> # View/component varlık kontrolü
+./scripts/tools/antigravity-schema-check.sh <t> <k> # DB kolon varlık kontrolü
+./scripts/tools/antigravity-route-check.sh --check <name>  # Route varlık kontrolü
+./scripts/tools/antigravity-route-check.sh --duplicates    # Duplicate route tespiti
+./scripts/tools/antigravity-layout-check.sh        # Layout uyum kontrolü
+./scripts/tools/antigravity-full-gate.sh           # ⭐ TÜM kontrolleri sırayla çalıştır
+./scripts/tools/antigravity-full-gate.sh --quick   # Artisan olmadan hızlı mod
+```
+
+---
+
+## 8. ⚠️ KESİN YASAK PRATİKLER
+
+| Pratik | Neden Yasak |
+| --- | --- |
+| `Model::create($request->all())` | Mass assignment riski → `$request->validated()` kullan |
+| `DB::transaction()` controller'da | TX sadece Service katmanında |
+| Boş catch bloğu | Exception yutma — log + rethrow zorunlu |
+| `env()` app/ içinde | Config cache bozar → `config()` kullan |
+| `->first()` orderBy'sız | Non-deterministic — production'da farklı sonuç |
+| Hardcoded URL string | `route('name')` veya `config('key')` kullan |
+| Duplicate route tanımı | `php artisan route:list` ile kontrol et |
+| `@extends` yanlış layout | Dizin bazlı kural §4'te, önce kontrol et |
+| Var olmayan component referansı | `antigravity-component-check.sh` ile önce doğrula |
+| FontAwesome (fa-, fas, fab) | `x-icon` bileşeni kullan, kütüphane icon.blade.php'de |
+
+---
+
+## 9. 📋 GÖREV TAMAMLAMA PROTOKOLÜ (SAB Rule 7)
+
+Her görev sonunda:
+1. `./scripts/tools/antigravity-full-gate.sh` çalıştır
+2. `docs/BEKCI_CHANGELOG.md`'ye oturum kaydı ekle
+3. `docs/PROGRESS-TRACKER.md`'yi güncelle
+
+---
+*Sürüm: Oturum 19 (2026-05-20) | Kaynak: .cursorrules + Cline otonom davranış genişletmeleri*

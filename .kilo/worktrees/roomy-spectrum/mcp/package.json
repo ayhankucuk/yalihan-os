@@ -1,0 +1,19 @@
+{
+  "name": "yalihan-bekci-mcp",
+  "version": "1.1.0",
+  "description": "Yalıhan Bekçi MCP Adapter (Strict Bridge)",
+  "main": "build/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "start": "node build/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "typescript": "^5.3.3"
+  }
+}

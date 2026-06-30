@@ -1,0 +1,19 @@
+# Bekçi Ignore File
+.context7/
+docs/
+
+yalihan-bekci/
+storage/
+vendor/
+node_modules/
+.cursor/
+.cursor/rules/
+*.mdc
+scripts/*.php
+
+# Config files (validation rule keys, not DB fields)
+config/validation-rules.php
+config/**/validation*.php
+
+# Seeder files (data keys, not schema)
+database/seeders/**

@@ -1,0 +1,550 @@
+# Copilot Instructions — Yalıhan Emlak (Updated 15 Şubat 2026)
+
+**Version:** 12.0.0 | **Status:** Self-Protecting | **Release:** v1.7.0-self-protecting
+**Tech Stack:** Laravel 10 + Vite + Tailwind CSS + Alpine.js + MySQL + Redis
+**Maturity Level:** L5 - Self-Protecting System
+
+---
+
+## 🚨 MANDATORY STARTUP PROTOCOLS
+
+1. **Yalıhan Bekçi MCP (Optional):** The Yalıhan Bekçi MCP server is optional and disabled by default. If needed, run `./scripts/services/start-all-mcp-servers.sh`.
+2. **Context7 Authority:** Before coding, read `.sab/authority.json`. It is the SSOT for all field naming.
+3. **No Assumptions:** Run `php artisan db:table [table]` or `DESCRIBE [table]` before writing any query.
+
+---
+
+## 🚀 Context7 & Yalıhan Bekçi (Non-Negotiable)
+
+**Context7 is the Law:** All database fields must follow canonical naming defined in `.sab/authority.json`.
+**Yalıhan Bekçi is the Enforcer:** No code is valid until `./scripts/quality-gate.sh` exits 0.
+
+### 🚫 Forbidden Fields (NEVER USE)
+
+- `status` → `yayin_durumu` (listings), `talep_durumu` (requests), `aktiflik_durumu` (general)
+- `active`, `is_active`, `aktif` → `aktiflik_durumu`
+- `order`, `sort_order` → `display_order` (general) or `siralama_sirasi` (analytics)
+- `enlem`/`boylam`, `latitude`/`longitude` → `lat`/`lng`
+- `city`, `sehir` → `il` / `il_adi`
+- `featured`, `is_featured` → `one_cikan`
+- `musteriler` → `kisiler` (CRM)
+- `featured_image` → `kapak_resmi`
+
+---
+
+## 🛡️ VibeOps Protocol (VibeOps Protokolü)
+
+### 1. Context7 TDD (Test-Driven Development)
+
+**Workflow:**
+
+1. **Write test FIRST** (Context7 compliant)
+2. Test FAILS (Test patlamalı)
+3. Write minimal code to pass (Kod yaz)
+4. Test PASSES (Test geçmeli)
+5. Run `php artisan sab:integrity-scan` (Bekçi scan)
+6. Commit
+
+**Example Pattern:**
+
+```php
+// ✅ Step 1: Write test with Context7 field naming
+public function test_ilan_requires_yayin_durumu_not_status()
+{
+    $this->expectException(ValidationException::class);
+    Ilan::create(['baslik' => 'Test', 'status' => 'active']); // ❌ Forbidden field
+}
+
+public function test_ilan_accepts_context7_compliant_fields()
+{
+    $ilan = Ilan::create([
+        'baslik' => 'Test İlan',
+        'yayin_durumu' => 'Aktif', // ✅ Context7 compliant
+        'aktiflik_durumu' => 1,
+    ]);
+    $this->assertDatabaseHas('ilanlar', ['baslik' => 'Test İlan', 'yayin_durumu' => 'Aktif']);
+}
+```
+
+### 2. Quality Gate Protocol
+
+**When to Run:** After completing a major feature, before PR, after refactoring, or before deployment.
+**Gate Checklist (Sequential):**
+| Step | Task | Command |
+|------|------|---------|
+| 1 | Unit & Feature Tests | `php artisan test` |
+| 2 | Context7 Integrity Scan | `php artisan sab:integrity-scan` |
+| 3 | Bekçi Wizard Contract | `php artisan bekci:wizard-contract` |
+| 4 | Quality Gate Shield | `./scripts/quality-gate.sh` |
+
+### 3. Checkpoint Strategy
+
+- **Automatic:** Every 10-15 tool calls (task_boundary update) or major milestone.
+- **Manual Reset:** Use `/checkpoint-reset "reason"` when context drift occurs.
+- **Contents:** Task summary, modified files, test status, and next steps.
+
+---
+
+## 🏗️ Architecture & Patterns
+
+- **Modular Design:** Use `app/Modules/{ModuleName}`. Controllers: `App\Modules\Emlak\Controllers\FeatureController`. Views: `return view('emlak::features.index')`.
+- **Namespace Structure:** Use `App\Modules\BaseModule` for shared logic. Example: `App\Modules\Emlak\Models\Feature`.
+- **Strict Facades:** Never use backslash facades (e.g., `\Cache`). Always use `use Illuminate\Support\Facades\Cache;`.
+- **Ghost Model Prevention:** Every model MUST define `$fillable` or `$guarded` synchronized with migration columns.
+- **No Ghost Methods:** Every public method must have a functional implementation. No `TODO` placeholders.
+
+---
+
+## 🎨 UI & Design System (Minimalist)
+
+- **Pure Tailwind:** Use only Tailwind utility classes. No custom CSS or Neo-prefixed classes.
+- **Dark Mode First:** Every element must have a `dark:*` variant.
+- **No Effects:** Remove or avoid gradients, blurs, and advanced CSS effects.
+- **Accessibility:** Use ARIA labels and semantic HTML for WCAG 2.1 compliance.
+
+---
+
+## 🔧 Developer Workflow
+
+1. **Schema Check:** Run `php artisan db:table [table]` or `DESCRIBE [table]` before assuming columns.
+2. **Facade Check:** Ensure all facades are imported via `use` statement. No `\DB::` or `\Log::`.
+3. **Draft Mode:** New listings start with `yayin_durumu: 0`.
+4. **N+1 Prevention:** Always eager load relationships: `Model::with(['rel1', 'rel2'])->get()`.
+5. **Auto-Fix:** Run `php artisan sab:integrity-scan --auto-fix` if violations occur.
+
+---
+
+## 🔌 Core Systems
+
+- **YalihanCortex:** AI decision engine (`app/Services/AI/YalihanCortex.php`).
+- **NLPProcessor:** Bodrum-specific location and typo logic (`app/Services/AI/NLPProcessor.php`).
+- **Phase 6 Analytics:** Canonical fields: `metrik_durumu`, `rapor_durumu`, `analiz_durumu`, `siralama_sirasi`.
+
+---
+
+## � Observability Protocol (Mandatory)
+
+**Production-Grade Monitoring:** Every critical operation must be observable, measurable, and traceable.
+
+### 1. Telemetry Requirements
+
+- **All async critical operations MUST measure latency** using `tStart()` / `tEnd()` from `resources/js/wizard/core/telemetry.js`.
+- **Never introduce new fetch calls without telemetry.** Every API request must capture:
+    - `duration_ms` (latency)
+    - `http_durum_kodu` (HTTP status - Context7 compliant)
+    - `basarili` (success flag - Context7 compliant)
+    - `istek_url` (request URL - Context7 compliant)
+- **All frontend errors must propagate to telemetry system** via:
+    - `window.addEventListener('error')` (global errors)
+    - `window.addEventListener('unhandledrejection')` (promise rejections)
+    - `Alpine.onError()` (Alpine.js errors)
+
+### 2. Event Allowlist (Security)
+
+- **Telemetry events MUST be defined in an allowlist** (`config/telemetry-events.php`).
+- **Arbitrary event names are FORBIDDEN.** Prevents telemetry abuse and log pollution.
+- **Backend telemetry endpoint MUST enforce allowlist validation.**
+
+**Example Allowlist:**
+
+```php
+// config/telemetry-events.php
+return [
+    'allowed_events' => [
+        'wizard_fetch_context',
+        'window_error',
+        'unhandled_promise',
+        'alpine_error',
+        'ai_title_generation',
+        'photo_upload_complete',
+        'form_validation_error',
+    ],
+];
+```
+
+### 3. Context7 Telemetry Fields (Canonical)
+
+| ❌ Forbidden       | ✅ Canonical (Context7) | Purpose              |
+| ------------------ | ----------------------- | -------------------- |
+| `http_status_code` | `http_durum_kodu`       | HTTP response status |
+| `status_code`      | `durum_kodu`            | Generic status code  |
+| `ok`               | `basarili`              | Boolean success flag |
+| `success`          | `basarili`              | Success indicator    |
+| `url`              | `istek_url`             | Request URL          |
+| `error`            | `hata_mesaji`           | Error message        |
+
+### 4. Logging Standards
+
+- **Frontend telemetry:** `storage/logs/telemetry-YYYY-MM-DD.log` (30-day retention)
+- **Backend errors:** `storage/logs/laravel.log`
+- **Security events:** `storage/logs/security.log` (90-day retention)
+- **Bekçi violations:** `storage/logs/bekci.log` (90-day retention)
+
+---
+
+## 🚀 Performance Budget (Non-Negotiable)
+
+**Performance is a Feature:** All operations must meet strict latency requirements.
+
+### 1. API Response Times (p95)
+
+| Endpoint                                      | Target  | Max Acceptable | Action on Breach       |
+| --------------------------------------------- | ------- | -------------- | ---------------------- |
+| Wizard context API (`/api/v1/wizard/context`) | < 400ms | 600ms          | Investigate + optimize |
+| AI title generation                           | < 3s    | 5s             | Review prompt size     |
+| Photo upload (single)                         | < 2s    | 3s             | Check storage driver   |
+| Search autocomplete                           | < 100ms | 200ms          | Add caching layer      |
+| Dashboard load                                | < 1s    | 1.5s           | Enable query caching   |
+
+### 2. Frontend Performance
+
+- **No request should block UI thread > 50ms.** Use Web Workers for heavy computation.
+- **Wizard step transitions: < 300ms.** Measure with `performance.now()`.
+- **AI button feedback: immediate.** Show loading state within 16ms (1 frame).
+
+### 3. Database Query Budget
+
+- **N+1 queries: ZERO TOLERANCE.** Always use eager loading.
+- **Max query count per page load: 25 queries.**
+- **Single query max execution time: 100ms (p95).**
+
+### 4. Monitoring & Alerts
+
+- **Performance regression CI step:** Automated detection in GitHub Actions.
+- **Telemetry anomaly detection:** Alert if p95 latency exceeds budget by 50%.
+- **Query monitoring:** Use Laravel Telescope in staging, Datadog in production.
+
+---
+
+## 🔧 Laravel Version Awareness (Compatibility Guard)
+
+**Framework Stability:** Never assume features from newer Laravel versions.
+
+### 1. Current Version Check
+
+- **Project uses Laravel 10.x** (check `composer.json` before using new APIs).
+- **Never assume Laravel 11+ features** (e.g., `Illuminate\Support\Sleep`, new validation rules).
+- **Always verify method availability** in Laravel 10 documentation.
+
+### 2. Composer.json Reference
+
+```json
+{
+    "require": {
+        "php": "^8.1",
+        "laravel/framework": "^10.0"
+    }
+}
+```
+
+### 3. Safe Upgrade Path
+
+- **Before using new framework methods:** Check Laravel 10 docs first.
+- **Avoid bleeding-edge packages** without LTS support.
+- **Test on staging with same Laravel version** as production.
+
+---
+
+## �🔒 Laravel Security Rules (PropTech Compliance)
+
+### 1. Authorization Enforcement
+
+- Every controller method MUST use `$this->authorize()` or `Gate::allows()`.
+- All Eloquent models MUST have a corresponding Policy class.
+
+### 2. Mass Assignment Protection
+
+- Never use `Model::create($request->all())` directly. Always use `$request->validated()`.
+
+---
+
+## 🚫 Anti-Pattern Prevention (Yalıhan Edition)
+
+### 1. Critical (Zero Tolerance)
+
+- **Silent Failure:** Never catch exceptions without logging and re-throwing.
+- **The Wobble:** Performance regression on tables with 100K+ records. Must use indexed queries.
+- **Magic Numbers:** Use Context7 Enums or Config constants. Never hardcode numeric IDs.
+
+### 2. High Priority
+
+- **Context Drift:** AI agents must self-checkpoint every 15 tool calls to prevent logic drift.
+- **Cargo Cult:** No copy-pasting code fragments without full understanding.
+
+---
+
+## 🏛️ System Maturity Levels (Yalıhan Scale)
+
+**Current Level:** L5 - Self-Protecting System
+
+| Level  | Definition             | Status         |
+| ------ | ---------------------- | -------------- |
+| **L1** | Code Works             | ✅ Achieved    |
+| **L2** | Tests Exist            | ✅ Achieved    |
+| **L3** | Governance Active      | ✅ Achieved    |
+| **L4** | Observability Layer    | ✅ Achieved    |
+| **L5** | Self-Protecting System | 🔄 In Progress |
+| **L6** | Self-Optimizing System | ⏳ Future      |
+
+**L5 Requirements:**
+
+- Performance regression CI gate (automated threshold enforcement)
+- Telemetry anomaly detection (error rate + latency spike alerts)
+- AI cost budget enforcement (token limits + fallback providers)
+- Runtime contract enforcement (API versioning + breaking change detection)
+- Immutable production policy (no hotfixes, rollback plans mandatory)
+- ADR (Architectural Decision Records) for structural changes
+
+---
+
+## 📚 ADR Protocol (Mandatory)
+
+**Why:** Decisions drift over time without documentation. "Why did we do this?" questions waste engineering hours.
+
+**Policy:**
+
+- Every structural change MUST have an ADR.
+- ADR format: **Context → Decision → Consequences → Alternatives Considered**.
+- ADR must be committed **before** merge.
+- No architectural change without ADR reference in PR description.
+
+**Location:** `docs/adr/YYYY-MM-DD-decision-title.md`
+
+**Example Structure:**
+
+```markdown
+# ADR-001: Use Context7 Canonical Turkish Fields
+
+## Context
+
+Multiple field naming conventions causing Context7 violations.
+
+## Decision
+
+All telemetry fields use Turkish canonical naming (http_durum_kodu, basarili, etc.).
+
+## Consequences
+
+- Eliminates "status" substring violations
+- Scanner passes consistently
+- Long-term maintenance clarity
+
+## Alternatives Considered
+
+- Keep English fields (rejected: Context7 drift risk)
+- Dual mapping (rejected: complexity overhead)
+```
+
+**Benefits:**
+
+- 6 months later: "Why did we do this?" → instant answer
+- New developer onboarding: weeks → days
+- AI agent drift: significantly reduced
+
+---
+
+## 🚀 Performance Regression Gate (CI Enforcement)
+
+**Why:** Observability measures performance. Regression gate **enforces** it.
+
+**CI Fail Conditions:**
+
+| Metric                 | Threshold | Action     |
+| ---------------------- | --------- | ---------- |
+| Wizard context API p95 | > 400ms   | ❌ Fail PR |
+| AI generation p95      | > 3s      | ❌ Fail PR |
+| Dashboard load p95     | > 1.5s    | ❌ Fail PR |
+| Telemetry error rate   | > 2%      | ❌ Fail PR |
+| N+1 query count        | > 0       | ❌ Fail PR |
+
+**Implementation:**
+
+1. **Nightly Synthetic Tests:** 50 wizard calls + 20 AI requests + 10 dashboard loads
+2. **Baseline Comparison:** JSON diff vs. `reports/performance-baseline.json`
+3. **CI Integration:** `./scripts/performance-gate.sh` (exit 1 on threshold breach)
+
+**Alert Channels:**
+
+- Slack webhook (`#performance-alerts`)
+- `storage/logs/performance.log`
+- GitHub PR comment with flame graph
+
+**Result:** System shifts from "measuring performance" → "protecting performance"
+
+---
+
+## 📈 Telemetry Anomaly Detection (Early Warning System)
+
+**Why:** Collecting telemetry without interpreting it = wasted observability.
+
+**Detection Rules:**
+
+| Condition                       | Threshold      | Alert Level | Action               |
+| ------------------------------- | -------------- | ----------- | -------------------- |
+| Error rate spike                | > 2% in 10 min | 🔴 Critical | Slack + PagerDuty    |
+| `wizard_fetch_context` failures | > 5%           | 🟠 High     | Slack warning        |
+| Latency spike                   | > 2x baseline  | 🟡 Medium   | Log alert event      |
+| AI cost surge                   | > daily budget | 🔴 Critical | Fallback provider    |
+| Disk usage                      | > 85%          | 🟠 High     | Log rotation trigger |
+
+**Minimum Implementation:**
+
+```php
+// app/Console/Commands/TelemetryAnomalyDetector.php
+$errorRate = $this->calculateErrorRate();
+if ($errorRate > 0.02) {
+    Log::channel('security')->critical('anomaly_error_rate_spike', [
+        'rate' => $errorRate,
+        'threshold' => 0.02,
+    ]);
+    $this->notifySlack('Error rate spike detected');
+}
+```
+
+**Cron Schedule:** Every 10 minutes (production), every hour (staging)
+
+**Result:** System shifts from "observation" → "early warning system"
+
+---
+
+## 💸 AI Cost Budget Enforcement (Financial Protection)
+
+**Why:** Uncontrolled token usage = production bill shock. Cost anomaly detection is non-negotiable.
+
+**Budget Rules:**
+
+| Environment | Daily Budget | Token Limit per Request | Fallback                |
+| ----------- | ------------ | ----------------------- | ----------------------- |
+| Production  | $50/day      | 4K tokens               | Switch to cheaper model |
+| Staging     | $10/day      | 2K tokens               | Mock responses          |
+| Development | $2/day       | 1K tokens               | Cached responses        |
+
+**Enforcement:**
+
+```php
+// config/ai-budgets.php
+'daily_budget_usd' => env('AI_DAILY_BUDGET', 50),
+'token_limit_per_request' => 4000,
+'fallback_provider' => 'openai-gpt-3.5-turbo', // cheaper model
+```
+
+**Cost Logging:**
+
+- Every AI request logs: `token_count`, `maliyet_usd`, `model`, `timestamp`
+- Daily aggregate: `php artisan ai:cost-report`
+- Alert if approaching 80% of budget
+
+**Kill Switch:**
+If daily budget exceeded:
+
+1. Switch to fallback provider (GPT-4 → GPT-3.5)
+2. If still exceeded: return cached responses
+3. Log to `security.log` + Slack alert
+
+**Result:** System becomes financially self-protecting, not just technically.
+
+---
+
+## 🧩 Runtime Contract Enforcement (API Versioning)
+
+**Why:** AI + Wizard APIs change frequently. Undocumented field changes = production crashes.
+
+**Contract Lock Rules:**
+
+1. **API Response Shape Versioning:**
+    - `/api/v1/wizard/context` → Schema locked in `contracts/wizard-context-v1.json`
+    - Breaking changes require version bump: `/api/v2/wizard/context`
+
+2. **Frontend Must Not Assume Undocumented Fields:**
+    - Example: accessing `response.extra_field` without schema definition = forbidden
+    - All accessed fields MUST be in TypeScript interface
+
+3. **Schema Validation Middleware:**
+
+```php
+// app/Http/Middleware/ValidateApiContract.php
+public function handle($request, Closure $next)
+{
+    $response = $next($request);
+    $schema = $this->loadSchema($request->route()->getName());
+    if (!$this->validateSchema($response->getData(), $schema)) {
+        Log::channel('security')->error('contract_violation');
+        return response()->json(['error' => 'Contract violation'], 500);
+    }
+    return $response;
+}
+```
+
+**TypeScript Contract Example:**
+
+```typescript
+// resources/js/contracts/WizardContext.ts
+export interface WizardContextResponse {
+    context: {
+        fields: Field[];
+        rules: Rule[];
+    };
+    metadata: {
+        version: string; // "1.0.0"
+        deprecations?: string[];
+    };
+}
+```
+
+**Result:** Breaking changes detected **before** production, not after.
+
+---
+
+## 🔐 Immutable Production Policy (Deployment Safety)
+
+**Why:** Hotfixes on `main` = bypass quality gate = production incidents.
+
+**Mandatory Rules:**
+
+| Rule                                   | Enforcement          | Violation Consequence          |
+| -------------------------------------- | -------------------- | ------------------------------ |
+| No hotfix directly on `main`           | Branch protection    | PR rejected                    |
+| No force push to `main`                | Git hooks            | Push rejected                  |
+| All deploys pass quality gate          | CI/CD gate           | Deploy blocked                 |
+| Emergency patch requires rollback plan | Pre-deploy checklist | Manual approval required       |
+| Deployment window: Mon-Thu 10am-4pm    | Automation           | Deploy rejected outside window |
+
+**Emergency Patch Protocol:**
+
+1. Create `hotfix/URGENT-issue-description` branch
+2. Write failing test for the bug
+3. Fix + pass quality gate
+4. Deploy to staging first
+5. Smoke test: `./scripts/smoke.sh production-url`
+6. Get manual approval from tech lead
+7. Deploy with rollback plan documented in PR
+
+**Rollback Plan Template:**
+
+```markdown
+## Rollback Plan
+
+- **Git SHA to rollback to:** abc123def
+- **Database migrations to revert:** 2026*02_15*\*.php
+- **Cache keys to flush:** wizard*context*_, ai*responses*_
+- **Estimated rollback time:** 5 minutes
+- **Verification command:** curl https://api.yalihan.com/health
+```
+
+**Result:** Production becomes truly immutable. Every deploy is traceable, testable, and reversible.
+
+---
+
+## ✅ Before Every Response
+
+1. Did I use any forbidden fields (status, active, order)?
+2. Did I use a backslash facade?
+3. Did I check the database schema for the specific table?
+4. Is it Dark Mode compatible?
+5. Did I run `./scripts/quality-gate.sh`?
+6. **Did I add telemetry to new async operations?**
+7. **Does this change meet performance budget requirements?**
+8. **Are all telemetry fields Context7 compliant (no status, ok, url)?**
+9. **Does this structural change need an ADR?** (docs/adr/)
+10. **Will this change affect API contracts?** (require version bump?)
+11. **Is there a rollback plan for production changes?**

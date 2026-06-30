@@ -1,0 +1,57 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Node/NPM
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Composer
+vendor
+composer.lock
+composer.json.backup
+
+# Laravel
+bootstrap/cache
+storage/logs
+storage/app/public
+
+# Testing
+.phpunit.result.cache
+coverage
+.coverage
+
+# Build artifacts
+dist
+build
+*.tar.gz
+*.zip
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Documentation
+docs
+README.md
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml

@@ -1,0 +1,65 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Context7 Compliance Migration Template - Complete Version
+ * 
+ * ⚠️ CONTEXT7 PERMANENT STANDARDS:
+ * - ALWAYS use 'display_order' field, NEVER use 'o-word'
+ * - ALWAYS use boolean 'aktif' field, NEVER use deprecated terms
+ * - ALWAYS use 'il' field, NEVER use 'sehir'
+ * - ALWAYS use 'kisi_*' fields, NEVER use 'musteri_*'
+ * - Pre-commit hook will BLOCK migrations with forbidden patterns
+ * - This is a PERMANENT STANDARD - NO EXCEPTIONS
+ * 
+ * @see .context7/authority.json for complete Context7 standards
+ * @see .context7/ORDER_DISPLAY_ORDER_STANDARD.md
+ * @see .context7/MIGRATION_STANDARDS.md
+ */
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        // ✅ CONTEXT7: Tablo varlık kontrolü
+        if (Schema::hasTable('{{ table }}')) {
+            return;
+        }
+        
+        Schema::create('{{ table }}', function (Blueprint $table) {
+            $table->id();
+            
+            // ✅ CONTEXT7 PERMANENT STANDARD: Display Order
+            // ❌ NEVER use 'o-word' → This will be BLOCKED by pre-commit hook
+            // ✅ ALWAYS use 'display_order' for sorting/ordering fields
+            $table->integer('display_order')->default(0)->comment('Sıralama (Context7: order → display_order)');
+            
+            // ✅ CONTEXT7 PERMANENT STANDARD: Status field MUST be TINYINT(1) boolean
+            // ❌ NEVER use VARCHAR, ENUM, or Turkish values like 'Aktif'
+            // ❌ NEVER use 'state', 'status', 'is_active', 'aktif' → This will be BLOCKED by pre-commit hook
+            // Default: 1 (active), 0 (inactive)
+            $table->tinyInteger('aktiflik_durumu')->default(1)->comment('0=inactive, 1=active (Context7 boolean - PERMANENT STANDARD)');
+            
+            // ✅ CONTEXT7: Index'ler
+            $table->index('aktiflik_durumu', 'idx_{{ table }}_aktiflik_durumu');
+            $table->index('display_order', 'idx_{{ table }}_display_order');
+            
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('{{ table }}');
+    }
+};
+

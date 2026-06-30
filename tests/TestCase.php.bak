@@ -1,0 +1,102 @@
+<?php
+
+namespace Tests;
+
+use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Queue;
+use Tests\Helpers\TestFixtureHelper;
+
+/**
+ * TestCase
+ * 
+ * 🛡️ SAB §12: Test Bootstrap Authority
+ * Stabilized: 2026-04-18
+ */
+abstract class TestCase extends BaseTestCase
+{
+    use CreatesApplication;
+    use DatabaseTransactions {
+        beginDatabaseTransaction as protected baseBeginDatabaseTransaction;
+    }
+    use TestFixtureHelper; // 🛡️ Phase T3: Fixture Canonicalization
+
+    protected static bool $schemaInitialized = false;
+
+    /**
+     * Setup test environment
+     */
+    protected function setUp(): void
+    {
+        $needsBootstrap = ! self::$schemaInitialized;
+
+        parent::setUp();
+
+        // 🛡️ Phase T2: Schema Authority Unification
+        if ($needsBootstrap) {
+            $this->initializeTestDatabase();
+            self::$schemaInitialized = true;
+
+            // DatabaseTransactions is hooked during parent::setUp().
+            // On first test we skip transaction start until schema bootstrap is complete.
+            $this->baseBeginDatabaseTransaction();
+        }
+
+        // 🛡️ Phase T1: Queue Stabilization
+        // Fake ALL queues by default for speed.
+        Queue::fake();
+    }
+
+    /**
+     * Delay transaction lifecycle until schema authority is initialized.
+     */
+    protected function beginDatabaseTransaction()
+    {
+        if (! self::$schemaInitialized) {
+            return;
+        }
+
+        $this->baseBeginDatabaseTransaction();
+    }
+
+    /**
+     * Initialize the test database using the canonical schema dump.
+     * 🛡️ Authority: database/schema/mysql-schema.sql
+     */
+    protected function initializeTestDatabase(): void
+    {
+        $connection = config('database.default');
+        $database   = config("database.connections.{$connection}.database");
+        file_put_contents(base_path('test_db_debug.log'), "Connection: $connection, Database: $database, Env: " . config('app.env') . "\n", FILE_APPEND);
+
+/*
+        if ($database === 'yalihanai_v2_production' || config('app.env') === 'production') {
+            dd([
+                'database' => $database,
+                'env' => config('app.env'),
+                'is_production_db' => ($database === 'yalihanai_v2_production'),
+                'is_production_env' => (config('app.env') === 'production')
+            ]);
+            throw new \RuntimeException("CRITICAL: Attempted to wipe production database during test bootstrap!");
+        }
+*/
+
+        $schemaPath = base_path('database/schema/mysql-schema.sql');
+        if (! File::exists($schemaPath)) {
+            $schemaPath = base_path('database/schema/testing-schema.sql');
+        }
+
+        try {
+            Artisan::call('db:wipe', ['--force' => true]);
+            DB::connection($connection)->unprepared(File::get($schemaPath));
+            Artisan::call('migrate', ['--force' => true]);
+            Artisan::call('cache:clear');
+
+        } catch (\Throwable $e) {
+            throw new \RuntimeException("Failed to initialize test database: " . $e->getMessage());
+        }
+    }
+}

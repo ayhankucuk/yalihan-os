@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 🛡️ Yalıhan Bekçi: Pre-Push Hook
+# ═══════════════════════════════════════════════════════════════════════════
+# 
+# This hook runs the quality gate before allowing push.
+# Lives in repo (hooks/) so it travels with code.
+# 
+# Installation:
+#   bash hooks/install.sh
+# 
+# Bypass (emergency only):
+#   git push --no-verify
+# ═══════════════════════════════════════════════════════════════════════════
+
+set -euo pipefail
+
+echo ""
+echo "🛡️ Yalıhan Bekçi: Pre-Push Quality Gate"
+echo "════════════════════════════════════════"
+echo ""
+
+# Run quality gate from repo root
+if bash scripts/quality-gate.sh; then
+    echo ""
+    echo "✅ Quality Gate PASSED - Proceeding with push"
+    echo ""
+    exit 0
+else
+    echo ""
+    echo "════════════════════════════════════════"
+    echo "❌ QUALITY GATE FAILED - PUSH BLOCKED"
+    echo "════════════════════════════════════════"
+    echo ""
+    echo "📝 Fix the violations above and try again."
+    echo ""
+    echo "⚠️  To bypass (EMERGENCY ONLY):"
+    echo "   git push --no-verify"
+    echo ""
+    exit 1
+fi

@@ -1,0 +1,317 @@
+{
+  "version": "6.1.1",
+  "name": "Yalıhan Bekçi Context7 Authority",
+  "description": "Centralized authority file for Context7 compliance and IDE integrations",
+  "bootstrap_entrypoint": ".sab/ONBOARDING.md",
+  "project": {
+    "name": "YalihanAI EmlakPro",
+    "type": "laravel_monolith_modular",
+    "framework_version": "Laravel 10.x",
+    "php_version": "8.1+",
+    "architecture": "modular_monolith"
+  },
+  "context7_standards": {
+    "version": "2.0.0",
+    "enforcement_level": "strict",
+    "css_framework": "tailwind_only",
+    "forbidden_frameworks": [
+      "neo-design-system",
+      "bootstrap"
+    ],
+    "forbidden_patterns": [],
+    "forbidden_patterns_note": "MOVED TO .sab/authority.json governance.forbidden_fields — Single SSOT policy",
+    "required_patterns": [
+      "dark_mode_classes",
+      "transition_effects",
+      "responsive_design",
+      "accessibility_compliance"
+    ],
+    "naming_conventions": {
+      "fields": {
+        "location_id": "il_id",
+        "status": "aktiflik_durumu",
+        "priority": "one_cikan",
+        "active": "aktiflik_durumu"
+      },
+      "eloquent_patterns": {
+        "relationships": "with()",
+        "accessors": "direct_access"
+      }
+    }
+  },
+  "yalihan_bekci_system": {
+    "ai_learning_status": true,
+    "mcp_server": {
+      "url": "http://localhost:4001",
+      "port": 4001,
+      "status": "active"
+    },
+    "learning_patterns": [
+      "code_changes",
+      "context7_fixes",
+      "performance_improvements",
+      "security_enhancements"
+    ],
+    "knowledge_base": "yalihan-bekci/knowledge/",
+    "learning_storage": "yalihan-bekci/learning/"
+  },
+  "ide_integrations": {
+    "universal_support": true,
+    "supported_ides": [
+      {
+        "name": "Cursor",
+        "type": "ai_editor",
+        "config_path": ".cursor/extensions/",
+        "extension_file": "context7-cursor-extension.json",
+        "shortcuts": {
+          "validate": "Ctrl+Shift+C",
+          "autofix": "Ctrl+Shift+F",
+          "learn": "Ctrl+Shift+L",
+          "ideas": "Ctrl+Shift+I"
+        }
+      },
+      {
+        "name": "Windsurf",
+        "type": "ai_environment",
+        "config_path": ".windsurf/extensions/",
+        "extension_file": "context7-windsurf-integration.json",
+        "ai_integration": true,
+        "shortcuts": {
+          "validate": "Cmd+Shift+C",
+          "autofix": "Cmd+Shift+F",
+          "learn": "Cmd+Shift+L",
+          "ideas": "Cmd+Shift+I"
+        }
+      },
+      {
+        "name": "VSCode",
+        "type": "editor",
+        "config_path": ".vscode/extensions/context7-extension/",
+        "extension_file": "package.json",
+        "marketplace": false,
+        "local_development": true,
+        "shortcuts": {
+          "validate": "Ctrl+Shift+C",
+          "autofix": "Ctrl+Shift+F",
+          "learn": "Ctrl+Shift+L",
+          "ideas": "Ctrl+Shift+I"
+        }
+      },
+      {
+        "name": "Warp",
+        "type": "terminal",
+        "config_path": ".warp/workflows/",
+        "extension_file": "context7-yalihan-bekci.json",
+        "aliases": {
+          "c7v": "context7_validate",
+          "c7f": "context7_autofix",
+          "bekci": "yalihan_bekci_learn",
+          "ideas": "generate_ideas",
+          "health": "project_monitor"
+        }
+      }
+    ],
+    "shared_components": {
+      "config_loader": "ide-extensions/shared/config-loader.js",
+      "types": "ide-extensions/shared/types.ts",
+      "icons": "ide-extensions/shared/icons/",
+      "test_script": "ide-extensions/test-extensions.sh"
+    }
+  },
+  "mcp_server_ecosystem": {
+    "servers": [
+      {
+        "name": "yalihan-bekci-mcp",
+        "port": 4001,
+        "path": "mcp-servers/yalihan-bekci-mcp.js",
+        "purpose": "AI learning and teaching system",
+        "tools": [
+          "learn_from_action",
+          "suggest_improvement",
+          "analyze_pattern",
+          "predict_violation",
+          "generate_development_ideas",
+          "get_project_health"
+        ]
+      },
+      {
+        "name": "context7-validator-mcp",
+        "port": 4002,
+        "path": "mcp-servers/context7-validator-mcp.js",
+        "purpose": "Context7 validation and compliance",
+        "tools": [
+          "validate_file",
+          "autofix_violations",
+          "check_compliance"
+        ]
+      },
+      {
+        "name": "upstash-context7-mcp",
+        "port": "auto",
+        "external": true,
+        "purpose": "Library documentation and examples",
+        "tools": [
+          "resolve-library-id",
+          "get-library-docs"
+        ]
+      }
+    ]
+  },
+  "laravel_commands": {
+    "sab_governance": [
+      "php artisan sab:integrity-scan",
+      "php artisan sab:integrity-scan --auto-fix",
+      "php artisan sab:guard",
+      "php artisan sab:baseline",
+      "php artisan sab:preflight --profile=release"
+    ],
+    "guard_commands": [
+      "php artisan guard:cqrs",
+      "php artisan guard:routes:v2",
+      "php artisan quality:gate"
+    ],
+    "context7_legacy": [
+      "php artisan context7:validate-migration --all"
+    ],
+    "yalihan_bekci": [
+      "php artisan bekci:learn <action_type> <context>",
+      "php artisan bekci:health",
+      "php artisan bekci:watch"
+    ],
+    "project_monitoring": [
+      "php artisan monitor:project --status",
+      "php artisan monitor:project --report",
+      "php artisan monitor:project --start"
+    ],
+    "development_ideas": [
+      "php artisan ideas:generate",
+      "php artisan ideas:generate --analyze --save",
+      "php artisan ideas:generate --interactive"
+    ]
+  },
+  "workspace_structure": {
+    "modules": "app/Modules/",
+    "routes": [
+      "routes/web.php",
+      "routes/api.php",
+      "routes/ai.php",
+      "routes/location.php"
+    ],
+    "config": [
+      "config/context7.php",
+      "config/context7.json",
+      "config/ai.php"
+    ],
+    "scripts": [
+      "scripts/services/start-mcp-server.sh",
+      "scripts/setup-ide-extensions.sh",
+      "scripts/fix-migrations.sh"
+    ],
+    "documentation": [
+      "docs/context7-rules.md",
+      "docs/context7-master.md",
+      ".warp/rules/context7-compliance.md"
+    ]
+  },
+  "development_workflow": {
+    "required_tools": [
+      "PHP 8.1+",
+      "Composer",
+      "Node.js 18+",
+      "MySQL/MAMP",
+      "Laravel 10+"
+    ],
+    "startup_sequence": [
+      "Start MySQL (MAMP)",
+      "Start Laravel Server (port 8002)",
+      "Start MCP Server (port 4001)",
+      "Open IDE with Context7 extensions"
+    ],
+    "daily_tasks": [
+      "Context7 validation",
+      "Health monitoring",
+      "AI learning from changes",
+      "Ideas generation"
+    ]
+  },
+  "compliance_metrics": {
+    "target_scores": {
+      "context7_compliance": 100,
+      "code_quality": 85,
+      "test_coverage": 80,
+      "performance": 90,
+      "security": 95
+    },
+    "monitoring_status": true,
+    "automated_reporting": true,
+    "violation_tracking": true
+  },
+  "governance": {
+    "authority_sync": "resync_from_source",
+    "version_freshness": {
+      "age_days": 0
+    },
+    "ci_pipeline": {
+      "active_workflow": ".github/workflows/core-ci.yml",
+      "pipeline_name": "Unified Core CI Pipeline",
+      "enforcement_model": "new-only-fail",
+      "gates": [
+        "sab:integrity-scan",
+        "guard:cqrs",
+        "guard:routes:v2",
+        "quality:gate",
+        "test --compact",
+        "sab:preflight --profile=release"
+      ],
+      "legacy_workflows_note": "sab-guard.yml, postseal-guard.yml and gold-line.yml are superseded; core-ci.yml is the single active CI pipeline"
+    },
+    "stale_commands": {
+      "context7:integrity-scan": "REMOVED — replaced by sab:integrity-scan"
+    }
+  },
+  "swallow_blocking_threshold": 99,
+  "context_isolation": {
+    "version": "1.0.0",
+    "status": "P0_IMPLEMENTED",
+    "adr": "ADR-041",
+    "budget_tiers": {
+      "normal": "0-80K",
+      "warning": "80K-120K",
+      "freeze": "120K-150K",
+      "archive_new_session": ">150K"
+    },
+    "session_policy": {
+      "soft_limit": "80K",
+      "archive_after": "120K",
+      "hard_stop": "150K",
+      "lifecycle": [
+        "open_session",
+        "produce_deliverables",
+        "publish_documents",
+        "close_session",
+        "archive_conversation",
+        "continue_from_documents"
+      ]
+    },
+    "corporate_memory_only": [
+      "approved_adr",
+      "architecture_decisions",
+      "office_reports",
+      "executive_summaries",
+      "corporate_ontology",
+      "capability_specifications"
+    ]
+  },
+  "ci_guards": {
+    "ci-guard-exception-swallow.sh": {
+      "blocking": false,
+      "note": "LP-014: 645 pre-existing controller violations — per-file threshold 99, non-blocking until debt resolved. LogService:: accepted as Log:: equivalent.",
+      "estimated_blocking_date": "2026-12-01"
+    }
+  },
+  "blocking_transition": {
+    "ci-guard-exception-swallow.sh": {
+      "estimated_blocking_date": "2026-12-01"
+    }
+  }
+}

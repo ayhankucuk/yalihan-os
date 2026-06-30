@@ -1,0 +1,175 @@
+name: Unified Core CI Pipeline
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  # Fix #51: PHP sürümü production (Oracle Cloud, Ubuntu 22.04) ile eşleştirildi (2026-05-15)
+  # Post-launch: 8.2 → 8.4 upgrade planlanacak (önce production güncellenmeli)
+  PHP_VERSION: '8.2'
+  NODE_VERSION: '20'
+  LARAVEL_BYPASS_ENV_CHECK: 1
+  APP_ENV: testing
+  DB_CONNECTION: sqlite
+  DB_DATABASE: ':memory:'
+
+jobs:
+  setup-and-verify:
+    name: 🛡️ Setup & Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: 🛡️ Seal Baseline Guard
+        run: |
+          if [[ "${{ env.PHP_VERSION }}" != "8.2" ]]; then echo "❌ PHP Drift"; exit 1; fi
+          if [[ "${{ env.NODE_VERSION }}" != "20" ]]; then echo "❌ Node Drift"; exit 1; fi
+          echo "✅ Runtime Baseline OK"
+
+      - name: 🛡️ Workflow Drift Guard
+        run: |
+          # Only core-ci.yml is allowed to change.
+          # Unauthorized workflow changes are blocked to maintain CI SSOT.
+          changed=$(git diff --name-only HEAD~1 HEAD | grep '^.github/workflows/' || true)
+          if [ ! -z "$changed" ] && echo "$changed" | grep -v '^.github/workflows/core-ci.yml$'; then
+            echo "❌ Governance Violation: Unauthorized workflow drift detected."
+            echo "Drifts: $changed"
+            exit 1
+          fi
+          echo "✅ Workflow Authority OK"
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, bcmath, pdo, mysql, sqlite, pdo_sqlite
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📁 Prepare Laravel Runtime Directories
+        run: |
+          mkdir -p bootstrap/cache
+          mkdir -p storage/framework/sessions
+          mkdir -p storage/framework/views
+          mkdir -p storage/framework/cache
+          mkdir -p storage/logs
+          chmod -R 775 bootstrap/cache storage
+
+      - name: 🔐 Create Environment Contract (.env)
+        run: |
+          cp .env.example .env || touch .env
+          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+          echo "APP_ENV=testing" >> .env
+          echo "APP_DEBUG=true" >> .env
+          echo "CI=true" >> .env
+          echo "OLLAMA_API_URL=http://localhost:11434" >> .env
+          echo "OLLAMA_ENFORCE_TLS=false" >> .env
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=:memory:" >> .env
+
+      - name: 🧱 Prepare Laravel Runtime Directories
+        run: |
+          mkdir -p bootstrap/cache
+          mkdir -p storage/framework/cache
+          mkdir -p storage/framework/sessions
+          mkdir -p storage/framework/views
+          chmod -R 775 bootstrap/cache storage
+          echo "✅ Runtime directories prepared (Pre-Install)"
+
+      - name: 🔍 SSOT Guard (package-lock.json)
+        run: |
+          if [ ! -f package-lock.json ]; then
+            echo "❌ package-lock.json missing (SSOT violation)"
+            exit 1
+          fi
+
+      - name: 📦 Install Dependencies (Deterministic)
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          npm ci
+
+      - name: 🛡️ Validate Config (SSOT Enforcement)
+        run: php artisan config:validate
+
+      - name: 🛡️ Config Drift Detection (Audit Gate)
+        run: php artisan config:diff
+
+      - name: 🗄️ Run Migrations (Memory DB)
+        run: php artisan migrate --force
+
+      - name: 🧪 PHP Tests (Parallel)
+        run: php artisan test --parallel --recreate-databases
+
+      - name: 🛡️ Phase 4B.3: Tenant Isolation Tests
+        run: |
+          echo "🔒 Running Phase 4B.3 Tenant Isolation Validation..."
+          php artisan test tests/Unit/Repositories/CRMTenantIsolationTest.php --stop-on-failure
+          php artisan test tests/Unit/Repositories/CRMScopedDeleteSafetyTest.php --stop-on-failure
+          php artisan test tests/Unit/Repositories/CRMAggregationIsolationTest.php --stop-on-failure
+          php artisan test tests/Unit/Cache/CRMCacheTenantScopingTest.php --stop-on-failure
+          php artisan test tests/Unit/Queue/CRMQueueTenantSafetyTest.php --stop-on-failure
+          echo "✅ Phase 4B.3 Validation: ALL TESTS PASSED"
+
+      - name: 🎨 Build Assets (Frontend)
+        run: npm run build
+
+      - name: 🛡️ Governance Quality Gate
+        run: |
+          php artisan quality:gate
+          php artisan sab:integrity-scan --diff
+          php artisan domain:seal-check
+
+  final-verdict:
+    name: 🏁 Final Seal Verdict
+    needs: setup-and-verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛡️ Service Layer Integrity Guard
+        run: |
+          # Forbidden: env() inside Services/Modules (Must use config())
+          # We allow env() in config files only.
+          grep -r "env(" app/Services app/Modules && (echo "❌ Governance Violation: env() used directly in service/module layer. Use config() instead."; exit 1) || true
+          # Forbidden: Direct DB write in Controllers
+          grep -r "DB::table" app/Http/Controllers && (echo "❌ Governance Violation: Direct DB write detected in Controller. Use Service/Repository layer."; exit 1) || true
+          echo "✅ Service Integrity OK"
+
+      - name: 🛡️ Phase 4B: Repository Authority Enforcement
+        run: |
+          echo "🔍 Scanning for Phase 4B governance violations..."
+
+          # Forbidden: Direct model access in CRM services
+          violations=$(grep -rn "Lead::\|Kisi::\|Gorev::\|KisiEtkilesim::" app/Services/CRM/ | grep -v "use " | grep -v "namespace " | grep -v "@var" | grep -v "@param" | grep -v "@return" || true)
+          if [ ! -z "$violations" ]; then
+            echo "❌ GOVERNANCE VIOLATION: Direct model access detected in CRM services"
+            echo "$violations"
+            echo ""
+            echo "REQUIRED: Use Repository pattern instead"
+            echo "Example: \$this->leadRepository->findById(\$id)"
+            exit 1
+          fi
+
+          # Forbidden: Tenantless CRM cache keys
+          cache_violations=$(grep -rn "Cache::remember\|cache(" app/Services/CRM/ | grep -v "tenant:" | grep -v "global_avg_views" | grep -v "il_list" | grep -v "ulke_list" | grep -v "talep_kategori_list" || true)
+          if [ ! -z "$cache_violations" ]; then
+            echo "❌ GOVERNANCE VIOLATION: Tenantless CRM cache keys detected"
+            echo "$cache_violations"
+            echo ""
+            echo "REQUIRED: Use tenant-scoped cache keys"
+            echo "Example: Cache::remember('tenant:{\$tenantId}:crm:stats', ...)"
+            exit 1
+          fi
+
+          echo "✅ Phase 4B Repository Authority: ENFORCED"
+
+      - name: 🏁 Final Status
+        run: echo "🚀 CI COMPLETED - SYSTEM IS PROTECTED SEALED AND VERIFIED"

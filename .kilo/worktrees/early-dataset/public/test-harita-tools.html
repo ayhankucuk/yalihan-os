@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harita Araçları Test Sayfası</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white rounded-xl shadow-2xl p-8 mb-6">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">🗺️ Harita Araçları Test Sayfası</h1>
+            <p class="text-gray-600 mb-6">Tüm harita fonksiyonlarını test edin</p>
+            
+            <!-- Test Buttons -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <button onclick="window.mapStatus()" 
+                        class="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg">
+                    📊 Harita Durumu
+                </button>
+                <button onclick="testCoordinateSync()" 
+                        class="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md hover:shadow-lg">
+                    🎯 Koordinat Sync
+                </button>
+                <button onclick="testMarkerDrag()" 
+                        class="px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all shadow-md hover:shadow-lg">
+                    📍 Marker Sürükleme
+                </button>
+                <button onclick="testReverseGeocode()" 
+                        class="px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-all shadow-md hover:shadow-lg">
+                    🔄 Reverse Geocoding
+                </button>
+            </div>
+            
+            <!-- Koordinat Inputs -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Enlem (Latitude)</label>
+                    <input type="text" id="enlem" value="37.0344000" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Boylam (Longitude)</label>
+                    <input type="text" id="boylam" value="27.4305000" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="bg-white rounded-xl shadow-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-900">Harita</h2>
+                <div class="flex gap-2">
+                    <button onclick="VanillaLocationManager.setMapType('standard')" 
+                            id="btn-map-standard"
+                            class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-all">
+                        Standart
+                    </button>
+                    <button onclick="VanillaLocationManager.setMapType('satellite')" 
+                            id="btn-map-satellite"
+                            class="px-3 py-1.5 bg-gray-600 text-white text-xs rounded-lg hover:bg-gray-700 transition-all">
+                        Uydu
+                    </button>
+                    <button onclick="VanillaLocationManager.getCurrentLocation()" 
+                            class="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-all">
+                        📍 GPS
+                    </button>
+                </div>
+            </div>
+            
+            <div id="map" class="w-full h-[600px] rounded-lg border-2 border-gray-200"></div>
+            
+            <!-- Test Results -->
+            <div id="test-results" class="mt-4 p-4 bg-gray-50 rounded-lg">
+                <h3 class="font-bold text-gray-900 mb-2">Test Sonuçları:</h3>
+                <div id="results-content" class="text-sm text-gray-700 space-y-1"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast System -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <script>
+        // Simple toast system
+        window.toast = {
+            success: (msg) => showToast(msg, 'success'),
+            error: (msg) => showToast(msg, 'error'),
+            warning: (msg) => showToast(msg, 'warning'),
+            info: (msg) => showToast(msg, 'info')
+        };
+
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = `${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300`;
+            toast.textContent = message;
+            
+            const container = document.getElementById('toast-container');
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Debug mode
+        const DEBUG_MODE = true;
+        const log = (...args) => DEBUG_MODE && console.log(...args);
+
+        // VanillaLocationManager (simplified for testing)
+        const VanillaLocationManager = {
+            map: null,
+            marker: null,
+            standardLayer: null,
+            satelliteLayer: null,
+            lastGeocodeCall: 0,
+
+            async init() {
+                log('📍 Initializing map...');
+                
+                try {
+                    await this.waitForLeaflet();
+                    this.initMap();
+                } catch (error) {
+                    console.error('❌ Init error:', error);
+                    this.showMapError(error.message);
+                }
+            },
+
+            waitForLeaflet() {
+                return new Promise((resolve, reject) => {
+                    if (typeof L !== 'undefined') {
+                        resolve();
+                        return;
+                    }
+
+                    let attempts = 0;
+                    const checkInterval = setInterval(() => {
+                        attempts++;
+                        if (typeof L !== 'undefined') {
+                            clearInterval(checkInterval);
+                            resolve();
+                        } else if (attempts >= 50) {
+                            clearInterval(checkInterval);
+                            reject(new Error('Leaflet yüklenemedi'));
+                        }
+                    }, 200);
+                });
+            },
+
+            initMap() {
+                const mapEl = document.getElementById('map');
+                if (!mapEl || this.map) return;
+
+                this.map = L.map('map').setView([37.0344, 27.4305], 13);
+
+                this.standardLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap',
+                    maxZoom: 19
+                }).addTo(this.map);
+
+                this.satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: '© Esri',
+                    maxZoom: 19
+                });
+
+                this.map.on('click', (e) => {
+                    this.setMarker(e.latlng.lat, e.latlng.lng);
+                });
+
+                log('✅ Harita yüklendi');
+                window.toast.success('🗺️ Harita hazır');
+                
+                this.loadExistingCoordinates();
+            },
+
+            loadExistingCoordinates() {
+                const lat = parseFloat(document.getElementById('enlem').value);
+                const lng = parseFloat(document.getElementById('boylam').value);
+                
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    setTimeout(() => {
+                        this.setMarker(lat, lng, true);
+                        this.map.setView([lat, lng], 15);
+                    }, 500);
+                }
+            },
+
+            setMarker(lat, lng, skipGeocode = false) {
+                if (this.marker) {
+                    this.map.removeLayer(this.marker);
+                }
+
+                this.marker = L.marker([lat, lng], {
+                    draggable: true,
+                    title: 'Sürükleyerek değiştirin'
+                }).addTo(this.map);
+
+                this.marker.on('dragend', (e) => {
+                    const pos = e.target.getLatLng();
+                    document.getElementById('enlem').value = pos.lat.toFixed(7);
+                    document.getElementById('boylam').value = pos.lng.toFixed(7);
+                    window.toast.success('📍 Konum güncellendi');
+                    this.reverseGeocode(pos.lat, pos.lng);
+                });
+
+                this.marker.bindPopup(`
+                    <strong>📍 Konum</strong><br>
+                    ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>
+                    <em class="text-xs">Sürükleyin</em>
+                `);
+
+                document.getElementById('enlem').value = lat.toFixed(7);
+                document.getElementById('boylam').value = lng.toFixed(7);
+
+                if (!skipGeocode) {
+                    this.reverseGeocode(lat, lng);
+                }
+            },
+
+            async reverseGeocode(lat, lng) {
+                try {
+                    // Rate limiting
+                    const timeSinceLastCall = Date.now() - this.lastGeocodeCall;
+                    if (timeSinceLastCall < 1000) {
+                        await new Promise(r => setTimeout(r, 1000 - timeSinceLastCall));
+                    }
+                    this.lastGeocodeCall = Date.now();
+
+                    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&accept-language=tr`;
+                    
+                    const response = await fetch(url, {
+                        headers: { 'User-Agent': 'YalihanEmlak/1.0' }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        log('✅ Adres:', data.display_name);
+                        addTestResult('✅ Reverse geocoding başarılı');
+                    }
+                } catch (error) {
+                    console.error('Geocoding error:', error);
+                }
+            },
+
+            setMapType(type) {
+                if (!this.map) return;
+
+                if (type === 'satellite') {
+                    this.map.removeLayer(this.standardLayer);
+                    this.map.addLayer(this.satelliteLayer);
+                } else {
+                    this.map.removeLayer(this.satelliteLayer);
+                    this.map.addLayer(this.standardLayer);
+                }
+            },
+
+            getCurrentLocation() {
+                if (!this.map) return;
+                if (!navigator.geolocation) {
+                    window.toast.error('Tarayıcı GPS desteklemiyor');
+                    return;
+                }
+
+                window.toast.info('GPS konumu alınıyor...');
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        this.map.flyTo([lat, lng], 15, { duration: 1.5 });
+                        this.setMarker(lat, lng);
+                        window.toast.success('✅ GPS konumu alındı');
+                    },
+                    (error) => {
+                        window.toast.error('❌ GPS hatası: ' + error.message);
+                    },
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            },
+
+            showMapError(message) {
+                const mapEl = document.getElementById('map');
+                mapEl.innerHTML = `
+                    <div class="flex items-center justify-center h-full bg-red-50 border-2 border-red-300 rounded-lg">
+                        <div class="text-center p-8">
+                            <div class="text-6xl mb-4">❌</div>
+                            <h3 class="text-xl font-bold text-red-800 mb-2">Harita Yüklenemedi</h3>
+                            <p class="text-red-600 mb-4">${message}</p>
+                            <button onclick="location.reload()" 
+                                    class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                Sayfayı Yenile
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        };
+
+        // Test Functions
+        function addTestResult(message) {
+            const container = document.getElementById('results-content');
+            const time = new Date().toLocaleTimeString('tr-TR');
+            const div = document.createElement('div');
+            div.className = 'text-sm';
+            div.textContent = `[${time}] ${message}`;
+            container.insertBefore(div, container.firstChild);
+        }
+
+        function testCoordinateSync() {
+            const lat = 37.5 + Math.random() * 0.1;
+            const lng = 27.3 + Math.random() * 0.1;
+            
+            document.getElementById('enlem').value = lat.toFixed(7);
+            document.getElementById('boylam').value = lng.toFixed(7);
+            
+            VanillaLocationManager.setMarker(lat, lng, true);
+            VanillaLocationManager.map.setView([lat, lng], 15);
+            
+            addTestResult(`✅ Koordinat sync test: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+            window.toast.success('Koordinat sync başarılı');
+        }
+
+        function testMarkerDrag() {
+            if (!VanillaLocationManager.marker) {
+                window.toast.warning('Önce haritaya tıklayın');
+                addTestResult('⚠️ Marker yok, önce tıklayın');
+                return;
+            }
+            
+            window.toast.info('Marker\'ı sürükleyin');
+            addTestResult('ℹ️ Marker sürükleme testi hazır - haritada sürükleyin');
+        }
+
+        function testReverseGeocode() {
+            const lat = parseFloat(document.getElementById('enlem').value);
+            const lng = parseFloat(document.getElementById('boylam').value);
+            
+            if (isNaN(lat) || isNaN(lng)) {
+                window.toast.error('Geçersiz koordinat');
+                return;
+            }
+            
+            addTestResult('🔄 Reverse geocoding başlatıldı...');
+            VanillaLocationManager.reverseGeocode(lat, lng);
+        }
+
+        window.mapStatus = function() {
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log('🗺️ HARITA DURUM RAPORU');
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log('✅ Leaflet:', typeof L !== 'undefined');
+            console.log('✅ Map:', !!VanillaLocationManager.map);
+            console.log('✅ Marker:', !!VanillaLocationManager.marker);
+            console.log('📍 Koordinatlar:', {
+                lat: document.getElementById('enlem').value,
+                lng: document.getElementById('boylam').value
+            });
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            
+            addTestResult('📊 Harita durumu console\'da');
+            window.toast.info('Durum console\'da - F12 ile kontrol edin');
+        };
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                VanillaLocationManager.init();
+                addTestResult('🚀 Sistem başlatıldı');
+            }, 100);
+
+            // Koordinat input sync
+            document.getElementById('enlem').addEventListener('blur', () => {
+                const lat = parseFloat(document.getElementById('enlem').value);
+                const lng = parseFloat(document.getElementById('boylam').value);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    VanillaLocationManager.setMarker(lat, lng, true);
+                    VanillaLocationManager.map.setView([lat, lng], 15);
+                    addTestResult('✅ Input → Map sync');
+                }
+            });
+
+            document.getElementById('boylam').addEventListener('blur', () => {
+                const lat = parseFloat(document.getElementById('enlem').value);
+                const lng = parseFloat(document.getElementById('boylam').value);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    VanillaLocationManager.setMarker(lat, lng, true);
+                    VanillaLocationManager.map.setView([lat, lng], 15);
+                    addTestResult('✅ Input → Map sync');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

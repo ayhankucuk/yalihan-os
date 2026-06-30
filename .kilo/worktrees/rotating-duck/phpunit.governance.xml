@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  H7 Problem Analyzer v1 — coverage override config.
+  Payda yalnızca Analyzer kaynaklarıyla sınırlıdır; diğer app/* dosyaları
+  coverage yüzdesini kirletmez. Çağrı: scripts/governance-coverage.sh
+-->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache"
+>
+    <testsuites>
+        <testsuite name="Governance">
+            <directory>tests/Unit/Governance/Analyze</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app/Support/Governance/Analyze</directory>
+            <file>app/Console/Commands/Governance/GovernanceAnalyzeCommand.php</file>
+        </include>
+    </source>
+    <coverage>
+        <report>
+            <clover outputFile="reports/coverage/governance/clover.xml"/>
+            <html outputDirectory="reports/coverage/governance/html"/>
+            <text outputFile="reports/coverage/governance/text.txt" showUncoveredFiles="true"/>
+        </report>
+    </coverage>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+    </php>
+</phpunit>

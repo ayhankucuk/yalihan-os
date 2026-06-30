@@ -1,0 +1,11 @@
+# Yalıhan Governance Core Protection
+# @authority-team (Simulated)
+
+# Critical Governance Files
+.context7/              @authority-team
+docs/DAP_DECISION_TABLE.json @authority-team
+scripts/                @authority-team
+package.json            @authority-team
+
+# CI/CD
+.github/                @authority-team

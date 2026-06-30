@@ -1,0 +1,16 @@
+{
+  "generated_at": "2026-05-15T07:55:29.026Z",
+  "files": {
+    ".sab/authority.json": "0f788859c54d6c2fa1d4757aa9fa5d3a578260f1d5e395934a96a0060a856598",
+    "docs/DAP_DECISION_TABLE.json": "cdbd337d31f50a9eb1271647afeac958a670113f35550465df29c72bc74b01f3",
+    "scripts/tools/compile-authority.cjs": "aba7fee181a7cb317ad7dc1bd807c09008db9d2a0a372a24c3227c92700ba9b5",
+    "scripts/tools/compile-decision-table.cjs": "921f5ce50de7f2f28880c26cd7c47514575696547b1c5d97498286cdf48ba2cb",
+    "scripts/guards/legacy-guard.cjs": "076574c647a23001e15b1748482029c25d3a1c7d1a9d9e2ba73ea646e9d759e6",
+    "scripts/tools/dap-drift-check.cjs": "fa3bba8eef37bd5d8d5414854cf0b4ec70ae79dfb5648cabe3b0fb7429c8f2e3",
+    "scripts/guards/quality-gate.sh": "aee35a14900e7d159a2410fc85cec7acc4c44af0b2fede0ad686cc31f63ed7d3",
+    "docs/API_CONTRACT.json": "8f1bc0a4f66e7aa769c8a0df2636ca6da35f279290d75209ddb64f527d9a733a",
+    "scripts/tools/compile-api-contract.cjs": "e3263bbc4113560c8d18efd0b6d3e3efeb373ef939a24d2ea021eb05089ee08a",
+    "scripts/guards/ci-guard-sealed.sh": "aff1b705ae06a96033783b400c90c5fd5f37ce4f2545036222b9da2a0aad01d8",
+    "scripts/guards/sprint-isolation-check.sh": "b73eb5423dc253bcd59a2d1a658f0c68032ed1a1d6e9165aa9eadbaf0e5bb59f"
+  }
+}

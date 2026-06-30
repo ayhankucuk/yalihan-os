@@ -1,0 +1,1243 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-04-20T15:33:02.608Z",
+  "source": {
+    "command": "php artisan list",
+    "parser_mode": "raw_fallback"
+  },
+  "summary": {
+    "total_commands": 285,
+    "namespace_count": 87
+  },
+  "namespaces": {
+    "about": 1,
+    "activitylog": 1,
+    "ai": 14,
+    "analytics": 4,
+    "api": 2,
+    "auth": 1,
+    "backup": 4,
+    "bekci": 8,
+    "blade": 1,
+    "cache-keys": 1,
+    "cache": 4,
+    "calendar": 1,
+    "categories": 2,
+    "channel": 1,
+    "cleanup": 1,
+    "clear-compiled": 1,
+    "completion": 1,
+    "config": 4,
+    "context7": 1,
+    "cortex": 6,
+    "db": 6,
+    "docs": 1,
+    "down": 1,
+    "enterprise": 1,
+    "env": 3,
+    "event": 4,
+    "events": 1,
+    "features": 3,
+    "field-deps": 1,
+    "geocode": 1,
+    "google": 1,
+    "gov": 13,
+    "governance": 1,
+    "guard": 11,
+    "help": 1,
+    "horizon": 17,
+    "ideas": 1,
+    "ilan": 1,
+    "key": 1,
+    "konut": 1,
+    "l5-swagger": 1,
+    "lang": 1,
+    "livewire": 8,
+    "mahalle": 2,
+    "make": 28,
+    "menus": 1,
+    "migrate": 7,
+    "model": 3,
+    "monitor": 1,
+    "notifications": 1,
+    "openclaw": 2,
+    "optimize": 2,
+    "package": 1,
+    "permission-routes": 1,
+    "permission": 5,
+    "portfolio": 1,
+    "projection": 3,
+    "quality": 1,
+    "queue": 16,
+    "ranking": 3,
+    "report": 1,
+    "route": 4,
+    "sab": 13,
+    "sail": 3,
+    "sanctum": 1,
+    "schedule": 6,
+    "schema": 1,
+    "sentry": 2,
+    "serve": 1,
+    "session": 1,
+    "standard": 1,
+    "storage": 2,
+    "stub": 1,
+    "system": 4,
+    "telemetry": 1,
+    "telescope": 6,
+    "test": 2,
+    "tinker": 1,
+    "turkiye": 1,
+    "up": 1,
+    "ups": 7,
+    "user": 2,
+    "validation-rules": 1,
+    "vendor": 1,
+    "view": 2,
+    "villa": 1,
+    "vision": 1
+  },
+  "commands": [
+    {
+      "name": "about",
+      "description": "Display basic information about your application"
+    },
+    {
+      "name": "activitylog:clean",
+      "description": "Clean up old records from the activity log."
+    },
+    {
+      "name": "ai:aggregate-telemetry",
+      "description": "Aggregate AI logs into hourly telemetry metrics (Phase 13 - Epic 2)"
+    },
+    {
+      "name": "ai:code-review",
+      "description": "AI-powered code review with Context7 compliance and optimization suggestions"
+    },
+    {
+      "name": "ai:data-hygiene",
+      "description": "Archive and cleanup old AI telemetry data (90+ days)"
+    },
+    {
+      "name": "ai:health-check",
+      "description": "Check AI system health and alert on issues"
+    },
+    {
+      "name": "ai:index-ilanlar",
+      "description": "Mevcut ilanları vektör veritabanına (embeddings) kaydeder (RAG için)."
+    },
+    {
+      "name": "ai:kb-search",
+      "description": "Search local AI KB index and return top-k matches"
+    },
+    {
+      "name": "ai:optimize-thresholds",
+      "description": "Optimize AI confidence thresholds using recent usage telemetry"
+    },
+    {
+      "name": "ai:recalculate-thresholds",
+      "description": "Recalculate adaptive AI confidence thresholds based on user learning signals"
+    },
+    {
+      "name": "ai:recompute-provider-profiles",
+      "description": "Compute and update AI provider performance profiles based on telemetry"
+    },
+    {
+      "name": "ai:rollback-thresholds",
+      "description": "Rollback threshold overrides created by a specific optimization run"
+    },
+    {
+      "name": "ai:scan-buyer-matches",
+      "description": "Scan active listings and detect potential buyer matches (SAB v16.4)"
+    },
+    {
+      "name": "ai:scan-deals",
+      "description": "Batch generate AI Deal Predictions for listings"
+    },
+    {
+      "name": "ai:scan-opportunities",
+      "description": "AI Opportunity Engine - Scan projections and generate opportunities"
+    },
+    {
+      "name": "ai:semantic-sync",
+      "description": "Existing ilanları semantik vektör veri tabanına senkronize eder."
+    },
+    {
+      "name": "analytics:calculate-velocity",
+      "description": "Calculate development velocity metrics for Context7 Analytics"
+    },
+    {
+      "name": "analytics:log-violation",
+      "description": "Log a Context7 compliance violation for analytics tracking"
+    },
+    {
+      "name": "analytics:record-metric",
+      "description": "Record an analytics metric for Context7 Dashboard"
+    },
+    {
+      "name": "analytics:velocity-report",
+      "description": "Generate comprehensive development velocity report"
+    },
+    {
+      "name": "api:generate-docs",
+      "description": "Generate API documentation from routes"
+    },
+    {
+      "name": "api:validate-routes",
+      "description": "Validate API routes for conflicts and issues"
+    },
+    {
+      "name": "auth:clear-resets",
+      "description": "Flush expired password reset tokens"
+    },
+    {
+      "name": "backup:clean",
+      "description": "Remove all backups older than specified number of days in config."
+    },
+    {
+      "name": "backup:list",
+      "description": "Display a list of all backups."
+    },
+    {
+      "name": "backup:monitor",
+      "description": "Monitor the health of all backups."
+    },
+    {
+      "name": "backup:run",
+      "description": "Run the backup."
+    },
+    {
+      "name": "bekci:aesthetics",
+      "description": "Yalıhan Bekçi: UI/UX Estetik ve Dark Mode Denetimi"
+    },
+    {
+      "name": "bekci:audit",
+      "description": "MCP Audit Server - Context7 ihlallerini yakala ve öğren"
+    },
+    {
+      "name": "bekci:features-empty",
+      "description": "🔍 Yalıhan Bekçi: Diagnose why features are empty for a category"
+    },
+    {
+      "name": "bekci:governance:init",
+      "description": "Establish the first governed configuration baseline (ACTIVE snapshot)"
+    },
+    {
+      "name": "bekci:health",
+      "description": "Yalıhan Bekçi AI sistemi genel sağlık durumunu görüntüler"
+    },
+    {
+      "name": "bekci:learn",
+      "description": "Teach Yalıhan Bekçi AI about performed actions"
+    },
+    {
+      "name": "bekci:watch",
+      "description": "🛡️ Yalıhan Bekçi - Watch for file changes and auto-teach AI (Phase 8 Sprint 3 Compatible)"
+    },
+    {
+      "name": "bekci:wizard-contract",
+      "description": "🛡️ Yalıhan Bekçi: Wizard Contract Validator"
+    },
+    {
+      "name": "blade:validate-alpine-scope",
+      "description": "Blade @include + Alpine.js scope standartlarını valide et"
+    },
+    {
+      "name": "cache-keys:validate",
+      "description": "Validate cache keys against central registry and detect conflicts"
+    },
+    {
+      "name": "cache:clear",
+      "description": "Flush the application cache"
+    },
+    {
+      "name": "cache:forget",
+      "description": "Remove an item from the cache"
+    },
+    {
+      "name": "cache:prune-stale-tags",
+      "description": "Prune stale cache tags from the cache (Redis only)"
+    },
+    {
+      "name": "cache:table",
+      "description": "Create a migration for the cache database table"
+    },
+    {
+      "name": "calendar:sync",
+      "description": "Takvim senkronizasyonlarını çalıştırır"
+    },
+    {
+      "name": "categories:add-konut-subcategories",
+      "description": "Add missing subcategories to Konut category"
+    },
+    {
+      "name": "categories:fix-yazlik-kiralama",
+      "description": "Fix Yazlık Kiralama subcategories naming conflict"
+    },
+    {
+      "name": "channel:list",
+      "description": "List all registered private broadcast channels"
+    },
+    {
+      "name": "cleanup:yazlik-features",
+      "description": "Yazlık Features sisteminden duplicate özellikleri ve boş kategorileri temizle"
+    },
+    {
+      "name": "clear-compiled",
+      "description": "Remove the compiled class file"
+    },
+    {
+      "name": "completion",
+      "description": "Dump the shell completion script"
+    },
+    {
+      "name": "config:cache",
+      "description": "Create a cache file for faster configuration loading"
+    },
+    {
+      "name": "config:clear",
+      "description": "Remove the configuration cache file"
+    },
+    {
+      "name": "config:migrate-to-database",
+      "description": "Mevcut config/yali_options.php dosyasını database'e aktar"
+    },
+    {
+      "name": "config:show",
+      "description": "Display all of the values for a given configuration file"
+    },
+    {
+      "name": "context7:cache:invalidate-international",
+      "description": "International sayfa için ülke/şehir/tür listesi cache temizliği"
+    },
+    {
+      "name": "cortex:analyze-market",
+      "description": "Cortex Market Analysis - TKGM Learning Engine powered insights"
+    },
+    {
+      "name": "cortex:autonomous-market-notification",
+      "description": "Cortex AI Autonomous Market Analysis and Notification System"
+    },
+    {
+      "name": "cortex:hunt",
+      "description": "Cortex Avcı Modülü: Sıcak fırsatları tarar ve tebliğ eder."
+    },
+    {
+      "name": "cortex:optimize-photos",
+      "description": "Reorders Ilan photos based on Cortex Vision AI criteria (Resolution, Ratio, Scene)"
+    },
+    {
+      "name": "cortex:search",
+      "description": "Analyze natural language search query using Cortex NLP"
+    },
+    {
+      "name": "cortex:smart-rank",
+      "description": "Cortex Smart Ranking - AI-powered listing prioritization"
+    },
+    {
+      "name": "db",
+      "description": "Start a new database CLI session"
+    },
+    {
+      "name": "db:monitor",
+      "description": "Monitor the number of connections on the specified database"
+    },
+    {
+      "name": "db:seed",
+      "description": "Seed the database with records"
+    },
+    {
+      "name": "db:show",
+      "description": "Display information about the given database"
+    },
+    {
+      "name": "db:table",
+      "description": "Display information about the given database table"
+    },
+    {
+      "name": "db:wipe",
+      "description": "Drop all tables, views, and types"
+    },
+    {
+      "name": "docs",
+      "description": "Access the Laravel documentation"
+    },
+    {
+      "name": "down",
+      "description": "Put the application into maintenance / demo mode"
+    },
+    {
+      "name": "enterprise:queue-stress",
+      "description": "Simulates a massive job burst for Gate C stress testing"
+    },
+    {
+      "name": "env",
+      "description": "Display the current framework environment"
+    },
+    {
+      "name": "env:decrypt",
+      "description": "Decrypt an environment file"
+    },
+    {
+      "name": "env:encrypt",
+      "description": "Encrypt an environment file"
+    },
+    {
+      "name": "event:cache",
+      "description": "Discover and cache the application's events and listeners"
+    },
+    {
+      "name": "event:clear",
+      "description": "Clear all cached events and listeners"
+    },
+    {
+      "name": "event:generate",
+      "description": "Generate the missing events and listeners based on registration"
+    },
+    {
+      "name": "event:list",
+      "description": "List the application's events and listeners"
+    },
+    {
+      "name": "events:validate",
+      "description": "Validate event definitions and listener mappings"
+    },
+    {
+      "name": "features:cleanup-konut-kiralik",
+      "description": "Konut \"Kiralık\" yayın tipinden yazlık özelliklerini temizle"
+    },
+    {
+      "name": "features:fix-arsa",
+      "description": "Arsa Features sistemindeki tutarsızlıkları düzelt"
+    },
+    {
+      "name": "features:fix-consistency",
+      "description": "Features sistemindeki tutarsızlıkları düzelt (type, unit)"
+    },
+    {
+      "name": "field-deps:fix-arsa",
+      "description": "Arsa Field Dependencies'deki unit eksikliklerini düzelt"
+    },
+    {
+      "name": "geocode:nominatim",
+      "description": "Geocode addresses using Nominatim (OpenStreetMap)"
+    },
+    {
+      "name": "google:fetch-pois",
+      "description": "Google Places API (New) kullanarak POI verilerini JSON dosyasına çeker ve veritabanına kaydeder."
+    },
+    {
+      "name": "gov:activation:dry-run",
+      "description": "Simulate Configuration Activation (Dry Run). Check for conflicts and compliance."
+    },
+    {
+      "name": "gov:audit-test",
+      "description": "Tests the Governance Audit Write Path"
+    },
+    {
+      "name": "gov:badge-migrate",
+      "description": "Identify badge-like publication types and prepare migration to UPS Feature (dry-run/apply)"
+    },
+    {
+      "name": "gov:baseline:init",
+      "description": "Initialize a secure, trusted configuration baseline for Governance."
+    },
+    {
+      "name": "gov:cache:purge",
+      "description": "Purge Governance Cache for a specific tenant or globally."
+    },
+    {
+      "name": "gov:cache:warm",
+      "description": "Warm Governance Cache for a specific tenant (Deterministic L2 Population)."
+    },
+    {
+      "name": "gov:db:harden",
+      "description": "SAB v3 DLP: Generates or applies SQL to revoke destructive privileges (DROP, TRUNCATE) from the application DB user."
+    },
+    {
+      "name": "gov:drift:scan",
+      "description": "Scan for configuration drift between Active Version and Database State."
+    },
+    {
+      "name": "gov:incident:replay",
+      "description": "List and Replay Governance Incidents for Forensic Analysis."
+    },
+    {
+      "name": "gov:promote-test",
+      "description": "E2E Smoke Tests the Governance Promote Lifecycle using Fake Repo"
+    },
+    {
+      "name": "gov:publication-type-inventory",
+      "description": "Build publication type inventory report and write to docs/GOV_PUBLICATION_TYPE_INVENTORY.md"
+    },
+    {
+      "name": "gov:tenant:freeze",
+      "description": "Emergency Freeze/Unfreeze of a Tenant (Isolation Breach Protocol)."
+    },
+    {
+      "name": "gov:view-diff",
+      "description": "Displays purely read-only Diff projection for a governed entity (Draft vs Published)"
+    },
+    {
+      "name": "governance:verify-export",
+      "description": "Verify integrity of exported governance timeline (hash chain + signatures)"
+    },
+    {
+      "name": "guard:actions:v10_9",
+      "description": "Action dispatch and policy coverage guard (v10.9)"
+    },
+    {
+      "name": "guard:cqrs",
+      "description": "🛡️ CQRS Integrity Guard: Detects direct writes to projection tables and missing event dispatches."
+    },
+    {
+      "name": "guard:docs-authority",
+      "description": "🛡️ Docs Authority Guard: Ensures architecture docs are marked as READ-ONLY reflection, not authority."
+    },
+    {
+      "name": "guard:docs-coverage",
+      "description": "🛡️ Docs Coverage Guard: Checks that admin routes, critical services, and models are documented."
+    },
+    {
+      "name": "guard:docs-drift",
+      "description": "🛡️ Docs Drift Guard: Detects verified-wrong command, route, and service references in documentation."
+    },
+    {
+      "name": "guard:ghost-schema",
+      "description": "Alias command for schema drift and ghost field audit"
+    },
+    {
+      "name": "guard:routes:v2",
+      "description": "Route integrity guard (v2) with report export"
+    },
+    {
+      "name": "guard:schema",
+      "description": "🛡️ Schema Drift Detector: Verifies Model $fillable fields match actual DB columns."
+    },
+    {
+      "name": "guard:security",
+      "description": "🛡️ Security Boundary Scanner: Verifies public AI search does not leak private fields."
+    },
+    {
+      "name": "guard:security-leak",
+      "description": "Alias command for public API security leak audit"
+    },
+    {
+      "name": "guard:sozlesme",
+      "description": "Phase 2 system contract scanner for Event/DTO/View/Endpoint artifacts"
+    },
+    {
+      "name": "help",
+      "description": "Display help for a command"
+    },
+    {
+      "name": "horizon",
+      "description": "Start a master supervisor in the foreground"
+    },
+    {
+      "name": "horizon:clear",
+      "description": "Delete all of the jobs from the specified queue"
+    },
+    {
+      "name": "horizon:clear-metrics",
+      "description": "Delete metrics for all jobs and queues"
+    },
+    {
+      "name": "horizon:continue",
+      "description": "Instruct the master supervisor to continue processing jobs"
+    },
+    {
+      "name": "horizon:continue-supervisor",
+      "description": "Instruct the supervisor to continue processing jobs"
+    },
+    {
+      "name": "horizon:forget",
+      "description": "Delete a failed queue job"
+    },
+    {
+      "name": "horizon:install",
+      "description": "Install all of the Horizon resources"
+    },
+    {
+      "name": "horizon:list",
+      "description": "List all of the deployed machines"
+    },
+    {
+      "name": "horizon:pause",
+      "description": "Pause the master supervisor"
+    },
+    {
+      "name": "horizon:pause-supervisor",
+      "description": "Pause a supervisor"
+    },
+    {
+      "name": "horizon:publish",
+      "description": "Publish all of the Horizon resources"
+    },
+    {
+      "name": "horizon:purge",
+      "description": "Terminate any rogue Horizon processes"
+    },
+    {
+      "name": "horizon:snapshot",
+      "description": "Store a snapshot of the queue metrics"
+    },
+    {
+      "name": "horizon:status",
+      "description": "Get the current status of Horizon"
+    },
+    {
+      "name": "horizon:supervisor-status",
+      "description": "Show the status for a given supervisor"
+    },
+    {
+      "name": "horizon:supervisors",
+      "description": "List all of the supervisors"
+    },
+    {
+      "name": "horizon:terminate",
+      "description": "Terminate the master supervisor so it can be restarted"
+    },
+    {
+      "name": "ideas:generate",
+      "description": "Generate automatic development ideas based on project analysis"
+    },
+    {
+      "name": "ilan:recalc-visibility",
+      "description": "Recalculates the visibility_score for all active listings based on the hardened ranking formula."
+    },
+    {
+      "name": "key:generate",
+      "description": "Set the application key"
+    },
+    {
+      "name": "konut:neural-sync",
+      "description": "🏠 Residential Spine Restoration - Konut özelliklerini şablonlara bağla"
+    },
+    {
+      "name": "l5-swagger:generate",
+      "description": "Regenerate docs"
+    },
+    {
+      "name": "lang:publish",
+      "description": "Publish all language files that are available for customization"
+    },
+    {
+      "name": "livewire:configure-s3-upload-cleanup",
+      "description": "Configure temporary file upload s3 directory to automatically cleanup files older than 24hrs"
+    },
+    {
+      "name": "livewire:copy",
+      "description": "Copy a Livewire component"
+    },
+    {
+      "name": "livewire:delete",
+      "description": "Delete a Livewire component"
+    },
+    {
+      "name": "livewire:discover",
+      "description": "Regenerate Livewire component auto-discovery manifest"
+    },
+    {
+      "name": "livewire:make",
+      "description": "Create a new Livewire component"
+    },
+    {
+      "name": "livewire:move",
+      "description": "Move a Livewire component"
+    },
+    {
+      "name": "livewire:publish",
+      "description": "Publish Livewire configuration"
+    },
+    {
+      "name": "livewire:stubs",
+      "description": "Publish Livewire stubs"
+    },
+    {
+      "name": "mahalle:import-turkiyeapi",
+      "description": "🌍 TurkiyeAPI'den mahalle verilerini import eder"
+    },
+    {
+      "name": "mahalle:sync-coordinates",
+      "description": "🗺️ Mahalle koordinatlarını otomatik geocode eder (Digital Twin Strategy)"
+    },
+    {
+      "name": "make:cast",
+      "description": "Create a new custom Eloquent cast class"
+    },
+    {
+      "name": "make:channel",
+      "description": "Create a new channel class"
+    },
+    {
+      "name": "make:command",
+      "description": "Create a new Artisan command"
+    },
+    {
+      "name": "make:component",
+      "description": "Create a new view component class"
+    },
+    {
+      "name": "make:controller",
+      "description": "Create a new controller class"
+    },
+    {
+      "name": "make:event",
+      "description": "Create a new event class"
+    },
+    {
+      "name": "make:exception",
+      "description": "Create a new custom exception class"
+    },
+    {
+      "name": "make:export",
+      "description": "Create a new export class"
+    },
+    {
+      "name": "make:factory",
+      "description": "Create a new model factory"
+    },
+    {
+      "name": "make:import",
+      "description": "Create a new import class"
+    },
+    {
+      "name": "make:job",
+      "description": "Create a new job class"
+    },
+    {
+      "name": "make:listener",
+      "description": "Create a new event listener class"
+    },
+    {
+      "name": "make:livewire",
+      "description": "Create a new Livewire component"
+    },
+    {
+      "name": "make:mail",
+      "description": "Create a new email class"
+    },
+    {
+      "name": "make:middleware",
+      "description": "Create a new middleware class"
+    },
+    {
+      "name": "make:migration",
+      "description": "Create a new migration file"
+    },
+    {
+      "name": "make:model",
+      "description": "Create a new Eloquent model class"
+    },
+    {
+      "name": "make:notification",
+      "description": "Create a new notification class"
+    },
+    {
+      "name": "make:observer",
+      "description": "Create a new observer class"
+    },
+    {
+      "name": "make:policy",
+      "description": "Create a new policy class"
+    },
+    {
+      "name": "make:provider",
+      "description": "Create a new service provider class"
+    },
+    {
+      "name": "make:request",
+      "description": "Create a new form request class"
+    },
+    {
+      "name": "make:resource",
+      "description": "Create a new resource"
+    },
+    {
+      "name": "make:rule",
+      "description": "Create a new validation rule"
+    },
+    {
+      "name": "make:scope",
+      "description": "Create a new scope class"
+    },
+    {
+      "name": "make:seeder",
+      "description": "Create a new seeder class"
+    },
+    {
+      "name": "make:test",
+      "description": "Create a new test class"
+    },
+    {
+      "name": "make:view",
+      "description": "Create a new view"
+    },
+    {
+      "name": "menus:validate",
+      "description": "Validate menus against central registry"
+    },
+    {
+      "name": "migrate",
+      "description": "Run the database migrations"
+    },
+    {
+      "name": "migrate:fresh",
+      "description": "Drop all tables and re-run all migrations"
+    },
+    {
+      "name": "migrate:install",
+      "description": "Create the migration repository"
+    },
+    {
+      "name": "migrate:refresh",
+      "description": "Reset and re-run all migrations"
+    },
+    {
+      "name": "migrate:reset",
+      "description": "Rollback all database migrations"
+    },
+    {
+      "name": "migrate:rollback",
+      "description": "Rollback the last database migration"
+    },
+    {
+      "name": "migrate:status",
+      "description": "Show the status of each migration"
+    },
+    {
+      "name": "model:drift-scan",
+      "description": "Model $fillable ve Database şeması arasındaki senkronizasyonu denetler (Ghost Field tespiti)"
+    },
+    {
+      "name": "model:prune",
+      "description": "Prune models that are no longer needed"
+    },
+    {
+      "name": "model:show",
+      "description": "Show information about an Eloquent model"
+    },
+    {
+      "name": "monitor:project",
+      "description": "Monitor project health and performance continuously"
+    },
+    {
+      "name": "notifications:table",
+      "description": "Create a migration for the notifications table"
+    },
+    {
+      "name": "openclaw:audit-report",
+      "description": "Generate a consolidated OpenClaw audit & health report"
+    },
+    {
+      "name": "openclaw:detect-anomalies",
+      "description": "Detect anomalous agent behavior patterns from OpenClaw audit logs"
+    },
+    {
+      "name": "optimize",
+      "description": "Cache the framework bootstrap files"
+    },
+    {
+      "name": "optimize:clear",
+      "description": "Remove the cached bootstrap files"
+    },
+    {
+      "name": "package:discover",
+      "description": "Rebuild the cached package manifest"
+    },
+    {
+      "name": "permission-routes:validate",
+      "description": "Validate permission routes against central registry"
+    },
+    {
+      "name": "permission:cache-reset",
+      "description": "Reset the permission cache"
+    },
+    {
+      "name": "permission:create-permission",
+      "description": "Create a permission"
+    },
+    {
+      "name": "permission:create-role",
+      "description": "Create a role"
+    },
+    {
+      "name": "permission:setup-teams",
+      "description": "Setup the teams feature by generating the associated migration."
+    },
+    {
+      "name": "permission:show",
+      "description": "Show a table of roles and permissions per guard"
+    },
+    {
+      "name": "portfolio:import",
+      "description": "Import portfolio listings from JSON file with EİDS tapu matching"
+    },
+    {
+      "name": "projection:dlq:replay",
+      "description": "Replays failed projection events from the Dead Letter Queue"
+    },
+    {
+      "name": "projection:health",
+      "description": "Checks the health of the CQRS projection system"
+    },
+    {
+      "name": "projection:rebuild",
+      "description": "Rebuilds CQRS read model projections from the Core Ledger and CRM data"
+    },
+    {
+      "name": "quality:gate",
+      "description": "Yalihan SAB Kristal Temizlik Otoritesi (Zero Drift Gate)"
+    },
+    {
+      "name": "queue:batches-table",
+      "description": "Create a migration for the batches database table"
+    },
+    {
+      "name": "queue:check-worker",
+      "description": "Check queue worker durum and send alert if stopped"
+    },
+    {
+      "name": "queue:clear",
+      "description": "Delete all of the jobs from the specified queue"
+    },
+    {
+      "name": "queue:failed",
+      "description": "List all of the failed queue jobs"
+    },
+    {
+      "name": "queue:failed-table",
+      "description": "Create a migration for the failed queue jobs database table"
+    },
+    {
+      "name": "queue:flush",
+      "description": "Flush all of the failed queue jobs"
+    },
+    {
+      "name": "queue:forget",
+      "description": "Delete a failed queue job"
+    },
+    {
+      "name": "queue:listen",
+      "description": "Listen to a given queue"
+    },
+    {
+      "name": "queue:monitor",
+      "description": "Monitor the size of the specified queues"
+    },
+    {
+      "name": "queue:prune-batches",
+      "description": "Prune stale entries from the batches database"
+    },
+    {
+      "name": "queue:prune-failed",
+      "description": "Prune stale entries from the failed jobs table"
+    },
+    {
+      "name": "queue:restart",
+      "description": "Restart queue worker daemons after their current job"
+    },
+    {
+      "name": "queue:retry",
+      "description": "Retry a failed queue job"
+    },
+    {
+      "name": "queue:retry-batch",
+      "description": "Retry the failed jobs for a batch"
+    },
+    {
+      "name": "queue:table",
+      "description": "Create a migration for the queue jobs database table"
+    },
+    {
+      "name": "queue:work",
+      "description": "Start processing jobs on the queue as a daemon"
+    },
+    {
+      "name": "ranking:integrity-check",
+      "description": "Verify visibility_score invariant (0-10000) for all listings"
+    },
+    {
+      "name": "ranking:recalculate-all",
+      "description": "Recalculate visibility scores and SEO for all listings (Phase 19)"
+    },
+    {
+      "name": "ranking:validate-invariants",
+      "description": "Validate Phase 19 ranking invariants"
+    },
+    {
+      "name": "report:owner-private-audit",
+      "description": "Mahrem veri audit özetini rapor dosyasına yazar"
+    },
+    {
+      "name": "route:cache",
+      "description": "Create a route cache file for faster route registration"
+    },
+    {
+      "name": "route:clear",
+      "description": "Remove the route cache file"
+    },
+    {
+      "name": "route:list",
+      "description": "List all registered routes"
+    },
+    {
+      "name": "route:validate",
+      "description": "Validate all routes against central registry"
+    },
+    {
+      "name": "sab:audit",
+      "description": "🛡️ SAB Audit Generator: Runs all SAB Guards V3 and exports a full Markdown audit report."
+    },
+    {
+      "name": "sab:authority-map:generate",
+      "description": "Generate or check human-readable companion projection (docs/authority-map.md) from .sab/authority.json"
+    },
+    {
+      "name": "sab:baseline",
+      "description": "Generate or refresh SAB integrity baseline using sab:integrity-scan."
+    },
+    {
+      "name": "sab:context:check",
+      "description": "🛰️ Verify the integrity of the SAB Documentation Projection Pipeline"
+    },
+    {
+      "name": "sab:context:event",
+      "description": "🛰️ Record a structured event for the Documentation Projection Pipeline"
+    },
+    {
+      "name": "sab:context:project",
+      "description": "🛰️ Rebuild AI context and memory projections from the event log"
+    },
+    {
+      "name": "sab:deprecation:validate",
+      "description": "🛡️ Validate deprecation coverage for a legacy file split/merge/archive migration"
+    },
+    {
+      "name": "sab:doctor",
+      "description": "Run SAB diagnostics and print actionable health summary."
+    },
+    {
+      "name": "sab:guard",
+      "description": "🛡️ SAB Strict Guard: Checks architecture constraints and fails CI (exit 1) if any violations exist."
+    },
+    {
+      "name": "sab:integrity-scan",
+      "description": "🛡️ Perform a SAB Zero-Tolerance integrity scan on the codebase"
+    },
+    {
+      "name": "sab:preflight",
+      "description": "Run a SAB preflight chain with selectable profile (fast, full, release)."
+    },
+    {
+      "name": "sab:report",
+      "description": "Alias for sab:audit to generate SAB markdown report."
+    },
+    {
+      "name": "sab:scan",
+      "description": "🛡️ SAB Architecture Scanner: Perform a quick check on core constraints (Context7, ThinController, CQRS, ServiceLayer, etc.)."
+    },
+    {
+      "name": "sail:add",
+      "description": "Add a service to an existing Sail installation"
+    },
+    {
+      "name": "sail:install",
+      "description": "Install Laravel Sail's default Docker Compose file"
+    },
+    {
+      "name": "sail:publish",
+      "description": "Publish the Laravel Sail Docker files"
+    },
+    {
+      "name": "sanctum:prune-expired",
+      "description": "Prune tokens expired for more than specified number of hours"
+    },
+    {
+      "name": "schedule:clear-cache",
+      "description": "Delete the cached mutex files created by scheduler"
+    },
+    {
+      "name": "schedule:interrupt",
+      "description": "Interrupt the current schedule run"
+    },
+    {
+      "name": "schedule:list",
+      "description": "List all scheduled tasks"
+    },
+    {
+      "name": "schedule:run",
+      "description": "Run the scheduled commands"
+    },
+    {
+      "name": "schedule:test",
+      "description": "Run a scheduled command"
+    },
+    {
+      "name": "schedule:work",
+      "description": "Start the schedule worker"
+    },
+    {
+      "name": "schema:dump",
+      "description": "Dump the given database schema"
+    },
+    {
+      "name": "sentry:publish",
+      "description": "Publishes and configures the Sentry config."
+    },
+    {
+      "name": "sentry:test",
+      "description": "Generate a test event and send it to Sentry"
+    },
+    {
+      "name": "serve",
+      "description": "Serve the application on the PHP development server"
+    },
+    {
+      "name": "session:table",
+      "description": "Create a migration for the session database table"
+    },
+    {
+      "name": "standard:check",
+      "description": "Context7 standard check"
+    },
+    {
+      "name": "storage:link",
+      "description": "Create the symbolic links configured for the application"
+    },
+    {
+      "name": "storage:unlink",
+      "description": "Delete existing symbolic links configured for the application"
+    },
+    {
+      "name": "stub:publish",
+      "description": "Publish all stubs that are available for customization"
+    },
+    {
+      "name": "system:audit-schema-alignment",
+      "description": "🔍 Schema Guard: Audit DB ↔ Model ↔ Code alignment for guarded tables"
+    },
+    {
+      "name": "system:detect-schema-drift",
+      "description": "🛡️ Schema Guard: Detect forbidden field usage in codebase"
+    },
+    {
+      "name": "system:env-drift-guard",
+      "description": "🧿 Environment & Schema Drift Guard — governance contract v3.2"
+    },
+    {
+      "name": "system:maintenance",
+      "description": "Perform system maintenance tasks like documentation cleanup"
+    },
+    {
+      "name": "telemetry:detect-anomalies",
+      "description": "Detect performance and error anomalies from telemetry data"
+    },
+    {
+      "name": "telescope:clear",
+      "description": "Delete all Telescope data from storage"
+    },
+    {
+      "name": "telescope:install",
+      "description": "Install all of the Telescope resources"
+    },
+    {
+      "name": "telescope:pause",
+      "description": "Pause all Telescope watchers"
+    },
+    {
+      "name": "telescope:prune",
+      "description": "Prune stale entries from the Telescope database"
+    },
+    {
+      "name": "telescope:publish",
+      "description": "Publish all of the Telescope resources"
+    },
+    {
+      "name": "telescope:resume",
+      "description": "Unpause all Telescope watchers"
+    },
+    {
+      "name": "test",
+      "description": "Run the application tests"
+    },
+    {
+      "name": "test:resolver",
+      "description": "Test Template Resolver implementation"
+    },
+    {
+      "name": "tinker",
+      "description": "Interact with your application"
+    },
+    {
+      "name": "turkiye:import-mugla",
+      "description": "Import Muğla province, districts and neighborhoods from TurkiyeAPI"
+    },
+    {
+      "name": "up",
+      "description": "Bring the application out of maintenance mode"
+    },
+    {
+      "name": "ups:ai-feature-map",
+      "description": "AI-powered feature-to-template mapping (unassigned features -> feature_assignments)"
+    },
+    {
+      "name": "ups:ai-rescue-features",
+      "description": "AI-powered rescue for unassigned features using YalihanCortex + SmartFieldGenerationService"
+    },
+    {
+      "name": "ups:audit",
+      "description": "🛡️ UPS Smart Audit V2: Deep inspection of category-feature-publication relationships"
+    },
+    {
+      "name": "ups:cleanup-orphans",
+      "description": "Clean orphan feature_assignments (missing feature or missing assignable)"
+    },
+    {
+      "name": "ups:governance:report",
+      "description": "UPS Feature Governance Report (read-only)"
+    },
+    {
+      "name": "ups:health",
+      "description": "UPS Phase 1: Monitor schema health and legacy runtime usage"
+    },
+    {
+      "name": "ups:seed:yazlik-airbnb",
+      "description": "✅ Phase 2.3: Seed Airbnb-style features for Yazlık Kiralık category"
+    },
+    {
+      "name": "user:assign-role",
+      "description": "Assign a role to a user"
+    },
+    {
+      "name": "user:check-role",
+      "description": "Check and fix user role assignment for admin panel access"
+    },
+    {
+      "name": "validation-rules:validate",
+      "description": "Validate validation rules against database schema"
+    },
+    {
+      "name": "vendor:publish",
+      "description": "Publish any publishable assets from vendor packages"
+    },
+    {
+      "name": "view:cache",
+      "description": "Compile all of the application's Blade templates"
+    },
+    {
+      "name": "view:clear",
+      "description": "Clear all compiled view files"
+    },
+    {
+      "name": "villa:calculate-pricing",
+      "description": "Villa fiyatlandırma hesaplamaları - Günlük fiyattan haftalık/aylık/sezonluk öneriler"
+    },
+    {
+      "name": "vision:analyze",
+      "description": "Analyze Ilan photos using Cortex Vision Tagging (Mock/Restb.ai Parity)"
+    }
+  ]
+}

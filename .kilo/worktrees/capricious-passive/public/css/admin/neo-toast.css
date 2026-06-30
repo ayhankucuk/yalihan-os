@@ -1,0 +1,205 @@
+/**
+ * Neo Design System - Toast Styles
+ * Context7 uyumlu toast bildirimleri
+ *
+ * @version 1.0.0
+ * @context7-compliant true
+ */
+
+/* Base Toast Styles */
+.neo-toast {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-lg border;
+    @apply p-4 min-w-[320px] max-w-md;
+    @apply transition-all duration-300 ease-out;
+}
+
+/* Toast Types */
+.neo-toast-success {
+    @apply border-l-4 border-green-500 dark:border-green-400;
+}
+
+.neo-toast-error {
+    @apply border-l-4 border-red-500 dark:border-red-400;
+}
+
+.neo-toast-warning {
+    @apply border-l-4 border-yellow-500 dark:border-yellow-400;
+}
+
+.neo-toast-info {
+    @apply border-l-4 border-blue-500 dark:border-blue-400;
+}
+
+/* Toast Container */
+#toast-container {
+    @apply fixed top-4 right-4 z-[9999];
+    @apply flex flex-col gap-3;
+    @apply pointer-events-none;
+}
+
+/* Toast Animation States */
+.neo-toast-enter {
+    @apply opacity-0 translate-x-full;
+}
+
+.neo-toast-enter-active {
+    @apply transition-all duration-300 ease-out;
+}
+
+.neo-toast-enter-to {
+    @apply opacity-100 translate-x-0;
+}
+
+.neo-toast-leave {
+    @apply opacity-100 translate-x-0;
+}
+
+.neo-toast-leave-active {
+    @apply transition-all duration-300 ease-in;
+}
+
+.neo-toast-leave-to {
+    @apply opacity-0 translate-x-full;
+}
+
+/* Toast Close Button */
+.toast-close-btn {
+    @apply flex-shrink-0 p-1 rounded-md;
+    @apply text-gray-400 hover:text-gray-600;
+    @apply dark:text-gray-500 dark:hover:text-gray-300;
+    @apply transition-colors duration-150;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
+}
+
+.toast-close-btn:hover {
+    @apply bg-gray-100 dark:bg-gray-700;
+}
+
+/* Toast Action Button */
+.toast-action-btn {
+    @apply mt-2 px-3 py-1.5 rounded-md;
+    @apply text-sm font-medium;
+    @apply bg-blue-50 dark:bg-blue-900/20;
+    @apply text-blue-600 dark:text-blue-400;
+    @apply hover:bg-blue-100 dark:hover:bg-blue-900/40;
+    @apply transition-colors duration-150;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
+}
+
+/* Toast Icon Styles */
+.neo-toast .neo-icon {
+    @apply w-5 h-5;
+}
+
+/* Toast Progress Bar (Optional) */
+.neo-toast-progress {
+    @apply absolute bottom-0 left-0 right-0 h-1 rounded-b-lg;
+    @apply bg-gradient-to-r;
+    @apply transition-all duration-100 ease-linear;
+}
+
+.neo-toast-success .neo-toast-progress {
+    @apply from-green-500 to-green-600;
+}
+
+.neo-toast-error .neo-toast-progress {
+    @apply from-red-500 to-red-600;
+}
+
+.neo-toast-warning .neo-toast-progress {
+    @apply from-yellow-500 to-yellow-600;
+}
+
+.neo-toast-info .neo-toast-progress {
+    @apply from-blue-500 to-blue-600;
+}
+
+/* Toast Positions */
+.neo-toast-position-top-right {
+    @apply top-4 right-4;
+}
+
+.neo-toast-position-top-left {
+    @apply top-4 left-4;
+}
+
+.neo-toast-position-bottom-right {
+    @apply bottom-4 right-4;
+}
+
+.neo-toast-position-bottom-left {
+    @apply bottom-4 left-4;
+}
+
+.neo-toast-position-top-center {
+    @apply top-4 left-1/2 -translate-x-1/2;
+}
+
+.neo-toast-position-bottom-center {
+    @apply bottom-4 left-1/2 -translate-x-1/2;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 640px) {
+    .neo-toast {
+        @apply min-w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)];
+    }
+
+    #toast-container {
+        @apply left-4 right-4;
+    }
+}
+
+/* Dark Mode Specific Adjustments */
+@media (prefers-color-scheme: dark) {
+    .neo-toast {
+        @apply shadow-2xl ring-1 ring-gray-700;
+    }
+}
+
+/* Accessibility Enhancements */
+.neo-toast:focus-within {
+    @apply ring-2 ring-blue-500 ring-offset-2;
+}
+
+/* Loading Toast Variant */
+.neo-toast-loading {
+    @apply border-l-4 border-gray-500 dark:border-gray-400;
+}
+
+.neo-toast-loading .neo-icon {
+    @apply animate-spin;
+}
+
+/* Compact Toast Variant */
+.neo-toast-compact {
+    @apply p-3 min-w-[280px];
+}
+
+.neo-toast-compact .text-sm {
+    @apply text-xs;
+}
+
+/* Stacked Toasts Animation */
+.neo-toast:not(:first-child) {
+    @apply mt-3;
+}
+
+/* Toast with rich content */
+.neo-toast-rich {
+    @apply p-0 overflow-hidden;
+}
+
+.neo-toast-rich .neo-toast-header {
+    @apply px-4 py-3 border-b border-gray-200 dark:border-gray-700;
+    @apply bg-gray-50 dark:bg-gray-900/50;
+}
+
+.neo-toast-rich .neo-toast-body {
+    @apply px-4 py-3;
+}
+
+.neo-toast-rich .neo-toast-footer {
+    @apply px-4 py-3 border-t border-gray-200 dark:border-gray-700;
+    @apply bg-gray-50 dark:bg-gray-900/50;
+}

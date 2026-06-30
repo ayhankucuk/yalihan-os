@@ -1,0 +1,84 @@
+#!/bin/bash
+# 🛡️ Adres Sistemi Koruma - Pre-Commit Hook
+# Tarih: 2025-10-23
+# Context7 Compliance Check
+
+echo "🛡️ Adres Sistemi Koruma Kontrolleri..."
+echo ""
+
+VIOLATIONS=0
+
+# Kontrol 1: Render Eksikliği
+echo "1️⃣ Render eksikliği kontrol ediliyor..."
+RENDER_CHECK=$(git diff --cached --name-only | grep '\.blade\.php$' | xargs grep -l 'async load' 2>/dev/null)
+if [ ! -z "$RENDER_CHECK" ]; then
+    for file in $RENDER_CHECK; do
+        # Check if loadXXX exists without renderXXX
+        if grep -q 'async load' "$file" && ! grep -q '\.render' "$file"; then
+            echo "   ⚠️  UYARI: $file"
+            echo "      → loadXXX() var ama renderXXX() eksik olabilir!"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    done
+fi
+
+# Kontrol 2: Duplicate Function
+echo "2️⃣ Duplicate fonksiyon kontrol ediliyor..."
+STAGED_FILES=$(git diff --cached --name-only | grep '\.(js|blade\.php)$')
+for file in $STAGED_FILES; do
+    if [ -f "$file" ]; then
+        DUPLICATES=$(grep -oE 'function\s+\w+\s*\(' "$file" | sort | uniq -d)
+        if [ ! -z "$DUPLICATES" ]; then
+            echo "   🚨 HATA: $file"
+            echo "      → Duplicate fonksiyon tespit edildi:"
+            echo "$DUPLICATES" | sed 's/^/         /'
+            VIOLATIONS=$((VIOLATIONS + 1))
+        fi
+    fi
+done
+
+# Kontrol 3: API Endpoint Kontrolü
+echo "3️⃣ API endpoint kontrolü..."
+NEW_FETCHES=$(git diff --cached | grep -oE "fetch\(['\"]\/api\/[^'\"]+['\"]" | sed "s/fetch(['\"]//;s/['\"].*//" | sort -u)
+if [ ! -z "$NEW_FETCHES" ]; then
+    for endpoint in $NEW_FETCHES; do
+        # Extract endpoint pattern for route check
+        ROUTE_PATTERN=$(echo "$endpoint" | sed 's/{[^}]*}/\{[^}]*\}/')
+        if ! grep -qE "Route::get\(['\"]$ROUTE_PATTERN" routes/api.php 2>/dev/null; then
+            echo "   ⚠️  UYARI: API endpoint eksik olabilir"
+            echo "      → $endpoint"
+            echo "      → routes/api.php'de tanımlı mı kontrol et"
+        fi
+    done
+fi
+
+# Kontrol 4: Init() Eksikliği
+echo "4️⃣ Alpine.js init() kontrolü..."
+ALPINE_FILES=$(git diff --cached --name-only | grep '\.blade\.php$')
+for file in $ALPINE_FILES; do
+    if [ -f "$file" ]; then
+        if grep -q 'x-data="' "$file" && ! grep -q 'init()' "$file"; then
+            echo "   ⚠️  UYARI: $file"
+            echo "      → Alpine component var ama init() eksik olabilir"
+        fi
+    fi
+done
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+if [ $VIOLATIONS -gt 0 ]; then
+    echo "⚠️  $VIOLATIONS potansiyel sorun tespit edildi!"
+    echo ""
+    echo "Devam etmek için:"
+    echo "  → Sorunları düzelt ve tekrar commit et"
+    echo "  → VEYA kontrolleri atla: git commit --no-verify"
+    echo ""
+    echo "📚 Kurallar: .context7/ADRES_SISTEMI_KORUMA_KURALLARI.md"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    exit 1
+else
+    echo "✅ Tüm kontroller başarılı!"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    exit 0
+fi

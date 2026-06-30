@@ -1,0 +1,104 @@
+#!/bin/bash
+
+echo "📚 Context7 Yalıhan Bekçi Post-commit Hook"
+echo "=========================================="
+
+# Colors for output
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+print_success() {
+    printf "${GREEN}✅ [SUCCESS]${NC} %s\n" "$1"
+}
+
+print_info() {
+    printf "${BLUE}ℹ️  [INFO]${NC} %s\n" "$1"
+}
+
+print_warning() {
+    printf "${YELLOW}⚠️  [WARNING]${NC} %s\n" "$1"
+}
+
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+
+# Get commit info
+commit_hash=$(git rev-parse HEAD)
+commit_message=$(git log -1 --pretty=%B)
+commit_author=$(git log -1 --pretty=%an)
+files_changed=$(git diff-tree --no-commit-id --name-only -r HEAD)
+
+print_info "Processing commit: ${commit_hash:0:8}"
+print_info "Author: $commit_author"
+
+# Teach Yalıhan Bekçi about the commit
+print_info "Teaching Yalıhan Bekçi about this commit..."
+if [ -f "$PROJECT_ROOT/artisan" ]; then
+    cd "$PROJECT_ROOT"
+
+    # Record commit metrics for analytics
+    print_info "Recording commit metrics for analytics dashboard..."
+    php artisan analytics:record-metric \
+        "git_activity" "commit_count" "1" --source="post_commit" 2>&1 | grep -i "error" && print_warning "Analytics metric recording issue" || true
+
+    php artisan analytics:record-metric \
+        "dev_velocity" "daily_commits" "1" --source="post_commit" 2>&1 | grep -i "error" && print_warning "Analytics metric recording issue" || true
+
+    if php artisan list | grep -q "bekci:learn"; then
+        # Learn from the commit
+        commit_data="Commit: $commit_hash\nMessage: $commit_message\nFiles: $files_changed\nAuthor: $commit_author"
+        
+        # Run bekci:learn and capture output
+        LEARN_OUTPUT=$(php artisan bekci:learn "git_commit" "$commit_data" 2>&1)
+        LEARN_EXIT=$?
+        
+        if [ $LEARN_EXIT -eq 0 ]; then
+            print_success "Commit learned successfully"
+        else
+            print_warning "Learning failed - Details:"
+            echo "$LEARN_OUTPUT" | head -10
+        fi
+
+        # Generate ideas based on the changes
+        if php artisan list | grep -q "ideas:generate"; then
+            IDEAS_OUTPUT=$(php artisan ideas:generate --auto --category=optimization --priority=medium 2>&1)
+            IDEAS_EXIT=$?
+            if [ $IDEAS_EXIT -eq 0 ]; then
+                print_success "New ideas generated"
+            fi
+        fi
+
+        # Update project monitoring
+        if php artisan list | grep -q "monitor:project"; then
+            MONITOR_OUTPUT=$(php artisan monitor:project --update 2>&1)
+            MONITOR_EXIT=$?
+            if [ $MONITOR_EXIT -eq 0 ]; then
+                print_success "Project metrics updated"
+            fi
+        fi
+    fi
+fi
+
+# Context7 health check after commit
+print_info "Running post-commit Context7 validation..."
+if [ -f "$PROJECT_ROOT/artisan" ]; then
+    cd "$PROJECT_ROOT"
+    if php artisan list | grep -q "bekci:health"; then
+        HEALTH_OUTPUT=$(php artisan bekci:health --silent 2>&1)
+        HEALTH_EXIT=$?
+        
+        if [ $HEALTH_EXIT -eq 0 ]; then
+            print_success "Context7 health check passed"
+        else
+            print_warning "Context7 issues detected:"
+            echo "$HEALTH_OUTPUT" | head -10
+        fi
+    fi
+fi
+
+print_success "🎉 Post-commit processing completed!"
+print_info "Yalıhan Bekçi has learned from your commit"
+echo "✅ Yalıhan Bekçi eğitimi tamamlandı."
+
+exit 0

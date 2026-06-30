@@ -1,0 +1,50 @@
+{
+  "_sab_directive": "SKIP_VALIDATION",
+  "_description": "SAB Violation Baseline — yeni violation detection için referans sayımlar",
+  "_generated": "2026-03-06",
+  "_branch": "gov/phase4-decommission",
+  "_methodology": "Scripts count violations at merge time; any increase = new violation = CI FAIL",
+  "baselines": {
+    "controller_tx": {
+      "count": 0,
+      "rule": "RULE-C1",
+      "guard": "ci-guard-sab-controller.sh",
+      "scan_cmd": "grep -rn DB::transaction\\|DB::beginTransaction app/Http/Controllers/ --include=*.php | grep -v Traits/\\|//\\|# | wc -l",
+      "hotspots": [],
+      "_sprint_note": "Sprint 2+3 — TX tamamen service katmanına taşındı (2026-02-23)"
+    },
+    "controller_cache": {
+      "count": 0,
+      "rule": "RULE-C2",
+      "guard": "ci-guard-sab-controller.sh",
+      "scan_cmd": "grep -rn Cache::put\\|Cache::forget\\|Cache::flush\\|Cache::tags app/Http/Controllers/ --include=*.php | grep -v Traits/\\|YalihanBekciController\\|// | wc -l",
+      "hotspots": [
+        "TKGMParselController(2)",
+        "ArsaCalculatorController(1)",
+        "IlanPublishController(1)",
+        "ImpactMetricsController(1)",
+        "MatchingFeedbackController(1)",
+        "MyListingsController(1)",
+        "HealthController(1)",
+        "Api/HealthCheckController(1)",
+        "Api/Admin/MenuItemsController(1)"
+      ]
+    },
+    "swallow_controller": {
+      "count": 445,
+      "rule": "RULE-E1",
+      "guard": "ci-guard-exception-swallow.sh",
+      "scan_cmd": "ci-guard-exception-swallow.sh COUNT output",
+      "hotspots": [
+        "AIController(27)",
+        "PropertyTypeManagerController(21)",
+        "IlanKategoriController(19)"
+      ]
+    }
+  },
+  "policy": {
+    "increase_tolerance": 0,
+    "decrease_rewarded": true,
+    "note": "count > baseline → BLOCKING (new_violation_zero_tolerance). count < baseline → baseline güncelle."
+  }
+}

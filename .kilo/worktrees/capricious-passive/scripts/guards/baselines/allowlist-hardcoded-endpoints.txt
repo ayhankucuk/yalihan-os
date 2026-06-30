@@ -1,0 +1,10 @@
+# Hardcoded Endpoint Allowlist
+# Files where hardcoded /admin/ or /api/ URLs are allowed
+# Format: partial path match (one per line)
+# Lines starting with # are comments
+
+# API config definition file (source of truth)
+api-config.js
+
+# Route definition files
+routes/

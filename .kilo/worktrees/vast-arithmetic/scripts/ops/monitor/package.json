@@ -1,0 +1,30 @@
+{
+  "name": "emlakpro-page-monitor",
+  "version": "1.0.0",
+  "description": "Real-time monitoring service for EmlakPro admin pages",
+  "main": "monitor.js",
+  "scripts": {
+    "start": "node monitor.js",
+    "dev": "nodemon monitor.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "axios": "^1.5.0",
+    "node-cron": "^3.0.2",
+    "colors": "^1.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "jest": "^29.6.4"
+  },
+  "keywords": [
+    "monitoring",
+    "laravel",
+    "real-time",
+    "analytics"
+  ],
+  "author": "EmlakPro Team",
+  "license": "MIT"
+}

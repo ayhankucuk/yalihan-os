@@ -1,0 +1,14 @@
+#!/bin/bash
+# Context7 Pre-commit Hook
+
+echo "🔍 Running Context7 compliance check..."
+
+# Run Context7 validation
+if ! php artisan context7:validate-migration --quick --exit-code; then
+    echo "❌ Context7 compliance check failed!"
+    echo "Run 'php artisan context7:validate-migration --auto-fix' to fix issues"
+    exit 1
+fi
+
+echo "✅ Context7 compliance check passed!"
+exit 0

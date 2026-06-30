@@ -1,0 +1,122 @@
+# Pre-commit hooks for code quality
+# Install: pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # PHP Code Quality
+  - repo: local
+    hooks:
+      # PHP Syntax Check
+      - id: php-syntax-check
+        name: PHP Syntax Check
+        entry: php -l
+        language: system
+        files: \.php$
+
+      # Laravel Blade Syntax Check
+      - id: blade-syntax-check
+        name: Blade Syntax Check
+        entry: php artisan view:clear
+        language: system
+        files: \.blade\.php$
+        pass_filenames: false
+
+      # CSS Class Validation
+      - id: css-class-validator
+        name: CSS Class Validator
+        entry: bash scripts/check-css-classes.sh
+        language: system
+        files: \.blade\.php$
+        pass_filenames: false
+
+      # Validation Rules Consistency
+      - id: validation-consistency
+        name: Validation Rules Consistency
+        entry: php artisan validate:consistency
+        language: system
+        files: (Controller\.php|Request\.php)$
+        pass_filenames: false
+
+      # Context7 Siralama Column Check
+      - id: context7-siralama-check
+        name: Context7 Siralama Column Check
+        entry: bash scripts/check-siralama-column.sh
+        language: system
+        files: (migrations|Models).*\.php$
+        pass_filenames: true
+
+  # Frontend Quality
+  - repo: local
+    hooks:
+      # ESLint for JavaScript
+      - id: eslint
+        name: ESLint
+        entry: npx eslint --fix
+        language: node
+        files: \.(js|ts|vue)$
+
+      # Prettier for Code Formatting
+      - id: prettier
+        name: Prettier
+        entry: npx prettier --write
+        language: node
+        files: \.(js|ts|css|scss|json|md)$
+
+  # General Code Quality
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      # Remove trailing whitespace
+      - id: trailing-whitespace
+        exclude: ^storage/framework/views/|^\.yalihan-bekci/learned/|^yalihan-bekci/learned/|\.md$
+
+      # Ensure files end with newline
+      - id: end-of-file-fixer
+        exclude: ^storage/framework/views/|^\.yalihan-bekci/learned/|^yalihan-bekci/learned/
+
+      # Check for large files
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+
+      # Check YAML syntax
+      - id: check-yaml
+
+      # Check JSON syntax
+      - id: check-json
+        exclude: ^(.yalihan-bekci|yalihan-bekci)/knowledge/.*\.json$|^(.yalihan-bekci|yalihan-bekci)/learned/.*\.json$
+
+      # Prevent commit to main branch
+      - id: no-commit-to-branch
+        args: ['--branch', 'main', '--branch', 'production']
+
+  # Security Checks
+  - repo: local
+    hooks:
+      # Check for secrets
+      - id: detect-secrets
+        name: Detect Secrets
+        entry: bash scripts/check-secrets.sh
+        language: system
+        files: \.(php|js|env|yml|yaml)$
+
+      # SQL Injection Check
+      - id: sql-injection-check
+        name: SQL Injection Check
+        entry: bash scripts/check-sql-injection.sh
+        language: system
+        files: \.php$
+
+  - repo: local
+    hooks:
+      - id: yalihan-bekci-commit-suggester
+        name: Yalıhan Bekçi Commit Suggester
+        entry: bash .yalihan-bekci/tools/git-commit-suggester.sh --suggest --warn
+        language: system
+        pass_filenames: false
+
+      - id: sab-integrity-scan
+        name: SAB Integrity Scan (NEW violations)
+        entry: bash -c 'php artisan sab:integrity-scan 2>&1 | grep -q "No NEW architectural violations"'
+        language: system
+        pass_filenames: false
+        stages: [commit]

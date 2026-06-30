@@ -1,0 +1,23 @@
+{
+  "name": "emlakbox/talep-analiz",
+  "description": "Emlak talepleri için analiz modülü",
+  "type": "laravel-module",
+  "require": {
+    "php": "^8.1",
+    "barryvdh/laravel-dompdf": "^2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\Modules\\TalepAnaliz\\": ""
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "App\\Modules\\TalepAnaliz\\TalepAnalizServiceProvider"
+      ]
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}

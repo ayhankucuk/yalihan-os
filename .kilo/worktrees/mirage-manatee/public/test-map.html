@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>VanillaLocationManager Test</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+<body>
+    <h1>VanillaLocationManager Test</h1>
+    <div id="map" style="height: 500px; width: 100%;"></div>
+
+    <script>
+        // Test: Leaflet yüklü mü?
+        console.log('window.L:', typeof window.L, window.L);
+
+        // Test: Basit bir harita oluştur
+        if (typeof L !== 'undefined') {
+            const map = L.map('map').setView([37.0344, 27.4305], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap',
+                maxZoom: 19
+            }).addTo(map);
+            console.log('✅ Harita başarıyla oluşturuldu!');
+        } else {
+            console.error('❌ Leaflet yüklenmedi!');
+        }
+    </script>
+</body>
+</html>

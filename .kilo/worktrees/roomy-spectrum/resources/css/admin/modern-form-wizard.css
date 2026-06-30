@@ -1,0 +1,566 @@
+/**
+ * Modern Form Wizard Styles - Context7 Standard
+ *
+ * 🎯 Hedefler:
+ * - Modern UI/UX tasarımı
+ * - Smooth animasyonlar
+ * - Responsive design
+ * - Accessibility support
+ *
+ * @version 1.1.0 (Premium Refactor)
+ * @author Context7 Team
+ */
+
+:root {
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-bg-dark: rgba(17, 24, 39, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --glass-border-dark: rgba(255, 255, 255, 0.1);
+    --premium-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #d946ef 100%);
+    --premium-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* ===== WIZARD CONTAINER ===== */
+.wizard-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+}
+
+.wizard-card {
+    @apply rounded-[2rem] shadow-2xl overflow-hidden border;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border-color: var(--glass-border);
+}
+
+.dark .wizard-card {
+    background: var(--glass-bg-dark);
+    border-color: var(--glass-border-dark);
+}
+
+/* ===== WIZARD HEADER ===== */
+.wizard-header {
+    @apply bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6;
+    position: relative;
+    overflow: hidden;
+}
+
+.wizard-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.wizard-title {
+    @apply text-2xl font-bold mb-2 relative z-10;
+}
+
+.wizard-subtitle {
+    @apply text-blue-100 relative z-10;
+}
+
+/* ===== PROGRESS BAR ===== */
+.wizard-progress-container {
+    @apply p-6 bg-gray-50 border-b;
+}
+
+.wizard-progress-bar-container {
+    @apply relative w-full bg-gray-200 rounded-full h-3 overflow-hidden;
+}
+
+.wizard-progress-bar {
+    @apply h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-500 ease-out;
+    position: relative;
+}
+
+.wizard-progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.wizard-progress-text {
+    @apply flex justify-between items-center mt-2 text-sm text-gray-600;
+}
+
+/* ===== STEP INDICATORS ===== */
+.wizard-steps-container {
+    @apply p-6 bg-white dark:bg-slate-900 border-b dark:border-slate-800;
+}
+
+.wizard-steps {
+    @apply flex justify-between items-center relative;
+}
+
+.wizard-step-connector {
+    @apply absolute top-6 left-6 right-6 h-0.5 bg-gray-200 z-0;
+}
+
+.wizard-step-connector-progress {
+    @apply h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500;
+}
+
+.wizard-step:hover {
+    @apply transform scale-105 transition-all;
+}
+
+.dark .wizard-step:hover {
+    @apply transform scale-105 brightness-110;
+}
+
+.wizard-step-indicator {
+    @apply w-14 h-14 rounded-2xl flex items-center justify-center text-sm font-bold transition-all duration-500 border-2 relative z-10;
+}
+
+.wizard-step-indicator::before {
+    content: '';
+    @apply absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 blur-md;
+    background: var(--premium-gradient);
+    z-index: -1;
+}
+
+.wizard-step-indicator.current::before {
+    @apply opacity-30;
+}
+
+.wizard-step-indicator.completed {
+    @apply bg-green-500 text-white border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.4)];
+}
+
+.wizard-step-indicator.current {
+    background: var(--premium-gradient);
+    @apply text-white border-transparent shadow-[0_0_20px_rgba(59,130,246,0.4)] scale-110;
+}
+
+.wizard-step-indicator.pending {
+    @apply bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700;
+}
+
+.wizard-step-label {
+    @apply mt-3 text-xs text-gray-600 font-medium text-center max-w-16 leading-tight;
+}
+
+.wizard-step-label.completed {
+    @apply text-green-600;
+}
+
+.wizard-step-label.current {
+    @apply text-blue-600 font-semibold;
+}
+
+/* ===== STEP CONTENT ===== */
+.wizard-content {
+    @apply p-6 min-h-96;
+}
+
+.wizard-step-content {
+    @apply transition-all duration-300 ease-in-out;
+}
+
+.wizard-step-content.hidden {
+    display: none;
+}
+
+.wizard-step-content.entering {
+    @apply opacity-0 transform translate-y-4;
+}
+
+.wizard-step-content.entered {
+    @apply opacity-100 transform translate-y-0;
+}
+
+/* ===== FORM FIELDS - PREMIUM VISIBLE DESIGN ===== */
+.wizard-field-group {
+    @apply mb-6;
+}
+
+.wizard-field-label {
+    @apply block text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-[0.15em] mb-2.5;
+}
+
+/*
+ * CRITICAL FIX: Previous border-2 was being overridden to 0px
+ * Now using !important and explicit border-width to ensure visibility
+ */
+.wizard-field,
+input.wizard-field,
+select.wizard-field,
+textarea.wizard-field {
+    @apply w-full px-4 py-3.5
+           rounded-xl
+           bg-white dark:bg-slate-900/70
+           text-slate-900 dark:text-white
+           transition-all duration-300
+           font-medium text-base;
+
+    /* EXPLICIT BORDER - cannot be overridden */
+    border: 2px solid rgb(226, 232, 240) !important; /* slate-200 */
+    box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.05),
+        0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Dark mode borders */
+.dark .wizard-field,
+.dark input.wizard-field,
+.dark select.wizard-field,
+.dark textarea.wizard-field {
+    border-color: rgb(51, 65, 85) !important; /* slate-700 */
+    box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.3),
+        0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* FOCUS STATE - Premium gradient ring */
+.wizard-field:focus,
+input.wizard-field:focus,
+select.wizard-field:focus,
+textarea.wizard-field:focus {
+    @apply bg-white dark:bg-slate-900 outline-none;
+
+    border-color: rgb(59, 130, 246) !important; /* blue-500 */
+    box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.05),
+        0 0 0 4px rgba(59, 130, 246, 0.1),
+        0 4px 12px rgba(59, 130, 246, 0.15) !important;
+}
+
+.dark .wizard-field:focus,
+.dark input.wizard-field:focus,
+.dark select.wizard-field:focus,
+.dark textarea.wizard-field:focus {
+    border-color: rgb(96, 165, 250) !important; /* blue-400 */
+    box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.2),
+        0 0 0 4px rgba(96, 165, 250, 0.15),
+        0 4px 12px rgba(96, 165, 250, 0.2) !important;
+}
+
+/* HOVER STATE */
+.wizard-field:hover:not(:focus),
+input.wizard-field:hover:not(:focus),
+select.wizard-field:hover:not(:focus),
+textarea.wizard-field:hover:not(:focus) {
+    border-color: rgb(203, 213, 225) !important; /* slate-300 */
+}
+
+.dark .wizard-field:hover:not(:focus),
+.dark input.wizard-field:hover:not(:focus),
+.dark select.wizard-field:hover:not(:focus),
+.dark textarea.wizard-field:hover:not(:focus) {
+    border-color: rgb(71, 85, 105) !important; /* slate-600 */
+}
+
+/* ERROR STATE */
+.wizard-field.error,
+input.wizard-field.error,
+select.wizard-field.error,
+textarea.wizard-field.error {
+    border-color: rgb(239, 68, 68) !important; /* red-500 */
+}
+
+.wizard-field.error:focus,
+input.wizard-field.error:focus,
+select.wizard-field.error:focus,
+textarea.wizard-field.error:focus {
+    box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.05),
+        0 0 0 4px rgba(239, 68, 68, 0.1),
+        0 4px 12px rgba(239, 68, 68, 0.15) !important;
+}
+
+/* SUCCESS STATE */
+.wizard-field.success,
+input.wizard-field.success,
+select.wizard-field.success,
+textarea.wizard-field.success {
+    border-color: rgb(34, 197, 94) !important; /* green-500 */
+}
+
+.wizard-field.success:focus,
+input.wizard-field.success:focus,
+select.wizard-field.success:focus,
+textarea.wizard-field.success:focus {
+    box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.05),
+        0 0 0 4px rgba(34, 197, 94, 0.1),
+        0 4px 12px rgba(34, 197, 94, 0.15) !important;
+}
+
+.wizard-field-help {
+    @apply text-sm text-gray-500 dark:text-gray-400 mt-1;
+}
+
+.wizard-field-error {
+    @apply text-sm text-red-600 dark:text-red-400 mt-1 flex items-center font-medium;
+}
+
+.wizard-field-success {
+    @apply text-sm text-green-600 dark:text-green-400 mt-1 flex items-center font-medium;
+}
+
+/* ===== NAVIGATION ===== */
+.wizard-navigation {
+    @apply flex justify-between items-center p-6 bg-gray-50 border-t;
+}
+
+.wizard-nav-button {
+    @apply inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white transition-all duration-200;
+}
+
+.wizard-nav-button:hover {
+    @apply transform translate-y-0.5 shadow-lg;
+}
+
+.wizard-nav-button:active {
+    @apply transform translate-y-1;
+}
+
+.wizard-nav-button:disabled {
+    @apply opacity-50 cursor-not-allowed transform-none;
+}
+
+.wizard-nav-button-primary {
+    @apply bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
+}
+
+.wizard-nav-button-secondary {
+    @apply bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500;
+}
+
+.wizard-nav-button-success {
+    @apply bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500;
+}
+
+/* ===== FORM SUMMARY ===== */
+.wizard-summary {
+    @apply bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6;
+}
+
+.wizard-summary-content h3 {
+    @apply text-lg font-semibold text-blue-900 mb-4;
+}
+
+.wizard-summary-item {
+    @apply flex justify-between items-center py-2 border-b border-blue-100 last:border-b-0;
+}
+
+.wizard-summary-label {
+    @apply text-blue-700 font-medium;
+}
+
+.wizard-summary-value {
+    @apply text-blue-900 font-semibold;
+}
+
+/* ===== AUTO-SAVE INDICATOR ===== */
+.auto-save-indicator {
+    @apply text-sm text-gray-400 dark:text-gray-500 transition-colors duration-200;
+}
+
+.auto-save-indicator.saving {
+    @apply text-blue-600 dark:text-blue-400;
+}
+
+.auto-save-indicator.saved {
+    @apply text-green-600;
+}
+
+.auto-save-indicator.error {
+    @apply text-red-600;
+}
+
+/* ===== NOTIFICATIONS ===== */
+.wizard-notification {
+    @apply fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.wizard-notification.success {
+    @apply bg-green-500 text-white;
+}
+
+.wizard-notification.error {
+    @apply bg-red-500 text-white;
+}
+
+.wizard-notification.warning {
+    @apply bg-yellow-500 text-white;
+}
+
+.wizard-notification.info {
+    @apply bg-blue-500 text-white;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ===== LOADING STATES ===== */
+.wizard-loading {
+    @apply flex items-center justify-center p-8;
+}
+
+.wizard-spinner {
+    @apply animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600;
+}
+
+.wizard-loading-text {
+    @apply ml-3 text-gray-600;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .wizard-container {
+        @apply px-2 py-4;
+    }
+
+    .wizard-card {
+        @apply rounded-2xl;
+    }
+
+    .wizard-header {
+        @apply p-4;
+    }
+
+    .wizard-title {
+        @apply text-xl;
+    }
+
+    .wizard-steps {
+        @apply flex-wrap gap-4;
+    }
+
+    .wizard-step {
+        @apply flex-shrink-0;
+    }
+
+    .wizard-step-indicator {
+        @apply w-10 h-10;
+    }
+
+    .wizard-step-label {
+        @apply text-xs max-w-12;
+    }
+
+    .wizard-content {
+        @apply p-4;
+    }
+
+    .wizard-navigation {
+        @apply p-4 flex-col space-y-3;
+    }
+
+    .wizard-nav-button {
+        @apply w-full justify-center;
+    }
+}
+
+/* ===== ACCESSIBILITY ===== */
+.wizard-step:focus {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
+
+.wizard-field:focus {
+    @apply outline-none;
+}
+
+.wizard-nav-button:focus {
+    @apply outline-none;
+}
+
+/* Dark mode is handled via .dark class in Context7 */
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.wizard-step-content.entering {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.wizard-step-content.entered {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+/* ===== UTILITY CLASSES ===== */
+.wizard-fade-in {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.wizard-fade-in-down {
+    animation: fadeInDown 0.3s ease-out;
+}
+
+.wizard-slide-in-left {
+    animation: slideInLeft 0.3s ease-out;
+}
+
+.wizard-pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}

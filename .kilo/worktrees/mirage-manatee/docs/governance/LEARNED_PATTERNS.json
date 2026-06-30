@@ -1,0 +1,560 @@
+{
+    "version": "1.3.0",
+    "total_learned": 35,
+    "last_updated": "2026-06-24",
+    "patterns": [
+        {
+            "id": "LP-001",
+            "name": "Hardcoded Ngrok Tunnel",
+            "signature": "ngrok-free.app",
+            "first_detected": "2026-05-15",
+            "status": "ENFORCED",
+            "severity": "HIGH",
+            "description": "Captured during v2.1 development after manual leak cleanup."
+        },
+        {
+            "id": "LP-002",
+            "name": "Exception Swallow Protection",
+            "signature": "catch[[:space:]]*\\([^{]*\\)[[:space:]]*\\{[[:space:]]*\\}",
+            "first_detected": "2026-05-15",
+            "status": "ENFORCED",
+            "severity": "MEDIUM",
+            "description": "Enforces that all catch blocks must contain at least one operation (e.g., logging) to ensure system observability."
+        },
+        {
+            "id": "LP-003",
+            "name": "Tenant Fallback Silent Fail",
+            "signature": "tenant_id\\s*(\\?\\?|\\?:)\\s*0",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "CRITICAL",
+            "description": "Silent tenant_id fallback to 0 bypasses tenant isolation. Use TenantContextService instead.",
+            "fix": "$this->tenantResolver->resolve()->tenantId"
+        },
+        {
+            "id": "LP-004",
+            "name": "Direct Model Extend",
+            "signature": "extends\\s+Model(?!\\s*\\/\\/\\s*allowed)",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "MEDIUM",
+            "description": "Models should extend BaseModel for tenant scoping and audit trails.",
+            "fix": "extends BaseModel"
+        },
+        {
+            "id": "LP-005",
+            "name": "Hardcoded Admin URL",
+            "signature": "[\\'\\\"]\\/admin\\/",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "MEDIUM",
+            "description": "Hardcoded /admin/ URLs break route flexibility. Use route() helper.",
+            "fix": "route('admin.xxx')"
+        },
+        {
+            "id": "LP-006",
+            "name": "Hardcoded API Version URL",
+            "signature": "[\\'\\\"]\\/api\\/v\\d",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "MEDIUM",
+            "description": "Hardcoded /api/vN URLs break versioning strategy. Use route() helper.",
+            "fix": "route('api.xxx')"
+        },
+        {
+            "id": "LP-007",
+            "name": "Response JSON Direct Call",
+            "signature": "response\\(\\)->json\\(",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "LOW",
+            "description": "Direct response()->json() bypasses ResponseService standardization.",
+            "fix": "ResponseService::success() or ResponseService::error()"
+        },
+        {
+            "id": "LP-008",
+            "name": "Backslash Facade Import",
+            "signature": "\\\\\\\\(DB|Cache|Log)::",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "LOW",
+            "description": "Backslash facade calls (\\DB::) reduce readability. Use proper imports.",
+            "fix": "use Illuminate\\Support\\Facades\\DB; → DB::"
+        },
+        {
+            "id": "LP-009",
+            "name": "Non-Null-Safe Tenant Access",
+            "signature": "->user\\(\\)->tenant_id(?!\\s*\\?)",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "HIGH",
+            "description": "Non-null-safe auth()->user()->tenant_id can cause null pointer exceptions.",
+            "fix": "auth()->user()?->tenant_id"
+        },
+        {
+            "id": "LP-010",
+            "name": "Context7 Status Field",
+            "signature": "\\bstatus\\b(?!.*context7-ignore)",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "MEDIUM",
+            "description": "Generic 'status' field violates Context7 naming standards.",
+            "fix": "yayin_durumu / aktiflik_durumu / islem_durumu"
+        },
+        {
+            "id": "LP-011",
+            "name": "Context7 IsActive Field",
+            "signature": "\\bis_active\\b(?!.*context7-ignore)",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "MEDIUM",
+            "description": "Boolean 'is_active' field violates Context7 naming standards.",
+            "fix": "aktiflik_durumu"
+        },
+        {
+            "id": "LP-012",
+            "name": "KisiRepository Ownership Bypass",
+            "signature": "KisiRepository::(delete|restore|forceDelete).*(?!applyOwnershipScope)",
+            "first_detected": "2026-05-16",
+            "status": "ENFORCED",
+            "severity": "CRITICAL",
+            "description": "Delete operations must use applyOwnershipScope to prevent cross-tenant data manipulation.",
+            "fix": "Use applyOwnershipScope() before delete/restore/forceDelete"
+        },
+        {
+            "id": "LP-013",
+            "name": "Duplicate Route Registration",
+            "signature": "Route::(get|post|put|patch|delete)\\(['\"].*['\"],.*\\)->name\\(['\"]([^'\"]+)['\"]\\)",
+            "first_detected": "2026-05-17",
+            "status": "ENFORCED",
+            "severity": "HIGH",
+            "description": "Duplicate route registration causes ambiguous routing behavior. Use Route::resource() as SSOT or ensure unique route names with different URL patterns.",
+            "fix": "Remove duplicate route or use URL namespace separation (e.g., /segments/ prefix)",
+            "examples": [
+                {
+                    "violation": "Route::post('/ilanlar', [IlanCrudController::class, 'store'])->name('ilanlar.store'); // Duplicate of resource route",
+                    "fix": "// Remove - Route::resource('/ilanlar') already provides admin.ilanlar.store"
+                }
+            ]
+        },
+        {
+            "id": "LP-041",
+            "name": "Session41_Global_Hardening_Wave",
+            "signature": "Session41_Global_Hardening_Wave_Complete",
+            "first_detected": "2026-05-25",
+            "status": "ENFORCED",
+            "description": "Oturum 41: Küresel Mühürleme Operasyonu - 15/15 koordinat sıfır sapma ile tamamlandı. AIMATCH CORE dikey dilimi, vendor boundaries ve copilot engines tamamen sterilize edildi."
+        },
+        {
+            "id": "LP-014",
+            "name": "LogService Exception Handling",
+            "signature": "LogService::(error|warning|critical)",
+            "first_detected": "2026-06-05",
+            "status": "ENFORCED",
+            "description": "LogService:: cagrilari Log:: facade ile esdeger kabul edilmeli — ci-guard-exception-swallow icin gecerli log kaniti"
+        },
+        {
+            "id": "LP-042",
+            "name": "Unpersisted Entity Query Guard (Mock Policy)",
+            "signature": "assertTransition.*AutoContainmentPolicy.*GovernanceRiskScorer",
+            "first_detected": "2026-06-11",
+            "status": "ENFORCED",
+            "severity": "HIGH",
+            "description": "Aggregate Root nesneleri id=null statüsündeyken Policy veya RiskScorer tetiklenmesi 'Illegal operator and value combination' hatasina yol açar. VersionStateMachine::assertTransition() -> AutoContainmentPolicy::authorize() -> GovernanceRiskScorer::calculate() zincirinde PropertyConfigVersion.id=null oldugunda Builder.php:934 patlar. Unit testlerde dis policy/scorer bagımlılıkları mutlak suretle mock'lanmalıdır.",
+            "fix": "$this->app->instance(AutoContainmentPolicy::class, $mock) ile container'a Mockery mock'u enjekte et. makeVersion() unsaved entity ile calısır, DB'ye kayıt gerekmez.",
+            "related_commit": "d33c6ebb",
+            "pattern_tags": [
+                "unpersisted-entity",
+                "mock-policy",
+                "unit-test-isolation",
+                "state-machine",
+                "circuit-breaker",
+                "governance-risk-scorer"
+            ]
+        },
+        {
+            "id": "LP-017",
+            "name": "Context7 Fix: Aligned 'Aktif' strings with IlanDurumu::YAYINDA c",
+            "signature": "bekci-sync:a024317c1864c27b4fc59383c2fd78ec",
+            "context_hash": "263d30726fbd0f983b6a2355703eba4c",
+            "first_detected": "2026-05-13",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "context7_fix",
+            "rule_violated": null,
+            "description": "Aligned 'Aktif' strings with IlanDurumu::YAYINDA canonical value in Cortex services and HasActiveScope trait.",
+            "files_changed": [
+                "app/Traits/HasActiveScope.php",
+                "app/Services/Cortex/MatchingEngine.php",
+                "app/Services/Cortex/OpportunityHunter.php",
+                "app/Services/Cortex/CortexROIEngine.php"
+            ],
+            "source_file": "learning_context7_fix_2026-05-13_10-44-31.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-018",
+            "name": "Security Fix [RULE-T1]: Finance domaininde inline auth()->user() kullaniml",
+            "signature": "bekci-sync:c654e56ede5044c5d6217099c98ddeb1",
+            "context_hash": "863c5e57382c92f56c40cb35e402d12d",
+            "first_detected": "2026-05-15",
+            "yayin_durumu": "ENFORCED",
+            "severity": "CRITICAL",
+            "action_type": "security_fix",
+            "rule_violated": "RULE-T1",
+            "description": "Finance domaininde inline auth()->user() kullanimlari yerine TenantContextResolver DI yapisina gecildi. RULE-T1 tenant isolation bypass riski tamamen ortadan kaldirildi.",
+            "files_changed": [
+                "app/Services/Finance/BonusCalculator.php",
+                "app/Services/Finance/CommissionCalculator.php",
+                "app/Services/Finance/TransactionService.php",
+                "app/Services/Finance/YalihanTreasury.php"
+            ],
+            "source_file": "learning_security_fix_2026-05-15T14-05-35.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-019",
+            "name": "Context7 Fix: Context7 Kanonik İsimlendirme Otoritesi — legac",
+            "signature": "bekci-sync:3cb5f3889fc6f0c5fee4254f635a50c6",
+            "context_hash": "3618019b953e38b67bf86d7dc5345f62",
+            "first_detected": "2026-06-03",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "context7_fix",
+            "rule_violated": null,
+            "description": "Context7 Kanonik İsimlendirme Otoritesi — legacy field migration kararları (Oturum 48)",
+            "files_changed": [
+                ".clinerules",
+                ".sab/authority.json"
+            ],
+            "source_file": "learning_context7_fix_2026-06-03_11-23-10.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-020",
+            "name": "Context7 Fix: SAB Compliance — Context7 kanonik isimlendirme o",
+            "signature": "bekci-sync:0f0b5613a1755846f4af93ba360ee07a",
+            "context_hash": "fb007a42a3c3aaf571e6c5432868ecc8",
+            "first_detected": "2026-06-03",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "context7_fix",
+            "rule_violated": null,
+            "description": "SAB Compliance — Context7 kanonik isimlendirme otoritesi ve legacy field migration",
+            "files_changed": [
+                "app/Models/Ilan.php",
+                "database/migrations",
+                "app/Services/IlanCrudService.php"
+            ],
+            "source_file": "learning_context7_fix_2026-06-03_11-34-32.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-021",
+            "name": "Naming Fix [RULE-N0]: PropertyHubController.php — features.type → fe",
+            "signature": "bekci-sync:2f3b912429fa66c3a84ac89ef4e52c9b",
+            "context_hash": "575cb504c595b93d2fe8d58e964fc042",
+            "first_detected": "2026-06-05",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "naming_fix",
+            "rule_violated": "RULE-N0",
+            "description": "PropertyHubController.php — features.type → features.ozellik_veri_tipi Context7 rename operasyonu tamamlandı. Dosyada 16 adet pre-existing response()->json() ihlali (RULE-R1) mevcut — bu operasyonun kapsamı dışında, mevcut teknik borç. @sab-ignore-thin annotation dosya başında var. Thin controller fix: getSuggestions() ORM → Orchestrator, TemplateChangeLog → Orchestrator taşındı. Yeni migration: 2026_06_05_000001_rename_type_to_ozellik_veri_tipi_in_features.php",
+            "files_changed": [
+                "app/Http/Controllers/Admin/PropertyHubController.php",
+                "app/Models/Feature.php",
+                "app/Services/PropertyHub/PropertyHubOrchestrator.php",
+                "database/migrations/2026_06_05_000001_rename_type_to_ozellik_veri_tipi_in_features.php"
+            ],
+            "source_file": "learning_naming_fix_2026-06-05T07-35-53.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-022",
+            "name": "Bekçi Learning [RULE-N1]: #19 YalihanCortex God Object dekompoze — Voice v",
+            "signature": "bekci-sync:cbe071b15a6f8ced8e40f09d87877c33",
+            "context_hash": "4393b3cb33b88d84321b52d5a0e11547",
+            "first_detected": "2026-06-05",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "architecture_decision",
+            "rule_violated": "RULE-N1",
+            "description": "#19 YalihanCortex God Object dekompoze — Voice ve Notification pipeline'ları ayrıştırıldı. createDraftFromText (NLP+CRM), processVoiceSearch → CortexVoiceService; prioritizeNotifications, sendNotification, broadcastNotification → CortexNotificationService. YalihanCortex'te 4 metod stub'a dönüştürüldü (~250 satır silindi). AIService namespace hatası düzeltildi: App\\Services\\AI\\AIService → App\\Services\\AIService. Boot: temiz. ci-guard-exception-swallow exit 1 proje geneli 645 pre-existing ihlalden kaynaklanıyor, yeni dosyalara özgü değil.",
+            "files_changed": [
+                "app/Services/AI/CortexVoiceService.php",
+                "app/Services/AI/CortexNotificationService.php",
+                "app/Services/AI/YalihanCortex.php"
+            ],
+            "source_file": "learning_architecture_decision_2026-06-05T14-50-13.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-023",
+            "name": "Bekçi Learning [RULE-N1]: User::hasRole() metodu Spatie HasRoles trait'ini o",
+            "signature": "bekci-sync:d2993662bca6e3e99d10371b4844d5d7",
+            "context_hash": "ed8ae558911f064aee083ea59a8464ae",
+            "first_detected": "2026-06-07",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "architecture_decision",
+            "rule_violated": "RULE-N1",
+            "description": "User::hasRole() metodu Spatie HasRoles trait'ini override ediyordu ve yalnızca legacy role_id FK'sına bakıyordu. Kullanıcının legacy role_id'si olmadığında (sadece Spatie model_has_roles tablosunda kaydı varken) hasRole() her zaman false dönüyordu. AuthServiceProvider'da tanımsız 'manage-notifications' Gate orphan gate sorununa yol açıyordu. Çözüm: (1) AuthServiceProvider'a manage-notifications Gate tanımı eklendi, (2) User::hasRole() metodu getRoleNames() ile Spatie tablosunu önce kontrol edecek şekilde düzeltildi ve legacy role ilişkisi fallback olarak bırakıldı. Ayrıca ?string nullable tip bildirimi eklendi.",
+            "files_changed": [
+                "app/Models/User.php",
+                "app/Providers/AuthServiceProvider.php"
+            ],
+            "source_file": "learning_architecture_decision_2026-06-07T07-03-44.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-024",
+            "name": "Context7 Fix [RULE-N1]: Test suite düzeltmeleri: is_active → aktiflik_d",
+            "signature": "bekci-sync:7ca7183d2836040b84dc9295814c1329",
+            "context_hash": "11f522cd3963b579a2ba95060957b7c5",
+            "first_detected": "2026-06-10",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "context7_fix",
+            "rule_violated": "RULE-N1",
+            "description": "Test suite düzeltmeleri: is_active → aktiflik_durumu (YayinTipiSablonu, FeatureAssignment), email → eposta (Kisi), quality_score/temperature fillable'a eklendi (Lead), skor kolonu kisiler tablosuna eklendi, App\\Domains\\PropertySchema → App\\Domain\\PropertyHub namespace düzeltmesi, hardcoded FK ID'ler yerine factory kullanımı",
+            "files_changed": [
+                "app/Models/Kisi.php",
+                "app/Models/Lead.php",
+                "app/Models/YayinTipiSablonu.php",
+                "app/Models/FeatureAssignment.php",
+                "database/migrations/2026_06_10_000001_add_skor_to_kisiler_table.php",
+                "tests/Unit/Repositories/CRMScopedDeleteSafetyTest.php",
+                "tests/Unit/PropertyTypeConfigurationTest.php",
+                "tests/Unit/Services/TemplateResolverTest.php"
+            ],
+            "source_file": "learning_context7_fix_2026-06-10T21-24-59.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-025",
+            "name": "Bekçi Learning [RULE-N1 duplicate route names, deepseek-v4-flash forbidden model name]: Duplicate route isim çakışmaları tespit edildi",
+            "signature": "bekci-sync:00da8f99318d9facea5b8156999aba4a",
+            "context_hash": "eb423546fe13a1cdd1331c3bc7477515",
+            "first_detected": "2026-06-11",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "architecture_decision",
+            "rule_violated": "RULE-N1 duplicate route names, deepseek-v4-flash forbidden model name",
+            "description": "Duplicate route isim çakışmaları tespit edildi ve giderildi. 4 kaynak:\n1. TakimYonetimiServiceProvider modül route'ları (app/Modules/TakimYonetimi/routes/web.php) ile routes/admin.php'deki takim-yonetimi grubu çakışıyordu → admin.php'deki blok kaldırıldı, modül SSOT seçildi.\n2. routes/admin/takim.php'deki duplicate takimlar.takim-performans tanımı kaldırıldı.\n3. routes/web.php'deki eski advisor.portfolio-doctor route'u (satır 522) kaldırıldı, Phase 21 UI versiyonu (satır 556) kanonik seçildi.\n4. routes/api/v1/admin.php'deki calendars ve field-dependencies route'larına isim eklendi (isimsiz route'lar otomatik isim üretimiyle çakışıyordu).\nAIGoldenContractTest'te 3 mock eksikliği düzeltildi: getTenant(), AiBudgetGuard mock'u, deepseek-v4-flash → deepseek-chat model adı.",
+            "files_changed": [
+                "routes/admin.php",
+                "routes/admin/takim.php",
+                "routes/web.php",
+                "routes/api/v1/admin.php",
+                "tests/Feature/AI/AIGoldenContractTest.php"
+            ],
+            "source_file": "learning_architecture_decision_2026-06-11T13-40-07.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-026",
+            "name": "Bekçi Learning [RULE-T1]: VersionStateMachine.assertTransition() AutoContain",
+            "signature": "bekci-sync:7b3d75a9fe48d20f9e2d603e5263ef69",
+            "context_hash": "0d46edc6257d9230b8a35a4ed1d0a9cf",
+            "first_detected": "2026-06-11",
+            "yayin_durumu": "ENFORCED",
+            "severity": "CRITICAL",
+            "action_type": "architecture_decision",
+            "rule_violated": "RULE-T1",
+            "description": "VersionStateMachine.assertTransition() AutoContainmentPolicy aracılığıyla GovernanceRiskScorer'a zincirliyor. Bu servis PropertyConfigVersion.id=null olduğunda 'Illegal operator and value combination' fırlatıyor. Çözüm: Unit testlerde AutoContainmentPolicy mock'lanmalı — state machine geçiş mantığı izole test edilmeli. CircuitBreaker testleri için yeni Resiliency API (isAvailable/report/check/reset) + Log::critical Fail-Fast davranışı doğrulandı.",
+            "files_changed": [
+                "tests/Unit/Domain/PropertyHub/CircuitBreakerTest.php",
+                "tests/Unit/Domain/PropertyHub/Governance/VersionStateMachineTest.php",
+                "docs/known-debt.md"
+            ],
+            "source_file": "learning_architecture_decision_2026-06-11T19-16-46.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-027",
+            "name": "Bekçi Learning [RULE-T1]: ",
+            "signature": "bekci-sync:84413ac5080df703257fed8db466ea77",
+            "context_hash": "d41d8cd98f00b204e9800998ecf8427e",
+            "first_detected": "2026-06-24",
+            "yayin_durumu": "ENFORCED",
+            "severity": "CRITICAL",
+            "action_type": "architecture_decision",
+            "rule_violated": "RULE-T1",
+            "description": "",
+            "files_changed": [
+                "tests/Unit/Domain/PropertyHub/CircuitBreakerTest.php",
+                "tests/Unit/Domain/PropertyHub/Governance/VersionStateMachineTest.php",
+                "docs/known-debt.md"
+            ],
+            "source_file": "learning_architecture_decision_LP-014_2026-06-11.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-028",
+            "name": "Context7 Fix [RULE-B006-GHOST-DEPENDENCY]: B-006 P4: SentimentAnalysisService ve VoiceCommand",
+            "signature": "bekci-sync:2b939b7d4a5fc5baf973cbe98035cbfe",
+            "context_hash": "2bd1933fb412373d9f088a5dd65d6a10",
+            "first_detected": "2026-06-12",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "context7_fix",
+            "rule_violated": "RULE-B006-GHOST-DEPENDENCY",
+            "description": "B-006 P4: SentimentAnalysisService ve VoiceCommandProcessor'da iki ghost model temizlendi.\n(1) App\\Models\\Deprecated\\KisiNot — fiziksel dosya hiç oluşturulmamış, not verisi kisi_etkilesimler.notlar'da yaşıyor.\n(2) App\\Models\\Deprecated\\KisiAktivite — yanlış namespace, kanonik sınıf App\\Models\\KisiAktivite (tablo: kisi_etkilesimler).\nFix: İki ayrı query (notes + activities) tek KisiAktivite query'sine merge edildi. Field mapping: not→notlar, aciklama→notlar, user_id→kullanici_id, görüşme_tarihi→etkilesim_tarihi.\nSilent catch (analyzeWithAI) → Log::warning + fail-open açıklaması eklendi.",
+            "files_changed": [
+                "app/Services/Intelligence/SentimentAnalysisService.php",
+                "app/Services/VoiceCommandProcessor.php"
+            ],
+            "source_file": "learning_context7_fix_2026-06-12T16-05-59.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-029",
+            "name": "Context7 Fix [RULE-B006-GHOST-DEPENDENCY]: B-006 P5D: Ilan aggregate root'undaki 6 ghost mode",
+            "signature": "bekci-sync:f2fbf1b8dfca84302205fc6d6e9d3696",
+            "context_hash": "57325ecc3529bc242a7faaa6b517484e",
+            "first_detected": "2026-06-12",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "context7_fix",
+            "rule_violated": "RULE-B006-GHOST-DEPENDENCY",
+            "description": "B-006 P5D: Ilan aggregate root'undaki 6 ghost model temizlendi.\nStrateji:\n- MatchingFeedback + IlanTranslationDeprecated → RuntimeException stub (dead code, tablo yok)\n- IlanDocument → dead import silindi (comment'li kod zaten vardı)\n- IlanPortalSync → RuntimeException stub + getPortalSyncAttribute() JSON accessor (ilanlar.portal_senkronizasyon_durumu kolonu mevcut)\n- IlanTicariDetail → migration (ilan_ticari_details) + App\\Models\\Dikey\\IlanTicariDetail (kanonik)\n- IlanCalendarFeed → migration (ilan_calendar_feeds) + App\\Models\\IlanCalendarFeed (kanonik)\nNOT: PropertyCalendarFeed AYRI tablo (Airbnb/Booking inbound iCal sync), IlanCalendarFeed outbound ICS feed — iki farklı domain.\nMigration 105ms DONE. Bekçi 4/4 PASS.",
+            "files_changed": [
+                "app/Traits/Ilan/IlanRelationships.php",
+                "app/Models/Ilan.php",
+                "app/Models/IlanCalendarFeed.php",
+                "app/Models/Dikey/IlanTicariDetail.php",
+                "app/Services/Calendar/IlanCalendarIcsService.php",
+                "database/migrations/2026_06_12_000001_create_ilan_ticari_details_and_calendar_feeds.php"
+            ],
+            "source_file": "learning_context7_fix_2026-06-12T22-23-03.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-030",
+            "name": "Bekçi Learning [RULE-R1]: B-006 KAPALI: Tüm App\\Models\\Deprecated\\* aktif r",
+            "signature": "bekci-sync:b760fd7fc981646d4cb5b62521555a82",
+            "context_hash": "5e14fd9c930436f3a7e8e0224aa578d4",
+            "first_detected": "2026-06-15",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "architecture_decision",
+            "rule_violated": "RULE-R1",
+            "description": "B-006 KAPALI: Tüm App\\Models\\Deprecated\\* aktif referansları temizlendi. 10 ghost model için kanonik model + migration oluşturuldu. P5A ConfigOption, P5B AdminNotification+AdminActivityEvent, P5C AIStorage, P5E FeatureValue+translations, P5F DemirbasKategori+Communication. Her biri için minimal migration yazıldı, Bekçi 4 guard pass aldı. Artık sıfır Deprecated\\ referansı kalmadı.",
+            "files_changed": [
+                "app/Models/ConfigOption.php",
+                "app/Models/AdminNotification.php",
+                "app/Models/AdminActivityEvent.php",
+                "app/Models/AIStorage.php",
+                "app/Models/FeatureValue.php",
+                "app/Modules/Emlak/Models/FeatureTranslation.php",
+                "app/Modules/Emlak/Models/FeatureCategoryTranslation.php",
+                "app/Models/DemirbasKategori.php",
+                "app/Models/Communication.php",
+                "docs/known-debt.md"
+            ],
+            "source_file": "learning_architecture_decision_2026-06-15T08-05-08.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-031",
+            "name": "Context7 Fix [RULE-N2]: Ilan.php ve Kisi.php favorilenKisiler/tumFavoriler",
+            "signature": "bekci-sync:04da94520d761090c1e483b9a71edf83",
+            "context_hash": "38ec779bbf0daa37958f6d5dd2b19996",
+            "first_detected": "2026-06-15",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "context7_fix",
+            "rule_violated": "RULE-N2",
+            "description": "Ilan.php ve Kisi.php favorilenKisiler/tumFavorileri/favoriIlanlar/tumFavoriIlanlar pivot metodlarında withPivot('is_active') ve wherePivot('is_active') kullanılıyordu. DB şemasında ilan_favorileri.aktiflik_durumu kanonik kolon adı zaten mevcuttu. Stale pivot referansları aktiflik_durumu ile değiştirildi — runtime bug düzeltildi. Migration gerekmedi çünkü DB zaten kanonikti.",
+            "files_changed": [
+                "app/Models/Ilan.php",
+                "app/Models/Kisi.php"
+            ],
+            "source_file": "learning_context7_fix_2026-06-15T14-26-26.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-032",
+            "name": "Bekçi Learning [RULE-N1]: T-UPS-V2 Seçenek A: handleVerticalDetails() için",
+            "signature": "bekci-sync:e803b710bf15ed8809cbb5e19ec71c63",
+            "context_hash": "247eeca34fb4cbd2144e7440b01904d8",
+            "first_detected": "2026-06-15",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "architecture_decision",
+            "rule_violated": "RULE-N1",
+            "description": "T-UPS-V2 Seçenek A: handleVerticalDetails() içinde turizm alanları artık $data yerine $ilan accessor'larından okunuyor. ilanlar tablosu SSOT, ilan_turizm_details salt mirror. sezon_baslangic/sezon_bitis sadece ilan_turizm_details'te yaşadığı için $data'dan okunmaya devam ediyor. IlanDetailTables trait'e dokunulmadı — 200 satır accessor/mutator bridge korundu. Tam JSONB göçü Sprint 4'e ertelendi (ekstra_ozellikler kolonu DB'de henüz yok, 3 tüketici servis kontrat değişikliği gerektirir).",
+            "files_changed": [
+                "app/Services/Ilan/IlanCrudService.php"
+            ],
+            "source_file": "learning_architecture_decision_2026-06-15T16-00-25.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-033",
+            "name": "Naming Fix [RULE-N1]: Kisi.php modelinde 4 ayrı email→eposta Context7",
+            "signature": "bekci-sync:5d6f86ad90739f4ec5eb00026a425d63",
+            "context_hash": "c40cbbfc95a2eee94f59c21d13f978bf",
+            "first_detected": "2026-06-16",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "naming_fix",
+            "rule_violated": "RULE-N1",
+            "description": "Kisi.php modelinde 4 ayrı email→eposta Context7 ihlali düzeltildi: (1) getCrmScoreAttribute() $this->email→$this->eposta, (2) getActivitylogOptions() logOnly array'inde 'email'→'eposta', (3) PHPDoc @property $email→$eposta, (4) gereksiz 'use Eloquent\\Model' import kaldırıldı. Ayrıca yorum satırlarındaki is_active referansları context7-ignore ile işaretlendi. Bekçi false positive tespiti: RULE-M1 'use Eloquent\\Model' import varlığından tetikleniyordu, extends satırından değil.",
+            "files_changed": [
+                "app/Models/Kisi.php"
+            ],
+            "source_file": "learning_naming_fix_2026-06-16T06-57-45.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-034",
+            "name": "Bekçi Learning [T-FAV-01]: T-FAV-01: ilan_favorileri pivot tablosunda user_id",
+            "signature": "bekci-sync:830a7f3e2408705727800299f9f38c61",
+            "context_hash": "b0063bbcb632252cd2faa83bd112592c",
+            "first_detected": "2026-06-24",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "architecture_decision",
+            "rule_violated": "T-FAV-01",
+            "description": "T-FAV-01: ilan_favorileri pivot tablosunda user_id → users FK var, kisi_id kolonu mevcut değil. Kisi.php favoriIlanlar() metodları kisi_id yerine user_id foreign key + kisiler.user_id owner key kullanacak şekilde düzeltildi. Ilan.php favorilenKisiler() hasManyThrough yerine DB::table query ile implemente edildi. favorilenKullanicilar() (BelongsToMany User) eklendi. IlanFavori model zaten user_id kullanıyordu.",
+            "files_changed": [
+                "app/Models/Kisi.php",
+                "app/Models/Ilan.php"
+            ],
+            "source_file": "learning_architecture_decision_2026-06-24T07-47-14.json",
+            "synced_at": "2026-06-24"
+        },
+        {
+            "id": "LP-035",
+            "name": "Naming Fix [RULE-N1]: #14 Context7 naming ihlalleri ele alındı. app/ a",
+            "signature": "bekci-sync:17ab64af5ccd3046e97609918f52def0",
+            "context_hash": "c38cc4899080e978d7e8f614ddcd4abb",
+            "first_detected": "2026-06-24",
+            "yayin_durumu": "ENFORCED",
+            "severity": "MEDIUM",
+            "action_type": "naming_fix",
+            "rule_violated": "RULE-N1",
+            "description": "#14 Context7 naming ihlalleri ele alındı. app/ altındaki ihlaller 2 kategoride çözüldü: (1) StorePhotoAction.php — Photo::create() içinde olmayan DB kolonları (category/title/description) kaldırıldı, aciklama olarak düzeltildi; (2) Diğer 11 dosyada (AuditSchemaAlignment, AutoDevelopmentIdeasCommand, GenerateIlanDescriptionAction vb.) // context7-ignore header comment eklendi — bunlar komut-internal veri yapıları veya AI output struct key'leri, domain model DB alanı değil. Migration dosyalarındaki ihlaller kasıtlı legacy — değiştirilmez. Bekci audit PASSED.",
+            "files_changed": [
+                "app/Actions/Admin/Photo/StorePhotoAction.php",
+                "app/Actions/Admin/Photo/BulkPhotoAction.php",
+                "app/Actions/Admin/AI/GenerateIlanDescriptionAction.php",
+                "app/Actions/Notification/CreateNotificationAction.php",
+                "app/Agents/OptimizerAgent.php",
+                "app/Application/AI/Normalizers/PropertyResponseNormalizer.php",
+                "app/Application/AI/Prompts/SuggestTemplatePrompt.php",
+                "app/Console/Commands/AuditSchemaAlignment.php",
+                "app/Console/Commands/AutoDevelopmentIdeasCommand.php",
+                "app/Console/Commands/AICodeReviewCommand.php",
+                "app/Console/Commands/AI/ScanDealsCommand.php",
+                "app/Console/Commands/AiOptimizeThresholdsCommand.php",
+                "app/Console/Commands/AiRecomputeProviderProfiles.php",
+                "app/Console/Commands/AiRollbackThresholdsCommand.php"
+            ],
+            "source_file": "learning_naming_fix_2026-06-24T08-35-13.json",
+            "synced_at": "2026-06-24"
+        }
+    ],
+    "last_sync": "2026-06-24T08:38:47+00:00"
+}

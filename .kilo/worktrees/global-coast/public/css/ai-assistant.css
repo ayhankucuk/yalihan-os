@@ -1,0 +1,113 @@
+/* AI Assistant Floating Widget Styles */
+.ai-assistant-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    font-family: 'Inter', sans-serif;
+}
+
+.ai-assistant-toggle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.ai-assistant-toggle:hover {
+    transform: scale(1.1);
+}
+
+.ai-assistant-chat {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 350px;
+    height: 500px;
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+.ai-assistant-header {
+    padding: 15px;
+    background: #4f46e5;
+    color: white;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+}
+
+.ai-assistant-body {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f9fafb;
+}
+
+.ai-message {
+    margin-bottom: 10px;
+    max-width: 85%;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.ai-message.bot {
+    background: #e0e7ff;
+    align-self: flex-start;
+}
+
+.ai-message.user {
+    background: #4f46e5;
+    color: white;
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.ai-assistant-footer {
+    padding: 10px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+}
+
+.ai-assistant-input {
+    flex: 1;
+    border: 1px solid #d1d5db;
+    border-radius: 20px;
+    padding: 8px 15px;
+    outline: none;
+}
+
+.ai-assistant-send {
+    margin-left: 10px;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+}
+
+.ai-suggestion {
+    display: inline-block;
+    background: #ffffff;
+    border: 1px solid #4f46e5;
+    color: #4f46e5;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    margin: 5px 5px 0 0;
+    cursor: pointer;
+}
