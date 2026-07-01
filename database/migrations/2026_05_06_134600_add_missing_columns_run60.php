@@ -29,7 +29,8 @@ return new class extends Migration
         // Add quality_score to ilanlar
         if (Schema::hasTable('ilanlar') && !Schema::hasColumn('ilanlar', 'quality_score')) {
             Schema::table('ilanlar', function (Blueprint $table) {
-                $table->decimal('quality_score', 5, 2)->nullable()->after('durum');
+                // Safe for clean bootstrap: removed ->after('durum') — column doesn't exist in mysql-schema.sql
+                $table->decimal('quality_score', 5, 2)->nullable();
                 $table->index('quality_score');
             });
         }

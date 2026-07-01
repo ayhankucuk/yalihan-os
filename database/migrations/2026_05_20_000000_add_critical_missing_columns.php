@@ -24,7 +24,8 @@ return new class extends Migration
         // 1. kisiler.kaynak - CRM Akışı için kritik (Context7: kaynak)
         if (Schema::hasTable('kisiler') && !Schema::hasColumn('kisiler', 'kaynak')) {
             Schema::table('kisiler', function (Blueprint $table) {
-                $table->string('kaynak', 50)->nullable()->after('telefon')
+                // Safe for clean bootstrap: removed ->after('telefon') — column may not exist in all schemas
+                $table->string('kaynak', 50)->nullable()
                       ->comment('CRM lead source: web, referral, agent, etc.');
             });
         }
@@ -32,7 +33,8 @@ return new class extends Migration
         // 2. ilanlar.kisi_id - İlişkisel bütünlük (Soft dependency)
         if (Schema::hasTable('ilanlar') && !Schema::hasColumn('ilanlar', 'kisi_id')) {
             Schema::table('ilanlar', function (Blueprint $table) {
-                $table->foreignId('kisi_id')->nullable()->after('danisman_id')
+                // Safe for clean bootstrap: removed ->after('danisman_id') — column not in schema
+                $table->foreignId('kisi_id')->nullable()
                       ->constrained('kisiler')->onDelete('set null')
                       ->comment('İlan sahibi (Kişi) - nullable for orphaned listings');
             });

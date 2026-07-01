@@ -101,14 +101,16 @@ return new class extends Migration
             // Step 3: Add odendi_mi column
             if (!Schema::hasColumn('bonuses', 'odendi_mi')) {
                 Schema::table('bonuses', function (Blueprint $table) {
-                    $table->boolean('odendi_mi')->default(false)->after('prim_tutari');
+                    // Safe for clean bootstrap: removed ->after('prim_tutari') — not in schema
+                    $table->boolean('odendi_mi')->default(false);
                 });
             }
 
             // Step 4: Add odeme_tarihi column
             if (!Schema::hasColumn('bonuses', 'odeme_tarihi')) {
                 Schema::table('bonuses', function (Blueprint $table) {
-                    $table->timestamp('odeme_tarihi')->nullable()->after('odendi_mi');
+                    // Safe for clean bootstrap: removed ->after('odendi_mi') — not in schema
+                    $table->timestamp('odeme_tarihi')->nullable();
                 });
             }
         }

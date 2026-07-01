@@ -30,7 +30,8 @@ return new class extends Migration
         // 1. Add 'kaynak' column to 'kisiler' table (Context7: source field)
         if (Schema::hasTable('kisiler') && !Schema::hasColumn('kisiler', 'kaynak')) {
             Schema::table('kisiler', function (Blueprint $table) {
-                $table->string('kaynak', 50)->nullable()->after('telefon')
+                // Safe for clean bootstrap: removed ->after('telefon') — column may not exist in all schemas
+                $table->string('kaynak', 50)->nullable()
                     ->comment('Context7: Lead source (website, telefon, referans, etc.)');
             });
         }
@@ -38,7 +39,8 @@ return new class extends Migration
         // 2. Add 'kisi_id' FK to 'ilanlar' table (Context7: property owner relationship)
         if (Schema::hasTable('ilanlar') && !Schema::hasColumn('ilanlar', 'kisi_id')) {
             Schema::table('ilanlar', function (Blueprint $table) {
-                $table->foreignId('kisi_id')->nullable()->after('danisman_id')
+                // Safe for clean bootstrap: removed ->after('danisman_id') — column not in schema
+                $table->foreignId('kisi_id')->nullable()
                     ->comment('Context7: Property owner (Kişi) relationship')
                     ->constrained('kisiler')->nullOnDelete();
             });

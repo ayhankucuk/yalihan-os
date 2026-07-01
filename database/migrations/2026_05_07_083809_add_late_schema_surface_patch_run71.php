@@ -36,14 +36,16 @@ return new class extends Migration
         // 2. copilot_action_logs.rejection_reason
         if (Schema::hasTable('copilot_action_logs') && !Schema::hasColumn('copilot_action_logs', 'rejection_reason')) {
             Schema::table('copilot_action_logs', function (Blueprint $table) {
-                $table->text('rejection_reason')->nullable()->after('status');
+                // Safe for clean bootstrap: removed ->after('status') — column doesn't exist in mysql-schema.sql
+                $table->text('rejection_reason')->nullable();
             });
         }
 
         // 3. talepler.tip
         if (Schema::hasTable('talepler') && !Schema::hasColumn('talepler', 'tip')) {
             Schema::table('talepler', function (Blueprint $table) {
-                $table->string('tip')->nullable()->after('talep_tipi');
+                // Safe for clean bootstrap: removed ->after('talep_tipi') — column not in mysql-schema.sql
+                $table->string('tip')->nullable();
                 $table->index('tip');
             });
         }
