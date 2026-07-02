@@ -2,6 +2,60 @@
 
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\Admin\AiMonitorController;
+use App\Http\Controllers\Admin\CustomerProfileController;
+use App\Http\Controllers\Admin\FeatureController;
+use App\Http\Controllers\Admin\IlanKategoriController;
+use App\Http\Controllers\Admin\IlanRaporController;
+use App\Http\Controllers\Admin\KisiController;
+use App\Http\Controllers\Admin\SystemMonitorController;
+use App\Http\Controllers\Admin\TalepPortfolyoController;
+use App\Http\Controllers\Admin\TKGMParselController;
+use App\Http\Controllers\Advisor\AdvisorAnalyticsController;
+use App\Http\Controllers\Advisor\AdvisorCommandCenterController;
+use App\Http\Controllers\Advisor\BuyerMatchController;
+use App\Http\Controllers\Advisor\BuyerMatchQueueController;
+use App\Http\Controllers\Advisor\ConversationalAdvisorController;
+use App\Http\Controllers\Advisor\CopilotController;
+use App\Http\Controllers\Advisor\DealRadarController;
+use App\Http\Controllers\Advisor\MarketIntelligenceAdvisorController;
+use App\Http\Controllers\Advisor\MarketValuationController;
+use App\Http\Controllers\Advisor\OpportunityInboxController;
+use App\Http\Controllers\Advisor\OwnerDiscoveryController;
+use App\Http\Controllers\Advisor\PortfolioDoctorController;
+use App\Http\Controllers\Advisor\PriceAdvisorController;
+use App\Http\Controllers\Advisor\SellerStrategyController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\BlogSitemapController;
+use App\Http\Controllers\Frontend\DanismanController;
+use App\Http\Controllers\Frontend\PreferenceController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Ilan\PropertyFeatureController;
+use App\Http\Controllers\IlanPublicController;
+use App\Http\Controllers\Owner\OwnerAuthController;
+use App\Http\Controllers\Owner\OwnerBelgeController;
+use App\Http\Controllers\Owner\OwnerDashboardController;
+use App\Http\Controllers\Owner\OwnerIlanController;
+use App\Http\Controllers\Owner\OwnerIntelligenceController;
+use App\Http\Controllers\Owner\OwnerMesajController;
+use App\Http\Controllers\Owner\OwnerPhotoController;
+use App\Http\Controllers\Owner\OwnerReportController;
+use App\Http\Controllers\Owner\OwnerTeklifController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Public\ConversationalAdvisorPublicController;
+use App\Http\Controllers\Public\IlanCalendarFeedController;
+use App\Http\Controllers\Public\InternationalLandingController;
+use App\Http\Controllers\SecureFileController;
+use App\Models\Il;
+use App\Models\Ilan;
+use App\Models\IlanKategori;
+use App\Models\Kisi;
+use App\Models\User;
+use App\Modules\TalepAnaliz\Controllers\TalepAnalizController;
+use App\Services\AIService;
+use App\Services\CurrencyConversionService;
+use Illuminate\Http\Request;
+
 // Preferences Routes (Language & Currency)
 Route::prefix('preferences')->name('preferences.')->group(function () {
     Route::post('/locale', [PreferenceController::class, 'setLocale'])->name('locale');
@@ -128,59 +182,7 @@ Route::get('/ilan-success/{ilan}', function ($ilan) {
 // This endpoint was marked as deprecated and has been removed
 // Archived in routes/api/v1/admin.php if needed for backward compatibility
 
-use App\Http\Controllers\Admin\AiMonitorController;
-use App\Http\Controllers\Admin\CustomerProfileController;
-use App\Http\Controllers\Admin\FeatureController;
-use App\Http\Controllers\Admin\IlanKategoriController;
-use App\Http\Controllers\Admin\IlanRaporController;
-use App\Http\Controllers\Admin\KisiController;
-use App\Http\Controllers\Admin\SystemMonitorController;
-use App\Http\Controllers\Admin\TalepPortfolyoController;
-use App\Http\Controllers\Admin\TKGMParselController;
-use App\Http\Controllers\Advisor\AdvisorAnalyticsController;
-use App\Http\Controllers\Advisor\AdvisorCommandCenterController;
-use App\Http\Controllers\Advisor\BuyerMatchController;
-use App\Http\Controllers\Advisor\BuyerMatchQueueController;
-use App\Http\Controllers\Advisor\ConversationalAdvisorController;
-use App\Http\Controllers\Advisor\CopilotController;
-use App\Http\Controllers\Advisor\DealRadarController;
-use App\Http\Controllers\Advisor\MarketIntelligenceAdvisorController;
-use App\Http\Controllers\Advisor\MarketValuationController;
-use App\Http\Controllers\Advisor\OpportunityInboxController;
-use App\Http\Controllers\Advisor\OwnerDiscoveryController;
-use App\Http\Controllers\Advisor\PortfolioDoctorController;
-use App\Http\Controllers\Advisor\PriceAdvisorController;
-use App\Http\Controllers\Advisor\SellerStrategyController;
-use App\Http\Controllers\BlogController;
-use App\Http\Controllers\BlogSitemapController;
-use App\Http\Controllers\Frontend\DanismanController;
-use App\Http\Controllers\Frontend\PreferenceController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\Ilan\PropertyFeatureController;
-use App\Http\Controllers\IlanPublicController;
-use App\Http\Controllers\Owner\OwnerAuthController;
-use App\Http\Controllers\Owner\OwnerBelgeController;
-use App\Http\Controllers\Owner\OwnerDashboardController;
-use App\Http\Controllers\Owner\OwnerIlanController;
-use App\Http\Controllers\Owner\OwnerIntelligenceController;
-use App\Http\Controllers\Owner\OwnerMesajController;
-use App\Http\Controllers\Owner\OwnerPhotoController;
-use App\Http\Controllers\Owner\OwnerReportController;
-use App\Http\Controllers\Owner\OwnerTeklifController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Public\ConversationalAdvisorPublicController;
-use App\Http\Controllers\Public\IlanCalendarFeedController;
-use App\Http\Controllers\Public\InternationalLandingController;
-use App\Http\Controllers\SecureFileController;
-use App\Models\Il;
-use App\Models\Ilan;
-use App\Models\IlanKategori;
-use App\Models\Kisi;
-use App\Models\User;
-use App\Modules\TalepAnaliz\Controllers\TalepAnalizController;
-use App\Services\AIService;
-use App\Services\CurrencyConversionService;
-use Illuminate\Http\Request;
+// Imports moved to the top of the file
 
 // Auth rotalarını dahil et
 require __DIR__.'/auth.php';
