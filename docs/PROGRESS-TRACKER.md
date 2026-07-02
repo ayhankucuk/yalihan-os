@@ -1,7 +1,24 @@
 # Governance Progress Tracker
-**Son Güncelleme:** 2026-06-30 (Oturum 64 — Sprint 4.0.2 Platform Hygiene & Guardrails)
-**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog**
-**Genel İlerleme:** Phase 14 Foundation Lock & Sprint 4.0.2 Platform Hygiene: 13 dosya temizlendi, veritabanı determinizmi artırıldı, local linter hızı artırıldı.
+**Son Güncelleme:** 2026-06-30 (Oturum 65 — Sprint 4.0.3 Production Readiness)
+**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE**
+**Genel İlerleme:** Phase 14 Foundation Lock & Sprint 4.0.3 Production Readiness: fixed test suite bottlenecks (resolved macOS IPv6 local latency, database teardown disconnect lifecycle, foreign key checks, CSRF bypass).
+
+---
+
+## 🔒 Oturum 65 — Sprint 4.0.3 Production Readiness (2026-06-30)
+
+### Değiştirilen Dosyalar
+
+| Dosya | Açıklama |
+|-------|----------|
+| `.env` | `DB_HOST` ve `MARKET_DB_HOST` 127.0.0.1 yapılarak macOS IPv6 local DNS gecikmeleri çözüldü. |
+| `tests/TestCase.php` | Database disconnect `beforeApplicationDestroyed` callback'ine alınarak test sonlarında rollback işlemlerinin yarıda kalması engellendi. |
+| `tests/Feature/Admin/TalepControllerAuthorizationTest.php` | RefreshDatabase yerine DatabaseTransactions kullanıldı, `iller` tablosu seeded edildi ve CSRF bypass tanımlandı. |
+
+### Uyumluluk
+- ✅ `TalepControllerAuthorizationTest`: Passed (8/8)
+- ✅ `ChaosEngineeringTest`: Passed (3/3)
+- ✅ `php artisan sab:integrity-scan`: Uyumlu (0 new violations)
 
 ---
 
