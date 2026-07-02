@@ -49,7 +49,15 @@ check_file() {
     EXPECTED=""
     REASON=""
     
-    if [[ "$FILE" == *resources/views/frontend/* ]]; then
+    if [[ "$FILE" == *resources/views/frontend/dynamic-form/* ]]; then
+        # Legacy exception: dynamic-form is an admin designer tool placed in frontend folder
+        if [[ "$EXTENDS" == "admin.layouts.admin" ]]; then
+            echo -e "  ${GREEN}✅ ${FILE}${NC} → @extends('${EXTENDS}') [legacy exception OK]"
+            return
+        fi
+        EXPECTED="admin.layouts.admin"
+        REASON="Legacy exception: Files in frontend/dynamic-form/ must use admin.layouts.admin"
+    elif [[ "$FILE" == *resources/views/frontend/* ]]; then
         EXPECTED="layouts.frontend"
         REASON="Files in frontend/ must use layouts.frontend"
     elif [[ "$FILE" == *resources/views/public/* ]]; then
