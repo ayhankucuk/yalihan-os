@@ -3,12 +3,17 @@
 namespace App\Services\Hermes\Registry;
 
 use App\Domain\Hermes\Enums\HermesCapability;
+use App\Domain\Hermes\Enums\HermesWorkforceCapability;
 use App\Domain\Hermes\Models\AgentRegistryEntry;
 use App\Domain\Hermes\Models\CapabilityBinding;
 use App\Services\Hermes\Handlers\AnalyticsHandler;
 use App\Services\Hermes\Handlers\GovernanceNotificationHandler;
 use App\Services\Hermes\Handlers\NotificationAgentHandler;
 use App\Services\Hermes\Handlers\TelegramNotificationHandler;
+use App\Services\Hermes\Handlers\Workforce\DescriptionAgent;
+use App\Services\Hermes\Handlers\Workforce\NotificationAgent;
+use App\Services\Hermes\Handlers\Workforce\PhotoAgent;
+use App\Services\Hermes\Handlers\Workforce\PortfolioAgent;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -149,6 +154,64 @@ class AgentRegistry
             ],
             layer: 'notification',
             enabled: false, // Stub: disabled by default
+        ));
+
+        // ─── AI Workforce Agents — Sprint 4.3 ──────────────────────────
+
+        // PortfolioAgent — initiates the workforce chain
+        $this->register(new AgentRegistryEntry(
+            agentName: 'portfolio_agent',
+            agentClass: PortfolioAgent::class,
+            subscribedEvents: [
+                'portfolio.created',
+            ],
+            capabilities: [
+                HermesWorkforceCapability::ANALYZE_PORTFOLIO->value,
+                HermesWorkforceCapability::ENRICH_PORTFOLIO->value,
+            ],
+            layer: 'workforce',
+        ));
+
+        // PhotoAgent — analyzes listing photos
+        $this->register(new AgentRegistryEntry(
+            agentName: 'photo_agent',
+            agentClass: PhotoAgent::class,
+            subscribedEvents: [
+                'workforce.photo_analysis_requested',
+            ],
+            capabilities: [
+                HermesWorkforceCapability::ANALYZE_PHOTOS->value,
+                HermesWorkforceCapability::SUGGEST_PHOTO_IMPROVEMENTS->value,
+            ],
+            layer: 'workforce',
+        ));
+
+        // DescriptionAgent — analyzes and improves listing descriptions
+        $this->register(new AgentRegistryEntry(
+            agentName: 'description_agent',
+            agentClass: DescriptionAgent::class,
+            subscribedEvents: [
+                'workforce.description_analysis_requested',
+            ],
+            capabilities: [
+                HermesWorkforceCapability::GENERATE_DESCRIPTION->value,
+                HermesWorkforceCapability::IMPROVE_DESCRIPTION->value,
+            ],
+            layer: 'workforce',
+        ));
+
+        // NotificationAgent — final notification on chain completion
+        $this->register(new AgentRegistryEntry(
+            agentName: 'workforce_notification_agent',
+            agentClass: NotificationAgent::class,
+            subscribedEvents: [
+                'workforce.notification_requested',
+            ],
+            capabilities: [
+                HermesWorkforceCapability::SEND_PORTFOLIO_NOTIFICATION->value,
+                HermesWorkforceCapability::SEND_CHAIN_COMPLETE_NOTIFICATION->value,
+            ],
+            layer: 'workforce',
         ));
 
         Log::debug('[AgentRegistry] Default agents bootstrapped', [

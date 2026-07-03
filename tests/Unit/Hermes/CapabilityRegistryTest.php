@@ -43,15 +43,15 @@ class CapabilityRegistryTest extends TestCase
     }
 
     /**
-     * Test portfolio.created has required notification capability
+     * Test portfolio.created has workforce capabilities (Sprint 4.3)
      */
     public function test_portfolio_created_binding(): void
     {
         $required = $this->registry->getRequiredCapabilities('portfolio.created');
         $optional = $this->registry->getOptionalCapabilities('portfolio.created');
 
-        $this->assertContains('notification.notify_portfolio_created', $required);
-        $this->assertContains('analytics.analyze_portfolio_trend', $optional);
+        // Sprint 4.3: portfolio.created routes to workforce agents
+        $this->assertContains('workforce.analyze_portfolio', $required);
     }
 
     /**
@@ -93,8 +93,8 @@ class CapabilityRegistryTest extends TestCase
         $capabilities = $this->registry->getAllCapabilities('portfolio.created');
 
         $this->assertNotEmpty($capabilities);
-        $this->assertContains('notification.notify_portfolio_created', $capabilities);
-        $this->assertContains('analytics.analyze_portfolio_trend', $capabilities);
+        // Sprint 4.3: portfolio.created now routes to workforce capability
+        $this->assertContains('workforce.analyze_portfolio', $capabilities);
     }
 
     /**

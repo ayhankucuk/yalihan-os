@@ -4,6 +4,8 @@ namespace App\Services\Hermes\Registry;
 
 use App\Domain\Hermes\Enums\HermesCapability;
 use App\Domain\Hermes\Enums\HermesEventVocabulary;
+use App\Domain\Hermes\Enums\HermesWorkforceCapability;
+use App\Domain\Hermes\Enums\HermesWorkforceEventVocabulary;
 use App\Domain\Hermes\Models\CapabilityBinding;
 use Illuminate\Support\Facades\Log;
 
@@ -133,6 +135,56 @@ class CapabilityRegistry
             routingStrategy: 'all',
         ));
 
+        // ─── AI Workforce Bindings — Sprint 4.3 ────────────────────────
+
+        // portfolio.created → workforce agent (Sprint 4.3: AI Workforce chain initiator)
+        $this->bind(new CapabilityBinding(
+            eventName: HermesEventVocabulary::PORTFOLIO_CREATED->value,
+            capabilitiesRequired: [
+                HermesWorkforceCapability::ANALYZE_PORTFOLIO->value,
+            ],
+            capabilitiesOptional: [
+                HermesWorkforceCapability::ENRICH_PORTFOLIO->value,
+            ],
+            routingStrategy: 'all',
+        ));
+
+        // Photo analysis chain event
+        $this->bind(new CapabilityBinding(
+            eventName: HermesWorkforceEventVocabulary::WORKFORCE_PHOTO_ANALYSIS_REQUESTED->value,
+            capabilitiesRequired: [
+                HermesWorkforceCapability::ANALYZE_PHOTOS->value,
+            ],
+            capabilitiesOptional: [
+                HermesWorkforceCapability::SUGGEST_PHOTO_IMPROVEMENTS->value,
+            ],
+            routingStrategy: 'all',
+        ));
+
+        // Description analysis chain event
+        $this->bind(new CapabilityBinding(
+            eventName: HermesWorkforceEventVocabulary::WORKFORCE_DESCRIPTION_ANALYSIS_REQUESTED->value,
+            capabilitiesRequired: [
+                HermesWorkforceCapability::GENERATE_DESCRIPTION->value,
+            ],
+            capabilitiesOptional: [
+                HermesWorkforceCapability::IMPROVE_DESCRIPTION->value,
+            ],
+            routingStrategy: 'all',
+        ));
+
+        // Notification chain event
+        $this->bind(new CapabilityBinding(
+            eventName: HermesWorkforceEventVocabulary::WORKFORCE_NOTIFICATION_REQUESTED->value,
+            capabilitiesRequired: [
+                HermesWorkforceCapability::SEND_PORTFOLIO_NOTIFICATION->value,
+            ],
+            capabilitiesOptional: [
+                HermesWorkforceCapability::SEND_CHAIN_COMPLETE_NOTIFICATION->value,
+            ],
+            routingStrategy: 'all',
+        ));
+
         Log::debug('[CapabilityRegistry] Default bindings bootstrapped', [
             'binding_count' => count($this->bindings),
         ]);
@@ -246,14 +298,17 @@ class CapabilityRegistry
         $issues = [];
 
         foreach (array_keys($this->bindings) as $eventName) {
-            if (!HermesEventVocabulary::isValid($eventName)) {
+            if (!HermesEventVocabulary::isValid($eventName)
+                && !\App\Domain\Hermes\Enums\HermesWorkforceEventVocabulary::isValid($eventName)) {
                 $issues[] = "Event '{$eventName}' is bound but not in vocabulary";
             }
         }
 
         foreach ($this->bindings as $binding) {
             foreach ($binding->allCapabilities() as $capability) {
-                if (!HermesCapability::isValid($capability)) {
+                $inBase = HermesCapability::isValid($capability);
+                $inWorkforce = \App\Domain\Hermes\Enums\HermesWorkforceCapability::isValid($capability);
+                if (!$inBase && !$inWorkforce) {
                     $issues[] = "Capability '{$capability}' is bound but not in vocabulary";
                 }
             }
