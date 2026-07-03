@@ -25,6 +25,10 @@ enum HermesWorkforceCapability: string
     case SEND_PORTFOLIO_NOTIFICATION = 'workforce.send_portfolio_notification';
     case SEND_CHAIN_COMPLETE_NOTIFICATION = 'workforce.send_chain_complete_notification';
 
+    // ─── DriveAgent Capabilities — Sprint 4.4 ────────────────────────
+    case CREATE_DRIVE_WORKSPACE = 'workforce.create_drive_workspace';
+    case MANAGE_DRIVE_WORKSPACE = 'workforce.manage_drive_workspace';
+
     /**
      * Get all capability names as array
      */
@@ -55,6 +59,8 @@ enum HermesWorkforceCapability: string
             self::IMPROVE_DESCRIPTION => 'Açıklama İyileştirme',
             self::SEND_PORTFOLIO_NOTIFICATION => 'Portföy Bildirimi Gönder',
             self::SEND_CHAIN_COMPLETE_NOTIFICATION => 'Zincir Tamamlama Bildirimi',
+            self::CREATE_DRIVE_WORKSPACE => 'Drive Çalışma Alanı Oluştur',
+            self::MANAGE_DRIVE_WORKSPACE => 'Drive Çalışma Alanı Yönet',
         };
     }
 }

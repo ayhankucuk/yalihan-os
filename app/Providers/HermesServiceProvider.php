@@ -4,10 +4,12 @@ namespace App\Providers;
 
 use App\Contracts\Hermes\HermesEventContract;
 use App\Contracts\Hermes\HermesHandlerContract;
+use App\Services\Drive\DriveWorkspaceService;
 use App\Services\Hermes\Handlers\AnalyticsHandler;
 use App\Services\Hermes\Handlers\GovernanceNotificationHandler;
 use App\Services\Hermes\Handlers\NotificationAgentHandler;
 use App\Services\Hermes\Handlers\Workforce\DescriptionAgent;
+use App\Services\Hermes\Handlers\Workforce\DriveAgent;
 use App\Services\Hermes\Handlers\Workforce\NotificationAgent;
 use App\Services\Hermes\Handlers\Workforce\PhotoAgent;
 use App\Services\Hermes\Handlers\Workforce\PortfolioAgent;
@@ -65,6 +67,13 @@ class HermesServiceProvider extends ServiceProvider
         $this->app->singleton(PhotoAgent::class, fn () => new PhotoAgent());
         $this->app->singleton(DescriptionAgent::class, fn () => new DescriptionAgent());
         $this->app->singleton(NotificationAgent::class, fn () => new NotificationAgent());
+
+        // DriveWorkspace service + agent — Sprint 4.4
+        $this->app->singleton(DriveWorkspaceService::class, fn () => new DriveWorkspaceService());
+        $this->app->singleton(DriveAgent::class, fn ($app) => new DriveAgent(
+            $app->make(DriveWorkspaceService::class),
+            $app->make(HermesService::class),
+        ));
     }
 
     /**
@@ -86,6 +95,9 @@ class HermesServiceProvider extends ServiceProvider
             $this->app->make(PhotoAgent::class),
             $this->app->make(DescriptionAgent::class),
             $this->app->make(NotificationAgent::class),
+
+            // DriveWorkspace agent — Sprint 4.4
+            $this->app->make(DriveAgent::class),
         ];
 
         foreach ($handlers as $handler) {

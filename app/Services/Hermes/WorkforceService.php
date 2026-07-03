@@ -5,6 +5,7 @@ namespace App\Services\Hermes;
 use App\Models\Hermes\HermesAnalytics;
 use App\Models\Hermes\HermesEventLog;
 use App\Models\Hermes\WorkforceExecutionLog;
+use App\Models\PortfolioDriveWorkspace;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -26,6 +27,7 @@ class WorkforceService
         $workforceMetrics = $this->getWorkforceMetrics($tenantId);
         $agentMetrics = $this->getAgentMetrics($tenantId);
         $chainMetrics = $this->getChainMetrics($tenantId);
+        $driveMetrics = $this->getDriveWorkspaceMetrics($tenantId);
 
         return [
             'generated_at' => now()->toIso8601String(),
@@ -47,6 +49,15 @@ class WorkforceService
                 'pending' => $workforceMetrics['pending'],
                 'success_rate' => $workforceMetrics['success_rate'],
                 'avg_duration_ms' => $workforceMetrics['avg_duration_ms'],
+            ],
+
+            // Drive workspace metrics — Sprint 4.4
+            'drive_workspace' => [
+                'total_workspaces' => $driveMetrics['total'],
+                'ready' => $driveMetrics['ready'],
+                'creating' => $driveMetrics['creating'],
+                'error' => $driveMetrics['error'],
+                'success_rate' => $driveMetrics['success_rate'],
             ],
 
             // Per-agent breakdown
@@ -264,6 +275,32 @@ class WorkforceService
                 fn ($agent) => ($agent['layer'] ?? '') === 'workforce'
             )),
             'registered_events' => $registry->getRegisteredEvents(),
+        ];
+    }
+
+    /**
+     * Get Drive workspace metrics — Sprint 4.4
+     */
+    private function getDriveWorkspaceMetrics(?int $tenantId): array
+    {
+        $query = PortfolioDriveWorkspace::query();
+        if ($tenantId !== null) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        $total = (clone $query)->count();
+        $ready = (clone $query)->where('workspace_status', PortfolioDriveWorkspace::STATUS_READY)->count();
+        $creating = (clone $query)->where('workspace_status', PortfolioDriveWorkspace::STATUS_CREATING)->count();
+        $error = (clone $query)->where('workspace_status', PortfolioDriveWorkspace::STATUS_ERROR)->count();
+
+        return [
+            'total' => $total,
+            'ready' => $ready,
+            'creating' => $creating,
+            'error' => $error,
+            'success_rate' => $total > 0
+                ? round(($ready / $total) * 100, 1)
+                : 100.0,
         ];
     }
 }

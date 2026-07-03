@@ -135,16 +135,19 @@ class CapabilityRegistry
             routingStrategy: 'all',
         ));
 
-        // ─── AI Workforce Bindings — Sprint 4.3 ────────────────────────
+        // ─── AI Workforce Bindings — Sprint 4.3 + Sprint 4.4 ────────────
 
-        // portfolio.created → workforce agent (Sprint 4.3: AI Workforce chain initiator)
+        // portfolio.created → workforce agents (Sprint 4.3: PortfolioAgent + Sprint 4.4: DriveAgent)
+        // Merged: both agents handle portfolio.created
         $this->bind(new CapabilityBinding(
             eventName: HermesEventVocabulary::PORTFOLIO_CREATED->value,
             capabilitiesRequired: [
                 HermesWorkforceCapability::ANALYZE_PORTFOLIO->value,
+                HermesWorkforceCapability::CREATE_DRIVE_WORKSPACE->value,
             ],
             capabilitiesOptional: [
                 HermesWorkforceCapability::ENRICH_PORTFOLIO->value,
+                HermesWorkforceCapability::MANAGE_DRIVE_WORKSPACE->value,
             ],
             routingStrategy: 'all',
         ));
@@ -182,6 +185,18 @@ class CapabilityRegistry
             capabilitiesOptional: [
                 HermesWorkforceCapability::SEND_CHAIN_COMPLETE_NOTIFICATION->value,
             ],
+            routingStrategy: 'all',
+        ));
+
+        // ─── DriveWorkspace — Sprint 4.4 ────────────────────────────────
+
+        // Drive workspace created event (emitted after DriveAgent creates workspace)
+        $this->bind(new CapabilityBinding(
+            eventName: HermesWorkforceEventVocabulary::WORKFORCE_WORKSPACE_CREATED->value,
+            capabilitiesRequired: [
+                HermesWorkforceCapability::MANAGE_DRIVE_WORKSPACE->value,
+            ],
+            capabilitiesOptional: [],
             routingStrategy: 'all',
         ));
 

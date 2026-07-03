@@ -116,7 +116,7 @@ class WorkforceExecutionLog extends BaseModel
     {
         $completedAt = now();
         $durationMs = $this->started_at
-            ? round($completedAt->floatDiffInMilliseconds($this->started_at), 2)
+            ? round($completedAt->diffInMilliseconds($this->started_at, true) / 1000, 2)
             : 0;
 
         $this->update([
@@ -132,7 +132,7 @@ class WorkforceExecutionLog extends BaseModel
     {
         $completedAt = now();
         $durationMs = $this->started_at
-            ? round($completedAt->floatDiffInMilliseconds($this->started_at), 2)
+            ? round($completedAt->diffInMilliseconds($this->started_at, true) / 1000, 2)
             : 0;
 
         $this->update([

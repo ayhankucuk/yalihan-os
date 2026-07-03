@@ -11,6 +11,7 @@ use App\Services\Hermes\Handlers\GovernanceNotificationHandler;
 use App\Services\Hermes\Handlers\NotificationAgentHandler;
 use App\Services\Hermes\Handlers\TelegramNotificationHandler;
 use App\Services\Hermes\Handlers\Workforce\DescriptionAgent;
+use App\Services\Hermes\Handlers\Workforce\DriveAgent;
 use App\Services\Hermes\Handlers\Workforce\NotificationAgent;
 use App\Services\Hermes\Handlers\Workforce\PhotoAgent;
 use App\Services\Hermes\Handlers\Workforce\PortfolioAgent;
@@ -210,6 +211,20 @@ class AgentRegistry
             capabilities: [
                 HermesWorkforceCapability::SEND_PORTFOLIO_NOTIFICATION->value,
                 HermesWorkforceCapability::SEND_CHAIN_COMPLETE_NOTIFICATION->value,
+            ],
+            layer: 'workforce',
+        ));
+
+        // ─── DriveAgent — Sprint 4.4 ────────────────────────────────────
+        $this->register(new AgentRegistryEntry(
+            agentName: 'drive_agent',
+            agentClass: DriveAgent::class,
+            subscribedEvents: [
+                'portfolio.created',
+            ],
+            capabilities: [
+                HermesWorkforceCapability::CREATE_DRIVE_WORKSPACE->value,
+                HermesWorkforceCapability::MANAGE_DRIVE_WORKSPACE->value,
             ],
             layer: 'workforce',
         ));
