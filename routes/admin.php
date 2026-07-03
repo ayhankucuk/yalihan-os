@@ -762,6 +762,7 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])-
         Route::get('/{talep}/edit', [TalepController::class, 'edit'])->name('edit');
         Route::put('/{talep}', [TalepController::class, 'update'])->name('update');
         Route::delete('/{talep}', [TalepController::class, 'destroy'])->name('destroy');
+        Route::post('/{talep}/restore', [TalepController::class, 'restore'])->name('restore');
         Route::get('/{talep}/eslesen', [TalepController::class, 'eslesen'])->name('eslesen');
         Route::get('/{talep}/matches', [TalepController::class, 'showMatches'])->name('matches'); // 🎯 Eşleşme Kokpiti
         Route::get('/search', [TalepController::class, 'search'])->name('search');

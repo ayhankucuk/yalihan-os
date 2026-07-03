@@ -96,13 +96,6 @@ class TalepAuthorityService
         });
     }
 
-    /**
-     * 🛰️ Delete a Talep (Authority Entrypoint)
-     *
-     * @param Talep $talep
-     * @param User|null $actor
-     * @return bool
-     */
     public function deleteTalep(Talep $talep, ?User $actor = null): bool
     {
         $this->blockAgentWrite(__FUNCTION__);
@@ -121,7 +114,30 @@ class TalepAuthorityService
             }
 
             return (bool) $result;
-        } );
+        });
+    }
+
+    /**
+     * Sprint 4.2: Restore soft-deleted Talep
+     *
+     * @param Talep $talep
+     * @param User|null $actor
+     * @return bool
+     */
+    public function restoreTalep(Talep $talep, ?User $actor = null): bool
+    {
+        $this->blockAgentWrite(__FUNCTION__);
+
+        $restored = (bool) $talep->restore();
+
+        if ($restored) {
+            $this->logActivity('restored', $talep, $actor, [
+                'talep_id' => $talep->id,
+                'baslik' => $talep->baslik,
+            ]);
+        }
+
+        return $restored;
     }
 
     /**
