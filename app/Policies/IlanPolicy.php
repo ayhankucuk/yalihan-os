@@ -69,6 +69,30 @@ class IlanPolicy
     }
 
     /**
+     * Sprint 4.2: Real CRUD Certification — Restore action
+     */
+    public function restore(User $user, Ilan $ilan): bool
+    {
+        if ($user->hasRole(['admin', 'super-admin'])) {
+            return true;
+        }
+
+        return $user->id === ($ilan->danisman_id ?? 0);
+    }
+
+    /**
+     * Sprint 4.2: Real CRUD Certification — Archive action
+     */
+    public function archive(User $user, Ilan $ilan): bool
+    {
+        if ($user->hasRole(['admin', 'super-admin'])) {
+            return true;
+        }
+
+        return $user->id === ($ilan->danisman_id ?? 0);
+    }
+
+    /**
      * [YALIHAN_REPORTING_0206] Rapor görüntüleme yetkisi
      */
     public function viewIlanRaporu(User $user, Ilan $ilan): bool

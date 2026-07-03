@@ -319,6 +319,18 @@ class IlanRepository
     }
 
     /**
+     * Restore listing from archive — ARSIV → TASLAK
+     *
+     * Sprint 4.2: Real CRUD Certification
+     * P0 fix: Missing restore endpoint
+     */
+    public function restore(int $id): Ilan
+    {
+        $ilan = $this->applyOwnershipScope($this->model->newQuery())->findOrFail($id);
+        return $this->lifecycle->restore($ilan);
+    }
+
+    /**
      * Toggle featured state
      */
     public function toggleFeatured(int $id, bool $featured = true): Ilan

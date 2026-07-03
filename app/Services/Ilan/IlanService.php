@@ -309,6 +309,35 @@ class IlanService
     }
 
     /**
+     * ✅ Thin Controller: Restore listing from archive.
+     *
+     * Sprint 4.2: Real CRUD Certification
+     * P0 fix: Missing restore endpoint
+     *
+     * @param Ilan $ilan
+     * @return Ilan
+     */
+    public function restoreListing(Ilan $ilan): Ilan
+    {
+        $ilanRepository = app(\App\Repositories\IlanRepository::class);
+        return $ilanRepository->restore($ilan->id);
+    }
+
+    /**
+     * ✅ Thin Controller: Archive listing.
+     *
+     * Sprint 4.2: Real CRUD Certification
+     *
+     * @param Ilan $ilan
+     * @return Ilan
+     */
+    public function archiveListing(Ilan $ilan): Ilan
+    {
+        $ilanRepository = app(\App\Repositories\IlanRepository::class);
+        return $ilanRepository->archive($ilan->id);
+    }
+
+    /**
      * Invalidate list cache
      *
      * @return void

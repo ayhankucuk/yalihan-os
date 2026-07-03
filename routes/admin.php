@@ -475,6 +475,8 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])-
     // ✅ Mahrem Bilgiler ve Portal ID Yönetimi (Resource dışı özel route'lar)
     Route::post('/ilanlar/{ilan}/owner-private', [\App\Http\Controllers\Admin\IlanCrudController::class, 'ownerPrivate'])->name('ilanlar.owner-private')->middleware('can:viewPrivateListingData,ilan');
     Route::post('/ilanlar/{ilan}/portal-ids', [\App\Http\Controllers\Admin\IlanCrudController::class, 'updatePortalIds'])->name('ilanlar.portal-ids')->middleware('can:edit-ilanlar');
+    Route::post('/ilanlar/{ilan}/restore', [\App\Http\Controllers\Admin\IlanCrudController::class, 'restore'])->name('ilanlar.restore');
+    Route::post('/ilanlar/{ilan}/archive', [\App\Http\Controllers\Admin\IlanCrudController::class, 'archive'])->name('ilanlar.archive');
 
 
     // Test route for category cascading
