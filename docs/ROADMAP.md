@@ -78,7 +78,7 @@ Sprint 4.3 (AI Workforce Zinciri) planlanıyor.
 
 ---
 
-## SPRINT 4 — 🔄 FAZ 2 ÜRÜN AŞAMASI (2026-06-25 → )
+## SPRINT 4 — 🔄 FAZ 2 ÜRÜN AŞAMASI + ERA III (2026-06-25 → )
 
 Risk: HIGH. ADR + tam test coverage şart.
 
@@ -90,6 +90,28 @@ Risk: HIGH. ADR + tam test coverage şart.
 | Sprint 4.3 | AI Workforce Zinciri | ⏳ Planlanıyor |
 | Sprint 4.4 | Dashboard + Event Monitoring | ⏳ Planlanıyor |
 | Sprint 4.5 | Telegram Entegrasyonu | ⏳ Planlanıyor |
+| **Sprint 4.6** | **Property Digital Twin Cockpit** | **🔄 AKTİF** |
+
+---
+
+## SPRINT 4.6 — 🔄 PROPERTY DIGITAL TWIN COCKPIT (2026-07-04)
+
+**ERA III — Digital Property Intelligence başladı.**
+
+SAAB Board Resolution: Property Digital Twin Cockpit APPROVED.
+
+### Mission
+"Build the first production-grade Property Digital Twin Cockpit — operational center for every Workspace."
+
+### In Scope
+- Workspace Dashboard (`/admin/workspace/{id}`)
+- Timeline Component (Hermes event history)
+- Health Score Component
+- Workspace Metrics/Summary/Events API endpoints
+- Dashboard Tests
+
+### Out of Scope
+- Telegram, Async Queue, Drive Sync, New AI Agents
 
 ---
 
@@ -112,25 +134,75 @@ Risk: HIGH. ADR + tam test coverage şart.
 
 ---
 
-## SPRINT 4.3 — AI Workforce Zinciri (Planlanıyor)
+## Sprint Roadmap — ERA III & Beyond
 
 ```
-Yeni İlan
-    ↓
-PortfolioCreated Event
-    ↓
-Hermes (Event Broker)
-    ↓
-Photo Agent (görsel analiz)
-    ↓
-Description Agent (içerik üretimi)
-    ↓
-Notification Agent (bildirim)
-    ↓
-Dashboard (sonuç görünümü)
-    ↓
-Telegram (opsiyonel bildirim)
+Sprint 4.6 → Property Digital Twin Cockpit     [🔄 AKTİF]
+Sprint 4.7 → Async Queue + Event Replay      [⏳ Planlanıyor]
+Sprint 4.8 → Google Drive & Docs Integration [⏳ Planlanıyor]
+Sprint 4.9 → Telegram Production             [⏳ Planlanıyor]
+Sprint 5.0 → İlk Canlı Müşteri Pilotu     [⏳ Planlanıyor]
 ```
+
+---
+
+## Sprint 4.7 — Async Queue + Event Replay (Planlanıyor)
+
+**Mission:** Event Replay Engine + Queue reliability
+
+### In Scope
+- Async event processing reliability
+- Dead Letter Queue (DLQ) replay
+- Event idempotency verification
+- Queue monitoring
+
+### Out of Scope
+- Telegram
+- Drive integration
+
+---
+
+## Sprint 4.8 — Google Drive & Docs Integration (Planlanıyor)
+
+**Mission:** Real document sync with Google Drive
+
+### In Scope
+- Drive OAuth integration
+- Auto-upload property documents
+- Title deed → Drive
+- Energy certificate → Drive
+
+### Out of Scope
+- Telegram
+- Event Replay
+
+---
+
+## Sprint 4.9 — Telegram Production (Planlanıyor)
+
+**Mission:** Full Telegram bot in production
+
+### In Scope
+- Telegram bot webhook
+- Notification pipeline
+- Agent status alerts
+- Real-time updates
+
+### Out of Scope
+- Drive integration
+- Event Replay
+
+---
+
+## Sprint 5.0 — İlk Canlı Müşteri Pilotu
+
+**Mission:** First real user in production
+
+### In Scope
+- Production deployment
+- Real user onboarding
+- Feedback collection
+- Sprint 5.1 backlog planning
 
 ---
 
