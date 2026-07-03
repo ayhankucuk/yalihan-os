@@ -198,6 +198,9 @@ class CopilotOrchestrator
         if (in_array($contextType, ['crm-detail', 'crm-edit', 'crm-list', 'crm-dashboard', 'dashboard'])) {
             $modules[] = 'crm';
         }
+        if ($contextType === 'generic') {
+            $modules[] = 'generic';
+        }
 
         return $modules;
     }

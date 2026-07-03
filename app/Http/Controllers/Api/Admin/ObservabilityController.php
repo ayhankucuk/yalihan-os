@@ -15,6 +15,7 @@ use App\Services\Resilience\CircuitBreaker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class ObservabilityController extends Controller
 {
@@ -40,7 +41,7 @@ class ObservabilityController extends Controller
         $circuitBreakerStates = [];
         foreach ($providers as $provider) {
             $circuitBreakerStates[$provider] = [
-                'state' => $this->circuitBreaker->getState($provider),
+                'state' => $this->circuitBreaker->getState($provider), // context7-ignore: CircuitBreaker state enum key
                 'failures' => (int) Cache::get("circuit_breaker:failures:{$provider}", 0),
             ];
         }
@@ -67,7 +68,7 @@ class ObservabilityController extends Controller
             Cache::put('observability_ping', 'pong', 5);
             $cacheWorking = Cache::get('observability_ping') === 'pong';
         } catch (\Throwable $e) {
-            // Ignore and leave false
+            Log::warning('Observability cache probe failed', ['error' => $e->getMessage()]);
         }
 
         return response()->json([
@@ -79,7 +80,7 @@ class ObservabilityController extends Controller
                 'ai_telemetry' => $aiTelemetry,
                 'database' => $dbStats,
                 'cache' => [
-                    'status' => $cacheWorking ? 'healthy' : 'degraded',
+                    'durum' => $cacheWorking ? 'healthy' : 'degraded',
                 ]
             ]
         ]);

@@ -51,7 +51,7 @@ class FeatureFlagService
      */
     public function enable(string $key): void
     {
-        FeatureFlag::updateOrCreate(['key' => $key], ['is_enabled' => true]);
+        FeatureFlag::updateOrCreate(['key' => $key], ['aktiflik_durumu' => true]);
         $this->clearCache($key);
     }
 
@@ -60,7 +60,7 @@ class FeatureFlagService
      */
     public function disable(string $key): void
     {
-        FeatureFlag::updateOrCreate(['key' => $key], ['is_enabled' => false]);
+        FeatureFlag::updateOrCreate(['key' => $key], ['aktiflik_durumu' => false]);
         $this->clearCache($key);
     }
 

@@ -232,10 +232,10 @@
 - **Risk:** 🔴 HIGH — Production workflow bu görevlere bağlı
 - **Durum:** ⏳ AÇIK (#21-25)
 
-### 36. Finans Komisyonlar — Eksik Admin Blade View (B-007)
+### 36. Finans Komisyonlar — Eksik Admin Blade View (B-007) ✅ KAPALI (2026-07-03)
 - **Kaynak:** Local smoke test 2026-06-24
 - **Sorun:** [`KomisyonController::index()`](app/Modules/Finans/Controllers/KomisyonController.php:35) sadece `JsonResponse` döndürüyor; Blade view yok
 - **URL:** `GET /admin/finans/komisyonlar` → ham JSON yanıt
-- **Çözüm:** `resources/views/admin/finans/komisyonlar/index.blade.php` oluştur + Alpine.js fetch mimarisi (`islemler` sayfası pattern)
-- **Risk:** 🟡 MEDIUM — API çalışıyor, sadece admin UI eksik
-- **Durum:** ⏳ AÇIK
+- **Çözüm:** `resources/views/admin/finans/komisyonlar/index.blade.php` Alpine.js fetch mimarisi + istatistikler, filtreler, pagination, approve/pay aksiyonları. Ek olarak: create, show, edit view'ları + `/api/admin/komisyonlar` API routes.
+- **Risk:** 🟢 LOW — Admin UI tamamlandı
+- **Durum:** ✅ KAPALI (Sprint 4.1 — 2026-07-03)

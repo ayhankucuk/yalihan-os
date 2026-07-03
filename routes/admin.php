@@ -983,7 +983,21 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])-
             Route::post('/ai/summary', [\App\Modules\Finans\Controllers\FinansalIslemController::class, 'aiGenerateSummary'])->name('ai.summary');
         });
 
-        // Komisyonlar (Commissions) - REMOVED (views deleted, module deprecated)
+        // Komisyonlar (Commissions)
+        Route::prefix('/komisyonlar')->name('komisyonlar.')->group(function () {
+            Route::get('/', function () {
+                return view('admin.finans.komisyonlar.index');
+            })->name('index');
+            Route::get('/create', function () {
+                return view('admin.finans.komisyonlar.create');
+            })->name('create');
+            Route::get('/{id}', function ($id) {
+                return view('admin.finans.komisyonlar.show', ['id' => $id]);
+            })->name('show');
+            Route::get('/{id}/edit', function ($id) {
+                return view('admin.finans.komisyonlar.edit', ['id' => $id]);
+            })->name('edit');
+        });
     });
 
     // Sistem Ayarları
