@@ -1,6 +1,41 @@
 # Governance Progress Tracker
-**Son Güncelleme:** 2026-07-03 (Oturum 66 — Sprint 4.1 Kapanışı)
-**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **Sprint 4.1 COMPLETE** + 🚀 **Faz 2 Ürün Aşaması**
+**Son Güncelleme:** 2026-07-03 (Oturum 67 — Sprint 4.2 Kapanışı)
+**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **Sprint 4.2 COMPLETE** + 🚀 **Faz 2 Ürün Aşaması**
+---
+
+## ✅ Oturum 67 — Sprint 4.2 Real CRUD Certification (2026-07-03) ✅ CLOSED
+
+### Sprint 4.2 Tamamlandı — Owner Portal CRUD Lifecycle Fonksiyonel
+
+### ✅ Tamamlanan İşler
+
+| Dosya | Değişiklik |
+|-------|------------|
+| `resources/views/owner/ilanlar/index.blade.php` | `ucfirst()` → `$ilan->yayin_durumu?->label()` (TypeError fix) |
+| `resources/views/owner/ilanlar/show.blade.php` | `ucfirst()` → `$ilan->yayin_durumu?->label()` (TypeError fix) |
+| `resources/views/owner/ilanlar/edit.blade.php` | `ucfirst()` → `->label()` + string comparison → enum comparison |
+| `app/Http/Controllers/Owner/OwnerIlanController.php` | `edit()`, `update()`, `destroy()`, `readiness()` metodları eklendi |
+| `app/Http/Requests/Owner/UpdateOwnerIlanRequest.php` | `failedAuthorization()` → 404 |
+| `app/Policies/IlanPolicy.php` | `update()` ownership: `danisman_id` → `user_id` |
+| `routes/web.php` | `{id}` → `{ilan}` (route model binding) |
+| `tests/Feature/Owner/OwnerIlanCrudTest.php` | `IlanKategori` + `Il` seeding |
+| `docs/sprints/SPRINT_4.2_REAL_CRUD_CERTIFICATION/` | YSYS sprint dokümanları (8 dosya) |
+
+### 📊 Test Sonuçları
+
+| Metric | Pre-Sprint | Post-Sprint |
+|--------|------------|-------------|
+| OwnerIlanCrudTest | 9/20 pass | **12/15 pass** |
+| Regression | — | **0 new failures** |
+
+**3 kalan hata pre-existing:** SQLite `yazlik_details.deleted_at`. Sprint kapsamı dışında.
+
+### 🔒 Uyumluluk
+- ✅ sab:dirty: 0 new violations in changed files
+- ✅ Owner Portal CRUD routes: tamamı fonksiyonel
+- ✅ Route model binding aktif
+- ✅ YSYS sprint yapısı: `docs/sprints/SPRINT_4.2_REAL_CRUD_CERTIFICATION/`
+
 ---
 
 ## ✅ Oturum 66 — Sprint 4.1 Alpine.js UI Stabilization (2026-07-03) ✅ COMPLETE
