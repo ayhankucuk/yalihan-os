@@ -656,6 +656,7 @@ Route::prefix('admin')->name('api.admin.')->middleware(['auth', 'admin', 'role:a
         Route::post('/', [KomisyonController::class, 'store'])->name('store');
         Route::put('/{id}', [KomisyonController::class, 'update'])->name('update');
         Route::delete('/{id}', [KomisyonController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/restore', [KomisyonController::class, 'restore'])->name('restore');
         Route::post('/{id}/approve', [KomisyonController::class, 'approve'])->name('approve');
         Route::post('/{id}/pay', [KomisyonController::class, 'pay'])->name('pay');
         Route::post('/{id}/recalculate', [KomisyonController::class, 'recalculate'])->name('recalculate');

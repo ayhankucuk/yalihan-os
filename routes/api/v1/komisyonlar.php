@@ -18,6 +18,7 @@ Route::prefix('admin/komisyonlar')->middleware(['auth:sanctum', 'can:manage-ilan
     Route::post('/', [KomisyonController::class, 'store'])->name('api.admin.komisyonlar.store');
     Route::put('/{id}', [KomisyonController::class, 'update'])->name('api.admin.komisyonlar.update');
     Route::delete('/{id}', [KomisyonController::class, 'destroy'])->name('api.admin.komisyonlar.destroy');
+    Route::post('/{id}/restore', [KomisyonController::class, 'restore'])->name('api.admin.komisyonlar.restore');
 
     // Status management
     Route::post('/{id}/approve', [KomisyonController::class, 'approve'])->name('api.admin.komisyonlar.approve');

@@ -20,6 +20,14 @@ trait BelongsToTenant
                 $model->tenant_id = $tenantService->getTenant()->id;
             }
         });
+
+        // Re-assign tenant_id on restore so scope can find the record
+        static::restoring(function ($model) {
+            $tenantService = app(TenantContextService::class);
+            if ($tenantService->hasTenant() && empty($model->tenant_id)) {
+                $model->tenant_id = $tenantService->getTenant()->id;
+            }
+        });
     }
 
     /**
