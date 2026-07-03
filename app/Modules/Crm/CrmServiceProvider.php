@@ -71,7 +71,7 @@ class CrmServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(KisiService::class, function ($app) {
-            return new KisiService;
+            return new KisiService($app->make(\App\Repositories\KisiRepository::class));
         });
 
         $this->app->singleton(EtiketService::class, function ($app) {

@@ -422,6 +422,61 @@ class KisiController extends AdminController
     }
 
     /**
+     * Restore soft-deleted Kisi.
+     *
+     * Sprint 4.2: Real CRUD Certification
+     * P0 fix: Missing restore endpoint
+     */
+    public function restore(Request $request, $kisiId)
+    {
+        try {
+            $kisi = $this->resolve($kisiId, withTrashed: true);
+
+            $this->authorize('restore', $kisi);
+
+            $kisiAdi = $kisi->ad . ' ' . $kisi->soyad;
+            $restored = $this->kisiService->restoreKisi((int) $kisi->id);
+
+            if (!$restored) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Kişi geri yüklenemedi.',
+                    ], 422);
+                }
+
+                return redirect()
+                    ->route('admin.kisiler.index')
+                    ->with('error', 'Kişi geri yüklenemedi.');
+            }
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $kisiAdi . ' başarıyla geri yüklendi.',
+                ]);
+            }
+
+            return redirect()
+                ->route('admin.kisiler.index')
+                ->with('success', $kisiAdi . ' başarıyla geri yüklendi.');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kişi geri yüklenirken hata oluştu: ' . $e->getMessage(),
+                ], 500);
+            }
+
+            return redirect()
+                ->route('admin.kisiler.index')
+                ->with('error', 'Kişi geri yüklenirken hata oluştu: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Search persons
      * Context7: Kişi arama endpoint
      *

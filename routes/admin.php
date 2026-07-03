@@ -711,6 +711,7 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])-
         Route::get('/{kisiId}/edit', [KisiController::class, 'edit'])->whereNumber('kisiId')->name('edit');
         Route::put('/{kisiId}', [KisiController::class, 'update'])->whereNumber('kisiId')->name('update');
         Route::delete('/{kisiId}', [KisiController::class, 'destroy'])->whereNumber('kisiId')->name('destroy');
+        Route::post('/{kisiId}/restore', [KisiController::class, 'restore'])->whereNumber('kisiId')->name('restore');
     });
 
     // 🗑️ Site Özellikleri - REMOVED (Now using Polymorphic Features System)
