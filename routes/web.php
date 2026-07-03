@@ -672,17 +672,17 @@ Route::prefix('owner')->name('owner.')->middleware(['web', 'check.owner'])->grou
     Route::get('/ilanlar', [OwnerIlanController::class, 'index'])->name('ilanlar.index');
     Route::get('/ilanlar/create', [OwnerIlanController::class, 'create'])->name('ilanlar.create');
     Route::post('/ilanlar', [OwnerIlanController::class, 'store'])->name('ilanlar.store');
-    Route::get('/ilanlar/{id}', [OwnerIlanController::class, 'show'])->name('ilanlar.show');
-    Route::get('/ilanlar/{id}/edit', [OwnerIlanController::class, 'edit'])->name('ilanlar.edit');
-    Route::put('/ilanlar/{id}', [OwnerIlanController::class, 'update'])->name('ilanlar.update');
-    Route::delete('/ilanlar/{id}', [OwnerIlanController::class, 'destroy'])->name('ilanlar.destroy');
+    Route::get('/ilanlar/{ilan}', [OwnerIlanController::class, 'show'])->name('ilanlar.show');
+    Route::get('/ilanlar/{ilan}/edit', [OwnerIlanController::class, 'edit'])->name('ilanlar.edit');
+    Route::put('/ilanlar/{ilan}', [OwnerIlanController::class, 'update'])->name('ilanlar.update');
+    Route::delete('/ilanlar/{ilan}', [OwnerIlanController::class, 'destroy'])->name('ilanlar.destroy');
 
     // 📷 Portföy Fotoğrafları (Sprint 3.4.2)
     Route::post('/ilanlar/{ilan}/photos', [OwnerPhotoController::class, 'upload'])->name('ilanlar.photos.upload');
     Route::delete('/ilanlar/{ilan}/photos/{photo}', [OwnerPhotoController::class, 'delete'])->name('ilanlar.photos.delete');
 
     // 🧠 Portföy Hazırlık Analizi (Sprint 3.4.3)
-    Route::get('/ilanlar/{ilan}/readiness', [OwnerIntelligenceController::class, 'readiness'])->name('ilanlar.readiness');
+    Route::get('/ilanlar/{ilan}/readiness', [OwnerIlanController::class, 'readiness'])->name('ilanlar.readiness');
 
     // 📩 Teklifler & Talepler (Task #16)
     Route::get('/teklifler', [OwnerTeklifController::class, 'index'])->name('teklifler.index');

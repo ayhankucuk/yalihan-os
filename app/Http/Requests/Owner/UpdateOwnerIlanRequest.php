@@ -3,8 +3,10 @@
 namespace App\Http\Requests\Owner;
 
 use App\Models\Ilan;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * UpdateOwnerIlanRequest
@@ -27,6 +29,15 @@ class UpdateOwnerIlanRequest extends FormRequest
         }
 
         return $this->user()?->can('update', $ilan) ?? false;
+    }
+
+    /**
+     * Handle a failed authorization attempt — return 404 instead of 403.
+     * Owner ownership is a data existence question, not a permission question.
+     */
+    protected function failedAuthorization(): void
+    {
+        throw new NotFoundHttpException();
     }
 
     public function rules(): array

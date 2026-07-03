@@ -20,12 +20,12 @@
         <p class="mt-1 text-sm text-gray-500 dark:text-slate-400">
             İlan No: <span class="font-medium text-gray-700 dark:text-slate-300">#{{ $ilan->ilan_no ?? $ilan->id }}</span>
             &nbsp;·&nbsp;
-            Durum: <span class="font-medium text-gray-700 dark:text-slate-300">{{ ucfirst($ilan->yayin_durumu?->value ?? 'taslak') }}</span>
+            Durum: <span class="font-medium text-gray-700 dark:text-slate-300">{{ $ilan->yayin_durumu?->label() ?? 'Taslak' }}</span>
         </p>
     </div>
 
     {{-- Silme Butonu --}}
-    @if($ilan->yayin_durumu !== 'yayinda')
+    @if($ilan->yayin_durumu !== App\Enums\IlanDurumu::YAYINDA)
     <form action="{{ route('owner.ilanlar.destroy', $ilan->id) }}" method="POST"
           onsubmit="return confirm('Bu ilanı silmek istediğinizden emin misiniz?')">
         @csrf

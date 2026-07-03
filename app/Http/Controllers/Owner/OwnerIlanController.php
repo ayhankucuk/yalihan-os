@@ -7,12 +7,15 @@ namespace App\Http\Controllers\Owner;
  * Write actions (create, store) delegate to IlanService → IlanCrudService — SAB zinciri korunur.
  */
 
+use App\Enums\IlanDurumu;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Owner\StoreOwnerIlanRequest;
+use App\Http\Requests\Owner\UpdateOwnerIlanRequest;
 use App\Models\Ilan;
 use App\Models\IlanKategori;
 use App\Models\Il;
 use App\Services\Ilan\IlanService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -48,15 +51,16 @@ class OwnerIlanController extends Controller
     /**
      * İlan detaylarını gösterir.
      */
-    public function show($id): View
+    public function show(Ilan $ilan): View
     {
         $user = auth()->user();
 
-        // İlanın bu mülk sahibine ait olup olmadığını kontrol et
-        $ilan = Ilan::with(['il', 'ilce', 'mahalle', 'anaKategori', 'altKategori', 'fotograflar', 'danisman'])
-            ->where('id', $id)
-            ->where('user_id', $user->id)
-            ->firstOrFail();
+        // Ownership check: 404 if not owned
+        if ($ilan->user_id !== $user->id) {
+            abort(404);
+        }
+
+        $ilan->load(['il', 'ilce', 'mahalle', 'anaKategori', 'altKategori', 'fotograflar', 'danisman']);
 
         return view('owner.ilanlar.show', compact('ilan'));
     }
@@ -100,5 +104,92 @@ class OwnerIlanController extends Controller
 
         return to_route('owner.ilanlar.show', $result['id'])
             ->with('success', $result['message'] ?? 'Portföy başarıyla oluşturuldu.');
+    }
+
+    /**
+     * İlan düzenleme formunu gösterir.
+     *
+     * SAB v6.1.2 — Sprint 4.2
+     * Ownership check: 404 if not owned by authenticated user.
+     */
+    public function edit(Ilan $ilan): View
+    {
+        $user = auth()->user();
+        if ($ilan->user_id !== $user->id) {
+            abort(404);
+        }
+
+        $anaKategoriler = IlanKategori::whereNull('parent_id')
+            ->with('children')
+            ->orderBy('display_order') // context7-ignore
+            ->get();
+
+        $iller = Il::orderBy('il_adi')->select(['id', 'il_adi'])->get();
+
+        return view('owner.ilanlar.edit', [
+            'ilan'            => $ilan,
+            'anaKategoriler' => $anaKategoriler,
+            'iller'          => $iller,
+        ]);
+    }
+
+    /**
+     * İlanı günceller.
+     *
+     * SAB v6.1.2 — Sprint 4.2
+     * Write authority: IlanService::updateListing() → IlanCrudService::update()
+     * UpdateOwnerIlanRequest strips yayin_durumu/danisman_id/user_id automatically.
+     * Ownership check in UpdateOwnerIlanRequest::failedAuthorization() → 404.
+     */
+    public function update(UpdateOwnerIlanRequest $request, Ilan $ilan): RedirectResponse
+    {
+        $ilanService = app(IlanService::class);
+        $result = $ilanService->updateListing($ilan, $request->validated());
+
+        return to_route('owner.ilanlar.show', $ilan->id)
+            ->with('success', $result['message'] ?? 'Portföy başarıyla güncellendi.');
+    }
+
+    /**
+     * İlanı soft-delete olarak siler.
+     *
+     * SAB v6.1.2 — Sprint 4.2
+     * Write authority: IlanService::deleteListing() → IlanCrudService
+     * Ownership check: 404 if not owned by authenticated user.
+     */
+    public function destroy(Ilan $ilan): RedirectResponse
+    {
+        $user = auth()->user();
+        if ($ilan->user_id !== $user->id) {
+            abort(404);
+        }
+
+        $ilanService = app(IlanService::class);
+        $ilanService->deleteListing($ilan);
+
+        return to_route('owner.ilanlar.index')
+            ->with('success', 'Portföy başarıyla silindi.');
+    }
+
+    /**
+     * Portföy hazırlık analizini döndürür (JSON).
+     *
+     * SAB v6.1.2 — Sprint 4.2
+     * Ownership check: 404 if not owned by authenticated user.
+     */
+    public function readiness(Ilan $ilan): JsonResponse
+    {
+        $user = auth()->user();
+        if ($ilan->user_id !== $user->id) {
+            abort(404);
+        }
+
+        $ilanService = app(IlanService::class);
+        $data = $ilanService->getDetailedListingAnalysis($ilan);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $data,
+        ]);
     }
 }
