@@ -10,6 +10,8 @@ use App\Services\Hermes\Handlers\AnalyticsHandler;
 use App\Services\Hermes\Handlers\GovernanceNotificationHandler;
 use App\Services\Hermes\Handlers\NotificationAgentHandler;
 use App\Services\Hermes\Handlers\TelegramNotificationHandler;
+use App\Services\Hermes\Handlers\Workflow\PropertyScoreAgent;
+use App\Services\Hermes\Handlers\Workflow\PublishDecisionAgent;
 use App\Services\Hermes\Handlers\Workforce\DescriptionAgent;
 use App\Services\Hermes\Handlers\Workforce\DriveAgent;
 use App\Services\Hermes\Handlers\Workforce\NotificationAgent;
@@ -157,65 +159,14 @@ class AgentRegistry
             enabled: false, // Stub: disabled by default
         ));
 
-        // ─── AI Workforce Agents — Sprint 4.3 ──────────────────────────
+        // ─── AI Workforce Agents — Sprint 4.5 Workspace-First Chain ───────
+        //
+        // New chain: PropertyWorkspaceCreated → PhotoAgent → DescriptionAgent
+        //          → PropertyScoreAgent → PublishDecisionAgent → NotificationAgent
+        //
+        // Old Sprint 4.3 chain (portfolio.created → workforce.*_requested) is deprecated.
 
-        // PortfolioAgent — initiates the workforce chain
-        $this->register(new AgentRegistryEntry(
-            agentName: 'portfolio_agent',
-            agentClass: PortfolioAgent::class,
-            subscribedEvents: [
-                'portfolio.created',
-            ],
-            capabilities: [
-                HermesWorkforceCapability::ANALYZE_PORTFOLIO->value,
-                HermesWorkforceCapability::ENRICH_PORTFOLIO->value,
-            ],
-            layer: 'workforce',
-        ));
-
-        // PhotoAgent — analyzes listing photos
-        $this->register(new AgentRegistryEntry(
-            agentName: 'photo_agent',
-            agentClass: PhotoAgent::class,
-            subscribedEvents: [
-                'workforce.photo_analysis_requested',
-            ],
-            capabilities: [
-                HermesWorkforceCapability::ANALYZE_PHOTOS->value,
-                HermesWorkforceCapability::SUGGEST_PHOTO_IMPROVEMENTS->value,
-            ],
-            layer: 'workforce',
-        ));
-
-        // DescriptionAgent — analyzes and improves listing descriptions
-        $this->register(new AgentRegistryEntry(
-            agentName: 'description_agent',
-            agentClass: DescriptionAgent::class,
-            subscribedEvents: [
-                'workforce.description_analysis_requested',
-            ],
-            capabilities: [
-                HermesWorkforceCapability::GENERATE_DESCRIPTION->value,
-                HermesWorkforceCapability::IMPROVE_DESCRIPTION->value,
-            ],
-            layer: 'workforce',
-        ));
-
-        // NotificationAgent — final notification on chain completion
-        $this->register(new AgentRegistryEntry(
-            agentName: 'workforce_notification_agent',
-            agentClass: NotificationAgent::class,
-            subscribedEvents: [
-                'workforce.notification_requested',
-            ],
-            capabilities: [
-                HermesWorkforceCapability::SEND_PORTFOLIO_NOTIFICATION->value,
-                HermesWorkforceCapability::SEND_CHAIN_COMPLETE_NOTIFICATION->value,
-            ],
-            layer: 'workforce',
-        ));
-
-        // ─── DriveAgent — Sprint 4.4 ────────────────────────────────────
+        // DriveAgent — creates workspace, emits PropertyWorkspaceCreated
         $this->register(new AgentRegistryEntry(
             agentName: 'drive_agent',
             agentClass: DriveAgent::class,
@@ -225,6 +176,77 @@ class AgentRegistry
             capabilities: [
                 HermesWorkforceCapability::CREATE_DRIVE_WORKSPACE->value,
                 HermesWorkforceCapability::MANAGE_DRIVE_WORKSPACE->value,
+            ],
+            layer: 'workforce',
+        ));
+
+        // PhotoAgent — subscribes workspace.created, emits photo_analysis.completed
+        $this->register(new AgentRegistryEntry(
+            agentName: 'photo_agent',
+            agentClass: PhotoAgent::class,
+            subscribedEvents: [
+                'workforce.workspace.created',
+            ],
+            capabilities: [
+                HermesWorkforceCapability::ANALYZE_PHOTOS->value,
+                HermesWorkforceCapability::SUGGEST_PHOTO_IMPROVEMENTS->value,
+            ],
+            layer: 'workforce',
+        ));
+
+        // DescriptionAgent — subscribes photo_analysis.completed, emits description.completed
+        $this->register(new AgentRegistryEntry(
+            agentName: 'description_agent',
+            agentClass: DescriptionAgent::class,
+            subscribedEvents: [
+                'workforce.photo_analysis.completed',
+            ],
+            capabilities: [
+                HermesWorkforceCapability::GENERATE_DESCRIPTION->value,
+                HermesWorkforceCapability::IMPROVE_DESCRIPTION->value,
+            ],
+            layer: 'workforce',
+        ));
+
+        // PropertyScoreAgent — subscribes both completions, emits property_score.calculated
+        $this->register(new AgentRegistryEntry(
+            agentName: 'property_score_agent',
+            agentClass: PropertyScoreAgent::class,
+            subscribedEvents: [
+                'workforce.photo_analysis.completed',
+                'workforce.description.completed',
+            ],
+            capabilities: [
+                HermesWorkforceCapability::CALCULATE_PROPERTY_SCORE->value,
+                HermesWorkforceCapability::ANALYZE_QUALITY->value,
+            ],
+            layer: 'workforce',
+        ));
+
+        // PublishDecisionAgent — subscribes property_score.calculated, emits publishing.decision_ready
+        $this->register(new AgentRegistryEntry(
+            agentName: 'publish_decision_agent',
+            agentClass: PublishDecisionAgent::class,
+            subscribedEvents: [
+                'workforce.property_score.calculated',
+            ],
+            capabilities: [
+                HermesWorkforceCapability::DECIDE_PUBLISHING->value,
+                HermesWorkforceCapability::EVALUATE_LISTING_QUALITY->value,
+            ],
+            layer: 'workforce',
+        ));
+
+        // NotificationAgent — subscribes publishing.decision_ready, notifies advisor
+        $this->register(new AgentRegistryEntry(
+            agentName: 'workforce_notification_agent',
+            agentClass: NotificationAgent::class,
+            subscribedEvents: [
+                'workforce.publishing.decision_ready',
+            ],
+            capabilities: [
+                HermesWorkforceCapability::SEND_PORTFOLIO_NOTIFICATION->value,
+                HermesWorkforceCapability::SEND_CHAIN_COMPLETE_NOTIFICATION->value,
             ],
             layer: 'workforce',
         ));

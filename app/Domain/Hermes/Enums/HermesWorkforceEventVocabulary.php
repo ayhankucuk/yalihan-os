@@ -26,6 +26,12 @@ enum HermesWorkforceEventVocabulary: string
     // ─── DriveWorkspace Events — Sprint 4.4 ─────────────────────────
     case WORKFORCE_WORKSPACE_CREATED = 'workforce.workspace.created';
 
+    // ─── Sprint 4.5 Digital Property Intelligence Events ────────────
+    case WORKFORCE_PHOTO_ANALYSIS_COMPLETED = 'workforce.photo_analysis.completed';
+    case WORKFORCE_DESCRIPTION_COMPLETED = 'workforce.description.completed';
+    case WORKFORCE_PROPERTY_SCORE_CALCULATED = 'workforce.property_score.calculated';
+    case WORKFORCE_PUBLISHING_DECISION_READY = 'workforce.publishing.decision_ready';
+
     /**
      * Get all event names as array
      */
@@ -48,11 +54,12 @@ enum HermesWorkforceEventVocabulary: string
     public function label(): string
     {
         return match ($this) {
-            self::WORKFORCE_PORTFOLIO_ANALYSIS_REQUESTED => 'AI Workforce: Portföy Analizi İstendi',
-            self::WORKFORCE_PHOTO_ANALYSIS_REQUESTED => 'AI Workforce: Fotoğraf Analizi İstendi',
-            self::WORKFORCE_DESCRIPTION_ANALYSIS_REQUESTED => 'AI Workforce: Açıklama Analizi İstendi',
-            self::WORKFORCE_NOTIFICATION_REQUESTED => 'AI Workforce: Bildirim İstendi',
-            self::WORKFORCE_WORKSPACE_CREATED => 'AI Workforce: Drive Çalışma Alanı Oluşturuldu',
+            self::WORKFORCE_WORKSPACE_CREATED => 'AI Workforce: Çalışma Alanı Oluşturuldu',
+            self::WORKFORCE_PHOTO_ANALYSIS_COMPLETED => 'AI Workforce: Fotoğraf Analizi Tamamlandı',
+            self::WORKFORCE_DESCRIPTION_COMPLETED => 'AI Workforce: Açıklama Analizi Tamamlandı',
+            self::WORKFORCE_PROPERTY_SCORE_CALCULATED => 'AI Workforce: Mülk Skoru Hesaplandı',
+            self::WORKFORCE_PUBLISHING_DECISION_READY => 'AI Workforce: Yayınlama Kararı Hazır',
+            default => $this->name, // Deprecated Sprint 4.3 events
         };
     }
 
@@ -62,11 +69,12 @@ enum HermesWorkforceEventVocabulary: string
     public function chainOrder(): int
     {
         return match ($this) {
-            self::WORKFORCE_PORTFOLIO_ANALYSIS_REQUESTED => 0,
-            self::WORKFORCE_PHOTO_ANALYSIS_REQUESTED => 1,
-            self::WORKFORCE_DESCRIPTION_ANALYSIS_REQUESTED => 2,
-            self::WORKFORCE_NOTIFICATION_REQUESTED => 3,
-            self::WORKFORCE_WORKSPACE_CREATED => 4,
+            self::WORKFORCE_WORKSPACE_CREATED => 0,
+            self::WORKFORCE_PHOTO_ANALYSIS_COMPLETED => 1,
+            self::WORKFORCE_DESCRIPTION_COMPLETED => 2,
+            self::WORKFORCE_PROPERTY_SCORE_CALCULATED => 3,
+            self::WORKFORCE_PUBLISHING_DECISION_READY => 4,
+            default => -1, // Deprecated
         };
     }
 }

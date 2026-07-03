@@ -4,28 +4,41 @@ namespace App\Services\Hermes\Handlers\Workforce;
 
 use App\Contracts\Hermes\HermesEventContract;
 use App\Contracts\Hermes\HermesHandlerContract;
-use App\Domain\Hermes\Enums\HermesWorkforceEventVocabulary;
+use App\Events\Workforce\PhotoAnalysisCompleted;
+use App\Events\Workforce\PropertyWorkspaceCreated;
 use App\Models\Hermes\WorkforceExecutionLog;
+use App\Models\PortfolioDriveWorkspace;
+use App\Services\Hermes\HermesService;
 use Illuminate\Support\Facades\Log;
 
 /**
- * PhotoAgent — AI Workforce Sprint 4.3
+ * PhotoAgent — AI Workforce Sprint 4.5
  *
- * Triggered by: workforce.photo_analysis_requested
- * Role: Analyzes listing photos and suggests improvements
+ * Subscribes to:
+ * - workforce.workspace.created (triggers after DriveAgent creates workspace)
+ *
+ * Emits:
+ * - workforce.photo_analysis.completed (downstream: DescriptionAgent)
+ *
+ * Role: Analyzes listing photos and suggests improvements.
+ * Updates workspace lifecycle: WORKSPACE_CREATED → MEDIA_READY
  *
  * No external API calls (vertical slice — rule-based).
  * Production: would call VisionAnalysisService.
  */
 class PhotoAgent implements HermesHandlerContract
 {
+    public function __construct(
+        private HermesService $hermesService,
+    ) {}
+
     /**
      * @inheritDoc
      */
     public function subscribesTo(): array
     {
         return [
-            HermesWorkforceEventVocabulary::WORKFORCE_PHOTO_ANALYSIS_REQUESTED->value,
+            'workforce.workspace.created',
         ];
     }
 
@@ -39,7 +52,9 @@ class PhotoAgent implements HermesHandlerContract
         $ilanId = $payload['ilan_id'] ?? null;
         $tenantId = $event->tenantId();
         $chainId = $payload['chain_id'] ?? null;
-        $portfolioAnalysis = $payload['portfolio_analysis'] ?? [];
+
+        // Load workspace
+        $workspace = $this->loadWorkspace($payload);
 
         // Record execution
         $execLog = WorkforceExecutionLog::create([
@@ -58,13 +73,13 @@ class PhotoAgent implements HermesHandlerContract
 
         try {
             // Rule-based photo analysis (production: VisionAnalysisService)
-            $ilanBaslik = $portfolioAnalysis['ilan_baslik'] ?? $payload['ilan_baslik'] ?? '';
-            $tier = $portfolioAnalysis['tier'] ?? 'standard';
+            $ilanBaslik = $payload['ilan_baslik'] ?? $workspace?->root_folder_name ?? '';
+            $tier = $this->classifyTier($ilanBaslik);
 
-            $result = [
+            $analysisResult = [
                 'ilan_id' => $ilanId,
                 'chain_id' => $chainId,
-                'photos_found' => 0, // No real photo data in vertical slice
+                'photos_found' => 0,
                 'recommendations' => $this->generatePhotoRecommendations($ilanBaslik, $tier),
                 'quality_score' => $this->calculateQualityScore($ilanBaslik, $tier),
                 'suggested_count' => $this->suggestPhotoCount($tier),
@@ -72,22 +87,36 @@ class PhotoAgent implements HermesHandlerContract
                 'analyzed_at' => now()->toIso8601String(),
             ];
 
-            $execLog->markCompleted($result);
+            // Update workspace: mark agent complete + auto-advance state
+            if ($workspace) {
+                $workspace->markAiAgentComplete('photo_agent', $analysisResult);
+            }
+
+            $execLog->markCompleted($analysisResult);
 
             Log::info('[PhotoAgent] Photo analysis complete', [
                 'ilan_id' => $ilanId,
-                'chain_id' => $chainId,
-                'quality_score' => $result['quality_score'],
-                'recommendations' => count($result['recommendations']),
+                'workspace_id' => $workspace?->getKey(),
+                'quality_score' => $analysisResult['quality_score'],
+                'lifecycle_state' => $workspace?->lifecycle_state?->value,
             ]);
+
+            // Emit PhotoAnalysisCompleted event
+            if ($workspace) {
+                $this->emitPhotoAnalysisCompleted($workspace, $analysisResult, [
+                    'ilan_id' => $ilanId,
+                    'chain_id' => $chainId,
+                ]);
+            }
 
             return [
                 'handler' => self::class,
                 'ilan_id' => $ilanId,
-                'chain_id' => $chainId,
-                'quality_score' => $result['quality_score'],
-                'recommendations' => $result['recommendations'],
-                'suggested_photo_count' => $result['suggested_count'],
+                'workspace_id' => $workspace?->getKey(),
+                'quality_score' => $analysisResult['quality_score'],
+                'recommendations' => $analysisResult['recommendations'],
+                'suggested_photo_count' => $analysisResult['suggested_count'],
+                'lifecycle_state' => $workspace?->lifecycle_state?->value,
                 'duration_ms' => round((microtime(true) - $startTime) * 1000, 2),
             ];
         } catch (\Throwable $e) {
@@ -95,14 +124,12 @@ class PhotoAgent implements HermesHandlerContract
 
             Log::error('[PhotoAgent] Photo analysis failed', [
                 'ilan_id' => $ilanId,
-                'chain_id' => $chainId,
                 'error' => $e->getMessage(),
             ]);
 
             return [
                 'handler' => self::class,
                 'ilan_id' => $ilanId,
-                'chain_id' => $chainId,
                 'error' => $e->getMessage(),
                 'duration_ms' => round((microtime(true) - $startTime) * 1000, 2),
             ];
@@ -117,18 +144,50 @@ class PhotoAgent implements HermesHandlerContract
         return false;
     }
 
-    private function generatePhotoRecommendations(string $baslik, string $tier): array
+    private function loadWorkspace(array $payload): ?PortfolioDriveWorkspace
+    {
+        $workspaceId = $payload['workspace_id'] ?? null;
+        $ilanId = $payload['ilan_id'] ?? null;
+
+        if ($workspaceId) {
+            return PortfolioDriveWorkspace::find($workspaceId);
+        }
+        if ($ilanId) {
+            return PortfolioDriveWorkspace::forPortfolio($ilanId)->first();
+        }
+        return null;
+    }
+
+    private function emitPhotoAnalysisCompleted(
+        PortfolioDriveWorkspace $workspace,
+        array $analysisResult,
+        array $metadata,
+    ): void {
+        $event = new PhotoAnalysisCompleted($workspace, $analysisResult, $metadata);
+        $this->hermesService->receive($event);
+    }
+
+    private function classifyTier(string $baslik): string
     {
         $lower = mb_strtolower($baslik);
-        $recommendations = [];
+        if (str_contains($lower, 'lüks') || str_contains($lower, 'luxury') || str_contains($lower, 'prestij')) {
+            return 'luxury';
+        }
+        if (str_contains($lower, 'premium') || str_contains($lower, 'özel')) {
+            return 'premium';
+        }
+        return 'standard';
+    }
 
-        // Always recommend minimum photos
+    private function generatePhotoRecommendations(string $baslik, string $tier): array // @sab-ignore-context7
+    {
+        $lower = mb_strtolower($baslik);
+        $recommendations = []; // @sab-ignore-context7
+
         $minPhotos = match ($tier) {
             'luxury' => 10,
             'premium' => 7,
-            'standard' => 5,
-            'budget' => 3,
-            default => 4,
+            default => 5,
         };
 
         $recommendations[] = [
@@ -137,7 +196,6 @@ class PhotoAgent implements HermesHandlerContract
             'priority' => 'high',
         ];
 
-        // Tier-specific recommendations
         if ($tier === 'luxury' || $tier === 'premium') {
             $recommendations[] = [
                 'type' => 'drone',
@@ -151,7 +209,6 @@ class PhotoAgent implements HermesHandlerContract
             ];
         }
 
-        // Feature-based recommendations
         if (str_contains($lower, 'deniz') || str_contains($lower, 'havuz')) {
             $recommendations[] = [
                 'type' => 'exterior',
@@ -168,7 +225,6 @@ class PhotoAgent implements HermesHandlerContract
             ];
         }
 
-        // Lighting recommendation
         $recommendations[] = [
             'type' => 'lighting',
             'message' => 'Gün ışığında çekim tercih edilmeli.',
@@ -180,18 +236,13 @@ class PhotoAgent implements HermesHandlerContract
 
     private function calculateQualityScore(string $baslik, string $tier): float
     {
-        $score = 0.5; // Base score
-
-        // Tier bonus
+        $score = 0.5;
         $score += match ($tier) {
             'luxury' => 0.3,
             'premium' => 0.2,
-            'standard' => 0.1,
-            'budget' => 0.0,
-            default => 0.0,
+            default => 0.1,
         };
 
-        // Feature richness bonus
         $lower = mb_strtolower($baslik);
         $features = ['deniz', 'havuz', 'bahçe', 'garaj', 'teras', 'jakuzi', 'dublex'];
         $foundCount = count(array_filter($features, fn ($f) => str_contains($lower, $f)));
@@ -205,9 +256,7 @@ class PhotoAgent implements HermesHandlerContract
         return match ($tier) {
             'luxury' => 10,
             'premium' => 7,
-            'standard' => 5,
-            'budget' => 3,
-            default => 4,
+            default => 5,
         };
     }
 

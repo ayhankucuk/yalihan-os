@@ -135,26 +135,23 @@ class CapabilityRegistry
             routingStrategy: 'all',
         ));
 
-        // ─── AI Workforce Bindings — Sprint 4.3 + Sprint 4.4 ────────────
-
-        // portfolio.created → workforce agents (Sprint 4.3: PortfolioAgent + Sprint 4.4: DriveAgent)
-        // Merged: both agents handle portfolio.created
+        // ─── AI Workforce Bindings — Sprint 4.5 Workspace-First Chain ──────
+        //
+        // portfolio.created → DriveAgent (creates workspace, emits workspace.created)
         $this->bind(new CapabilityBinding(
             eventName: HermesEventVocabulary::PORTFOLIO_CREATED->value,
             capabilitiesRequired: [
-                HermesWorkforceCapability::ANALYZE_PORTFOLIO->value,
                 HermesWorkforceCapability::CREATE_DRIVE_WORKSPACE->value,
             ],
             capabilitiesOptional: [
-                HermesWorkforceCapability::ENRICH_PORTFOLIO->value,
                 HermesWorkforceCapability::MANAGE_DRIVE_WORKSPACE->value,
             ],
             routingStrategy: 'all',
         ));
 
-        // Photo analysis chain event
+        // workspace.created → PhotoAgent
         $this->bind(new CapabilityBinding(
-            eventName: HermesWorkforceEventVocabulary::WORKFORCE_PHOTO_ANALYSIS_REQUESTED->value,
+            eventName: HermesWorkforceEventVocabulary::WORKFORCE_WORKSPACE_CREATED->value,
             capabilitiesRequired: [
                 HermesWorkforceCapability::ANALYZE_PHOTOS->value,
             ],
@@ -164,39 +161,53 @@ class CapabilityRegistry
             routingStrategy: 'all',
         ));
 
-        // Description analysis chain event
+        // photo_analysis.completed → DescriptionAgent + PropertyScoreAgent
         $this->bind(new CapabilityBinding(
-            eventName: HermesWorkforceEventVocabulary::WORKFORCE_DESCRIPTION_ANALYSIS_REQUESTED->value,
+            eventName: HermesWorkforceEventVocabulary::WORKFORCE_PHOTO_ANALYSIS_COMPLETED->value,
             capabilitiesRequired: [
                 HermesWorkforceCapability::GENERATE_DESCRIPTION->value,
+                HermesWorkforceCapability::CALCULATE_PROPERTY_SCORE->value,
             ],
             capabilitiesOptional: [
                 HermesWorkforceCapability::IMPROVE_DESCRIPTION->value,
+                HermesWorkforceCapability::ANALYZE_QUALITY->value,
             ],
             routingStrategy: 'all',
         ));
 
-        // Notification chain event
+        // description.completed → PropertyScoreAgent
         $this->bind(new CapabilityBinding(
-            eventName: HermesWorkforceEventVocabulary::WORKFORCE_NOTIFICATION_REQUESTED->value,
+            eventName: HermesWorkforceEventVocabulary::WORKFORCE_DESCRIPTION_COMPLETED->value,
+            capabilitiesRequired: [
+                HermesWorkforceCapability::CALCULATE_PROPERTY_SCORE->value,
+            ],
+            capabilitiesOptional: [
+                HermesWorkforceCapability::ANALYZE_QUALITY->value,
+            ],
+            routingStrategy: 'all',
+        ));
+
+        // property_score.calculated → PublishDecisionAgent
+        $this->bind(new CapabilityBinding(
+            eventName: HermesWorkforceEventVocabulary::WORKFORCE_PROPERTY_SCORE_CALCULATED->value,
+            capabilitiesRequired: [
+                HermesWorkforceCapability::DECIDE_PUBLISHING->value,
+            ],
+            capabilitiesOptional: [
+                HermesWorkforceCapability::EVALUATE_LISTING_QUALITY->value,
+            ],
+            routingStrategy: 'all',
+        ));
+
+        // publishing.decision_ready → NotificationAgent
+        $this->bind(new CapabilityBinding(
+            eventName: HermesWorkforceEventVocabulary::WORKFORCE_PUBLISHING_DECISION_READY->value,
             capabilitiesRequired: [
                 HermesWorkforceCapability::SEND_PORTFOLIO_NOTIFICATION->value,
             ],
             capabilitiesOptional: [
                 HermesWorkforceCapability::SEND_CHAIN_COMPLETE_NOTIFICATION->value,
             ],
-            routingStrategy: 'all',
-        ));
-
-        // ─── DriveWorkspace — Sprint 4.4 ────────────────────────────────
-
-        // Drive workspace created event (emitted after DriveAgent creates workspace)
-        $this->bind(new CapabilityBinding(
-            eventName: HermesWorkforceEventVocabulary::WORKFORCE_WORKSPACE_CREATED->value,
-            capabilitiesRequired: [
-                HermesWorkforceCapability::MANAGE_DRIVE_WORKSPACE->value,
-            ],
-            capabilitiesOptional: [],
             routingStrategy: 'all',
         ));
 

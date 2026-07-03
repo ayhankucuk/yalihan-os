@@ -4,28 +4,40 @@ namespace App\Services\Hermes\Handlers\Workforce;
 
 use App\Contracts\Hermes\HermesEventContract;
 use App\Contracts\Hermes\HermesHandlerContract;
-use App\Domain\Hermes\Enums\HermesWorkforceEventVocabulary;
+use App\Events\Workforce\DescriptionCompleted;
+use App\Events\Workforce\PhotoAnalysisCompleted;
 use App\Models\Hermes\WorkforceExecutionLog;
+use App\Models\PortfolioDriveWorkspace;
+use App\Services\Hermes\HermesService;
 use Illuminate\Support\Facades\Log;
 
 /**
- * DescriptionAgent — AI Workforce Sprint 4.3
+ * DescriptionAgent — AI Workforce Sprint 4.5
  *
- * Triggered by: workforce.description_analysis_requested
- * Role: Analyzes and improves listing descriptions
+ * Subscribes to:
+ * - workforce.photo_analysis.completed (triggers after PhotoAgent)
+ *
+ * Emits:
+ * - workforce.description.completed (downstream: PropertyScoreAgent)
+ *
+ * Role: Analyzes and improves listing descriptions.
+ * Updates workspace lifecycle: MEDIA_READY → DESCRIPTION_READY
  *
  * No external API calls (vertical slice — rule-based).
- * Production: would call AIOrchestrator.generateListing() or description service.
  */
 class DescriptionAgent implements HermesHandlerContract
 {
+    public function __construct(
+        private HermesService $hermesService,
+    ) {}
+
     /**
      * @inheritDoc
      */
     public function subscribesTo(): array
     {
         return [
-            HermesWorkforceEventVocabulary::WORKFORCE_DESCRIPTION_ANALYSIS_REQUESTED->value,
+            'workforce.photo_analysis.completed',
         ];
     }
 
@@ -39,7 +51,9 @@ class DescriptionAgent implements HermesHandlerContract
         $ilanId = $payload['ilan_id'] ?? null;
         $tenantId = $event->tenantId();
         $chainId = $payload['chain_id'] ?? null;
-        $portfolioAnalysis = $payload['portfolio_analysis'] ?? [];
+
+        // Load workspace
+        $workspace = $this->loadWorkspace($payload);
 
         // Record execution
         $execLog = WorkforceExecutionLog::create([
@@ -57,17 +71,15 @@ class DescriptionAgent implements HermesHandlerContract
         ]);
 
         try {
-            $ilanBaslik = $portfolioAnalysis['ilan_baslik'] ?? $payload['ilan_baslik'] ?? '';
-            $tier = $portfolioAnalysis['tier'] ?? 'standard';
-            $priority = $portfolioAnalysis['priority'] ?? 'normal';
+            $ilanBaslik = $payload['ilan_baslik'] ?? $workspace?->root_folder_name ?? '';
+            $tier = $this->classifyTier($ilanBaslik);
 
-            // Rule-based description analysis (production: AI service)
-            $result = [
+            $analysisResult = [
                 'ilan_id' => $ilanId,
                 'chain_id' => $chainId,
                 'current_title' => $ilanBaslik,
                 'title_score' => $this->scoreTitle($ilanBaslik),
-                'suggestions' => $this->generateDescriptionSuggestions($ilanBaslik, $tier, $priority),
+                'suggestions' => $this->generateDescriptionSuggestions($ilanBaslik, $tier),
                 'improved_title' => $this->generateImprovedTitle($ilanBaslik, $tier),
                 'keywords' => $this->extractKeywords($ilanBaslik),
                 'market_positioning' => $this->classifyMarketPositioning($ilanBaslik, $tier),
@@ -75,23 +87,37 @@ class DescriptionAgent implements HermesHandlerContract
                 'analyzed_at' => now()->toIso8601String(),
             ];
 
-            $execLog->markCompleted($result);
+            // Update workspace
+            if ($workspace) {
+                $workspace->markAiAgentComplete('description_agent', $analysisResult);
+            }
+
+            $execLog->markCompleted($analysisResult);
 
             Log::info('[DescriptionAgent] Description analysis complete', [
                 'ilan_id' => $ilanId,
-                'chain_id' => $chainId,
-                'title_score' => $result['title_score'],
-                'suggestions_count' => count($result['suggestions']),
+                'workspace_id' => $workspace?->getKey(),
+                'title_score' => $analysisResult['title_score'],
+                'lifecycle_state' => $workspace?->lifecycle_state?->value,
             ]);
+
+            // Emit DescriptionCompleted event
+            if ($workspace) {
+                $this->emitDescriptionCompleted($workspace, $analysisResult, [
+                    'ilan_id' => $ilanId,
+                    'chain_id' => $chainId,
+                ]);
+            }
 
             return [
                 'handler' => self::class,
                 'ilan_id' => $ilanId,
-                'chain_id' => $chainId,
-                'title_score' => $result['title_score'],
-                'suggestions' => $result['suggestions'],
-                'improved_title' => $result['improved_title'],
-                'keywords' => $result['keywords'],
+                'workspace_id' => $workspace?->getKey(),
+                'title_score' => $analysisResult['title_score'],
+                'suggestions' => $analysisResult['suggestions'],
+                'improved_title' => $analysisResult['improved_title'],
+                'keywords' => $analysisResult['keywords'],
+                'lifecycle_state' => $workspace?->lifecycle_state?->value,
                 'duration_ms' => round((microtime(true) - $startTime) * 1000, 2),
             ];
         } catch (\Throwable $e) {
@@ -99,14 +125,12 @@ class DescriptionAgent implements HermesHandlerContract
 
             Log::error('[DescriptionAgent] Description analysis failed', [
                 'ilan_id' => $ilanId,
-                'chain_id' => $chainId,
                 'error' => $e->getMessage(),
             ]);
 
             return [
                 'handler' => self::class,
                 'ilan_id' => $ilanId,
-                'chain_id' => $chainId,
                 'error' => $e->getMessage(),
                 'duration_ms' => round((microtime(true) - $startTime) * 1000, 2),
             ];
@@ -121,6 +145,41 @@ class DescriptionAgent implements HermesHandlerContract
         return false;
     }
 
+    private function loadWorkspace(array $payload): ?PortfolioDriveWorkspace
+    {
+        $workspaceId = $payload['workspace_id'] ?? null;
+        $ilanId = $payload['ilan_id'] ?? null;
+
+        if ($workspaceId) {
+            return PortfolioDriveWorkspace::find($workspaceId);
+        }
+        if ($ilanId) {
+            return PortfolioDriveWorkspace::forPortfolio($ilanId)->first();
+        }
+        return null;
+    }
+
+    private function emitDescriptionCompleted(
+        PortfolioDriveWorkspace $workspace,
+        array $analysisResult,
+        array $metadata,
+    ): void {
+        $event = new DescriptionCompleted($workspace, $analysisResult, $metadata);
+        $this->hermesService->receive($event);
+    }
+
+    private function classifyTier(string $baslik): string
+    {
+        $lower = mb_strtolower($baslik);
+        if (str_contains($lower, 'lüks') || str_contains($lower, 'luxury')) {
+            return 'luxury';
+        }
+        if (str_contains($lower, 'premium')) {
+            return 'premium';
+        }
+        return 'standard';
+    }
+
     private function scoreTitle(string $baslik): float
     {
         if (empty($baslik)) {
@@ -129,16 +188,14 @@ class DescriptionAgent implements HermesHandlerContract
 
         $score = 0.4;
         $lower = mb_strtolower($baslik);
-
-        // Length scoring
         $len = mb_strlen($baslik);
+
         if ($len >= 30 && $len <= 60) {
             $score += 0.2;
         } elseif ($len >= 20 && $len <= 80) {
             $score += 0.1;
         }
 
-        // Specificity scoring
         $specificityKeywords = ['satılık', 'kiralık', 'dükkan', 'villa', 'daire', 'arazi', 'bahçe'];
         foreach ($specificityKeywords as $kw) {
             if (str_contains($lower, $kw)) {
@@ -146,16 +203,14 @@ class DescriptionAgent implements HermesHandlerContract
             }
         }
 
-        // Value keywords
-        $valueKeywords = ['lüks', 'deniz', 'havuz', 'site', 'prestij', 'ultra'];
+        $valueKeywords = ['lüks', 'deniz', 'havuz', 'site', 'prestij'];
         foreach ($valueKeywords as $kw) {
             if (str_contains($lower, $kw)) {
                 $score += 0.05;
             }
         }
 
-        // Urgency keywords
-        $urgencyKeywords = ['acil', 'fırsat', 'hemen', 'sahibinden'];
+        $urgencyKeywords = ['acil', 'fırsat', 'hemen'];
         foreach ($urgencyKeywords as $kw) {
             if (str_contains($lower, $kw)) {
                 $score += 0.1;
@@ -165,13 +220,12 @@ class DescriptionAgent implements HermesHandlerContract
         return round(min($score, 1.0), 2);
     }
 
-    private function generateDescriptionSuggestions(string $baslik, string $tier, string $priority): array // @sab-ignore-context7
+    private function generateDescriptionSuggestions(string $baslik, string $tier): array // @sab-ignore-context7
     {
         $suggestions = []; // @sab-ignore-context7
         $lower = mb_strtolower($baslik);
-
-        // Length suggestions
         $len = mb_strlen($baslik);
+
         if ($len < 20) {
             $suggestions[] = [
                 'type' => 'length',
@@ -186,50 +240,18 @@ class DescriptionAgent implements HermesHandlerContract
             ];
         }
 
-        // Tier-specific suggestions
         if ($tier === 'luxury') {
             $suggestions[] = [
                 'type' => 'tone',
-                'message' => 'Lüks segment için premium dil kullanılmalı: "benzersiz", "özel", "rahatlık".',
-                'priority' => 'medium',
-            ];
-            $suggestions[] = [
-                'type' => 'features',
-                'message' => 'Lüks alıcılar için yaşam tarzı vurgusu ekleyin.',
+                'message' => 'Lüks segment için premium dil kullanılmalı: "benzersiz", "özel".',
                 'priority' => 'medium',
             ];
         }
 
-        if ($tier === 'budget') {
-            $suggestions[] = [
-                'type' => 'value',
-                'message' => 'Fiyat avantajı ve lokasyon bilgisi ön plana çıkarılmalı.',
-                'priority' => 'medium',
-            ];
-        }
-
-        // Missing element suggestions
         if (!str_contains($lower, 'satılık') && !str_contains($lower, 'kiralık')) {
             $suggestions[] = [
                 'type' => 'clarity',
                 'message' => 'İlan tipi (Satılık/Kiralık) başlıkta belirtilmemiş.',
-                'priority' => 'high',
-            ];
-        }
-
-        if (!str_contains($lower, 'bodrum') && !str_contains($lower, 'antalya') && !str_contains($lower, 'istanbul')) {
-            $suggestions[] = [
-                'type' => 'location',
-                'message' => 'Lokasyon bilgisi başlıkta belirtilmemiş.',
-                'priority' => 'medium',
-            ];
-        }
-
-        // Priority suggestions
-        if ($priority === 'high') {
-            $suggestions[] = [
-                'type' => 'urgency',
-                'message' => 'Acil/fırsat vurgusu varsa, detaylı açıklama ile desteklenmeli.',
                 'priority' => 'high',
             ];
         }
@@ -241,23 +263,20 @@ class DescriptionAgent implements HermesHandlerContract
     {
         $lower = mb_strtolower($baslik);
 
-        // If title already good, return as-is
         if ($this->scoreTitle($baslik) >= 0.8) {
             return $baslik;
         }
 
         $improvements = [];
 
-        // Add tier indicator
         if ($tier === 'luxury' && !str_contains($lower, 'lüks')) {
             $improvements[] = 'Lüks';
         }
 
-        // Add property type if missing
         $propertyTypes = ['villa', 'daire', 'dükkan', 'arazi', 'büro'];
         $hasType = false;
-        foreach ($propertyTypes as $type) {
-            if (str_contains($lower, $type)) {
+        foreach ($propertyTypes as $pt) {
+            if (str_contains($lower, $pt)) {
                 $hasType = true;
                 break;
             }
@@ -272,33 +291,16 @@ class DescriptionAgent implements HermesHandlerContract
     private function extractKeywords(string $baslik): array
     {
         $lower = mb_strtolower($baslik);
-
         $keywordMap = [
-            'satılık' => 'Satılık',
-            'kiralık' => 'Kiralık',
-            'villa' => 'Villa',
-            'daire' => 'Daire',
-            'dükkan' => 'Dükkan',
-            'arazi' => 'Arazi',
-            'büro' => 'Ofis',
-            'bodrum' => 'Bodrum',
-            'antalya' => 'Antalya',
-            'istanbul' => 'İstanbul',
-            'muğla' => 'Muğla',
-            'deniz' => 'Deniz',
-            'havuz' => 'Havuz',
-            'bahçe' => 'Bahçe',
-            'dublex' => 'Dublex',
-            'site' => 'Site',
-            'lüks' => 'Lüks',
-            'acil' => 'Acil',
-            'fırsat' => 'Fırsat',
+            'satılık', 'kiralık', 'villa', 'daire', 'dükkan', 'arazi',
+            'bodrum', 'antalya', 'istanbul', 'deniz', 'havuz',
+            'bahçe', 'dublex', 'site', 'lüks', 'acil', 'fırsat',
         ];
 
         $found = [];
-        foreach ($keywordMap as $keyword => $label) {
-            if (str_contains($lower, $keyword)) {
-                $found[] = $label;
+        foreach ($keywordMap as $kw) {
+            if (str_contains($lower, $kw)) {
+                $found[] = ucfirst($kw);
             }
         }
 
@@ -310,15 +312,13 @@ class DescriptionAgent implements HermesHandlerContract
         return match ($tier) {
             'luxury' => 'premium_market',
             'premium' => 'upper_mid_market',
-            'standard' => 'mass_market',
-            'budget' => 'value_market',
-            default => 'standard_market',
+            default => 'mass_market',
         };
     }
 
     private function assessLanguageQuality(string $baslik): array
     {
-        $score = 0.8; // Default reasonable quality
+        $score = 0.8;
 
         if (empty($baslik)) {
             return ['score' => 0.0, 'issues' => ['Boş başlık']];
@@ -326,24 +326,21 @@ class DescriptionAgent implements HermesHandlerContract
 
         $issues = [];
 
-        // Check for Turkish characters
         if (!preg_match('/[çğıöşü]/u', $baslik) && preg_match('/[cgiou]/u', $baslik)) {
             $issues[] = 'Türkçe karakter eksikliği (olası yabancı dil kullanımı)';
         }
 
-        // Check for excessive caps
         if (preg_match('/[A-ZÇĞİÖŞÜ]{5,}/u', $baslik)) {
             $issues[] = 'Aşırı büyük harf kullanımı';
         }
 
-        // Check for URL-like content
         if (str_contains($baslik, 'http') || str_contains($baslik, 'www')) {
             $issues[] = 'URL içeriği algılandı';
             $score -= 0.3;
         }
 
         return [
-            'score' => round(max($score - (count($issues) * 0.1), 0.0), 2),
+            'score' => round(max($score - count($issues) * 0.1, 0.0), 2),
             'issues' => $issues,
         ];
     }

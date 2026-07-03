@@ -43,15 +43,15 @@ class CapabilityRegistryTest extends TestCase
     }
 
     /**
-     * Test portfolio.created has workforce capabilities (Sprint 4.3)
+     * Test portfolio.created has workforce capabilities (Sprint 4.5)
      */
     public function test_portfolio_created_binding(): void
     {
         $required = $this->registry->getRequiredCapabilities('portfolio.created');
         $optional = $this->registry->getOptionalCapabilities('portfolio.created');
 
-        // Sprint 4.3: portfolio.created routes to workforce agents
-        $this->assertContains('workforce.analyze_portfolio', $required);
+        // Sprint 4.5: portfolio.created routes to DriveAgent (workspace-first)
+        $this->assertContains('workforce.create_drive_workspace', $required);
     }
 
     /**
@@ -93,8 +93,8 @@ class CapabilityRegistryTest extends TestCase
         $capabilities = $this->registry->getAllCapabilities('portfolio.created');
 
         $this->assertNotEmpty($capabilities);
-        // Sprint 4.3: portfolio.created now routes to workforce capability
-        $this->assertContains('workforce.analyze_portfolio', $capabilities);
+        // Sprint 4.5: portfolio.created now routes to workspace creation
+        $this->assertContains('workforce.create_drive_workspace', $capabilities);
     }
 
     /**

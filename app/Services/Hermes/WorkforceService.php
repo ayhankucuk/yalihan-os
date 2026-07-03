@@ -2,6 +2,7 @@
 
 namespace App\Services\Hermes;
 
+use App\Domain\Workspace\Enums\WorkspaceState;
 use App\Models\Hermes\HermesAnalytics;
 use App\Models\Hermes\HermesEventLog;
 use App\Models\Hermes\WorkforceExecutionLog;
@@ -12,8 +13,10 @@ use Illuminate\Support\Facades\DB;
  * WorkforceService
  *
  * Sprint 4.3 — AI Workforce Vertical Slice
+ * Sprint 4.5 — Digital Property Intelligence Platform
  *
- * Provides dashboard metrics by aggregating HermesEventLog and WorkforceExecutionLog data.
+ * Provides dashboard metrics by aggregating HermesEventLog, WorkforceExecutionLog,
+ * and PortfolioDriveWorkspace data.
  * Read-only: no external API calls, no financial mutations.
  */
 class WorkforceService
@@ -28,6 +31,8 @@ class WorkforceService
         $agentMetrics = $this->getAgentMetrics($tenantId);
         $chainMetrics = $this->getChainMetrics($tenantId);
         $driveMetrics = $this->getDriveWorkspaceMetrics($tenantId);
+        $lifecycleMetrics = $this->getLifecycleMetrics($tenantId);
+        $aiCompletionMetrics = $this->getAiCompletionMetrics($tenantId);
 
         return [
             'generated_at' => now()->toIso8601String(),
@@ -58,6 +63,25 @@ class WorkforceService
                 'creating' => $driveMetrics['creating'],
                 'error' => $driveMetrics['error'],
                 'success_rate' => $driveMetrics['success_rate'],
+            ],
+
+            // Sprint 4.5: Property Digital Twin lifecycle
+            'property_lifecycle' => [
+                'total' => $lifecycleMetrics['total'],
+                'by_state' => $lifecycleMetrics['by_state'],
+                'completion_percent_avg' => $lifecycleMetrics['completion_percent_avg'],
+                'pre_publishing' => $lifecycleMetrics['pre_publishing'],
+                'live' => $lifecycleMetrics['live'],
+                'archived' => $lifecycleMetrics['archived'],
+            ],
+
+            // Sprint 4.5: AI completion metrics
+            'ai_workforce' => [
+                'avg_completion_percent' => $aiCompletionMetrics['avg_completion_percent'],
+                'fully_complete' => $aiCompletionMetrics['fully_complete'],
+                'partially_complete' => $aiCompletionMetrics['partially_complete'],
+                'not_started' => $aiCompletionMetrics['not_started'],
+                'by_agent' => $aiCompletionMetrics['by_agent'],
             ],
 
             // Per-agent breakdown
@@ -258,6 +282,99 @@ class WorkforceService
             'failed_steps' => (int) $row->failed,
             'total_duration_ms' => $row->total_duration_ms ? round((float) $row->total_duration_ms, 2) : null,
         ])->toArray();
+    }
+
+    /**
+     * Get Property Digital Twin lifecycle metrics — Sprint 4.5
+     */
+    private function getLifecycleMetrics(?int $tenantId): array
+    {
+        $query = PortfolioDriveWorkspace::query();
+        if ($tenantId !== null) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        $total = (clone $query)->count();
+
+        $byState = [];
+        $prePublishing = 0;
+        $live = 0;
+        $archived = 0;
+
+        $states = (clone $query)
+            ->selectRaw('lifecycle_state, COUNT(*) as count')
+            ->groupBy('lifecycle_state')
+            ->pluck('count', 'lifecycle_state');
+
+        foreach ($states as $state => $count) {
+            $byState[$state] = (int) $count;
+        }
+
+        $prePublishing = (clone $query)->whereIn('lifecycle_state', [
+            WorkspaceState::DRAFT->value,
+            WorkspaceState::WORKSPACE_CREATED->value,
+            WorkspaceState::MEDIA_READY->value,
+            WorkspaceState::DESCRIPTION_READY->value,
+            WorkspaceState::QUALITY_CHECKED->value,
+            WorkspaceState::READY_FOR_PUBLISH->value,
+        ])->count();
+
+        $live = (clone $query)->whereIn('lifecycle_state', [
+            WorkspaceState::PUBLISHED->value,
+            WorkspaceState::ACTIVE->value,
+        ])->count();
+
+        $archived = (clone $query)->where('lifecycle_state', WorkspaceState::ARCHIVED->value)->count();
+
+        $avgPercent = (clone $query)->avg('ai_completion_percent') ?? 0;
+
+        return [
+            'total' => $total,
+            'by_state' => $byState,
+            'completion_percent_avg' => round((float) $avgPercent, 1),
+            'pre_publishing' => $prePublishing,
+            'live' => $live,
+            'archived' => $archived,
+        ];
+    }
+
+    /**
+     * Get AI Workforce completion metrics — Sprint 4.5
+     */
+    private function getAiCompletionMetrics(?int $tenantId): array
+    {
+        $query = PortfolioDriveWorkspace::query();
+        if ($tenantId !== null) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        $total = (clone $query)->count();
+        $fullyComplete = (clone $query)->where('ai_completion_percent', 100)->count();
+        $partiallyComplete = (clone $query)
+            ->where('ai_completion_percent', '>', 0)
+            ->where('ai_completion_percent', '<', 100)->count();
+        $notStarted = (clone $query)->where('ai_completion_percent', 0)->count();
+
+        // Per-agent completion
+        $allFlags = (clone $query)->whereNotNull('ai_completion_flags')->pluck('ai_completion_flags');
+        $agents = ['photo_agent', 'description_agent', 'property_score_agent', 'publish_decision_agent'];
+        $byAgent = [];
+
+        foreach ($agents as $agent) {
+            $complete = $allFlags->filter(fn ($flags) => ($flags[$agent]['complete'] ?? false) === true)->count();
+            $byAgent[$agent] = [
+                'complete' => $complete,
+                'pending' => max(0, $total - $complete),
+            ];
+        }
+
+        return [
+            'avg_completion_percent' => $total > 0 ? round(($fullyComplete * 100 + $partiallyComplete * 50) / $total, 1) : 0.0,
+            'fully_complete' => $fullyComplete,
+            'partially_complete' => $partiallyComplete,
+            'not_started' => $notStarted,
+            'by_agent' => $byAgent,
+        ];
     }
 
     /**
