@@ -9,7 +9,6 @@ use App\Modules\TakimYonetimi\Models\Gorev;
 use App\Repositories\KisiRepository;
 use App\Repositories\LeadRepository;
 use App\Repositories\GorevRepository;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
@@ -28,7 +27,6 @@ use Tests\TestCase;
  */
 class CRMScopedDeleteSafetyTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected KisiRepository $kisiRepo;
     protected LeadRepository $leadRepo;

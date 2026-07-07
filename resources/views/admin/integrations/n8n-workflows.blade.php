@@ -41,7 +41,7 @@
 
                         {{-- Description --}}
                         <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                            {{ $workflow['description'] }}
+                            {{ $workflow['aciklama'] }}
                         </p>
 
                         {{-- Stats --}}

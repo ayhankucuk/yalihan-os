@@ -137,6 +137,11 @@ abstract class AggregateRoot
         foreach ($events as $event) {
             $this->applyEvent($event->event_type, $event->payload);
         }
+
+        // Sync currentSequence after replay so the next recordEvent() increments
+        // from the correct DB-backed sequence, not a stale in-memory value.
+        $lastEvent = $events->last();
+        $this->currentSequence = $lastEvent ? (int) $lastEvent->sequence_number : 0;
     }
 
     /**

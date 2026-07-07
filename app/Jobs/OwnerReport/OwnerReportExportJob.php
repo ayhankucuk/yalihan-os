@@ -17,7 +17,7 @@ use Exception;
  * Sorumluluk: Raporu oluşturur ve storage'a kaydeder.
  * Context7 Standard: SAB-JOB-V1
  */
-class OwnerReportExportJob implements ShouldQueue
+class OwnerReportExportJob implements ShouldQueue, \App\Queue\Contracts\TenantAwareJobInterface
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -30,6 +30,21 @@ class OwnerReportExportJob implements ShouldQueue
     public function __construct(
         public OwnerReportExport $export
     ) {}
+
+    public function getTenantId(): ?int
+    {
+        return $this->export->tenant_id;
+    }
+
+    public function getUserId(): ?int
+    {
+        return $this->export->owner_id;
+    }
+
+    public function middleware(): array
+    {
+        return [new \App\Queue\Middleware\RestoreTenantContext(app(\App\Services\SaaS\TenantContextService::class))];
+    }
 
     /**
      * Execute the job.

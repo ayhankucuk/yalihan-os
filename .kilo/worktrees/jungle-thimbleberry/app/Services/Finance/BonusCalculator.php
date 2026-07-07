@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Ilan;
 use App\Models\Finance\Bonus;
 use App\Models\Finance\FinancialSetting;
+use App\Enums\IlanDurumu;
 use App\Application\Shared\Services\TenantContextResolver;
 use Illuminate\Support\Collection;
 
@@ -63,19 +64,19 @@ class BonusCalculator
             'total_sales_count' => $sales->count(),
             'bonus_tier' => $tierInfo['tier'],
             'bonus_rate' => $tierInfo['rate'],
-            'is_paid' => false,
+            'odendi_mi' => false,
         ];
     }
 
     /**
      * Mark bonus as paid (PROJECTION DATA ONLY)
+     * 🛡️ P0 FIX: Uses Context7 canonical DB names (odendi_mi/odeme_tarihi)
      */
     public function getPayoutProjection(): array
     {
         return [
-            'is_paid' => true,
-            'payout_date' => now()->toDateString(),
-            'paid_by' => auth()->id(),
+            'odendi_mi' => true,
+            'odeme_tarihi' => now(),
             'updated_at' => now()
         ];
     }
@@ -92,7 +93,7 @@ class BonusCalculator
         return Bonus::query()
             ->where('tenant_id', $tenantId)
             ->where('agent_id', $agentId)
-            ->where('is_paid', false)
+            ->where('odendi_mi', false)
             ->orderBy('target_month', 'desc') // context7-ignore
             ->get();
     }
@@ -109,7 +110,7 @@ class BonusCalculator
         return Bonus::query()
             ->where('tenant_id', $tenantId)
             ->where('agent_id', $agentId)
-            ->where('is_paid', false)
+            ->where('odendi_mi', false)
             ->sum('prim_tutari');
     }
 
@@ -176,12 +177,15 @@ class BonusCalculator
 
     /**
      * Get sales for a period.
+     * 🛡️ SAB P0: Uses danisman_id (not kullanici_id) + tenant scope.
      */
     public function getSalesForPeriod(int $agentId, string $start, string $end): Collection
     {
+        $tenantId = $this->tenantResolver->resolve()->tenantId;
         return Ilan::query()
-            ->where('kullanici_id', $agentId)
-            ->where('yayin_durumu', 'Satıldı')
+            ->where('tenant_id', $tenantId)
+            ->where('danisman_id', $agentId)
+            ->where('yayin_durumu', IlanDurumu::ARSIV)
             ->whereBetween('updated_at', [$start, $end])
             ->get();
     }
@@ -198,7 +202,7 @@ class BonusCalculator
             ->select('bonuses.*', 'agents.name as agent_name');
 
         if (isset($filters['paid'])) {
-            $query->where('bonuses.is_paid', $filters['paid'] == '1');
+            $query->where('bonuses.odendi_mi', $filters['paid'] == '1');
         }
         if (isset($filters['target_month'])) {
             $query->where('bonuses.target_month', $filters['target_month']);
@@ -209,15 +213,18 @@ class BonusCalculator
 
     /**
      * Resolve monthly sold listings for the given agent.
+     * 🛡️ SAB P0: Uses danisman_id (not kullanici_id) + tenant scope.
      */
     private function getMonthSales(int $agentId, string $month): Collection
     {
+        $tenantId = $this->tenantResolver->resolve()->tenantId;
         $start = Carbon::createFromFormat('Y-m', $month)->startOfMonth()->toDateString();
         $end = Carbon::createFromFormat('Y-m', $month)->endOfMonth()->toDateString();
 
         return Ilan::query()
-            ->where('kullanici_id', $agentId)
-            ->where('yayin_durumu', 'Satıldı')
+            ->where('tenant_id', $tenantId)
+            ->where('danisman_id', $agentId)
+            ->where('yayin_durumu', IlanDurumu::ARSIV)
             ->whereBetween('updated_at', [$start, $end])
             ->get();
     }

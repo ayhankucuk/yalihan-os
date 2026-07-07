@@ -66,6 +66,8 @@ class GuardCoverageRegressionTest extends TestCase
         \App\Services\CRM\LeadAuthorityService::class,
         \App\Services\CRM\TalepAuthorityService::class,
         \App\Services\CRM\MatchingAuthorityService::class,
+        \App\Services\PropertyWorkspace\PropertyWorkspaceService::class,
+        \App\Services\AI\CortexVoiceService::class,
     ];
 
     /**

@@ -54,14 +54,14 @@ class IntegrationsController extends Controller
             ],
             'voice_search' => [
                 'name' => 'Voice Search',
-                'aktiflik_durumu' => config('ai.voice_search.aktiflik_durumu', false) ? AktiflikDurumu::AKTIF->label() : AktiflikDurumu::PASIF->label(),
+                'aktiflik_durumu' => (config('ai.voice_search.aktiflik_durumu', false) ? 'aktif' : 'pasif'), // context7-ignore
                 'provider' => config('ai.voice_search.default_provider', 'whisper'),
                 'languages' => count(config('ai.voice_search.supported_languages', [])),
                 'icon' => '🎤',
             ],
             'notifications' => [
                 'name' => 'Bildirim Sistemi',
-                'aktiflik_durumu' => AktiflikDurumu::AKTIF->label(),
+                'aktiflik_durumu' => 'aktif', // context7-ignore
                 'channels' => 6, // websocket, database, email, sms, push, telegram
                 'icon' => '🔔',
             ],
@@ -80,31 +80,31 @@ class IntegrationsController extends Controller
         $workflows = [
             'ilan_created' => [
                 'name' => 'İlan Oluşturuldu',
-                'description' => 'Yeni ilan oluşturulduğunda tetiklenir',
+                'aciklama' => 'Yeni ilan oluşturulduğunda tetiklenir',
                 'aktiflik_durumu' => AktiflikDurumu::AKTIF->label(),
                 'trigger_count' => Cache::get('n8n_workflow_trigger_count_ilan_created', 0),
             ],
             'ilan_sold' => [
                 'name' => 'İlan Satıldı',
-                'description' => 'İlan satıldığında tetiklenir',
+                'aciklama' => 'İlan satıldığında tetiklenir',
                 'aktiflik_durumu' => AktiflikDurumu::AKTIF->label(),
                 'trigger_count' => Cache::get('n8n_workflow_trigger_count_ilan_sold', 0),
             ],
             'contract_signed' => [
                 'name' => 'Sözleşme İmzalandı',
-                'description' => 'Sözleşme imzalandığında tetiklenir',
+                'aciklama' => 'Sözleşme imzalandığında tetiklenir',
                 'aktiflik_durumu' => AktiflikDurumu::AKTIF->label(),
                 'trigger_count' => Cache::get('n8n_workflow_trigger_count_contract_signed', 0),
             ],
             'gorev_created' => [
                 'name' => 'Görev Oluşturuldu',
-                'description' => 'Yeni görev oluşturulduğunda tetiklenir',
+                'aciklama' => 'Yeni görev oluşturulduğunda tetiklenir',
                 'aktiflik_durumu' => AktiflikDurumu::AKTIF->label(),
                 'trigger_count' => Cache::get('n8n_workflow_trigger_count_gorev_created', 0),
             ],
             'gorev_deadline' => [
                 'name' => 'Görev Deadline',
-                'description' => 'Görev deadline yaklaştığında tetiklenir',
+                'aciklama' => 'Görev deadline yaklaştığında tetiklenir',
                 'aktiflik_durumu' => AktiflikDurumu::AKTIF->label(),
                 'trigger_count' => Cache::get('n8n_workflow_trigger_count_gorev_deadline', 0),
             ],

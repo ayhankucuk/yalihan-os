@@ -41,43 +41,45 @@
 
 ---
 
-## 2. HEDEF DURUM — 4 KATMANLI BİLGİ MİMARİSİ
+## 2. HEDEF DURUM — 6 KATMANLI BİLGİ MİMARİSİ (ADR-022)
+
+> **Resmi Kaynak:** `docs/adr/2026-07-05-knowledge-platform-adoption.md`
+> **Karar:** SAAB Board, 2026-07-05 tarihinde Knowledge Platform'u dördüncü katman olarak kabul etti.
+> **Era:** ERA III → ERA IV Geçiş
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    YALIHAN PLATFORM BİLGİ KATMANLARI               │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  KATMAN 4 — KURUMSAL ARŞİV                                      │
-│  Google Drive — Uzun Ömürlü Dokümanlar                           │
-│  • Stratejik planlar, sözleşmeler, raporlar                     │
-│  • Müşteri dökümanları, kanıtlar                                 │
-│  • Yıllık bilanço, vergi, hukuk                                   │
-│  • SLA, tedarikçi anlaşmaları                                     │
-│                                                                     │
-│  KATMAN 3 — PROJE BİLGİ HAVUZU                                   │
-│  Google Drive — İş Birimi Dokümanları                             │
-│  • Sprint retrospektifleri, feature spec'lar                      │
-│  • API kontratları, entegrasyon belgeleri                        │
-│  • UX wireframe, kullanıcı hikayeleri                             │
-│  • Test stratejisi, kalite raporları                             │
-│                                                                     │
-│  KATMAN 2 — TEKNİK BİLGİ                                        │
-│  Repository + NotebookLM — Kod ve Mimarî                          │
-│  • ADR'ler (docs/adr/)                                           │
-│  • NotebookLM notebook'ları (AI okunabilir)                      │
-│  • Sistem mimarisi, CQRS diyagramları                            │
-│  • Bekçi kuralları, SAB anayasası                                │
-│                                                                     │
-│  KATMAN 1 — OPERASYONEL HAFIZA                                   │
-│  memory/ — Agent Oturum Belleği                                 │
-│  • PROJECT_BRAIN.md (kalıcı metrikler)                          │
-│  • CHANGELOG_AGENT.md (agent değişiklikleri)                     │
-│  • SESSION_NOTES.md (oturum notları)                             │
-│  • LEARNED_PATTERNS.md (öğrenilen kalıplar)                     │
-│  • DECISIONS.md (mimari kararlar)                                │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│              YALIHAN PLATFORM — 4 KATMAN (ERA III)                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  KATMAN 4 — Kurumsal Arşiv (Google Drive — 06-ARCHIVE)                    │
+│  • Stratejik planlar, sözleşmeler, raporlar                                │
+│  • Müşteri dökümanları (KVKK: 7 yıl)                                       │
+│  • Yasal, finansal — uzun ömürlü                                           │
+│                                                                              │
+│  KATMAN 3 — Kurumsal Bilgi (Google Drive — 02+04+05)                      │
+│  • 02-PRODUCT: Sprint, feature spec, UX, KPI                               │
+│  • 04-OPERATIONS: SOP, şablonlar, onboarding                              │
+│  • 05-KNOWLEDGE: AI okunabilir knowledge base                              │
+│                                                                              │
+│  KATMAN 2 — Teknik Bilgi (Repository + NotebookLM — 6 Notebook)            │
+│  • docs/ — SAB, ADR, mimari dokümanlar                                     │
+│  • NB-1..NB-6 — AI bilgi çıkarımı (Governance/Architecture/Product/       │
+│                  Domain/Onboarding/Market Intelligence)                      │
+│                                                                              │
+│  KATMAN 1 — Operasyonel Hafıza (memory/)                                  │
+│  • PROJECT_BRAIN.md — Kalıcı proje belleği                                  │
+│  • CHANGELOG_AGENT.md — Agent değişiklikleri                               │
+│  • SESSION_NOTES.md — Oturum notları                                       │
+│  • LEARNED_PATTERNS.md — Öğrenilen kalıplar                                │
+│  • DECISIONS.md — Mimari kararlar                                           │
+│  • daily/ + weekly/ + sprint/ — Zaman-bazlı hafıza                        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+DÖRDÜNCÜ KATMAN = Knowledge Platform
+ERA IV hedefi: Autonomous Property Company
+Bilgi = Platformun birinci sınıf vatandaşı (K-1)
 ```
 
 ---
@@ -108,9 +110,22 @@
 
 ---
 
-## 4. ADIM YOL HARİTASI
+## 4. ADIM YOL HARİTASI (ERA IV Sprint 5.x)
 
-### Sprint 1 — Temel Altyapı (Hafta 1-2)
+> **Resmi Kaynak:** `docs/SAB.md#🔒-BİLGİ-YÖNETİMİ-UYGULAMASI`
+> **Sprint 5.x:** Knowledge Engine inşası ERA IV'ün temelidir.
+
+### Sprint 5.1 — Corporate Memory Index
+
+| GÖREV | SORUMLU | SÜRE |
+|-------|---------|-------|
+| memory/daily/ klasörü + oturum sonu protokol | Kilo | 1 gün |
+| memory/weekly/ formatı + Cuma otomatik | Kilo | 1 gün |
+| memory/sprint/ klasörü + sprint kapanış protokol | Kilo | 1 gün |
+| memory-cleanup.sh (30/12/12 saklama) | Kilo | 1 gün |
+| chief-ai oturum başı/sonu protokolü kodla | Kilo | 2 gün |
+
+### Sprint 5.2 — Knowledge Search
 
 | GÖREV | SORUMLU | SÜRE |
 |-------|---------|-------|
@@ -121,7 +136,7 @@
 | Agent prompt güncelleme | Kilo | 1 gün |
 | Test + doğrulama | Kilo | 1 gün |
 
-### Sprint 2 — Bilgi Otomasyonu (Hafta 3-4)
+### Sprint 5.3 — NotebookLM Sync Engine
 
 | GÖREV | SORUMLU | SÜRE |
 |-------|---------|-------|
@@ -133,7 +148,11 @@
 | Sahiplik matrisi | İnsan | 1 gün |
 | Test + doğrulama | Kilo | 1 gün |
 
-### Sprint 3 — Kurumsal Hafıza (Hafta 5-6)
+### Sprint 5.4 — Drive Sync Engine
+
+### Sprint 5.5 — Embedding & Vector Search
+
+### Sprint 5.6 — Knowledge Verification
 
 | GÖREV | SORUMLU | SÜRE |
 |-------|---------|-------|

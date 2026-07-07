@@ -1,7 +1,7 @@
 # Yalıhan Emlak — Sistem Yol Haritası
 
 **Versiyon:** 3.0.0
-**Son güncelleme:** 2026-07-03 (Oturum 67 — YSOS Era Başladı)
+**Son güncelleme:** 2026-07-04 (Sprint 4.8 CERTIFIED — SC-2026-07-04-0048)
 **YSOS:** v1.0 ACTIVE | **SAAB:** v7.0 | **Durum:** YSOS ENGINEERING STANDARD
 
 ---
@@ -88,20 +88,19 @@ Risk: HIGH. ADR + tam test coverage şart.
 | Sprint 4.1 | Alpine.js UI Stabilization | ✅ KAPANDI |
 | Sprint 4.2 | Real CRUD Certification | ✅ KAPANDI |
 | Sprint 4.3 | AI Workforce Zinciri | ⏳ Planlanıyor |
-| Sprint 4.4 | Dashboard + Event Monitoring | ⏳ Planlanıyor |
-| Sprint 4.5 | Telegram Entegrasyonu | ⏳ Planlanıyor |
-| **Sprint 4.6** | **Property Digital Twin Cockpit** | **🔄 AKTİF** |
+| **Sprint 4.6** | **Property Digital Twin Cockpit** | ✅ KAPANDI |
+| **Sprint 4.7** | **Workspace Execution Engine** | ✅ KAPANDI |
+| Sprint 4.8 | Workspace Integrations (Drive Sync) | ✅ CERTIFIED (SC-2026-07-04-0048) |
+| Sprint 4.9 | Capability Activation Platform | ⏳ Planlanıyor |
 
 ---
 
-## SPRINT 4.6 — 🔄 PROPERTY DIGITAL TWIN COCKPIT (2026-07-04)
-
-**ERA III — Digital Property Intelligence başladı.**
+## ✅ SPRINT 4.6 — PROPERTY DIGITAL TWIN COCKPIT (2026-07-04) ✅
 
 SAAB Board Resolution: Property Digital Twin Cockpit APPROVED.
+SC-2026-07-04-0046-REV2: PRODUCTION CERTIFIED.
 
-### Mission
-"Build the first production-grade Property Digital Twin Cockpit — operational center for every Workspace."
+**Mission:** Build the first production-grade Property Digital Twin Cockpit.
 
 ### In Scope
 - Workspace Dashboard (`/admin/workspace/{id}`)
@@ -109,9 +108,178 @@ SAAB Board Resolution: Property Digital Twin Cockpit APPROVED.
 - Health Score Component
 - Workspace Metrics/Summary/Events API endpoints
 - Dashboard Tests
+- Execution Monitor panel
+- Finance + Reservations + Documents panels
 
 ### Out of Scope
 - Telegram, Async Queue, Drive Sync, New AI Agents
+
+---
+
+## ✅ SPRINT 4.7 — WORKSPACE EXECUTION ENGINE (2026-07-04) ✅
+
+SAAB Board Resolution: SC-2026-07-04-0047 — CERTIFIED.
+
+**Mission:** Transform Workspace from Operational Cockpit into Operational Execution Engine.
+
+### In Scope
+- WorkspaceExecution model (8-state)
+- Execution Queue + Background Job
+- ReplayService (idempotent)
+- RetryService (exponential backoff)
+- Execution Monitor in cockpit
+- Execution REST API (7 endpoints)
+- Tenant isolation
+
+### Architecture
+```
+Workspace → Execution Record → Queue → Worker → Agent → Timeline → Cockpit
+```
+
+---
+
+## ✅ SPRINT 4.8 — WORKSPACE INTEGRATIONS (2026-07-04) ✅
+
+SAAB Board: SC-2026-07-04-0048 — CERTIFIED.
+
+### In Scope
+- Google Drive Workspace Integration
+- Drive file change detection
+- Drive events → Workspace Timeline
+- Document lifecycle management
+- DriveWebhookService (register/renew/stop/validate/process)
+- Webhook Route: POST /api/webhook/drive
+- Channel metadata persistence (drive_webhook_channel_json)
+- File metadata persistence (metadata_json)
+- Integration Health panel in cockpit
+- DriveAgent auto-register on workspace provisioning
+- Scheduler command: drive:renew-channels (daily 06:00)
+
+### Out of Scope
+- Telegram, New AI Agents
+
+### Board Operational Prerequisites (Production deployment)
+```bash
+# 1. Migration — channel + metadata kolonları
+php artisan migrate
+
+# 2. Scheduler renewal — otomatik channel yenileme
+# Kernel.php'ye eklendi: drive:renew-channels --force (daily 06:00)
+
+# 3. Google Cloud Pub/Sub — webhook push URL
+# Subscription push: https://yalihan.ai/api/webhook/drive
+
+# 4. .env webhook secret
+GOOGLE_DRIVE_WEBHOOK_SECRET=<random_32_char>
+```
+
+---
+
+## ⏳ SPRINT 4.9 — CAPABILITY ACTIVATION PLATFORM (Planlanıyor)
+
+**SAAB Board Tavsiyesi (SC-2026-07-04-0048):**
+> "Bu noktadan sonra Sprint 4.9'un odağı teknik entegrasyondan ziyade Capability Activation ve sistemde mevcut yeteneklerin eksiksiz şekilde kullanılabilir hale getirilmesi olmalıdır."
+
+### Focus Areas
+- Orphan controller route registration (14 kritik controller)
+- Mevcut API endpoint'lerin eksik endpoint'lerle tamamlanması
+- Pre-existing technical debt (45 SAB violations — Ilan.php naming)
+- Sistem yeteneklerinin eksiksiz aktivasyonu
+
+### Out of Scope
+- Yeni AI ajanlar
+- Yeni entegrasyonlar (Drive/Telegram dışında)
+
+---
+
+## ⏳ ERA IV — AUTONOMOUS OPERATIONS
+
+**ERA IV Directive (SC-2026-07-04-ERA-IV):**
+> "Yeni soru: Workspace kendi başına iş tamamlayabiliyor mu?"
+
+**ERA III tamamlandı:** Observation + Execution + Integration katmanları ayrıldı.
+**ERA IV hedefi:** Workspace'in kendi başına tam iş çalıştırabilmesi.
+
+### ERA III — COMPLETED (2026-07-04) ✅
+
+**EC-2026-07-04-0001 — ERA III CERTIFIED**
+
+| Sprint | Katman | Status |
+|--------|--------|--------|
+| Sprint 4.6 | Observation Layer | ✅ Certified |
+| Sprint 4.7 | Execution Layer | ✅ Certified |
+| Sprint 4.8 | Integration Layer | ✅ Certified |
+
+**Mimari:**
+```
+Workspace
+  ├─ Observation → Cockpit, Health, Timeline
+  ├─ Execution → Queue, Replay, Retry
+  └─ Integration → Drive Webhook, Metadata, Files
+```
+
+---
+
+## ⏳ PRR Sprint 4.9 — Production Readiness Review (Önkoşul)
+
+**Board Acknowledgement:** EC-2026-07-04-0002 — ERA III OFFICIALLY CLOSED
+**Next Phase:** ERA IV — Autonomous Operations
+**Sprint 4.9 Authorized:** Production Readiness Review
+
+### PRR Kapsamı
+
+| Alan | Kontrol |
+|------|---------|
+| Route Coverage | Tüm controller method'larının route karşılığı var mı? |
+| Orphan Controllers | 14 kritik + 6 duplicate çözüldü mü? |
+| Queue Health | Retry/Replay mekanizması doğru çalışıyor mu? |
+| Webhook Health | Channel renewal, error handling, retry |
+| Replay Tests | Başarısız execution'lar yeniden oynatılabiliyor mu? |
+| Security Review | Tenant isolation, webhook auth, rate limiting |
+| Tenant Isolation | Tüm query'ler tenant scope içeriyor mu? |
+| Backup / Restore | Migration ve seed'ler idempotent mi? |
+| Monitoring | Health metrics, alert thresholds |
+| Deployment Checklist | Hetzner'a deploy için kontrol listesi |
+
+### PRR Çıktısı
+- `docs/sprints/SPRINT_PRR_4_9/` — PRR Sprint dokümantasyonu
+- Technical debt quantified (SAB violations, orphan controllers)
+- Deployment checklist
+- Go/no-go for Sprint 5.0
+
+---
+
+## ⏳ Sprint 4.9 — Capability Activation Platform
+
+**Board Directive (SC-2026-07-04-0048):**
+> "Sprint 4.9'un odağı teknik entegrasyondan ziyade mevcut yeteneklerin eksiksiz şekilde kullanılabilir hale getirilmesidir."
+
+### Yetenek Aktivasyon Öncelikleri
+
+| # | Yetenek | Durum | Eylem |
+|---|---------|-------|-------|
+| 1 | Route Coverage | ~65% | Orphan controller route'larını tamamla |
+| 2 | Orphan Controllers | 14 kritik | Register veya arşivle |
+| 3 | Duplicate Controllers | 6 çift | Birleştir veya eskiyi sil |
+| 4 | SAB Violations | 45 pre-existing | Naming Authority düzelt |
+| 5 | Replay Tests | Eksik | ReplayService test yaz |
+| 6 | Webhook Health | Board önkoşulu | `drive:renew-channels` test et |
+| 7 | API Contract Registry | Yok | Tüm endpoint kontratlarını belgele |
+| 8 | Capability Registry | Yok | Workspace cockpit yeteneklerini kataloga gir |
+
+### ERA IV Hedef Durum (Sprint 4.9 Sonu)
+```
+Workspace
+  ├─ Cockpit → 16/16 panel çalışıyor
+  ├─ Queue → Tüm agent'lar idempotent replay destekliyor
+  ├─ Drive → Webhook channel renew + file sync çalışıyor
+  ├─ API → Tüm endpoint route'lı, test edilmiş
+  └─ Güvenlik → Tenant isolation + webhook auth doğrulanmış
+```
+
+### Out of Scope
+- Yeni AI ajanlar
+- Yeni entegrasyonlar (Drive dışında)
 
 ---
 
@@ -137,10 +305,10 @@ SAAB Board Resolution: Property Digital Twin Cockpit APPROVED.
 ## Sprint Roadmap — ERA III & Beyond
 
 ```
-Sprint 4.6 → Property Digital Twin Cockpit     [🔄 AKTİF]
-Sprint 4.7 → Async Queue + Event Replay      [⏳ Planlanıyor]
-Sprint 4.8 → Google Drive & Docs Integration [⏳ Planlanıyor]
-Sprint 4.9 → Telegram Production             [⏳ Planlanıyor]
+Sprint 4.6 → Property Digital Twin Cockpit     [✅ CERTIFIED]
+Sprint 4.7 → Async Queue + Event Replay      [✅ CERTIFIED]
+Sprint 4.8 → Google Drive Integration        [✅ CERTIFIED — ERA III COMPLETE]
+Sprint 4.9 → Capability Activation Platform  [⏳ Planlanıyor]
 Sprint 5.0 → İlk Canlı Müşteri Pilotu     [⏳ Planlanıyor]
 ```
 

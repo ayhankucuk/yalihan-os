@@ -76,6 +76,11 @@ Route::prefix('v1')->middleware([ThrottleApiRequests::class])->group(function ()
     Route::post('/webhook/facebook', [FacebookWebhookController::class, 'handleWebhook']);
     Route::get('/webhook/facebook', [FacebookWebhookController::class, 'verifyWebhook']);
 
+    // 📁 Google Drive Push Notifications — Sprint 4.8
+    // Secured by X-Goog-Channel-token header (HMAC)
+    Route::post('/webhook/drive', [\App\Http\Controllers\Api\DriveWebhookController::class, 'handle'])
+        ->name('api.drive.webhook');
+
     // 🤖 Telegram Integration (secured by X-Telegram-Bot-Api-Secret-Token)
     Route::post('/integrations/telegram/webhook', [\App\Http\Controllers\Api\Integrations\TelegramAdvisorAdapterController::class, 'handleWebhook'])
         ->middleware('telegram.secret')

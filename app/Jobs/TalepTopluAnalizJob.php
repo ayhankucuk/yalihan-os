@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Log;
  *
  * Birden fazla talebi queue'da analiz eder
  */
-class TalepTopluAnalizJob implements ShouldQueue
+class TalepTopluAnalizJob implements ShouldQueue, \App\Queue\Contracts\TenantAwareJobInterface
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -27,6 +27,29 @@ class TalepTopluAnalizJob implements ShouldQueue
      * Analiz edilecek talep ID'leri
      */
     public array $talepIds;
+
+    public function getTenantId(): ?int
+    {
+        if (empty($this->talepIds)) {
+            return null;
+        }
+        $talep = Talep::withoutGlobalScopes()->find($this->talepIds[0]);
+        return $talep?->tenant_id;
+    }
+
+    public function getUserId(): ?int
+    {
+        if (empty($this->talepIds)) {
+            return null;
+        }
+        $talep = Talep::withoutGlobalScopes()->find($this->talepIds[0]);
+        return $talep?->danisman_id;
+    }
+
+    public function middleware(): array
+    {
+        return [new \App\Queue\Middleware\RestoreTenantContext(app(\App\Services\SaaS\TenantContextService::class))];
+    }
 
     /**
      * Job ID (progress tracking için)

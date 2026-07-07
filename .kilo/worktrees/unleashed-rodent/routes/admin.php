@@ -1604,3 +1604,33 @@ Route::prefix('/monitoring')->name('monitoring.')->group(function () {
     Route::get('/health', [\App\Http\Controllers\Admin\HealthController::class, 'dashboard'])->name('health.dashboard');
     Route::get('/api/health', [\App\Http\Controllers\Admin\HealthController::class, 'api'])->name('api.health');
 });
+
+// ======================================
+// SPRINT 6.0: PROPERTY WORKSPACE FOUNDATION
+// Workspace CRUD + Dashboard endpoints
+// Omurga kritik yolu: Feature Flag → Runtime → Dashboard Card
+// ======================================
+Route::middleware(['auth', 'role:admin'])->prefix('workspace')->name('workspace.')->group(function () {
+    // Sprint 6.1: Template Engine endpoints
+    Route::get('/templates', [App\Http\Controllers\Admin\WorkspaceController::class, 'templates'])->name('templates');
+    Route::get('/templates/health', [App\Http\Controllers\Admin\WorkspaceController::class, 'templateHealth'])->name('templates.health');
+    Route::get('/templates/{templateId}', [App\Http\Controllers\Admin\WorkspaceController::class, 'getTemplate'])->name('templates.show');
+    Route::get('/templates/by-intent/{intent}', [App\Http\Controllers\Admin\WorkspaceController::class, 'getTemplateByIntent'])->name('templates.by-intent');
+
+
+    // Dashboard card data
+    Route::get('/', [App\Http\Controllers\Admin\WorkspaceController::class, 'index'])->name('index');
+    Route::get('/stats', [App\Http\Controllers\Admin\WorkspaceController::class, 'stats'])->name('stats');
+
+    // Intent Selection
+    Route::get('/intents', [App\Http\Controllers\Admin\WorkspaceController::class, 'intents'])->name('intents');
+
+    // Workspace CRUD
+    Route::post('/', [App\Http\Controllers\Admin\WorkspaceController::class, 'store'])->name('store');
+    Route::get('/{uuid}', [App\Http\Controllers\Admin\WorkspaceController::class, 'show'])->name('show');
+
+    // Workspace lifecycle
+    Route::post('/{uuid}/intent', [App\Http\Controllers\Admin\WorkspaceController::class, 'selectIntent'])->name('intent');
+    Route::post('/{uuid}/draft', [App\Http\Controllers\Admin\WorkspaceController::class, 'toDraft'])->name('draft');
+    Route::get('/{uuid}/timeline', [App\Http\Controllers\Admin\WorkspaceController::class, 'timeline'])->name('timeline');
+});

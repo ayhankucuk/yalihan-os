@@ -1,0 +1,1512 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e6]:
+        - list [ref=e7]:
+          - listitem [ref=e8]:
+            - link "Stack" [ref=e9] [cursor=pointer]:
+              - /url: "#stack"
+              - button "Stack" [ref=e10]:
+                - img [ref=e12]
+                - text: Stack
+          - listitem [ref=e14]:
+            - link "Context" [ref=e15] [cursor=pointer]:
+              - /url: "#context"
+              - button "Context" [ref=e16]:
+                - img [ref=e18]
+                - text: Context
+          - listitem [ref=e20]:
+            - link "Debug" [ref=e21] [cursor=pointer]:
+              - /url: "#debug"
+              - button "Debug" [ref=e22]:
+                - img [ref=e24]
+                - text: Debug
+          - listitem [ref=e26]:
+            - link "Flare" [ref=e27] [cursor=pointer]:
+              - /url: https://flareapp.io/?utm_campaign=ignition&utm_source=ignition
+              - button "Flare" [ref=e28]:
+                - img [ref=e30]
+                - text: Flare
+        - list [ref=e35]:
+          - listitem [ref=e36]:
+            - link "Share" [ref=e37] [cursor=pointer]:
+              - /url: "#share"
+              - button "Share" [ref=e38]:
+                - img [ref=e40]
+                - text: Share
+            - generic:
+              - generic:
+                - generic:
+                  - heading "Share with Flare" [level=4]
+                  - link "Docs":
+                    - /url: https://flareapp.io/docs/ignition/introducing-ignition/sharing-errors?utm_campaign=ignition&utm_source=ignition
+                    - text: Docs
+                    - img
+                - list:
+                  - listitem:
+                    - generic:
+                      - checkbox "Stack" [checked]
+                      - generic: Stack
+                  - listitem:
+                    - generic:
+                      - checkbox "Context" [checked]
+                      - generic: Context
+                  - listitem:
+                    - generic:
+                      - checkbox "Debug" [checked]
+                      - generic: Debug
+                - generic:
+                  - button "Create Share":
+                    - img
+                    - text: Create Share
+          - listitem [ref=e42]:
+            - link "Docs" [ref=e43] [cursor=pointer]:
+              - /url: https://laravel.com/docs/
+              - button "Docs" [ref=e44]:
+                - img [ref=e46]
+                - text: Docs
+          - listitem [ref=e48]:
+            - link [ref=e49] [cursor=pointer]:
+              - /url: "#settings"
+              - button [ref=e50]:
+                - img [ref=e52]
+            - generic:
+              - generic:
+                - generic:
+                  - heading "Ignition Settings" [level=4]
+                  - link "Docs":
+                    - /url: https://flareapp.io/ignition?utm_campaign=ignition&utm_source=ignition
+                    - text: Docs
+                    - img
+                - generic:
+                  - text: Editor
+                  - generic:
+                    - combobox "Editor":
+                      - option "Clipboard"
+                      - option "Sublime"
+                      - option "TextMate"
+                      - option "Emacs"
+                      - option "MacVim"
+                      - option "PhpStorm" [selected]
+                      - option "PHPStorm Remote"
+                      - option "Idea"
+                      - option "VS Code"
+                      - option "VS Code Insiders"
+                      - option "VS Code Remote"
+                      - option "VS Code Insiders Remote"
+                      - option "VS Codium"
+                      - option "Cursor"
+                      - option "Atom"
+                      - option "Nova"
+                      - option "NetBeans"
+                      - option "Zed"
+                      - option "Windsurf"
+                      - option "Xdebug"
+                    - generic:
+                      - img
+                - generic:
+                  - text: Theme
+                  - button "auto":
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                        - generic:
+                          - generic:
+                            - img
+                        - generic:
+                          - generic:
+                            - img
+                      - generic: auto
+                - generic:
+                  - button "Save settings"
+                - paragraph:
+                  - text: Settings will be saved locally in
+                  - code: ~/.ignition.json
+                  - text: .
+      - link "Class \"App\\Tenant\\Scopes\\TenantScope\" not found" [ref=e56] [cursor=pointer]:
+        - /url: "#top"
+        - generic [ref=e57]: Class "App\Tenant\Scopes\TenantScope" not found
+  - main [ref=e58]:
+    - main [ref=e62]:
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - generic [ref=e68]: Error
+          - generic [ref=e69]:
+            - generic [ref=e70]: PHP 8.4.7
+            - generic [ref=e71]:
+              - img [ref=e72]
+              - text: 10.50.2
+        - generic [ref=e75]: Class "App\Tenant\Scopes\TenantScope" not found
+    - generic [ref=e78]:
+      - complementary [ref=e79]:
+        - generic [ref=e80]:
+          - button "Expand vendor frames" [ref=e82] [cursor=pointer]:
+            - generic [ref=e83]:
+              - img [ref=e84]
+              - img [ref=e86]
+            - text: Expand vendor frames
+          - list [ref=e89]:
+            - listitem [ref=e90]:
+              - generic [ref=e92]:
+                - generic [ref=e93]: App
+                - generic [ref=e94]: \
+                - generic [ref=e95]: Models
+                - generic [ref=e96]: \
+                - generic [ref=e97]: WorkspaceExecution
+                - generic [ref=e98]: ": 134"
+              - generic [ref=e99]: booted
+            - listitem [ref=e100]
+            - listitem [ref=e101] [cursor=pointer]:
+              - text: 3 vendor frames
+              - img [ref=e102]
+            - listitem [ref=e104] [cursor=pointer]:
+              - generic [ref=e106]:
+                - generic [ref=e107]: App
+                - generic [ref=e108]: \
+                - generic [ref=e109]: Services
+                - generic [ref=e110]: \
+                - generic [ref=e111]: Workspace
+                - generic [ref=e112]: \
+                - generic [ref=e113]: WorkspaceExecutionService
+                - generic [ref=e114]: ": 192"
+              - generic [ref=e115]: getSummary
+            - listitem [ref=e116] [cursor=pointer]:
+              - generic [ref=e118]:
+                - generic [ref=e119]: App
+                - generic [ref=e120]: \
+                - generic [ref=e121]: Services
+                - generic [ref=e122]: \
+                - generic [ref=e123]: Workspace
+                - generic [ref=e124]: \
+                - generic [ref=e125]: WorkspaceSummaryService
+                - generic [ref=e126]: ": 46"
+              - generic [ref=e127]: getSummary
+            - listitem [ref=e128] [cursor=pointer]:
+              - generic [ref=e130]:
+                - generic [ref=e131]: App
+                - generic [ref=e132]: \
+                - generic [ref=e133]: Http
+                - generic [ref=e134]: \
+                - generic [ref=e135]: Controllers
+                - generic [ref=e136]: \
+                - generic [ref=e137]: Admin
+                - generic [ref=e138]: \
+                - generic [ref=e139]: WorkspaceDashboardController
+                - generic [ref=e140]: ": 55"
+              - generic [ref=e141]: show
+            - listitem [ref=e142] [cursor=pointer]:
+              - text: 9 vendor frames
+              - img [ref=e143]
+            - listitem [ref=e145] [cursor=pointer]:
+              - generic [ref=e147]:
+                - generic [ref=e148]: App
+                - generic [ref=e149]: \
+                - generic [ref=e150]: Http
+                - generic [ref=e151]: \
+                - generic [ref=e152]: Middleware
+                - generic [ref=e153]: \
+                - generic [ref=e154]: SAB
+                - generic [ref=e155]: \
+                - generic [ref=e156]: GlobalWriteGuard
+                - generic [ref=e157]: ": 17"
+              - generic [ref=e158]: handle
+            - listitem [ref=e159] [cursor=pointer]:
+              - text: 1 vendor frame
+              - img [ref=e160]
+            - listitem [ref=e162] [cursor=pointer]:
+              - generic [ref=e164]:
+                - generic [ref=e165]: App
+                - generic [ref=e166]: \
+                - generic [ref=e167]: Http
+                - generic [ref=e168]: \
+                - generic [ref=e169]: Middleware
+                - generic [ref=e170]: \
+                - generic [ref=e171]: RoleMiddleware
+                - generic [ref=e172]: ": 39"
+              - generic [ref=e173]: handle
+            - listitem [ref=e174] [cursor=pointer]:
+              - text: 3 vendor frames
+              - img [ref=e175]
+            - listitem [ref=e177] [cursor=pointer]:
+              - generic [ref=e179]:
+                - generic [ref=e180]: App
+                - generic [ref=e181]: \
+                - generic [ref=e182]: Http
+                - generic [ref=e183]: \
+                - generic [ref=e184]: Middleware
+                - generic [ref=e185]: \
+                - generic [ref=e186]: AppStateVersionMiddleware
+                - generic [ref=e187]: ": 24"
+              - generic [ref=e188]: handle
+            - listitem [ref=e189] [cursor=pointer]:
+              - text: 1 vendor frame
+              - img [ref=e190]
+            - listitem [ref=e192] [cursor=pointer]:
+              - generic [ref=e194]:
+                - generic [ref=e195]: App
+                - generic [ref=e196]: \
+                - generic [ref=e197]: Http
+                - generic [ref=e198]: \
+                - generic [ref=e199]: Middleware
+                - generic [ref=e200]: \
+                - generic [ref=e201]: TrackUserActivity
+                - generic [ref=e202]: ": 22"
+              - generic [ref=e203]: handle
+            - listitem [ref=e204] [cursor=pointer]:
+              - text: 9 vendor frames
+              - img [ref=e205]
+            - listitem [ref=e207] [cursor=pointer]:
+              - generic [ref=e209]:
+                - generic [ref=e210]: App
+                - generic [ref=e211]: \
+                - generic [ref=e212]: Http
+                - generic [ref=e213]: \
+                - generic [ref=e214]: Middleware
+                - generic [ref=e215]: \
+                - generic [ref=e216]: LocaleAndCurrencyMiddleware
+                - generic [ref=e217]: ": 56"
+              - generic [ref=e218]: handle
+            - listitem [ref=e219] [cursor=pointer]:
+              - text: 8 vendor frames
+              - img [ref=e220]
+            - listitem [ref=e222] [cursor=pointer]:
+              - generic [ref=e224]:
+                - generic [ref=e225]: App
+                - generic [ref=e226]: \
+                - generic [ref=e227]: Http
+                - generic [ref=e228]: \
+                - generic [ref=e229]: Middleware
+                - generic [ref=e230]: \
+                - generic [ref=e231]: ProductionLockMiddleware
+                - generic [ref=e232]: ": 20"
+              - generic [ref=e233]: handle
+            - listitem [ref=e234] [cursor=pointer]:
+              - text: 16 vendor frames
+              - img [ref=e235]
+            - listitem [ref=e237] [cursor=pointer]:
+              - generic [ref=e239]:
+                - generic [ref=e240]: App
+                - generic [ref=e241]: \
+                - generic [ref=e242]: Http
+                - generic [ref=e243]: \
+                - generic [ref=e244]: Middleware
+                - generic [ref=e245]: \
+                - generic [ref=e246]: SecurityMiddleware
+                - generic [ref=e247]: ": 31"
+              - generic [ref=e248]: handle
+            - listitem [ref=e249] [cursor=pointer]:
+              - text: 20 vendor frames
+              - img [ref=e250]
+            - listitem [ref=e252] [cursor=pointer]:
+              - generic [ref=e254]:
+                - generic [ref=e255]: public
+                - generic [ref=e256]: /
+                - generic [ref=e257]: index
+                - generic [ref=e258]: .php
+                - generic [ref=e259]: ": 21"
+              - generic [ref=e260]: require_once
+            - listitem [ref=e261] [cursor=pointer]:
+              - text: 1 vendor frame
+              - img [ref=e262]
+      - generic [ref=e264]:
+        - 'link "app / Models / WorkspaceExecution .php : 134" [ref=e266] [cursor=pointer]':
+          - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=134
+          - generic [ref=e267]:
+            - generic [ref=e268]: app
+            - generic [ref=e269]: /
+            - generic [ref=e270]: Models
+            - generic [ref=e271]: /
+            - generic [ref=e272]: WorkspaceExecution
+            - generic [ref=e273]: .php
+            - generic [ref=e274]: ": 134"
+        - main [ref=e275]:
+          - navigation [ref=e276]:
+            - generic [ref=e277]:
+              - paragraph [ref=e278]: "119"
+              - paragraph [ref=e279]: "120"
+              - paragraph [ref=e280]: "121"
+              - paragraph [ref=e281]: "122"
+              - paragraph [ref=e282]: "123"
+              - paragraph [ref=e283]: "124"
+              - paragraph [ref=e284]: "125"
+              - paragraph [ref=e285]: "126"
+              - paragraph [ref=e286]: "127"
+              - paragraph [ref=e287]: "128"
+              - paragraph [ref=e288]: "129"
+              - paragraph [ref=e289]: "130"
+              - paragraph [ref=e290]: "131"
+              - paragraph [ref=e291]: "132"
+              - paragraph [ref=e292]: "133"
+              - paragraph [ref=e293]: "134"
+              - paragraph [ref=e294]: "135"
+              - paragraph [ref=e295]: "136"
+              - paragraph [ref=e296]: "137"
+              - paragraph [ref=e297]: "138"
+              - paragraph [ref=e298]: "139"
+              - paragraph [ref=e299]: "140"
+              - paragraph [ref=e300]: "141"
+              - paragraph [ref=e301]: "142"
+              - paragraph [ref=e302]: "143"
+              - paragraph [ref=e303]: "144"
+              - paragraph [ref=e304]: "145"
+              - paragraph [ref=e305]: "146"
+              - paragraph [ref=e306]: "147"
+              - paragraph [ref=e307]: "148"
+          - code [ref=e310]:
+            - generic [ref=e311]:
+              - link [ref=e312] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=119
+                - button [ref=e313]:
+                  - img [ref=e314]
+              - generic [ref=e317]: "];"
+            - link [ref=e319] [cursor=pointer]:
+              - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=120
+              - button [ref=e320]:
+                - img [ref=e321]
+            - generic [ref=e324]:
+              - link [ref=e325] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=121
+                - button [ref=e326]:
+                  - img [ref=e327]
+              - generic [ref=e330]: protected $attributes = [
+            - generic [ref=e331]:
+              - link [ref=e332] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=122
+                - button [ref=e333]:
+                  - img [ref=e334]
+              - generic [ref=e337]: "'state' => self::STATE_QUEUED,"
+            - generic [ref=e338]:
+              - link [ref=e339] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=123
+                - button [ref=e340]:
+                  - img [ref=e341]
+              - generic [ref=e344]: "'attempt_number' => 1,"
+            - generic [ref=e345]:
+              - link [ref=e346] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=124
+                - button [ref=e347]:
+                  - img [ref=e348]
+              - generic [ref=e351]: "'max_attempts' => 3,"
+            - generic [ref=e352]:
+              - link [ref=e353] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=125
+                - button [ref=e354]:
+                  - img [ref=e355]
+              - generic [ref=e358]: "'retry_count' => 0,"
+            - generic [ref=e359]:
+              - link [ref=e360] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=126
+                - button [ref=e361]:
+                  - img [ref=e362]
+              - generic [ref=e365]: "'queue_name' => 'workspace',"
+            - generic [ref=e366]:
+              - link [ref=e367] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=127
+                - button [ref=e368]:
+                  - img [ref=e369]
+              - generic [ref=e372]: "'timeout_seconds' => 300,"
+            - generic [ref=e373]:
+              - link [ref=e374] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=128
+                - button [ref=e375]:
+                  - img [ref=e376]
+              - generic [ref=e378]: "];"
+            - link [ref=e380] [cursor=pointer]:
+              - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=129
+              - button [ref=e381]:
+                - img [ref=e382]
+            - generic [ref=e385]:
+              - link [ref=e386] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=130
+                - button [ref=e387]:
+                  - img [ref=e388]
+              - generic [ref=e391]: // ─── Boot ───────────────────────────────────────────────────────────────
+            - link [ref=e393] [cursor=pointer]:
+              - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=131
+              - button [ref=e394]:
+                - img [ref=e395]
+            - generic [ref=e398]:
+              - link [ref=e399] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=132
+                - button [ref=e400]:
+                  - img [ref=e401]
+              - generic [ref=e404]: "protected static function booted(): void"
+            - generic [ref=e405]:
+              - link [ref=e406] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=133
+                - button [ref=e407]:
+                  - img [ref=e408]
+              - generic [ref=e411]: "{"
+            - generic [ref=e412]:
+              - link [ref=e413] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=134
+                - button [ref=e414]:
+                  - img [ref=e415]
+              - generic [ref=e418]: static::addGlobalScope(new TenantScope);
+            - link [ref=e420] [cursor=pointer]:
+              - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=135
+              - button [ref=e421]:
+                - img [ref=e422]
+            - generic [ref=e425]:
+              - link [ref=e426] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=136
+                - button [ref=e427]:
+                  - img [ref=e428]
+              - generic [ref=e431]: "static::creating(function (self $exec) {"
+            - generic [ref=e432]:
+              - link [ref=e433] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=137
+                - button [ref=e434]:
+                  - img [ref=e435]
+              - generic [ref=e438]: "if (!$exec->tenant_id && $exec->workspace_id) {"
+            - generic [ref=e439]:
+              - link [ref=e440] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=138
+                - button [ref=e441]:
+                  - img [ref=e442]
+              - generic [ref=e445]: $ws = \App\Models\PortfolioDriveWorkspace::find($exec->workspace_id);
+            - generic [ref=e446]:
+              - link [ref=e447] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=139
+                - button [ref=e448]:
+                  - img [ref=e449]
+              - generic [ref=e452]: "if ($ws) {"
+            - generic [ref=e453]:
+              - link [ref=e454] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=140
+                - button [ref=e455]:
+                  - img [ref=e456]
+              - generic [ref=e459]: $exec->tenant_id = $ws->tenant_id;
+            - generic [ref=e460]:
+              - link [ref=e461] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=141
+                - button [ref=e462]:
+                  - img [ref=e463]
+              - generic [ref=e465]: "}"
+            - generic [ref=e466]:
+              - link [ref=e467] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=142
+                - button [ref=e468]:
+                  - img [ref=e469]
+              - generic [ref=e471]: "}"
+            - generic [ref=e472]:
+              - link [ref=e473] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=143
+                - button [ref=e474]:
+                  - img [ref=e475]
+              - generic [ref=e478]: "if (!$exec->queued_at) {"
+            - generic [ref=e479]:
+              - link [ref=e480] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=144
+                - button [ref=e481]:
+                  - img [ref=e482]
+              - generic [ref=e485]: $exec->queued_at = now();
+            - generic [ref=e486]:
+              - link [ref=e487] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=145
+                - button [ref=e488]:
+                  - img [ref=e489]
+              - generic [ref=e491]: "}"
+            - generic [ref=e492]:
+              - link [ref=e493] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=146
+                - button [ref=e494]:
+                  - img [ref=e495]
+              - generic [ref=e498]: "if (!$exec->backoff_intervals) {"
+            - generic [ref=e499]:
+              - link [ref=e500] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=147
+                - button [ref=e501]:
+                  - img [ref=e502]
+              - generic [ref=e505]: $exec->backoff_intervals = self::DEFAULT_BACKOFF;
+            - generic [ref=e506]:
+              - link [ref=e507] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FModels%2FWorkspaceExecution.php&line=148
+                - button [ref=e508]:
+                  - img [ref=e509]
+              - generic [ref=e511]: "}"
+    - generic [ref=e513]:
+      - navigation [ref=e514]:
+        - list [ref=e516]:
+          - listitem [ref=e517]:
+            - link "App" [ref=e518] [cursor=pointer]:
+              - /url: "#context-app"
+            - list [ref=e519]:
+              - listitem [ref=e520]:
+                - link "Routing" [ref=e521] [cursor=pointer]:
+                  - /url: "#context-app-routing"
+                  - img [ref=e523]
+                  - generic [ref=e525]: Routing
+          - listitem [ref=e526]:
+            - link "Request" [ref=e527] [cursor=pointer]:
+              - /url: "#context-request"
+            - list [ref=e528]:
+              - listitem [ref=e529]:
+                - link "Browser" [ref=e530] [cursor=pointer]:
+                  - /url: "#context-request-browser"
+                  - img [ref=e532]
+                  - generic [ref=e534]: Browser
+              - listitem [ref=e535]:
+                - link "Headers" [ref=e536] [cursor=pointer]:
+                  - /url: "#context-request-headers"
+                  - img [ref=e538]
+                  - generic [ref=e540]: Headers
+              - listitem [ref=e541]:
+                - link "Body" [ref=e542] [cursor=pointer]:
+                  - /url: "#context-request-body"
+                  - img [ref=e544]
+                  - generic [ref=e546]: Body
+          - listitem [ref=e547]:
+            - link "Context" [ref=e548] [cursor=pointer]:
+              - /url: "#context-context"
+            - list [ref=e549]:
+              - listitem [ref=e550]:
+                - link "User" [ref=e551] [cursor=pointer]:
+                  - /url: "#context-user-user"
+                  - img [ref=e553]
+                  - generic [ref=e555]: User
+              - listitem [ref=e556]:
+                - link "Git" [ref=e557] [cursor=pointer]:
+                  - /url: "#context-context-git"
+                  - img [ref=e559]
+                  - generic [ref=e561]: Git
+              - listitem [ref=e562]:
+                - link "Versions" [ref=e563] [cursor=pointer]:
+                  - /url: "#context-context-versions"
+                  - img [ref=e565]
+                  - generic [ref=e567]: Versions
+      - generic [ref=e568]:
+        - generic [ref=e569]:
+          - heading "App" [level=2] [ref=e570]
+          - generic [ref=e572]:
+            - heading "Routing" [level=1] [ref=e573]:
+              - text: Routing
+              - img [ref=e575]
+            - generic [ref=e577]:
+              - generic [ref=e578]:
+                - term [ref=e579]: Controller
+                - definition [ref=e580]:
+                  - generic [ref=e581]:
+                    - code [ref=e584]: App\Http\Controllers\Admin\WorkspaceDashboardController@show
+                    - button "Copy to clipboard" [ref=e586] [cursor=pointer]:
+                      - img [ref=e587]
+              - generic [ref=e589]:
+                - term [ref=e590]: Route name
+                - definition [ref=e591]:
+                  - generic [ref=e592]:
+                    - code [ref=e595]: admin.workspace.show
+                    - button "Copy to clipboard" [ref=e597] [cursor=pointer]:
+                      - img [ref=e598]
+              - generic [ref=e600]:
+                - term [ref=e601]: Middleware
+                - definition [ref=e602]:
+                  - list [ref=e603]:
+                    - listitem [ref=e604]:
+                      - generic [ref=e605]:
+                        - code [ref=e608]: web
+                        - button "Copy to clipboard" [ref=e610] [cursor=pointer]:
+                          - img [ref=e611]
+                    - listitem [ref=e613]:
+                      - generic [ref=e614]:
+                        - code [ref=e617]: auth
+                        - button "Copy to clipboard" [ref=e619] [cursor=pointer]:
+                          - img [ref=e620]
+                    - listitem [ref=e622]:
+                      - generic [ref=e623]:
+                        - code [ref=e626]: verified
+                        - button "Copy to clipboard" [ref=e628] [cursor=pointer]:
+                          - img [ref=e629]
+                    - listitem [ref=e631]:
+                      - generic [ref=e632]:
+                        - code [ref=e635]: role:admin
+                        - button "Copy to clipboard" [ref=e637] [cursor=pointer]:
+                          - img [ref=e638]
+                    - listitem [ref=e640]:
+                      - generic [ref=e641]:
+                        - code [ref=e644]: sab.write.guard
+                        - button "Copy to clipboard" [ref=e646] [cursor=pointer]:
+                          - img [ref=e647]
+        - generic [ref=e649]:
+          - heading "Request" [level=2] [ref=e650]
+          - generic [ref=e651]:
+            - generic [ref=e652]:
+              - generic [ref=e653]:
+                - generic [ref=e654]: http://127.0.0.1:8021/admin/workspace/2
+                - generic [ref=e655]: GET
+              - generic [ref=e657] [cursor=pointer]:
+                - code [ref=e660]:
+                  - code [ref=e662]: "curl \"http://127.0.0.1:8021/admin/workspace/2\" \\ -X GET \\ -H 'host: 127.0.0.1:8021' \\ -H 'connection: keep-alive' \\ -H 'sec-ch-ua: \"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"' \\ -H 'sec-ch-ua-mobile: ?0' \\ -H 'sec-ch-ua-platform: \"macOS\"' \\ -H 'upgrade-insecure-requests: 1' \\ -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36' \\ -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \\ -H 'sec-fetch-site: none' \\ -H 'sec-fetch-mode: navigate' \\ -H 'sec-fetch-user: ?1' \\ -H 'sec-fetch-dest: document' \\ -H 'accept-encoding: gzip, deflate, br, zstd' \\ -H 'accept-language: tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7' \\ -H 'cookie: <CENSORED>';"
+                - button "Copy to clipboard" [ref=e664]:
+                  - img [ref=e665]
+                - button [ref=e667]:
+                  - img [ref=e668]
+            - generic [ref=e670]:
+              - heading "Browser" [level=1] [ref=e671]:
+                - text: Browser
+                - img [ref=e673]
+              - generic [ref=e675]:
+                - code [ref=e678]: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36
+                - button "Copy to clipboard" [ref=e680] [cursor=pointer]:
+                  - img [ref=e681]
+            - generic [ref=e683]:
+              - heading "Headers" [level=1] [ref=e684]:
+                - text: Headers
+                - img [ref=e686]
+              - generic [ref=e688]:
+                - generic [ref=e689]:
+                  - term [ref=e690]: host
+                  - definition [ref=e691]:
+                    - generic [ref=e692]:
+                      - code [ref=e695]: 127.0.0.1:8021
+                      - button "Copy to clipboard" [ref=e697] [cursor=pointer]:
+                        - img [ref=e698]
+                - generic [ref=e700]:
+                  - term [ref=e701]: connection
+                  - definition [ref=e702]:
+                    - generic [ref=e703]:
+                      - code [ref=e706]: keep-alive
+                      - button "Copy to clipboard" [ref=e708] [cursor=pointer]:
+                        - img [ref=e709]
+                - generic [ref=e711]:
+                  - term [ref=e712]: sec-ch-ua
+                  - definition [ref=e713]:
+                    - generic [ref=e714]:
+                      - code [ref=e717]: "\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\""
+                      - button "Copy to clipboard" [ref=e719] [cursor=pointer]:
+                        - img [ref=e720]
+                - generic [ref=e722]:
+                  - term [ref=e723]: sec-ch-ua-mobile
+                  - definition [ref=e724]:
+                    - generic [ref=e725]:
+                      - code [ref=e728]: "?0"
+                      - button "Copy to clipboard" [ref=e730] [cursor=pointer]:
+                        - img [ref=e731]
+                - generic [ref=e733]:
+                  - term [ref=e734]: sec-ch-ua-platform
+                  - definition [ref=e735]:
+                    - generic [ref=e736]:
+                      - code [ref=e739]: "\"macOS\""
+                      - button "Copy to clipboard" [ref=e741] [cursor=pointer]:
+                        - img [ref=e742]
+                - generic [ref=e744]:
+                  - term [ref=e745]: upgrade-insecure-requests
+                  - definition [ref=e746]:
+                    - generic [ref=e747]:
+                      - code [ref=e750]: "1"
+                      - button "Copy to clipboard" [ref=e752] [cursor=pointer]:
+                        - img [ref=e753]
+                - generic [ref=e755]:
+                  - term [ref=e756]: user-agent
+                  - definition [ref=e757]:
+                    - generic [ref=e758]:
+                      - code [ref=e761]: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36
+                      - button "Copy to clipboard" [ref=e763] [cursor=pointer]:
+                        - img [ref=e764]
+                - generic [ref=e766]:
+                  - term [ref=e767]: accept
+                  - definition [ref=e768]:
+                    - generic [ref=e769]:
+                      - code [ref=e772]: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+                      - button "Copy to clipboard" [ref=e774] [cursor=pointer]:
+                        - img [ref=e775]
+                - generic [ref=e777]:
+                  - term [ref=e778]: sec-fetch-site
+                  - definition [ref=e779]:
+                    - generic [ref=e780]:
+                      - code [ref=e783]: none
+                      - button "Copy to clipboard" [ref=e785] [cursor=pointer]:
+                        - img [ref=e786]
+                - generic [ref=e788]:
+                  - term [ref=e789]: sec-fetch-mode
+                  - definition [ref=e790]:
+                    - generic [ref=e791]:
+                      - code [ref=e794]: navigate
+                      - button "Copy to clipboard" [ref=e796] [cursor=pointer]:
+                        - img [ref=e797]
+                - generic [ref=e799]:
+                  - term [ref=e800]: sec-fetch-user
+                  - definition [ref=e801]:
+                    - generic [ref=e802]:
+                      - code [ref=e805]: "?1"
+                      - button "Copy to clipboard" [ref=e807] [cursor=pointer]:
+                        - img [ref=e808]
+                - generic [ref=e810]:
+                  - term [ref=e811]: sec-fetch-dest
+                  - definition [ref=e812]:
+                    - generic [ref=e813]:
+                      - code [ref=e816]: document
+                      - button "Copy to clipboard" [ref=e818] [cursor=pointer]:
+                        - img [ref=e819]
+                - generic [ref=e821]:
+                  - term [ref=e822]: accept-encoding
+                  - definition [ref=e823]:
+                    - generic [ref=e824]:
+                      - code [ref=e827]: gzip, deflate, br, zstd
+                      - button "Copy to clipboard" [ref=e829] [cursor=pointer]:
+                        - img [ref=e830]
+                - generic [ref=e832]:
+                  - term [ref=e833]: accept-language
+                  - definition [ref=e834]:
+                    - generic [ref=e835]:
+                      - code [ref=e838]: tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7
+                      - button "Copy to clipboard" [ref=e840] [cursor=pointer]:
+                        - img [ref=e841]
+                - generic [ref=e843]:
+                  - term [ref=e844]: cookie
+                  - definition [ref=e845]:
+                    - generic [ref=e846]:
+                      - code [ref=e849]: <CENSORED>
+                      - button "Copy to clipboard" [ref=e851] [cursor=pointer]:
+                        - img [ref=e852]
+            - generic [ref=e854]:
+              - heading "Body" [level=1] [ref=e855]:
+                - text: Body
+                - img [ref=e857]
+              - generic [ref=e859]:
+                - code [ref=e862]: "[]"
+                - button "Copy to clipboard" [ref=e864] [cursor=pointer]:
+                  - img [ref=e865]
+        - generic [ref=e867]:
+          - heading "Context" [level=2] [ref=e868]
+          - generic [ref=e869]:
+            - generic [ref=e870]:
+              - heading "User" [level=1] [ref=e871]:
+                - text: User
+                - img [ref=e873]
+              - generic [ref=e875]:
+                - img "iletisim@yalihanemlak.com" [ref=e877]
+                - generic [ref=e878]:
+                  - paragraph [ref=e879]: E2E Admin
+                  - paragraph [ref=e880]: iletisim@yalihanemlak.com
+              - generic [ref=e881] [cursor=pointer]:
+                - code [ref=e884]:
+                  - code [ref=e886]: "{ \"id\": 1303, \"tenant_id\": null, \"created_at\": \"2026-07-02T09:40:43.000000Z\", \"updated_at\": \"2026-07-04T08:37:14.000000Z\", \"name\": \"E2E Admin\", \"baslik\": null, \"bio\": null, \"instagram_profil\": null, \"linkedin_profil\": null, \"website\": null, \"email\": \"iletisim@yalihanemlak.com\", \"telefon\": null, \"ofis_telefon\": null, \"ofis_adres\": null, \"whatsapp_numara\": null, \"email_verified_at\": \"2026-07-02T09:40:43.000000Z\", \"ulke_id\": 1, \"role_id\": 1, \"departman\": null, \"pozisyon\": null, \"uzmanlik_alanlari\": null, \"diller\": null, \"bolge_uzmanliklari\": null, \"lisans_no\": null, \"deneyim_yili\": null, \"aktiflik_durumu\": 1, \"dogrulanmis_mi\": 0, \"telegram_chat_id\": null, \"last_activity_at\": \"2026-07-04T08:37:14.000000Z\", \"deleted_at\": null, \"profile_photo_path\": null, \"role\": null, \"roles\": [ { \"id\": 76, \"name\": \"super-admin\", \"guard_name\": \"web\", \"description\": null, \"created_at\": \"2026-07-02T09:40:43.000000Z\", \"updated_at\": \"2026-07-02T09:40:43.000000Z\", \"pivot\": { \"model_type\": \"App\\\\Models\\\\User\", \"model_id\": 1303, \"role_id\": 76 } } ] }"
+                - button "Copy to clipboard" [ref=e888]:
+                  - img [ref=e889]
+                - button [ref=e891]:
+                  - img [ref=e892]
+            - generic [ref=e894]:
+              - heading "Git" [level=1] [ref=e895]:
+                - text: Git
+                - img [ref=e897]
+              - generic [ref=e899]:
+                - generic [ref=e900]: "feat: final board statement — constitutional phase closed"
+                - generic [ref=e901]:
+                  - generic [ref=e902]:
+                    - code [ref=e905]: 180a6a02de20bf5de9ef28df3d135056b83180ad
+                    - button "Copy to clipboard" [ref=e907] [cursor=pointer]:
+                      - img [ref=e908]
+                  - link "View commit 180a6a0" [ref=e910] [cursor=pointer]:
+                    - /url: https://github.com/ayhankucuk/yalihan-os/commit/180a6a02de20bf5de9ef28df3d135056b83180ad
+                    - button "View commit 180a6a0" [ref=e911]:
+                      - img [ref=e912]
+                      - text: View commit 180a6a0
+              - generic [ref=e916]:
+                - img [ref=e918]
+                - paragraph [ref=e920]: Last commit is dirty. (Un)staged changes have been made since this commit.
+            - generic [ref=e921]:
+              - heading "Versions" [level=1] [ref=e922]:
+                - text: Versions
+                - img [ref=e924]
+              - generic [ref=e926]:
+                - generic [ref=e927]:
+                  - term [ref=e928]: Php Version
+                  - definition [ref=e929]:
+                    - generic [ref=e930]:
+                      - code [ref=e933]: 8.4.7
+                      - button "Copy to clipboard" [ref=e935] [cursor=pointer]:
+                        - img [ref=e936]
+                - generic [ref=e938]:
+                  - term [ref=e939]: Laravel Version
+                  - definition [ref=e940]:
+                    - generic [ref=e941]:
+                      - code [ref=e944]: 10.50.2
+                      - button "Copy to clipboard" [ref=e946] [cursor=pointer]:
+                        - img [ref=e947]
+                - generic [ref=e949]:
+                  - term [ref=e950]: Laravel Locale
+                  - definition [ref=e951]:
+                    - generic [ref=e952]:
+                      - code [ref=e955]: tr
+                      - button "Copy to clipboard" [ref=e957] [cursor=pointer]:
+                        - img [ref=e958]
+                - generic [ref=e960]:
+                  - term [ref=e961]: Laravel Config Cached
+                  - definition [ref=e962]:
+                    - generic [ref=e963]:
+                      - img [ref=e964]
+                      - generic [ref=e966]: "false"
+                - generic [ref=e967]:
+                  - term [ref=e968]: App Debug
+                  - definition [ref=e969]:
+                    - generic [ref=e970]:
+                      - img [ref=e971]
+                      - generic [ref=e973]: "true"
+                - generic [ref=e974]:
+                  - term [ref=e975]: App Env
+                  - definition [ref=e976]:
+                    - generic [ref=e977]:
+                      - code [ref=e980]: local
+                      - button "Copy to clipboard" [ref=e982] [cursor=pointer]:
+                        - img [ref=e983]
+    - generic [ref=e986]:
+      - navigation:
+        - list [ref=e987]:
+          - listitem [ref=e988]:
+            - button "34 Queries" [ref=e989] [cursor=pointer]:
+              - generic [ref=e990]: "34"
+              - generic [ref=e991]: Queries
+      - generic [ref=e992]:
+        - generic [ref=e993]:
+          - generic [ref=e994]:
+            - generic [ref=e995]: 12:12:31
+            - generic [ref=e996]:
+              - img "Runtime" [ref=e997]
+              - text: 28.43ms
+            - generic [ref=e999]:
+              - img "Connection" [ref=e1000]
+              - text: mysql
+          - generic [ref=e1003] [cursor=pointer]:
+            - code [ref=e1006]:
+              - code [ref=e1008]: "select table_name as `name`, (data_length + index_length) as `size`, table_comment as `comment`, engine as `engine`, table_collation as `collation` from information_schema.tables where table_schema = 'yalihanai_test' and table_type in ('BASE TABLE', 'SYSTEM VERSIONED') order by table_name"
+            - button "Copy to clipboard" [ref=e1010]:
+              - img [ref=e1011]
+            - button [ref=e1013]:
+              - img [ref=e1014]
+        - generic [ref=e1016]:
+          - generic [ref=e1017]:
+            - generic [ref=e1018]: 12:12:31
+            - generic [ref=e1019]:
+              - img "Runtime" [ref=e1020]
+              - text: 0.72ms
+            - generic [ref=e1022]:
+              - img "Connection" [ref=e1023]
+              - text: mysql
+          - generic [ref=e1026]:
+            - generic [ref=e1027] [cursor=pointer]:
+              - code [ref=e1030]:
+                - code [ref=e1032]: "select * from `settings` where `group` = voice"
+              - button "Copy to clipboard" [ref=e1034]:
+                - img [ref=e1035]
+              - button [ref=e1037]:
+                - img [ref=e1038]
+            - button "1 query parameter" [ref=e1041] [cursor=pointer]:
+              - img [ref=e1042]
+              - text: 1 query parameter
+        - generic [ref=e1044]:
+          - generic [ref=e1045]:
+            - generic [ref=e1046]: 12:12:31
+            - generic [ref=e1047]:
+              - img "Runtime" [ref=e1048]
+              - text: 0.62ms
+            - generic [ref=e1050]:
+              - img "Connection" [ref=e1051]
+              - text: mysql
+          - generic [ref=e1054]:
+            - generic [ref=e1055] [cursor=pointer]:
+              - code [ref=e1058]:
+                - code [ref=e1060]: "select * from `settings` where `key` = voice_api_key limit 1"
+              - button "Copy to clipboard" [ref=e1062]:
+                - img [ref=e1063]
+              - button [ref=e1065]:
+                - img [ref=e1066]
+            - button "1 query parameter" [ref=e1069] [cursor=pointer]:
+              - img [ref=e1070]
+              - text: 1 query parameter
+        - generic [ref=e1072]:
+          - generic [ref=e1073]:
+            - generic [ref=e1074]: 12:12:31
+            - generic [ref=e1075]:
+              - img "Runtime" [ref=e1076]
+              - text: 0.45ms
+            - generic [ref=e1078]:
+              - img "Connection" [ref=e1079]
+              - text: mysql
+          - generic [ref=e1082]:
+            - generic [ref=e1083] [cursor=pointer]:
+              - code [ref=e1086]:
+                - code [ref=e1088]: "select * from `settings` where `group` = ai"
+              - button "Copy to clipboard" [ref=e1090]:
+                - img [ref=e1091]
+              - button [ref=e1093]:
+                - img [ref=e1094]
+            - button "1 query parameter" [ref=e1097] [cursor=pointer]:
+              - img [ref=e1098]
+              - text: 1 query parameter
+        - generic [ref=e1100]:
+          - generic [ref=e1101]:
+            - generic [ref=e1102]: 12:12:31
+            - generic [ref=e1103]:
+              - img "Runtime" [ref=e1104]
+              - text: 0.38ms
+            - generic [ref=e1106]:
+              - img "Connection" [ref=e1107]
+              - text: mysql
+          - generic [ref=e1110]:
+            - generic [ref=e1111] [cursor=pointer]:
+              - code [ref=e1114]:
+                - code [ref=e1116]: "select * from `settings` where `key` = openai_api_key limit 1"
+              - button "Copy to clipboard" [ref=e1118]:
+                - img [ref=e1119]
+              - button [ref=e1121]:
+                - img [ref=e1122]
+            - button "1 query parameter" [ref=e1125] [cursor=pointer]:
+              - img [ref=e1126]
+              - text: 1 query parameter
+        - generic [ref=e1128]:
+          - generic [ref=e1129]:
+            - generic [ref=e1130]: 12:12:31
+            - generic [ref=e1131]:
+              - img "Runtime" [ref=e1132]
+              - text: 0.26ms
+            - generic [ref=e1134]:
+              - img "Connection" [ref=e1135]
+              - text: mysql
+          - generic [ref=e1138]:
+            - generic [ref=e1139] [cursor=pointer]:
+              - code [ref=e1142]:
+                - code [ref=e1144]: "select * from `settings` where `key` = google_api_key limit 1"
+              - button "Copy to clipboard" [ref=e1146]:
+                - img [ref=e1147]
+              - button [ref=e1149]:
+                - img [ref=e1150]
+            - button "1 query parameter" [ref=e1153] [cursor=pointer]:
+              - img [ref=e1154]
+              - text: 1 query parameter
+        - generic [ref=e1156]:
+          - generic [ref=e1157]:
+            - generic [ref=e1158]: 12:12:31
+            - generic [ref=e1159]:
+              - img "Runtime" [ref=e1160]
+              - text: 13.76ms
+            - generic [ref=e1162]:
+              - img "Connection" [ref=e1163]
+              - text: mysql
+          - generic [ref=e1166]:
+            - generic [ref=e1167] [cursor=pointer]:
+              - code [ref=e1170]:
+                - code [ref=e1172]: "select * from `users` where `id` = 1303 and `users`.`deleted_at` is null limit 1"
+              - button "Copy to clipboard" [ref=e1174]:
+                - img [ref=e1175]
+              - button [ref=e1177]:
+                - img [ref=e1178]
+            - button "1 query parameter" [ref=e1181] [cursor=pointer]:
+              - img [ref=e1182]
+              - text: 1 query parameter
+        - generic [ref=e1184]:
+          - generic [ref=e1185]:
+            - generic [ref=e1186]: 12:12:31
+            - generic [ref=e1187]:
+              - img "Runtime" [ref=e1188]
+              - text: 9.59ms
+            - generic [ref=e1190]:
+              - img "Connection" [ref=e1191]
+              - text: mysql
+          - generic [ref=e1194] [cursor=pointer]:
+            - code [ref=e1197]:
+              - code [ref=e1199]: "select column_name as `name`, data_type as `type_name`, column_type as `type`, collation_name as `collation`, is_nullable as `nullable`, column_default as `default`, column_comment as `comment`, extra as `extra` from information_schema.columns where table_schema = 'yalihanai_test' and table_name = 'languages' order by ordinal_position asc"
+            - button "Copy to clipboard" [ref=e1201]:
+              - img [ref=e1202]
+            - button [ref=e1204]:
+              - img [ref=e1205]
+        - generic [ref=e1207]:
+          - generic [ref=e1208]:
+            - generic [ref=e1209]: 12:12:31
+            - generic [ref=e1210]:
+              - img "Runtime" [ref=e1211]
+              - text: 1.89ms
+            - generic [ref=e1213]:
+              - img "Connection" [ref=e1214]
+              - text: mysql
+          - generic [ref=e1217]:
+            - generic [ref=e1218] [cursor=pointer]:
+              - code [ref=e1221]:
+                - code [ref=e1223]: "select * from `languages` where `aktiflik_durumu` = 1 order by `display_order` asc"
+              - button "Copy to clipboard" [ref=e1225]:
+                - img [ref=e1226]
+              - button [ref=e1228]:
+                - img [ref=e1229]
+            - button "1 query parameter" [ref=e1232] [cursor=pointer]:
+              - img [ref=e1233]
+              - text: 1 query parameter
+        - generic [ref=e1235]:
+          - generic [ref=e1236]:
+            - generic [ref=e1237]: 12:12:31
+            - generic [ref=e1238]:
+              - img "Runtime" [ref=e1239]
+              - text: 0.46ms
+            - generic [ref=e1241]:
+              - img "Connection" [ref=e1242]
+              - text: mysql
+          - generic [ref=e1245]:
+            - generic [ref=e1246] [cursor=pointer]:
+              - code [ref=e1249]:
+                - code [ref=e1251]: "select `code` from `languages` where `varsayilan_durumu` = true limit 1"
+              - button "Copy to clipboard" [ref=e1253]:
+                - img [ref=e1254]
+              - button [ref=e1256]:
+                - img [ref=e1257]
+            - button "1 query parameter" [ref=e1260] [cursor=pointer]:
+              - img [ref=e1261]
+              - text: 1 query parameter
+        - generic [ref=e1263]:
+          - generic [ref=e1264]:
+            - generic [ref=e1265]: 12:12:31
+            - generic [ref=e1266]:
+              - img "Runtime" [ref=e1267]
+              - text: 2.6ms
+            - generic [ref=e1269]:
+              - img "Connection" [ref=e1270]
+              - text: mysql
+          - generic [ref=e1273] [cursor=pointer]:
+            - code [ref=e1276]:
+              - code [ref=e1278]: "select column_name as `name`, data_type as `type_name`, column_type as `type`, collation_name as `collation`, is_nullable as `nullable`, column_default as `default`, column_comment as `comment`, extra as `extra` from information_schema.columns where table_schema = 'yalihanai_test' and table_name = 'currencies' order by ordinal_position asc"
+            - button "Copy to clipboard" [ref=e1280]:
+              - img [ref=e1281]
+            - button [ref=e1283]:
+              - img [ref=e1284]
+        - generic [ref=e1286]:
+          - generic [ref=e1287]:
+            - generic [ref=e1288]: 12:12:31
+            - generic [ref=e1289]:
+              - img "Runtime" [ref=e1290]
+              - text: 2.21ms
+            - generic [ref=e1292]:
+              - img "Connection" [ref=e1293]
+              - text: mysql
+          - generic [ref=e1296]:
+            - generic [ref=e1297] [cursor=pointer]:
+              - code [ref=e1300]:
+                - code [ref=e1302]: "select `code` from `currencies` where `varsayilan_durumu` = true limit 1"
+              - button "Copy to clipboard" [ref=e1304]:
+                - img [ref=e1305]
+              - button [ref=e1307]:
+                - img [ref=e1308]
+            - button "1 query parameter" [ref=e1311] [cursor=pointer]:
+              - img [ref=e1312]
+              - text: 1 query parameter
+        - generic [ref=e1314]:
+          - generic [ref=e1315]:
+            - generic [ref=e1316]: 12:12:31
+            - generic [ref=e1317]:
+              - img "Runtime" [ref=e1318]
+              - text: 0.49ms
+            - generic [ref=e1320]:
+              - img "Connection" [ref=e1321]
+              - text: mysql
+          - generic [ref=e1324]:
+            - generic [ref=e1325] [cursor=pointer]:
+              - code [ref=e1328]:
+                - code [ref=e1330]: "select * from `currencies` where `aktiflik_durumu` = 1"
+              - button "Copy to clipboard" [ref=e1332]:
+                - img [ref=e1333]
+              - button [ref=e1335]:
+                - img [ref=e1336]
+            - button "1 query parameter" [ref=e1339] [cursor=pointer]:
+              - img [ref=e1340]
+              - text: 1 query parameter
+        - generic [ref=e1342]:
+          - generic [ref=e1343]:
+            - generic [ref=e1344]: 12:12:31
+            - generic [ref=e1345]:
+              - img "Runtime" [ref=e1346]
+              - text: 0.82ms
+            - generic [ref=e1348]:
+              - img "Connection" [ref=e1349]
+              - text: mysql
+          - generic [ref=e1352]:
+            - generic [ref=e1353] [cursor=pointer]:
+              - code [ref=e1356]:
+                - code [ref=e1358]: "select `roles`.*, `model_has_roles`.`model_id` as `pivot_model_id`, `model_has_roles`.`role_id` as `pivot_role_id`, `model_has_roles`.`model_type` as `pivot_model_type` from `roles` inner join `model_has_roles` on `roles`.`id` = `model_has_roles`.`role_id` where `model_has_roles`.`model_id` in (1303) and `model_has_roles`.`model_type` = App\\Models\\User"
+              - button "Copy to clipboard" [ref=e1360]:
+                - img [ref=e1361]
+              - button [ref=e1363]:
+                - img [ref=e1364]
+            - button "1 query parameter" [ref=e1367] [cursor=pointer]:
+              - img [ref=e1368]
+              - text: 1 query parameter
+        - generic [ref=e1370]:
+          - generic [ref=e1371]:
+            - generic [ref=e1372]: 12:12:31
+            - generic [ref=e1373]:
+              - img "Runtime" [ref=e1374]
+              - text: 1.81ms
+            - generic [ref=e1376]:
+              - img "Connection" [ref=e1377]
+              - text: mysql
+          - generic [ref=e1380]:
+            - generic [ref=e1381] [cursor=pointer]:
+              - code [ref=e1384]:
+                - code [ref=e1386]: "select * from `portfolio_drive_workspaces` where `portfolio_drive_workspaces`.`id` = 2 limit 1"
+              - button "Copy to clipboard" [ref=e1388]:
+                - img [ref=e1389]
+              - button [ref=e1391]:
+                - img [ref=e1392]
+            - button "1 query parameter" [ref=e1395] [cursor=pointer]:
+              - img [ref=e1396]
+              - text: 1 query parameter
+        - generic [ref=e1398]:
+          - generic [ref=e1399]:
+            - generic [ref=e1400]: 12:12:31
+            - generic [ref=e1401]:
+              - img "Runtime" [ref=e1402]
+              - text: 9.35ms
+            - generic [ref=e1404]:
+              - img "Connection" [ref=e1405]
+              - text: mysql
+          - generic [ref=e1408]:
+            - generic [ref=e1409] [cursor=pointer]:
+              - code [ref=e1412]:
+                - code [ref=e1414]: "select * from `ilanlar` where `ilanlar`.`id` = 173 limit 1"
+              - button "Copy to clipboard" [ref=e1416]:
+                - img [ref=e1417]
+              - button [ref=e1419]:
+                - img [ref=e1420]
+            - button "1 query parameter" [ref=e1423] [cursor=pointer]:
+              - img [ref=e1424]
+              - text: 1 query parameter
+        - generic [ref=e1426]:
+          - generic [ref=e1427]:
+            - generic [ref=e1428]: 12:12:31
+            - generic [ref=e1429]:
+              - img "Runtime" [ref=e1430]
+              - text: 1.64ms
+            - generic [ref=e1432]:
+              - img "Connection" [ref=e1433]
+              - text: mysql
+          - generic [ref=e1436] [cursor=pointer]:
+            - code [ref=e1439]:
+              - code [ref=e1441]: "select column_name as `name`, data_type as `type_name`, column_type as `type`, collation_name as `collation`, is_nullable as `nullable`, column_default as `default`, column_comment as `comment`, extra as `extra` from information_schema.columns where table_schema = 'yalihanai_test' and table_name = 'iller' order by ordinal_position asc"
+            - button "Copy to clipboard" [ref=e1443]:
+              - img [ref=e1444]
+            - button [ref=e1446]:
+              - img [ref=e1447]
+        - generic [ref=e1449]:
+          - generic [ref=e1450]:
+            - generic [ref=e1451]: 12:12:31
+            - generic [ref=e1452]:
+              - img "Runtime" [ref=e1453]
+              - text: 0.52ms
+            - generic [ref=e1455]:
+              - img "Connection" [ref=e1456]
+              - text: mysql
+          - generic [ref=e1459] [cursor=pointer]:
+            - code [ref=e1462]:
+              - code [ref=e1464]: "select * from `iller` where `iller`.`id` in (1) and `iller`.`deleted_at` is null"
+            - button "Copy to clipboard" [ref=e1466]:
+              - img [ref=e1467]
+            - button [ref=e1469]:
+              - img [ref=e1470]
+        - generic [ref=e1472]:
+          - generic [ref=e1473]:
+            - generic [ref=e1474]: 12:12:31
+            - generic [ref=e1475]:
+              - img "Runtime" [ref=e1476]
+              - text: 1.35ms
+            - generic [ref=e1478]:
+              - img "Connection" [ref=e1479]
+              - text: mysql
+          - generic [ref=e1482] [cursor=pointer]:
+            - code [ref=e1485]:
+              - code [ref=e1487]: "select column_name as `name`, data_type as `type_name`, column_type as `type`, collation_name as `collation`, is_nullable as `nullable`, column_default as `default`, column_comment as `comment`, extra as `extra` from information_schema.columns where table_schema = 'yalihanai_test' and table_name = 'ilceler' order by ordinal_position asc"
+            - button "Copy to clipboard" [ref=e1489]:
+              - img [ref=e1490]
+            - button [ref=e1492]:
+              - img [ref=e1493]
+        - generic [ref=e1495]:
+          - generic [ref=e1496]:
+            - generic [ref=e1497]: 12:12:31
+            - generic [ref=e1498]:
+              - img "Runtime" [ref=e1499]
+              - text: 0.33ms
+            - generic [ref=e1501]:
+              - img "Connection" [ref=e1502]
+              - text: mysql
+          - generic [ref=e1505] [cursor=pointer]:
+            - code [ref=e1508]:
+              - code [ref=e1510]: "select * from `ilceler` where `ilceler`.`id` in (1) and `ilceler`.`deleted_at` is null"
+            - button "Copy to clipboard" [ref=e1512]:
+              - img [ref=e1513]
+            - button [ref=e1515]:
+              - img [ref=e1516]
+        - generic [ref=e1518]:
+          - generic [ref=e1519]:
+            - generic [ref=e1520]: 12:12:31
+            - generic [ref=e1521]:
+              - img "Runtime" [ref=e1522]
+              - text: 0.99ms
+            - generic [ref=e1524]:
+              - img "Connection" [ref=e1525]
+              - text: mysql
+          - generic [ref=e1528] [cursor=pointer]:
+            - code [ref=e1531]:
+              - code [ref=e1533]: "select column_name as `name`, data_type as `type_name`, column_type as `type`, collation_name as `collation`, is_nullable as `nullable`, column_default as `default`, column_comment as `comment`, extra as `extra` from information_schema.columns where table_schema = 'yalihanai_test' and table_name = 'ilan_kategorileri' order by ordinal_position asc"
+            - button "Copy to clipboard" [ref=e1535]:
+              - img [ref=e1536]
+            - button [ref=e1538]:
+              - img [ref=e1539]
+        - generic [ref=e1541]:
+          - generic [ref=e1542]:
+            - generic [ref=e1543]: 12:12:31
+            - generic [ref=e1544]:
+              - img "Runtime" [ref=e1545]
+              - text: 0.47ms
+            - generic [ref=e1547]:
+              - img "Connection" [ref=e1548]
+              - text: mysql
+          - generic [ref=e1551] [cursor=pointer]:
+            - code [ref=e1554]:
+              - code [ref=e1556]: "select * from `ilan_kategorileri` where `ilan_kategorileri`.`id` in (166) and `ilan_kategorileri`.`deleted_at` is null"
+            - button "Copy to clipboard" [ref=e1558]:
+              - img [ref=e1559]
+            - button [ref=e1561]:
+              - img [ref=e1562]
+        - generic [ref=e1564]:
+          - generic [ref=e1565]:
+            - generic [ref=e1566]: 12:12:31
+            - generic [ref=e1567]:
+              - img "Runtime" [ref=e1568]
+              - text: 0.46ms
+            - generic [ref=e1570]:
+              - img "Connection" [ref=e1571]
+              - text: mysql
+          - generic [ref=e1574] [cursor=pointer]:
+            - code [ref=e1577]:
+              - code [ref=e1579]: "select * from `users` where `users`.`id` in (1315) and `users`.`deleted_at` is null"
+            - button "Copy to clipboard" [ref=e1581]:
+              - img [ref=e1582]
+            - button [ref=e1584]:
+              - img [ref=e1585]
+        - generic [ref=e1587]:
+          - generic [ref=e1588]:
+            - generic [ref=e1589]: 12:12:31
+            - generic [ref=e1590]:
+              - img "Runtime" [ref=e1591]
+              - text: 1.77ms
+            - generic [ref=e1593]:
+              - img "Connection" [ref=e1594]
+              - text: mysql
+          - generic [ref=e1597] [cursor=pointer]:
+            - code [ref=e1600]:
+              - code [ref=e1602]: "select column_name as `name`, data_type as `type_name`, column_type as `type`, collation_name as `collation`, is_nullable as `nullable`, column_default as `default`, column_comment as `comment`, extra as `extra` from information_schema.columns where table_schema = 'yalihanai_test' and table_name = 'ilan_fotograflari' order by ordinal_position asc"
+            - button "Copy to clipboard" [ref=e1604]:
+              - img [ref=e1605]
+            - button [ref=e1607]:
+              - img [ref=e1608]
+        - generic [ref=e1610]:
+          - generic [ref=e1611]:
+            - generic [ref=e1612]: 12:12:31
+            - generic [ref=e1613]:
+              - img "Runtime" [ref=e1614]
+              - text: 0.73ms
+            - generic [ref=e1616]:
+              - img "Connection" [ref=e1617]
+              - text: mysql
+          - generic [ref=e1620] [cursor=pointer]:
+            - code [ref=e1623]:
+              - code [ref=e1625]: "select * from `ilan_fotograflari` where `ilan_fotograflari`.`ilan_id` in (173) order by `display_order` asc"
+            - button "Copy to clipboard" [ref=e1627]:
+              - img [ref=e1628]
+            - button [ref=e1630]:
+              - img [ref=e1631]
+        - generic [ref=e1633]:
+          - generic [ref=e1634]:
+            - generic [ref=e1635]: 12:12:31
+            - generic [ref=e1636]:
+              - img "Runtime" [ref=e1637]
+              - text: 1.29ms
+            - generic [ref=e1639]:
+              - img "Connection" [ref=e1640]
+              - text: mysql
+          - generic [ref=e1643]:
+            - generic [ref=e1644] [cursor=pointer]:
+              - code [ref=e1647]:
+                - code [ref=e1649]: "select count(*) as aggregate from `ilan_fotograflari` where `ilan_fotograflari`.`ilan_id` = 173 and `ilan_fotograflari`.`ilan_id` is not null"
+              - button "Copy to clipboard" [ref=e1651]:
+                - img [ref=e1652]
+              - button [ref=e1654]:
+                - img [ref=e1655]
+            - button "1 query parameter" [ref=e1658] [cursor=pointer]:
+              - img [ref=e1659]
+              - text: 1 query parameter
+        - generic [ref=e1661]:
+          - generic [ref=e1662]:
+            - generic [ref=e1663]: 12:12:31
+            - generic [ref=e1664]:
+              - img "Runtime" [ref=e1665]
+              - text: 0.8ms
+            - generic [ref=e1667]:
+              - img "Connection" [ref=e1668]
+              - text: mysql
+          - generic [ref=e1671]:
+            - generic [ref=e1672] [cursor=pointer]:
+              - code [ref=e1675]:
+                - code [ref=e1677]: "select * from `ilanlar` where `ilanlar`.`id` = 173 limit 1"
+              - button "Copy to clipboard" [ref=e1679]:
+                - img [ref=e1680]
+              - button [ref=e1682]:
+                - img [ref=e1683]
+            - button "1 query parameter" [ref=e1686] [cursor=pointer]:
+              - img [ref=e1687]
+              - text: 1 query parameter
+        - generic [ref=e1689]:
+          - generic [ref=e1690]:
+            - generic [ref=e1691]: 12:12:31
+            - generic [ref=e1692]:
+              - img "Runtime" [ref=e1693]
+              - text: 0.48ms
+            - generic [ref=e1695]:
+              - img "Connection" [ref=e1696]
+              - text: mysql
+          - generic [ref=e1699]:
+            - generic [ref=e1700] [cursor=pointer]:
+              - code [ref=e1703]:
+                - code [ref=e1705]: "select count(*) as aggregate from `ilan_fotograflari` where `ilan_fotograflari`.`ilan_id` = 173 and `ilan_fotograflari`.`ilan_id` is not null"
+              - button "Copy to clipboard" [ref=e1707]:
+                - img [ref=e1708]
+              - button [ref=e1710]:
+                - img [ref=e1711]
+            - button "1 query parameter" [ref=e1714] [cursor=pointer]:
+              - img [ref=e1715]
+              - text: 1 query parameter
+        - generic [ref=e1717]:
+          - generic [ref=e1718]:
+            - generic [ref=e1719]: 12:12:32
+            - generic [ref=e1720]:
+              - img "Runtime" [ref=e1721]
+              - text: 2.52ms
+            - generic [ref=e1723]:
+              - img "Connection" [ref=e1724]
+              - text: mysql
+          - generic [ref=e1727] [cursor=pointer]:
+            - code [ref=e1730]:
+              - code [ref=e1732]: "select column_name as `name`, data_type as `type_name`, column_type as `type`, collation_name as `collation`, is_nullable as `nullable`, column_default as `default`, column_comment as `comment`, extra as `extra` from information_schema.columns where table_schema = 'yalihanai_test' and table_name = 'property_reservations' order by ordinal_position asc"
+            - button "Copy to clipboard" [ref=e1734]:
+              - img [ref=e1735]
+            - button [ref=e1737]:
+              - img [ref=e1738]
+        - generic [ref=e1740]:
+          - generic [ref=e1741]:
+            - generic [ref=e1742]: 12:12:32
+            - generic [ref=e1743]:
+              - img "Runtime" [ref=e1744]
+              - text: 0.51ms
+            - generic [ref=e1746]:
+              - img "Connection" [ref=e1747]
+              - text: mysql
+          - generic [ref=e1750]:
+            - generic [ref=e1751] [cursor=pointer]:
+              - code [ref=e1754]:
+                - code [ref=e1756]: "select * from `property_reservations` where `property_reservations`.`property_id` = 173 and `property_reservations`.`property_id` is not null and `property_reservations`.`ulke_id` = 1 order by `start_date` desc limit 5"
+              - button "Copy to clipboard" [ref=e1758]:
+                - img [ref=e1759]
+              - button [ref=e1761]:
+                - img [ref=e1762]
+            - button "2 query parameters" [ref=e1765] [cursor=pointer]:
+              - img [ref=e1766]
+              - text: 2 query parameters
+        - generic [ref=e1768]:
+          - generic [ref=e1769]:
+            - generic [ref=e1770]: 12:12:32
+            - generic [ref=e1771]:
+              - img "Runtime" [ref=e1772]
+              - text: 1.38ms
+            - generic [ref=e1774]:
+              - img "Connection" [ref=e1775]
+              - text: mysql
+          - generic [ref=e1778]:
+            - generic [ref=e1779] [cursor=pointer]:
+              - code [ref=e1782]:
+                - code [ref=e1784]: "select count(*) as aggregate from `property_reservations` where `property_reservations`.`property_id` = 173 and `property_reservations`.`property_id` is not null and `reservation_state` = confirmed and `start_date` <= 2026-07-04 and `end_date` >= 2026-07-04 and `property_reservations`.`ulke_id` = 1"
+              - button "Copy to clipboard" [ref=e1786]:
+                - img [ref=e1787]
+              - button [ref=e1789]:
+                - img [ref=e1790]
+            - button "5 query parameters" [ref=e1793] [cursor=pointer]:
+              - img [ref=e1794]
+              - text: 5 query parameters
+        - generic [ref=e1796]:
+          - generic [ref=e1797]:
+            - generic [ref=e1798]: 12:12:32
+            - generic [ref=e1799]:
+              - img "Runtime" [ref=e1800]
+              - text: 0.66ms
+            - generic [ref=e1802]:
+              - img "Connection" [ref=e1803]
+              - text: mysql
+          - generic [ref=e1806]:
+            - generic [ref=e1807] [cursor=pointer]:
+              - code [ref=e1810]:
+                - code [ref=e1812]: "select count(*) as aggregate from `property_reservations` where `property_reservations`.`property_id` = 173 and `property_reservations`.`property_id` is not null and `property_reservations`.`ulke_id` = 1"
+              - button "Copy to clipboard" [ref=e1814]:
+                - img [ref=e1815]
+              - button [ref=e1817]:
+                - img [ref=e1818]
+            - button "2 query parameters" [ref=e1821] [cursor=pointer]:
+              - img [ref=e1822]
+              - text: 2 query parameters
+        - generic [ref=e1824]:
+          - generic [ref=e1825]:
+            - generic [ref=e1826]: 12:12:32
+            - generic [ref=e1827]:
+              - img "Runtime" [ref=e1828]
+              - text: 0.81ms
+            - generic [ref=e1830]:
+              - img "Connection" [ref=e1831]
+              - text: mysql
+          - generic [ref=e1834]:
+            - generic [ref=e1835] [cursor=pointer]:
+              - code [ref=e1838]:
+                - code [ref=e1840]: "select exists(select * from `property_reservations` where `property_reservations`.`property_id` = 173 and `property_reservations`.`property_id` is not null and `property_reservations`.`ulke_id` = 1) as `exists`"
+              - button "Copy to clipboard" [ref=e1842]:
+                - img [ref=e1843]
+              - button [ref=e1845]:
+                - img [ref=e1846]
+            - button "2 query parameters" [ref=e1849] [cursor=pointer]:
+              - img [ref=e1850]
+              - text: 2 query parameters
+        - generic [ref=e1852]:
+          - generic [ref=e1853]:
+            - generic [ref=e1854]: 12:12:32
+            - generic [ref=e1855]:
+              - img "Runtime" [ref=e1856]
+              - text: 0.78ms
+            - generic [ref=e1858]:
+              - img "Connection" [ref=e1859]
+              - text: mysql
+          - generic [ref=e1862]:
+            - generic [ref=e1863] [cursor=pointer]:
+              - code [ref=e1866]:
+                - code [ref=e1868]: "select * from `roles` where `roles`.`id` = 1 limit 1"
+              - button "Copy to clipboard" [ref=e1870]:
+                - img [ref=e1871]
+              - button [ref=e1873]:
+                - img [ref=e1874]
+            - button "1 query parameter" [ref=e1877] [cursor=pointer]:
+              - img [ref=e1878]
+              - text: 1 query parameter
+    - generic [ref=e1881]:
+      - list [ref=e1882]:
+        - listitem [ref=e1883]:
+          - img [ref=e1884]
+        - listitem [ref=e1892]: ·
+        - listitem [ref=e1893]:
+          - link "Source" [ref=e1894] [cursor=pointer]:
+            - /url: https://github.com/spatie/laravel-ignition
+        - listitem [ref=e1895]: ·
+        - listitem [ref=e1896]:
+          - link "Docs" [ref=e1897] [cursor=pointer]:
+            - /url: https://flareapp.io/docs/ignition/introducing-ignition/overview
+        - listitem [ref=e1898]: ·
+        - listitem [ref=e1899]:
+          - link "Laravel" [ref=e1900] [cursor=pointer]:
+            - /url: https://laravel.com
+      - paragraph [ref=e1902]:
+        - text: Ignition is built by
+        - link "Flare" [ref=e1903] [cursor=pointer]:
+          - /url: https://flareapp.io/?utm_campaign=ignition&utm_source=ignition
+          - img [ref=e1904]
+          - text: Flare
+        - text: ", the Laravel error reporting service."

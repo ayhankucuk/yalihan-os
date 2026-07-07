@@ -200,7 +200,7 @@ class DriveWorkspaceService
      */
     private function createFolder(string $name, ?string $parentId = null): array
     {
-        $credentials = $this->getCredentials();
+        $credentials = $this->getToken();
         if ($credentials === null) {
             return ['success' => false, 'error' => 'Google Drive credentials not configured'];
         }
@@ -256,7 +256,7 @@ class DriveWorkspaceService
         $rootFolderName = '03-PORTFÖYLER';
 
         try {
-            $credentials = $this->getCredentials();
+            $credentials = $this->getToken();
             if ($credentials === null) {
                 return null;
             }
@@ -296,8 +296,9 @@ class DriveWorkspaceService
 
     /**
      * Get access token from service account credentials
+     * @internal Use by DriveTemplateService and DriveSyncService
      */
-    private function getCredentials(): ?string
+    public function getToken(): ?string
     {
         $credentialsPath = config('ai-storage.storage.google_drive.credentials');
 
@@ -406,5 +407,10 @@ class DriveWorkspaceService
     public function getSubfolderNames(): array
     {
         return self::SUBFOLDER_NAMES;
+    }
+
+    public function getAccessToken(): ?string
+    {
+        return $this->getToken();
     }
 }

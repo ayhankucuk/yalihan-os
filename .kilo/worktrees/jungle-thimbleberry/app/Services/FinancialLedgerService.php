@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\LedgerAccount;
 use App\Models\LedgerEntry;
 use App\Models\PropertyReservation;
+use App\Application\Shared\Services\TenantContextResolver;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -23,7 +24,8 @@ use Illuminate\Support\Str;
 class FinancialLedgerService
 {
     public function __construct(
-        private readonly FxService $fxService
+        private readonly FxService $fxService,
+        private readonly TenantContextResolver $tenantResolver
     ) {}
 
     /**
@@ -282,10 +284,13 @@ class FinancialLedgerService
 
     /**
      * ✅ Thin Controller compliance: Find account through service.
+     * 🛡️ SAB P0: Tenant scope enforced — prevents cross-tenant account enumeration.
      */
     public function findAccount(int $id): ?LedgerAccount
     {
+        $tenantId = $this->tenantResolver->resolve()->tenantId;
         return LedgerAccount::where('id', $id)
+            ->where('tenant_id', $tenantId)
             ->where('aktiflik_durumu', true)
             ->first();
     }

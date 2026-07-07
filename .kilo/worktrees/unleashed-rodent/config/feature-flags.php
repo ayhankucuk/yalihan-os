@@ -43,4 +43,50 @@ return [
         'routes'     => [],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Property Workspace Foundation (Sprint 6.0)
+    |--------------------------------------------------------------------------
+    | Default: false (kapalı — Sprint 6.0 omurga geliştirme aşamasında)
+    | Açmak için: APP_PROPERTY_WORKSPACE_ENABLED=true
+    |
+    | Bu flag:
+    | - Workspace oluşturma akışını açar/kapar
+    | - Dashboard kartını görünür kılar
+    | - Intent Selection UI'yi aktif eder
+    |
+    | Rollback: php artisan feature:disable property_workspace_v1
+    |
+    | Kapatıldığında: Mevcut tüm akışlar çalışmaya devam eder.
+    | Açıldığında: WorkspaceRuntime → Timeline → Dashboard entegre olur.
+    |
+    | Sprint 6.0 Exit Criteria:
+    |   1. Workspace oluşturuldu (UUID döndü)
+    |   2. Intent çalıştı (Template yüklendi)
+    |   3. Template çalıştı (Required fields oluştu)
+    |   4. State machine: created→draft geçti
+    |   5. Timeline: Event yazıldı
+    |   6. Tenant: Tenant test PASS
+    */
+    'property_workspace_v1' => (bool) env('APP_PROPERTY_WORKSPACE_ENABLED', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Property Workspace Allowlist (tenant / route bazlı)
+    |--------------------------------------------------------------------------
+    | property_workspace_v1=true olsa bile bu liste boşsa tüm istekler geçer.
+    | Doluysa yalnızca eşleşen tenant/route allowlist edilir.
+    */
+    'property_workspace_v1_allowlist' => [
+        'tenant_ids' => [],
+        'routes'     => [
+            'admin.workspace.create',
+            'admin.workspace.show',
+            'admin.workspace.index',
+            'admin.workspace.intent',
+            'admin.workspace.template',
+            'admin.workspace.state',
+        ],
+    ],
+
 ];

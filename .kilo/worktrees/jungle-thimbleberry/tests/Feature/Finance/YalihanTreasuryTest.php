@@ -7,7 +7,9 @@ use App\Models\User;
 use App\Models\Ilan;
 use App\Models\Finance\Commission;
 use App\Models\Finance\Bonus;
+use App\Models\LedgerAccount;
 use App\Services\Finance\YalihanTreasury;
+use App\Services\FinancialLedgerService;
 use App\Application\Shared\Services\TenantContextResolver;
 use App\Application\Shared\DTOs\TenantContext;
 use App\Enums\Finance\PaymentStatus;
@@ -71,6 +73,29 @@ class YalihanTreasuryTest extends TestCase
             'fiyat' => 1000000,
         ]);
 
+        // 🛡️ P0 FIX: Create required LedgerAccounts for double-entry ledger calls
+        // System account with ID=1 for ledger system operations
+        LedgerAccount::create([
+            'id' => 1,
+            'tenant_id' => 1,
+            'name' => 'System Account',
+            'tip' => 'system',
+            'currency' => 'TRY',
+            'aktiflik_durumu' => true,
+            'display_order' => 0,
+        ]);
+
+        // Agent account with ID matching agent's user ID for agent ledger operations
+        LedgerAccount::create([
+            'id' => $this->agent->id,
+            'tenant_id' => 1,
+            'name' => 'Agent Account',
+            'tip' => 'agent',
+            'currency' => 'TRY',
+            'aktiflik_durumu' => true,
+            'display_order' => 1,
+        ]);
+
         // Resolve YalihanTreasury from container (with mocked TenantContextResolver)
         $this->treasury = app(YalihanTreasury::class);
     }
@@ -121,8 +146,9 @@ class YalihanTreasuryTest extends TestCase
      */
     public function test_commission_approval_workflow(): void
     {
-        // Create pending commission (tenant_id will be added by Phase 13 migration)
+        // Create pending commission (tenant_id required for tenant scoping)
         $commission = Commission::create([
+            'tenant_id' => 1,
             'ilan_id' => $this->ilan->id,
             'agent_id' => $this->agent->id,
             'payment_state' => PaymentStatus::PENDING,
@@ -149,6 +175,7 @@ class YalihanTreasuryTest extends TestCase
     {
         // Create pending commission
         $commission = Commission::create([
+            'tenant_id' => 1,
             'ilan_id' => $this->ilan->id,
             'agent_id' => $this->agent->id,
             'payment_state' => PaymentStatus::PENDING,
@@ -174,6 +201,7 @@ class YalihanTreasuryTest extends TestCase
     {
         // Create unpaid bonus (using Context7 field names from Phase 13)
         $bonus = Bonus::create([
+            'tenant_id' => 1,
             'agent_id' => $this->agent->id,
             'target_month' => now()->format('Y-m'),
             'prim_tutari' => 5000,

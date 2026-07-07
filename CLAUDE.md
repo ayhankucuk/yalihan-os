@@ -320,10 +320,22 @@ KATEGORİ 4: Local PHP değişkenleri (camelCase)
   → context7-ignore (DB alanı değil)
 ```
 
-### Devam Eden İşler (Oturum 63 — 2026-06-30)
-- [ ] Sprint 3.1: Naming Authority Violation temizliği (hibrid plan)
-- [x] Sprint 4.0: Reliability Hardening (Outbox, Circuit Breaker, CQRS Recovery, File Safety, Idempotent Billing) ✅
+### Devam Eden İşler (Oturum 66 — 2026-07-03)
+- [ ] **Sprint 4.2: Real CRUD Certification** — Create/Read/Update/Archive/Restore/Soft Delete + Playwright
 - [ ] 89 fail test → yeşile çek
-- [ ] Context7 baseline reduce (4500 → 3000)
-- [ ] scripts/services/ klasörü eksik (start-mcp-server.sh)
-- [x] Priority 3: README standardı tamamlandı ✅
+- [ ] Context7 baseline reduce (4650 → 3000)
+- [ ] Sprint 4.3: AI Workforce Zinciri (Hermes → Photo Agent → Description Agent → Dashboard)
+- [x] Sprint 4.1: Alpine.js UI Stabilization ✅
+- [x] Sprint 4.0: Reliability Hardening ✅
+
+### Faz 2 Sprint Zinciri
+```
+Kod → Test → Playwright → Commit → Production
+```
+Doküman → yalnızca gerekiyorsa.
+
+### Sprint 4.2 — Real CRUD Certification
+| Operasyon | Hedef |
+|-----------|-------|
+| Create/Read/Update/Archive/Restore/Soft Delete | Database + Audit + Tenant + Auth + Playwright |
+| Kapsam | İlan, Kisi, Talep, Komisyon |

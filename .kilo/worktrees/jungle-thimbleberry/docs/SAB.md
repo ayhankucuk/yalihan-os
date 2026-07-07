@@ -1,5 +1,5 @@
 # 🧱 STANDART UYGULAMA BLOĞU (SAB — PRODUCTION SEAL)
-Version: 24.2.0 (Phase 12: Monetization & Financial Seal)
+Version: 24.4.0 (Phase 14: Property Workspace v8.1 — Intent First)
 
 SAB, projenin bağlayıcı teknik anayasasıdır.
 Uygulanmadan hiçbir iş "Done" kabul edilmez.
@@ -179,4 +179,297 @@ Aşağıdaki eylemler "Mimari Suç" kabul edilir ve Bekçi tarafından bloklanı
 4. **Budget Guard Bypass:** `AiBudgetGuard::canExecute()` kontrolü olmadan AI servisi çalıştırmak.
 
 ---
+
+## 🔟 BİLGİ VARLIK İLKELERİ (Knowledge as Business Asset — ERA IV)
+
+Aşağıdaki ilkeler YALIHAN Platform'un dördüncü katmanı olan Knowledge Platform'u yönetir:
+
+```
+K-1. Bilgi, Workspace kadar stratejik bir varlıktır.
+     Platformun kendi bilgisini yönetmesi, saklaması ve
+     kullanması ERA IV hedefinin temelidir.
+
+K-2. Her önemli iş kararı aranabilir bilgiye dönüşmelidir.
+     ADR, memory veya Drive'a kaydedilmeyen kararlar
+     kaybolmuş sayılır.
+
+K-3. Bilgi tek bir yerde yönetilir:
+     Knowledge Platform = Corporate Memory
+                      + Technical Knowledge
+                      + Institutional Knowledge
+
+K-4. Her bilgi parçasının bir sahibi, bir yaşam döngüsü
+     ve bir gözden geçirme tarihi olmalıdır.
+     Sahipsiz bilgi = bakımsız bilgi = kaybolmuş bilgi.
+
+K-5. Bilgi sürümlenir ve değişiklikleri izlenir.
+     Version history olmayan doküman = güvenilmez doküman.
+
+K-6. Bilgi üçe ayrılır ve her biri farklı yönetilir:
+     ├─ Corporate Memory   (memory/)     → Agent oturum belleği, süresiz saklanır
+     ├─ Technical Knowledge (docs/ + NotebookLM) → Mimari, kod standartları
+     └─ Institutional Knowledge (Google Drive) → Müşteri, hukuk, operasyon
+```
+
+**Bilgi Yaşam Döngüsü:**
+```
+DOĞUM ──► KULLANIM ──► BAKIM ──► GÖZDEN GEÇİRME ──► ARŞİV
+   │          │           │            │                │
+   ▼          ▼           ▼            ▼                ▼
+memory/   Tüm katmanlar  6 ayda     12 ayda        36 ay sonra
+           kullanılır     bir         bir              Drive/
+                         bakım       gözden          Archive
+                                     geçir
+```
+
+**Saklama Süreleri:**
+| Bilgi Tipi | Saklama | Arşiv |
+|------------|---------|-------|
+| SAB + ADR | Süresiz | Asla silinmez |
+| memory/ (core) | Süresiz | Asla silinmez |
+| memory/daily/ | 30 gün | Drive/06-ARCHIVE |
+| memory/weekly/ | 12 hafta | Drive/06-ARCHIVE |
+| Drive/01-GOVERNANCE | Süresiz | Asla silinmez |
+| Drive/03-CLIENTS | 7 yıl | KVKK uyumu |
+| Drive/06-ARCHIVE | 10+ yıl | Asla silinmez |
+
+---
 *Bu anayasa Yalıhan AI OS'un teknik onurunu ve ticari geleceğini korur.*
+
+## 🔒 BİLGİ YÖNETİMİ UYGULAMASI (ERA IV — Knowledge Engine)
+
+Knowledge Platform aşağıdaki Sprint'lerde inşa edilir:
+
+```
+Sprint 5.1 → Corporate Memory Index
+Sprint 5.2 → Knowledge Search (arama + aranabilirlik)
+Sprint 5.3 → NotebookLM Sync Engine (6 notebook)
+Sprint 5.4 → Drive Sync Engine (6-klasör yapısı)
+Sprint 5.5 → Embedding & Vector Search (semantic arama)
+Sprint 5.6 → Knowledge Verification (bilgi tazelik + gap detection)
+```
+
+**Bilgi Sahipliği Matrisi:**
+| Bilgi Tipi | Birincil Sahip | Gözden Geçirme |
+|------------|----------------|----------------|
+| SAB anayasası | CTO | Her sprint |
+| ADR'ler | Architect | Gerektiğinde |
+| memory/* | Chief AI | Oturum sonu |
+| NotebookLM | AI Coordinator | Aylık |
+| Drive/01-02 | Product Owner | Sprint sonu |
+| Drive/03-CLIENTS | CFO | Çeyreklik |
+| Drive/06-ARCHIVE | CKO | Yıllık |
+
+**Kaynak:** `docs/knowledge/KNOWLEDGE_BLUEPRINT.md` — Resmi bilgi mimarisi planı
+**ADR:** `docs/adr/2026-07-05-knowledge-platform-adoption.md` — Board kararı
+
+---
+
+## 🔷 SAAB v8.0 — Location Intelligence Domain
+
+Bu bölüm ERA IV Location Intelligence altyapısını tanımlar.
+
+### Rule 8 — Property Owns Geographic Truth
+
+Tüm ham coğrafi gerçek Property/Ilan üzerinde tutulur.
+
+**Ham veri (Property üzerinde):**
+- `ada`, `parsel`, `pafta`
+- `coordinate` (lat/lng)
+- `polygon` (GeoJSON)
+- `tkgm_metadata` (KAKS, TAKS, gabari, imar durumu)
+- `parcel_area` (alan_m2)
+- `neighborhood_id`, `mahalle_id`
+
+**Hesaplanmış zeka değerleri (ayrı tutulur):**
+- `neighborhood_score`
+- `location_signal_score`
+- `investment_score`
+- `accessibility_score`
+
+**Yasak:** Coğrafi veri asla Talep'e yazılmaz. Talep sadece müşteri arama kriteri depolar.
+
+### Rule 9 — Location Verification Pipeline
+
+Konum doğrulaması sıralı pipeline olarak çalışır:
+
+```
+Danışman → Adres → Koordinat → TKGM/Parsel → Polygon → POI → Scores → Timeline → Ready
+```
+
+Her aşama `LocationStepUpdated` event fırlatır. UI bu event'leri dinleyerek ilerleme gösterir.
+
+### Rule 10 — TKGM Is Data Provider Only
+
+TKGM business logic sahibi değildir. TKGM sadece normalize edilmiş parsel verisi döner.
+
+```
+TKGM Provider → Location Intelligence → Property/Ilan
+```
+
+TKGM değişirse veya farklı bir CBS servisi eklenirse sistem değişmez. Provider pattern uygulanır.
+
+### Rule 11 — Property Template Owns Visibility
+
+Konum görünürlüğü Property Template tarafından kontrol edilir ve yayın kanalına göre farklılık gösterebilir.
+
+**Örnek kanal bazlı görünürlük:**
+
+| Kanal | Ada | Parsel | Polygon | Tam Koordinat |
+|-------|-----|--------|---------|---------------|
+| Website | show | show | hide | yaklaşık |
+| Sahibinden | show | show | hide | hide |
+| Airbnb | hide | hide | hide | sadece mahalle |
+| CRM | show | show | show | show |
+
+Hiçbir provider görünürlük kararı vermez.
+
+### Rule 12 — Location Intelligence Is One Capability
+
+Tüm mekansal operasyonlar Location Intelligence capability'si altındadır:
+
+- Geocoding / Reverse geocoding
+- TKGM parsel sorgusu
+- POI analizi
+- Polygon işleme
+- Harita skoru hesaplama
+- Mahalle skoru
+- Provider fallback
+- Provider caching
+
+Bağımsız service, Location Intelligence bypass ederek domain write yapamaz.
+
+### Rule 13 — Location Data Is Immutable After Publish
+
+Yayınlanmış konum verisi sessizce değiştirilemez.
+
+Koordinat, ada/parsel, polygon veya parsel kimliği değişirse:
+
+1. İlan draft/review durumuna alınır
+2. Verification pipeline yeniden çalışır
+3. Publishing readiness yeniden hesaplanır
+4. Visibility kuralları reset edilir
+5. Timeline değişikliği kaydeder
+
+### Rule 14 — Provider Cannot Access Domain
+
+Provider'lar doğrudan Ilan, Talep, Workspace veya Publishing modellerine yazamaz.
+
+**İzin verilen akış:**
+
+```
+Provider → Location Intelligence → Domain Service → Property/Ilan
+```
+
+Provider çıktısı ham veridir. Location Intelligence yorumlama sahibidir. Domain Service mutation sahibidir.
+
+---
+
+**ADR:** `docs/adr/2026-07-06-location-intelligence-domain.md` — Detaylı mimari kararları
+
+---
+
+## 🔷 SAAB v8.1 — Property Workspace Architecture
+
+### Rule 15 — Property Workspace Mental Model
+
+Wizard Property Workspace Creator'dır, Listing Form değil. Kullanıcı iş niyeti seçer, database kategorisi değil.
+
+```
+Seçim akışı:
+Intent → Workspace Created → Template Attached → Capabilities Activated
+```
+
+"Ne yaratıyorsunuz?" sorusu database yapısını değil, iş niyetini yansıtır:
+- "Villa Satılık"
+- "Villa Kiralık (Günlük)"
+- "Arsa Satılık"
+- "Ticari Gayrimenkul"
+
+### Rule 16 — Template-Owned AI Hooks
+
+AI aksiyonları Property Template tarafından aktive edilir. Her template hangi AI hook'ların kullanılabileceğini tanımlar.
+
+```
+Template: Luxury Villa Sales
+├── enabled_ai:
+│   ├── title_generation: true
+│   ├── description_generation: true
+│   ├── price_suggestion: true
+│   ├── location_description: true
+│   └── seo_optimization: true
+│   └── reservation_optimization: false (satılık değil)
+```
+
+Template'in aktif etmediği AI hook UI'da görünmez.
+
+### Rule 17 — Reservation Is Business Capability
+
+Reservation sadece calendar değildir. Reservation şunları kapsar:
+
+- Availability (Takvim değil, kullanılabilirlik yönetimi)
+- Pricing Rules (Sezon, hafta sonu, uzun konaklama)
+- Guest Info (Misafir bilgileri, kimlik, tercihler)
+- Financial Events (Tahsilat, iade, komisyon)
+- Calendar Sync (iCal, Airbnb, Booking.com)
+
+Calendar bu capability'nin sadece bir görünümüdür.
+
+### Rule 18 — Channel Visibility Is Template-Owned
+
+Publishing visibility kuralları Property Template'e aittir. Kod değil, template karar verir.
+
+```
+Template: Villa Sale
+├── channels:
+│   ├── website:
+│   │   ├── location.ada: show
+│   │   └── location.coordinates: approximate
+│   ├── sahibinden:
+│   │   ├── location.ada: show
+│   │   └── location.coordinates: hide
+│   └── crm:
+│       └── location.all: show
+```
+
+### Rule 19 — Documents Gate Publishing
+
+Required belgeler doğrulanmadan publishing başlayamaz. Template property type'a göre gerekli/koşullu/opsiyonel belgeleri tanımlar.
+
+```
+Arsa Template:
+├── documents:
+│   ├── required: [tapu, imar_durumu]
+│   ├── conditional: [zemin_etudu] # if alan > 1000m²
+│   └── optional: [degerleme_raporu]
+```
+
+### Rule 20 — Workspace Owns Timeline
+
+Tüm önemli aksiyonlar Workspace Timeline'da kaydedilir. Audit log değil, Workspace History'dir.
+
+```
+Timeline Events:
+- workspace.created
+- location.address_entered
+- location.coordinates_verified
+- location.tkgm_verified
+- location.polygon_generated
+- location.poi_analyzed
+- location.scores_calculated
+- media.uploaded
+- media.ai_analyzed
+- document.uploaded
+- document.verified
+- ai.title_generated
+- ai.description_generated
+- pricing.suggested
+- pricing.confirmed
+- publishing.channel_enabled
+- publishing.listing_created
+```
+
+---
+
+**Reference:** `docs/architecture/PROPERTY_WORKSPACE_ARCHITECTURE.md` — Kapsamlı referans dokümanı
+**ADR:** `docs/adr/2026-07-06-property-workspace-model.md` — Property Workspace mimari kararı

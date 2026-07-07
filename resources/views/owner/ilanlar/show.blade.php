@@ -30,6 +30,160 @@
     </div>
 </div>
 
+{{-- ================================================
+     BC-001: First Advisor Experience — Readiness Panel
+     Sprint 5.0 — 8-Component Status Grid
+     ================================================ --}}
+@php
+    $bc001Components = [
+        [
+            'key' => 'workspace',
+            'label' => 'Workspace',
+            'icon' => '🏠',
+            'ready' => (bool) $ilan->workspace,
+            'detail' => $ilan->workspace?->workspace_status === 'ready' ? 'Drive Alanı Hazır' : 'Oluşturuluyor...',
+        ],
+        [
+            'key' => 'drive',
+            'label' => 'Drive',
+            'icon' => '📁',
+            'ready' => (bool) $ilan->workspace?->drive_folder_id,
+            'detail' => $ilan->workspace?->drive_folder_id ? 'Klasörler Hazır' : 'Klasörler Oluşturuluyor...',
+        ],
+        [
+            'key' => 'knowledge',
+            'label' => 'Knowledge',
+            'icon' => '🧠',
+            'ready' => (bool) ($ilan->workspace?->metadata_json['notebook_synced'] ?? false),
+            'detail' => ($ilan->workspace?->metadata_json['notebook_synced'] ?? false) ? 'Memory Güncellendi' : 'Bilgi Kaydediliyor...',
+        ],
+        [
+            'key' => 'photos',
+            'label' => 'Fotoğraflar',
+            'icon' => '📷',
+            'ready' => $ilan->fotograflar && $ilan->fotograflar->count() > 0,
+            'detail' => $ilan->fotograflar ? $ilan->fotograflar->count() . ' Fotoğraf Yüklendi' : 'Fotoğraf Bekleniyor',
+        ],
+        [
+            'key' => 'ai',
+            'label' => 'AI Analiz',
+            'icon' => '🤖',
+            'ready' => (bool) ($ilan->workspace?->ai_completion_percent >= 50),
+            'detail' => $ilan->workspace?->ai_completion_percent
+                ? $ilan->workspace->ai_completion_percent . '% Tamamlandı'
+                : 'AI Analiz Bekleniyor',
+        ],
+        [
+            'key' => 'crm',
+            'label' => 'CRM',
+            'icon' => '👥',
+            'ready' => (bool) ($ilan->workspace?->metadata_json['publish_queue']['enqueued_at'] ?? false),
+            'detail' => ($ilan->workspace?->metadata_json['publish_queue']['enqueued_at'] ?? false) ? 'CRM Kaydedildi' : 'CRM Oluşturuluyor...',
+        ],
+        [
+            'key' => 'publishing',
+            'label' => 'Yayınlama',
+            'icon' => '📢',
+            'ready' => (bool) ($ilan->workspace?->lifecycle_state?->value === 'READY_FOR_PUBLISH'),
+            'detail' => $ilan->workspace?->lifecycle_state?->value === 'READY_FOR_PUBLISH' ? 'Yayınlamaya Hazır' : 'Yayınlama Hazırlanıyor...',
+        ],
+        [
+            'key' => 'telegram',
+            'label' => 'Bildirim',
+            'icon' => '✉️',
+            'ready' => (bool) ($ilan->workspace?->metadata_json['publish_queue']['enqueued_at'] ?? false),
+            'detail' => ($ilan->workspace?->metadata_json['publish_queue']['enqueued_at'] ?? false) ? 'Bildirim Gönderildi' : 'Bildirim Bekleniyor',
+        ],
+    ];
+
+    $bc001ReadyCount = collect($bc001Components)->where('ready', true)->count();
+    $bc001Total = count($bc001Components);
+    $bc001AllReady = $bc001ReadyCount === $bc001Total;
+    $bc001Score = $ilan->workspace?->ai_completion_percent ?? ($ilan->fotograflar && $ilan->fotograflar->count() > 0 ? 25 : 0);
+@endphp
+
+<div class="mb-6 rounded-xl border bg-gradient-to-br from-[#0A1628] to-[#0f2040] p-6 shadow-lg"
+     x-data="{
+         refreshInterval: 10000,
+         init() {
+             setInterval(() => $refs.readinessPanel.innerHTML = $refs.readinessPanel.innerHTML, this.refreshInterval);
+         }
+     }">
+
+    {{-- Header --}}
+    <div class="mb-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[#C9A84C]/20">
+                <span class="text-xl">🚀</span>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold text-[#F8F6F1]">BC-001 — İlan Hazırlık Durumu</h2>
+                <p class="text-sm text-[#F8F6F1]/60">YALIHAN OS Otomatik Bootstrap</p>
+            </div>
+        </div>
+        <div class="text-right">
+            <div class="text-3xl font-bold text-[#C9A84C]">{{ $bc001ReadyCount }}/{{ $bc001Total }}</div>
+            <div class="text-xs text-[#F8F6F1]/50">Bileşen Hazır</div>
+        </div>
+    </div>
+
+    {{-- Component Grid --}}
+    <div class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4" x-ref="readinessPanel">
+        @foreach($bc001Components as $component)
+            <div class="rounded-lg border p-3 text-center transition-all
+                @if($component['ready'])
+                    border-[#C9A84C]/40 bg-[#C9A84C]/10
+                @else
+                    border-[#F8F6F1]/10 bg-[#F8F6F1]/5
+                @endif
+            ">
+                <div class="mb-1 text-2xl">{{ $component['icon'] }}</div>
+                <div class="text-xs font-medium text-[#F8F6F1]">{{ $component['label'] }}</div>
+                <div class="mt-1 flex items-center justify-center gap-1">
+                    @if($component['ready'])
+                        <span class="h-1.5 w-1.5 rounded-full bg-[#C9A84C]"></span>
+                        <span class="text-xs text-[#C9A84C]">Hazır</span>
+                    @else
+                        <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-[#F8F6F1]/40"></span>
+                        <span class="text-xs text-[#F8F6F1]/50">Bekleniyor</span>
+                    @endif
+                </div>
+                <div class="mt-1 text-[10px] text-[#F8F6F1]/40">{{ $component['detail'] }}</div>
+            </div>
+        @endforeach
+    </div>
+
+    {{-- Overall Score Bar + CTA --}}
+    <div class="rounded-lg border border-[#F8F6F1]/10 bg-[#F8F6F1]/5 p-4">
+        <div class="mb-2 flex items-center justify-between">
+            <span class="text-sm font-medium text-[#F8F6F1]/70">Hazırlık Skoru</span>
+            <span class="text-lg font-bold text-[#C9A84C]">{{ $bc001Score }}/100</span>
+        </div>
+        <div class="h-2 overflow-hidden rounded-full bg-[#F8F6F1]/10">
+            <div class="h-full rounded-full bg-gradient-to-r from-[#C9A84C] to-[#d4b860]"
+                 style="width: {{ $bc001Score }}%"></div>
+        </div>
+
+        @if($bc001AllReady)
+            <div class="mt-4 flex items-center gap-3">
+                <button
+                    onclick="document.getElementById('bc001-approve-form').submit()"
+                    class="flex-1 rounded-lg bg-[#C9A84C] px-6 py-3 font-bold text-[#0A1628] transition hover:bg-[#d4b860]">
+                    ✅ ONAYLA VE YAYINLA
+                </button>
+                <form id="bc001-approve-form" method="POST"
+                      action="{{ route('owner.ilanlar.yayinla', $ilan->id) }}">
+                    @csrf
+                </form>
+            </div>
+        @else
+            <div class="mt-3 text-center text-sm text-[#F8F6F1]/40">
+                {{ $bc001Total - $bc001ReadyCount }} bileşen henüz hazır değil
+            </div>
+        @endif
+    </div>
+</div>
+
 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
     {{-- Sol Taraf (Ana Detaylar) --}}
     <div class="lg:col-span-2 space-y-6">

@@ -65,12 +65,21 @@ class TransactionService
             $transaction = Transaction::query()->create($transactionData);
 
             // 2. Double-Entry Integration (Financial Fortress)
+            // 🛡️ P0 FIX: resolve LedgerAccount models before calling recordDoubleEntry
+            $systemAccount = $this->ledgerService->findAccount(1);
+            $ilanAccount = $this->ledgerService->findAccount($data['ilan_id']);
+
+            if (!$systemAccount || !$ilanAccount) {
+                throw new \RuntimeException("LedgerAccount bulunamadı: ilan_id={$data['ilan_id']}");
+            }
+
             $this->ledgerService->recordDoubleEntry(
-                $tenantId,
-                1, // System Account (receiving)
-                $data['ilan_id'], // Or Customer/Ilan account
+                $systemAccount,    // debit (paranın girdiği hesap)
+                $ilanAccount,      // credit (paranın çıktığı hesap)
                 (float)$data['islem_tutari'],
                 $data['currency'] ?? 'TRY',
+                Transaction::class,
+                $transaction->id,
                 "Payment Recorded: #{$transaction->id}"
             );
 
@@ -281,12 +290,21 @@ class TransactionService
                 ]);
 
                 // Double-Entry Integration for Refund
+                // 🛡️ P0 FIX: resolve LedgerAccount models before calling recordDoubleEntry
+                $systemAccount = $this->ledgerService->findAccount(1);
+                $ilanAccount = $this->ledgerService->findAccount($transaction->ilan_id);
+
+                if (!$systemAccount || !$ilanAccount) {
+                    throw new \RuntimeException("LedgerAccount bulunamadı: ilan_id={$transaction->ilan_id}");
+                }
+
                 $this->ledgerService->recordDoubleEntry(
-                    $tenantId,
-                    $transaction->ilan_id, // Refund back to user/ilan
-                    1, // From system
+                    $ilanAccount,    // debit — para refund ediliyor (paranın girdiği)
+                    $systemAccount,  // credit — sistemden çıkıyor
                     (float)$transaction->islem_tutari,
                     $transaction->currency,
+                    Transaction::class,
+                    $transaction->id,
                     "Refund: #{$transaction->id}"
                 );
             }

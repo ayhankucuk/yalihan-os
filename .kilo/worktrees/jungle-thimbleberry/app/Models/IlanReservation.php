@@ -7,9 +7,16 @@ use App\Models\BaseModel;
 use App\Traits\HasCountryScope;
 
 /**
- * Ilan Reservation Model
+ * DEPRECATED — Use PropertyReservation instead.
  *
- * Context7 Compliance: Rezervasyon yönetimi
+ * IlanReservation was a parallel model pointing to property_reservations table.
+ * It had the same table but a different fillable set and missing tenant_id.
+ *
+ * SSOT consolidation (Sprint 5.2 — 2026-07-06):
+ * property_reservations table → PropertyReservation is the sole authoritative model.
+ *
+ * @deprecated 2026-07-06 — SSOT: use App\Models\PropertyReservation
+ * @see PropertyReservation
  */
 class IlanReservation extends BaseModel
 {
@@ -18,6 +25,13 @@ class IlanReservation extends BaseModel
 
     protected $table = 'property_reservations';
 
+    /**
+     * SSOT Rule: All writes must go through PropertyReservation.
+     * IlanReservation exists only for backward compatibility with existing code.
+     * New code must NOT use this model.
+     *
+     * @deprecated 2026-07-06
+     */
     protected $fillable = [
         'property_id',
         'start_date',
@@ -58,43 +72,32 @@ class IlanReservation extends BaseModel
     ];
 
     /**
-     * İlan ilişkisi
+     * @deprecated 2026-07-06 — Use PropertyReservation::ilan()
      */
     public function ilan()
     {
-        return $this->belongsTo(Ilan::class, 'ilan_id');
+        return $this->belongsTo(Ilan::class, 'property_id');
     }
 
     /**
-     * Oluşturan kullanıcı
+     * @deprecated 2026-07-06 — Use PropertyReservation::creator()
      */
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
-    /**
-     * Scope: Sadece aktif rezervasyonlar
-     */
     public function scopeActive($query)
     {
-        // reservation_state: confirmed veya pending — iptal edilmemiş rezervasyonlar
         return $query->whereIn('reservation_state', ['confirmed', 'pending'])
-                     ->whereNull('cancelled_at'); // context7-ignore
+                     ->whereNull('cancelled_at');
     }
 
-    /**
-     * Scope: İptal edilmiş
-     */
     public function scopeCancelled($query)
     {
         return $query->whereNotNull('cancelled_at');
     }
 
-    /**
-     * Scope: Belirli ilan için
-     * property_reservations tablosu property_id FK kullanır
-     */
     public function scopeForIlan($query, int $ilanId)
     {
         return $query->where('property_id', $ilanId);

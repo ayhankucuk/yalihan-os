@@ -5,7 +5,6 @@ namespace Tests\Feature\Admin;
 use App\Models\Kisi;
 use App\Models\User;
 use App\Modules\Auth\Models\Role;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
@@ -15,7 +14,6 @@ use Tests\TestCase;
  */
 class KisiControllerAuthorizationTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected User $admin;
     protected User $danisman1;

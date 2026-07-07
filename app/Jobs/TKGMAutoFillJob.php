@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Log;
  * @package App\Jobs
  * @version 1.0.0
  */
-class TKGMAutoFillJob implements ShouldQueue
+class TKGMAutoFillJob implements ShouldQueue, \App\Queue\Contracts\TenantAwareJobInterface
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -39,12 +39,35 @@ class TKGMAutoFillJob implements ShouldQueue
     private User $user;
     public int $tries = 3;
     public int $timeout = 120;
+    public int $taleId;
+    public int $userId;
 
     public function __construct(int $taleId, int $userId)
     {
+        $this->taleId = $taleId;
+        $this->userId = $userId;
         $this->talep = Talep::find($taleId);
         $this->user = User::find($userId);
         $this->onQueue('high');
+    }
+
+    public function getTenantId(): ?int
+    {
+        if ($this->user) {
+            return $this->user->tenant_id;
+        }
+        $user = User::withoutGlobalScopes()->find($this->userId);
+        return $user?->tenant_id;
+    }
+
+    public function getUserId(): ?int
+    {
+        return $this->userId;
+    }
+
+    public function middleware(): array
+    {
+        return [new \App\Queue\Middleware\RestoreTenantContext(app(\App\Services\SaaS\TenantContextService::class))];
     }
 
     /**

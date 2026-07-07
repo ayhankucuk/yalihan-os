@@ -49,6 +49,7 @@ class SabIntegrityScanCommand extends Command
      */
     public function handle(): int
     {
+        $this->runner = app(\App\Services\Governance\SabScanRunner::class);
         $this->formatter = new \App\Services\Governance\SabScanFormatter($this);
         
         $path = $this->option('path');

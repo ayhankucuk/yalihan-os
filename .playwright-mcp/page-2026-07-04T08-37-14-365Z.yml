@@ -1,0 +1,334 @@
+- generic [active] [ref=f5e1]:
+  - banner [ref=f5e2]:
+    - generic [ref=f5e4]:
+      - link "Yalıhan AI OS" [ref=f5e5] [cursor=pointer]:
+        - /url: /admin
+        - img [ref=f5e7]
+        - generic [ref=f5e9]:
+          - generic [ref=f5e10]: Yalıhan
+          - generic [ref=f5e11]: AI OS
+      - navigation [ref=f5e12]:
+        - link "Pano" [ref=f5e13] [cursor=pointer]:
+          - /url: http://127.0.0.1:8020/admin/dashboard
+        - link "İlanlar" [ref=f5e14] [cursor=pointer]:
+          - /url: http://127.0.0.1:8020/admin/ilanlar
+        - link "CRM" [ref=f5e15] [cursor=pointer]:
+          - /url: http://127.0.0.1:8020/admin/crm
+        - link "Danışmanlar" [ref=f5e16] [cursor=pointer]:
+          - /url: http://127.0.0.1:8020/admin/danisman
+        - link "Analitik" [ref=f5e17] [cursor=pointer]:
+          - /url: http://127.0.0.1:8020/admin/analytics
+        - link "AI" [ref=f5e18] [cursor=pointer]:
+          - /url: http://127.0.0.1:8020/admin/ai-monitor
+        - link "Portföy" [ref=f5e19] [cursor=pointer]:
+          - /url: http://127.0.0.1:8020/advisor/portfolio/doctor
+      - generic [ref=f5e20]:
+        - button [ref=f5e21] [cursor=pointer]:
+          - img [ref=f5e22]
+          - img [ref=f5e24]
+        - link [ref=f5e26] [cursor=pointer]:
+          - /url: http://127.0.0.1:8020/admin/admin-notifications
+          - img [ref=f5e27]
+        - link [ref=f5e29] [cursor=pointer]:
+          - /url: http://127.0.0.1:8020/admin/ayarlar
+          - img [ref=f5e30]
+  - main [ref=f5e33]:
+    - generic [ref=f5e34]:
+      - generic [ref=f5e35]:
+        - generic [ref=f5e36]:
+          - link [ref=f5e37] [cursor=pointer]:
+            - /url: http://127.0.0.1:8020/admin/ilanlar
+            - img [ref=f5e38]
+          - generic [ref=f5e40]:
+            - generic [ref=f5e42]: Digital Twin Cockpit
+            - heading "Ratione corrupti vitae veritatis minima harum. DT-00173" [level=1] [ref=f5e43]
+        - 'link "İlan #173" [ref=f5e45] [cursor=pointer]':
+          - /url: http://127.0.0.1:8020/admin/ilanlar/173
+          - img [ref=f5e46]
+          - text: "İlan #173"
+      - generic [ref=f5e49]:
+        - generic [ref=f5e50]:
+          - generic [ref=f5e51]:
+            - img [ref=f5e52]
+            - generic [ref=f5e56]: "8"
+          - generic [ref=f5e57]:
+            - generic [ref=f5e58]: Workspace Health
+            - generic [ref=f5e59]: Kritik
+            - generic [ref=f5e60]: "Hesaplanma: 1 saniye önce"
+        - link "Drive Çalışma Alanı Oluştur" [ref=f5e62] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=f5e63]
+          - text: Drive Çalışma Alanı Oluştur
+      - generic [ref=f5e65]:
+        - generic [ref=f5e67]:
+          - generic [ref=f5e68]:
+            - img [ref=f5e69]
+            - text: Çalışma Alanı
+          - generic [ref=f5e71]:
+            - generic [ref=f5e72]:
+              - generic [ref=f5e73]: Portföy No
+              - generic [ref=f5e74]: DT-00173
+            - generic [ref=f5e75]:
+              - generic [ref=f5e76]: Drive Durumu
+              - generic [ref=f5e78]: Oluşturuluyor…
+            - generic [ref=f5e79]:
+              - generic [ref=f5e80]: Alan ID
+              - generic [ref=f5e81]: —
+            - generic [ref=f5e82]:
+              - generic [ref=f5e83]: Oluşturulma
+              - generic [ref=f5e84]: —
+            - generic [ref=f5e85]:
+              - generic [ref=f5e86]: Son Güncelleme
+              - generic [ref=f5e87]: 3 dakika önce
+        - generic [ref=f5e89]:
+          - generic [ref=f5e90]:
+            - img [ref=f5e91]
+            - text: Yaşam Döngüsü 0% tamamlandı
+          - generic [ref=f5e94]:
+            - generic [ref=f5e95]:
+              - generic "Taslak"
+              - text: Taslak
+            - generic [ref=f5e97]:
+              - generic "Drive Hazır"
+              - text: Drive Hazır
+            - generic [ref=f5e99]:
+              - generic "Medya Hazır"
+              - text: Medya Hazır
+            - generic [ref=f5e101]:
+              - generic "Açıklama Hazır"
+              - text: Açıklama Hazır
+            - generic [ref=f5e103]:
+              - generic "Kalite Kontrol"
+              - text: Kalite Kontrol
+            - generic [ref=f5e105]:
+              - generic "Yayına Hazır"
+              - text: Yayına Hazır
+            - generic [ref=f5e107]:
+              - generic "Yayında"
+              - text: Yayında
+            - generic [ref=f5e109]:
+              - generic "Aktif"
+              - text: Aktif
+            - generic [ref=f5e111]:
+              - generic "Arşivlendi"
+              - text: Arşivlendi
+        - generic [ref=f5e113]:
+          - generic [ref=f5e114]:
+            - img [ref=f5e115]
+            - text: AI
+          - generic [ref=f5e117]:
+            - generic [ref=f5e118]:
+              - generic [ref=f5e119]: 0%
+              - generic [ref=f5e120]: AI İlerleme
+            - generic [ref=f5e121]:
+              - generic [ref=f5e122]:
+                - img [ref=f5e123]
+                - text: Fotoğraf Analizi
+              - generic [ref=f5e125]:
+                - img [ref=f5e126]
+                - text: Açıklama Üretimi
+              - generic [ref=f5e128]:
+                - img [ref=f5e129]
+                - text: Mülk Skoru
+              - generic [ref=f5e131]:
+                - img [ref=f5e132]
+                - text: Yayın Kararı
+        - generic [ref=f5e135]:
+          - generic [ref=f5e136]:
+            - img [ref=f5e137]
+            - text: Sonraki Adım
+          - generic [ref=f5e140]:
+            - generic [ref=f5e141]:
+              - generic [ref=f5e142]: Kritik
+              - generic [ref=f5e143]: "#1"
+            - generic [ref=f5e144]:
+              - img [ref=f5e146]
+              - generic [ref=f5e148]:
+                - generic [ref=f5e149]: Drive Çalışma Alanı Oluştur
+                - generic [ref=f5e150]: Bu ilan için henüz Google Drive çalışma alanı oluşturulmamış.
+      - generic [ref=f5e151]:
+        - generic [ref=f5e153]:
+          - generic [ref=f5e154]:
+            - img [ref=f5e155]
+            - text: İlan
+            - link "Detay →" [ref=f5e157] [cursor=pointer]:
+              - /url: http://127.0.0.1:8020/admin/ilanlar/173
+          - generic [ref=f5e158]:
+            - generic [ref=f5e159]:
+              - generic [ref=f5e160]: Başlık
+              - generic [ref=f5e161]: Ratione corrupti vitae veritatis minima harum.
+            - generic [ref=f5e162]:
+              - generic [ref=f5e163]:
+                - generic [ref=f5e164]: Fiyat
+                - generic [ref=f5e165]: 4.141.251 TL
+              - generic [ref=f5e166]:
+                - generic [ref=f5e167]: Yayın
+                - text: Yayında
+            - generic [ref=f5e169]:
+              - generic [ref=f5e170]: Konum
+              - generic [ref=f5e171]: —
+            - generic [ref=f5e173]:
+              - generic [ref=f5e174]: Fotoğraf
+              - generic [ref=f5e175]: 0 adet
+            - generic [ref=f5e176]:
+              - generic [ref=f5e177]:
+                - generic [ref=f5e178]: Görüntülenme
+                - generic [ref=f5e179]: "0"
+              - generic [ref=f5e180]:
+                - generic [ref=f5e181]: Danışman
+                - generic [ref=f5e182]: Adrain Predovic MD
+        - generic [ref=f5e184]:
+          - generic [ref=f5e185]:
+            - img [ref=f5e186]
+            - text: Drive Dosyaları 0/12
+          - paragraph [ref=f5e190]: Henüz Drive klasörü yok
+        - generic [ref=f5e192]:
+          - generic [ref=f5e193]:
+            - img [ref=f5e194]
+            - text: CRM
+          - generic [ref=f5e196]:
+            - generic [ref=f5e197]:
+              - generic [ref=f5e198]: İlan Sahibi
+              - generic [ref=f5e199]:
+                - img [ref=f5e200]
+                - text: Eksik
+            - generic [ref=f5e202]:
+              - generic [ref=f5e203]: Danışman
+              - generic [ref=f5e204]:
+                - img [ref=f5e205]
+                - text: Adrain Predovic...
+            - generic [ref=f5e208]:
+              - generic [ref=f5e209]: CRM Skoru
+              - generic [ref=f5e210]: 0/100
+        - generic [ref=f5e212]:
+          - generic [ref=f5e213]:
+            - img [ref=f5e214]
+            - text: Yayın
+          - generic [ref=f5e216]:
+            - generic [ref=f5e218]:
+              - generic [ref=f5e219]: Yayın Skoru
+              - generic [ref=f5e220]: 30/100
+            - generic [ref=f5e221]:
+              - generic [ref=f5e223]: Taslak
+              - generic [ref=f5e225]:
+                - img [ref=f5e226]
+                - text: Açıklama
+        - generic [ref=f5e229]:
+          - generic [ref=f5e230]:
+            - img [ref=f5e231]
+            - text: Sağlık Detay
+          - generic [ref=f5e233]:
+            - generic [ref=f5e234]:
+              - generic [ref=f5e235]: "0"
+              - generic [ref=f5e237]: Dokümanlar
+            - generic [ref=f5e238]:
+              - generic [ref=f5e239]: "0"
+              - generic [ref=f5e241]: Medya
+            - generic [ref=f5e242]:
+              - generic [ref=f5e243]: "0"
+              - generic [ref=f5e245]: AI
+            - generic [ref=f5e246]:
+              - generic [ref=f5e247]: "0"
+              - generic [ref=f5e249]: CRM
+            - generic [ref=f5e250]:
+              - generic [ref=f5e251]: "30"
+              - generic [ref=f5e253]: Yayın
+            - generic [ref=f5e254]:
+              - generic [ref=f5e255]: "60"
+              - generic [ref=f5e257]: Uyum
+      - generic [ref=f5e258]:
+        - generic [ref=f5e260]:
+          - generic [ref=f5e261]:
+            - img [ref=f5e262]
+            - text: Dokümanlar 0/12
+          - generic [ref=f5e265]:
+            - generic [ref=f5e266]:
+              - img [ref=f5e267]
+              - img [ref=f5e269]
+              - generic [ref=f5e271]: Fotoğraflar
+              - generic [ref=f5e272]: Boş
+            - generic [ref=f5e273]:
+              - img [ref=f5e274]
+              - img [ref=f5e276]
+              - generic [ref=f5e278]: Videolar
+              - generic [ref=f5e279]: Boş
+            - generic [ref=f5e280]:
+              - img [ref=f5e281]
+              - img [ref=f5e283]
+              - generic [ref=f5e285]: Tapu
+              - generic [ref=f5e286]: Boş
+            - generic [ref=f5e287]:
+              - img [ref=f5e288]
+              - img [ref=f5e290]
+              - generic [ref=f5e292]: İmar
+              - generic [ref=f5e293]: Boş
+            - generic [ref=f5e294]:
+              - img [ref=f5e295]
+              - img [ref=f5e297]
+              - generic [ref=f5e299]: Ekspertiz
+              - generic [ref=f5e300]: Boş
+            - generic [ref=f5e301]:
+              - img [ref=f5e302]
+              - img [ref=f5e304]
+              - generic [ref=f5e306]: Airbnb
+              - generic [ref=f5e307]: Boş
+            - generic [ref=f5e308]:
+              - img [ref=f5e309]
+              - img [ref=f5e311]
+              - generic [ref=f5e313]: Sahibinden
+              - generic [ref=f5e314]: Boş
+            - generic [ref=f5e315]:
+              - img [ref=f5e316]
+              - img [ref=f5e318]
+              - generic [ref=f5e320]: HepsiEmlak
+              - generic [ref=f5e321]: Boş
+            - generic [ref=f5e322]:
+              - img [ref=f5e323]
+              - img [ref=f5e325]
+              - generic [ref=f5e327]: CRM
+              - generic [ref=f5e328]: Boş
+            - generic [ref=f5e329]:
+              - img [ref=f5e330]
+              - img [ref=f5e332]
+              - generic [ref=f5e334]: Finans
+              - generic [ref=f5e335]: Boş
+            - generic [ref=f5e336]:
+              - img [ref=f5e337]
+              - img [ref=f5e339]
+              - generic [ref=f5e341]: AI Analiz
+              - generic [ref=f5e342]: Boş
+            - generic [ref=f5e343]:
+              - img [ref=f5e344]
+              - img [ref=f5e346]
+              - generic [ref=f5e348]: Arşiv
+              - generic [ref=f5e349]: Boş
+        - generic [ref=f5e351]:
+          - generic [ref=f5e352]:
+            - img [ref=f5e353]
+            - text: Finans
+          - generic [ref=f5e356]:
+            - generic [ref=f5e357]: Satılık Fiyat
+            - generic [ref=f5e358]: 4.141.251 TL
+        - generic [ref=f5e361]:
+          - generic [ref=f5e362]:
+            - img [ref=f5e363]
+            - text: Rezervasyonlar 0 aktif
+          - generic [ref=f5e366]:
+            - img [ref=f5e367]
+            - paragraph [ref=f5e369]: Rezervasyon yok
+      - generic [ref=f5e370]:
+        - generic [ref=f5e371]:
+          - img [ref=f5e372]
+          - text: Hermes Zaman Çizelgesi Tüm olaylar kronolojik sırayla
+          - button "Yenile" [ref=f5e374] [cursor=pointer]:
+            - img [ref=f5e375]
+            - text: Yenile
+        - generic [ref=f5e379]:
+          - img [ref=f5e380]
+          - paragraph [ref=f5e382]: Zaman çizelgesi yükleniyor…
+  - contentinfo [ref=f5e383]:
+    - generic [ref=f5e384]:
+      - generic [ref=f5e385]:
+        - img [ref=f5e387]
+        - generic [ref=f5e389]: © 2026 Yalıhan Emlak
+      - generic [ref=f5e390]: AI OS · SAB v6.1.1 · Context7

@@ -6,6 +6,215 @@
 
 ---
 
+## 2026-07-06 | Oturum 50 | Sprint 5.2: Reservation SSOT Consolidation
+
+### 2 Tablo → 2 SSOT
+
+| Tablo | SSOT Model | Deprecated |
+|-------|-------------|------------|
+| `property_reservations` | `PropertyReservation` | `IlanReservation` |
+| `yazlik_rezervasyonlar` | `YazlikRezervasyon` | `Event` |
+
+### Kritik Bulgular
+
+| # | Bulgu | Impact |
+|---|-------|--------|
+| 1 | `PropertyReservation` fillable'da `ilan_id` ama DB'de `property_id` | Aktif yazma bug'ı — fixlendi |
+| 2 | `PropertyReservation` tenant isolation yok | Cross-tenant veri erişimi riski — TenantContextResolver eklendi |
+| 3 | `IlanReservation` → deprecated ama aktif kullanımda | Split-brain yazma riski |
+| 4 | `Event` → deprecated ama `yazlik_rezervasyonlar` tablosunda | Legacy alias |
+
+### Değişen Dosyalar
+- `app/Models/PropertyReservation.php` (property_id fillable + FK fix)
+- `app/Models/IlanReservation.php` (deprecated @deprecated annotation)
+- `app/Models/Event.php` (deprecated @deprecated annotation)
+- `app/Services/ReservationService.php` (TenantContextResolver DI + tenant isolation)
+
+### Doğrulama
+- sab:integrity-scan: 0 yeni violation (tüm ihlaller pre-existing) ✅
+- Gate route: PASS ✅
+- PHP syntax: Tüm dosyalar PASS ✅
+
+---
+
+## 2026-07-06 | Oturum 50 | Sprint 5.1 Location Intelligence Stabilization
+
+### 4 Parça Tamamlandı
+
+| # | Parça | Dosya(lar) | Not |
+|---|-------|-------------|-----|
+| 1 | TKGM Loopback kaldırıldı | `TKGMService.php`, `NominatimService.php` | NominatimService inject → direct call |
+| 2 | SpatialScoutJob async queue | `SpatialScoutJob.php`, `SpatialScoutListener.php` | Event-driven dispatch |
+| 3 | POI ASCII canonical | `PointOfInterest.php`, migration, `BackfillPoiAscii.php` | is_active → aktiflik_durumu |
+| 4 | Location timeline | `SpatialScoutListener.php` | LogService audit trail |
+
+### Yeni Dosyalar
+- `app/Jobs/Location/SpatialScoutJob.php`
+- `app/Listeners/SpatialScoutListener.php`
+- `database/migrations/2026_07_06_000001_add_poi_adi_ascii_and_fix_model.php`
+- `app/Console/Commands/BackfillPoiAscii.php`
+
+### Commit Öncesi Not
+- Git worktree context: `/Users/macbookpro/dev/yalihan2026/.kilo/worktrees/jungle-thimbleberry`
+- .git dosya olarak mevcut ama worktree değil → `git status` çalışmıyor
+- Commit için: `cd /Users/macbookpro/dev/yalihan2026 && git worktree add ...` veya manual stage
+
+---
+
+## 2026-07-05 | Oturum 49 | ERA IV + ROADMAP v3.0 + First Advisor Experience + 3 Yeni KPI
+
+### ROADMAP v3.0 — Sprint 5.x: Workflow Sprint Değil, Ürün Sprinti
+
+**Değişiklik:** ROADMAP tamamen yeniden yazıldı.
+
+**Önceki:** Sprint 5.0 = First Advisor Pilot + R002 + modül geliştirme
+**Yeni:** Sprint 5.0 = First Advisor Experience + Tek User Story = "Yeni Portföy Oluştur"
+
+**Yeni manifest:**
+> Sprint 5.x'in amacı yeni modül geliştirmek değil;
+> mevcut platformu kullanarak gerçek bir emlak danışmanının
+> ilk portföyünü uçtan uca otomatik oluşturmasını sağlamaktır.
+
+### Sprint 5.0 — 4 Epic
+
+| Epic | İçerik | Otomasyon |
+|------|---------|----------|
+| Epic 1: Workspace Bootstrap | Portföy → Workspace → Drive folder | Otomatik |
+| Epic 2: Knowledge Bootstrap | Workspace → NotebookLM → Memory | Otomatik |
+| Epic 3: AI Bootstrap | Fotoğraf → Vision → Description → Score | Otomatik |
+| Epic 4: Publishing Bootstrap | CRM → Airbnb → Sahibinden → Telegram | Otomatik |
+
+### Sprint 5.0 — Başarı Ekranı
+
+> Danışman sadece [Onayla] der. YALIHAN OS her şeyi yapar.
+
+```
+Workspace        ✅ READY
+Drive           ✅ READY  (03-CLIENTS/YVH-001/)
+Knowledge       ✅ READY  (NotebookLM synced)
+Photos          ✅ READY  (12 fotoğraf, AI analiz)
+AI              ✅ READY  (açıklama + başlık üretildi)
+Publishing      ✅ READY  (3 platform hazır)
+Telegram        ✅ READY  (danışmana bildirim atıldı)
+Score           ✅ 96/100
+```
+
+### 3 Yeni KPI (ERA IV)
+
+| KPI | Açıklama | Hedef |
+|-----|-----------|--------|
+| **Time to Ready** | Yeni portföy → READY süresi | ≤ 30 sn |
+| **Advisor Click Count** | Danışman tıklama sayısı | ≤ 5 |
+| **Business Automation %** | Otomatik tamamlanan iş oranı | %95 |
+
+### Sprint 5.x Artık
+- ❌ Yeni mimari katman YAZILMAZ
+- ✅ Mevcut platformu iş akışına BAĞLAYAN kod yazılır
+- ✅ Workspace → Drive otomasyonu
+- ✅ Event → Agent tetikleme
+- ✅ READY ekranı
+
+### Değişen/Güncellenen Dosyalar
+
+| Dosya | İşlem |
+|--------|--------|
+| `ROADMAP.md` | ✍️ v3.0 — ERA IV + First Advisor Experience + 3 KPI |
+
+---
+
+### SAAB Board Kararı: Knowledge Platform Resmen Kabul Edildi
+
+**ADR-022:** `docs/adr/2026-07-05-knowledge-platform-adoption.md`
+**Karar:** Knowledge Platform YALIHAN'ın dördüncü katmanı olarak kabul edildi.
+
+### Üretilen Dokümanlar (6 dosya)
+
+```
+docs/knowledge/
+├── KNOWLEDGE_BLUEPRINT.md     ← Stratejik plan — 4 katman + yol haritası
+├── NOTEBOOKLM_STRUCTURE.md    ← 6 notebook kataloğu (NB-6 Market Intelligence)
+├── DRIVE_STRUCTURE.md         ← 6-klasör Drive hiyerarşisi (01...06)
+├── CORPORATE_MEMORY.md        ← 5-katman hafıza mimarisi
+├── KNOWLEDGE_GAP_REPORT.md    ← 10 açık + 9 öneri + 90 gün yol haritası
+└── README.md                 ← Giriş noktası — navigasyon
+```
+
+### NB-6 Market Intelligence
+
+```
+NotebookLM
+├── NB-1: YALIHAN GOVERNANCE   ✅
+├── NB-2: TECHNICAL ARCHITECTURE  ✅
+├── NB-3: PRODUCT KNOWLEDGE    ✅
+├── NB-4: DOMAIN EXPERTISE    ✅
+├── NB-5: ONBOARDING          ✅
+└── NB-6: MARKET INTELLIGENCE  ← YENİ (Airbnb, Sahibinden, Tapu, İmar, KVKK)
+```
+
+**K-6 Gerekçesi:** AI karar kalitesini artıran bilgi kod değildir.
+Gayrimenkul değerlemesi, rakip analizi, yasal düzenlemeler
+AI motorlarının daha doğru tahmin yapmasını sağlar.
+
+### SAAB.md Güncellendi — 🔟 Bilgi Varlık İlkeleri
+
+```
+K-1. Bilgi, Workspace kadar stratejik bir varlıktır.
+K-2. Her önemli iş kararı aranabilir bilgiye dönüşmelidir.
+K-3. Bilgi tek bir yerde yönetilir: Knowledge Platform
+K-4. Her bilgi parçasının bir sahibi, yaşam döngüsü ve gözden geçirme tarihi olmalıdır.
+K-5. Bilgi sürümlenir ve değişiklikleri izlenir.
+K-6. Bilgi üçe ayrılır: Corporate Memory / Technical Knowledge / Institutional Knowledge
+```
+
+Bilgi Yaşam Döngüsü + Saklama Süreleri + Bilgi Sahipliği Matrisi + Sprint 5.x eklendi.
+
+### ROADMAP v2.0 — ERA IV Ürün Serisi
+
+```
+Sprint 5.0 ──► Sprint 5.1 ──► Sprint 5.2 ──► Sprint 5.3 ──► Sprint 5.4 ──► Sprint 6.0
+   │              │              │              │              │              │
+First Advisor   Knowledge     Agent        Multi-Agent   Production    Commercial
+Pilot + R002    Engine       Capability   Automation   Pilot        Release
+(🔴 P0)         (🔴 P0)      Registry     (🟠 P1)      (🟢 P2)       (🚀)
+                              (🟠 P1)
+```
+
+### Sprint 5.0 — First Advisor Pilot (HEDEF)
+
+> Bir danışman "Yeni Portföy Oluştur" dediğinde YALIHAN OS:
+> 1. Workspace'i oluşturur
+> 2. Drive klasörlerini hazırlar
+> 3. Şablon dokümanları üretir
+> 4. AI analizlerini başlatır
+> 5. CRM kaydını açar
+> 6. Dashboard'ı hazır hale getirir
+
+**Eğer bu çalışırsa → YALIHAN ilk kez gerçek bir emlak
+operasyonunu baştan sona otomatik tamamlamış olur.**
+
+### Değişen/Güncellenen Dosyalar
+
+| Dosya | İşlem | Açıklama |
+|-------|-------|----------|
+| `docs/knowledge/KNOWLEDGE_BLUEPRINT.md` | ✍️ Yeni | Stratejik bilgi mimarisi |
+| `docs/knowledge/NOTEBOOKLM_STRUCTURE.md` | ✍️ Yeni | 6 notebook kataloğu |
+| `docs/knowledge/DRIVE_STRUCTURE.md` | ✍️ Yeni | 6-klasör Drive yapısı |
+| `docs/knowledge/CORPORATE_MEMORY.md` | ✍️ Yeni | Kurumsal hafıza katmanları |
+| `docs/knowledge/KNOWLEDGE_GAP_REPORT.md` | ✍️ Yeni | 10 açık + 9 öneri |
+| `docs/knowledge/README.md` | ✍️ Güncelleme | Navigasyon giriş noktası |
+| `docs/SAB.md` | ✍️ Güncelleme | 🔟 Bilgi Varlık İlkeleri (K-1...K-6) |
+| `docs/adr/2026-07-05-knowledge-platform-adoption.md` | ✍️ Yeni | Board kararı (ADR-022) |
+| `docs/adr/README.md` | ✍️ Güncelleme | ADR-022 tabloya eklendi |
+| `ROADMAP.md` | ✍️ Yeniden Yazım | v2.0 — ERA IV Ürün Serisi |
+| `memory/CHANGELOG_AGENT.md` | ✍️ Güncelleme | Bu kayıt |
+
+### SAAB Sprint Sonu Sorusu (ERA IV)
+
+> "Bu sprint sonunda danışmanın yaptığı hangi işi
+> YALIHAN OS kendi başına yapabiliyor?"
+
+---
+
 ## 2026-06-27 | Oturum 48 | Sprint 3.4.4 COMPLETE + YALIHAN PLATFORM DOĞDU
 
 ### Strategic Pivot: Proje → Platform

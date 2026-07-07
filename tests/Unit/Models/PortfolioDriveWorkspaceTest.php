@@ -198,9 +198,16 @@ class PortfolioDriveWorkspaceTest extends TestCase
             'drive_folder_id',
             'drive_folder_url',
             'workspace_status',
+            'lifecycle_state',
+            'state_changed_at',
+            'workspace_created_at',
+            'ai_completion_percent',
+            'ai_completion_flags',
             'root_folder_name',
             'portfolio_no',
             'subfolders_json',
+            'drive_webhook_channel_json',
+            'metadata_json',
         ];
 
         $workspace = new PortfolioDriveWorkspace();

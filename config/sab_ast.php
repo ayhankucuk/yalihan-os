@@ -101,6 +101,11 @@ return [
                 'app/Services/Governance/Ast/Rules/ForbiddenFieldAstRule.php', // Rule itself
                 'app/Listeners/',
                 'app/Services/Governance/SabScanRunner.php',
+                // Sprint 4.7: Hermes system log tables — 'status' is a system enum, not a domain field
+                'app/Models/Hermes/',          // WorkforceExecutionLog, HermesEventLog
+                'app/Services/Hermes/',        // HermesDispatcher, HermesReplayService
+                'app/Jobs/Hermes/',           // AsyncHandlerDispatchJob
+                'app/Http/Controllers/Admin/HermesReplayController.php', // Sprint 4.7
             ],
         ],
 
@@ -114,6 +119,11 @@ return [
                 'app/Listeners/',
                 'app/Services/AI/Domains/CortexContentService.php',
                 'app/Services/Governance/SabScanRunner.php',
+                // Sprint 4.7: Hermes system log tables and services
+                'app/Models/Hermes/',
+                'app/Services/Hermes/',
+                'app/Jobs/Hermes/',
+                'app/Http/Controllers/Admin/HermesReplayController.php',
             ],
         ],
     ],

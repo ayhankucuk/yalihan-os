@@ -6,7 +6,6 @@ use App\Models\Ilan;
 use App\Models\IlanKategori;
 use App\Models\User;
 use App\Services\AI\MarketValuationService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
@@ -21,7 +20,6 @@ use Tests\TestCase;
  */
 class OwnerIlanValuationTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected User $owner;
     protected Ilan $ilan;

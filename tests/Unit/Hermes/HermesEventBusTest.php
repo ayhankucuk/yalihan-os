@@ -11,7 +11,6 @@ use App\Services\Hermes\Handlers\NotificationAgentHandler;
 use App\Services\Hermes\HermesDispatcher;
 use App\Services\Hermes\HermesRegistry;
 use App\Services\Hermes\HermesService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -29,7 +28,6 @@ use Tests\TestCase;
  */
 class HermesEventBusTest extends TestCase
 {
-    use RefreshDatabase;
 
     private HermesRegistry $registry;
     private HermesDispatcher $dispatcher;

@@ -127,46 +127,33 @@ trait TestFixtureHelper
 
     /**
      * Ensure a specific IlanKategori exists.
+     * Uses updateOrCreate to avoid unique constraint violations when
+     * records with matching slug already exist in the test database.
      */
     protected function ensureKategori(string $slug, array $attributes = []): IlanKategori
     {
-        $kategori = IlanKategori::withTrashed()->where('slug', $slug)->first();
-
-        if ($kategori) {
-            if ($kategori->trashed()) {
-                $kategori->restore();
-            }
-            $kategori->update($attributes);
-            return $kategori;
-        }
-
-        return IlanKategori::factory()->create(array_merge([
-            'slug' => $slug,
-            'name' => ucfirst($slug),
-            'aktiflik_durumu' => true,
-        ], $attributes));
+        return IlanKategori::withTrashed()->updateOrCreate(
+            ['slug' => $slug],
+            array_merge([
+                'name' => ucfirst($slug),
+                'aktiflik_durumu' => true,
+            ], $attributes)
+        );
     }
 
     /**
      * Ensure a specific YayinTipiSablonu exists.
+     * Uses updateOrCreate to avoid unique constraint violations.
      */
     protected function ensureYayinTipi(string $slug, array $attributes = []): YayinTipiSablonu
     {
-        $tip = YayinTipiSablonu::withTrashed()->where('slug', $slug)->first();
-
-        if ($tip) {
-            if ($tip->trashed()) {
-                $tip->restore();
-            }
-            $tip->update($attributes);
-            return $tip;
-        }
-
-        return YayinTipiSablonu::factory()->create(array_merge([
-            'slug' => $slug,
-            'ad' => ucfirst(str_replace('-', ' ', $slug)),
-            'aktiflik_durumu' => \App\Enums\AktiflikDurumu::AKTIF,
-        ], $attributes));
+        return YayinTipiSablonu::withTrashed()->updateOrCreate(
+            ['slug' => $slug],
+            array_merge([
+                'ad' => ucfirst(str_replace('-', ' ', $slug)),
+                'aktiflik_durumu' => \App\Enums\AktiflikDurumu::AKTIF,
+            ], $attributes)
+        );
     }
 
     /**

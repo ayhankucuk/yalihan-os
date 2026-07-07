@@ -6,13 +6,11 @@ use App\Models\Lead;
 use App\Models\User;
 use App\Repositories\LeadRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
 
 class LeadRepositoryAuthorizationTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected LeadRepository $repository;
 

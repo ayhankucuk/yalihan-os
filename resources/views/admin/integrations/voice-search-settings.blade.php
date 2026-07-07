@@ -190,8 +190,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const testBtn = document.querySelector('button:contains("Test Et")') || document.querySelector(
-                'button[type="button"]');
+            const testBtn = Array.from(document.querySelectorAll('button')).find(el => el.textContent.includes('Test Et')) || document.querySelector('button[type="button"]');
 
             if (testBtn) {
                 testBtn.addEventListener('click', function() {

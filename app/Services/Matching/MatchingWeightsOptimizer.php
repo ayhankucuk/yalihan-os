@@ -245,8 +245,20 @@ class MatchingWeightsOptimizer
             ->whereNotNull('metadata')
             ->get();
 
-        return $logs->filter(function ($log) use ($kategoriId) {
+        // Pre-parse metadata to extract all talep_ids in one pass
+        $parsedLogs = $logs->map(function ($log) {
             $metadata = is_string($log->metadata) ? json_decode($log->metadata, true) : $log->metadata;
+            $log->parsed_metadata = $metadata;
+            return $log;
+        });
+
+        $talepIds = $parsedLogs->pluck('parsed_metadata.talep_id')->filter()->unique()->toArray();
+
+        // Fetch all talepler in one database query
+        $talepler = empty($talepIds) ? collect([]) : Talep::whereIn('id', $talepIds)->get()->keyBy('id');
+
+        return $parsedLogs->filter(function ($log) use ($kategoriId, $talepler) {
+            $metadata = $log->parsed_metadata;
             
             // Score > 80 ve aynı kategoride
             if (!isset($metadata['score']) || $metadata['score'] < 80) {
@@ -255,13 +267,13 @@ class MatchingWeightsOptimizer
 
             // Talep kategorisini kontrol et
             if (isset($metadata['talep_id'])) {
-                $talep = Talep::find($metadata['talep_id']);
+                $talep = $talepler->get($metadata['talep_id']);
                 return $talep && $talep->alt_kategori_id == $kategoriId;
             }
 
             return false;
         })->map(function ($log) {
-            $metadata = is_string($log->metadata) ? json_decode($log->metadata, true) : $log->metadata;
+            $metadata = $log->parsed_metadata;
             
             return [
                 'ilan_id' => $metadata['ilan_id'] ?? null,

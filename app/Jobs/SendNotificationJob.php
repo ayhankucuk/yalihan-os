@@ -13,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 /**
  * N1-B: Async Notification Delivery Job
  */
-class SendNotificationJob implements ShouldQueue
+class SendNotificationJob implements ShouldQueue, \App\Queue\Contracts\TenantAwareJobInterface
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -27,14 +27,38 @@ class SendNotificationJob implements ShouldQueue
      */
     public int $backoff = 60;
 
+    public ?int $tenantId;
+    public ?int $userId;
+
     /**
      * Create a new job instance.
      */
     public function __construct(
         protected NotificationContract $notification,
-        protected int $auditId
+        protected int $auditId,
+        ?int $tenantId = null,
+        ?int $userId = null
     ) {
+        $this->tenantId = $tenantId ?? (app(\App\Services\SaaS\TenantContextService::class)->hasTenant() 
+            ? app(\App\Services\SaaS\TenantContextService::class)->getTenant()->id 
+            : null);
+        $this->userId = $userId ?? auth()->id();
         $this->onQueue('notifications');
+    }
+
+    public function getTenantId(): ?int
+    {
+        return $this->tenantId;
+    }
+
+    public function getUserId(): ?int
+    {
+        return $this->userId;
+    }
+
+    public function middleware(): array
+    {
+        return [new \App\Queue\Middleware\RestoreTenantContext(app(\App\Services\SaaS\TenantContextService::class))];
     }
 
     /**

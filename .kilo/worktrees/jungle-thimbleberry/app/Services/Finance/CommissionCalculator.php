@@ -52,10 +52,11 @@ class CommissionCalculator
 
         $officeAmount = ($totalCommission * $officeShare) / 100;
         $agentAmount = ($totalCommission * $agentShare) / 100;
-        $agent = $ilan->ilanSahibi ?? $ilan->user;
 
+        // 🛡️ SAB P0: Commission agent = danisman (User), not ilanSahibi (Kisi)
+        $agent = $ilan->danisman ?? $ilan->userDanisman ?? $ilan->user;
         if (!$agent) {
-            throw new \RuntimeException('İlan sahibi (danışman) bulunamadı');
+            throw new \RuntimeException('İlan danışmanı (User) bulunamadı');
         }
 
         $payoutDate = now()->addDays($settings->payment_delay_days ?? 30)->toDateString();

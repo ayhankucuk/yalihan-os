@@ -18,6 +18,12 @@ class Kernel extends ConsoleKernel
             ->dailyAt('10:00')
             ->appendOutputTo(storage_path('logs/exchange-rates.log'));
 
+        // 📁 Drive Webhook Channel Renewal — Her gün 06:00'da (Sprint 4.8)
+        // Google Drive kanalları ~7 günde dolar; renewal ile kesintisiz webhook
+        $schedule->command('drive:renew-channels --force')
+            ->dailyAt('06:00')
+            ->appendOutputTo(storage_path('logs/drive-channel-renewal.log'));
+
         // TestSprite otomatik öğrenme - Her gün 03:00'da
         $schedule->command('testsprite:auto-learn')
             ->dailyAt('03:00')
@@ -206,7 +212,11 @@ class Kernel extends ConsoleKernel
             ->dailyAt('04:00')
             ->appendOutputTo(storage_path('logs/ai-deal-predictor.log'));
 
-        $schedule->job(new \App\Jobs\AI\DailySnapshotsJob)
+        $schedule->call(function () {
+            foreach (\App\Models\SaaS\Tenant::where('aktiflik_durumu', 1)->get() as $tenant) {
+                dispatch(new \App\Jobs\AI\DailySnapshotsJob($tenant->id));
+            }
+        })
             ->dailyAt('04:30')
             ->onOneServer();
 

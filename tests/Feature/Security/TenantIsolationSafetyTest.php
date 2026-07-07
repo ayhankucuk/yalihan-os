@@ -6,12 +6,10 @@ use App\Models\Ilan;
 use App\Models\Photo;
 use App\Models\SaaS\Tenant;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class TenantIsolationSafetyTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected Tenant $tenantA;
     protected User $userA;

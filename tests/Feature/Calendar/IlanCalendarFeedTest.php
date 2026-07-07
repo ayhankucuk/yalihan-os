@@ -9,7 +9,6 @@ use App\Models\IlanCalendarFeed;
 use App\Models\IlanReservation;
 use App\Models\User;
 use App\Services\Calendar\IlanCalendarIcsService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -27,7 +26,6 @@ use Tests\TestCase;
  */
 class IlanCalendarFeedTest extends TestCase
 {
-    use RefreshDatabase;
 
     private Ilan $ilan;
     private User $user;

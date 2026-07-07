@@ -13,7 +13,6 @@ use App\Models\User;
 use App\Modules\Auth\Models\Role;
 use App\Services\AI\YalihanCortex;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
@@ -32,7 +31,6 @@ use Tests\TestCase;
  */
 class DescriptionReviewModalTest extends TestCase
 {
-    use RefreshDatabase;
 
     private User $admin;
 

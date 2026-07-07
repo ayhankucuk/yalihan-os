@@ -7,6 +7,7 @@ use App\Contracts\Hermes\HermesHandlerContract;
 use App\Events\Workforce\PropertyWorkspaceCreated;
 use App\Models\Hermes\WorkforceExecutionLog;
 use App\Models\PortfolioDriveWorkspace;
+use App\Services\Drive\DriveWebhookService;
 use App\Services\Drive\DriveWorkspaceService;
 use App\Services\Hermes\HermesService;
 use Illuminate\Support\Facades\Log;
@@ -24,6 +25,7 @@ class DriveAgent implements HermesHandlerContract
 {
     public function __construct(
         private DriveWorkspaceService $driveService,
+        private DriveWebhookService $webhookService,
         private HermesService $hermesService,
     ) {}
 
@@ -136,11 +138,29 @@ class DriveAgent implements HermesHandlerContract
                 subfolders: $subfolders,
             );
 
+            // ── Step 6: Register Drive push webhook channel ─────────────
+            $callbackUrl = config('app.url') . '/api/webhook/drive';
+            $channelResult = $this->webhookService->registerChannel($workspace, $callbackUrl);
+
+            if (!$channelResult['success']) {
+                Log::warning('[DriveAgent] Webhook channel registration failed', [
+                    'workspace_id' => $workspace->getKey(),
+                    'error'        => $channelResult['error'] ?? 'Unknown',
+                ]);
+            } else {
+                Log::info('[DriveAgent] Webhook channel registered', [
+                    'workspace_id' => $workspace->getKey(),
+                    'channel_id'   => $channelResult['channel_id'] ?? null,
+                ]);
+            }
+
             $execLog->markCompleted([
                 'workspace_id' => $workspace->getKey(),
                 'drive_folder_id' => $workspace->drive_folder_id,
                 'subfolders_created' => count($subfolders),
                 'portfolio_no' => $portfolioNo,
+                'webhook_channel_registered' => $channelResult['success'],
+                'channel_id' => $channelResult['channel_id'] ?? null,
             ]);
 
             Log::info('[DriveAgent] Workspace created successfully', [
@@ -150,7 +170,7 @@ class DriveAgent implements HermesHandlerContract
                 'subfolders_created' => count($subfolders),
             ]);
 
-            // ── Step 6: Emit PropertyWorkspaceCreated event ──────────────
+            // ── Step 7: Emit PropertyWorkspaceCreated event ──────────────
             $this->emitWorkspaceCreatedEvent($workspace, [
                 'ilan_id' => $ilanId,
                 'tenant_id' => $tenantId,

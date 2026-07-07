@@ -11,7 +11,6 @@ use App\Repositories\KisiRepository;
 use App\Repositories\LeadRepository;
 use App\Repositories\GorevRepository;
 use App\Repositories\KisiEtkilesimRepository;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Tests\TestCase;
 
@@ -30,7 +29,6 @@ use Tests\TestCase;
  */
 class CRMTenantIsolationTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected KisiRepository $kisiRepo;
     protected LeadRepository $leadRepo;

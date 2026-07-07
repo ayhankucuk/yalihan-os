@@ -11,7 +11,6 @@ use App\Services\Finance\YalihanTreasury;
 use App\Application\Shared\Services\TenantContextResolver;
 use App\Application\Shared\DTOs\TenantContext;
 use App\Enums\Finance\PaymentStatus;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Mockery\MockInterface;
 
@@ -25,7 +24,6 @@ use Mockery\MockInterface;
  */
 class YalihanTreasuryTest extends TestCase
 {
-    use RefreshDatabase;
 
     private YalihanTreasury $treasury;
     private User $agent;
@@ -123,6 +121,7 @@ class YalihanTreasuryTest extends TestCase
     {
         // Create pending commission (tenant_id will be added by Phase 13 migration)
         $commission = Commission::create([
+            'tenant_id' => 1,
             'ilan_id' => $this->ilan->id,
             'agent_id' => $this->agent->id,
             'payment_state' => PaymentStatus::PENDING,
@@ -149,6 +148,7 @@ class YalihanTreasuryTest extends TestCase
     {
         // Create pending commission
         $commission = Commission::create([
+            'tenant_id' => 1,
             'ilan_id' => $this->ilan->id,
             'agent_id' => $this->agent->id,
             'payment_state' => PaymentStatus::PENDING,
@@ -174,6 +174,7 @@ class YalihanTreasuryTest extends TestCase
     {
         // Create unpaid bonus (using Context7 field names from Phase 13)
         $bonus = Bonus::create([
+            'tenant_id' => 1,
             'agent_id' => $this->agent->id,
             'target_month' => now()->format('Y-m'),
             'prim_tutari' => 5000,

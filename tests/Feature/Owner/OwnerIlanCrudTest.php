@@ -7,7 +7,6 @@ use App\Models\Il;
 use App\Models\Ilan;
 use App\Models\IlanKategori;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
@@ -25,7 +24,6 @@ use Tests\TestCase;
  */
 class OwnerIlanCrudTest extends TestCase
 {
-    use RefreshDatabase;
 
     private User $owner;
     private User $otherOwner;

@@ -1,9 +1,9 @@
 # Executive Dashboard
 
-> Chief AI — Sistem Durumu Özeti
-> Chief AI açıldığında BAKILACAK ilk dosya
-> Her oturum başında güncellenir
-> Son güncelleme: 2026-06-25
+> Chief AI — Sistem Durumu Ozeti
+> Chief AI acildiginda BAKILACAK ilk dosya
+> Her oturum basinda güncellenir
+> Son güncelleme: 2026-07-07
 
 ---
 
@@ -12,27 +12,44 @@
 ```
 ╔═══════════════════════════════════════════════════════════════╗
 ║                 YALIHAN AI OS — EXECUTIVE DASHBOARD          ║
-║                        2026-06-25 16:36 +03:00                ║
+║                        2026-07-07 14:00 +03:00               ║
 ╚═══════════════════════════════════════════════════════════════╝
 
   ┌─────────────────────────────────────────────────────────┐
-  │  OVERALL HEALTH                                        │
-  │  ██████████████████████░░░░░░░░░░░░░  59.25%  ⚠️      │
-  │  Hedef: 75%                                            │
+  │  SPRINT STATUS                                         │
+  │  Sprint 6.0 ✅ CLOSED  |  Sprint 6.1 🔄 ACTIVE         │
+  │                                                         │
+  │  FOCUS: Template Engine MVP                            │
+  │  HARDENING: Security R11-R15 (ayri izleme hatti)      │
   └─────────────────────────────────────────────────────────┘
 
   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-  │ ARCHITECTURE │  │   KNOWLEDGE  │  │ DOCUMENTATION │
-  │      A-      │  │     94%      │  │     96%      │
-  │   86/100     │  │    ✅        │  │     ✅       │
+  │   SPRINT 6   │  │   WORKING    │  │   SECURITY   │
+  │   COMPLETE   │  │ CAPABILITIES │  │  R11-R15    │
+  │     ✅       │  │    🔄        │  │  DOGRULANMALI│
   └──────────────┘  └──────────────┘  └──────────────┘
 
   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-  │    RISK      │  │TECHNICAL DEBT│  │  VELOCITY    │
-  │   MEDIUM     │  │     445      │  │    +18%      │
-  │  2 Critical  │  │    🔴       │  │     ✅       │
+  │    KANBAN    │  │AUTOMATION % │  │   VELOCITY   │
+  │  6 Sprint    │  │    🔄        │  │    🔄        │
+  │  Roadmap ✅   │  │              │  │              │
   └──────────────┘  └──────────────┘  └──────────────┘
 ```
+
+---
+
+## CHIEF ENGINEER YENI KPI — BASARI ARTUK BUNLARLA ÖLCÜLÜR
+
+| KPI | Aciklamasi | Hedef |
+|-----|------------|-------|
+| **Working Capabilities** | Calisan ozellik sayisi | 6.1, 6.2, 6.3, 6.4, 6.5 tamamlandiginda |
+| **Automation %** | Is akisi otomasyon orani | Sprint 6.1+ sonrasi ölçülecek |
+| **Workspace Creation Time** | Portföy olusturma süresi | < 5 dakika |
+| **Replay Success** | Event replay basari orani | > 95% |
+| **Tenant Isolation** | Kiraci izolasyonu test basarisi | 100% |
+| **Capability Health** | Kayitli intent/capability'lerin durumu | 6/6 green |
+
+> ⚠️ **KOD SATIRI, ADR SAYISI, SAB SAYISI ARTUK BASARI ÖLCÜTÜ DEGIL!**
 
 ---
 
@@ -40,39 +57,62 @@
 
 | Metric | Value | Status | Trend |
 |--------|-------|--------|-------|
-| **Overall Health** | 59.25% | ⚠️ | → |
-| **Architecture Score** | 86/100 | ✅ A- | ↑ |
-| **Project Health** | 59.25% | ⚠️ | → |
+| **Sprint 6.0** | ✅ CLOSED | — | — |
+| **Sprint 6.1** | 🔄 ACTIVE | Template Engine | — |
+| **Security R11-R15** | 🔴 P0 | Dogrulanmaya Bekliyor | → |
 | **Technical Debt** | 445 pts | 🔴 | → |
-| **Naming Violations** | 175 | ⚠️ | → |
-| **Fail Tests** | 89 (37 kritik) | 🔴 | → |
-| **Agent Utilization** | 62% | 🟡 | → |
 
 ---
 
 ## ACTIVE SPRINT
 
-| Alan | Değer |
+| Alan | Deger |
 |------|-------|
-| **Sprint** | Sprint 3.1 |
-| **Hedef** | Health 59% → 75%+ |
-| **Süre** | 7 gün |
-| **Başlangıç** | 2026-06-25 |
-| **Bitiş** | 2026-07-02 |
-| **Kalan** | 6 gün 23 saat |
-| **Tamamlanma** | 0% |
-| **Status** | 🔴 ACTIVE |
+| **Sprint** | Sprint 6.1 |
+| **Hedef** | Template Engine MVP |
+| **Baslangic** | 2026-07-07 |
+| **Status** | 🔄 ACTIVE |
 
 ---
 
-## RISK SUMMARY
+## SPRINT 6 ROADMAP — KANBAN
 
-| ID | Risk | Puan | Durum |
-|----|------|------|--------|
-| R01 | SSH Blocker | 🔴 8 | ⚠️ İnsan gerekli |
-| R02 | 89 Fail Tests | 🟠 7 | 🔄 Sprint 3.1 |
-| R03 | Naming 175 | 🟠 6 | 🔄 Sprint 3.1 |
-| R04 | JSONB Migration | 🟠 6 | 📋 Sprint 4 |
+```
+Sprint 6.1 ────────────────────────── 🔄 ACTIVE
+  └── Template Engine MVP
+  └── Dynamic Field Engine
+  └── Readiness Rules
+  └── AI Hook Registry
+
+Sprint 6.2 ────────────────────────── 📋 PLANLANDI
+  └── Location Intelligence
+  └── TKGM Service
+  └── Maps Integration
+
+Sprint 6.3 ────────────────────────── 📋 PLANLANDI
+  └── Publishing
+
+Sprint 6.4 ────────────────────────── 📋 PLANLANDI
+  └── AI Copilot
+
+Sprint 6.5 ────────────────────────── 📋 PLANLANDI
+  └── Reservation
+```
+
+---
+
+## RISK SUMMARY — PRODUCTION RISK REGISTER
+
+> **Chief Engineer Karari:** R11-R15 ayri bir security hardening hatti olarak izlenir.
+> Sprint 6.1 feature gelistirmesinden ÖNCE dogrulanip önceliklendirilmeli.
+
+| ID | Risk | Oncelik | Durum |
+|----|------|---------|-------|
+| R11 | Google Drive Webhook Bypass | 🔴 P0 | DOGRULANMALI |
+| R12 | Tenant Context Kaybi (Drive Event) | 🔴 P0 | DOGRULANMALI |
+| R14 | Tenant Isolation Middleware Devre Disi | 🔴 P0 | DOGRULANMALI |
+| R13 | TKGM Loopback Deadlock | 🟠 P1 | YAKLASAN |
+| R15 | OutboxService Atil Kod | 🟢 P2 | IZLENIYOR |
 
 ---
 
@@ -88,7 +128,7 @@ TD-08:  27 ██████                          🟡  Legacy Naming
 TD-07:  16 ████                            🟡  CI Gates
 TD-06:  12 ███                             🟢  AI Workspace
 TD-09:  12 ███                             🟢  MCP Test
-─────────────────────────────────────────────
+─────────────────────────────────────────────────────
 TOPLAM:  445                                 🔴
 ```
 
@@ -96,14 +136,10 @@ TOPLAM:  445                                 🔴
 
 ## AGENT STATUS
 
-| Agent | Sprint | Yük | Durum |
+| Agent | Sprint | Yuk | Durum |
 |-------|--------|-----|-------|
-| Kilo | Sprint 3.1 | 85% | 🔄 Aktif |
-| Claude Desktop | Sprint 3.1 | 20% | 📋 Beklemede |
-| Windsurf | Sprint 3.1 | 40% | 📋 Beklemede |
-| Cursor | Sprint 3.1 | 40% | 📋 Beklemede |
-| Cline | Sprint 3.1 | 40% | 📋 Beklemede |
-| Human | R01 | 20% | ⚠️ Action Required |
+| Kilo | Sprint 6.1 | 100% | 🔄 Aktif |
+| Human | R01 SSH | — | ⚠️ Action Required |
 
 ---
 
@@ -111,26 +147,16 @@ TOPLAM:  445                                 🔴
 
 ### Human Action Required
 
-| Görev | Impact | Owner | Son Tarih |
+| Gorev | Impact | Owner | Son Tarih |
 |-------|--------|-------|-----------|
-| SSH Blocker Resolution | Sprint 4 blocked | Human | ⚠️ Acil |
-
----
-
-## NEXT MILESTONE
-
-| Milestone | Tarih | Durum |
-|-----------|-------|-------|
-| Sprint 3.1 Bitimi | 2026-07-02 | 📋 6 gün kaldı |
-| Sprint 4 Başlangıç | 2026-07-02 | ⏳ Bloke |
-| YALIHAN AI OS v4 | TBD | 📋 Planlandı |
+| R01 SSH Blocker Resolution | Sprint 4 blocked | Human | ⚠️ Acil |
 
 ---
 
 ## QUICK COMMANDS
 
 ```bash
-# Sistem sağlığı
+# Sistem sagligi
 php artisan bekci:health --detailed
 
 # Mimari ihlaller
@@ -139,37 +165,16 @@ php artisan sab:integrity-scan
 # Test durumu
 php artisan test --compact
 
-# MCP durumu
-php artisan bekci:health | grep MCP
+# Property Workspace tests
+php artisan test --filter=PropertyWorkspace
 ```
-
----
-
-## ACTIVE INCIDENTS
-
-| Incident ID | Risk | Priority | Status | Owner |
-|-------------|------|----------|--------|-------|
-| INC-2026-0625-R08 | R08 | 🔴 P0 | ✅ FALSE POSITIVE | Kilo |
-| INC-2026-0625-R09 | R09 | 🟠 P1 | ✅ FALSE POSITIVE | Kilo |
-| INC-2026-0625-R10 | R10 | 🟠 P1 | ✅ FALSE POSITIVE | Kilo |
-
-**Chief AI Note:** R08, R09, R10 false positive. Phase 1 ACTIVE.
-
----
-
-## SPRINT 3.1 STATUS
-
-| Phase | Status | Blocked By |
-|-------|--------|------------|
-| Phase 0: Test Infrastructure | ✅ CLOSED | — |
-| Phase 1: Naming Cleanup | 🔄 ACTIVE | — |
-| Phase 2: CI Baseline | ⏳ PENDING | Phase 1 |
 
 ---
 
 ## Chief AI Notu
 
-> Bu dashboard Chief AI'ın ilk baktığı dosyadır.
-> Tüm sistem durumu 10 saniyede görünür.
-> Detay için ilgili chief-ai/ dosyasına bak.
-> **Chief AI v3.0 Directive: ACTIVE**
+> Bu dashboard Chief AI'in ilk baktigi dosyadir.
+> Sprint 6.0 CLOSED. Sprint 6.1 ACTIVE.
+> R11-R15 Security Hardening ayri izleme hattinda.
+> **Chief Engineer Directive: AKTIF**
+> **Yeni KPI: Working Capabilities, Automation %, Tenant Isolation**

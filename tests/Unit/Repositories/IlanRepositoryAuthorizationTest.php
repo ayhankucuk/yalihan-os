@@ -7,13 +7,11 @@ use App\Models\Ilan;
 use App\Models\User;
 use App\Repositories\IlanRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
 
 class IlanRepositoryAuthorizationTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected IlanRepository $repository;
 

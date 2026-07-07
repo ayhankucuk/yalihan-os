@@ -1,7 +1,7 @@
 # Technical Debt
 
 > Chief AI — Teknik borç envanteri ve hesaplaması
-> Son güncelleme: 2026-06-25
+> Son güncelleme: 2026-07-07
 
 ---
 
@@ -47,6 +47,7 @@ Toplam Puan:
 | TD-07 | CI pre-existing gate failures | 2×4×2=**16** | CI/CD | İzleme + baseline | Sprint 5 🟡 |
 | TD-08 | Legacy naming (is_active, status, type) | 3×3×3=**27** | Domain | Naming standard | Sprint 3.1 🟡 |
 | TD-09 | MCP entegrasyonu eksik testi | 2×3×2=**12** | MCP | Test senaryosu | Sprint 6 🟢 |
+| TD-10 | DriveWorkspaceService Context7 'type' usage (2 NEW LOW, foamy-fire deploy) | 1×2×1=**2** | Context7 Guard | False positive — comment/doc usage; add `@sab-ignore` veya refactor variable name | Backlog 🟢 |
 
 ---
 
@@ -66,7 +67,7 @@ Toplam Puan:
 ║  TD-08:  27 ██████                          ║
 ║  TD-09:  12 ███                             ║
 ║                                              ║
-║  TOPLAM:  445 / 1000                         ║
+║  TOPLAM:  447 / 1000                         ║
 ║  KABUL EDİLEBİLİR LİMİT: 100                 ║
 ║  DURUM: 🔴 KABUL EDILEMEZ — Sprint durdur     ║
 ╚══════════════════════════════════════════════╝

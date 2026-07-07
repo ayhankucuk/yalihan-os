@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Domain\Workspace\Enums\WorkspaceState;
+use App\Models\Ilan;
 use App\Scopes\TenantScope;
 use App\Traits\HasCountryScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * PortfolioDriveWorkspace Model
@@ -41,6 +43,8 @@ class PortfolioDriveWorkspace extends BaseModel
         'root_folder_name',
         'portfolio_no',
         'subfolders_json',
+        'drive_webhook_channel_json',
+        'metadata_json',
     ];
 
     protected $casts = [
@@ -50,6 +54,8 @@ class PortfolioDriveWorkspace extends BaseModel
         'ai_completion_flags' => 'array',
         'ai_completion_percent' => 'integer',
         'lifecycle_state' => WorkspaceState::class,
+        'drive_webhook_channel_json' => 'array',
+        'metadata_json' => 'array',
     ];
 
     // ─── Drive Workspace Status (Google Drive API state) ───────────────
@@ -314,5 +320,92 @@ class PortfolioDriveWorkspace extends BaseModel
     public function getSubfolderCount(): int
     {
         return count($this->subfolders_json ?? []);
+    }
+
+    // ─── Drive Webhook Channel Helpers ────────────────────────────────
+
+    /**
+     * Sprint 4.8: Workspace Integration Platform
+     * Drive push notification channel metadata.
+     */
+    public function getWebhookChannel(): ?array
+    {
+        return $this->drive_webhook_channel_json;
+    }
+
+    public function hasActiveChannel(): bool
+    {
+        $channel = $this->drive_webhook_channel_json;
+        if (!$channel || !($channel['expiration'] ?? null)) {
+            return false;
+        }
+        return !now()->parse($channel['expiration'])->isPast();
+    }
+
+    public function getChannelExpiration(): ?string
+    {
+        return $this->drive_webhook_channel_json['expiration'] ?? null;
+    }
+
+    public function getLastSyncAt(): ?string
+    {
+        return $this->drive_webhook_channel_json['last_sync_at'] ?? null;
+    }
+
+    public function getLastSyncError(): ?string
+    {
+        return $this->drive_webhook_channel_json['last_error'] ?? null;
+    }
+
+    public function getWebhookUrl(): ?string
+    {
+        return $this->drive_webhook_channel_json['webhook_url'] ?? null;
+    }
+
+    // ─── Drive File Metadata Helpers ──────────────────────────────────
+
+    /**
+     * Sprint 4.8: Persisted Drive file records.
+     * Each tracked file: { id, name, mime_type, web_view_link, modified_time, last_synced_at }
+     */
+    public function getTrackedFiles(): array
+    {
+        return $this->metadata_json['drive_files'] ?? [];
+    }
+
+    public function getFileById(string $driveFileId): ?array
+    {
+        return collect($this->getTrackedFiles())
+            ->firstWhere('id', $driveFileId);
+    }
+
+    public function getGoogleDocFiles(): array
+    {
+        return collect($this->getTrackedFiles())
+            ->filter(fn($f) => str_contains($f['mime_type'] ?? '', 'google'))
+            ->values()
+            ->toArray();
+    }
+
+    public function getGoogleSheetFiles(): array
+    {
+        return collect($this->getTrackedFiles())
+            ->filter(fn($f) => str_contains($f['mime_type'] ?? '', 'spreadsheet'))
+            ->values()
+            ->toArray();
+    }
+
+    public function getTrackedFileCount(): int
+    {
+        return count($this->getTrackedFiles());
+    }
+
+    /**
+     * Sprint 4.6: Property Digital Twin Cockpit
+     * Canonical relationship to the associated Ilan.
+     */
+    public function ilan(): BelongsTo
+    {
+        return $this->belongsTo(Ilan::class, 'ilan_id');
     }
 }

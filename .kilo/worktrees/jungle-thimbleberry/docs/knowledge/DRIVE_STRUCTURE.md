@@ -21,15 +21,44 @@ Google Drive yapısı **yok**. Tüm dokümantasyon repository'de (docs/) ve yere
 
 ---
 
-## 2. HEDEF: 4-SEVİYELİ HİYERARŞİ
+## 2. HEDEF: 6-SEVİYELİ HİYERARŞİ (ADR-022)
+
+> **Resmi Kaynak:** `docs/adr/2026-07-05-knowledge-platform-adoption.md`
 
 ```
 yalihanai/
 │
-├── 📁 01-GOVERNANCE/           [Katman 2 — Sabit Referans]
-├── 📁 02-PRODUCT/              [Katman 3 — İş Birimi]
-├── 📁 03-CLIENTS/              [Katman 4 — Müşteri & Hukuk]
-└── 📁 04-ARCHIVE/             [Arşiv — Otomatik]
+├── 📁 01-GOVERNANCE/           [K-6 Layer 2 — Mimari Standartlar]
+├── 📁 02-PRODUCT/              [K-6 Layer 3 — Ürün Bilgisi]
+├── 📁 03-CLIENTS/              [K-6 Layer 4 — Müşteri & Hukuk]
+├── 📁 04-OPERATIONS/           [K-6 Layer 3 — Operasyonel Prosedürler]
+├── 📁 05-KNOWLEDGE/            [K-6 Layer 3 — AI Okunabilir KB]
+└── 📁 06-ARCHIVE/             [K-6 Layer 4 — Uzun Süreli Saklama]
+```
+
+**Ayrıştırma Gerekçesi:**
+- Ürün bilgisi (02-PRODUCT) sprint bazlı güncellenir
+- Operasyonel prosedürler (04-OPERATIONS) yıllık gözden geçirme gerektirir
+- İkisi farklı yaşam döngülerine sahiptir → ayrı klasör
+
+### 04-OPERATIONS İçeriği
+
+```
+04-OPERATIONS/
+├── 📁 SOP/                    ← Standart Operasyonel Prosedürler
+│   ├── 📄 CHECK-IN-SOP.md
+│   ├── 📄 CHECK-OUT-SOP.md
+│   ├── 📄 TEMIZLIK-SOP.md
+│   └── 📄 BAKIM-SOP.md
+├── 📁 TEMPLATES/              ← Standart şablonlar
+│   ├── 📄 SOZLESME-SABLONLARI/
+│   └── 📄 RAPOR-SABLONLARI/
+├── 📁 ONBOARDING/             ← Ekip onboarding
+│   ├── 📄 DANSIMAN-ONBOARDING.md
+│   └── 📄 YENI-TEKNOLOJI.md
+└── 📁 CRISIS/                 ← Kriz protokolleri
+    ├── 📄 ACIL-DURUM.md
+    └── 📄 MUSTERİ-ŞIKAYETI.md
 ```
 
 ### Seviye Mantığı

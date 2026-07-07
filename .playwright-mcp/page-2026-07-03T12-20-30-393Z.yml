@@ -1,0 +1,40 @@
+- generic [ref=f9e3]:
+  - generic [ref=f9e4]:
+    - img [ref=f9e6]
+    - heading "Yalıhan Emlak" [level=2] [ref=f9e8]
+    - paragraph [ref=f9e9]: Yönetim Paneli Girişi
+  - generic [ref=f9e10]:
+    - generic [ref=f9e11]:
+      - generic [ref=f9e12]:
+        - generic [ref=f9e13]: E-posta Adresi
+        - generic [ref=f9e14]:
+          - generic:
+            - img
+          - textbox "E-posta Adresi" [ref=f9e15]:
+            - /placeholder: ornek@email.com
+      - generic [ref=f9e16]:
+        - generic [ref=f9e17]: Şifre
+        - generic [ref=f9e18]:
+          - generic:
+            - img
+          - textbox "Şifre" [ref=f9e19]:
+            - /placeholder: ••••••••
+          - button [ref=f9e20] [cursor=pointer]
+      - generic [ref=f9e22]:
+        - checkbox "Beni hatırla" [ref=f9e23] [cursor=pointer]
+        - generic [ref=f9e24] [cursor=pointer]: Beni hatırla
+      - button "Giriş Yap" [ref=f9e25] [cursor=pointer]:
+        - generic [ref=f9e26]: Giriş Yap
+        - img [ref=f9e27]
+    - generic [ref=f9e29]:
+      - paragraph [ref=f9e30]: "Demo Hesapları:"
+      - generic [ref=f9e31]:
+        - generic [ref=f9e32]:
+          - strong [ref=f9e33]: "Admin:"
+          - text: admin@example.com
+          - text: password
+        - generic [ref=f9e34]:
+          - strong [ref=f9e35]: "User:"
+          - text: user@example.com
+          - text: password
+  - paragraph [ref=f9e36]: © 2026 Yalıhan Emlak. Tüm hakları saklıdır.

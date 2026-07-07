@@ -6,6 +6,166 @@
 
 ---
 
+## 2026-07-07 | AI GOVERNANCE v1.0 — Chief Engineer Direktifi
+
+### Karar: Üç Ofis Yapısı — AI Governance v1.0
+
+**Chief Engineer Kararı:** Üç AI birbirinin işini yapmaz. Her AI'ın yetki alanı net, çıktısı tanımlı.
+
+```
+╔═══════════════════════════════════════════════════════════════════╗
+║                    YALIHAN OS — AI GOVERNANCE                   ║
+╠═══════════════════════════════════════════════════════════════════╣
+║                                                                   ║
+║   🏛 SAAB (ChatGPT)          💻 VS CODE AI          🔬 ANTIGRAVITY ║
+║   Architecture Office        Engineering Office      Research Office ║
+║                                                                   ║
+║   STRATEGY                   EXECUTION                 QUALITY       ║
+║   ↓                          ↓                         ↓             ║
+║   Ne yapılacağına            Nasıl yapılacağını        Doğru yapılıp  ║
+║   karar verir                implement eder            yapılmadığını   ║
+║                                                     araştırır       ║
+╚═══════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+### 🏛 SAAB — Architecture Office
+
+| Özellik | Değer |
+|---------|-------|
+| Yetki | Stratejik Mimari Kararları |
+| Kod yazar mı? | HAYIR |
+| Model | ChatGPT (SAB, ADR, Sprint Charter) |
+| Çıktıları | Sprint Charter, ADR, Architecture Review, Certification |
+
+**Kuralları:**
+```
+1. SAAB kod YAZMAZ — sadece yön verir
+2. SAAB implementasyon YAPMAZ — karar verir
+3. SAAB test YAZMAZ — kalite kriteri belirler
+4. SAAB research YAPMAZ — strateji üretir
+```
+
+---
+
+### 💻 VS Code AI — Engineering Office
+
+| Özellik | Değer |
+|---------|-------|
+| Yetki | Üretken Geliştirme |
+| Kod yazar mı? | EVET |
+| Model | Claude Code / Cursor / Cline |
+| Çıktıları | Code, Pull Request, Tests, Migration, Implementation |
+
+**Kuralları:**
+```
+1. VS Code mimari DEĞİŞTİREMEZ — SAAB kararlarını uygular
+2. VS Code yetki alanı DIŞINA ÇIKAMAZ — sadece kod yazar
+3. VS Code yeni domain EKLEYEMEZ — SAAB onayı gerekir
+4. VS Code kural İHLAL EDEMEZ — SAB kurallarına uyar
+```
+
+---
+
+### 🔬 Antigravity — Research Office
+
+| Özellik | Değer |
+|---------|-------|
+| Yetki | Bağımsız Araştırma ve Doğrulama |
+| Kod yazar mı? | HAYIR |
+| Model | Kilo Agent |
+| Çıktıları | Audit Report, Security Report, Performance Report |
+
+**Görevleri:**
+```
+1. Repository Audit (dead code, cyclic dependency, anti-pattern)
+2. Security Office (Webhook, OAuth, Queue, Tenant, JWT)
+3. Performance Office (N+1, memory leak, cache, benchmark)
+4. Technology Research (TKGM, Google Places, Vector DB)
+5. Competitive Research (Airbnb, Booking, Hostaway)
+6. Architecture Drift (SAAB ile kod uyumu kontrolü)
+```
+
+**OPERASYONEL KURAL:**
+```
+Antigravity hiçbir zaman:
+  ✗ Mimariyi değiştirmez
+  ✗ Uygulama kapsamını genişletmez
+  ✗ Yeni domain eklemez
+  ✗ ADR yazmaz
+  ✗ Sprint Charter yazmaz
+
+Antigravity sadece:
+  ✓ Bağımsız doğrulama yapar
+  ✓ Teknik araştırma yapar
+  ✓ Güvenlik analizi yapar
+  ✓ Performans analizi yapar
+  ✓ Benchmark üretir
+  ✓ SAAB'a öneri sunar
+```
+
+---
+
+### Sprint Döngüsü
+
+```
+1. SAAB
+   └── Sprint Charter yazar
+   └── ADR onaylar (gerekirse)
+   └── Quality Gate belirler
+   └── Kapasite ataması yapar
+
+2. Engineering Office (VS Code)
+   └── Implementasyon yapar
+   └── Test yazar
+   └── PR açar
+
+3. Antigravity (Kilo)
+   └── Independent Audit
+   └── Security Review
+   └── Performance Analysis
+   └── Architecture Drift Check
+
+4. SAAB
+   └── Sprint Review
+   └── Certification
+   └── Bir sonraki Sprint Charter
+```
+
+---
+
+### Rol Atamaları
+
+| Agent | Office | Rol |
+|-------|--------|-----|
+| ChatGPT | 🏛 SAAB | Architecture Office |
+| Claude Desktop | 💻 Engineering | Code Implementation |
+| Cursor | 💻 Engineering | Code Implementation |
+| Cline | 💻 Engineering | CI/CD & Quality |
+| Windsurf | 💻 Engineering | Framework Migration |
+| Kilo | 🔬 Antigravity | Research Office |
+
+---
+
+### ERA III Uyumu
+
+```
+ERA I ────────────── ERA II ────────────── ERA III
+Mimari Tasarım         Altyapı             Çalışan Capability
+   ↑                      ↑                     ↑
+SAAB oluştu          Bekçi oluştu       AI Governance v1.0
+                    MCP aktif
+                    Chief AI layer
+
+ERA III Hedefi:
+  ▸ Çalışan özellik üretmek
+  ▸ Mimari değil, değer üretmek
+  ▸ Net governance ile sürdürülebilir geliştirme
+```
+
+---
+
 ## 2026-06-27 | Oturum 48 | YALIHAN PLATFORM v2.0 — Dört Katmanlı Mimari
 
 ### Karar: Üç → Dört Katmanlı Mimari

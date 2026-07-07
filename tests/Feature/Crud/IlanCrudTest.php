@@ -93,7 +93,11 @@ class IlanCrudTest extends TestCase
         // Arrange: Ensure a YayinTipiSablonu exists (FK required for YAYINDA transition)
         $sablonu = \App\Models\YayinTipiSablonu::firstOrCreate(
             ['id' => 1],
-            \App\Models\YayinTipiSablonu::factory()->definition()
+            [
+                'name' => 'Test Şablon',
+                'ilan_kategorisi_id' => \App\Models\IlanKategori::factory()->create()->id,
+                'aktiflik_durumu' => true,
+            ]
         );
 
         // Create ilan in 'beklemede' then force-assign required FK fields before lifecycle

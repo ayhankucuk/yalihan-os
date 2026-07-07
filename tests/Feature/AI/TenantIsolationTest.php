@@ -7,12 +7,10 @@ use App\Application\Shared\Exceptions\TenantContextMissingException;
 use App\Models\User;
 use App\Models\SaaS\Tenant;
 use App\Services\AI\AIOrchestrator;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class TenantIsolationTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected AIOrchestrator $orchestrator;
 

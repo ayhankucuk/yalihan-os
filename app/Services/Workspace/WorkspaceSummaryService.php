@@ -1,0 +1,282 @@
+<?php
+
+namespace App\Services\Workspace;
+
+use App\Domain\Workspace\Enums\WorkspaceState;
+use App\Models\Ilan;
+use App\Models\PortfolioDriveWorkspace;
+
+/**
+ * WorkspaceSummaryService
+ *
+ * Sprint 4.6: Property Digital Twin Cockpit
+ *
+ * Aggregates all cockpit data for a single workspace into a single payload:
+ *   - Workspace core
+ *   - Ilan core
+ *   - Health score + dimensions
+ *   - AI completion summary
+ *   - Lifecycle progress
+ *   - Next recommended action
+ */
+class WorkspaceSummaryService
+{
+    public function __construct(
+        private readonly WorkspaceHealthService $healthService,
+        private readonly WorkspaceTimelineService $timelineService,
+        private readonly WorkspaceExecutionService $executionService,
+    ) {}
+
+    /**
+     * Full cockpit payload for /admin/workspace/{id}.
+     */
+    public function getSummary(PortfolioDriveWorkspace $workspace): array
+    {
+        $ilan = $this->resolveIlan($workspace);
+
+        return [
+            'workspace'   => $this->workspaceCore($workspace),
+            'ilan'       => $ilan ? $this->ilanCore($ilan) : null,
+            'health'     => $this->healthService->calculate($workspace),
+            'lifecycle'  => $this->lifecycleInfo($workspace),
+            'ai'         => $this->aiInfo($workspace),
+            'drive'      => $this->driveInfo($workspace),
+            'finance'    => $ilan ? $this->financeInfo($ilan) : null,
+            'reservations' => $ilan ? $this->reservationsInfo($ilan) : null,
+            'executions' => $this->executionService->getSummary($workspace->id),
+            'generated_at' => now()->toIso8601String(),
+        ];
+    }
+
+    /**
+     * Timeline events for the workspace.
+     */
+    public function getTimeline(PortfolioDriveWorkspace $workspace, int $limit = 50): array
+    {
+        return $this->timelineService->build($workspace, $limit);
+    }
+
+    /**
+     * Health + dimensions only.
+     */
+    public function getHealth(PortfolioDriveWorkspace $workspace): array
+    {
+        return $this->healthService->calculate($workspace);
+    }
+
+    // ─── Private ───────────────────────────────────────────────────────────────
+
+    private function workspaceCore(PortfolioDriveWorkspace $w): array
+    {
+        return [
+            'id'                  => $w->id,
+            'ilan_id'             => $w->ilan_id,
+            'tenant_id'           => $w->tenant_id,
+            'portfolio_no'        => $w->portfolio_no,
+            'drive_folder_id'     => $w->drive_folder_id,
+            'drive_folder_url'    => $w->drive_folder_url,
+            'root_folder_name'   => $w->root_folder_name,
+            'workspace_status'    => $w->workspace_status,
+            'lifecycle_state'     => $w->lifecycle_state?->value,
+            'lifecycle_label'    => $w->lifecycle_state?->label(),
+            'lifecycle_color'    => $w->lifecycle_state?->color(),
+            'ai_completion_pct'  => $w->ai_completion_percent,
+            'state_changed_at'   => $w->state_changed_at?->toIso8601String(),
+            'workspace_created_at'=> $w->workspace_created_at?->toIso8601String(),
+            'created_at'         => $w->created_at?->toIso8601String(),
+            'updated_at'         => $w->updated_at?->toIso8601String(),
+        ];
+    }
+
+    private function ilanCore(Ilan $ilan): array
+    {
+        return [
+            'id'               => $ilan->id,
+            'baslik'          => $ilan->baslik,
+            'fiyat'           => $ilan->fiyat,
+            'para_birimi'     => $ilan->para_birimi,
+            'yayin_durumu'    => $ilan->yayin_durumu?->value,
+            'yayin_durumu_label' => $ilan->yayin_durumu?->label(),
+            'il_adi'          => $ilan->il?->adi ?? null,
+            'ilce_adi'        => $ilan?->ilce?->adi ?? null,
+            'kategori'        => $ilan->altKategori?->adi ?? $ilan->anaKategori?->adi ?? null,
+            'danisman'        => $ilan->danisman?->name ?? null,
+            'ilan_sahibi'     => $ilan->ilanSahibi?->ad_soyad ?? null,
+            'photo_count'     => $ilan->fotograflar()->count(),
+            'has_video'       => !empty($ilan->youtube_video_url),
+            'view_count'      => $ilan->view_count,
+            'created_at'      => $ilan->created_at?->toIso8601String(),
+        ];
+    }
+
+    private function lifecycleInfo(PortfolioDriveWorkspace $w): array
+    {
+        $state = $w->lifecycle_state;
+        if (!$state) {
+            return ['step' => 0, 'total' => 7, 'percent' => 0, 'is_live' => false];
+        }
+
+        return [
+            'step'        => $state->step(),
+            'total'       => $state->activeLifecycleSteps(),
+            'percent'     => $state->completionPercent(),
+            'is_live'     => $state->isLive(),
+            'is_terminal' => $state->isTerminal(),
+            'is_pre_pub'  => $state->isPrePublishing(),
+        ];
+    }
+
+    private function aiInfo(PortfolioDriveWorkspace $w): array
+    {
+        $summary = $w->getAiCompletionSummary();
+        $state   = $w->lifecycle_state;
+
+        $agents = [];
+        foreach ($summary['agents'] ?? [] as $key => $agent) {
+            $agents[] = [
+                'key'         => $key,
+                'name'        => $this->agentLabel($key),
+                'complete'    => $agent['complete'] ?? false,
+                'completed_at' => $agent['completed_at'] ?? null,
+                'color'       => ($agent['complete'] ?? false) ? 'emerald' : 'slate',
+            ];
+        }
+
+        return [
+            'percent'    => $summary['percent'] ?? 0,
+            'all_done'   => $summary['all_complete'] ?? false,
+            'agents'     => $agents,
+            'lifecycle'  => $state?->value, // context7-ignore
+            'lifecycle_label'=> $state?->label(),
+        ];
+    }
+
+    private function driveInfo(PortfolioDriveWorkspace $w): array
+    {
+        $subfolders = $w->subfolders_json ?? [];
+        $channel    = $w->getWebhookChannel();
+        $files      = $w->getTrackedFiles();
+
+        return [
+            'folder_id'  => $w->drive_folder_id,
+            'folder_url' => $w->drive_folder_url,
+            'durum'     => $w->workspace_status, // context7-ignore
+            'durum_ok'  => $w->workspace_status === 'ready',
+            'subfolders' => array_map(fn($sf) => [
+                'name' => $sf['name'] ?? '?',
+                'url'  => $sf['url'] ?? null,
+                'id'   => $sf['id'] ?? null,
+            ], $subfolders),
+            'subfolder_count' => count($subfolders),
+            'ready'      => count($subfolders) > 0,
+            // ─── Sprint 4.8: Drive Integration ──────────────────────────
+            'webhook' => [
+                'connected'      => $w->hasActiveChannel(),
+                'channel_id'    => $channel['channel_id'] ?? null,
+                'webhook_url'   => $channel['webhook_url'] ?? null,
+                'expiration'    => $channel['expiration'] ?? null,
+                'expiration_ts' => $channel['expiration']
+                    ? now()->parse($channel['expiration'])->timestamp
+                    : null,
+                'last_sync_at'  => $channel['last_sync_at'] ?? null,
+                'last_error'    => $channel['last_error'] ?? null,
+                'last_count'    => $channel['last_sync_count'] ?? 0,
+                'needs_renewal' => $w->hasActiveChannel()
+                    ? (now()->parse($channel['expiration'])->diffInHours(now()) < 24)
+                    : false,
+            ],
+            'files' => [
+                'total'         => count($files),
+                'docs'          => count($w->getGoogleDocFiles()),
+                'sheets'        => count($w->getGoogleSheetFiles()),
+                'list'          => array_slice($files, 0, 10), // last 10 for panel
+            ],
+        ];
+    }
+
+    private function resolveIlan(PortfolioDriveWorkspace $w): ?Ilan
+    {
+        if (!$w->ilan_id) {
+            return null;
+        }
+        return Ilan::query()
+            ->withoutGlobalScopes()
+            ->with([
+                'il',
+                'ilce',
+            'anaKategori',    // context7-ignore
+            'altKategori',    // context7-ignore
+            'danisman',
+            'ilanSahibi',     // context7-ignore
+                'fotograflar',
+            ])
+            ->find($w->ilan_id);
+    }
+
+    private function financeInfo(Ilan $ilan): array
+    {
+        $fiyat          = (float) ($ilan->fiyat ?? 0);
+        $purchasePrice  = (float) ($ilan->purchase_price ?? 0);
+        $dailyRate      = (float) ($ilan->gunluk_fiyat ?? 0);
+        $currency       = $ilan->para_birimi ?? 'TL';
+        $roiTarget      = (float) ($ilan->investor_target_roi ?? 0);
+
+        $roiEstimate = 0;
+        if ($purchasePrice > 0 && $dailyRate > 0) {
+            $annualRevenue = $dailyRate * 365 * 0.6; // 60% occupancy assumption
+            $roiEstimate   = round(($annualRevenue / $purchasePrice) * 100, 1);
+        }
+
+        return [
+            'listing_price'  => $fiyat,
+            'listing_formatted' => $fiyat > 0 ? number_format($fiyat, 0, ',', '.') . ' ' . $currency : null,
+            'purchase_price' => $purchasePrice,
+            'purchase_formatted' => $purchasePrice > 0 ? number_format($purchasePrice, 0, ',', '.') . ' ' . $currency : null,
+            'daily_rate'     => $dailyRate,
+            'daily_formatted' => $dailyRate > 0 ? number_format($dailyRate, 0, ',', '.') . ' ' . $currency : null,
+            'currency'       => $currency,
+            'roi_target'     => $roiTarget,
+            'roi_estimate'   => $roiEstimate,
+            'has_investment_data' => $purchasePrice > 0 || $dailyRate > 0 || $roiTarget > 0,
+        ];
+    }
+
+    private function reservationsInfo(Ilan $ilan): array
+    {
+        $reservations = $ilan->rezervasyonlar()
+            ->orderBy('start_date', 'desc')
+            ->limit(5)
+            ->get();
+
+        $active = $ilan->rezervasyonlar()
+            ->where('reservation_state', 'confirmed')
+            ->where('start_date', '<=', now()->toDateString())
+            ->where('end_date', '>=', now()->toDateString())
+            ->count();
+
+        return [
+            'total_count'   => $ilan->rezervasyonlar()->count(),
+            'active_count'  => $active,
+            'recent'        => $reservations->map(fn($r) => [
+                'id'          => $r->id,
+                'guest_name'  => $r->guest_name ?? null,
+                'baslangic'   => $r->start_date?->format('d.m.Y'),
+                'bitis'       => $r->end_date?->format('d.m.Y'),
+                'durum'       => $r->reservation_state ?? null,
+                'toplam_tutar'=> $r->total_amount ?? null,
+            ])->toArray(),
+            'has_reservations' => $ilan->rezervasyonlar()->exists(),
+        ];
+    }
+
+    private function agentLabel(string $key): string
+    {
+        return match ($key) {
+            'photo_agent'           => 'Fotoğraf Analizi',
+            'description_agent'     => 'Açıklama Üretimi',
+            'property_score_agent'  => 'Mülk Skoru',
+            'publish_decision_agent' => 'Yayın Kararı',
+            default                 => $key,
+        };
+    }
+}

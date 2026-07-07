@@ -5,7 +5,6 @@ namespace Tests\Feature\CQRS;
 use App\Models\SaaS\Tenant;
 use App\Models\Projections\KisiReadModel;
 use App\Jobs\CQRS\ProcessProjectionJob;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -19,7 +18,6 @@ use Tests\TestCase;
  */
 class CqrsRebuildAndDlqRetryTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected Tenant $tenant;
 

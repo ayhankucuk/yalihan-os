@@ -5,7 +5,6 @@ namespace Tests\Unit\Queue;
 use App\Models\User;
 use App\Models\Lead;
 use App\Models\Kisi;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
@@ -25,7 +24,6 @@ use Tests\TestCase;
  */
 class CRMQueueTenantSafetyTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected function setUp(): void
     {

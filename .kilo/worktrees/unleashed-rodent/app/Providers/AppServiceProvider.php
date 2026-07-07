@@ -119,6 +119,28 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\Notification\NotificationAuthorityInterface::class,
             \App\Services\Notification\NotificationAuthorityService::class
         );
+
+        // 🏗️ SPRINT 6.0: Property Workspace Foundation
+        // Property Workspace Service (CRUD operations)
+        $this->app->singleton(\App\Services\PropertyWorkspace\PropertyWorkspaceService::class);
+
+        // Workspace Loader Interface → Implementation
+        $this->app->singleton(
+            \App\Services\Workspace\WorkspaceLoaderInterface::class,
+            \App\Services\Workspace\WorkspaceLoader::class
+        );
+
+        // Capability Registry (singleton: shared registry state)
+        $this->app->singleton(\App\Services\Workspace\WorkspaceCapabilityRegistry::class);
+
+        // Workspace Runtime Service
+        $this->app->singleton(\App\Services\Workspace\WorkspaceRuntimeService::class);
+
+        // Workspace Dashboard Service
+        $this->app->singleton(\App\Services\Workspace\WorkspaceDashboardService::class);
+
+        // Intent Service (singleton: shared intent registry)
+        $this->app->singleton(\App\Services\Workspace\IntentService::class);
     }
 
     /**

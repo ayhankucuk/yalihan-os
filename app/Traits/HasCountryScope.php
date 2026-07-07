@@ -27,4 +27,38 @@ trait HasCountryScope
             }
         });
     }
+
+    /**
+     * CountryScope global scope'u devre dışı bırakır.
+     * Test/sistem operasyonlarında ülke izolasyonu olmaksızın sorgu yapmak için kullanılır.
+     */
+    public static function withoutCountryScope(): \Illuminate\Database\Eloquent\Builder
+    {
+        return static::query()->withoutGlobalScope(CountryScope::class);
+    }
+
+    /**
+     * CountryScope ile find işlemi yapar (auth ulke_id filter devrede).
+     */
+    public static function findWithCountryScope(int $id): ?\App\Models\BaseModel
+    {
+        return static::find($id);
+    }
+
+    /**
+     * CountryScope olmadan find işlemi yapar.
+     * Test DB veya cross-country operasyonlar için.
+     */
+    public static function findWithoutCountryScope(int $id): ?\App\Models\BaseModel
+    {
+        return static::withoutCountryScope()->find($id);
+    }
+
+    /**
+     * CountryScope olmadan findOrFail işlemi yapar.
+     */
+    public static function findOrFailWithoutCountryScope(int $id): \App\Models\BaseModel
+    {
+        return static::withoutCountryScope()->findOrFail($id);
+    }
 }

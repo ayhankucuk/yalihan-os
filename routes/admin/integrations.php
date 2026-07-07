@@ -13,6 +13,10 @@ Route::prefix('/integrations')->name('integrations.')->group(function () {
     Route::get('/n8n-workflows', [\App\Http\Controllers\Admin\IntegrationsController::class, 'n8nWorkflows'])->name('n8n-workflows');
 });
 
+// Notification Settings (Context7: C7-NOTIFICATIONS-SETTINGS-2025-12-19)
+Route::get('/notification-settings', [\App\Http\Controllers\Admin\IntegrationsController::class, 'notificationSettings'])->name('integrations.notification-settings');
+Route::post('/notification-settings', [\App\Http\Controllers\Admin\IntegrationsController::class, 'updateNotificationSettings'])->name('notifications.settings.update');
+
 // Voice Search Settings
 Route::prefix('/voice-search')->name('voice-search.')->group(function () {
     Route::get('/settings', [\App\Http\Controllers\Admin\IntegrationsController::class, 'voiceSearchSettings'])->name('settings');

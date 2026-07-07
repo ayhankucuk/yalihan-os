@@ -21,7 +21,7 @@ class DeepSeekServiceTest extends SimpleTestCase
         Http::fake([
             'api.deepseek.com/*' => Http::response([
                 'choices' => [
-                    ['message' => ['content' => 'hello from deepseek']
+                    ['message' => ['content' => 'hello from deepseek']]
                 ],
                 'usage' => ['prompt_tokens' => 10, 'completion_tokens' => 5],
                 'model' => 'deepseek-chat'
@@ -32,7 +32,7 @@ class DeepSeekServiceTest extends SimpleTestCase
         $tenantContext = new \App\Application\Shared\DTOs\TenantContext(1, 1, 'test-request');
         $request = new CortexRequestData(
             AITaskType::ANALYZE_PROPERTY,
-            ['messages' => [['role' => 'user', 'content' => 'test']],
+            ['messages' => [['role' => 'user', 'content' => 'test']]],
             $tenantContext,
             [],
             'deepseek-v4-flash',
@@ -51,7 +51,7 @@ class DeepSeekServiceTest extends SimpleTestCase
         Http::fake([
             'api.deepseek.com/*' => Http::response([
                 'choices' => [
-                    ['message' => ['content' => 'hi']
+                    ['message' => ['content' => 'hi']]
                 ],
                 'usage' => ['prompt_tokens' => 1, 'completion_tokens' => 1],
                 'model' => 'wrong-model'
@@ -62,7 +62,7 @@ class DeepSeekServiceTest extends SimpleTestCase
         $tenantContext = new \App\Application\Shared\DTOs\TenantContext(1, 1, 'test-request');
         $request = new CortexRequestData(
             AITaskType::ANALYZE_PROPERTY,
-            ['messages' => [['role' => 'user', 'content' => 'test']],
+            ['messages' => [['role' => 'user', 'content' => 'test']]],
             $tenantContext,
             [],
             'deepseek-v4-flash',

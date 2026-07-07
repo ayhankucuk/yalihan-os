@@ -13,7 +13,6 @@ class Talep extends BaseModel
 {
     use HasFactory;
     use SoftDeletes;
-    use HasActiveScope;
     use HasCountryScope;
 
     protected $table = 'talepler';
@@ -78,7 +77,7 @@ class Talep extends BaseModel
      */
     public function kullanici()
     {
-        return $this->belongsTo(User::class, 'kullanici_id');
+        return $this->belongsTo(User::class, 'danisman_id');
     }
 
     /**
@@ -200,5 +199,10 @@ class Talep extends BaseModel
     public function scopeActive($query)
     {
         return $query->byDurum(\App\Enums\TalepDurumu::AKTIF);
+    }
+
+    public function scopeAktif($query)
+    {
+        return $this->scopeActive($query);
     }
 }

@@ -6,6 +6,77 @@
 
 ---
 
+## OTURUM 50 | 2026-07-06 | Sprint 5.1 COMPLETE + Sprint 5.2 COMPLETE
+
+### Sprint 5.1: Location Intelligence Stabilization
+
+| # | Parça | Durum |
+|---|-------|-------|
+| TKGM Loopback | ✅ Kaldırıldı | NominatimService direct DI |
+| POI Async Queue | ✅ Stable | SpatialScoutJob event-driven |
+| POI Keys ASCII | ✅ Canonical | PointOfInterest fix |
+| Location Timeline | ✅ Audit trail | LogService |
+
+### Sprint 5.2: Reservation SSOT Consolidation
+
+**İKİ AYRI TABLO = İKİ AYRI SSOT:**
+
+| Tablo | SSOT Model | Deprecated |
+|-------|-------------|------------|
+| `property_reservations` | `PropertyReservation` | `IlanReservation` |
+| `yazlik_rezervasyonlar` | `YazlikRezervasyon` | `Event` |
+
+**Kritik Bulgu (Yazma Bug):**
+- `PropertyReservation` fillable'da `ilan_id` → DB'de `property_id` = write bug
+- Fix: `property_id` fillable + `belongsTo('property_id')` FK
+- TenantContextResolver DI → cross-tenant isolation
+
+**Deploy Sonrası:** Yok (migration yok, sadece model + service değişikliği)
+
+---
+
+## OTURUM 50 | 2026-07-06 | Sprint 5.1: Location Intelligence Stabilization COMPLETE
+
+**Agent:** Kilo
+**Konu:** TKGM Loopback + POI Async Queue + POI ASCII Keys + Location Timeline
+
+### Sprint 5.1 — 4 Parça
+
+| # | Parça | Durum | Dosya(lar) |
+|---|-------|-------|-------------|
+| 1 | TKGM loopback kaldırma | ✅ | `TKGMService.php`, `NominatimService.php` |
+| 2 | POI async queue | ✅ | `SpatialScoutJob.php`, `SpatialScoutListener.php` |
+| 3 | POI keys ASCII canonical | ✅ | `PointOfInterest.php`, migration, `BackfillPoiAscii.php` |
+| 4 | Location timeline | ✅ | `SpatialScoutListener.php` |
+
+### Yeni Dosyalar
+- `app/Jobs/Location/SpatialScoutJob.php` — ShouldQueue, spatial queue
+- `app/Listeners/SpatialScoutListener.php` — event-driven POI scoring + location audit
+- `database/migrations/2026_07_06_000001_add_poi_adi_ascii_and_fix_model.php`
+- `app/Console/Commands/BackfillPoiAscii.php`
+
+### Kritik Bulgu: is_active vs aktiflik_durumu
+- `point_of_interests` DB kolonu: `aktiflik_durumu` (SAB canonical)
+- Model $fillable: yanlışlıkla `is_active` yazıyordu
+- Model $casts: `is_active => AktiflikDurumu::class`
+- **Her ikisi de DB'de YOK — bu bir yazma bug'ıydı**
+
+### Deploy Sonrası
+```bash
+php artisan migrate
+php artisan poi:backfill-ascii
+php artisan queue:work --queue=spatial
+```
+
+### Doğrulama
+- sab:integrity-scan: 0 new violation ✅
+- Gate 2/3: PASS ✅
+- PHP syntax: Tüm dosyalar PASS ✅
+
+### Sonraki: Sprint 5.2 — Reservation SSOT Consolidation
+
+---
+
 ## OTURUM 47 | 2026-06-27 | Sprint 3.4.2 COMPLETE
 
 **Agent:** Kilo

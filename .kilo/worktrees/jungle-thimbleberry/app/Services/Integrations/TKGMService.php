@@ -7,6 +7,7 @@ use App\Enums\IlanDurumu;
 use App\Exceptions\RealityCheckException;
 use App\Models\Ilan;
 use App\Services\Intelligence\TKGMLearningService;
+use App\Services\NominatimService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -43,17 +44,21 @@ class TKGMService
 
     protected \App\Services\AI\Monitoring\AiTelemetryService $telemetryService;
 
+    protected NominatimService $nominatim;
+
     /**
      * Constructor - Dependency Injection
      */
     public function __construct(
         TKGMLearningService $learningEngine,
         \App\Contracts\Resilience\CircuitBreakerInterface $circuitBreaker,
-        \App\Services\AI\Monitoring\AiTelemetryService $telemetryService
+        \App\Services\AI\Monitoring\AiTelemetryService $telemetryService,
+        NominatimService $nominatim
     ) {
         $this->learningEngine = $learningEngine;
         $this->circuitBreaker = $circuitBreaker;
         $this->telemetryService = $telemetryService;
+        $this->nominatim = $nominatim;
     }
 
     /**
@@ -537,6 +542,10 @@ class TKGMService
     /**
      * Ada/Parsel için koordinat bul (Geocoding)
      *
+     * Refactored: Removed loopback HTTP call.
+     * Previously called config('app.url').'/api/geo/geocode' (HTTP loopback).
+     * Now uses NominatimService directly (injected dependency).
+     *
      * @param string $il
      * @param string $ilce
      * @param string $ada
@@ -556,25 +565,23 @@ class TKGMService
         return Cache::remember($geocodeCacheKey, 86400, function () use ($il, $ilce, $ada, $parsel) {
             try {
                 $query = sprintf('%s, %s, Ada %s Parsel %s, Türkiye', $il, $ilce, $ada, $parsel);
-                $geocodeUrl = config('app.url') . '/api/geo/geocode';
 
-                $response = \Illuminate\Support\Facades\Http::timeout(5)
-                    ->withOptions(['verify' => false])
-                    ->post($geocodeUrl, [
-                        'query' => $query,
-                        'limit' => 1,
-                    ]);
+                // ✅ Direct NominatimService call — no loopback HTTP
+                $coordinates = $this->nominatim->geocode($query, 1);
 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    if (isset($data['success']) && $data['success'] && !empty($data['data'])) {
-                        $firstResult = $data['data'][0];
-                        return [
-                            'lat' => (float) $firstResult['lat'],
-                            'lon' => (float) $firstResult['lon'],
-                        ];
-                    }
+                if ($coordinates !== null) {
+                    return [
+                        'lat' => $coordinates['lat'],
+                        'lon' => $coordinates['lng'],
+                    ];
                 }
+
+                Log::warning('TKGM Geocoding: no results from Nominatim', [
+                    'il' => $il,
+                    'ilce' => $ilce,
+                    'ada' => $ada,
+                    'parsel' => $parsel,
+                ]);
             } catch (\Exception $e) {
                 Log::warning('TKGM Geocoding failed', [
                     'il' => $il,

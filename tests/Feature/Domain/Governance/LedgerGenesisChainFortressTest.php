@@ -5,7 +5,6 @@ namespace Tests\Feature\Domain\Governance;
 use Tests\TestCase;
 use App\Services\Governance\Crypto\LedgerGenesisChainFortress;
 use App\Exceptions\Governance\CryptoChainDriftException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Database\Seeders\TenantBaselineSeeder;
 
@@ -16,7 +15,6 @@ use Database\Seeders\TenantBaselineSeeder;
  */
 class LedgerGenesisChainFortressTest extends TestCase
 {
-    use RefreshDatabase;
 
     private LedgerGenesisChainFortress $fortress;
     private int $tenantId = 1;

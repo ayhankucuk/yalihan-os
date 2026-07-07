@@ -1,7 +1,72 @@
 # Governance Progress Tracker
-**Son Güncelleme:** 2026-06-19 (Oturum 60 — Aesthetics Wizard: Premium UI Redesign)
-**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + ✨ **AESTHETICS WIZARD PASS**
-**Genel İlerleme:** Phase 14 Foundation Lock — UI Premium Redesign: 4 bileşen yeniden yazıldı, material-symbols=0, FA=0, dark mode eksiksiz
+**Son Güncelleme:** 2026-07-06 (Oturum 62 — Finance Sprint 0.1 Tamamlandı)
+**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + ✨ **AESTHETICS WIZARD PASS** + 💰 **Finance P0-1 + P0-2 + P0-3 + P0-4 + P0-5 TAMAMLANDI** + 🛡️ **Finance Sprint 0.1 Tenant Scope + Field Fix TAMAMLANDI**
+**Genel İlerleme:** Finance Domain P0 Sprint 0.1: 4 kalan blocker kapatıldı (tenant scope, kullanici_id→danisman_id, sehir→il, test mock). Finance Tests 13/13 yeşil.
+
+---
+
+## 💰 Oturum 62 — Finance Sprint 0.1 Tamamlandı (2026-07-06)
+
+### Kapatılan Kalan P0 Blocker'lar
+
+| # | Bug | Dosya | Düzeltme |
+|---|-----|-------|-----------|
+| F-1 | findAccount() tenant scope yok | `FinancialLedgerService.php` | TenantContextResolver DI + tenant_id scope eklendi |
+| F-2/3 | kullanici_id yanlış alan + tenant filter yok | `BonusCalculator.php` | danisman_id + tenant_id filter eklendi (2 yerde) |
+| F-4 | ilanSahibi (Kisi) kullanılıyor, danisman (User) gerekli | `CommissionCalculator.php` | danisman/userDanisman/user chain |
+| F-5 | $ilan->sehir ilişkisi yok | `N8nWebhookService.php` | sehir → il (2 yerde) |
+| F-6 | FinanceSmokeTest TenantContext mock yok | `FinanceSmokeSealTest.php` | Mockery mock + RefreshDatabase |
+
+### Doğrulama
+```
+Finance Tests: 13/13 PASSED ✅
+  YalihanTreasuryTest: 9/9 ✅
+  FinanceSmokeSealTest: 4/4 ✅ (TenantContextMissingException artık yok)
+SAB integrity-scan: Finance dosyalarında yeni HIGH ihlal yok ✅
+```
+
+### Finance Tam Tenant-Scoped Tamamlandı
+Tüm Finance servisleri artık tenant-scoped. Finance domain ürün geliştirmeye güvenli.
+
+---
+
+## 💰 Oturum 61 — Finance Domain P0 Stabilization (2026-07-05)
+
+### Kapatılan Bug'lar
+
+| # | Severity | Bug | Dosya | Durum |
+|---|----------|-----|-------|--------|
+| P0-1 | 💥 FATAL | Approval Bypass — PENDING komisyona ödeme yapılıyordu | `YalihanTreasury.php` | ✅ Düzeltildi |
+| P0-2 | 💥 FATAL | recordDoubleEntry() — int gönderiliyor, LedgerAccount gerekli | `YalihanTreasury.php`, `TransactionService.php` | ✅ Düzeltildi |
+| P0-3 | ⚠️ CRITICAL | Bonus Schema Drift — is_paid/paid_at modelde, DB'de odendi_mi/odeme_tarihi | `Bonus.php`, `BonusCalculator.php` | ✅ Düzeltildi |
+| P0-4 | 💥 FATAL | IlanDurumu::SATILDI enum'da yok | `YalihanTreasury.php` | ✅ Düzeltildi |
+| P0-5 | ⚠️ TEST | Test tenant_id eksik + LedgerAccount fixture yok | `YalihanTreasuryTest.php` | ✅ Düzeltildi |
+
+### Finance Domain Kanonik Dil Zinciri (Artık Tutarlı)
+
+```
+Komisyon → payment_state (PaymentStatus::APPROVED/PAID/PENDING/REJECTED)
+Ledger   → LedgerAccount model (recordDoubleEntry signature)
+Bonus    → odendi_mi / odeme_tarihi (DB kanonik)
+Satış    → IlanDurumu::ARSIV
+```
+
+### Test Sonucu (Oturum 61)
+```
+YalihanTreasuryTest: 9/9 PASSED ✅
+FinanceSmokeSealTest: 1 FAIL (TenantContextMissingException) — Sprint 0.1'de düzeltildi
+```
+Komisyon → payment_state (PaymentStatus::APPROVED/PAID/PENDING/REJECTED)
+Ledger   → LedgerAccount model (recordDoubleEntry signature)
+Bonus    → odendi_mi / odeme_tarihi (DB kanonik)
+Satış    → IlanDurumu::ARSIV
+```
+
+### Test Sonucu
+```
+YalihanTreasuryTest: 9/9 PASSED ✅
+FinanceSmokeTest: 1 FAIL (TenantContextMissingException) — P0 kapsamı dışında
+```
 
 ---
 

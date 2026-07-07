@@ -1,0 +1,170 @@
+- generic [active] [ref=f22e1]:
+  - link "İçeriğe atla" [ref=f22e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f22e4]:
+    - complementary [ref=f22e5]:
+      - generic [ref=f22e7]:
+        - generic [ref=f22e11] [cursor=pointer]: "Y"
+        - generic [ref=f22e12]:
+          - heading "Yalıhan Emlak" [level=2] [ref=f22e13]
+          - paragraph [ref=f22e16]: Yönetim Paneli
+      - navigation [ref=f22e17]:
+        - generic [ref=f22e19]:
+          - generic:
+            - img
+          - textbox "Menüde ara..." [ref=f22e20]
+        - menu [ref=f22e21]:
+          - listitem [ref=f22e22]:
+            - menuitem "Dashboard" [ref=f22e23] [cursor=pointer]:
+              - img [ref=f22e25]
+              - generic [ref=f22e30]: Dashboard
+          - listitem [ref=f22e31]:
+            - button "İlanlar & Portföy" [expanded] [ref=f22e32] [cursor=pointer]:
+              - img [ref=f22e34]
+              - generic [ref=f22e37]: İlanlar & Portföy
+              - img [ref=f22e38]
+            - generic [ref=f22e40]:
+              - menuitem "İlanlarım" [ref=f22e42] [cursor=pointer]:
+                - generic [ref=f22e44]: İlanlarım
+              - menuitem "Tüm İlanlar" [ref=f22e45] [cursor=pointer]:
+                - generic [ref=f22e47]: Tüm İlanlar
+              - menuitem "Yeni İlan AI" [ref=f22e48] [cursor=pointer]:
+                - generic [ref=f22e50]: Yeni İlan
+                - generic [ref=f22e51]: AI
+              - menuitem "Danışmanlar" [ref=f22e52] [cursor=pointer]:
+                - generic [ref=f22e54]: Danışmanlar
+          - listitem [ref=f22e55]:
+            - button "CRM & Müşteri" [ref=f22e56] [cursor=pointer]:
+              - img [ref=f22e58]
+              - generic [ref=f22e60]: CRM & Müşteri
+              - img [ref=f22e61]
+          - listitem [ref=f22e63]:
+            - button "Takım & Operasyon" [ref=f22e64] [cursor=pointer]:
+              - img [ref=f22e66]
+              - generic [ref=f22e69]: Takım & Operasyon
+              - img [ref=f22e70]
+          - listitem [ref=f22e72]:
+            - button "Finans & Satış" [ref=f22e73] [cursor=pointer]:
+              - img [ref=f22e75]
+              - generic [ref=f22e77]: Finans & Satış
+              - img [ref=f22e78]
+          - listitem [ref=f22e80]:
+            - menuitem "Bildirimler" [ref=f22e81] [cursor=pointer]:
+              - img [ref=f22e83]
+              - generic [ref=f22e86]: Bildirimler
+          - listitem [ref=f22e87]:
+            - button "Property Engine" [ref=f22e88] [cursor=pointer]:
+              - img [ref=f22e90]
+              - generic [ref=f22e92]: Property Engine
+              - img [ref=f22e93]
+          - listitem [ref=f22e95]:
+            - button "Cortex" [ref=f22e96] [cursor=pointer]:
+              - img [ref=f22e98]
+              - generic [ref=f22e100]: Cortex
+              - img [ref=f22e101]
+          - listitem [ref=f22e103]:
+            - button "Governance" [ref=f22e104] [cursor=pointer]:
+              - img [ref=f22e106]
+              - generic [ref=f22e108]: Governance
+              - img [ref=f22e109]
+          - listitem [ref=f22e111]:
+            - button "Automation Hub" [ref=f22e112] [cursor=pointer]:
+              - img [ref=f22e114]
+              - generic [ref=f22e117]: Automation Hub
+              - img [ref=f22e118]
+          - listitem [ref=f22e120]:
+            - button "Sistem" [ref=f22e121] [cursor=pointer]:
+              - img [ref=f22e123]
+              - generic [ref=f22e125]: Sistem
+              - img [ref=f22e126]
+      - generic [ref=f22e129]:
+        - generic [ref=f22e130]: A
+        - generic [ref=f22e131]:
+          - paragraph [ref=f22e132]: Ayhan Küçük
+          - paragraph [ref=f22e133]: Süper Yönetici
+    - generic [ref=f22e134]:
+      - banner [ref=f22e135]:
+        - generic [ref=f22e137]:
+          - button "Hızlı Arama... ⌘K" [ref=f22e139] [cursor=pointer]:
+            - img [ref=f22e140]
+            - generic [ref=f22e142]: Hızlı Arama...
+            - generic [ref=f22e143]: ⌘K
+          - button "Bildirimler" [ref=f22e145] [cursor=pointer]
+          - button "Tema" [ref=f22e146] [cursor=pointer]:
+            - img [ref=f22e147]
+          - button "A" [ref=f22e150] [cursor=pointer]:
+            - generic [ref=f22e152]: A
+            - img [ref=f22e153]
+      - link:
+        - /url: http://localhost:8000/admin/governance/intelligence-center
+      - generic [ref=f22e155]:
+        - 'link "AI Sistem Watcher: Beklemede Agent: 0/5" [ref=f22e156] [cursor=pointer]':
+          - /url: http://localhost:8000/admin/governance/intelligence-center
+          - generic [ref=f22e157]:
+            - generic [ref=f22e158]: AI Sistem
+            - generic [ref=f22e159]: "Watcher: Beklemede"
+            - generic [ref=f22e162]: "Agent: 0/5"
+        - generic [ref=f22e163]:
+          - 'link "Bugün Oto: 0 🟢 Düşük" [ref=f22e164] [cursor=pointer]':
+            - /url: http://localhost:8000/admin/governance/intelligence-center
+          - link "L2" [ref=f22e165] [cursor=pointer]:
+            - /url: http://localhost:8000/admin/governance/autonomy
+      - main [ref=f22e166]:
+        - generic [ref=f22e167]:
+          - generic [ref=f22e168]:
+            - generic [ref=f22e169]:
+              - generic [ref=f22e170]:
+                - heading "Yeni İlan Oluştur" [level=1] [ref=f22e171]
+                - paragraph [ref=f22e172]: Adım adım ilan bilgilerinizi doldurun
+              - link "Geri Dön" [ref=f22e173] [cursor=pointer]:
+                - /url: http://localhost:8000/admin/ilanlar
+                - img [ref=f22e174]
+                - text: Geri Dön
+            - generic [ref=f22e178]:
+              - generic [ref=f22e179]: İlerleme Durumu
+              - generic [ref=f22e180]: 20%
+            - generic [ref=f22e187]:
+              - generic [ref=f22e191] [cursor=pointer]: 1. Kategori
+              - generic [ref=f22e196] [cursor=pointer]: 2. Bilgiler
+              - generic [ref=f22e201] [cursor=pointer]: 3. Fotoğraf
+              - generic [ref=f22e206] [cursor=pointer]: 4. Adres
+              - generic [ref=f22e211] [cursor=pointer]: 5. Önizleme
+            - generic [ref=f22e213]:
+              - generic [ref=f22e214]:
+                - generic [ref=f22e215]:
+                  - heading "İlan Kategorisi" [level=3] [ref=f22e216]
+                  - paragraph [ref=f22e217]: İlanınızın kategorisini seçin
+                - generic [ref=f22e218]:
+                  - generic [ref=f22e219]:
+                    - generic [ref=f22e220]:
+                      - generic [ref=f22e221]: Ana Kategori *
+                      - combobox "Ana Kategori *" [ref=f22e222]:
+                        - option "Ana Kategori Seçin" [selected]
+                    - generic [ref=f22e223]:
+                      - generic [ref=f22e224]: Alt Kategori *
+                      - combobox "Alt Kategori *" [disabled] [ref=f22e225]:
+                        - option "Önce Ana Kategori Seçin" [selected]
+                    - generic [ref=f22e226]:
+                      - generic [ref=f22e227]: Yayın Tipi *
+                      - combobox [disabled] [ref=f22e228]:
+                        - option "Önce Alt Kategori Seçin" [selected]
+                  - paragraph [ref=f22e230]:
+                    - strong [ref=f22e231]: "İpucu:"
+                    - text: Kategori seçimi, ilanınızın hangi özelliklerin gösterileceğini belirler. Doğru kategori seçimi, alıcıların ilanınızı daha kolay bulmasını sağlar.
+                - generic [ref=f22e236]: veya
+                - generic [ref=f22e238]:
+                  - heading "Hızlı Seçim" [level=4] [ref=f22e240]
+                  - generic [ref=f22e241]: En çok kullanılan kombinasyonlar
+              - button "İleri →" [ref=f22e243] [cursor=pointer]
+          - generic [ref=f22e246] [cursor=pointer]:
+            - generic [ref=f22e247]:
+              - generic [ref=f22e249]: 🧠
+              - generic [ref=f22e250]:
+                - heading "Cortex" [level=3] [ref=f22e251]
+                - paragraph [ref=f22e252]: LIVE
+            - generic [ref=f22e253]: 0%
+  - button [ref=f22e255] [cursor=pointer]:
+    - img [ref=f22e256]
+  - button "Copilot Asistan" [ref=f22e259] [cursor=pointer]:
+    - img [ref=f22e260]
+  - img

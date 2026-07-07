@@ -1,0 +1,812 @@
+- generic [ref=f11e2]:
+  - navigation [ref=f11e3]:
+    - generic [ref=f11e4]:
+      - generic [ref=f11e6]:
+        - list [ref=f11e7]:
+          - listitem [ref=f11e8]:
+            - link "Stack" [ref=f11e9] [cursor=pointer]:
+              - /url: "#stack"
+              - button "Stack" [ref=f11e10]:
+                - img [ref=f11e12]
+                - text: Stack
+          - listitem [ref=f11e14]:
+            - link "Context" [ref=f11e15] [cursor=pointer]:
+              - /url: "#context"
+              - button "Context" [ref=f11e16]:
+                - img [ref=f11e18]
+                - text: Context
+          - listitem [ref=f11e20]:
+            - link "Debug" [ref=f11e21] [cursor=pointer]:
+              - /url: "#debug"
+              - button "Debug" [ref=f11e22]:
+                - img [ref=f11e24]
+                - text: Debug
+          - listitem [ref=f11e26]:
+            - link "Flare" [ref=f11e27] [cursor=pointer]:
+              - /url: https://flareapp.io/?utm_campaign=ignition&utm_source=ignition
+              - button "Flare" [ref=f11e28]:
+                - img [ref=f11e30]
+                - text: Flare
+        - list [ref=f11e35]:
+          - listitem [ref=f11e36]:
+            - link "Share" [ref=f11e37] [cursor=pointer]:
+              - /url: "#share"
+              - button "Share" [ref=f11e38]:
+                - img [ref=f11e40]
+                - text: Share
+            - generic:
+              - generic:
+                - generic:
+                  - heading "Share with Flare" [level=4]
+                  - link "Docs":
+                    - /url: https://flareapp.io/docs/ignition/introducing-ignition/sharing-errors?utm_campaign=ignition&utm_source=ignition
+                    - text: Docs
+                    - img
+                - list:
+                  - listitem:
+                    - generic:
+                      - checkbox "Stack" [checked]
+                      - generic: Stack
+                  - listitem:
+                    - generic:
+                      - checkbox "Context" [checked]
+                      - generic: Context
+                  - listitem:
+                    - generic:
+                      - checkbox "Debug" [checked]
+                      - generic: Debug
+                - generic:
+                  - button "Create Share":
+                    - img
+                    - text: Create Share
+          - listitem [ref=f11e42]:
+            - link "Docs" [ref=f11e43] [cursor=pointer]:
+              - /url: https://laravel.com/docs/
+              - button "Docs" [ref=f11e44]:
+                - img [ref=f11e46]
+                - text: Docs
+          - listitem [ref=f11e48]:
+            - link [ref=f11e49] [cursor=pointer]:
+              - /url: "#settings"
+              - button [ref=f11e50]:
+                - img [ref=f11e52]
+            - generic:
+              - generic:
+                - generic:
+                  - heading "Ignition Settings" [level=4]
+                  - link "Docs":
+                    - /url: https://flareapp.io/ignition?utm_campaign=ignition&utm_source=ignition
+                    - text: Docs
+                    - img
+                - generic:
+                  - text: Editor
+                  - generic:
+                    - combobox "Editor":
+                      - option "Clipboard"
+                      - option "Sublime"
+                      - option "TextMate"
+                      - option "Emacs"
+                      - option "MacVim"
+                      - option "PhpStorm" [selected]
+                      - option "PHPStorm Remote"
+                      - option "Idea"
+                      - option "VS Code"
+                      - option "VS Code Insiders"
+                      - option "VS Code Remote"
+                      - option "VS Code Insiders Remote"
+                      - option "VS Codium"
+                      - option "Cursor"
+                      - option "Atom"
+                      - option "Nova"
+                      - option "NetBeans"
+                      - option "Zed"
+                      - option "Windsurf"
+                      - option "Xdebug"
+                    - generic:
+                      - img
+                - generic:
+                  - text: Theme
+                  - button "auto":
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                        - generic:
+                          - generic:
+                            - img
+                        - generic:
+                          - generic:
+                            - img
+                      - generic: auto
+                - generic:
+                  - button "Save settings"
+                - paragraph:
+                  - text: Settings will be saved locally in
+                  - code: ~/.ignition.json
+                  - text: .
+      - 'link "The GET method is not supported for route logout. Supported methods: POST." [ref=f11e56] [cursor=pointer]':
+        - /url: "#top"
+        - generic [ref=f11e57]: "The GET method is not supported for route logout. Supported methods: POST."
+  - main [ref=f11e58]:
+    - main [ref=f11e62]:
+      - generic [ref=f11e64]:
+        - generic [ref=f11e65]:
+          - generic [ref=f11e67]:
+            - generic [ref=f11e68]: Symfony
+            - generic [ref=f11e69]: \
+            - generic [ref=f11e70]: Component
+            - generic [ref=f11e71]: \
+            - generic [ref=f11e72]: HttpKernel
+            - generic [ref=f11e73]: \
+            - generic [ref=f11e74]: Exception
+            - generic [ref=f11e75]: \
+            - generic [ref=f11e76]: MethodNotAllowedHttpException
+          - generic [ref=f11e77]:
+            - generic [ref=f11e78]: PHP 8.4.7
+            - generic [ref=f11e79]:
+              - img [ref=f11e80]
+              - text: 10.50.2
+        - generic [ref=f11e83]: "The GET method is not supported for route logout. Supported methods: POST."
+    - generic [ref=f11e86]:
+      - complementary [ref=f11e87]:
+        - generic [ref=f11e88]:
+          - button "Expand vendor frames" [ref=f11e90] [cursor=pointer]:
+            - generic [ref=f11e91]:
+              - img [ref=f11e92]
+              - img [ref=f11e94]
+            - text: Expand vendor frames
+          - list [ref=f11e97]:
+            - listitem [ref=f11e98] [cursor=pointer]:
+              - text: 17 vendor frames
+              - img [ref=f11e99]
+            - listitem [ref=f11e101]:
+              - generic [ref=f11e103]:
+                - generic [ref=f11e104]: App
+                - generic [ref=f11e105]: \
+                - generic [ref=f11e106]: Http
+                - generic [ref=f11e107]: \
+                - generic [ref=f11e108]: Middleware
+                - generic [ref=f11e109]: \
+                - generic [ref=f11e110]: SecurityMiddleware
+                - generic [ref=f11e111]: ": 31"
+              - generic [ref=f11e112]: handle
+            - listitem [ref=f11e113]
+            - listitem [ref=f11e114] [cursor=pointer]:
+              - text: 20 vendor frames
+              - img [ref=f11e115]
+            - listitem [ref=f11e117] [cursor=pointer]:
+              - generic [ref=f11e119]:
+                - generic [ref=f11e120]: public
+                - generic [ref=f11e121]: /
+                - generic [ref=f11e122]: index
+                - generic [ref=f11e123]: .php
+                - generic [ref=f11e124]: ": 21"
+              - generic [ref=f11e125]: require_once
+            - listitem [ref=f11e126] [cursor=pointer]:
+              - text: 1 vendor frame
+              - img [ref=f11e127]
+      - generic [ref=f11e129]:
+        - 'link "app / Http / Middleware / SecurityMiddleware .php : 31" [ref=f11e131] [cursor=pointer]':
+          - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=31
+          - generic [ref=f11e132]:
+            - generic [ref=f11e133]: app
+            - generic [ref=f11e134]: /
+            - generic [ref=f11e135]: Http
+            - generic [ref=f11e136]: /
+            - generic [ref=f11e137]: Middleware
+            - generic [ref=f11e138]: /
+            - generic [ref=f11e139]: SecurityMiddleware
+            - generic [ref=f11e140]: .php
+            - generic [ref=f11e141]: ": 31"
+        - main [ref=f11e142]:
+          - navigation [ref=f11e143]:
+            - generic [ref=f11e144]:
+              - paragraph [ref=f11e145]: "16"
+              - paragraph [ref=f11e146]: "17"
+              - paragraph [ref=f11e147]: "18"
+              - paragraph [ref=f11e148]: "19"
+              - paragraph [ref=f11e149]: "20"
+              - paragraph [ref=f11e150]: "21"
+              - paragraph [ref=f11e151]: "22"
+              - paragraph [ref=f11e152]: "23"
+              - paragraph [ref=f11e153]: "24"
+              - paragraph [ref=f11e154]: "25"
+              - paragraph [ref=f11e155]: "26"
+              - paragraph [ref=f11e156]: "27"
+              - paragraph [ref=f11e157]: "28"
+              - paragraph [ref=f11e158]: "29"
+              - paragraph [ref=f11e159]: "30"
+              - paragraph [ref=f11e160]: "31"
+              - paragraph [ref=f11e161]: "32"
+              - paragraph [ref=f11e162]: "33"
+              - paragraph [ref=f11e163]: "34"
+              - paragraph [ref=f11e164]: "35"
+              - paragraph [ref=f11e165]: "36"
+              - paragraph [ref=f11e166]: "37"
+              - paragraph [ref=f11e167]: "38"
+              - paragraph [ref=f11e168]: "39"
+              - paragraph [ref=f11e169]: "40"
+              - paragraph [ref=f11e170]: "41"
+              - paragraph [ref=f11e171]: "42"
+              - paragraph [ref=f11e172]: "43"
+              - paragraph [ref=f11e173]: "44"
+              - paragraph [ref=f11e174]: "45"
+          - code [ref=f11e177]:
+            - generic [ref=f11e178]:
+              - link [ref=f11e179] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=16
+                - button [ref=f11e180]:
+                  - img [ref=f11e181]
+              - generic [ref=f11e184]: "* - Security Headers"
+            - generic [ref=f11e185]:
+              - link [ref=f11e186] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=17
+                - button [ref=f11e187]:
+                  - img [ref=f11e188]
+              - generic [ref=f11e190]: "* - Input Sanitization"
+            - generic [ref=f11e191]:
+              - link [ref=f11e192] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=18
+                - button [ref=f11e193]:
+                  - img [ref=f11e194]
+              - generic [ref=f11e196]: "*"
+            - generic [ref=f11e197]:
+              - link [ref=f11e198] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=19
+                - button [ref=f11e199]:
+                  - img [ref=f11e200]
+              - generic [ref=f11e203]: "* @version 1.0.0"
+            - generic [ref=f11e204]:
+              - link [ref=f11e205] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=20
+                - button [ref=f11e206]:
+                  - img [ref=f11e207]
+              - generic [ref=f11e209]: "*"
+            - generic [ref=f11e210]:
+              - link [ref=f11e211] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=21
+                - button [ref=f11e212]:
+                  - img [ref=f11e213]
+              - generic [ref=f11e215]: "* @author Context7 Team"
+            - generic [ref=f11e216]:
+              - link [ref=f11e217] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=22
+                - button [ref=f11e218]:
+                  - img [ref=f11e219]
+              - generic [ref=f11e221]: "*/"
+            - generic [ref=f11e222]:
+              - link [ref=f11e223] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=23
+                - button [ref=f11e224]:
+                  - img [ref=f11e225]
+              - generic [ref=f11e228]: class SecurityMiddleware
+            - generic [ref=f11e229]:
+              - link [ref=f11e230] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=24
+                - button [ref=f11e231]:
+                  - img [ref=f11e232]
+              - generic [ref=f11e235]: "{"
+            - generic [ref=f11e236]:
+              - link [ref=f11e237] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=25
+                - button [ref=f11e238]:
+                  - img [ref=f11e239]
+              - generic [ref=f11e242]: /**
+            - generic [ref=f11e243]:
+              - link [ref=f11e244] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=26
+                - button [ref=f11e245]:
+                  - img [ref=f11e246]
+              - generic [ref=f11e248]: "* Handle an incoming request"
+            - generic [ref=f11e249]:
+              - link [ref=f11e250] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=27
+                - button [ref=f11e251]:
+                  - img [ref=f11e252]
+              - generic [ref=f11e255]: "*/"
+            - generic [ref=f11e256]:
+              - link [ref=f11e257] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=28
+                - button [ref=f11e258]:
+                  - img [ref=f11e259]
+              - generic [ref=f11e262]: public function handle(Request $request, Closure $next)
+            - generic [ref=f11e263]:
+              - link [ref=f11e264] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=29
+                - button [ref=f11e265]:
+                  - img [ref=f11e266]
+              - generic [ref=f11e269]: "{"
+            - generic [ref=f11e270]:
+              - link [ref=f11e271] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=30
+                - button [ref=f11e272]:
+                  - img [ref=f11e273]
+              - generic [ref=f11e276]: // Apply security headers
+            - generic [ref=f11e277]:
+              - link [ref=f11e278] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=31
+                - button [ref=f11e279]:
+                  - img [ref=f11e280]
+              - generic [ref=f11e283]: $response = $next($request);
+            - link [ref=f11e285] [cursor=pointer]:
+              - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=32
+              - button [ref=f11e286]:
+                - img [ref=f11e287]
+            - generic [ref=f11e290]:
+              - link [ref=f11e291] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=33
+                - button [ref=f11e292]:
+                  - img [ref=f11e293]
+              - generic [ref=f11e296]: // Add security headers
+            - generic [ref=f11e297]:
+              - link [ref=f11e298] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=34
+                - button [ref=f11e299]:
+                  - img [ref=f11e300]
+              - generic [ref=f11e303]: $this->addSecurityHeaders($response);
+            - link [ref=f11e305] [cursor=pointer]:
+              - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=35
+              - button [ref=f11e306]:
+                - img [ref=f11e307]
+            - generic [ref=f11e310]:
+              - link [ref=f11e311] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=36
+                - button [ref=f11e312]:
+                  - img [ref=f11e313]
+              - generic [ref=f11e316]: // Log security events
+            - generic [ref=f11e317]:
+              - link [ref=f11e318] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=37
+                - button [ref=f11e319]:
+                  - img [ref=f11e320]
+              - generic [ref=f11e323]: $this->logSecurityEvent($request, $response);
+            - link [ref=f11e325] [cursor=pointer]:
+              - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=38
+              - button [ref=f11e326]:
+                - img [ref=f11e327]
+            - generic [ref=f11e330]:
+              - link [ref=f11e331] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=39
+                - button [ref=f11e332]:
+                  - img [ref=f11e333]
+              - generic [ref=f11e336]: return $response;
+            - generic [ref=f11e337]:
+              - link [ref=f11e338] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=40
+                - button [ref=f11e339]:
+                  - img [ref=f11e340]
+              - generic [ref=f11e342]: "}"
+            - link [ref=f11e344] [cursor=pointer]:
+              - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=41
+              - button [ref=f11e345]:
+                - img [ref=f11e346]
+            - generic [ref=f11e349]:
+              - link [ref=f11e350] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=42
+                - button [ref=f11e351]:
+                  - img [ref=f11e352]
+              - generic [ref=f11e355]: /**
+            - generic [ref=f11e356]:
+              - link [ref=f11e357] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=43
+                - button [ref=f11e358]:
+                  - img [ref=f11e359]
+              - generic [ref=f11e361]: "* Add security headers"
+            - generic [ref=f11e362]:
+              - link [ref=f11e363] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=44
+                - button [ref=f11e364]:
+                  - img [ref=f11e365]
+              - generic [ref=f11e368]: "*/"
+            - generic [ref=f11e369]:
+              - link [ref=f11e370] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Fdev%2Fyalihan2026%2Fapp%2FHttp%2FMiddleware%2FSecurityMiddleware.php&line=45
+                - button [ref=f11e371]:
+                  - img [ref=f11e372]
+              - generic [ref=f11e375]: private function addSecurityHeaders($response)
+      - generic [ref=f11e376]:
+        - generic [ref=f11e377]: arguments
+        - generic [ref=f11e379]:
+          - term [ref=f11e380]:
+            - generic [ref=f11e381]:
+              - generic [ref=f11e382]:
+                - generic "by reference"
+                - text: $arg0
+              - generic [ref=f11e383]: :Illuminate\Http\Request
+          - definition [ref=f11e384]:
+            - generic [ref=f11e385]:
+              - code [ref=f11e388]: GET http://localhost:8000/logout
+              - button "Copy to clipboard" [ref=f11e390] [cursor=pointer]:
+                - img [ref=f11e391]
+    - generic [ref=f11e394]:
+      - navigation [ref=f11e395]:
+        - list [ref=f11e397]:
+          - listitem [ref=f11e398]:
+            - link "Request" [ref=f11e399] [cursor=pointer]:
+              - /url: "#context-request"
+            - list [ref=f11e400]:
+              - listitem [ref=f11e401]:
+                - link "Browser" [ref=f11e402] [cursor=pointer]:
+                  - /url: "#context-request-browser"
+                  - img [ref=f11e404]
+                  - generic [ref=f11e406]: Browser
+              - listitem [ref=f11e407]:
+                - link "Headers" [ref=f11e408] [cursor=pointer]:
+                  - /url: "#context-request-headers"
+                  - img [ref=f11e410]
+                  - generic [ref=f11e412]: Headers
+              - listitem [ref=f11e413]:
+                - link "Body" [ref=f11e414] [cursor=pointer]:
+                  - /url: "#context-request-body"
+                  - img [ref=f11e416]
+                  - generic [ref=f11e418]: Body
+          - listitem [ref=f11e419]:
+            - link "Context" [ref=f11e420] [cursor=pointer]:
+              - /url: "#context-context"
+            - list [ref=f11e421]:
+              - listitem [ref=f11e422]:
+                - link "Git" [ref=f11e423] [cursor=pointer]:
+                  - /url: "#context-context-git"
+                  - img [ref=f11e425]
+                  - generic [ref=f11e427]: Git
+              - listitem [ref=f11e428]:
+                - link "Versions" [ref=f11e429] [cursor=pointer]:
+                  - /url: "#context-context-versions"
+                  - img [ref=f11e431]
+                  - generic [ref=f11e433]: Versions
+      - generic [ref=f11e434]:
+        - generic [ref=f11e435]:
+          - heading "Request" [level=2] [ref=f11e436]
+          - generic [ref=f11e437]:
+            - generic [ref=f11e438]:
+              - generic [ref=f11e439]:
+                - generic [ref=f11e440]: http://localhost:8000/logout
+                - generic [ref=f11e441]: GET
+              - generic [ref=f11e443] [cursor=pointer]:
+                - code [ref=f11e446]:
+                  - code [ref=f11e448]: "curl \"http://localhost:8000/logout\" \\ -X GET \\ -H 'host: localhost:8000' \\ -H 'connection: keep-alive' \\ -H 'sec-ch-ua: \"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"' \\ -H 'sec-ch-ua-mobile: ?0' \\ -H 'sec-ch-ua-platform: \"macOS\"' \\ -H 'upgrade-insecure-requests: 1' \\ -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36' \\ -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \\ -H 'sec-fetch-site: none' \\ -H 'sec-fetch-mode: navigate' \\ -H 'sec-fetch-user: ?1' \\ -H 'sec-fetch-dest: document' \\ -H 'accept-encoding: gzip, deflate, br, zstd' \\ -H 'accept-language: tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7' \\ -H 'cookie: <CENSORED>';"
+                - button "Copy to clipboard" [ref=f11e450]:
+                  - img [ref=f11e451]
+                - button [ref=f11e453]:
+                  - img [ref=f11e454]
+            - generic [ref=f11e456]:
+              - heading "Browser" [level=1] [ref=f11e457]:
+                - text: Browser
+                - img [ref=f11e459]
+              - generic [ref=f11e461]:
+                - code [ref=f11e464]: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36
+                - button "Copy to clipboard" [ref=f11e466] [cursor=pointer]:
+                  - img [ref=f11e467]
+            - generic [ref=f11e469]:
+              - heading "Headers" [level=1] [ref=f11e470]:
+                - text: Headers
+                - img [ref=f11e472]
+              - generic [ref=f11e474]:
+                - generic [ref=f11e475]:
+                  - term [ref=f11e476]: host
+                  - definition [ref=f11e477]:
+                    - generic [ref=f11e478]:
+                      - code [ref=f11e481]: localhost:8000
+                      - button "Copy to clipboard" [ref=f11e483] [cursor=pointer]:
+                        - img [ref=f11e484]
+                - generic [ref=f11e486]:
+                  - term [ref=f11e487]: connection
+                  - definition [ref=f11e488]:
+                    - generic [ref=f11e489]:
+                      - code [ref=f11e492]: keep-alive
+                      - button "Copy to clipboard" [ref=f11e494] [cursor=pointer]:
+                        - img [ref=f11e495]
+                - generic [ref=f11e497]:
+                  - term [ref=f11e498]: sec-ch-ua
+                  - definition [ref=f11e499]:
+                    - generic [ref=f11e500]:
+                      - code [ref=f11e503]: "\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\""
+                      - button "Copy to clipboard" [ref=f11e505] [cursor=pointer]:
+                        - img [ref=f11e506]
+                - generic [ref=f11e508]:
+                  - term [ref=f11e509]: sec-ch-ua-mobile
+                  - definition [ref=f11e510]:
+                    - generic [ref=f11e511]:
+                      - code [ref=f11e514]: "?0"
+                      - button "Copy to clipboard" [ref=f11e516] [cursor=pointer]:
+                        - img [ref=f11e517]
+                - generic [ref=f11e519]:
+                  - term [ref=f11e520]: sec-ch-ua-platform
+                  - definition [ref=f11e521]:
+                    - generic [ref=f11e522]:
+                      - code [ref=f11e525]: "\"macOS\""
+                      - button "Copy to clipboard" [ref=f11e527] [cursor=pointer]:
+                        - img [ref=f11e528]
+                - generic [ref=f11e530]:
+                  - term [ref=f11e531]: upgrade-insecure-requests
+                  - definition [ref=f11e532]:
+                    - generic [ref=f11e533]:
+                      - code [ref=f11e536]: "1"
+                      - button "Copy to clipboard" [ref=f11e538] [cursor=pointer]:
+                        - img [ref=f11e539]
+                - generic [ref=f11e541]:
+                  - term [ref=f11e542]: user-agent
+                  - definition [ref=f11e543]:
+                    - generic [ref=f11e544]:
+                      - code [ref=f11e547]: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36
+                      - button "Copy to clipboard" [ref=f11e549] [cursor=pointer]:
+                        - img [ref=f11e550]
+                - generic [ref=f11e552]:
+                  - term [ref=f11e553]: accept
+                  - definition [ref=f11e554]:
+                    - generic [ref=f11e555]:
+                      - code [ref=f11e558]: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+                      - button "Copy to clipboard" [ref=f11e560] [cursor=pointer]:
+                        - img [ref=f11e561]
+                - generic [ref=f11e563]:
+                  - term [ref=f11e564]: sec-fetch-site
+                  - definition [ref=f11e565]:
+                    - generic [ref=f11e566]:
+                      - code [ref=f11e569]: none
+                      - button "Copy to clipboard" [ref=f11e571] [cursor=pointer]:
+                        - img [ref=f11e572]
+                - generic [ref=f11e574]:
+                  - term [ref=f11e575]: sec-fetch-mode
+                  - definition [ref=f11e576]:
+                    - generic [ref=f11e577]:
+                      - code [ref=f11e580]: navigate
+                      - button "Copy to clipboard" [ref=f11e582] [cursor=pointer]:
+                        - img [ref=f11e583]
+                - generic [ref=f11e585]:
+                  - term [ref=f11e586]: sec-fetch-user
+                  - definition [ref=f11e587]:
+                    - generic [ref=f11e588]:
+                      - code [ref=f11e591]: "?1"
+                      - button "Copy to clipboard" [ref=f11e593] [cursor=pointer]:
+                        - img [ref=f11e594]
+                - generic [ref=f11e596]:
+                  - term [ref=f11e597]: sec-fetch-dest
+                  - definition [ref=f11e598]:
+                    - generic [ref=f11e599]:
+                      - code [ref=f11e602]: document
+                      - button "Copy to clipboard" [ref=f11e604] [cursor=pointer]:
+                        - img [ref=f11e605]
+                - generic [ref=f11e607]:
+                  - term [ref=f11e608]: accept-encoding
+                  - definition [ref=f11e609]:
+                    - generic [ref=f11e610]:
+                      - code [ref=f11e613]: gzip, deflate, br, zstd
+                      - button "Copy to clipboard" [ref=f11e615] [cursor=pointer]:
+                        - img [ref=f11e616]
+                - generic [ref=f11e618]:
+                  - term [ref=f11e619]: accept-language
+                  - definition [ref=f11e620]:
+                    - generic [ref=f11e621]:
+                      - code [ref=f11e624]: tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7
+                      - button "Copy to clipboard" [ref=f11e626] [cursor=pointer]:
+                        - img [ref=f11e627]
+                - generic [ref=f11e629]:
+                  - term [ref=f11e630]: cookie
+                  - definition [ref=f11e631]:
+                    - generic [ref=f11e632]:
+                      - code [ref=f11e635]: <CENSORED>
+                      - button "Copy to clipboard" [ref=f11e637] [cursor=pointer]:
+                        - img [ref=f11e638]
+            - generic [ref=f11e640]:
+              - heading "Body" [level=1] [ref=f11e641]:
+                - text: Body
+                - img [ref=f11e643]
+              - generic [ref=f11e645]:
+                - code [ref=f11e648]: "[]"
+                - button "Copy to clipboard" [ref=f11e650] [cursor=pointer]:
+                  - img [ref=f11e651]
+        - generic [ref=f11e653]:
+          - heading "Context" [level=2] [ref=f11e654]
+          - generic [ref=f11e655]:
+            - generic [ref=f11e656]:
+              - heading "Git" [level=1] [ref=f11e657]:
+                - text: Git
+                - img [ref=f11e659]
+              - generic [ref=f11e661]:
+                - generic [ref=f11e662]: "docs: update session 65 sprint 4.0.3 records"
+                - generic [ref=f11e663]:
+                  - generic [ref=f11e664]:
+                    - code [ref=f11e667]: 99c98cf48da400328637c6728c62055b56b42df1
+                    - button "Copy to clipboard" [ref=f11e669] [cursor=pointer]:
+                      - img [ref=f11e670]
+                  - link "View commit 99c98cf" [ref=f11e672] [cursor=pointer]:
+                    - /url: https://github.com/ayhankucuk/yalihan-os/commit/99c98cf48da400328637c6728c62055b56b42df1
+                    - button "View commit 99c98cf" [ref=f11e673]:
+                      - img [ref=f11e674]
+                      - text: View commit 99c98cf
+              - generic [ref=f11e678]:
+                - img [ref=f11e680]
+                - paragraph [ref=f11e682]: Last commit is dirty. (Un)staged changes have been made since this commit.
+            - generic [ref=f11e683]:
+              - heading "Versions" [level=1] [ref=f11e684]:
+                - text: Versions
+                - img [ref=f11e686]
+              - generic [ref=f11e688]:
+                - generic [ref=f11e689]:
+                  - term [ref=f11e690]: Php Version
+                  - definition [ref=f11e691]:
+                    - generic [ref=f11e692]:
+                      - code [ref=f11e695]: 8.4.7
+                      - button "Copy to clipboard" [ref=f11e697] [cursor=pointer]:
+                        - img [ref=f11e698]
+                - generic [ref=f11e700]:
+                  - term [ref=f11e701]: Laravel Version
+                  - definition [ref=f11e702]:
+                    - generic [ref=f11e703]:
+                      - code [ref=f11e706]: 10.50.2
+                      - button "Copy to clipboard" [ref=f11e708] [cursor=pointer]:
+                        - img [ref=f11e709]
+                - generic [ref=f11e711]:
+                  - term [ref=f11e712]: Laravel Locale
+                  - definition [ref=f11e713]:
+                    - generic [ref=f11e714]:
+                      - code [ref=f11e717]: tr
+                      - button "Copy to clipboard" [ref=f11e719] [cursor=pointer]:
+                        - img [ref=f11e720]
+                - generic [ref=f11e722]:
+                  - term [ref=f11e723]: Laravel Config Cached
+                  - definition [ref=f11e724]:
+                    - generic [ref=f11e725]:
+                      - img [ref=f11e726]
+                      - generic [ref=f11e728]: "false"
+                - generic [ref=f11e729]:
+                  - term [ref=f11e730]: App Debug
+                  - definition [ref=f11e731]:
+                    - generic [ref=f11e732]:
+                      - img [ref=f11e733]
+                      - generic [ref=f11e735]: "true"
+                - generic [ref=f11e736]:
+                  - term [ref=f11e737]: App Env
+                  - definition [ref=f11e738]:
+                    - generic [ref=f11e739]:
+                      - code [ref=f11e742]: local
+                      - button "Copy to clipboard" [ref=f11e744] [cursor=pointer]:
+                        - img [ref=f11e745]
+    - generic [ref=f11e748]:
+      - navigation:
+        - list [ref=f11e749]:
+          - listitem [ref=f11e750]:
+            - button "6 Queries" [ref=f11e751] [cursor=pointer]:
+              - generic [ref=f11e752]: "6"
+              - generic [ref=f11e753]: Queries
+      - generic [ref=f11e754]:
+        - generic [ref=f11e755]:
+          - generic [ref=f11e756]:
+            - generic [ref=f11e757]: 12:55:12
+            - generic [ref=f11e758]:
+              - img "Runtime" [ref=f11e759]
+              - text: 6.54ms
+            - generic [ref=f11e761]:
+              - img "Connection" [ref=f11e762]
+              - text: mysql
+          - generic [ref=f11e765] [cursor=pointer]:
+            - code [ref=f11e768]:
+              - code [ref=f11e770]: "select table_name as `name`, (data_length + index_length) as `size`, table_comment as `comment`, engine as `engine`, table_collation as `collation` from information_schema.tables where table_schema = 'yalihanai_test' and table_type in ('BASE TABLE', 'SYSTEM VERSIONED') order by table_name"
+            - button "Copy to clipboard" [ref=f11e772]:
+              - img [ref=f11e773]
+            - button [ref=f11e775]:
+              - img [ref=f11e776]
+        - generic [ref=f11e778]:
+          - generic [ref=f11e779]:
+            - generic [ref=f11e780]: 12:55:12
+            - generic [ref=f11e781]:
+              - img "Runtime" [ref=f11e782]
+              - text: 0.75ms
+            - generic [ref=f11e784]:
+              - img "Connection" [ref=f11e785]
+              - text: mysql
+          - generic [ref=f11e788]:
+            - generic [ref=f11e789] [cursor=pointer]:
+              - code [ref=f11e792]:
+                - code [ref=f11e794]: "select * from `settings` where `group` = voice"
+              - button "Copy to clipboard" [ref=f11e796]:
+                - img [ref=f11e797]
+              - button [ref=f11e799]:
+                - img [ref=f11e800]
+            - button "1 query parameter" [ref=f11e803] [cursor=pointer]:
+              - img [ref=f11e804]
+              - text: 1 query parameter
+        - generic [ref=f11e806]:
+          - generic [ref=f11e807]:
+            - generic [ref=f11e808]: 12:55:12
+            - generic [ref=f11e809]:
+              - img "Runtime" [ref=f11e810]
+              - text: 0.25ms
+            - generic [ref=f11e812]:
+              - img "Connection" [ref=f11e813]
+              - text: mysql
+          - generic [ref=f11e816]:
+            - generic [ref=f11e817] [cursor=pointer]:
+              - code [ref=f11e820]:
+                - code [ref=f11e822]: "select * from `settings` where `key` = voice_api_key limit 1"
+              - button "Copy to clipboard" [ref=f11e824]:
+                - img [ref=f11e825]
+              - button [ref=f11e827]:
+                - img [ref=f11e828]
+            - button "1 query parameter" [ref=f11e831] [cursor=pointer]:
+              - img [ref=f11e832]
+              - text: 1 query parameter
+        - generic [ref=f11e834]:
+          - generic [ref=f11e835]:
+            - generic [ref=f11e836]: 12:55:12
+            - generic [ref=f11e837]:
+              - img "Runtime" [ref=f11e838]
+              - text: 0.23ms
+            - generic [ref=f11e840]:
+              - img "Connection" [ref=f11e841]
+              - text: mysql
+          - generic [ref=f11e844]:
+            - generic [ref=f11e845] [cursor=pointer]:
+              - code [ref=f11e848]:
+                - code [ref=f11e850]: "select * from `settings` where `group` = ai"
+              - button "Copy to clipboard" [ref=f11e852]:
+                - img [ref=f11e853]
+              - button [ref=f11e855]:
+                - img [ref=f11e856]
+            - button "1 query parameter" [ref=f11e859] [cursor=pointer]:
+              - img [ref=f11e860]
+              - text: 1 query parameter
+        - generic [ref=f11e862]:
+          - generic [ref=f11e863]:
+            - generic [ref=f11e864]: 12:55:12
+            - generic [ref=f11e865]:
+              - img "Runtime" [ref=f11e866]
+              - text: 0.2ms
+            - generic [ref=f11e868]:
+              - img "Connection" [ref=f11e869]
+              - text: mysql
+          - generic [ref=f11e872]:
+            - generic [ref=f11e873] [cursor=pointer]:
+              - code [ref=f11e876]:
+                - code [ref=f11e878]: "select * from `settings` where `key` = openai_api_key limit 1"
+              - button "Copy to clipboard" [ref=f11e880]:
+                - img [ref=f11e881]
+              - button [ref=f11e883]:
+                - img [ref=f11e884]
+            - button "1 query parameter" [ref=f11e887] [cursor=pointer]:
+              - img [ref=f11e888]
+              - text: 1 query parameter
+        - generic [ref=f11e890]:
+          - generic [ref=f11e891]:
+            - generic [ref=f11e892]: 12:55:12
+            - generic [ref=f11e893]:
+              - img "Runtime" [ref=f11e894]
+              - text: 0.2ms
+            - generic [ref=f11e896]:
+              - img "Connection" [ref=f11e897]
+              - text: mysql
+          - generic [ref=f11e900]:
+            - generic [ref=f11e901] [cursor=pointer]:
+              - code [ref=f11e904]:
+                - code [ref=f11e906]: "select * from `settings` where `key` = google_api_key limit 1"
+              - button "Copy to clipboard" [ref=f11e908]:
+                - img [ref=f11e909]
+              - button [ref=f11e911]:
+                - img [ref=f11e912]
+            - button "1 query parameter" [ref=f11e915] [cursor=pointer]:
+              - img [ref=f11e916]
+              - text: 1 query parameter
+    - generic [ref=f11e919]:
+      - list [ref=f11e920]:
+        - listitem [ref=f11e921]:
+          - img [ref=f11e922]
+        - listitem [ref=f11e930]: ·
+        - listitem [ref=f11e931]:
+          - link "Source" [ref=f11e932] [cursor=pointer]:
+            - /url: https://github.com/spatie/laravel-ignition
+        - listitem [ref=f11e933]: ·
+        - listitem [ref=f11e934]:
+          - link "Docs" [ref=f11e935] [cursor=pointer]:
+            - /url: https://flareapp.io/docs/ignition/introducing-ignition/overview
+        - listitem [ref=f11e936]: ·
+        - listitem [ref=f11e937]:
+          - link "Laravel" [ref=f11e938] [cursor=pointer]:
+            - /url: https://laravel.com
+      - paragraph [ref=f11e940]:
+        - text: Ignition is built by
+        - link "Flare" [ref=f11e941] [cursor=pointer]:
+          - /url: https://flareapp.io/?utm_campaign=ignition&utm_source=ignition
+          - img [ref=f11e942]
+          - text: Flare
+        - text: ", the Laravel error reporting service."

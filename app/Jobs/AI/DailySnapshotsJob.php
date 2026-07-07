@@ -18,9 +18,33 @@ use Illuminate\Support\Facades\Log;
  * Daily Snapshots Job
  * captures historical snapshots of deal scores for all active listings.
  */
-class DailySnapshotsJob implements ShouldQueue
+class DailySnapshotsJob implements ShouldQueue, \App\Queue\Contracts\TenantAwareJobInterface
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public ?int $tenantId;
+    public ?int $userId;
+
+    public function __construct(?int $tenantId = null, ?int $userId = null)
+    {
+        $this->tenantId = $tenantId;
+        $this->userId = $userId;
+    }
+
+    public function getTenantId(): ?int
+    {
+        return $this->tenantId;
+    }
+
+    public function getUserId(): ?int
+    {
+        return $this->userId;
+    }
+
+    public function middleware(): array
+    {
+        return [new \App\Queue\Middleware\RestoreTenantContext(app(\App\Services\SaaS\TenantContextService::class))];
+    }
 
     public function handle()
     {

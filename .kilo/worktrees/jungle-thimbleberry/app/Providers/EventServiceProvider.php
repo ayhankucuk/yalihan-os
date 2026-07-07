@@ -27,10 +27,12 @@ class EventServiceProvider extends ServiceProvider
             \App\Listeners\InvalidateIlanCache::class, // Cache invalidation
             \App\Listeners\SendEmailOnIlanCreated::class, // Email notification
             \App\Listeners\UpdateAnalyticsProjections::class, // [Phase 16] Analytics CQRS-lite Sync
+            \App\Listeners\SpatialScoutListener::class . '@handleCreated', // Location Intelligence: async POI scoring
         ],
         \App\Events\IlanUpdated::class => [
             \App\Listeners\InvalidateIlanCache::class, // Cache invalidation
             \App\Listeners\UpdateAnalyticsProjections::class, // [Phase 16] Analytics CQRS-lite Sync
+            \App\Listeners\SpatialScoutListener::class . '@handleUpdated', // Location Intelligence: async POI scoring
         ],
         \App\Events\IlanDeleted::class => [
             \App\Listeners\InvalidateIlanCache::class, // Cache invalidation

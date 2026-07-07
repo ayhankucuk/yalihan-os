@@ -1,0 +1,8 @@
+- generic [ref=f10e4]:
+  - generic [ref=f10e5]:
+    - generic [ref=f10e6]: "403"
+    - generic [ref=f10e7]: This action is unauthorized.
+  - link "Ana Sayfaya Dön" [ref=f10e9] [cursor=pointer]:
+    - /url: http://localhost:8000/admin/dashboard
+    - img [ref=f10e10]
+    - text: Ana Sayfaya Dön

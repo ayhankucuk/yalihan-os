@@ -3,6 +3,7 @@
 namespace App\Services\Ilan;
 
 use App\Enums\IlanDurumu;
+use App\Jobs\Location\SpatialScoutJob;
 use App\Models\Ilan;
 use App\Models\IlanPriceHistory;
 use App\Models\IlanKategori;

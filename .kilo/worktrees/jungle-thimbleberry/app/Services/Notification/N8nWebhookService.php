@@ -77,7 +77,7 @@ class N8nWebhookService
                 'metrekare' => $ilan->metrekare,
                 'yayin_durumu' => $ilan->yayin_durumu ?? 'Bilinmiyor',
                 'lokasyon' => [
-                    'il' => $ilan->sehir?->sehir_adi,
+                    'il' => $ilan->il?->il_adi,
                     'ilce' => $ilan->ilce?->ilce_adi,
                     'mahalle' => $ilan->mahalle?->mahalle_adi,
                 ],
@@ -140,7 +140,7 @@ class N8nWebhookService
                 'yayin_durumu' => $ilan->yayin_durumu ?? 'Bilinmiyor',
                 'kategori' => $ilan->kategori?->name,
                 'lokasyon' => [
-                    'il' => $ilan->sehir?->sehir_adi,
+                    'il' => $ilan->il?->il_adi,
                     'ilce' => $ilan->ilce?->ilce_adi,
                 ],
                 'danisman' => [

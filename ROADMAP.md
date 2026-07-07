@@ -1,10 +1,10 @@
 # YALIHAN OS — Resmi Yol Haritası
 
-> **Versiyon:** 1.0
-> **Tarih:** 2026-06-27
-> **Oturum:** 44 — Kuruluş Oturumu
-> **Durum:** FAZ 2 BAŞLIYOR
-> **Son Güncelleme:** 2026-06-27 14:12
+> **Versiyon:** 1.1
+> **Tarih:** 2026-07-03
+> **Oturum:** 66 — Sprint 4.1 Kapanışı
+> **Durum:** FAZ 2 — ÜRÜN AŞAMASI | TEAM HERMES
+> **Son Güncelleme:** 2026-07-03 16:18
 
 ---
 
@@ -413,7 +413,135 @@ Bu değişim, herhangi bir commit'ten veya dokümandan daha değerlidir.
 
 ---
 
-*Versiyon 1.0 — 2026-06-27*
-*Oturum 44 — Kuruluş Oturumu*
-*Faz 2 başlıyor*
-*Ürün zamanı.*
+## Faz 2 Sprint Zinciri — Ürün Aşaması
+
+> Her sprint sonunda sorulacak tek soru:
+> **"Bugün kullanıcı veya AI ajanı dün yapamadığı hangi işi artık gerçekten yapabiliyor?"**
+
+### Sprint DoD (Definition of Done)
+
+```
+Kod
+  ↓
+Test
+  ↓
+Playwright
+  ↓
+Commit
+  ↓
+Production
+```
+
+Doküman → yalnızca gerekiyorsa.
+
+---
+
+### Sprint 4.2 — Real CRUD Certification 🔄 BAŞLADI
+
+**Sprint Hedefi:** Tüm CRUD operasyonları tamamen doğrulanmış, üretim kalitesinde.
+
+| Op | Database | Audit | Tenant | Auth | Playwright |
+|----|----------|-------|--------|------|------------|
+| Create | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Read | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Update | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Archive | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Restore | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Soft Delete | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+**Başarı Kriteri:** Her operasyon uçtan uca test edilmiş + Playwright ile görsel doğrulama yapılmış.
+
+---
+
+### Sprint 4.3 — İlk AI Workforce Zinciri
+
+**Sprint Hedefi:** İlk gerçek end-to-end AI ajan zinciri çalışıyor.
+
+```
+Yeni İlan
+    ↓
+PortfolioCreated Event
+    ↓
+Hermes (Event Broker)
+    ↓
+Photo Agent (görsel analiz)
+    ↓
+Description Agent (içerik üretimi)
+    ↓
+Notification Agent (bildirim)
+    ↓
+Dashboard (sonuç görünümü)
+    ↓
+Telegram (opsiyonel bildirim)
+```
+
+**Başarı Kriteri:** Bir ilan oluşturulduğunda, AI ajanları otomatik olarak sırayla çalışıyor ve sonuç dashboard'da görünüyor.
+
+---
+
+### Sprint 4.4 — Dashboard + Event Monitoring
+
+**Sprint Hedefi:** Gerçek zamanlı AI agent activity dashboard.
+
+- Event log görünümü
+- Agent başarı/başarısızlık metrikleri
+- İş akışı görselleştirme
+
+---
+
+### Sprint 4.5 — Telegram Entegrasyonu
+
+**Sprint Hedefi:** AI ajanları Telegram üzerinden bildirim gönderebiliyor.
+
+- Danışman → Telegram'a AI analiz sonucu
+- Mülk sahibi → Yeni mesaj/ilan bildirimi
+
+---
+
+### Sprint 5.0 — İlk Canlı Müşteri Pilotu
+
+**Sprint Hedefi:** Gerçek kullanıcı ile pilot deploy.
+
+- Üretim ortamına deploy
+- Sınırlı kullanıcı grubu ile test
+- Geri bildirim toplama
+- Sprint 5.1'e backlog temizleme
+
+---
+
+## Faz 2 KPI'ları (Güncellenmiş)
+
+> Sadece teknik KPI değil — ürün KPI'ları.
+
+| KPI | Hedef | Ölçüm |
+|-----|-------|-------|
+| İlk ilan hazırlama süresi | ≤ 5 dakika | Kullanıcı testi |
+| AI'nın otomatik doldurduğu alan oranı | ≥ %80 | Sistem metrik |
+| Kullanıcının manuel düzenleme ihtiyacı | ≤ %20 | Kullanıcı testi |
+| **CRUD test coverage** | ≥ %95 | Playwright + Feature test |
+| **AI Workforce zinciri çalışıyor mu?** | Evet/Hayır | Sprint 4.3 sonu |
+| **Pilot kullanıcı memnuniyeti** | ≥ %80 | Anket |
+
+---
+
+## Faz 2 İlerleme Tablosu
+
+| Sprint | Hedef | Durum |
+|--------|-------|-------|
+| Sprint 3.x (Hermes Foundation) | ✅ Tamamlandı | ✅ |
+| SAB Tasarım Fazı | ✅ Tamamlandı | ✅ |
+| Office Dokümantasyonu | ✅ Tamamlandı | ✅ |
+| Hermes Core | ✅ Tamamlandı | ✅ |
+| **Sprint 4.1 Alpine Stabilization** | ✅ Tamamlandı | ✅ |
+| **Sprint 4.2 Real CRUD Certification** | 🔄 **BAŞLADI** | ⏳ |
+| Sprint 4.3 AI Workforce Zinciri | — | ⏳ |
+| Sprint 4.4 Dashboard + Monitoring | — | ⏳ |
+| Sprint 4.5 Telegram Entegrasyonu | — | ⏳ |
+| Sprint 5.0 İlk Canlı Pilot | — | ⏳ |
+
+---
+
+*Versiyon 1.1 — 2026-07-03*
+*Oturum 66 — Sprint 4.1 Kapanış*
+*Faz 2 — Ürün Aşaması*
+*Artık kod üretiyoruz, değer üretiyoruz.*

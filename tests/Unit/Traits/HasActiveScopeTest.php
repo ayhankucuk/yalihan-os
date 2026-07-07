@@ -5,7 +5,6 @@ namespace Tests\Unit\Traits;
 use App\Traits\HasActiveScope;
 use App\Enums\IlanDurumu;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -24,7 +23,6 @@ use Tests\TestCase;
  */
 class HasActiveScopeTest extends TestCase
 {
-    use RefreshDatabase;
 
     /**
      * Test Model with yayin_durumu field

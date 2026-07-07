@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Http;
  * Context7: Otonom Fiyat Değişim Takibi ve n8n Entegrasyonu
  * Multi-Channel (Telegram, WhatsApp, Email) destekli fiyat değişikliği bildirimi
  */
-class NotifyN8nAboutIlanPriceChange implements ShouldQueue
+class NotifyN8nAboutIlanPriceChange implements ShouldQueue, \App\Queue\Contracts\TenantAwareJobInterface
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -25,6 +25,23 @@ class NotifyN8nAboutIlanPriceChange implements ShouldQueue
      * İlan ID
      */
     public int $ilanId;
+
+    public function getTenantId(): ?int
+    {
+        $ilan = Ilan::withoutGlobalScopes()->find($this->ilanId);
+        return $ilan?->tenant_id;
+    }
+
+    public function getUserId(): ?int
+    {
+        $ilan = Ilan::withoutGlobalScopes()->find($this->ilanId);
+        return $ilan?->danisman_id;
+    }
+
+    public function middleware(): array
+    {
+        return [new \App\Queue\Middleware\RestoreTenantContext(app(\App\Services\SaaS\TenantContextService::class))];
+    }
 
     /**
      * Eski fiyat

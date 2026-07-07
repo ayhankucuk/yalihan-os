@@ -7,7 +7,6 @@ use App\Domain\Kisi\KisiDomainYonetici;
 use App\Domain\CQRS\Messaging\EventDispatcher;
 use App\Exceptions\Governance\TenantMismatchException;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use App\Domain\Kisi\Projections\KisiProjectionHandler;
 use App\Exceptions\Governance\ProjectionSequenceException;
@@ -20,7 +19,6 @@ use Database\Seeders\TenantBaselineSeeder;
  */
 class KisiDomainIsolationTest extends TestCase
 {
-    use RefreshDatabase;
 
     private KisiDomainYonetici $domainYonetici;
     private mixed $mockDispatcher;

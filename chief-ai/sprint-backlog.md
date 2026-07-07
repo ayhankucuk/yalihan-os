@@ -55,7 +55,7 @@
 
 ---
 
-## Sprint 6 — Chief AI Layer
+## Sprint 6 — Property Workspace Foundation
 
 | ID | Görev | Öncelik | Durum |
 |----|--------|----------|--------|
@@ -66,6 +66,55 @@
 
 ---
 
+## Sprint 6.1 — Template Engine MVP
+
+> **Başlangıç:** 2026-07-07
+> **Hedef:** Dynamic Field Engine + Readiness Rules + AI Hook Registry
+> **Chief AI Not:** Template Engine, Property Workspace mimarisinin devamıdır. Güvenlik riskleri (R11-R15) ayrı hardening hattında ele alınacak.
+
+| ID | Görev | Öncelik | Durum |
+|----|--------|----------|--------|
+| S6.1-T01 | Template Engine MVP | P1 | 📋 Planlandı |
+| S6.1-T02 | Dynamic Field Engine | P1 | 📋 Planlandı |
+| S6.1-T03 | Readiness Rules | P2 | 📋 Planlandı |
+| S6.1-T04 | AI Hook Registry | P2 | 📋 Planlandı |
+
+---
+
+## Sprint 6.2 — Location Intelligence
+
+| ID | Görev | Öncelik | Durum |
+|----|--------|----------|--------|
+| S6.2-L01 | TKGM Service | P1 | 📋 Planlandı |
+| S6.2-L02 | Maps Integration | P1 | 📋 Planlandı |
+| S6.2-L03 | POI Distance Calculator | P2 | 📋 Planlandı |
+
+---
+
+## Sprint 6.3 — Publishing
+
+| ID | Görev | Öncelik | Durum |
+|----|--------|----------|--------|
+| S6.3-P01 | İlan Yayınlama Akışı | P1 | 📋 Planlandı |
+
+---
+
+## Sprint 6.4 — AI Copilot
+
+| ID | Görev | Öncelik | Durum |
+|----|--------|----------|--------|
+| S6.4-A01 | AI Workspace Assistant | P1 | 📋 Planlandı |
+
+---
+
+## Sprint 6.5 — Reservation
+
+| ID | Görev | Öncelik | Durum |
+|----|--------|----------|--------|
+| S6.5-R01 | Rezervasyon Sistemi | P1 | 📋 Planlandı |
+
+---
+
 ## Tamamlanan Sprintler
 
 | Sprint | Tarih | Durum |
@@ -73,6 +122,8 @@
 | Sprint 1 | 2026-05-10 | ✅ TAMAMLANDI |
 | Sprint 2 | 2026-06-15 | ✅ TAMAMLANDI |
 | Sprint 3 | 2026-06-15 | 🔄 DEVAM |
+| **Sprint 6.0** | **2026-07-07** | **✅ CLOSED** |
+| Sprint 6.1 | 2026-07-07 | 🔄 AKTIF |
 
 ---
 

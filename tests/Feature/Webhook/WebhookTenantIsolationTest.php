@@ -5,7 +5,6 @@ namespace Tests\Feature\Webhook;
 use App\Http\Middleware\VerifyWebhookTenant;
 use App\Models\SaaS\Tenant;
 use App\Services\SaaS\TenantContextService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -27,7 +26,6 @@ use Tests\TestCase;
  */
 class WebhookTenantIsolationTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected Tenant $tenant1;
     protected Tenant $tenant2;

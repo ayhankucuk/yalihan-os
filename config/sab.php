@@ -33,8 +33,26 @@ return [
     'evasion_regexes' => [
         '/([\'"][a-z][\'"]\s*\.\s*[\'"][a-z][\'"]\s*\.\s*[\'"][a-z][\'"])/i' => 'String concatenation',
         '/chr\(\s*\d+\s*\)\s*\.\s*chr\(/i' => 'chr() chain concatenation',
-        '/base64_decode\([\s\'"]*[a-zA-Z0-9+\/]+[\s\'"]*\)/i' => 'Generic base64_decode usage (Manual review required)',
-        '/hex2bin\([\s\'"]*[a-fA-F0-9]+[\s\'"]*\)/i' => 'hex2bin decoding',
+        '/base64_decode\([\s\'"[a-zA-Z0-9+\/]+[\s\'"]*\)/i' => 'Generic base64_decode usage (Manual review required)',
+        '/hex2bin\([\s\'"[a-fA-F0-9]+[\s\'"]*\)/i' => 'hex2bin decoding',
         '/unpack\(/i' => 'unpack decoding'
-    ]
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Context7 Exclusions
+    |--------------------------------------------------------------------------
+    |
+    | Files or paths excluded from Context7 forbidden field scanning.
+    | System infrastructure files (event log tables, audit logs) use 'status'
+    | as a system enumeration constant, not a domain field.
+    |
+    */
+    'context7_exclusions' => [
+        'app/Services/Hermes/',              // Sprint 4.7: Hermes system services
+        'app/Jobs/Hermes/',                  // Sprint 4.7: Async queue jobs
+        'app/Services/Workspace/',            // Sprint 4.6: Workspace system services
+        'app/Models/Hermes/',                // Sprint 4.7: Hermes system log models (status/durum as system enum)
+        'app/Http/Controllers/Admin/HermesReplayController.php', // Sprint 4.7: Controller using Hermes system model constants
+    ],
 ];

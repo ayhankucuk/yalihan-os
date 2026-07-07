@@ -108,7 +108,10 @@ NotebookLM Notebook: "Yalıhan AI OS - Project Knowledge"
 
 ---
 
-## 3. NOTBOOK KATALOĞU
+## 3. NOTBOOK KATALOĞU (6 Notebook — ADR-022)
+
+> **Resmi Kaynak:** `docs/adr/2026-07-05-knowledge-platform-adoption.md#4`
+> **NB-6 Gerekçesi:** AI karar kalitesini artıran bilgi kod değildir. Piyasa, rakip ve yasal bilgi AI motorlarının daha doğru tahmin yapmasını sağlar.
 
 ### NB-1: YALIHAN GOVERNANCE
 
@@ -261,6 +264,43 @@ NotebookLM Notebook: "Yalıhan AI OS - Project Knowledge"
 - "Kod yazmadan önce hangi kontrolleri yapmalıyım?"
 - "Thin Controller kuralı tam olarak ne diyor?"
 - "Bu projeye kimler katkı yapıyor?"
+
+---
+
+### NB-6: MARKET INTELLIGENCE
+
+**Odak:** Piyasa bilgisi, rakip analizi, yasal düzenlemeler
+
+| Alan | Değer |
+|------|-------|
+| Kullanım | AI değerleme motorları, rakip analizi, yasal uyumluluk |
+| Model | Gemini 2.5 |
+| Rate limit | 250 query/gün |
+| Öncelik | P1 (ERA IV Sprint 5.3'te kurulacak) |
+
+**Kaynaklar:**
+
+| # | Kaynak | Tip | Güncelleme |
+|---|--------|-----|------------|
+| 1 | Airbnb bölge raporları | PDF | Haftalık |
+| 2 | Sahibinden trend analizi | CSV/rapor | Haftalık |
+| 3 | HepsiEmlak piyasa raporu | PDF | Aylık |
+| 4 | EmlakJet veri analizi | CSV | Haftalık |
+| 5 | KVKK güncellemeleri | URL/text | Değişiklikte |
+| 6 | Tapu Kadastro mevzuatı | URL/text | Değişiklikte |
+| 7 | İmar durumu değişiklikleri | Resmi Gazete | Günlük |
+| 8 | Google Trends (Bodrum, emlak) | Screenshot/text | Haftalık |
+| 9 | Rakip emlak ofisi analizi | Manuel not | Aylık |
+| 10 | Bölgesel fiyat endeksi | Rapor | Aylık |
+
+**Kullanım Senaryoları:**
+- "Bu bölgede 2026'da fiyat artışı ne bekleniyor?"
+- "KVKK'daki yeni değişiklik emlak operasyonlarını nasıl etkiler?"
+- "Bodrum'da yazlık kiralama talebi artıyor mu?"
+- "Rakip ofisler bu mahallede ne fiyattan satış yapıyor?"
+- "İmar değişikliği bu portföyü nasıl etkiler?"
+
+**Not:** NB-6, YalihanCortex'in değerleme motorlarını besleyen dışsal bilgi katmanıdır. Kod değildir ama AI'ın karar kalitesini doğrudan etkiler.
 
 ---
 
