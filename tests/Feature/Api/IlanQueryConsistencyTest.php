@@ -9,7 +9,6 @@ use App\Models\Ilan;
 use App\Domain\CQRS\Projections\IlanProjectionHandler;
 use App\Services\SaaS\TenantContextService;
 use App\Enums\IlanDurumu;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\Sanctum;
@@ -21,7 +20,6 @@ use Laravel\Sanctum\Sanctum;
  */
 class IlanQueryConsistencyTest extends TestCase
 {
-    use RefreshDatabase;
 
     private TenantContextService $tenantContext;
     private IlanProjectionHandler $projectionHandler;

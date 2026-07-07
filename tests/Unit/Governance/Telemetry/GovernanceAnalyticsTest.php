@@ -3,13 +3,11 @@
 namespace Tests\Unit\Governance\Telemetry;
 
 use App\Governance\Analytics\GovernanceAnalytics;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class GovernanceAnalyticsTest extends TestCase
 {
-    use RefreshDatabase;
 
     private GovernanceAnalytics $analytics;
 

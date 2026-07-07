@@ -4,13 +4,11 @@ namespace Tests\Unit\Governance\Telemetry;
 
 use App\Governance\Alerting\GovernanceAlerter;
 use App\Governance\Analytics\GovernanceAnalytics;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class GovernanceAlerterTest extends TestCase
 {
-    use RefreshDatabase;
 
     private GovernanceAlerter $alerter;
     private $analyticsMock;

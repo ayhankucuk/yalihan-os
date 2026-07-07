@@ -15,10 +15,10 @@ class FakeDescriptionGenerator implements DescriptionGeneratorInterface
 {
     public function generate(string $baslik, array $ozellikler = []): string
     {
-        $ özelliklerList = implode(', ', $ozellikler ?: ['bahçe', 'havuz', 'deniz manzarası']);
+        $ozelliklerList = implode(', ', $ozellikler ?: ['bahçe', 'havuz', 'deniz manzarası']);
 
         return "🏠 {$baslik}\n\n" .
-               "Bu mülk, {$özelliklerList} ile donatılmıştır.\n\n" .
+               "Bu mülk, {$ozelliklerList} ile donatılmıştır.\n\n" .
                "Detaylı bilgi için ilan sahibiyle iletişime geçin.\n\n" .
                "[FAKE — AI açıklama üretimi simüle edildi]";
     }

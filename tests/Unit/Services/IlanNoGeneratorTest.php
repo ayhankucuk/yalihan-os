@@ -5,7 +5,6 @@ namespace Tests\Unit\Services;
 use App\Models\Ilan;
 use App\Models\IlanKategori;
 use App\Services\Listing\IlanNoGenerator;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
@@ -16,7 +15,6 @@ use Tests\TestCase;
  */
 class IlanNoGeneratorTest extends TestCase
 {
-    use RefreshDatabase;
 
     private IlanNoGenerator $generator;
 

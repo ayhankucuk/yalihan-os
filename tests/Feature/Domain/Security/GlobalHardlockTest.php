@@ -11,7 +11,6 @@ use App\Exceptions\Governance\GlobalHardlockException;
 use App\Domain\CQRS\Messaging\EventDispatcher;
 use App\Services\Ilan\IlanCrudService;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
@@ -23,7 +22,6 @@ use Tests\TestCase;
  */
 class GlobalHardlockTest extends TestCase
 {
-    use RefreshDatabase;
 
     private GlobalHardlockManager $manager;
     private SignatureSealEngine $sealEngine;
@@ -33,6 +31,15 @@ class GlobalHardlockTest extends TestCase
         parent::setUp();
         $this->manager = new GlobalHardlockManager();
         $this->sealEngine = new SignatureSealEngine();
+
+        config([
+            'yalihan.fortress_secure_salt' => [
+                'aktiflik_durumu' => true,
+                'algoritma' => 'sha256',
+                'kripto_anahtar' => 'TEST_SECRET_HMAC_SALT_2026',
+                'genesis_seed' => 'TEST_GENESIS_BLOCK_SEED_2026',
+            ]
+        ]);
 
         // Her test öncesi Cache durumunu temizle
         Cache::forget('governance.system_compromised');

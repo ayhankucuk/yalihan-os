@@ -6,7 +6,6 @@ use App\Events\PortfolioCreated;
 use App\Models\Hermes\HermesAnalytics;
 use App\Models\Ilan;
 use App\Services\Hermes\Handlers\AnalyticsHandler;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
@@ -14,7 +13,6 @@ use Tests\TestCase;
  */
 class AnalyticsHandlerTest extends TestCase
 {
-    use RefreshDatabase;
 
     private AnalyticsHandler $handler;
 

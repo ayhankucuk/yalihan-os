@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Application\Shared\Services\TenantContextResolver;
 use App\Models\Ilan;
 use App\Models\PropertyAvailability;
 use App\Models\PropertyReservation;
@@ -10,16 +11,31 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use App\Traits\GuardsAgentWrites;
 
+/**
+ * ReservationService
+ *
+ * SSOT for property_reservations table (CI/Airbnb-style calendar).
+ *
+ * SSOT consolidation (Sprint 5.2 — 2026-07-06):
+ * - property_reservations → PropertyReservation is the sole authoritative model.
+ * - IlanReservation is deprecated (see IlanReservation.php).
+ * - ✅ Tenant isolation: all queries scoped by tenant_id via TenantContextResolver.
+ *
+ * @see PropertyReservation
+ */
 class ReservationService
 {
     use GuardsAgentWrites;
+
+    public function __construct(
+        private readonly TenantContextResolver $tenantResolver,
+    ) {}
+
     /**
-     * @param int $propertyId
-     * @param string $startDate
-     * @param string $endDate
-     * @param array $guestData
-     * @param int|null $userId
-     * @return PropertyReservation
+     * Create a new reservation with conflict detection and availability blocking.
+     *
+     * ✅ Tenant isolation: reservation is scoped to current tenant.
+     *
      * @throws Exception
      */
     public function createReservation(
@@ -39,10 +55,18 @@ class ReservationService
         }
 
         $nights = $start->diffInDays($end);
+        $tenantId = $this->tenantResolver->getCurrentTenantId();
 
-        $ilan = Ilan::findOrFail($propertyId);
+        // Tenant isolation: verify property belongs to current tenant
+        $ilan = Ilan::where('id', $propertyId)
+            ->where('tenant_id', $tenantId)
+            ->first();
 
-        if (!$ilan->rental_enabled) {
+        if (! $ilan) {
+            throw new Exception("Property not found or access denied.");
+        }
+
+        if (! $ilan->rental_enabled) {
             throw new Exception("This property is not enabled for rental.");
         }
 
@@ -50,14 +74,15 @@ class ReservationService
             throw new Exception("Minimum stay is {$ilan->min_stay_nights} nights.");
         }
 
-        return DB::transaction(function () use ($propertyId, $start, $end, $nights, $guestData, $userId) {
+        return DB::transaction(function () use ($propertyId, $start, $end, $nights, $guestData, $userId, $tenantId) {
 
-            // Overlap Constraint (Strict User Requirement)
+            // Overlap Constraint
             $overlapCount = PropertyReservation::where('property_id', $propertyId)
+                ->where('tenant_id', $tenantId)
                 ->where('start_date', '<', $end->format('Y-m-d'))
                 ->where('end_date', '>', $start->format('Y-m-d'))
                 ->where('reservation_state', '!=', 'cancelled')
-                ->lockForUpdate() // Prevent concurrent reading of overlapping rows before insertion
+                ->lockForUpdate()
                 ->count();
 
             if ($overlapCount > 0) {
@@ -72,7 +97,7 @@ class ReservationService
                 $currentDate->addDay();
             }
 
-            // Ensure rows exist before locking using bulk insertOrIgnore
+            // Bulk insert availability rows (ignore if already exist)
             $now = now();
             $insertData = [];
             foreach ($dates as $dateStr) {
@@ -92,21 +117,21 @@ class ReservationService
                 ->whereIn('date', $dates)
                 ->lockForUpdate()
                 ->get()
-                ->keyBy(function ($item) {
-                    return Carbon::parse($item->date)->format('Y-m-d');
-                });
+                ->keyBy(fn ($item) => Carbon::parse($item->date)->format('Y-m-d'));
 
             foreach ($dates as $dateStr) {
-                if (isset($existingAvailabilities[$dateStr])) {
-                    $avail = $existingAvailabilities[$dateStr];
-                    if (!$avail->is_available) {
-                        throw new Exception("Dates are not available. Conflict on {$dateStr}.");
-                    }
+                if (! isset($existingAvailabilities[$dateStr])) {
+                    continue;
+                }
+                $avail = $existingAvailabilities[$dateStr];
+                if (! $avail->is_available) {
+                    throw new Exception("Dates are not available. Conflict on {$dateStr}.");
                 }
             }
 
-            // 2. Create reservation
+            // Create reservation
             $reservation = PropertyReservation::create([
+                'tenant_id' => $tenantId,
                 'property_id' => $propertyId,
                 'start_date' => $start->format('Y-m-d'),
                 'end_date' => $end->format('Y-m-d'),
@@ -121,10 +146,12 @@ class ReservationService
                 'confirmed_at' => now(),
             ]);
 
-            // 3. Update availability objects directly using locked models
+            // Update availability to blocked
             foreach ($dates as $dateStr) {
-                $avail = $existingAvailabilities[$dateStr];
-                $avail->update([
+                if (! isset($existingAvailabilities[$dateStr])) {
+                    continue;
+                }
+                $existingAvailabilities[$dateStr]->update([
                     'is_available' => false,
                     'block_reason' => 'reservation',
                     'source_system' => 'internal',
@@ -137,17 +164,28 @@ class ReservationService
     }
 
     /**
-     * @param int $reservationId
-     * @return void
+     * Cancel a reservation and restore availability.
+     *
+     * ✅ Tenant isolation: reservation is scoped to current tenant.
+     *
      * @throws Exception
      */
     public function cancelReservation(int $reservationId): void
     {
-        DB::transaction(function () use ($reservationId) {
-            $reservation = PropertyReservation::lockForUpdate()->findOrFail($reservationId);
+        $tenantId = $this->tenantResolver->getCurrentTenantId();
+
+        DB::transaction(function () use ($reservationId, $tenantId) {
+            $reservation = PropertyReservation::where('id', $reservationId)
+                ->where('tenant_id', $tenantId)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $reservation) {
+                throw new Exception("Reservation not found or access denied.");
+            }
 
             if ($reservation->reservation_state === 'cancelled') {
-                return; // Idempotent behaviour
+                return; // Idempotent
             }
 
             $reservation->update([
@@ -155,7 +193,6 @@ class ReservationService
                 'cancelled_at' => now(),
             ]);
 
-            // Sadece Internal blockları (reservation bazlı) kaldır
             PropertyAvailability::where('reservation_id', $reservationId)
                 ->where('source_system', 'internal')
                 ->update([

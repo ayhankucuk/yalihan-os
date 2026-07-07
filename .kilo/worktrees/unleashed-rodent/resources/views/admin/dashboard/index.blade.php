@@ -176,6 +176,12 @@
             </div>
         </div>
 
+        {{-- SPRINT 6.0: Property Workspace Card Widget --}}
+        {{-- Omurga kritik yolu: Feature Flag → Runtime → Dashboard Card --}}
+        <div class="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            @include('admin.dashboard.widgets.workspace-card')
+        </div>
+
         {{-- 🎯 CORTEX ACTION CENTER - Daily Intelligence --}}
         <div class="mb-8" x-data="actionCenter()">
             <div

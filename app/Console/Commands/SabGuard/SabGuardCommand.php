@@ -34,6 +34,7 @@ class SabGuardCommand extends Command
      */
     public function handle(): int
     {
+        $this->runner = app(\App\Services\Governance\SabScanRunner::class);
         $isJson = $this->option('json');
         
         if (!$isJson) {

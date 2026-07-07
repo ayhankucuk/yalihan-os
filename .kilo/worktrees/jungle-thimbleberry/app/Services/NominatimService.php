@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Log;
  * FREE alternative to WikiMapia and Google Places
  * Rate limit: 1 request/second
  * Coverage: Worldwide, good Turkey support
+ *
+ * @method array geocode(string $query, int $limit = 1) Geocode an address string to lat/lng
  */
 class NominatimService
 {
@@ -32,6 +34,92 @@ class NominatimService
         $this->timeout = config('services.nominatim.timeout', 10);
         $this->cacheEnabled = config('services.nominatim.cache_durumu', true);
         $this->cacheTtl = config('services.nominatim.cache_ttl', 3600);
+    }
+
+    /**
+     * Geocode an address string to coordinates (lat/lng)
+     *
+     * Direct replacement for TKGMService loopback:
+     * TKGMService previously called config('app.url').'/api/geo/geocode'
+     * which proxied back through GeoProxyController. Now called directly.
+     *
+     * @param string $query Full address query (e.g. "Muğla, Bodrum, Ada 123 Parsel 5, Türkiye")
+     * @param int $limit Maximum number of results to return
+     * @return array|null ['lat' => float, 'lng' => float] or null if not found
+     */
+    public function geocode(string $query, int $limit = 1): ?array
+    {
+        $cacheKey = 'nominatim:geocode:'.md5($query.'|'.$limit);
+
+        if ($this->cacheEnabled) {
+            $cached = Cache::get($cacheKey);
+            if ($cached !== null) {
+                return $cached ?: null;
+            }
+        }
+
+        $result = $this->performGeocode($query, $limit);
+
+        if ($this->cacheEnabled) {
+            // Cache null as well to prevent repeated failed lookups
+            Cache::put($cacheKey, $result ?: [], $this->cacheTtl);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Perform the actual Nominatim geocode HTTP call
+     */
+    protected function performGeocode(string $query, int $limit): ?array
+    {
+        try {
+            // Rate limiting: sleep 1 second between requests (Nominatim policy)
+            sleep(1);
+
+            $response = Http::timeout($this->timeout)
+                ->withHeaders([
+                    'User-Agent' => 'YalihanEmlak/1.0 (server-to-server)',
+                    'Accept-Language' => 'tr',
+                ])
+                ->get($this->baseUrl.'/search', [
+                    'format' => 'json',
+                    'q' => $query,
+                    'limit' => $limit,
+                    'countrycodes' => 'tr',
+                    'addressdetails' => 1,
+                ]);
+
+            if (! $response->successful()) {
+                Log::warning('Nominatim geocode HTTP error', [
+                    'status' => $response->status(),
+                    'query' => $query,
+                ]);
+
+                return null;
+            }
+
+            $data = $response->json();
+
+            if (empty($data)) {
+                return null;
+            }
+
+            // Return first result as {lat, lng}
+            $first = $data[0];
+
+            return [
+                'lat' => (float) $first['lat'],
+                'lng' => (float) $first['lon'],
+            ];
+        } catch (\Exception $e) {
+            Log::error('Nominatim geocode exception', [
+                'query' => $query,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     /**

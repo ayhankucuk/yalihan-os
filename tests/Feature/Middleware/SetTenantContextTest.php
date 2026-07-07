@@ -8,7 +8,6 @@ use App\Http\Middleware\SetTenantContext;
 use App\Models\SaaS\Tenant;
 use App\Models\User;
 use App\Services\SaaS\TenantContextService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
@@ -19,7 +18,6 @@ use Tests\TestCase;
  */
 class SetTenantContextTest extends TestCase
 {
-    use RefreshDatabase;
 
     /** @test */
     public function kimlik_dogrulanmamis_istek_bağlam_olmadan_devam_eder(): void

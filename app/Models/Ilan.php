@@ -978,6 +978,15 @@ class Ilan extends BaseModel
         return $this->hasMany(PropertyReservation::class, 'property_id');
     }
 
+    /**
+     * Sprint 4.6: Property Digital Twin Cockpit
+     * Canonical relationship to PortfolioDriveWorkspace (1:1 via ilan_id).
+     */
+    public function workspace(): HasOne
+    {
+        return $this->hasOne(PortfolioDriveWorkspace::class, 'ilan_id');
+    }
+
     public function expenses(): HasMany
     {
         return $this->hasMany(PropertyExpense::class, 'ilan_id');

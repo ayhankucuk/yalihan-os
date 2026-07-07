@@ -12,6 +12,25 @@
 return [
     'generated_from' => '.sab/authority.json',
     'last_updated' => 'STABLE',
+
+    /*
+    |----------------------------------------------------------------------
+    | Hermes System Log Tables
+    | Sprint 4.7: Async Queue + Event Replay + Workspace Execution Engine
+    |
+    | These are internal audit/event log tables. Their 'status' column is a
+    | system enumeration (pending/running/completed/failed/skipped), not a
+    | domain concept. Context7 naming rules do not apply.
+    |----------------------------------------------------------------------
+    */
     'tables' => [
+        'hermes_event_logs' => [
+            'forbidden' => [], // status is a system enum, not a domain field
+            'exempt'   => true,
+        ],
+        'workforce_execution_logs' => [
+            'forbidden' => [], // status/duration_ms are system fields, not domain fields
+            'exempt'   => true,
+        ],
     ],
 ];

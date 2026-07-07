@@ -5,7 +5,6 @@ namespace Tests\Unit\Repositories;
 use App\Models\Kisi;
 use App\Models\User;
 use App\Repositories\KisiRepository;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
@@ -15,7 +14,6 @@ use Tests\TestCase;
  */
 class KisiRepositoryAuthorizationTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected KisiRepository $repository;
 

@@ -19,6 +19,8 @@ use Exception;
 use InvalidArgumentException;
 use RuntimeException;
 
+use App\Traits\GuardsAgentWrites;
+
 /**
  * CortexVoiceService — Voice-to-CRM Pipeline
  *
@@ -35,6 +37,7 @@ use RuntimeException;
  */
 class CortexVoiceService
 {
+    use GuardsAgentWrites;
     public function __construct(
         private readonly AIService $aiService,
         private readonly VoiceSearchService $voiceSearch,
@@ -123,6 +126,8 @@ class CortexVoiceService
      */
     public function createDraftFromText(string $rawText, int $danismanId, array $options = []): array
     {
+        $this->blockAgentWrite(__FUNCTION__);
+
         $startTime = LogService::startTimer('cortex_voice_to_crm');
 
         try {

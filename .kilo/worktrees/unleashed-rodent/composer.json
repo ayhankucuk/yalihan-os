@@ -57,7 +57,8 @@
       "App\\Modules\\": "app/Modules/"
     },
     "files": [
-      "app/Helpers/settings_helper.php"
+      "app/Helpers/settings_helper.php",
+      "app/Helpers/FeatureFlagHelper.php"
     ]
   },
   "autoload-dev": {

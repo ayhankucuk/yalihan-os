@@ -130,10 +130,22 @@ class SabAutomationGuardService
         $pattern = '/([\'"]|->|\.)(' . implode('|', $forbidden) . ')([\'"]|\b)/i';
 
         $directories = ['app/Services', 'app/Http/Controllers', 'app/Models', 'resources/views/advisor'];
+        $exclusions = config('sab.context7_exclusions', []);
 
         foreach ($directories as $dir) {
             foreach ($this->getFiles($dir, str_contains($dir, 'views') ? 'php' : 'php') as $file) {
                 if ($file->getFilename() === 'SabAutomationGuardService.php') continue;
+
+                // Skip excluded paths (system log tables, Hermes, Workspace infrastructure)
+                $filepath = $file->getPathname();
+                $skipped = false;
+                foreach ($exclusions as $exclusion) {
+                    if (str_contains($filepath, $exclusion)) {
+                        $skipped = true;
+                        break;
+                    }
+                }
+                if ($skipped) continue;
 
                 $content = File::get($file);
                 $lines = explode("\n", $content);

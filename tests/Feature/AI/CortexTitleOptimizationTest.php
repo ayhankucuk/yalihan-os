@@ -3,71 +3,69 @@
 namespace Tests\Feature\AI;
 
 use App\Models\IlanKategori;
-use App\Models\Il;
-use App\Models\Ilce;
+use App\Models\SaaS\Tenant;
 use App\Models\User;
+use App\Services\AI\AIService;
+use App\Services\AI\Domains\CortexContentService;
+use App\Services\AI\YalihanCortex;
 use Tests\TestCase;
 
+/**
+ * Cortex Title Optimization Feature Tests
+ *
+ * Tests the /api/v1/cortex/ai/optimize-title endpoint.
+ */
 class CortexTitleOptimizationTest extends TestCase
 {
-
-    private User $admin;
+    private User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->admin = User::factory()->create();
+
+        $tenant = Tenant::create(['name' => 'Cortex Optimize Tenant', 'status' => 'active']);
+        $this->user = User::factory()->create(['tenant_id' => $tenant->id]);
+
+        // Create required kategori record with ID=1 so CortexContentService lookup succeeds
+        IlanKategori::factory()->create(['id' => 1, 'name' => 'Villa']);
+
+        // Mock AIService to avoid real AI calls
+        $this->mock(AIService::class, function ($mock) {
+            $mock->shouldReceive('generate')
+                ->andReturn('Muğla Menteşe\'de Satılık Lüks Villa — Kesinlikle Kaçırmayın');
+        });
+
+        // Forget singletons so mocked AIService is used
+        $this->app->forgetInstance(YalihanCortex::class);
+        $this->app->forgetInstance(CortexContentService::class);
     }
 
     /** @test */
     public function it_can_optimize_listing_title_via_api()
     {
-        $kat = IlanKategori::factory()->create(['name' => 'Villa']);
-
         $payload = [
             'baslik' => 'Satılık ev',
-            'ana_kategori_id' => $kat->id,
-            'il_id' => 48, // Direct ID simulation
+            'kategori' => 'Villa',
+            'ana_kategori_id' => 1,
+            'il_id' => 48,
             'ilce_id' => 1,
-            'ozellik_ids' => []
+            'ozellik_ids' => [],
         ];
 
-        // Mock YalihanCortex since we don't want real AI requests in Feature tests
-        $cortexMock = \Mockery::mock(\App\Services\AI\YalihanCortex::class);
-        $cortexMock->shouldReceive('optimizeIlanTitle')
-            ->once()
-            ->with($payload)
-            ->andReturn([
-                'success' => true,
-                'original_title' => 'Satılık ev',
-                'optimized_title' => 'Muğla Menteşe\'de Satılık Lüks Villa Kesinlikle Kaçırmayın',
-                'improvements' => [
-                    'seo_score' => 85,
-                    'click_potential' => 90,
-                    'execution_time_ms' => 150
-                ]
-            ]);
-        $this->app->instance(\App\Services\AI\YalihanCortex::class, $cortexMock);
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->postJson('/api/v1/cortex/ai/optimize-title', $payload);
 
-        // 2. Request
-        $response = $this->actingAs($this->admin)
-            ->postJson('/api/v1/ai/optimize-title', $payload);
-
-        // 3. Verify — Phase 36 contract: { success, data, meta, error }
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'success',
-            'original_title',
-            'optimized_title',
-            'improvements' => [
-                'seo_score',
-                'click_potential',
-                'keywords_found'
-            ]
+            'data' => [
+                'success',
+                'optimized_title',
+            ],
+            'meta',
         ]);
 
         $data = $response->json();
-        $this->assertNotEmpty($data['optimized_title']);
-        $this->assertGreaterThanOrEqual(1, $data['improvements']['click_potential']);
+        $this->assertNotEmpty($data['data']['optimized_title']);
     }
 }

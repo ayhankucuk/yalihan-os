@@ -105,7 +105,7 @@ class YalihanTreasury
         $tenantId = $this->tenantResolver->resolve()->tenantId;
         return DB::transaction(function() use ($id, $invoiceNumber, $tenantId) {
             $commission = Commission::where('tenant_id', $tenantId)->find($id);
-            if (!$commission || $commission->payment_state === PaymentStatus::PAID) {
+            if (!$commission || $commission->payment_state !== PaymentStatus::APPROVED) {
                 return false;
             }
 
@@ -134,7 +134,7 @@ class YalihanTreasury
         $tenantId = $this->tenantResolver->resolve()->tenantId;
         return DB::transaction(function() use ($id, $tenantId) {
             $bonus = Bonus::where('tenant_id', $tenantId)->find($id);
-            if (!$bonus || $bonus->is_paid) {
+            if (!$bonus || $bonus->odendi_mi) {
                 return false;
             }
 
@@ -179,7 +179,7 @@ class YalihanTreasury
 
             $agentsWithSales = Ilan::where('tenant_id', $tenantId)
                 ->whereBetween('updated_at', [$startDate, $endDate])
-                ->where('yayin_durumu', IlanDurumu::SATILDI)
+                ->where('yayin_durumu', IlanDurumu::ARSIV)
                 ->distinct()
                 ->pluck('danisman_id'); // 🛡️ Using correct Context7 field
 

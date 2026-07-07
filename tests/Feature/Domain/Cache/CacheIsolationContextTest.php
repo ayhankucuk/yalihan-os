@@ -4,7 +4,6 @@ namespace Tests\Feature\Domain\Cache;
 
 use Tests\TestCase;
 use App\Domain\Core\Cache\CacheIsolationContext;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Database\Seeders\TenantBaselineSeeder;
 
@@ -15,7 +14,6 @@ use Database\Seeders\TenantBaselineSeeder;
  */
 class CacheIsolationContextTest extends TestCase
 {
-    use RefreshDatabase;
 
     private CacheIsolationContext $context;
     private int $tenantId = 1;

@@ -99,13 +99,23 @@ class YalihanTreasury
 
     /**
      * ATOMIC PERSISTENCE: Request Commission Payment
+     * 🛡️ SAB P0: Payment blocked unless APPROVED
      */
     public function requestCommissionPayment(int $id, ?string $invoiceNumber = null): bool
     {
         $tenantId = $this->tenantResolver->resolve()->tenantId;
         return DB::transaction(function() use ($id, $invoiceNumber, $tenantId) {
             $commission = Commission::where('tenant_id', $tenantId)->find($id);
-            if (!$commission || $commission->payment_state === PaymentStatus::PAID) {
+            if (!$commission) {
+                return false;
+            }
+
+            // 🛡️ P0 GUARD: Only APPROVED commissions can be paid
+            if ($commission->payment_state !== PaymentStatus::APPROVED) {
+                return false;
+            }
+
+            if ($commission->payment_state === PaymentStatus::PAID) {
                 return false;
             }
 
@@ -113,12 +123,21 @@ class YalihanTreasury
             $commission->update($projection);
 
             // 2. Canonical Ledger Integration (Double-Entry)
+            // 🛡️ P0 FIX: resolve LedgerAccount models before calling recordDoubleEntry
+            $systemAccount = $this->ledgerService->findAccount(1); // System/Office account
+            $agentAccount = $this->ledgerService->findAccount($commission->agent_id); // Agent account
+
+            if (!$systemAccount || !$agentAccount) {
+                throw new \RuntimeException("LedgerAccount bulunamadı: agent={$commission->agent_id}");
+            }
+
             $this->ledgerService->recordDoubleEntry(
-                $tenantId,
-                $commission->agent_id,
-                1, // System Account
+                $systemAccount,   // debit (paranın girdiği hesap)
+                $agentAccount,    // credit (paranın çıktığı hesap)
                 (float)$commission->danisman_tutari,
                 'TRY',
+                Commission::class,
+                $commission->id,
                 "Commission Payment: #{$commission->id}"
             );
 
@@ -128,13 +147,14 @@ class YalihanTreasury
 
     /**
      * ATOMIC PERSISTENCE: Request Bonus Payment
+     * 🛡️ SAB P0: Uses Context7 canonical DB names (odendi_mi/odeme_tarihi)
      */
     public function requestBonusPayment(int $id): bool
     {
         $tenantId = $this->tenantResolver->resolve()->tenantId;
         return DB::transaction(function() use ($id, $tenantId) {
             $bonus = Bonus::where('tenant_id', $tenantId)->find($id);
-            if (!$bonus || $bonus->is_paid) {
+            if (!$bonus || $bonus->odendi_mi) {
                 return false;
             }
 
@@ -142,12 +162,21 @@ class YalihanTreasury
             $bonus->update($projection);
 
             // 2. Canonical Ledger Integration (Double-Entry)
+            // 🛡️ P0 FIX: resolve LedgerAccount models before calling recordDoubleEntry
+            $systemAccount = $this->ledgerService->findAccount(1); // System/Office account
+            $agentAccount = $this->ledgerService->findAccount($bonus->agent_id); // Agent account
+
+            if (!$systemAccount || !$agentAccount) {
+                throw new \RuntimeException("LedgerAccount bulunamadı: agent={$bonus->agent_id}");
+            }
+
             $this->ledgerService->recordDoubleEntry(
-                $tenantId,
-                $bonus->agent_id,
-                1, // System Account
+                $systemAccount,   // debit (paranın girdiği hesap)
+                $agentAccount,    // credit (paranın çıktığı hesap)
                 (float)$bonus->prim_tutari,
                 'TRY',
+                Bonus::class,
+                $bonus->id,
                 "Bonus Payment: #{$bonus->id}"
             );
 
@@ -158,12 +187,28 @@ class YalihanTreasury
     /**
      * ATOMIC LEDGER UPDATE (DEPRECATED: Use FinancialLedgerService)
      * @deprecated 24.2.0
+     * 🛡️ P0 FIX: Removed broken call — was passing int as LedgerAccount
      */
     protected function updateLedgerBalance(int $accountId, float $amount, string $currency): void
     {
         // 🛡️ REDIRECTING TO NEW CANONICAL LEDGER
         $tenantId = $this->tenantResolver->resolve()->tenantId;
-        $this->ledgerService->recordDoubleEntry($tenantId, $accountId, 1, $amount, $currency, 'Legacy Ledger Update');
+        $systemAccount = $this->ledgerService->findAccount(1);
+        $targetAccount = $this->ledgerService->findAccount($accountId);
+
+        if (!$systemAccount || !$targetAccount) {
+            throw new \RuntimeException("LedgerAccount bulunamadı: accountId={$accountId}");
+        }
+
+        $this->ledgerService->recordDoubleEntry(
+            $systemAccount,
+            $targetAccount,
+            $amount,
+            $currency,
+            null,
+            null,
+            'Legacy Ledger Update'
+        );
     }
 
     /**
@@ -179,7 +224,7 @@ class YalihanTreasury
 
             $agentsWithSales = Ilan::where('tenant_id', $tenantId)
                 ->whereBetween('updated_at', [$startDate, $endDate])
-                ->where('yayin_durumu', IlanDurumu::SATILDI)
+                ->where('yayin_durumu', IlanDurumu::ARSIV)
                 ->distinct()
                 ->pluck('danisman_id'); // 🛡️ Using correct Context7 field
 

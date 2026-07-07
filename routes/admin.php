@@ -36,6 +36,66 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])-
     // Phase 17: Investor Dashboard (CQRS Read Model — Read Only)
     Route::get('/dashboard/investor', [\App\Http\Controllers\Admin\InvestorDashboardController::class, 'index'])->name('dashboard.investor');
 
+    // SPRINT 4.6: Property Digital Twin Cockpit
+    Route::prefix('/workspace')->name('workspace.')->group(function () {
+        Route::get('/{id}', [\App\Http\Controllers\Admin\WorkspaceDashboardController::class, 'show'])
+            ->whereNumber('id')->name('show');
+        Route::get('/{id}/summary', [\App\Http\Controllers\Admin\WorkspaceDashboardController::class, 'summary'])
+            ->whereNumber('id')->name('summary');
+        Route::get('/{id}/events', [\App\Http\Controllers\Admin\WorkspaceDashboardController::class, 'events'])
+            ->whereNumber('id')->name('events');
+        Route::get('/{id}/health', [\App\Http\Controllers\Admin\WorkspaceDashboardController::class, 'health'])
+            ->whereNumber('id')->name('health');
+    });
+
+    // SPRINT 4.7: Workspace Execution Engine
+    Route::prefix('/workspace/{workspace}/executions')
+        ->name('workspace.executions.')
+        ->group(function () {
+            Route::get('/', [App\Http\Controllers\Admin\WorkspaceExecutionController::class, 'index'])
+                ->name('index');
+            Route::get('/summary', [App\Http\Controllers\Admin\WorkspaceExecutionController::class, 'summary'])
+                ->name('summary');
+            Route::get('/{exec}', [App\Http\Controllers\Admin\WorkspaceExecutionController::class, 'show'])
+                ->whereNumber('exec')->name('show');
+            Route::post('/', [App\Http\Controllers\Admin\WorkspaceExecutionController::class, 'dispatchExecution'])
+                ->name('dispatch');
+            Route::post('/{exec}/replay', [App\Http\Controllers\Admin\WorkspaceExecutionController::class, 'replay'])
+                ->whereNumber('exec')->name('replay');
+            Route::post('/{exec}/retry', [App\Http\Controllers\Admin\WorkspaceExecutionController::class, 'retry'])
+                ->whereNumber('exec')->name('retry');
+            Route::post('/{exec}/cancel', [App\Http\Controllers\Admin\WorkspaceExecutionController::class, 'cancel'])
+                ->whereNumber('exec')->name('cancel');
+        });
+
+    // SPRINT 4.7: Async Queue + Event Replay
+    Route::prefix('/hermes')->name('hermes.')->group(function () {
+        // Failed event list
+        Route::get('/replay', [\App\Http\Controllers\Admin\HermesReplayController::class, 'index'])
+            ->name('replay.index');
+
+        // Event replay (sync + async)
+        Route::post('/replay/{logId}', [\App\Http\Controllers\Admin\HermesReplayController::class, 'replay'])
+            ->whereNumber('logId')->name('replay.event');
+        Route::post('/replay/{logId}/async', [\App\Http\Controllers\Admin\HermesReplayController::class, 'replayAsync'])
+            ->whereNumber('logId')->name('replay.event.async');
+
+        // Handler retry (sync + async)
+        Route::post('/retry/{execLogId}', [\App\Http\Controllers\Admin\HermesReplayController::class, 'retryHandler'])
+            ->whereNumber('execLogId')->name('retry.handler');
+        Route::post('/retry/{execLogId}/async', [\App\Http\Controllers\Admin\HermesReplayController::class, 'retryHandlerAsync'])
+            ->whereNumber('execLogId')->name('retry.handler.async');
+
+        // Chain operations
+        Route::get('/chain/{ilanId}', [\App\Http\Controllers\Admin\HermesReplayController::class, 'chainStatus'])
+            ->whereNumber('ilanId')->name('chain.status');
+        Route::post('/chain/{chainId}/pause', [\App\Http\Controllers\Admin\HermesReplayController::class, 'pauseChain'])
+            ->name('chain.pause');
+        Route::post('/chain/{chainId}/resume', [\App\Http\Controllers\Admin\HermesReplayController::class, 'resumeChain'])
+            ->name('chain.resume');
+        Route::post('/chain/{chainId}/abort', [\App\Http\Controllers\Admin\HermesReplayController::class, 'abortChain'])
+            ->name('chain.abort');
+    });
 
     // Dashboard aliases for backward compatibility
     Route::get('/', function () {

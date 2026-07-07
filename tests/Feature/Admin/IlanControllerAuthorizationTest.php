@@ -6,7 +6,6 @@ use App\Models\Ilan;
 use App\Models\User;
 use App\Modules\Auth\Models\Role;
 use App\Enums\IlanDurumu;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -21,7 +20,6 @@ use Tests\TestCase;
  */
 class IlanControllerAuthorizationTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected User $admin;
     protected User $danisman1;

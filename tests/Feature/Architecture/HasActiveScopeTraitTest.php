@@ -5,7 +5,6 @@ namespace Tests\Feature\Architecture;
 use Tests\TestCase;
 use App\Models\Ilan;
 use App\Enums\IlanDurumu;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 /**
  * HasActiveScope Trait Test
@@ -22,7 +21,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
  */
 class HasActiveScopeTraitTest extends TestCase
 {
-    use RefreshDatabase;
 
     /**
      * Test: Ilan::active() scope yayin_durumu = 'yayinda' kayıtları döndürür

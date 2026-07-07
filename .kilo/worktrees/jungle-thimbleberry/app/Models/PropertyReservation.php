@@ -15,7 +15,7 @@ class PropertyReservation extends BaseModel
 
     protected $fillable = [
         'tenant_id',
-        'ilan_id',
+        'property_id', // context7-ignore: DB column name, not domain model
         'start_date',
         'end_date',
         'nights',
@@ -55,7 +55,7 @@ class PropertyReservation extends BaseModel
 
     public function ilan(): BelongsTo
     {
-        return $this->belongsTo(Ilan::class, 'ilan_id');
+        return $this->belongsTo(Ilan::class, 'property_id');
     }
 
     public function creator(): BelongsTo

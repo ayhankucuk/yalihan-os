@@ -63,7 +63,7 @@ class BonusCalculator
             'total_sales_count' => $sales->count(),
             'bonus_tier' => $tierInfo['tier'],
             'bonus_rate' => $tierInfo['rate'],
-            'is_paid' => false,
+            'odendi_mi' => false,
         ];
     }
 
@@ -73,8 +73,8 @@ class BonusCalculator
     public function getPayoutProjection(): array
     {
         return [
-            'is_paid' => true,
-            'payout_date' => now()->toDateString(),
+            'odendi_mi' => true,
+            'odeme_tarihi' => now(),
             'paid_by' => auth()->id(),
             'updated_at' => now()
         ];
@@ -92,7 +92,7 @@ class BonusCalculator
         return Bonus::query()
             ->where('tenant_id', $tenantId)
             ->where('agent_id', $agentId)
-            ->where('is_paid', false)
+            ->where('odendi_mi', false)
             ->orderBy('target_month', 'desc') // context7-ignore
             ->get();
     }
@@ -109,7 +109,7 @@ class BonusCalculator
         return Bonus::query()
             ->where('tenant_id', $tenantId)
             ->where('agent_id', $agentId)
-            ->where('is_paid', false)
+            ->where('odendi_mi', false)
             ->sum('prim_tutari');
     }
 
@@ -181,7 +181,7 @@ class BonusCalculator
     {
         return Ilan::query()
             ->where('kullanici_id', $agentId)
-            ->where('yayin_durumu', 'Satıldı')
+            ->where('yayin_durumu', \App\Enums\IlanDurumu::ARSIV->value)
             ->whereBetween('updated_at', [$start, $end])
             ->get();
     }
@@ -198,7 +198,7 @@ class BonusCalculator
             ->select('bonuses.*', 'agents.name as agent_name');
 
         if (isset($filters['paid'])) {
-            $query->where('bonuses.is_paid', $filters['paid'] == '1');
+            $query->where('bonuses.odendi_mi', $filters['paid'] == '1');
         }
         if (isset($filters['target_month'])) {
             $query->where('bonuses.target_month', $filters['target_month']);
@@ -217,7 +217,7 @@ class BonusCalculator
 
         return Ilan::query()
             ->where('kullanici_id', $agentId)
-            ->where('yayin_durumu', 'Satıldı')
+            ->where('yayin_durumu', \App\Enums\IlanDurumu::ARSIV->value)
             ->whereBetween('updated_at', [$start, $end])
             ->get();
     }

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Governance;
 
-use App\Modules\GovernanceCore\Services\DriftDetectionService;
+use App\Modules\GovernanceCore\Core\DriftDetectionService;
 use App\Modules\GovernanceCore\Services\AutonomousDriftResponder;
 use App\Domain\PropertyHub\Resiliency\HealthAutoRecoveryService;
 use App\Models\PropertyConfigVersion;

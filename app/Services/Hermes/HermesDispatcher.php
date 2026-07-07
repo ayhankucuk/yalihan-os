@@ -4,91 +4,221 @@ namespace App\Services\Hermes;
 
 use App\Contracts\Hermes\HermesEventContract;
 use App\Contracts\Hermes\HermesHandlerContract;
+use App\Jobs\Hermes\AsyncHandlerDispatchJob;
+use App\Models\Hermes\HermesEventLog;
+use App\Models\Hermes\WorkforceExecutionLog;
 use Illuminate\Support\Facades\Log;
 
 /**
  * HermesDispatcher
  *
+ * Sprint 4.7: Async Queue + Event Replay + Workspace Execution Engine
+ *
  * Dispatches events to their registered handlers.
- * Handles both sync and async handlers.
+ * Supports both synchronous and asynchronous (queue) handlers.
  */
 class HermesDispatcher
 {
     public function __construct(
-        private HermesRegistry $registry,
+        private readonly HermesRegistry $registry,
     ) {}
 
     /**
-     * Dispatch an event to all registered handlers
+     * Dispatch an event to all registered handlers.
+     *
+     * Async handlers are dispatched to the queue.
+     * Sync handlers are invoked in-process.
      *
      * @return array<string, array> Handler results keyed by handler class
      */
-    public function dispatch(HermesEventContract $event): array
+    public function dispatch(HermesEventContract $event, ?int $hermesEventLogId = null): array
     {
         $eventName = $event->eventName();
-        $handlers = $this->registry->getHandlers($eventName);
-        $results = [];
+        $handlers  = $this->registry->getHandlers($eventName);
+        $results  = [];
 
         if (empty($handlers)) {
-            Log::debug("[HermesDispatcher] No handlers registered for event", [
+            Log::debug('[HermesDispatcher] No handlers registered for event', [
                 'event' => $eventName,
             ]);
             return $results;
         }
 
-        Log::info("[HermesDispatcher] Dispatching event", [
-            'event' => $eventName,
+        Log::info('[HermesDispatcher] Dispatching event', [
+            'event'         => $eventName,
             'handler_count' => count($handlers),
-            'tenant_id' => $event->tenantId(),
+            'tenant_id'     => $event->tenantId(),
         ]);
 
         foreach ($handlers as $handler) {
-            $results[get_class($handler)] = $this->invokeHandler($handler, $event);
+            if ($handler->isAsync()) {
+                $this->dispatchAsync($handler, $event, $hermesEventLogId);
+                $results[get_class($handler)] = [
+                    'async'  => true,
+                    'queued' => true,
+                    'result' => null,
+                ];
+            } else {
+                $results[get_class($handler)] = $this->invokeHandler($handler, $event, $hermesEventLogId);
+            }
         }
 
         return $results;
     }
 
     /**
-     * Invoke a single handler
-     *
-     * @return array Result data
+     * Dispatch a handler asynchronously via queue.
      */
-    private function invokeHandler(HermesHandlerContract $handler, HermesEventContract $event): array
-    {
+    public function dispatchAsync(
+        HermesHandlerContract $handler,
+        HermesEventContract $event,
+        ?int $hermesEventLogId = null,
+    ): void {
         $handlerClass = get_class($handler);
-        $startTime = microtime(true);
+
+        // Record WorkforceExecutionLog for audit trail
+        $execLog = WorkforceExecutionLog::create([
+            'hermes_event_log_id' => $hermesEventLogId,
+            'ilan_id'             => method_exists($event, 'ilanId') ? $event->ilanId() : null,
+            'tenant_id'           => $event->tenantId(),
+            'chain_id'           => method_exists($event, 'chainId') ? $event->chainId() : 0,
+            'agent_name'          => $this->inferAgentName($handlerClass),
+            'agent_class'         => $handlerClass,
+            'event_received'      => $event->eventName(),
+            'event_chain_step'    => $this->inferChainStep($event, $handler),
+            'input_payload'       => $event->toPayload(),
+            'output_payload'      => [],
+            'status'             => WorkforceExecutionLog::STATUS_PENDING,
+            'started_at'          => now(),
+        ]);
+
+        // Track exec log ID for the job to update
+        AsyncHandlerDispatchJob::dispatch($handler, $event, $hermesEventLogId)
+            ->onQueue('hermes');
+
+        Log::info('[HermesDispatcher] Async handler queued', [
+            'handler'   => $handlerClass,
+            'event'     => $event->eventName(),
+            'exec_log_id' => $execLog->id,
+        ]);
+    }
+
+    // ─── Private ───────────────────────────────────────────────────────────
+
+    /**
+     * Invoke a single synchronous handler.
+     */
+    private function invokeHandler(
+        HermesHandlerContract $handler,
+        HermesEventContract $event,
+        ?int $hermesEventLogId = null,
+    ): array {
+        $handlerClass = get_class($handler);
+        $startTime   = microtime(true);
+
+        // Record execution log
+        $execLog = $this->recordExecutionLog($handler, $event, $hermesEventLogId);
 
         try {
-            $result = $handler->handle($event);
+            $execLog->markRunning();
+
+            $result   = $handler->handle($event);
             $duration = round((microtime(true) - $startTime) * 1000, 2);
 
-            Log::info("[HermesDispatcher] Handler executed", [
-                'handler' => $handlerClass,
-                'event' => $event->eventName(),
+            $execLog->markCompleted($result);
+
+            Log::info('[HermesDispatcher] Handler executed', [
+                'handler'     => $handlerClass,
+                'event'       => $event->eventName(),
                 'duration_ms' => $duration,
+                'exec_log_id' => $execLog->id,
             ]);
 
             return [
-                'success' => true,
-                'result' => $result,
-                'duration_ms' => $duration,
+                'success'     => true,
+                'result'      => $result,
+                'duration_ms'  => $duration,
+                'exec_log_id'  => $execLog->id,
             ];
         } catch (\Throwable $e) {
             $duration = round((microtime(true) - $startTime) * 1000, 2);
 
-            Log::error("[HermesDispatcher] Handler failed", [
-                'handler' => $handlerClass,
-                'event' => $event->eventName(),
-                'error' => $e->getMessage(),
+            $execLog->markFailed($e->getMessage());
+
+            Log::error('[HermesDispatcher] Handler failed', [
+                'handler'     => $handlerClass,
+                'event'       => $event->eventName(),
+                'error'       => $e->getMessage(),
                 'duration_ms' => $duration,
+                'exec_log_id' => $execLog->id,
             ]);
 
             return [
-                'success' => false,
-                'error' => $e->getMessage(),
-                'duration_ms' => $duration,
+                'success'     => false,
+                'error'       => $e->getMessage(),
+                'duration_ms'  => $duration,
+                'exec_log_id'  => $execLog->id,
             ];
         }
+    }
+
+    /**
+     * Create a WorkforceExecutionLog record for a handler invocation.
+     */
+    private function recordExecutionLog(
+        HermesHandlerContract $handler,
+        HermesEventContract $event,
+        ?int $hermesEventLogId,
+    ): WorkforceExecutionLog {
+        return WorkforceExecutionLog::create([
+            'hermes_event_log_id' => $hermesEventLogId,
+            'ilan_id'            => method_exists($event, 'ilanId') ? $event->ilanId() : null,
+            'tenant_id'          => $event->tenantId(),
+            'chain_id'           => method_exists($event, 'chainId') ? $event->chainId() : 0,
+            'agent_name'         => $this->inferAgentName(get_class($handler)),
+            'agent_class'        => get_class($handler),
+            'event_received'     => $event->eventName(),
+            'event_chain_step'    => $this->inferChainStep($event, $handler),
+            'input_payload'       => $event->toPayload(),
+            'output_payload'      => [],
+            'status'             => WorkforceExecutionLog::STATUS_PENDING,
+            'started_at'          => now(),
+        ]);
+    }
+
+    /**
+     * Infer agent name from handler class name.
+     * e.g. App\Services\Hermes\Handlers\Workforce\DriveAgent → drive_agent
+     */
+    private function inferAgentName(string $handlerClass): string
+    {
+        $short = class_basename($handlerClass);
+
+        return match (true) {
+            str_ends_with($short, 'Agent') => strtolower(preg_replace('/(?<!^)[A-Z]/', '_', $short)),
+            default => strtolower($short),
+        };
+    }
+
+    /**
+     * Infer chain step from event + handler context.
+     * Step is inferred from the event's position in the known workforce chain.
+     */
+    private function inferChainStep(HermesEventContract $event, HermesHandlerContract $handler): int
+    {
+        $eventName = $event->eventName();
+
+        // Known workforce chain order
+        $chainMap = [
+            'portfolio.created'                        => 0,
+            'workforce.workspace.created'              => 1,
+            'workforce.photo_analysis.completed'       => 2,
+            'workforce.description.completed'          => 3,
+            'workforce.property_score.calculated'      => 4,
+            'workforce.publishing.decision_ready'       => 5,
+            'workforce.notification.sent'              => 6,
+        ];
+
+        return $chainMap[$eventName] ?? 99;
     }
 }

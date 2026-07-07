@@ -192,6 +192,9 @@ Example:
 | 019 | [bekci-v2-1-cognitive-guardian-ast](2026-05-15-bekci-v2-1-cognitive-guardian-ast.md) | Bekçi v2.1 Bilişsel Muhafız AST | 2026-05-15 | ✅ Kabul |
 | 020 | [governance-diff-viewer-cli-read-model](020-governance-diff-viewer-cli-read-model.md) | Governance Diff Viewer CLI Read Model | — | ✅ Kabul |
 | **021** | [**sprint2-architecture-decisions**](2026-06-15-sprint2-architecture-decisions.md) | **Sprint 2 Mimari Kararları (#19,#28,#58,#60)** | 2026-06-15 | ✅ Kabul |
+| **022** | [**knowledge-platform-adoption**](2026-07-05-knowledge-platform-adoption.md) | **Knowledge Platform — Dördüncü Katman Olarak Benimsenmesi** | 2026-07-05 | ✅ Kabul |
+| **023** | [**location-intelligence-domain**](2026-07-06-location-intelligence-domain.md) | **Location Intelligence Domain v8.0** | 2026-07-06 | ✅ Kabul |
+| **024** | [**property-workspace-model**](2026-07-06-property-workspace-model.md) | **Property Workspace Model — Intent First Architecture** | 2026-07-06 | ✅ Kabul |
 
 ---
 

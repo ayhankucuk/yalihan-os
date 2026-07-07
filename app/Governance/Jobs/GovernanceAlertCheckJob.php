@@ -21,15 +21,16 @@ class GovernanceAlertCheckJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
-     * Kuyruk adı: governance
-     * Priority: Medium (Business path'i etkilemez)
-     */
-    public $queue = 'governance';
-
-    /**
      * Deneme sayısı: 3
+     * Priority: Medium (Business path'i etkilemez)
+     * Kuyruk: governance (Queueable trait'in onQueue() ile set)
      */
-    public $tries = 3;
+    public int $tries = 3;
+
+    public function __construct()
+    {
+        $this->onQueue('governance');
+    }
 
     /**
      * Execute the job.

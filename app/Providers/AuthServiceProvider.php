@@ -56,6 +56,8 @@ class AuthServiceProvider extends ServiceProvider
         Talep::class => TalepPolicy::class,
         Lead::class => LeadPolicy::class,
         User::class => DanismanPolicy::class,
+        // Sprint 4.6: Property Digital Twin Cockpit
+        PortfolioDriveWorkspace::class => PortfolioDriveWorkspacePolicy::class,
     ];
 
     /**

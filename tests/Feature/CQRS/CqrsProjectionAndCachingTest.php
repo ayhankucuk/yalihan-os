@@ -8,7 +8,6 @@ use App\Models\Projections\KisiReadModel;
 use App\Repositories\CQRS\KisiReadRepository;
 use App\Domain\CQRS\Projections\KisiProjeksiyonYoneticisi;
 use App\Jobs\CQRS\ProcessProjectionJob;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -22,7 +21,6 @@ use Tests\TestCase;
  */
 class CqrsProjectionAndCachingTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected Tenant $tenantA;
     protected Tenant $tenantB;

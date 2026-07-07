@@ -22,15 +22,15 @@ class Bonus extends BaseModel
         'prim_tutari',
         'bonus_type',
         'reason',
-        'is_paid',
-        'paid_at',
+        'odendi_mi',
+        'odeme_tarihi',
     ];
 
     protected $casts = [
         'tenant_id' => 'integer',
         'prim_tutari' => 'decimal:2',
-        'is_paid' => 'boolean',
-        'paid_at' => 'datetime',
+        'odendi_mi' => 'boolean',
+        'odeme_tarihi' => 'datetime',
     ];
 
     public function agent(): BelongsTo

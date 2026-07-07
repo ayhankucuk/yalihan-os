@@ -4,7 +4,6 @@ namespace Tests\Unit\Cache;
 
 use App\Models\Kisi;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
@@ -24,7 +23,6 @@ use Tests\TestCase;
  */
 class CRMCacheTenantScopingTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected function setUp(): void
     {

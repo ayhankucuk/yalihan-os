@@ -23,10 +23,11 @@ class EventServiceProvider extends ServiceProvider
             'App\Listeners\LogUserActivity',
         ],
         \App\Events\IlanCreated::class => [
-            \App\Listeners\FindMatchingDemands::class, // Context7: Tersine Eşleştirme (Reverse Matching)
-            \App\Listeners\InvalidateIlanCache::class, // Cache invalidation
-            \App\Listeners\SendEmailOnIlanCreated::class, // Email notification
-            \App\Listeners\UpdateAnalyticsProjections::class, // [Phase 16] Analytics CQRS-lite Sync
+            \App\Listeners\BC001\IlanCreatedListener::class,        // [BC-001] First Advisor Experience
+            \App\Listeners\FindMatchingDemands::class,              // Context7: Tersine Eşleştirme (Reverse Matching)
+            \App\Listeners\InvalidateIlanCache::class,               // Cache invalidation
+            \App\Listeners\SendEmailOnIlanCreated::class,            // Email notification
+            \App\Listeners\UpdateAnalyticsProjections::class,          // [Phase 16] Analytics CQRS-lite Sync
         ],
         \App\Events\IlanUpdated::class => [
             \App\Listeners\InvalidateIlanCache::class, // Cache invalidation

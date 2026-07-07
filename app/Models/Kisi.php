@@ -285,6 +285,11 @@ class Kisi extends BaseModel
         return $this->hasMany(Talep::class, 'kisi_id');
     }
 
+    public function etkilesimler(): HasMany
+    {
+        return $this->hasMany(KisiEtkilesim::class, 'kisi_id');
+    }
+
     /**
      * İlanlar (Alias for ilanlarAsSahibi)
      * Context7: Fix for RelationNotFoundException

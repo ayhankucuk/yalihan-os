@@ -10,7 +10,6 @@ use App\Exceptions\Governance\TenantMismatchException;
 use App\Models\Ilan;
 use App\Models\User;
 use App\Enums\IlanDurumu;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -20,7 +19,6 @@ use Illuminate\Support\Facades\DB;
  */
 class IlanDomainIsolationTest extends TestCase
 {
-    use RefreshDatabase;
 
     private IlanDomainYonetici $domainYonetici;
     private mixed $mockCrudService;

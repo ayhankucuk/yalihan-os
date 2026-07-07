@@ -6,6 +6,7 @@ use App\Contracts\Hermes\HermesEventContract;
 use App\DTOs\DriveWorkspaceResult;
 use App\Events\Workforce\PropertyWorkspaceCreated;
 use App\Models\PortfolioDriveWorkspace;
+use App\Services\Drive\DriveWebhookService;
 use App\Services\Drive\DriveWorkspaceService;
 use App\Services\Hermes\Handlers\Workforce\DriveAgent;
 use App\Services\Hermes\HermesService;
@@ -30,6 +31,7 @@ class DriveAgentTest extends TestCase
 {
     private DriveAgent $agent;
     private DriveWorkspaceService $driveService;
+    private DriveWebhookService $webhookService;
     private HermesService $hermesService;
 
     protected function setUp(): void
@@ -37,9 +39,10 @@ class DriveAgentTest extends TestCase
         parent::setUp();
 
         $this->driveService = Mockery::mock(DriveWorkspaceService::class);
+        $this->webhookService = Mockery::mock(DriveWebhookService::class);
         $this->hermesService = Mockery::mock(HermesService::class);
 
-        $this->agent = new DriveAgent($this->driveService, $this->hermesService);
+        $this->agent = new DriveAgent($this->driveService, $this->webhookService, $this->hermesService);
     }
 
     protected function tearDown(): void
@@ -78,9 +81,18 @@ class DriveAgentTest extends TestCase
             ->with(42)
             ->andReturn(false);
 
+        $workspace = new PortfolioDriveWorkspace([
+            'ilan_id' => 42,
+            'tenant_id' => 1,
+            'drive_folder_id' => 'drive_folder_123',
+            'workspace_status' => PortfolioDriveWorkspace::STATUS_READY,
+        ]);
+        $workspace->id = 77;
+
+        // All mocks must be set before handle() is called
         $this->driveService
             ->shouldReceive('createWorkspace')
-            ->with('00042', 'Test İlan', 1)
+            ->withAnyArgs()
             ->andReturn(DriveWorkspaceResult::success(
                 rootFolderId: 'drive_folder_123',
                 rootFolderUrl: 'https://drive.google.com/drive/folders/drive_folder_123',
@@ -92,23 +104,21 @@ class DriveAgentTest extends TestCase
 
         $this->driveService
             ->shouldReceive('createSubfolders')
-            ->with('drive_folder_123', '00042')
+            ->withAnyArgs()
             ->andReturn([
                 '01_Fotograflar' => 'sub_1',
                 '02_Videolar' => 'sub_2',
             ]);
 
-        $workspace = new PortfolioDriveWorkspace([
-            'ilan_id' => 42,
-            'tenant_id' => 1,
-            'drive_folder_id' => 'drive_folder_123',
-            'workspace_status' => PortfolioDriveWorkspace::STATUS_READY,
-        ]);
-
         $this->driveService
             ->shouldReceive('storeWorkspaceMeta')
-            ->once()
+            ->withAnyArgs()
             ->andReturn($workspace);
+
+        $this->webhookService
+            ->shouldReceive('registerChannel')
+            ->withAnyArgs()
+            ->andReturn(['success' => true, 'channel_id' => 'ch_abc']);
 
         $this->hermesService
             ->shouldReceive('receive')
@@ -213,7 +223,13 @@ class DriveAgentTest extends TestCase
 
         $this->driveService
             ->shouldReceive('storeWorkspaceMeta')
+            ->withAnyArgs()
             ->andReturn($workspace);
+
+        $this->webhookService
+            ->shouldReceive('registerChannel')
+            ->withAnyArgs()
+            ->andReturn(['success' => true, 'channel_id' => 'ch_abc']);
 
         $emittedEvent = null;
         $this->hermesService

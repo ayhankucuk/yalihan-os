@@ -44,29 +44,21 @@ class InstagramAdapter
                 'access_token' => $accessToken,
             ];
 
-            if ($audit) {
-                $audit->update([
-                    'son_deneme_tarihi' => now(),
-                    'deneme_sayisi' => ($audit->deneme_sayisi ?? 0) + 1
-                ]);
-            }
-
             $response = Http::post($endpoint, $payload);
 
             if ($audit) {
                 $audit->update([
-                    'provider_response' => $response->json()
+                    'son_deneme_tarihi' => now(),
+                    'deneme_sayisi' => ($audit->deneme_sayisi ?? 0) + 1,
+                    'provider_response' => $response->json(),
+                ]);
+            }
+
             if ($response->successful()) {
-                if ($audit) {
-                    $audit->update([
-                        'provider_response' => $response->json()
-                    ]);
-                }
                 return true;
             }
 
             throw new \Exception("Instagram API error: " . $response->body());
-
         } catch (\Throwable $e) {
             if ($audit) {
                 $audit->update([

@@ -4,12 +4,10 @@ namespace Tests\Feature\Admin;
 
 use App\Models\User;
 use App\Enums\AI\DeepSeekModel;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class DeepSeekSettingsTest extends TestCase
 {
-    use RefreshDatabase;
 
     private User $admin;
 

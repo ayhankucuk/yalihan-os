@@ -296,8 +296,9 @@ class DriveWorkspaceService
 
     /**
      * Get access token from service account credentials
+     * @internal Use by DriveTemplateService and DriveSyncService
      */
-    private function getCredentials(): ?string
+    public function getToken(): ?string
     {
         $credentialsPath = config('ai-storage.storage.google_drive.credentials');
 
@@ -406,5 +407,30 @@ class DriveWorkspaceService
     public function getSubfolderNames(): array
     {
         return self::SUBFOLDER_NAMES;
+    }
+
+    /**
+     * Get a valid Drive API access token.
+     * Used by DriveTemplateService, DriveSyncService, DriveWebhookService.
+     *
+     * @return string|null
+     */
+    public function getAccessToken(): ?string
+    {
+        $credentials = $this->getCredentials();
+        if ($credentials === null) {
+            return null;
+        }
+
+        $credsType = $credentials['type'] ?? null; // @sab-ignore-context7
+        if ($credsType === self::CRED_TYPE_SERVICE_ACCOUNT) {
+            return $this->getServiceAccountToken($credentials);
+        }
+
+        if ($credsType === self::CRED_TYPE_AUTHORIZED_USER) {
+            return $credentials['access_token'] ?? null;
+        }
+
+        return null;
     }
 }

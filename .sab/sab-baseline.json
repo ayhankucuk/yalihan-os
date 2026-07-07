@@ -1,6 +1,6 @@
 {
     "governance_version": "1.7",
-    "generated_at": "2026-06-30T12:11:00+00:00",
+    "generated_at": "2026-07-07T12:57:17+00:00",
     "ignored_violations": {
         "Services/AI/CodeReviewService.php": [
             {
@@ -730,127 +730,127 @@
         ],
         "Services/AI/Copilot/CopilotOrchestrator.php": [
             {
-                "line": 308,
+                "line": 311,
                 "type": "",
                 "message": "Forbidden field 'active' usage detected in code.",
                 "fingerprint": "d87d5abc6077107679ed8bd6f75221ab"
             },
             {
-                "line": 315,
+                "line": 318,
                 "type": "",
                 "message": "Forbidden field 'active' usage detected in code.",
                 "fingerprint": "d87d5abc6077107679ed8bd6f75221ab"
             },
             {
-                "line": 211,
+                "line": 214,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'title'. Use Turkish 'baslik' for domain concepts.",
                 "fingerprint": "dfa61f3bb443ba9adef4c0b226190580"
             },
             {
-                "line": 211,
+                "line": 214,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'title'. Use Turkish 'baslik' for domain concepts.",
                 "fingerprint": "dfa61f3bb443ba9adef4c0b226190580"
             },
             {
-                "line": 212,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
-                "fingerprint": "0da09d34e3c082e14ce54c97b040fa8b"
-            },
-            {
-                "line": 212,
+                "line": 215,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
                 "fingerprint": "0da09d34e3c082e14ce54c97b040fa8b"
             },
             {
                 "line": 215,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
+                "fingerprint": "0da09d34e3c082e14ce54c97b040fa8b"
+            },
+            {
+                "line": 218,
                 "type": "ForbiddenFieldAST",
                 "message": "Forbidden field 'priority' detected. Suggested canonical: one_cikan.",
                 "fingerprint": "158c5e9296fb09dd43063fe90e8bcf21"
             },
             {
-                "line": 223,
+                "line": 226,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'title'. Use Turkish 'baslik' for domain concepts.",
                 "fingerprint": "dfa61f3bb443ba9adef4c0b226190580"
             },
             {
-                "line": 224,
+                "line": 227,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
                 "fingerprint": "0da09d34e3c082e14ce54c97b040fa8b"
             },
             {
-                "line": 229,
+                "line": 232,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'title'. Use Turkish 'baslik' for domain concepts.",
                 "fingerprint": "dfa61f3bb443ba9adef4c0b226190580"
             },
             {
-                "line": 230,
+                "line": 233,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
                 "fingerprint": "0da09d34e3c082e14ce54c97b040fa8b"
             },
             {
-                "line": 234,
+                "line": 237,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'title'. Use Turkish 'baslik' for domain concepts.",
                 "fingerprint": "dfa61f3bb443ba9adef4c0b226190580"
             },
             {
-                "line": 235,
+                "line": 238,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
                 "fingerprint": "0da09d34e3c082e14ce54c97b040fa8b"
             },
             {
-                "line": 239,
+                "line": 242,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'title'. Use Turkish 'baslik' for domain concepts.",
                 "fingerprint": "dfa61f3bb443ba9adef4c0b226190580"
             },
             {
-                "line": 240,
+                "line": 243,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
                 "fingerprint": "0da09d34e3c082e14ce54c97b040fa8b"
             },
             {
-                "line": 245,
+                "line": 248,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'title'. Use Turkish 'baslik' for domain concepts.",
                 "fingerprint": "dfa61f3bb443ba9adef4c0b226190580"
             },
             {
-                "line": 246,
+                "line": 249,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
                 "fingerprint": "0da09d34e3c082e14ce54c97b040fa8b"
             },
             {
-                "line": 250,
+                "line": 253,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'title'. Use Turkish 'baslik' for domain concepts.",
                 "fingerprint": "dfa61f3bb443ba9adef4c0b226190580"
             },
             {
-                "line": 251,
+                "line": 254,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
                 "fingerprint": "0da09d34e3c082e14ce54c97b040fa8b"
             },
             {
-                "line": 255,
+                "line": 258,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'title'. Use Turkish 'baslik' for domain concepts.",
                 "fingerprint": "dfa61f3bb443ba9adef4c0b226190580"
             },
             {
-                "line": 256,
+                "line": 259,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
                 "fingerprint": "0da09d34e3c082e14ce54c97b040fa8b"
@@ -1874,6 +1874,338 @@
                 "fingerprint": "06a287eb1eda1d44a3c9b9990453fd32"
             }
         ],
+        "Services/Drive/DriveSyncService.php": [
+            {
+                "line": 157,
+                "type": "",
+                "message": "Forbidden field 'status' usage detected in code.",
+                "fingerprint": "7692ba5a9222b3aa3be2ab300972a356"
+            },
+            {
+                "line": 240,
+                "type": "",
+                "message": "Silent/Swallowed catch block.",
+                "fingerprint": "29d7ac64d91296fd063a6272c2a9e807"
+            },
+            {
+                "line": 280,
+                "type": "",
+                "message": "Silent/Swallowed catch block.",
+                "fingerprint": "29d7ac64d91296fd063a6272c2a9e807"
+            },
+            {
+                "line": 107,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'changeType' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "9e3bb7b6fb593bed8739e70bea8271a1"
+            },
+            {
+                "line": 108,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'fileId' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "3ad73192d16a139467b87571488b3d66"
+            },
+            {
+                "line": 109,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'fileName' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "ef50a250ed069c1e00daa2266ea57fbc"
+            },
+            {
+                "line": 110,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'webViewLink' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "57f7c4ec377e6ac6b4f29063ad8ca5ab"
+            },
+            {
+                "line": 151,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'pageToken' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "a209d4c8220e97abf7644497a5dd6726"
+            },
+            {
+                "line": 152,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'pageSize' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "c4016dbe6600f4522c622bf96f671e9e"
+            },
+            {
+                "line": 157,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'status' detected. Suggested canonical: aktiflik_durumu.",
+                "fingerprint": "c96eea9aff31ca771a5a0f9ee1cd0f62"
+            },
+            {
+                "line": 157,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'status'. Use Turkish 'durum' for domain concepts.",
+                "fingerprint": "e3b6081fa77b4f94d3498bc88bd881c0"
+            },
+            {
+                "line": 164,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'nextPageToken' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "34316b010bc64050ec797e686a419682"
+            },
+            {
+                "line": 207,
+                "type": "SilentCatchAST",
+                "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
+                "fingerprint": "d1b0301dd82695de23b38bf1a7fac8d1"
+            },
+            {
+                "line": 253,
+                "type": "SilentCatchAST",
+                "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
+                "fingerprint": "d1b0301dd82695de23b38bf1a7fac8d1"
+            }
+        ],
+        "Services/Drive/DriveTemplateService.php": [
+            {
+                "line": 113,
+                "type": "",
+                "message": "Forbidden field 'status' usage detected in code.",
+                "fingerprint": "c78127fdfcaf68840ecd09ee82e7df6c"
+            },
+            {
+                "line": 113,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'status' detected. Suggested canonical: aktiflik_durumu.",
+                "fingerprint": "b9ccdb2f5168d38de85dbc6ab1a2b7ed"
+            },
+            {
+                "line": 113,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'status'. Use Turkish 'durum' for domain concepts.",
+                "fingerprint": "433d7b8fc1e70369c77f17a5508742ce"
+            }
+        ],
+        "Services/Drive/DriveWebhookService.php": [
+            {
+                "line": 68,
+                "type": "",
+                "message": "Context7 forbidden keyword 'type' in comment/doc. False positive?",
+                "fingerprint": "61ad0e288a1d8df6db4e2c6b16741e9b"
+            },
+            {
+                "line": 77,
+                "type": "",
+                "message": "Forbidden field 'status' usage detected in code.",
+                "fingerprint": "6d70725a924363fc7a2b4d25b4aa5aa0"
+            },
+            {
+                "line": 159,
+                "type": "",
+                "message": "Forbidden field 'type' usage detected in code.",
+                "fingerprint": "3c2c1d06fd16a9649da7a1e957a658dc"
+            },
+            {
+                "line": 169,
+                "type": "",
+                "message": "Forbidden field 'status' usage detected in code.",
+                "fingerprint": "6d70725a924363fc7a2b4d25b4aa5aa0"
+            },
+            {
+                "line": 230,
+                "type": "",
+                "message": "Forbidden field 'status' usage detected in code.",
+                "fingerprint": "6d70725a924363fc7a2b4d25b4aa5aa0"
+            },
+            {
+                "line": 468,
+                "type": "",
+                "message": "Forbidden field 'status' usage detected in code.",
+                "fingerprint": "6d70725a924363fc7a2b4d25b4aa5aa0"
+            },
+            {
+                "line": 68,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'type' detected. Suggested canonical: tip / tur / kategori.",
+                "fingerprint": "260839f05f91a170fb1665cbc5ed6647"
+            },
+            {
+                "line": 68,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'type'. Use Turkish 'tip' for domain concepts.",
+                "fingerprint": "fea12ee24d6c571b04f76350c9208ec1"
+            },
+            {
+                "line": 69,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'address'. Use Turkish 'adres' for domain concepts.",
+                "fingerprint": "2c95798b80aba816d02ac2e5f806f6bb"
+            },
+            {
+                "line": 77,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'status' detected. Suggested canonical: aktiflik_durumu.",
+                "fingerprint": "70fe548a23c478cdf8173209973bcce5"
+            },
+            {
+                "line": 77,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'status'. Use Turkish 'durum' for domain concepts.",
+                "fingerprint": "78421b793ac7934f75350ef306c07d41"
+            },
+            {
+                "line": 88,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'resourceId' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "5ceec8689d9e4d07932032202cbba953"
+            },
+            {
+                "line": 104,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'resourceId' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "5ceec8689d9e4d07932032202cbba953"
+            },
+            {
+                "line": 159,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'type' detected. Suggested canonical: tip / tur / kategori.",
+                "fingerprint": "260839f05f91a170fb1665cbc5ed6647"
+            },
+            {
+                "line": 159,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'type'. Use Turkish 'tip' for domain concepts.",
+                "fingerprint": "fea12ee24d6c571b04f76350c9208ec1"
+            },
+            {
+                "line": 160,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'address'. Use Turkish 'adres' for domain concepts.",
+                "fingerprint": "2c95798b80aba816d02ac2e5f806f6bb"
+            },
+            {
+                "line": 162,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'resourceId' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "5ceec8689d9e4d07932032202cbba953"
+            },
+            {
+                "line": 169,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'status' detected. Suggested canonical: aktiflik_durumu.",
+                "fingerprint": "70fe548a23c478cdf8173209973bcce5"
+            },
+            {
+                "line": 169,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'status'. Use Turkish 'durum' for domain concepts.",
+                "fingerprint": "78421b793ac7934f75350ef306c07d41"
+            },
+            {
+                "line": 224,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'resourceId' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "5ceec8689d9e4d07932032202cbba953"
+            },
+            {
+                "line": 364,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'mimeType' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "3fe7267464c9f37fbb30d05ccbaa85b9"
+            },
+            {
+                "line": 387,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'mimeType' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "3fe7267464c9f37fbb30d05ccbaa85b9"
+            },
+            {
+                "line": 388,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'modifiedTime' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "d527754422a4cb4c9e1126de361bcb8a"
+            },
+            {
+                "line": 389,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'webViewLink' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "ac8e2268365552f0e9233ef18c71c7ba"
+            },
+            {
+                "line": 430,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'mimeType' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "3fe7267464c9f37fbb30d05ccbaa85b9"
+            },
+            {
+                "line": 431,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'webViewLink' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "ac8e2268365552f0e9233ef18c71c7ba"
+            },
+            {
+                "line": 432,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'modifiedTime' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "d527754422a4cb4c9e1126de361bcb8a"
+            },
+            {
+                "line": 468,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'status' detected. Suggested canonical: aktiflik_durumu.",
+                "fingerprint": "70fe548a23c478cdf8173209973bcce5"
+            }
+        ],
+        "Services/Drive/DriveWorkspaceService.php": [
+            {
+                "line": 313,
+                "type": "",
+                "message": "Forbidden field 'type' usage detected in code.",
+                "fingerprint": "e9641e39b247236a1b40b807b4d1a920"
+            },
+            {
+                "line": 318,
+                "type": "",
+                "message": "Context7 forbidden keyword 'type' in comment/doc. False positive?",
+                "fingerprint": "a0afd45d62fce8da143be720b55f45b9"
+            },
+            {
+                "line": 425,
+                "type": "",
+                "message": "Context7 forbidden keyword 'type' in comment/doc. False positive?",
+                "fingerprint": "a0afd45d62fce8da143be720b55f45b9"
+            },
+            {
+                "line": 211,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'mimeType' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "d4996e0cd661bfa4db9e2d9d6db7b2b2"
+            },
+            {
+                "line": 218,
+                "type": "SilentCatchAST",
+                "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
+                "fingerprint": "24f45965f9fc3e854635fe70756dbb2b"
+            },
+            {
+                "line": 268,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'pageSize' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "a28129ccaa17e356792107715acbb67d"
+            },
+            {
+                "line": 313,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'type'. Use Turkish 'tip' for domain concepts.",
+                "fingerprint": "105192ef49b0c9e10093dddb1ba52fb7"
+            },
+            {
+                "line": 318,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'type'. Use Turkish 'tip' for domain concepts.",
+                "fingerprint": "105192ef49b0c9e10093dddb1ba52fb7"
+            },
+            {
+                "line": 425,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'type'. Use Turkish 'tip' for domain concepts.",
+                "fingerprint": "105192ef49b0c9e10093dddb1ba52fb7"
+            }
+        ],
         "Services/ErrorAutoRepairService.php": [
             {
                 "line": 253,
@@ -2466,46 +2798,6 @@
                 "fingerprint": "2182c5153ed5d0e86c280a12e60f66f4"
             }
         ],
-        "Services/Hermes/Handlers/GovernanceNotificationHandler.php": [
-            {
-                "line": 54,
-                "type": "",
-                "message": "Forbidden field 'type' usage detected in code.",
-                "fingerprint": "049c4c66e15c08f23a2dd79a3f62f479"
-            },
-            {
-                "line": 54,
-                "type": "ForbiddenFieldAST",
-                "message": "Forbidden field 'type' detected. Suggested canonical: tip / tur / kategori.",
-                "fingerprint": "8f17339b7d200f24304d355d5c733398"
-            },
-            {
-                "line": 54,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Found forbidden English field 'type'. Use Turkish 'tip' for domain concepts.",
-                "fingerprint": "55f5d50fac0a6c150444634ab47e84e0"
-            }
-        ],
-        "Services/Hermes/HermesService.php": [
-            {
-                "line": 56,
-                "type": "",
-                "message": "Forbidden field 'status' usage detected in code.",
-                "fingerprint": "f131dc77c90e3ab4c38dc243f9873d4b"
-            },
-            {
-                "line": 56,
-                "type": "ForbiddenFieldAST",
-                "message": "Forbidden field 'status' detected. Suggested canonical: aktiflik_durumu.",
-                "fingerprint": "53e78a566b9261966a856b6d7a3b9dfc"
-            },
-            {
-                "line": 56,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Found forbidden English field 'status'. Use Turkish 'durum' for domain concepts.",
-                "fingerprint": "c20c6acb5a9dd3fe78b90f8a8fd8f6e4"
-            }
-        ],
         "Services/Intelligence/ActionFeedbackService.php": [
             {
                 "line": 228,
@@ -2902,6 +3194,20 @@
                 "type": "",
                 "message": "Forbidden field 'active' usage detected in code.",
                 "fingerprint": "e9c4281d6b26bd2d9b8cb5d4f50f8a9a"
+            }
+        ],
+        "Services/PropertyWorkspace/PropertyWorkspaceService.php": [
+            {
+                "line": 60,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "04b160356885ec2e67c1d541beadabed"
+            },
+            {
+                "line": 156,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "04b160356885ec2e67c1d541beadabed"
             }
         ],
         "Services/SaaS/BillingLedgerService.php": [
@@ -3384,6 +3690,68 @@
                 "fingerprint": "775f633196e7adbc17534785730ea4b3"
             }
         ],
+        "Http/Controllers/Admin/WorkspaceExecutionController.php": [
+            {
+                "line": 282,
+                "type": "",
+                "message": "Forbidden field 'type' usage detected in code.",
+                "fingerprint": "de1f5d1062dcb765c47e1e60705feedd"
+            },
+            {
+                "line": 284,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "e61fe283caf298639cda2cfaa5ded1ea"
+            },
+            {
+                "line": 195,
+                "type": "",
+                "message": "Silent/Swallowed catch block.",
+                "fingerprint": "38c0c8dffdc9c4669cf1ce557138fb01"
+            },
+            {
+                "line": 197,
+                "type": "",
+                "message": "Silent/Swallowed catch block.",
+                "fingerprint": "38c0c8dffdc9c4669cf1ce557138fb01"
+            },
+            {
+                "line": 230,
+                "type": "",
+                "message": "Silent/Swallowed catch block.",
+                "fingerprint": "38c0c8dffdc9c4669cf1ce557138fb01"
+            },
+            {
+                "line": 233,
+                "type": "",
+                "message": "Silent/Swallowed catch block.",
+                "fingerprint": "38c0c8dffdc9c4669cf1ce557138fb01"
+            },
+            {
+                "line": 264,
+                "type": "",
+                "message": "Silent/Swallowed catch block.",
+                "fingerprint": "38c0c8dffdc9c4669cf1ce557138fb01"
+            },
+            {
+                "line": 267,
+                "type": "",
+                "message": "Silent/Swallowed catch block.",
+                "fingerprint": "38c0c8dffdc9c4669cf1ce557138fb01"
+            },
+            {
+                "line": 282,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'type' detected. Suggested canonical: tip / tur / kategori.",
+                "fingerprint": "da2334068a4901ee6f2a1cb81f33c5da"
+            },
+            {
+                "line": 282,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'type'. Use Turkish 'tip' for domain concepts.",
+                "fingerprint": "cfb8b69cd96372be0e37151d4fb59894"
+            }
+        ],
         "Http/Controllers/Api/AIController.php": [
             {
                 "line": 55,
@@ -3698,91 +4066,91 @@
         ],
         "Models/Ilan.php": [
             {
-                "line": 175,
+                "line": 177,
                 "type": "",
                 "message": "Forbidden field 'status' usage detected in code.",
                 "fingerprint": "b74e953e66fb2fa2a658638091680d98"
             },
             {
-                "line": 229,
+                "line": 231,
                 "type": "ForbiddenFieldAST",
                 "message": "Forbidden field 'active' detected. Suggested canonical: aktiflik_durumu.",
                 "fingerprint": "7c940a792f03de884c410931a439be2b"
             },
             {
-                "line": 336,
+                "line": 338,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'is_active'. Use Turkish 'aktiflik_durumu' for domain concepts.",
                 "fingerprint": "760f74466f573c36995f832780a0a535"
             },
             {
-                "line": 557,
+                "line": 559,
                 "type": "ForbiddenFieldAST",
                 "message": "Forbidden field 'is_active' detected. Suggested canonical: aktiflik_durumu.",
                 "fingerprint": "3bbd671df0f66cb84211bbb7b330d8f0"
             },
             {
-                "line": 557,
+                "line": 559,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'is_active'. Use Turkish 'aktiflik_durumu' for domain concepts.",
                 "fingerprint": "760f74466f573c36995f832780a0a535"
             },
             {
-                "line": 944,
+                "line": 946,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'yazlikFiyatlandirma' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "6bbe471ec730bf7da1b4dd75708bc693"
             },
             {
-                "line": 945,
+                "line": 947,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'is_active'. Use Turkish 'aktiflik_durumu' for domain concepts.",
                 "fingerprint": "760f74466f573c36995f832780a0a535"
             },
             {
-                "line": 950,
+                "line": 952,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'yazlikFiyatlandirma' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "6bbe471ec730bf7da1b4dd75708bc693"
             },
             {
-                "line": 951,
+                "line": 953,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'is_active'. Use Turkish 'aktiflik_durumu' for domain concepts.",
                 "fingerprint": "760f74466f573c36995f832780a0a535"
             },
             {
-                "line": 1019,
+                "line": 1030,
                 "type": "ForbiddenFieldAST",
                 "message": "Forbidden field 'active' detected. Suggested canonical: aktiflik_durumu.",
                 "fingerprint": "7c940a792f03de884c410931a439be2b"
             },
             {
-                "line": 1035,
+                "line": 1046,
                 "type": "ForbiddenFieldAST",
                 "message": "Forbidden field 'active' detected. Suggested canonical: aktiflik_durumu.",
                 "fingerprint": "7c940a792f03de884c410931a439be2b"
             },
             {
-                "line": 1313,
+                "line": 1324,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'ticariDetail' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "faf415a7d990888e77a62c409ff622f5"
             },
             {
-                "line": 1592,
+                "line": 1603,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "7d1fb4a502620601544fa8490a0c930b"
             },
             {
-                "line": 1604,
+                "line": 1615,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "7d1fb4a502620601544fa8490a0c930b"
             },
             {
-                "line": 1726,
+                "line": 1737,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "7d1fb4a502620601544fa8490a0c930b"
@@ -3818,6 +4186,74 @@
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'status'. Use Turkish 'durum' for domain concepts.",
                 "fingerprint": "365b176861be87a0464b1aceb78ab09c"
+            }
+        ],
+        "Models/PropertyWorkspace.php": [
+            {
+                "line": 55,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "4448d30784739d5080fa874c0579da72"
+            },
+            {
+                "line": 69,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "4448d30784739d5080fa874c0579da72"
+            },
+            {
+                "line": 86,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "4448d30784739d5080fa874c0579da72"
+            },
+            {
+                "line": 87,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "4448d30784739d5080fa874c0579da72"
+            },
+            {
+                "line": 125,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "4448d30784739d5080fa874c0579da72"
+            },
+            {
+                "line": 166,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "4448d30784739d5080fa874c0579da72"
+            },
+            {
+                "line": 177,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "4448d30784739d5080fa874c0579da72"
+            },
+            {
+                "line": 187,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "4448d30784739d5080fa874c0579da72"
+            },
+            {
+                "line": 197,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "4448d30784739d5080fa874c0579da72"
+            },
+            {
+                "line": 207,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "4448d30784739d5080fa874c0579da72"
+            },
+            {
+                "line": 32,
+                "type": "Foundation Lock Violation",
+                "message": "Model must extend App\\Models\\BaseModel instead of Illuminate\\Database\\Eloquent\\Model.",
+                "fingerprint": "c082d49903be4b028a89681b46c11891"
             }
         ],
         "Models/SaaS/Subscription.php": [
@@ -3896,6 +4332,128 @@
                 "fingerprint": "67e62fe8bf604c4a97692dfff84e5146"
             }
         ],
+        "Models/WorkspaceExecution.php": [
+            {
+                "line": 83,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 122,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 189,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 197,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 207,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 218,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 226,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 235,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 243,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 244,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 245,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 246,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 247,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 268,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 277,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 287,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 317,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 332,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 341,
+                "type": "",
+                "message": "Forbidden field 'state' usage detected in code.",
+                "fingerprint": "1ddf94c622815aa2c603437163dd73c8"
+            },
+            {
+                "line": 52,
+                "type": "Foundation Lock Violation",
+                "message": "Model must extend App\\Models\\BaseModel instead of Illuminate\\Database\\Eloquent\\Model.",
+                "fingerprint": "b1d2e050e753a8caa56df33205ef2133"
+            }
+        ],
         "resources/views/advisor/copilot.blade.php": [
             {
                 "line": 67,
@@ -3948,6 +4506,38 @@
                 "type": "",
                 "message": "Heavy method chaining / orchestration detected in Controller.",
                 "fingerprint": "37bae39804f522eb3a7806fae9b05a43"
+            }
+        ],
+        "Http/Controllers/Admin/IlanCrudController.php": [
+            {
+                "line": 1,
+                "type": "",
+                "message": "Complex branching logic detected in Controller (4 blocks).",
+                "fingerprint": "3b30e83a8aaeabbfcf24ce9855f8cf29"
+            },
+            {
+                "line": 35,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'viewAny' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "716390a8cd7e262c8eeaec15ade44160"
+            },
+            {
+                "line": 159,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'viewAny' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "716390a8cd7e262c8eeaec15ade44160"
+            },
+            {
+                "line": 168,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'viewAny' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "716390a8cd7e262c8eeaec15ade44160"
+            },
+            {
+                "line": 177,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'viewPrivateListingData' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "d390738ea9571beba225ddcfc2532b01"
             }
         ],
         "Http/Controllers/Admin/PropertyHub/FeatureController.php": [
@@ -4062,6 +4652,58 @@
                 "type": "",
                 "message": "Complex branching logic detected in Controller (8 blocks).",
                 "fingerprint": "3ae74f3acb7ca182ed53b72b3131abe2"
+            }
+        ],
+        "Http/Controllers/Api/DriveWebhookController.php": [
+            {
+                "line": 1,
+                "type": "",
+                "message": "Complex branching logic detected in Controller (7 blocks).",
+                "fingerprint": "5447b143341f939c0d72c398d91bd81a"
+            }
+        ],
+        "Http/Controllers/Owner/OwnerIlanController.php": [
+            {
+                "line": 1,
+                "type": "",
+                "message": "Complex branching logic detected in Controller (4 blocks).",
+                "fingerprint": "56a9c82b9752f76ae67022f4833abcc2"
+            },
+            {
+                "line": 43,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'anaKategori' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "4a88767fd0d938bb4dd5ef032611edb1"
+            },
+            {
+                "line": 43,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'altKategori' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "e083c545c9db5198b898f821fd274b7d"
+            },
+            {
+                "line": 63,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'anaKategori' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "4a88767fd0d938bb4dd5ef032611edb1"
+            },
+            {
+                "line": 63,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'altKategori' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "e083c545c9db5198b898f821fd274b7d"
+            },
+            {
+                "line": 84,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'anaKategoriler' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "0a66a53cba2c6d00190ee021f7fddcef"
+            },
+            {
+                "line": 131,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'anaKategoriler' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "0a66a53cba2c6d00190ee021f7fddcef"
             }
         ],
         "Http/Controllers/Owner/OwnerMesajController.php": [
@@ -4344,19 +4986,19 @@
         ],
         "Services/AI/CortexVoiceService.php": [
             {
-                "line": 210,
+                "line": 215,
                 "type": "",
                 "message": "Silent/Swallowed catch block.",
                 "fingerprint": "ec115cabb766a48b513190b5f53502cf"
             },
             {
-                "line": 272,
+                "line": 277,
                 "type": "",
                 "message": "Silent/Swallowed catch block.",
                 "fingerprint": "ec115cabb766a48b513190b5f53502cf"
             },
             {
-                "line": 569,
+                "line": 574,
                 "type": "",
                 "message": "Silent/Swallowed catch block.",
                 "fingerprint": "ec115cabb766a48b513190b5f53502cf"
@@ -4678,6 +5320,68 @@
                 "fingerprint": "c048e9104b762f4e6df915723d6b4de6"
             }
         ],
+        "Services/Workspace/WorkspaceExecutionService.php": [
+            {
+                "line": 177,
+                "type": "",
+                "message": "Silent/Swallowed catch block.",
+                "fingerprint": "7ac608fdc10bbd83136218f1ff785334"
+            },
+            {
+                "line": 78,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'type' detected. Suggested canonical: tip / tur / kategori.",
+                "fingerprint": "6b74b706675fc6af4543c3f36f22d7d7"
+            },
+            {
+                "line": 78,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'type'. Use Turkish 'tip' for domain concepts.",
+                "fingerprint": "50d439b021c7d54e22efc7d560bd3c9b"
+            },
+            {
+                "line": 175,
+                "type": "SilentCatchAST",
+                "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
+                "fingerprint": "a53563d8d4189335482bc14258abf528"
+            },
+            {
+                "line": 220,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'type' detected. Suggested canonical: tip / tur / kategori.",
+                "fingerprint": "6b74b706675fc6af4543c3f36f22d7d7"
+            },
+            {
+                "line": 220,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'type'. Use Turkish 'tip' for domain concepts.",
+                "fingerprint": "50d439b021c7d54e22efc7d560bd3c9b"
+            },
+            {
+                "line": 239,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'type' detected. Suggested canonical: tip / tur / kategori.",
+                "fingerprint": "6b74b706675fc6af4543c3f36f22d7d7"
+            },
+            {
+                "line": 239,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'type'. Use Turkish 'tip' for domain concepts.",
+                "fingerprint": "50d439b021c7d54e22efc7d560bd3c9b"
+            },
+            {
+                "line": 270,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'type' detected. Suggested canonical: tip / tur / kategori.",
+                "fingerprint": "6b74b706675fc6af4543c3f36f22d7d7"
+            },
+            {
+                "line": 270,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'type'. Use Turkish 'tip' for domain concepts.",
+                "fingerprint": "50d439b021c7d54e22efc7d560bd3c9b"
+            }
+        ],
         "Http/Controllers/Admin/PropertyHub/TemplateController.php": [
             {
                 "line": 148,
@@ -4842,6 +5546,20 @@
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "a79d94a379ddffc082df4350fd5da07e"
+            }
+        ],
+        "Console/Commands/AI/AICostReportCommand.php": [
+            {
+                "line": 37,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden Turkish framework field 'olusturma_tarihi'. Use Laravel convention 'created_at'.",
+                "fingerprint": "443312419969d7025563fbae5af84b54"
+            },
+            {
+                "line": 86,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden Turkish framework field 'olusturma_tarihi'. Use Laravel convention 'created_at'.",
+                "fingerprint": "443312419969d7025563fbae5af84b54"
             }
         ],
         "Console/Commands/AI/ScanDealsCommand.php": [
@@ -5406,6 +6124,20 @@
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'title'. Use Turkish 'baslik' for domain concepts.",
                 "fingerprint": "aa3061a556448c2dcc10fe91fc87bc50"
+            }
+        ],
+        "Console/Commands/Chaos/ChaosSimulationCommand.php": [
+            {
+                "line": 89,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden Turkish framework field 'olusturma_tarihi'. Use Laravel convention 'created_at'.",
+                "fingerprint": "70edcb12a2e6d26e516a4c1d7ff79856"
+            },
+            {
+                "line": 90,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden Turkish framework field 'guncelleme_tarihi'. Use Laravel convention 'updated_at'.",
+                "fingerprint": "711a460b88797581e893dfb886288396"
             }
         ],
         "Console/Commands/CheckQueueWorker.php": [
@@ -6288,13 +7020,13 @@
         ],
         "Console/Commands/SabGuard/SabGuardCommand.php": [
             {
-                "line": 52,
+                "line": 53,
                 "type": "ForbiddenFieldAST",
                 "message": "Forbidden field 'status' detected. Suggested canonical: aktiflik_durumu.",
                 "fingerprint": "5e18ae1217ef1afb55d7a01266e25b3c"
             },
             {
-                "line": 52,
+                "line": 53,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'status'. Use Turkish 'durum' for domain concepts.",
                 "fingerprint": "5d2b18c3e2c5fecc2b27ee3c1760c2b7"
@@ -6474,37 +7206,37 @@
         ],
         "Console/Commands/YalihanBekciHealthCommand.php": [
             {
-                "line": 262,
+                "line": 268,
                 "type": "ForbiddenFunctionAST",
                 "message": "AST Detected: Call to forbidden function 'shell_exec()'. This may be a security or architectural violation.",
                 "fingerprint": "aec230a4cad6e891c6e0f533da240ee1"
             },
             {
-                "line": 277,
+                "line": 283,
                 "type": "ForbiddenFunctionAST",
                 "message": "AST Detected: Call to forbidden function 'shell_exec()'. This may be a security or architectural violation.",
                 "fingerprint": "aec230a4cad6e891c6e0f533da240ee1"
             },
             {
-                "line": 278,
+                "line": 284,
                 "type": "ForbiddenFunctionAST",
                 "message": "AST Detected: Call to forbidden function 'shell_exec()'. This may be a security or architectural violation.",
                 "fingerprint": "aec230a4cad6e891c6e0f533da240ee1"
             },
             {
-                "line": 297,
+                "line": 303,
                 "type": "ForbiddenFunctionAST",
                 "message": "AST Detected: Call to forbidden function 'shell_exec()'. This may be a security or architectural violation.",
                 "fingerprint": "aec230a4cad6e891c6e0f533da240ee1"
             },
             {
-                "line": 298,
+                "line": 304,
                 "type": "ForbiddenFunctionAST",
                 "message": "AST Detected: Call to forbidden function 'shell_exec()'. This may be a security or architectural violation.",
                 "fingerprint": "aec230a4cad6e891c6e0f533da240ee1"
             },
             {
-                "line": 335,
+                "line": 341,
                 "type": "ForbiddenFunctionAST",
                 "message": "AST Detected: Call to forbidden function 'shell_exec()'. This may be a security or architectural violation.",
                 "fingerprint": "aec230a4cad6e891c6e0f533da240ee1"
@@ -6918,7 +7650,7 @@
         ],
         "Governance/Jobs/GovernanceAlertCheckJob.php": [
             {
-                "line": 39,
+                "line": 40,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "c63a6e6153fb539cc0a9fffe9bcd2ee3"
@@ -9074,32 +9806,6 @@
                 "fingerprint": "f2b6ed4912362694f42ada475eba8ab3"
             }
         ],
-        "Http/Controllers/Admin/IlanCrudController.php": [
-            {
-                "line": 34,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Field 'viewAny' uses camelCase. Database columns must use snake_case.",
-                "fingerprint": "716390a8cd7e262c8eeaec15ade44160"
-            },
-            {
-                "line": 115,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Field 'viewAny' uses camelCase. Database columns must use snake_case.",
-                "fingerprint": "716390a8cd7e262c8eeaec15ade44160"
-            },
-            {
-                "line": 124,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Field 'viewAny' uses camelCase. Database columns must use snake_case.",
-                "fingerprint": "716390a8cd7e262c8eeaec15ade44160"
-            },
-            {
-                "line": 133,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Field 'viewPrivateListingData' uses camelCase. Database columns must use snake_case.",
-                "fingerprint": "d390738ea9571beba225ddcfc2532b01"
-            }
-        ],
         "Http/Controllers/Admin/IlanFeatureController.php": [
             {
                 "line": 45,
@@ -9578,34 +10284,10 @@
         ],
         "Http/Controllers/Admin/IntegrationsController.php": [
             {
-                "line": 83,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
-                "fingerprint": "af01d0b6503426220567723c0e5294db"
-            },
-            {
-                "line": 89,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
-                "fingerprint": "af01d0b6503426220567723c0e5294db"
-            },
-            {
-                "line": 95,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
-                "fingerprint": "af01d0b6503426220567723c0e5294db"
-            },
-            {
-                "line": 101,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
-                "fingerprint": "af01d0b6503426220567723c0e5294db"
-            },
-            {
-                "line": 107,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
-                "fingerprint": "af01d0b6503426220567723c0e5294db"
+                "line": 64,
+                "type": "Hardcoded State String",
+                "message": "Hardcoded state string detected. Use an Enum or Value Object (Rule 6).",
+                "fingerprint": "e0ff052ef7af70faab92c546ad514458"
             },
             {
                 "line": 128,
@@ -9724,31 +10406,31 @@
                 "fingerprint": "5d3a87430e18d53dcf874c3e181f8d50"
             },
             {
-                "line": 433,
+                "line": 488,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'viewAny' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "8c32a7a40e37b5f037fa101157dc4ad9"
             },
             {
-                "line": 471,
+                "line": 526,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'viewAny' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "8c32a7a40e37b5f037fa101157dc4ad9"
             },
             {
-                "line": 492,
+                "line": 547,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'viewAny' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "8c32a7a40e37b5f037fa101157dc4ad9"
             },
             {
-                "line": 579,
+                "line": 634,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'viewAny' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "8c32a7a40e37b5f037fa101157dc4ad9"
             },
             {
-                "line": 635,
+                "line": 690,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'viewAny' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "8c32a7a40e37b5f037fa101157dc4ad9"
@@ -11474,37 +12156,37 @@
                 "fingerprint": "d4f5980aa0b78376ae12e8e7d7041245"
             },
             {
-                "line": 194,
+                "line": 216,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'eslesenIlanlar' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "99d148ed58475bf7983a1e619b7549af"
             },
             {
-                "line": 194,
+                "line": 216,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'eslesenIlanlar' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "99d148ed58475bf7983a1e619b7549af"
             },
             {
-                "line": 195,
+                "line": 217,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'semanticMatches' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "2cc8032a5917e43cbc0430fbb6c89193"
             },
             {
-                "line": 195,
+                "line": 217,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'semanticMatches' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "2cc8032a5917e43cbc0430fbb6c89193"
             },
             {
-                "line": 211,
+                "line": 233,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'eslesenIlanlar' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "99d148ed58475bf7983a1e619b7549af"
             },
             {
-                "line": 211,
+                "line": 233,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'eslesenIlanlar' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "99d148ed58475bf7983a1e619b7549af"
@@ -14576,38 +15258,6 @@
                 "fingerprint": "d5b8c92d28a2a96f8cd4925c9d336176"
             }
         ],
-        "Http/Controllers/Owner/OwnerIlanController.php": [
-            {
-                "line": 40,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Field 'anaKategori' uses camelCase. Database columns must use snake_case.",
-                "fingerprint": "4a88767fd0d938bb4dd5ef032611edb1"
-            },
-            {
-                "line": 40,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Field 'altKategori' uses camelCase. Database columns must use snake_case.",
-                "fingerprint": "e083c545c9db5198b898f821fd274b7d"
-            },
-            {
-                "line": 56,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Field 'anaKategori' uses camelCase. Database columns must use snake_case.",
-                "fingerprint": "4a88767fd0d938bb4dd5ef032611edb1"
-            },
-            {
-                "line": 56,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Field 'altKategori' uses camelCase. Database columns must use snake_case.",
-                "fingerprint": "e083c545c9db5198b898f821fd274b7d"
-            },
-            {
-                "line": 80,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Field 'anaKategoriler' uses camelCase. Database columns must use snake_case.",
-                "fingerprint": "0a66a53cba2c6d00190ee021f7fddcef"
-            }
-        ],
         "Http/Controllers/Owner/OwnerReportController.php": [
             {
                 "line": 71,
@@ -15174,6 +15824,22 @@
                 "fingerprint": "ef616c5591e1f363162411a17dbee95e"
             }
         ],
+        "Jobs/Bootstrap/AiBootstrapJob.php": [
+            {
+                "line": 43,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'ilanDetay' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "d7e15a39e058ac8b2520bbc59d4714a1"
+            }
+        ],
+        "Jobs/Bootstrap/PublishingBootstrapJob.php": [
+            {
+                "line": 42,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'ilanDetay' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "85c47cef8f643c2b1a16f17ac0b2086c"
+            }
+        ],
         "Jobs/Copilot/AggregateVerificationResultsJob.php": [
             {
                 "line": 72,
@@ -15558,6 +16224,38 @@
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'status'. Use Turkish 'durum' for domain concepts.",
                 "fingerprint": "80c1f55c1445f2d86d45c981420fdded"
+            }
+        ],
+        "Jobs/Workspace/ProcessWorkspaceExecutionJob.php": [
+            {
+                "line": 65,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'type' detected. Suggested canonical: tip / tur / kategori.",
+                "fingerprint": "459c706e0d4044c728d557eeb5540745"
+            },
+            {
+                "line": 65,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'type'. Use Turkish 'tip' for domain concepts.",
+                "fingerprint": "5836e00d0e89b1b7f312b687cafdf538"
+            },
+            {
+                "line": 71,
+                "type": "SilentCatchAST",
+                "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
+                "fingerprint": "0bb5966e6b9f9d2c6cbd9925c4d0088d"
+            },
+            {
+                "line": 97,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'type' detected. Suggested canonical: tip / tur / kategori.",
+                "fingerprint": "459c706e0d4044c728d557eeb5540745"
+            },
+            {
+                "line": 97,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'type'. Use Turkish 'tip' for domain concepts.",
+                "fingerprint": "5836e00d0e89b1b7f312b687cafdf538"
             }
         ],
         "Models/AI/AIContractDraft.php": [
@@ -16236,50 +16934,6 @@
                 "fingerprint": "be1c856a27068e07a9944acda268feb2"
             }
         ],
-        "Models/Hermes/HermesEventLog.php": [
-            {
-                "line": 31,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Found forbidden English field 'status'. Use Turkish 'durum' for domain concepts.",
-                "fingerprint": "5280c8742b68377e130328382bfa55e6"
-            },
-            {
-                "line": 69,
-                "type": "ForbiddenFieldAST",
-                "message": "Forbidden field 'status' detected. Suggested canonical: aktiflik_durumu.",
-                "fingerprint": "3c1b08439b6d0f49a95517e672c9cbf9"
-            },
-            {
-                "line": 69,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Found forbidden English field 'status'. Use Turkish 'durum' for domain concepts.",
-                "fingerprint": "5280c8742b68377e130328382bfa55e6"
-            },
-            {
-                "line": 80,
-                "type": "ForbiddenFieldAST",
-                "message": "Forbidden field 'status' detected. Suggested canonical: aktiflik_durumu.",
-                "fingerprint": "3c1b08439b6d0f49a95517e672c9cbf9"
-            },
-            {
-                "line": 80,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Found forbidden English field 'status'. Use Turkish 'durum' for domain concepts.",
-                "fingerprint": "5280c8742b68377e130328382bfa55e6"
-            },
-            {
-                "line": 93,
-                "type": "ForbiddenFieldAST",
-                "message": "Forbidden field 'status' detected. Suggested canonical: aktiflik_durumu.",
-                "fingerprint": "3c1b08439b6d0f49a95517e672c9cbf9"
-            },
-            {
-                "line": 93,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Found forbidden English field 'status'. Use Turkish 'durum' for domain concepts.",
-                "fingerprint": "5280c8742b68377e130328382bfa55e6"
-            }
-        ],
         "Models/Il.php": [
             {
                 "line": 28,
@@ -16438,13 +17092,13 @@
         ],
         "Models/Kisi.php": [
             {
-                "line": 373,
+                "line": 378,
                 "type": "ForbiddenFieldAST",
                 "message": "Forbidden field 'active' detected. Suggested canonical: aktiflik_durumu.",
                 "fingerprint": "31a873fee055320a50089f748bddc776"
             },
             {
-                "line": 390,
+                "line": 395,
                 "type": "ForbiddenFieldAST",
                 "message": "Forbidden field 'active' detected. Suggested canonical: aktiflik_durumu.",
                 "fingerprint": "31a873fee055320a50089f748bddc776"
@@ -17232,31 +17886,37 @@
         ],
         "Modules/Crm/Services/KisiService.php": [
             {
-                "line": 19,
+                "line": 23,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'createKisi' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "30be4cf11c84e85ec3f303456a7aa1e7"
             },
             {
-                "line": 59,
+                "line": 63,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'updateKisi' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "65b3939d21582028c9bc2156fb4b72f7"
             },
             {
-                "line": 72,
+                "line": 76,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'deleteKisi' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "8a9ff660db529973e6581f38c45cd335"
             },
             {
-                "line": 99,
+                "line": 91,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'restoreKisi' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "eafe8879feda6a0bfbeb004cd04728ec"
+            },
+            {
+                "line": 116,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'isAdmin' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "a8c96e1219652ed6f54798f588951927"
             },
             {
-                "line": 100,
+                "line": 117,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'hasRole' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "2bdbe4731b65e2de52624ad79938e439"
@@ -17526,91 +18186,85 @@
         ],
         "Modules/Finans/Controllers/KomisyonController.php": [
             {
-                "line": 37,
-                "type": "SilentCatchAST",
-                "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
-                "fingerprint": "3b469bf026e809e0798ea5972d1b887c"
-            },
-            {
-                "line": 38,
+                "line": 45,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'saticiDanisman' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "e59abc3721998ff558764d91bdadfe0a"
             },
             {
-                "line": 38,
+                "line": 45,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'aliciDanisman' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "053aa4c2cf6649ee651da28a7199d1df"
             },
             {
-                "line": 77,
+                "line": 96,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "3b469bf026e809e0798ea5972d1b887c"
             },
             {
-                "line": 79,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Field 'saticiDanisman' uses camelCase. Database columns must use snake_case.",
-                "fingerprint": "e59abc3721998ff558764d91bdadfe0a"
-            },
-            {
-                "line": 79,
-                "type": "NamingAuthorityAST",
-                "message": "Naming Authority Violation: Field 'aliciDanisman' uses camelCase. Database columns must use snake_case.",
-                "fingerprint": "053aa4c2cf6649ee651da28a7199d1df"
-            },
-            {
-                "line": 113,
+                "line": 136,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "3b469bf026e809e0798ea5972d1b887c"
             },
             {
-                "line": 180,
+                "line": 174,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "3b469bf026e809e0798ea5972d1b887c"
             },
             {
-                "line": 216,
+                "line": 241,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "3b469bf026e809e0798ea5972d1b887c"
             },
             {
-                "line": 235,
+                "line": 281,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "3b469bf026e809e0798ea5972d1b887c"
             },
             {
-                "line": 254,
+                "line": 305,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "3b469bf026e809e0798ea5972d1b887c"
             },
             {
-                "line": 273,
+                "line": 329,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "3b469bf026e809e0798ea5972d1b887c"
             },
             {
-                "line": 304,
+                "line": 353,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "3b469bf026e809e0798ea5972d1b887c"
             },
             {
-                "line": 324,
+                "line": 377,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "3b469bf026e809e0798ea5972d1b887c"
             },
             {
-                "line": 350,
+                "line": 413,
+                "type": "SilentCatchAST",
+                "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
+                "fingerprint": "3b469bf026e809e0798ea5972d1b887c"
+            },
+            {
+                "line": 433,
+                "type": "SilentCatchAST",
+                "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
+                "fingerprint": "3b469bf026e809e0798ea5972d1b887c"
+            },
+            {
+                "line": 464,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "3b469bf026e809e0798ea5972d1b887c"
@@ -18564,7 +19218,7 @@
                 "fingerprint": "134f1d5a53adde06e0753dfe4524cc52"
             },
             {
-                "line": 55,
+                "line": 56,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'isAdmin' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "134f1d5a53adde06e0753dfe4524cc52"
@@ -18598,6 +19252,20 @@
                 "fingerprint": "3e8026e68261f6aa3094dfef3ef15b25"
             }
         ],
+        "Policies/PortfolioDriveWorkspacePolicy.php": [
+            {
+                "line": 23,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'isAdmin' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "a7e9324b3a491427f5431f39cd066961"
+            },
+            {
+                "line": 37,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'isAdmin' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "a7e9324b3a491427f5431f39cd066961"
+            }
+        ],
         "Policies/TalepPolicy.php": [
             {
                 "line": 23,
@@ -18613,6 +19281,12 @@
             },
             {
                 "line": 56,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'isAdmin' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "3913a76935594f434878010fd98e8c74"
+            },
+            {
+                "line": 68,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'isAdmin' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "3913a76935594f434878010fd98e8c74"
@@ -18654,43 +19328,43 @@
                 "fingerprint": "b14c99ec3acc70e5d2c41efceabee713"
             },
             {
-                "line": 201,
+                "line": 206,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "b14c99ec3acc70e5d2c41efceabee713"
             },
             {
-                "line": 204,
+                "line": 209,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'clientId' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "2a5218790b208636b63ff912291a51b8"
             },
             {
-                "line": 205,
+                "line": 210,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'clientSecret' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "6d07b649b97c1008227a178db202c292"
             },
             {
-                "line": 206,
+                "line": 211,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'refreshToken' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "4168867361016d2d8b5bd04d494d5e50"
             },
             {
-                "line": 246,
+                "line": 251,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'currentLocale' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "d0b4fadf8ef61fe01c55cba72b6545af"
             },
             {
-                "line": 248,
+                "line": 253,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'currentCurrency' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "21028c4dcc0ef400c3cc93c30b60c05e"
             },
             {
-                "line": 253,
+                "line": 258,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "b14c99ec3acc70e5d2c41efceabee713"
@@ -23994,133 +24668,133 @@
                 "fingerprint": "0ba9349a0213dcf6d7ae5c1d235e4617"
             },
             {
-                "line": 334,
+                "line": 363,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'ilanSahibi' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "fcb7377a26f540b7f3256ddce6aa31a6"
             },
             {
-                "line": 335,
+                "line": 364,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'ilgiliKisi' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "0ba9349a0213dcf6d7ae5c1d235e4617"
             },
             {
-                "line": 336,
+                "line": 365,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'userDanisman' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "ad8178f0eb4360ec3f485b1830b42e77"
             },
             {
-                "line": 338,
+                "line": 367,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'parentKategori' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "0dc712297bff84f8c4ee8e5e6cfd5ad4"
             },
             {
-                "line": 538,
+                "line": 567,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'anaKategoriler' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "ee8dd662bf07e7e63c647244fa106e27"
             },
             {
-                "line": 542,
+                "line": 571,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'durumSecenekleri' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "9f15b5912c8803f8a039df4cafed5b01"
             },
             {
-                "line": 543,
+                "line": 572,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'autoSave' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "b285aff56381e740f578abf2a868a550"
             },
             {
-                "line": 556,
+                "line": 585,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'ilanSahibi' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "fcb7377a26f540b7f3256ddce6aa31a6"
             },
             {
-                "line": 558,
+                "line": 587,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'parentKategori' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "0dc712297bff84f8c4ee8e5e6cfd5ad4"
             },
             {
-                "line": 601,
+                "line": 630,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'durumSecenekleri' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "9f15b5912c8803f8a039df4cafed5b01"
             },
             {
-                "line": 607,
+                "line": 636,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'autoSaveData' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "a021c02acfa586d03e510e2a5adfbc52"
             },
             {
-                "line": 608,
+                "line": 637,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'ilanId' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "58665841790112430c5ba914f7cb4ef8"
             },
             {
-                "line": 741,
+                "line": 770,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'marketData' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "3accef5d56df6d93f1a5c00667426d9a"
             },
             {
-                "line": 742,
+                "line": 771,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'priceAdvice' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "e0fc7bdc8bc5780d7f55cdaf41a65407"
             },
             {
-                "line": 743,
+                "line": 772,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'potentialBuyers' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "b18943747952397d78a617f99f67d82e"
             },
             {
-                "line": 744,
+                "line": 773,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'pricingInsight' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "45b295ff1ac6b34e6080fa1396d0aa54"
             },
             {
-                "line": 745,
+                "line": 774,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'advisorInsight' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "92fd569f79b734bace1cac29c1e62a93"
             },
             {
-                "line": 746,
+                "line": 775,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'locationInsight' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "896d81eadf2ce11927ed41d51ddef3dc"
             },
             {
-                "line": 747,
+                "line": 776,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'actionMode' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "5a8e3a53afb720da6a227a061fefae7a"
             },
             {
-                "line": 748,
+                "line": 777,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'trustBreakdown' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "61fdfa9b3a41ab7f5703bac78ce6c73f"
             },
             {
-                "line": 824,
+                "line": 853,
                 "type": "ForbiddenFieldAST",
                 "message": "Forbidden field 'active' detected. Suggested canonical: aktiflik_durumu.",
                 "fingerprint": "8d5274b900f60c88933709b044a5c6c3"
             },
             {
-                "line": 825,
+                "line": 854,
                 "type": "ForbiddenFieldAST",
                 "message": "Forbidden field 'active' detected. Suggested canonical: aktiflik_durumu.",
                 "fingerprint": "8d5274b900f60c88933709b044a5c6c3"
@@ -25720,25 +26394,25 @@
                 "fingerprint": "2a25671695b13be50f044f4397bb4bd5"
             },
             {
-                "line": 393,
+                "line": 405,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'calculateLocationScore' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "44412488d3518237997a8d042eaed36a"
             },
             {
-                "line": 394,
+                "line": 406,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'calculatePriceScore' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "8fee3537eddcd227614b7b7b80b88c52"
             },
             {
-                "line": 395,
+                "line": 407,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'calculateCategoryScore' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "308a6d7e373988f903ab58f4b697afa9"
             },
             {
-                "line": 396,
+                "line": 408,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'calculateAreaScore' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "4ffca09bc42ad19b4ba0cc865f739c58"
@@ -29344,6 +30018,74 @@
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'updateField' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "12485214cfa9ec4b5eb04bc0d5dbb904"
+            }
+        ],
+        "Services/Workspace/ReplayService.php": [
+            {
+                "line": 45,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'type' detected. Suggested canonical: tip / tur / kategori.",
+                "fingerprint": "6eb663d0e206a6751a1f4dcad6afc92a"
+            },
+            {
+                "line": 45,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'type'. Use Turkish 'tip' for domain concepts.",
+                "fingerprint": "072af82e593b80a5f52f1087d05f09fb"
+            }
+        ],
+        "Services/Workspace/WorkspaceNextActionService.php": [
+            {
+                "line": 189,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'priority' detected. Suggested canonical: one_cikan.",
+                "fingerprint": "2ff1dc4d8a91276628f00f0b87f9abff"
+            }
+        ],
+        "Services/Workspace/WorkspaceSummaryService.php": [
+            {
+                "line": 207,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'anaKategori' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "43abd2f6464552736118ddb430dd717a"
+            },
+            {
+                "line": 208,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'altKategori' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "4acca180be4637d5fc1f46ef830c675a"
+            },
+            {
+                "line": 210,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Field 'ilanSahibi' uses camelCase. Database columns must use snake_case.",
+                "fingerprint": "94c6579241f812652cd978d01baa464b"
+            }
+        ],
+        "Services/Workspace/WorkspaceTimelineService.php": [
+            {
+                "line": 173,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
+                "fingerprint": "1293c0a1ff999648b4752969645f1046"
+            },
+            {
+                "line": 186,
+                "type": "NamingAuthorityAST",
+                "message": "Naming Authority Violation: Found forbidden English field 'description'. Use Turkish 'aciklama' for domain concepts.",
+                "fingerprint": "1293c0a1ff999648b4752969645f1046"
+            },
+            {
+                "line": 195,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'status' detected. Suggested canonical: aktiflik_durumu.",
+                "fingerprint": "94eca745db67a6d7eb187eaa8e574319"
+            },
+            {
+                "line": 199,
+                "type": "ForbiddenFieldAST",
+                "message": "Forbidden field 'status' detected. Suggested canonical: aktiflik_durumu.",
+                "fingerprint": "94eca745db67a6d7eb187eaa8e574319"
             }
         ],
         "Support/Governance/Analyze/Finding.php": [

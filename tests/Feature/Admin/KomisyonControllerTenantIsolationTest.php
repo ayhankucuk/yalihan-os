@@ -9,7 +9,6 @@ use App\Models\SaaS\Tenant;
 use App\Modules\Auth\Models\Role;
 use App\Modules\Finans\Models\Komisyon;
 use App\Services\SaaS\TenantContextService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -21,7 +20,6 @@ use Tests\TestCase;
  */
 class KomisyonControllerTenantIsolationTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected User $admin;
     protected User $danismanA;

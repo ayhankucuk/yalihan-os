@@ -1,0 +1,341 @@
+- generic [active] [ref=f4e1]:
+  - link "İçeriğe atla" [ref=f4e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f4e4]:
+    - complementary [ref=f4e5]:
+      - generic [ref=f4e7]:
+        - generic [ref=f4e11] [cursor=pointer]: "Y"
+        - generic [ref=f4e12]:
+          - heading "Yalıhan Emlak" [level=2] [ref=f4e13]
+          - paragraph [ref=f4e16]: Yönetim Paneli
+      - navigation [ref=f4e17]:
+        - generic [ref=f4e19]:
+          - generic:
+            - img
+          - textbox "Menüde ara..." [ref=f4e20]
+        - menu [ref=f4e21]:
+          - listitem [ref=f4e22]:
+            - menuitem "Dashboard" [ref=f4e23] [cursor=pointer]:
+              - img [ref=f4e25]
+              - generic [ref=f4e30]: Dashboard
+          - listitem [ref=f4e31]:
+            - button "İlanlar & Portföy" [ref=f4e32] [cursor=pointer]:
+              - img [ref=f4e34]
+              - generic [ref=f4e37]: İlanlar & Portföy
+              - img [ref=f4e38]
+            - generic [ref=f4e40]:
+              - menuitem "İlanlarım" [ref=f4e42] [cursor=pointer]:
+                - generic [ref=f4e44]: İlanlarım
+              - menuitem "Tüm İlanlar" [ref=f4e45] [cursor=pointer]:
+                - generic [ref=f4e47]: Tüm İlanlar
+              - menuitem "Yeni İlan AI" [ref=f4e48] [cursor=pointer]:
+                - generic [ref=f4e50]: Yeni İlan
+                - generic [ref=f4e51]: AI
+              - menuitem "Danışmanlar" [ref=f4e52] [cursor=pointer]:
+                - generic [ref=f4e54]: Danışmanlar
+          - listitem [ref=f4e55]:
+            - button "CRM & Müşteri" [ref=f4e56] [cursor=pointer]:
+              - img [ref=f4e58]
+              - generic [ref=f4e60]: CRM & Müşteri
+              - img [ref=f4e61]
+            - generic [ref=f4e63]:
+              - menuitem "CRM Dashboard" [ref=f4e65] [cursor=pointer]:
+                - generic [ref=f4e67]: CRM Dashboard
+              - menuitem "Kişiler" [ref=f4e68] [cursor=pointer]:
+                - generic [ref=f4e70]: Kişiler
+              - menuitem "Kişilerim" [ref=f4e71] [cursor=pointer]:
+                - generic [ref=f4e73]: Kişilerim
+              - menuitem "Talepler" [ref=f4e74] [cursor=pointer]:
+                - generic [ref=f4e76]: Talepler
+              - menuitem "Eşleştirmeler AI" [ref=f4e77] [cursor=pointer]:
+                - generic [ref=f4e79]: Eşleştirmeler
+                - generic [ref=f4e80]: AI
+          - listitem [ref=f4e81]:
+            - button "Takım & Operasyon" [ref=f4e82] [cursor=pointer]:
+              - img [ref=f4e84]
+              - generic [ref=f4e87]: Takım & Operasyon
+              - img [ref=f4e88]
+            - generic [ref=f4e90]:
+              - menuitem "Takımlar" [ref=f4e92] [cursor=pointer]:
+                - generic [ref=f4e94]: Takımlar
+              - menuitem "Görevler" [ref=f4e95] [cursor=pointer]:
+                - generic [ref=f4e97]: Görevler
+              - menuitem "Projeler" [ref=f4e98] [cursor=pointer]:
+                - generic [ref=f4e100]: Projeler
+              - menuitem "Kanban Board" [ref=f4e101] [cursor=pointer]:
+                - generic [ref=f4e103]: Kanban Board
+          - listitem [ref=f4e104]:
+            - button "Finans & Satış" [ref=f4e105] [cursor=pointer]:
+              - img [ref=f4e107]
+              - generic [ref=f4e109]: Finans & Satış
+              - img [ref=f4e110]
+            - generic [ref=f4e112]:
+              - menuitem "Finansal İşlemler" [ref=f4e114] [cursor=pointer]:
+                - generic [ref=f4e116]: Finansal İşlemler
+              - menuitem "Satışlar 💰" [ref=f4e117] [cursor=pointer]:
+                - generic [ref=f4e119]: Satışlar
+                - generic [ref=f4e120]: 💰
+          - listitem [ref=f4e121]:
+            - menuitem "Bildirimler" [ref=f4e122] [cursor=pointer]:
+              - img [ref=f4e124]
+              - generic [ref=f4e127]: Bildirimler
+          - listitem [ref=f4e128]:
+            - button "Property Engine" [ref=f4e129] [cursor=pointer]:
+              - img [ref=f4e131]
+              - generic [ref=f4e133]: Property Engine
+              - img [ref=f4e134]
+            - generic [ref=f4e136]:
+              - menuitem "Dashboard" [ref=f4e138] [cursor=pointer]:
+                - generic [ref=f4e140]: Dashboard
+              - menuitem "Özellik Havuzu" [ref=f4e141] [cursor=pointer]:
+                - generic [ref=f4e143]: Özellik Havuzu
+              - menuitem "Şablonlar" [ref=f4e144] [cursor=pointer]:
+                - generic [ref=f4e146]: Şablonlar
+              - menuitem "Özellik Paketleri" [ref=f4e147] [cursor=pointer]:
+                - generic [ref=f4e149]: Özellik Paketleri
+              - menuitem "Özellik Kategorileri" [ref=f4e150] [cursor=pointer]:
+                - generic [ref=f4e152]: Özellik Kategorileri
+              - menuitem "Kategori Matrisi" [ref=f4e153] [cursor=pointer]:
+                - generic [ref=f4e155]: Kategori Matrisi
+              - menuitem "Bağımlılık Kuralları" [ref=f4e156] [cursor=pointer]:
+                - generic [ref=f4e158]: Bağımlılık Kuralları
+              - menuitem "TKGM Parsel" [ref=f4e159] [cursor=pointer]:
+                - generic [ref=f4e161]: TKGM Parsel
+          - listitem [ref=f4e162]:
+            - button "Cortex" [ref=f4e163] [cursor=pointer]:
+              - img [ref=f4e165]
+              - generic [ref=f4e167]: Cortex
+              - img [ref=f4e168]
+            - generic [ref=f4e170]:
+              - menuitem "AI Dashboard" [ref=f4e172] [cursor=pointer]:
+                - generic [ref=f4e174]: AI Dashboard
+              - menuitem "Cortex Analytics" [ref=f4e175] [cursor=pointer]:
+                - generic [ref=f4e177]: Cortex Analytics
+              - menuitem "Cortex Monitoring" [ref=f4e178] [cursor=pointer]:
+                - generic [ref=f4e180]: Cortex Monitoring
+              - menuitem "AI Alan Önerileri" [ref=f4e181] [cursor=pointer]:
+                - generic [ref=f4e183]: AI Alan Önerileri
+              - menuitem "Kullanım & Maliyet" [ref=f4e184] [cursor=pointer]:
+                - generic [ref=f4e186]: Kullanım & Maliyet
+              - menuitem "İstatistikler" [ref=f4e187] [cursor=pointer]:
+                - generic [ref=f4e189]: İstatistikler
+              - menuitem "Tüm Raporlar" [ref=f4e190] [cursor=pointer]:
+                - generic [ref=f4e192]: Tüm Raporlar
+              - menuitem "Portfolio Doctor AI" [ref=f4e193] [cursor=pointer]:
+                - generic [ref=f4e195]: Portfolio Doctor
+                - generic [ref=f4e196]: AI
+          - listitem [ref=f4e197]:
+            - button "Governance" [ref=f4e198] [cursor=pointer]:
+              - img [ref=f4e200]
+              - generic [ref=f4e202]: Governance
+              - img [ref=f4e203]
+            - generic [ref=f4e205]:
+              - menuitem "Telemetri İzleme LIVE" [ref=f4e207] [cursor=pointer]:
+                - generic [ref=f4e209]: Telemetri İzleme
+                - generic [ref=f4e210]: LIVE
+              - menuitem "AI Kontrol Merkezi" [ref=f4e211] [cursor=pointer]:
+                - generic [ref=f4e213]: AI Kontrol Merkezi
+              - menuitem "Karar Kuyruğu" [ref=f4e214] [cursor=pointer]:
+                - generic [ref=f4e216]: Karar Kuyruğu
+              - menuitem "Governance Dashboard" [ref=f4e217] [cursor=pointer]:
+                - generic [ref=f4e219]: Governance Dashboard
+              - menuitem "Özellik Sağlık Matrisi" [ref=f4e220] [cursor=pointer]:
+                - generic [ref=f4e222]: Özellik Sağlık Matrisi
+              - menuitem "AI Governance" [ref=f4e223] [cursor=pointer]:
+                - generic [ref=f4e225]: AI Governance
+              - menuitem "Denetim Kayıtları" [ref=f4e226] [cursor=pointer]:
+                - generic [ref=f4e228]: Denetim Kayıtları
+              - menuitem "Otonom Kontrol" [ref=f4e229] [cursor=pointer]:
+                - generic [ref=f4e231]: Otonom Kontrol
+              - menuitem "Aksiyon Döngüsü" [ref=f4e232] [cursor=pointer]:
+                - generic [ref=f4e234]: Aksiyon Döngüsü
+              - menuitem "Yalıhan Bekçi" [ref=f4e235] [cursor=pointer]:
+                - generic [ref=f4e237]: Yalıhan Bekçi
+          - listitem [ref=f4e238]:
+            - button "Automation Hub" [ref=f4e239] [cursor=pointer]:
+              - img [ref=f4e241]
+              - generic [ref=f4e244]: Automation Hub
+              - img [ref=f4e245]
+            - generic [ref=f4e247]:
+              - menuitem "Telegram Bot 🤖" [ref=f4e249] [cursor=pointer]:
+                - generic [ref=f4e251]: Telegram Bot
+                - generic [ref=f4e252]: 🤖
+              - menuitem "n8n Workflows" [ref=f4e253] [cursor=pointer]:
+                - generic [ref=f4e255]: n8n Workflows
+              - menuitem "Entegrasyonlar" [ref=f4e256] [cursor=pointer]:
+                - generic [ref=f4e258]: Entegrasyonlar
+              - menuitem "Sesli Arama" [ref=f4e259] [cursor=pointer]:
+                - generic [ref=f4e261]: Sesli Arama
+          - listitem [ref=f4e262]:
+            - button "Sistem" [ref=f4e263] [cursor=pointer]:
+              - img [ref=f4e265]
+              - generic [ref=f4e267]: Sistem
+              - img [ref=f4e268]
+            - generic [ref=f4e270]:
+              - menuitem "Sistem Sağlığı" [ref=f4e272] [cursor=pointer]:
+                - generic [ref=f4e274]: Sistem Sağlığı
+              - menuitem "Telescope" [ref=f4e275] [cursor=pointer]:
+                - generic [ref=f4e277]: Telescope
+              - menuitem "Horizon" [ref=f4e278] [cursor=pointer]:
+                - generic [ref=f4e280]: Horizon
+              - menuitem "Kullanıcılar" [ref=f4e281] [cursor=pointer]:
+                - generic [ref=f4e283]: Kullanıcılar
+              - menuitem "Genel Ayarlar" [ref=f4e284] [cursor=pointer]:
+                - generic [ref=f4e286]: Genel Ayarlar
+              - menuitem "AI Ayarları" [ref=f4e287] [cursor=pointer]:
+                - generic [ref=f4e289]: AI Ayarları
+              - menuitem "Adres Yönetimi" [ref=f4e290] [cursor=pointer]:
+                - generic [ref=f4e292]: Adres Yönetimi
+      - generic [ref=f4e294]:
+        - generic [ref=f4e295]: A
+        - generic [ref=f4e296]:
+          - paragraph [ref=f4e297]: Ayhan Küçük
+          - paragraph [ref=f4e298]: Süper Yönetici
+    - generic [ref=f4e299]:
+      - banner [ref=f4e300]:
+        - generic [ref=f4e302]:
+          - button "Hızlı Arama... ⌘K" [ref=f4e304] [cursor=pointer]:
+            - img [ref=f4e305]
+            - generic [ref=f4e307]: Hızlı Arama...
+            - generic [ref=f4e308]: ⌘K
+          - button "Bildirimler" [ref=f4e310] [cursor=pointer]
+          - button "Tema" [ref=f4e312] [cursor=pointer]:
+            - img [ref=f4e313]
+            - img [ref=f4e315]
+          - generic [ref=f4e317]:
+            - button "A" [ref=f4e318] [cursor=pointer]:
+              - generic [ref=f4e320]: A
+              - img [ref=f4e321]
+            - generic [ref=f4e323]:
+              - link "Profil" [ref=f4e324] [cursor=pointer]:
+                - /url: http://localhost:8000/profile
+              - link "Ayarlar" [ref=f4e325] [cursor=pointer]:
+                - /url: http://localhost:8000/admin/ayarlar
+              - button "Çıkış" [ref=f4e328] [cursor=pointer]
+      - link:
+        - /url: http://localhost:8000/admin/governance/intelligence-center
+      - generic [ref=f4e329]:
+        - 'link "AI Sistem Watcher: Beklemede Agent: 0/5" [ref=f4e330] [cursor=pointer]':
+          - /url: http://localhost:8000/admin/governance/intelligence-center
+          - generic [ref=f4e331]:
+            - generic [ref=f4e332]: AI Sistem
+            - generic [ref=f4e333]: "Watcher: Beklemede"
+            - generic [ref=f4e336]: "Agent: 0/5"
+        - generic [ref=f4e337]:
+          - 'link "Bugün Oto: 0 🟢 Düşük" [ref=f4e338] [cursor=pointer]':
+            - /url: http://localhost:8000/admin/governance/intelligence-center
+          - link "L2" [ref=f4e339] [cursor=pointer]:
+            - /url: http://localhost:8000/admin/governance/autonomy
+      - main [ref=f4e340]:
+        - generic [ref=f4e342]:
+          - generic [ref=f4e344]:
+            - generic [ref=f4e345]:
+              - heading "Sistem Ayarları" [level=1] [ref=f4e346]:
+                - img [ref=f4e347]
+                - text: Sistem Ayarları
+              - paragraph [ref=f4e350]: Sistem genelinde tüm ayarları yönetin ve yapılandırın
+            - button "Varsayılanlara Dön" [ref=f4e352] [cursor=pointer]:
+              - img [ref=f4e353]
+              - text: Varsayılanlara Dön
+          - generic [ref=f4e356]:
+            - navigation "Tabs" [ref=f4e358]:
+              - button "Genel" [ref=f4e359] [cursor=pointer]:
+                - img [ref=f4e360]
+                - text: Genel
+              - button "Bildirimler" [ref=f4e362] [cursor=pointer]:
+                - img [ref=f4e363]
+                - text: Bildirimler
+              - button "Portal Entegrasyonları" [ref=f4e365] [cursor=pointer]:
+                - img [ref=f4e366]
+                - text: Portal Entegrasyonları
+              - button "Fiyatlandırma" [ref=f4e368] [cursor=pointer]:
+                - img [ref=f4e369]
+                - text: Fiyatlandırma
+              - button "QR Kod" [ref=f4e371] [cursor=pointer]:
+                - img [ref=f4e372]
+                - text: QR Kod
+              - button "Navigasyon" [ref=f4e374] [cursor=pointer]:
+                - img [ref=f4e375]
+                - text: Navigasyon
+              - button "Kullanıcı Yönetimi" [ref=f4e377] [cursor=pointer]:
+                - img [ref=f4e378]
+                - text: Kullanıcı Yönetimi
+              - button "Diller" [ref=f4e380] [cursor=pointer]:
+                - img [ref=f4e381]
+                - text: Diller
+              - button "Para Birimleri" [ref=f4e383] [cursor=pointer]:
+                - img [ref=f4e384]
+                - text: Para Birimleri
+            - generic [ref=f4e386]:
+              - generic [ref=f4e388]:
+                - generic [ref=f4e389]:
+                  - heading "Genel Ayarlar" [level=2] [ref=f4e390]:
+                    - img [ref=f4e391]
+                    - text: Genel Ayarlar
+                  - paragraph [ref=f4e393]: Sitenin temel ayarlarını buradan yönetebilirsiniz.
+                - generic [ref=f4e394]:
+                  - generic [ref=f4e395]:
+                    - generic [ref=f4e396]: Site Başlığı *
+                    - textbox "Site Başlığı *" [ref=f4e397]:
+                      - /placeholder: Yalıhan Emlak
+                    - paragraph [ref=f4e398]: Sitenin ana başlığı
+                  - generic [ref=f4e399]:
+                    - generic [ref=f4e400]: Varsayılan Para Birimi *
+                    - combobox "Varsayılan Para Birimi *" [ref=f4e401]
+                    - paragraph [ref=f4e402]: Sistem genelinde kullanılacak para birimi
+                  - generic [ref=f4e403]:
+                    - generic [ref=f4e404]: Varsayılan Dil *
+                    - combobox "Varsayılan Dil *" [ref=f4e405]
+                    - paragraph [ref=f4e406]: Sistem genelinde kullanılacak birincil dil
+              - generic [ref=f4e407]:
+                - paragraph [ref=f4e408]:
+                  - img [ref=f4e409]
+                  - text: Değişiklikleri kaydetmek için aşağıdaki butona tıklayın
+                - button "Tüm Değişiklikleri Kaydet" [ref=f4e411] [cursor=pointer]:
+                  - img [ref=f4e412]
+                  - text: Tüm Değişiklikleri Kaydet
+  - generic [ref=f4e415] [cursor=pointer]:
+    - paragraph
+    - button [ref=f4e416]:
+      - img [ref=f4e417]
+  - generic [ref=f4e419]:
+    - generic [ref=f4e420]:
+      - link "Yeni İlan" [ref=f4e421] [cursor=pointer]:
+        - /url: http://localhost:8000/admin/ilanlar/create-wizard
+        - generic [ref=f4e422]: Yeni İlan
+        - img [ref=f4e424]
+      - link "Yeni Müşteri" [ref=f4e426] [cursor=pointer]:
+        - /url: http://localhost:8000/admin/kisiler/create
+        - generic [ref=f4e427]: Yeni Müşteri
+        - img [ref=f4e429]
+      - link "Yeni Görev" [ref=f4e431] [cursor=pointer]:
+        - /url: "#"
+        - generic [ref=f4e432]: Yeni Görev
+        - img [ref=f4e434]
+    - button [ref=f4e436] [cursor=pointer]:
+      - img [ref=f4e437]
+  - generic [ref=f4e439]:
+    - button "Copilot Asistan" [ref=f4e440] [cursor=pointer]:
+      - img [ref=f4e441]
+      - img [ref=f4e443]
+    - generic [ref=f4e446]:
+      - generic [ref=f4e447]:
+        - generic [ref=f4e448]:
+          - img [ref=f4e449]
+          - heading "Copilot" [level=3] [ref=f4e451]
+        - button "Yenile" [ref=f4e453] [cursor=pointer]:
+          - img [ref=f4e454]
+      - generic [ref=f4e458]: Yalıhan Copilot v2.0
+    - generic [ref=f4e460]:
+      - generic [ref=f4e461]:
+        - generic [ref=f4e462]:
+          - img [ref=f4e463]
+          - heading "Değişiklik Önizleme" [level=3] [ref=f4e465]
+        - button "Kapat" [ref=f4e467] [cursor=pointer]:
+          - img [ref=f4e468]
+      - generic [ref=f4e471]:
+        - button "İptal" [ref=f4e472] [cursor=pointer]
+        - generic [ref=f4e473]:
+          - button "Reddet" [ref=f4e474] [cursor=pointer]
+          - button "Tümünü Uygula" [ref=f4e475] [cursor=pointer]
+  - img

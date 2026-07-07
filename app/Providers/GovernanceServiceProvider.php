@@ -28,5 +28,15 @@ final class GovernanceServiceProvider extends ServiceProvider
             GovernanceReadServiceInterface::class,
             GovernanceReadService::class
         );
+
+        $this->app->singleton(
+            \App\Domain\Core\Security\ZeroTrustAuditorContract::class,
+            \App\Domain\Core\Security\ZeroTrustAuditor::class
+        );
+
+        $this->app->singleton(
+            \App\Domain\Core\Security\GlobalHardlockManagerContract::class,
+            \App\Domain\Core\Security\GlobalHardlockManager::class
+        );
     }
 }

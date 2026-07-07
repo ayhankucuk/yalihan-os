@@ -148,3 +148,42 @@ php artisan test
 # ❌ scopeOfType
 # ✅ scopeOfTip
 ```
+
+---
+
+## LP-016: Orphan Controller / Route Debt (2026-07-04)
+
+### Kalıp
+Controller yazıldı ama route eklenmedi — endpoint asla tetiklenemez.
+Bazen controller method'larının bir kısmı route'lı, bir kısmı değil.
+
+### Örnek
+```
+Api/DriveWebhookController → handle() yazıldı
+routes/api.php → POST /api/drive/webhook YOK
+→ Google Drive webhook'ları 404 verir
+```
+
+### Oturum-Kontrol Listesi
+Her yeni controller yazımında:
+```bash
+# 1. Controller yaz
+# 2. Route'u aynı oturumda ekle
+# 3. Doğrula
+php artisan route:list | grep ControllerAdi
+```
+
+### Dışlama (route EKLEME, silme):
+- `*Test.php` — test-only
+- `*Debug*` veya `*Demo*` — dev-only
+- Base class / trait — zaten controller değil
+
+### Nasıl Bulunur
+```bash
+# Tüm controller'ları listele
+find app/Http/Controllers -name "*Controller.php" | wc -l
+
+# Route'sız controller'ları bul (agent ile)
+# Route dosyalarındaki tüm Controller::class referanslarını çek
+# Controller dosyalarını eşleştir
+```

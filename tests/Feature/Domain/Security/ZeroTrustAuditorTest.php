@@ -11,7 +11,6 @@ use App\Services\Ilan\IlanCrudService;
 use App\Exceptions\Governance\TenantMismatchException;
 use App\Models\User;
 use App\Models\Ilan;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Database\Seeders\TenantBaselineSeeder;
 
@@ -22,7 +21,6 @@ use Database\Seeders\TenantBaselineSeeder;
  */
 class ZeroTrustAuditorTest extends TestCase
 {
-    use RefreshDatabase;
 
     private ZeroTrustAuditor $auditor;
     private int $tenantId = 1;

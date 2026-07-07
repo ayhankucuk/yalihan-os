@@ -16,6 +16,14 @@
     <div x-data="{
         locationWizard: null,
         mapInitialized: false,
+        isArsaCategory: false,
+        hasPolygon: false,
+        calculatedArea: 0,
+        centroidLat: null,
+        centroidLng: null,
+        showUploadModal: false,
+        geojsonInput: '',
+        uploadError: '',
         initStep4Map() {
             if (this.mapInitialized) return;
     
