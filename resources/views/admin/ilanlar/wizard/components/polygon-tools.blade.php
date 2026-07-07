@@ -17,13 +17,12 @@
         window.addEventListener('wizard:category-changed', (e) => {
                     const slug = (e.detail?.kategoriSlug || '').toLowerCase();
                     const catId = parseInt(e.detail?.kategoriId || 0);
-                    // Parent "Arsa & Arazi" (id=3) veya alt kategorileri (id 15-22) this.isArsaCategory=catId===3 ||
-    (catId>= 15 && catId <= 22) || slug.includes('arsa') || slug.includes('arazi') || slug.includes('tarla') ||
-        slug.includes('zeytin') || slug.includes('bahce') || slug === 'turizm-otel-kamp' || slug === 'turizm-konut' ||
-        slug === 'sanayi-ticari-imar'; if (this.isArsaCategory) { this.$nextTick(()=> this.initPolygonTools());
-        } else {
-        this.disablePolygonTools();
-        }
+                    this.isArsaCategory = catId === 3 || (catId >= 15 && catId <= 22) || slug.includes('arsa') || slug.includes('arazi') || slug.includes('tarla') || slug.includes('zeytin') || slug.includes('bahce') || slug === 'turizm-otel-kamp' || slug === 'turizm-konut' || slug === 'sanayi-ticari-imar';
+                    if (this.isArsaCategory) {
+                        this.$nextTick(() => this.initPolygonTools());
+                    } else {
+                        this.disablePolygonTools();
+                    }
         });
 
         // Alt kategori select'ten de kontrol et
@@ -33,12 +32,12 @@
         const val = parseInt(altKatSelect.value || 0);
         const text = altKatSelect.options[altKatSelect.selectedIndex]?.text?.toLowerCase() || '';
         // ID veya text bazlı kontrol
-        this.isArsaCategory = (val >= 15 && val <= 22) || text.includes('arsa') || text.includes('arazi') ||
-            text.includes('tarla') || text.includes('zeytin') || text.includes('bahçe') || text.includes('bahce'); if
-            (this.isArsaCategory) { this.$nextTick(()=> this.initPolygonTools());
-            } else {
+        this.isArsaCategory = (val >= 15 && val <= 22) || text.includes('arsa') || text.includes('arazi') || text.includes('tarla') || text.includes('zeytin') || text.includes('bahçe') || text.includes('bahce');
+        if (this.isArsaCategory) {
+            this.$nextTick(() => this.initPolygonTools());
+        } else {
             this.disablePolygonTools();
-            }
+        }
             });
             }
             },
