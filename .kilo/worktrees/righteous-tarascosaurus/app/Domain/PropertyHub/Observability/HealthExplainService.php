@@ -19,8 +19,8 @@ class HealthExplainService
     {
         return match ($state) {
             'healthy' => 'Bu düğüm yönetilen (governed) durumla %100 uyumludur. Sapma tespit edilmedi.',
-            'missing_template' => 'KRİTİK: Bu kategori için hem canlı veritabanında hem de yönetilen snapshot'ta şablon (template) bulunmuyor.',
-            'shadow' => 'GÖLGE: Bu düğüm yönetilen snapshot'ta tanımlı ancak canlı veritabanında henüz oluşturulmamış (Missing in Live).',
+            'missing_template' => "KRİTİK: Bu kategori için hem canlı veritabanında hem de yönetilen snapshot'ta şablon (template) bulunmuyor.",
+            'shadow' => "GÖLGE: Bu düğüm yönetilen snapshot'ta tanımlı ancak canlı veritabanında henüz oluşturulmamış (Missing in Live).",
             'drift' => $this->explainDrift($context),
             'empty' => 'Boş: Bu kombinasyon için herhangi bir konfigürasyon tanımlanmamış.',
             default => 'Bilinmeyen Durum: Detaylı analiz yapılamıyor.',

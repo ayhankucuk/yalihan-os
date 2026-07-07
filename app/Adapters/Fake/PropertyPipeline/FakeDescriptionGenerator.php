@@ -15,7 +15,7 @@ class FakeDescriptionGenerator implements DescriptionGeneratorInterface
 {
     public function generate(string $baslik, array $ozellikler = []): string
     {
-        $ özelliklerList = implode(', ', $ozellikler ?: ['bahçe', 'havuz', 'deniz manzarası']);
+        $ozelliklerList = implode(', ', $ozellikler ?: ['bahçe', 'havuz', 'deniz manzarası']);
 
         return "🏠 {$baslik}\n\n" .
                "Bu mülk, {$özelliklerList} ile donatılmıştır.\n\n" .
