@@ -1,7 +1,7 @@
 # Risk Register
 
 > Chief AI — Risk puanları ve durum takibi
-> Son güncelleme: 2026-07-07
+> Son güncelleme: 2026-07-07 — R11/R12/R14 CLOSED, Security Hardening Certificate verildi
 > **Chief Engineer Kararı:** R11-R15 Production Risk Register'a taşındı. Sprint 6.1 feature geliştirmesinden ÖNCE doğrulanıp önceliklendirilmeli.
 
 ## Risk Skorlama Sistemi
@@ -38,13 +38,13 @@ Puanlama: 1-10
 > **Chief Engineer Kararı:** R11-R15, Sprint 6.1 feature geliştirmesinden AYRI bir hardening hattı olarak izlenir.
 > **Öncelik:** Webhook Authentication + Tenant Isolation — Sprint 6.1 öncesi doğrulanmalı.
 
-| ID | Risk | Öncelik | Durum | Kök Neden | Mitigasyon |
-|----|------|---------|--------|-----------|------------|
-| **R11** | Google Drive Webhook Doğrulama Bypass | 🔴 **P0** | **DOĞRULANMALI** | `X-Goog-Channel-token` null bypass | DriveWebhookService::verifyChannelToken() düzelt |
-| **R14** | Tenant Isolation Middleware Devre Dışı | 🔴 **P0** | **DOĞRULANMALI** | `RestoreTenantContext` hiçbir job'da kullanılmıyor | Job'lara TenantAwareJobInterface ekle |
-| **R12** | Tenant Context Kaybı — Drive Event Log | 🔴 **P0** | **DOĞRULANMALI** | `emitDriveEvent()` tenant_id eksik | HermesEventLog::emitDriveEvent() düzelt |
-| **R13** | TKGM Single-Threaded Deadlock | 🟠 **P1** | **YAKLAŞAN** | Loopback API isteği deadlock | Queue veya harici geocoding kullan |
-| **R15** | OutboxService Kullanılmıyor | 🟢 **P2** | **İZLENİYOR** | Pattern yazılmış ama çağrılmıyor | Kullan veya kaldır |
+| ID | Risk | Öncelik | Durum | Kök Neden | Mitigasyon | Sertifika |
+|----|------|---------|--------|-----------|------------|-----------|
+| **R11** | Google Drive Webhook Doğrulama Bypass | 🔴 **P0** | **✅ CLOSED** | `X-Goog-Channel-token` null bypass | DriveWebhookService::verifyChannelToken() düzeltildi | `DriveWebhookSecurityTest` 3/3 pass ✅ |
+| **R14** | Tenant Isolation Middleware Devre Dışı | 🔴 **P0** | **✅ CLOSED** | `RestoreTenantContext` hiçbir job'da kullanılmıyor | 11 Job'a TenantAwareJobInterface + middleware eklendi | sab:integrity-scan PASS ✅ |
+| **R12** | Tenant Context Kaybı — Drive Event Log | 🔴 **P0** | **✅ CLOSED** | `emitDriveEvent()` tenant_id eksik | emitDriveEvent() → tenant_id field eklendi | `DriveWebhookSecurityTest` propagates ✅ |
+| **R13** | TKGM Single-Threaded Deadlock | 🟠 **P1** | **🟡 WATCH** | Loopback API isteği deadlock | False positive şüphesi — production path'te loopback yok | izleniyor |
+| **R15** | OutboxService Kullanılmıyor | 🟢 **P2** | **🟢 BACKLOG** | Pattern yazılmış ama çağrılmıyor | Kullan veya kaldır | backlog'a yazıldı |
 
 ---
 
