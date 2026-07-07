@@ -35,6 +35,7 @@ class PropertyWorkspaceAggregateTest extends TestCase
         $aggregate = PropertyWorkspaceAggregate::createWorkspace(
             ilanId: 1,
             intent: 'rental_listing',
+            tenantId: 42,
             templateId: 'template_123'
         );
 
@@ -43,6 +44,8 @@ class PropertyWorkspaceAggregateTest extends TestCase
         $this->assertEquals('rental_listing', $aggregate->getState()['intent']);
         $this->assertEquals('template_123', $aggregate->getState()['template_id']);
         $this->assertEquals(PropertyWorkspaceAggregate::STATE_WORKSPACE_CREATED, $aggregate->getWorkspaceState());
+        // S6.1-E01: Verify tenantId is correctly propagated without auth() session dependency
+        $this->assertEquals(42, $aggregate->getState()['tenant_id']);
     }
 
     /**
@@ -247,7 +250,7 @@ class PropertyWorkspaceAggregateTest extends TestCase
      */
     public function test_full_happy_path_workflow(): void
     {
-        $aggregate = PropertyWorkspaceAggregate::createWorkspace(1, 'rental');
+        $aggregate = PropertyWorkspaceAggregate::createWorkspace(1, 'rental', tenantId: 1);
 
         $this->assertEquals(PropertyWorkspaceAggregate::STATE_WORKSPACE_CREATED, $aggregate->getWorkspaceState());
 
@@ -272,7 +275,7 @@ class PropertyWorkspaceAggregateTest extends TestCase
      */
     public function test_rejection_workflow(): void
     {
-        $aggregate = PropertyWorkspaceAggregate::createWorkspace(1, 'rental');
+        $aggregate = PropertyWorkspaceAggregate::createWorkspace(1, 'rental', tenantId: 1);
 
         $aggregate->transitionTo(PropertyWorkspaceAggregate::STATE_DRAFT);
         $aggregate->transitionTo(PropertyWorkspaceAggregate::STATE_READY_FOR_REVIEW);

@@ -83,14 +83,19 @@ class PropertyWorkspaceAggregate extends AggregateRoot
     /**
      * Factory: create new workspace (requires DB record to be created first, then call initializeWorkspace)
      *
+     * Tenant ID must be passed explicitly from the application/service layer.
+     * Domain layer must NOT resolve tenant from auth session (S6.1-E01).
+     *
      * @param int $ilanId
      * @param string $intent
+     * @param int $tenantId Tenant ID — must be passed by caller, never resolved via auth() here
      * @param string|null $templateId
      * @return self
      */
-     public static function createWorkspace(int $ilanId, string $intent, ?string $templateId = null): self
+     public static function createWorkspace(int $ilanId, string $intent, int $tenantId = 0, ?string $templateId = null): self
      {
-         $aggregate = new self(0, (int) auth()->user()?->tenant_id ?? 0);
+         $aggregate = new self(0, $tenantId);
+         $aggregate->state['tenant_id'] = $tenantId;
          $aggregate->state['ilan_id'] = $ilanId;
          $aggregate->state['intent'] = $intent;
          $aggregate->state['template_id'] = $templateId;
