@@ -212,7 +212,11 @@ class Kernel extends ConsoleKernel
             ->dailyAt('04:00')
             ->appendOutputTo(storage_path('logs/ai-deal-predictor.log'));
 
-        $schedule->job(new \App\Jobs\AI\DailySnapshotsJob)
+        $schedule->call(function () {
+            foreach (\App\Models\SaaS\Tenant::where('aktiflik_durumu', 1)->get() as $tenant) {
+                dispatch(new \App\Jobs\AI\DailySnapshotsJob($tenant->id));
+            }
+        })
             ->dailyAt('04:30')
             ->onOneServer();
 

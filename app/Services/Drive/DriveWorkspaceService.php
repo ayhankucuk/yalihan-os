@@ -200,7 +200,7 @@ class DriveWorkspaceService
      */
     private function createFolder(string $name, ?string $parentId = null): array
     {
-        $credentials = $this->getCredentials();
+        $credentials = $this->getToken();
         if ($credentials === null) {
             return ['success' => false, 'error' => 'Google Drive credentials not configured'];
         }
@@ -256,7 +256,7 @@ class DriveWorkspaceService
         $rootFolderName = '03-PORTFÖYLER';
 
         try {
-            $credentials = $this->getCredentials();
+            $credentials = $this->getToken();
             if ($credentials === null) {
                 return null;
             }
@@ -409,28 +409,8 @@ class DriveWorkspaceService
         return self::SUBFOLDER_NAMES;
     }
 
-    /**
-     * Get a valid Drive API access token.
-     * Used by DriveTemplateService, DriveSyncService, DriveWebhookService.
-     *
-     * @return string|null
-     */
     public function getAccessToken(): ?string
     {
-        $credentials = $this->getCredentials();
-        if ($credentials === null) {
-            return null;
-        }
-
-        $credsType = $credentials['type'] ?? null; // @sab-ignore-context7
-        if ($credsType === self::CRED_TYPE_SERVICE_ACCOUNT) {
-            return $this->getServiceAccountToken($credentials);
-        }
-
-        if ($credsType === self::CRED_TYPE_AUTHORIZED_USER) {
-            return $credentials['access_token'] ?? null;
-        }
-
-        return null;
+        return $this->getToken();
     }
 }

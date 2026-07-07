@@ -262,13 +262,13 @@ class DriveWebhookService
                 return ['valid' => false, 'workspace_id' => null, 'error' => 'Unknown channel'];
             }
 
-            // Verify token matches
+            // Verify token matches (R11 Security Hardening)
             $expectedToken = $this->buildChannelToken($workspace->id);
-            if ($channelToken && $channelToken !== $expectedToken) {
-                Log::warning('[DriveWebhookService] Channel token mismatch', [
+            if (empty($channelToken) || $channelToken !== $expectedToken) {
+                Log::warning('[DriveWebhookService] Channel token missing or mismatch', [
                     'workspace_id' => $workspace->id,
                 ]);
-                return ['valid' => false, 'workspace_id' => null, 'error' => 'Token mismatch'];
+                return ['valid' => false, 'workspace_id' => null, 'error' => 'Unauthorized'];
             }
 
             // Check if channel is expired
@@ -283,8 +283,12 @@ class DriveWebhookService
             return ['valid' => true, 'workspace_id' => $workspace->id, 'error' => null];
         }
 
-        // Fallback: no channel ID, treat as valid (dev mode)
-        return ['valid' => true, 'workspace_id' => null, 'error' => null];
+        // Fallback: no channel ID, treat as valid only in local/testing environment (R11 Security Hardening)
+        if (app()->environment('local', 'testing')) {
+            return ['valid' => true, 'workspace_id' => null, 'error' => null];
+        }
+
+        return ['valid' => false, 'workspace_id' => null, 'error' => 'Missing channel ID'];
     }
 
     /**
@@ -391,6 +395,7 @@ class DriveWebhookService
         $eventName = $this->mapMimeToEvent($mimeType);
 
         $payload = [
+            'tenant_id'      => $workspace->tenant_id,
             'workspace_id'   => $workspace->id,
             'ilan_id'       => $workspace->ilan_id,
             'file_id'       => $fileId,
@@ -463,6 +468,7 @@ class DriveWebhookService
             $log = new \App\Models\Hermes\HermesEventLog();
             $log->tenant_id   = $payload['tenant_id'] ?? null;
             $log->event_name  = $eventName;
+            $log->event_class = \App\Events\Hermes\DriveWebhookEvent::class;
             $log->payload     = $payload;
             $log->occurred_at = now();
             $log->status      = 'processed';

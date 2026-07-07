@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Log;
  * @package App\Jobs
  * @version 1.0.0
  */
-class ReverseMatchJob implements ShouldQueue
+class ReverseMatchJob implements ShouldQueue, \App\Queue\Contracts\TenantAwareJobInterface
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -37,11 +37,36 @@ class ReverseMatchJob implements ShouldQueue
     private Talep $talep;
     public int $tries = 3;
     public int $timeout = 300;
+    public int $taleId;
 
     public function __construct(int $taleId)
     {
+        $this->taleId = $taleId;
         $this->talep = Talep::find($taleId);
         $this->onQueue('high');
+    }
+
+    public function getTenantId(): ?int
+    {
+        if ($this->talep) {
+            return $this->talep->tenant_id;
+        }
+        $talep = Talep::withoutGlobalScopes()->find($this->taleId);
+        return $talep?->tenant_id;
+    }
+
+    public function getUserId(): ?int
+    {
+        if ($this->talep) {
+            return $this->talep->danisman_id;
+        }
+        $talep = Talep::withoutGlobalScopes()->find($this->taleId);
+        return $talep?->danisman_id;
+    }
+
+    public function middleware(): array
+    {
+        return [new \App\Queue\Middleware\RestoreTenantContext(app(\App\Services\SaaS\TenantContextService::class))];
     }
 
     /**

@@ -1,5 +1,41 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 79 — Security Hardening Implementation (R11-R12-R14) (2026-07-07) ✅ CLOSED
+
+### 🎯 Hedef
+Google Drive Webhook güvenlik doğrulamalarının sıkılaştırılması (R11), webhook olaylarına kiracı kimliklerinin (tenant_id) eklenmesi (R12) ve çoklu kiracı kuyruk işlemlerinin (tenant-aware queue middleware) sertleştirilerek tenant context sızıntılarının önlenmesi (R14).
+
+### ✅ Tamamlanan İşler
+
+| Dosya | Değişiklik |
+|-------|------------|
+| [`app/Services/Drive/DriveWebhookService.php`](../app/Services/Drive/DriveWebhookService.php) | **R11 & R12 & R14** — Webhook kanal doğrulamasında token ve kanal eşleşmesi sıkılaştırıldı. Webhook olaylarına `tenant_id` parametresi eklendi ve HermesEventLog `event_class` kaydı eklendi. |
+| [`app/Services/Drive/DriveWorkspaceService.php`](../app/Services/Drive/DriveWorkspaceService.php) | **BUGFIX** — Tanımsız `getCredentials()` çağrıları `getToken()` ile değiştirilerek entegrasyon hataları giderildi. |
+| [`app/Console/Kernel.php`](../app/Console/Kernel.php) | **R14** — `DailySnapshotsJob` zamanlaması aktif kiracılar üzerinden dönecek şekilde refaktör edilerek her kiracı için izole kuyruk işi oluşturuldu. |
+| [`app/Jobs/AI/DailySnapshotsJob.php`](../app/Jobs/AI/DailySnapshotsJob.php) | **R14** — `TenantAwareJobInterface` uygulandı ve `RestoreTenantContext` kuyruk middleware'i entegre edildi. |
+| [`app/Jobs/OwnerReport/OwnerReportExportJob.php`](../app/Jobs/OwnerReport/OwnerReportExportJob.php) | **R14** — `TenantAwareJobInterface` uygulandı ve kuyruk middleware'i entegre edildi. |
+| [`app/Jobs/NotifyN8nAboutIlanPriceChange.php`](../app/Jobs/NotifyN8nAboutIlanPriceChange.php) | **R14** — `TenantAwareJobInterface` uygulandı ve kuyruk middleware'i entegre edildi. |
+| [`app/Jobs/TalepTopluAnalizJob.php`](../app/Jobs/TalepTopluAnalizJob.php) | **R14** — `TenantAwareJobInterface` uygulandı ve kuyruk middleware'i entegre edildi. |
+| [`app/Jobs/TKGMAutoFillJob.php`](../app/Jobs/TKGMAutoFillJob.php) | **R14** — `TenantAwareJobInterface` uygulandı ve kuyruk middleware'i entegre edildi. |
+| [`app/Jobs/GenerateListingReportJob.php`](../app/Jobs/GenerateListingReportJob.php) | **R14** — `TenantAwareJobInterface` uygulandı ve kuyruk middleware'i entegre edildi. |
+| [`app/Jobs/UpdateListingVisibilityScore.php`](../app/Jobs/UpdateListingVisibilityScore.php) | **R14** — `TenantAwareJobInterface` uygulandı ve kuyruk middleware'i entegre edildi. |
+| [`app/Jobs/ReverseMatchJob.php`](../app/Jobs/ReverseMatchJob.php) | **R14** — `TenantAwareJobInterface` uygulandı ve kuyruk middleware'i entegre edildi. |
+| [`app/Jobs/SendNotificationJob.php`](../app/Jobs/SendNotificationJob.php) | **R14** — `TenantAwareJobInterface` uygulandı ve kuyruk middleware'i entegre edildi. |
+| [`app/Jobs/HandleUrgentMatch.php`](../app/Jobs/HandleUrgentMatch.php) | **R14** — `TenantAwareJobInterface` uygulandı ve kuyruk middleware'i entegre edildi. |
+| [`app/Events/Hermes/DriveWebhookEvent.php`](../app/Events/Hermes/DriveWebhookEvent.php) | **YENİ** — Drive webhook olaylarının Hermes üzerinden sorunsuz kaydedilmesi için event sınıfı oluşturuldu. |
+| [`tests/Feature/Drive/DriveWebhookSecurityTest.php`](../tests/Feature/Drive/DriveWebhookSecurityTest.php) | **YENİ** — Webhook yetkilendirme ve kiracı bilgisi taşıma doğrulamalarını içeren otomatik testler yazıldı. |
+| [`tests/Feature/Queue/QueueTenantIsolationHardeningTest.php`](../tests/Feature/Queue/QueueTenantIsolationHardeningTest.php) | **YENİ** — Kuyruk işlerinin izolasyonu ve context sızıntısı önleme testleri yazıldı. |
+
+### 🛡️ Uyumluluk Kontrolleri
+
+| Kural | Sonuç |
+|-------|-------|
+| `php artisan test` | ✅ Uyumlu (Tüm yeni testler ve mevcut testler başarıyla geçiyor) |
+| `php artisan sab:integrity-scan` | ✅ Uyumlu (Sıfır bütünlük ihlali) |
+| `./scripts/tools/antigravity-full-gate.sh` | ✅ PASSED (Tüm kalite ve güvenlik kapıları geçildi) |
+
+---
+
 ## Oturum 78 — Security Hardening Verification & Audits (R11-R15) (2026-07-07) ✅ CLOSED
 
 ### 🎯 Hedef

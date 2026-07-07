@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Log;
  * SmartPropertyMatcherAI tarafından bulunan yüksek skorlu (>90) ve kritik (CRITICAL)
  * fırsatları yakalar ve Telegram üzerinden yöneticilere bildirim gönderir.
  */
-class HandleUrgentMatch implements ShouldQueue
+class HandleUrgentMatch implements ShouldQueue, \App\Queue\Contracts\TenantAwareJobInterface
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -38,6 +38,45 @@ class HandleUrgentMatch implements ShouldQueue
         $this->matchData = $matchData;
         // Set queue via trait methods
         $this->onQueue('cortex-notifications');
+    }
+
+    public function getTenantId(): ?int
+    {
+        $ilanId = $this->matchData['ilan_id'] ?? null;
+        if ($ilanId) {
+            $ilan = \App\Models\Ilan::withoutGlobalScopes()->find($ilanId);
+            return $ilan?->tenant_id;
+        }
+
+        $talepId = $this->matchData['talep_id'] ?? null;
+        if ($talepId) {
+            $talep = \App\Models\Talep::withoutGlobalScopes()->find($talepId);
+            return $talep?->tenant_id;
+        }
+
+        return null;
+    }
+
+    public function getUserId(): ?int
+    {
+        $ilanId = $this->matchData['ilan_id'] ?? null;
+        if ($ilanId) {
+            $ilan = \App\Models\Ilan::withoutGlobalScopes()->find($ilanId);
+            return $ilan?->danisman_id;
+        }
+
+        $talepId = $this->matchData['talep_id'] ?? null;
+        if ($talepId) {
+            $talep = \App\Models\Talep::withoutGlobalScopes()->find($talepId);
+            return $talep?->danisman_id;
+        }
+
+        return null;
+    }
+
+    public function middleware(): array
+    {
+        return [new \App\Queue\Middleware\RestoreTenantContext(app(\App\Services\SaaS\TenantContextService::class))];
     }
 
     /**

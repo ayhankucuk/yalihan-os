@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Log;
  * Triggered when 'firsat_mühru' is awarded.
  * Generates the PDF report and updates the ilan record with the path and hash.
  */
-class GenerateListingReportJob implements ShouldQueue
+class GenerateListingReportJob implements ShouldQueue, \App\Queue\Contracts\TenantAwareJobInterface
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -29,6 +29,23 @@ class GenerateListingReportJob implements ShouldQueue
         public string $locale = 'tr'
     ) {
         $this->onQueue('reports');
+    }
+
+    public function getTenantId(): ?int
+    {
+        $ilan = Ilan::withoutGlobalScopes()->find($this->ilanId);
+        return $ilan?->tenant_id;
+    }
+
+    public function getUserId(): ?int
+    {
+        $ilan = Ilan::withoutGlobalScopes()->find($this->ilanId);
+        return $ilan?->danisman_id;
+    }
+
+    public function middleware(): array
+    {
+        return [new \App\Queue\Middleware\RestoreTenantContext(app(\App\Services\SaaS\TenantContextService::class))];
     }
 
     public function handle(ReportService $reportService): void
