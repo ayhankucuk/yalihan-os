@@ -235,7 +235,9 @@ class ValidateBackupRestoreCommand extends Command
             if (isset($pdo) && isset($tempDb)) {
                 try {
                     $pdo->exec("DROP DATABASE IF EXISTS `{$tempDb}`");
-                } catch (Exception $ignored) {}
+                } catch (Exception $ignored) {
+                    report($ignored);
+                }
             }
 
             return $this->verifySqlSyntaxDryRun($sqlContent);

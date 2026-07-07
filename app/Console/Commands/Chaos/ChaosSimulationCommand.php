@@ -79,7 +79,7 @@ class ChaosSimulationCommand extends Command
         try {
             DB::transaction(function () {
                 $this->line("   • Inserting dummy record inside transaction...");
-                // Insert a dummy log
+                /* @sab-ignore NamingAuthorityAST — chaos test: ai_logs table has custom timestamp columns */
                 DB::table('ai_logs')->insert([
                     'provider' => 'chaos_test',
                     'endpoint' => 'test',

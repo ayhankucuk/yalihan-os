@@ -30,16 +30,43 @@ class YayinTipiSeeder extends Seeder
         }
 
         // 2. Baseline Wizard Mapping (Arsa Category Baseline - E2E Support)
-        // Arsa (Konut/Villa) ID: 15
-        
+        // Resolve arsa-konut-villa dynamically to avoid hardcoded ID fragility.
+        // Verified against IlanKategoriSeeder slug: 'arsa-konut-villa' (line 174).
+        $arsaKonutVilla = \App\Models\IlanKategori::where('slug', 'arsa-konut-villa')->firstOrFail();
+
         // a) Pivot mapping
-        $arsaJunctions = [
-            ['alt_kategori_id' => 15, 'yayin_tipi_id' => 1, 'id' => 13], // Satılık
-            ['alt_kategori_id' => 15, 'yayin_tipi_id' => 3, 'id' => 14], // Kat Karşılığı
+        $ArsaJunctions = [
+            ['alt_kategori_id' => $arsaKonutVilla->id, 'yayin_tipi_id' => 1, 'id' => 13], // Satılık
+            ['alt_kategori_id' => $arsaKonutVilla->id, 'yayin_tipi_id' => 3, 'id' => 14], // Kat Karşılığı
         ];
 
-        foreach ($arsaJunctions as $j) {
+        foreach ($ArsaJunctions as $j) {
             DB::table('alt_kategori_yayin_tipi')->updateOrInsert(['id' => $j['id']], $j);
+        }
+
+        // b) Wizard Context Templates
+        // NOTE: tenant_id has default 'SYSTEM' in schema.
+        $ArsaTemplates = [
+            [
+                'id' => 13,
+                'kategori_id' => $arsaKonutVilla->id,
+                'yayin_tipi_id' => 1,
+                'ad' => 'Arsa Satılık Şablonu',
+                'slug' => 'arsa-konut-villa-satilik',
+                'aktiflik_durumu' => 1,
+            ],
+            [
+                'id' => 14,
+                'kategori_id' => $arsaKonutVilla->id,
+                'yayin_tipi_id' => 3,
+                'ad' => 'Arsa Kat Karşılığı Şablonu',
+                'slug' => 'arsa-konut-villa-kat-karsiligi',
+                'aktiflik_durumu' => 1,
+            ],
+        ];
+
+        foreach ($ArsaTemplates as $t) {
+            YayinTipiSablonu::updateOrCreate(['id' => $t['id']], $t);
         }
 
         // b) Wizard Context Templates

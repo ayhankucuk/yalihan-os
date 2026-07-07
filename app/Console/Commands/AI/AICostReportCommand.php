@@ -34,7 +34,7 @@ class AICostReportCommand extends Command
             DB::raw('sum(output_tokens) as total_output_tokens'),
             DB::raw('sum(maliyet_usd) as total_cost_usd')
         )
-        ->where('olusturma_tarihi', '>=', $startDate);
+        ->where('created_at', '>=', $startDate);
 
         if ($userId) {
             $query->where('user_id', $userId);
@@ -83,7 +83,7 @@ class AICostReportCommand extends Command
             DB::raw('count(*) as requests'),
             DB::raw('sum(maliyet_usd) as cost')
         )
-        ->where('olusturma_tarihi', '>=', $startDate);
+        ->where('created_at', '>=', $startDate);
 
         if ($userId) {
             $trendQuery->where('user_id', $userId);

@@ -414,6 +414,7 @@ class YalihanBekciHealthCommand extends Command
                 'details' => $data,
             ];
         } catch (\Throwable $e) {
+            report($e);
             return [
                 'saglik_durumu' => 'unhealthy',
                 'message' => 'Failed to probe runtime: ' . $e->getMessage(),

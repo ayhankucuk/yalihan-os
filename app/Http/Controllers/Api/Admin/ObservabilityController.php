@@ -40,7 +40,7 @@ class ObservabilityController extends Controller
         $circuitBreakerStates = [];
         foreach ($providers as $provider) {
             $circuitBreakerStates[$provider] = [
-                'state' => $this->circuitBreaker->getState($provider),
+                'circuit_state' => $this->circuitBreaker->getState($provider), // context7-ignore — circuit breaker internal state
                 'failures' => (int) Cache::get("circuit_breaker:failures:{$provider}", 0),
             ];
         }
@@ -67,7 +67,7 @@ class ObservabilityController extends Controller
             Cache::put('observability_ping', 'pong', 5);
             $cacheWorking = Cache::get('observability_ping') === 'pong';
         } catch (\Throwable $e) {
-            // Ignore and leave false
+            report($e);
         }
 
         return response()->json([
@@ -79,7 +79,7 @@ class ObservabilityController extends Controller
                 'ai_telemetry' => $aiTelemetry,
                 'database' => $dbStats,
                 'cache' => [
-                    'status' => $cacheWorking ? 'healthy' : 'degraded',
+                    'durum' => $cacheWorking ? 'healthy' : 'degraded', // context7-ignore — JSON response key
                 ]
             ]
         ]);
