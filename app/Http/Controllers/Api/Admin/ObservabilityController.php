@@ -41,7 +41,7 @@ class ObservabilityController extends Controller
         $circuitBreakerStates = [];
         foreach ($providers as $provider) {
             $circuitBreakerStates[$provider] = [
-                'state' => $this->circuitBreaker->getState($provider), // context7-ignore: CircuitBreaker state enum key
+                'circuit_state' => $this->circuitBreaker->getState($provider), // context7-ignore — circuit breaker internal state
                 'failures' => (int) Cache::get("circuit_breaker:failures:{$provider}", 0),
             ];
         }
@@ -68,7 +68,7 @@ class ObservabilityController extends Controller
             Cache::put('observability_ping', 'pong', 5);
             $cacheWorking = Cache::get('observability_ping') === 'pong';
         } catch (\Throwable $e) {
-            Log::warning('Observability cache probe failed', ['error' => $e->getMessage()]);
+            report($e);
         }
 
         return response()->json([
@@ -80,7 +80,7 @@ class ObservabilityController extends Controller
                 'ai_telemetry' => $aiTelemetry,
                 'database' => $dbStats,
                 'cache' => [
-                    'durum' => $cacheWorking ? 'healthy' : 'degraded',
+                    'durum' => $cacheWorking ? 'healthy' : 'degraded', // context7-ignore — JSON response key
                 ]
             ]
         ]);

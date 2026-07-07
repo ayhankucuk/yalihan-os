@@ -15,10 +15,9 @@ class AiLog extends BaseModel
 
     protected $table = 'ai_logs';
 
-    /**
-     * Context7: Türkçe Timestamp İsimlendirmeleri
-     */
+    // @sab-ignore NamingAuthorityAST — DB column is olusturma_tarihi
     const CREATED_AT = 'olusturma_tarihi';
+    // @sab-ignore NamingAuthorityAST — DB column is guncelleme_tarihi
     const UPDATED_AT = 'guncelleme_tarihi';
 
     protected $fillable = [

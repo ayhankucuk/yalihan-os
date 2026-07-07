@@ -29,7 +29,7 @@ class FeatureFlagService
             return false;
         }
 
-        if (!$flag->is_enabled) {
+        if (!$flag->aktiflik_durumu) {
             return false;
         }
 

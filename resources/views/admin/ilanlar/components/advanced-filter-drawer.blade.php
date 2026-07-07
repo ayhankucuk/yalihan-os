@@ -1,6 +1,47 @@
-<div x-show="showFilters"
-     class="fixed inset-0 z-[80] overflow-hidden"
-     style="display: none;"
+<div x-data="{
+    showFilters: false,
+    filters: {},
+    ilceler: [],
+
+    init() {
+        // Walk DOM upward to find the parent ilanFilter() component
+        let el = this.$el;
+        while (el && el !== document.body) {
+            const stack = el._x_dataStack;
+            if (stack && stack[0] && typeof stack[0].applyFilters === &apos;function&apos;) {
+                this._parent = stack[0];
+                break;
+            }
+            el = el.parentElement;
+        }
+
+        if (this._parent) {
+            // Sync initial state from parent
+            this.showFilters = this._parent.showFilters;
+            this.filters = this._parent.filters;
+            this.ilceler = this._parent.ilceler || [];
+
+            // Watch parent showFilters (e.g. main page button clicks)
+            this.$watch(&apos;_parent.showFilters&apos;, val => { this.showFilters = val; });
+        }
+    },
+
+    async fetchIlceler() {
+        if (this._parent) await this._parent.fetchIlceler();
+    },
+
+    setArea(min, max) {
+        if (this._parent) this._parent.setArea(min, max);
+    },
+
+    clearFilters() {
+        if (this._parent) this._parent.clearFilters();
+    },
+
+    applyFilters() {
+        if (this._parent) this._parent.applyFilters();
+    }
+}" x-show="showFilters"
      x-transition:enter="transition ease-in-out duration-300 transform"
      x-transition:enter-start="translate-x-full"
      x-transition:enter-end="translate-x-0"
@@ -70,10 +111,10 @@
                     <div>
                         <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Net Alan (m²)</label>
                         <div class="flex flex-wrap gap-2 mb-3">
-                            <button @click="setArea(0, 150)" :class="filters.min_m2 == 0 && filters.max_m2 == 150 ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-900 text-gray-600 dark:text-gray-400'" class="px-3 py-1.5 rounded-full text-xs font-medium transition-all">0 - 150m²</button>
-                            <button @click="setArea(150, 300)" :class="filters.min_m2 == 150 && filters.max_m2 == 300 ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-900 text-gray-600 dark:text-gray-400'" class="px-3 py-1.5 rounded-full text-xs font-medium transition-all">150 - 300m²</button>
-                            <button @click="setArea(300, 500)" :class="filters.min_m2 == 300 && filters.max_m2 == 500 ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-900 text-gray-600 dark:text-gray-400'" class="px-3 py-1.5 rounded-full text-xs font-medium transition-all">300 - 500m²</button>
-                            <button @click="setArea(500, null)" :class="filters.min_m2 == 500 && !filters.max_m2 ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-900 text-gray-600 dark:text-gray-400'" class="px-3 py-1.5 rounded-full text-xs font-medium transition-all">500m² +</button>
+                            <button type="button" @click="setArea(0, 150)" :class="filters.min_m2 == 0 && filters.max_m2 == 150 ? &apos;bg-blue-600 text-white&apos; : &apos;bg-gray-100 dark:bg-slate-900 text-gray-600 dark:text-gray-400&apos;" class="px-3 py-1.5 rounded-full text-xs font-medium transition-all">0 - 150m²</button>
+                            <button type="button" @click="setArea(150, 300)" :class="filters.min_m2 == 150 && filters.max_m2 == 300 ? &apos;bg-blue-600 text-white&apos; : &apos;bg-gray-100 dark:bg-slate-900 text-gray-600 dark:text-gray-400&apos;" class="px-3 py-1.5 rounded-full text-xs font-medium transition-all">150 - 300m²</button>
+                            <button type="button" @click="setArea(300, 500)" :class="filters.min_m2 == 300 && filters.max_m2 == 500 ? &apos;bg-blue-600 text-white&apos; : &apos;bg-gray-100 dark:bg-slate-900 text-gray-600 dark:text-gray-400&apos;" class="px-3 py-1.5 rounded-full text-xs font-medium transition-all">300 - 500m²</button>
+                            <button type="button" @click="setArea(500, null)" :class="filters.min_m2 == 500 && !filters.max_m2 ? &apos;bg-blue-600 text-white&apos; : &apos;bg-gray-100 dark:bg-slate-900 text-gray-600 dark:text-gray-400&apos;" class="px-3 py-1.5 rounded-full text-xs font-medium transition-all">500m² +</button>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <input type="number" x-model="filters.min_m2" placeholder="Min m²" class="w-full px-4 py-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg text-sm dark:border-slate-700">
@@ -98,7 +139,7 @@
                 <!-- Footer -->
                 <div class="px-6 py-6 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-slate-800 dark:bg-slate-900 dark:border-slate-700">
                     <div class="flex gap-4">
-                        <button type="button" @click="clearFilters()" class="flex-1 px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-slate-200 rounded-xl text-sm font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-all dark:text-slate-300">Sıfırla</button>
+                        <button type="button" @click="clearFilters(); showFilters = false;" class="flex-1 px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-slate-200 rounded-xl text-sm font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-all dark:text-slate-300">Sıfırla</button>
                         <button type="button" @click="applyFilters(); showFilters = false;" class="flex-[2] px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition-all">Sonuçları Göster</button>
                     </div>
                 </div>
