@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Validator;
  * Context7 Standardı: C7-KOMISYON-CONTROLLER-2025-11-25
  *
  * CRUD operations + AI-powered commission calculation and optimization
+ * Tenant Isolation: BelongsToTenant trait enforces SAB Rule 1.
+ * Admin bypass: isAdmin() users bypass tenant scope via withoutGlobalScope.
  */
 class KomisyonController extends Controller
 {
@@ -28,6 +30,63 @@ class KomisyonController extends Controller
     }
 
     /**
+     * Return a Komisyon query builder.
+     * Admin users bypass tenant scope (see all tenants).
+     * Non-admin users are scoped to their tenant via BelongsToTenant global scope.
+     *
+     * Note: 'danisman' eager-load is excluded for admin queries because
+     * User model uses BelongsToTenant which would filter the relationship
+     * query by the Komisyon's tenant_id, not the danisman's tenant_id.
+     */
+    private function komisyonQuery(bool $withTrashed = false): \Illuminate\Database\Eloquent\Builder
+    {
+        // Relationships on Komisyon: ilan, kisi, saticiDanisman, aliciDanisman
+        // Note: 'danisman' is NOT a relationship — danisman_id is a plain FK column
+        $with = ['ilan', 'kisi', 'saticiDanisman', 'aliciDanisman'];
+
+        if ($this->isAdmin()) {
+            $query = Komisyon::withoutGlobalScope(\App\Scopes\TenantScope::class)->with($with);
+        } else {
+            $query = Komisyon::with($with);
+        }
+
+        if ($withTrashed) {
+            $query = $query->withTrashed();
+        }
+
+        return $query;
+    }
+
+    /**
+     * Check if the current authenticated user is an admin.
+     * Uses role name to avoid hardcoded role ID assumptions.
+     */
+    private function isAdmin(): bool
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        // Check role name (resolves role_id → role.name mapping)
+        $roleName = optional($user->role)->name ?? null;
+
+        return in_array($roleName, ['admin', 'superadmin'], true);
+    }
+
+    /**
+     * Find a single Komisyon by ID.
+     * Admin bypasses tenant scope.
+     */
+    private function findKomisyon(int $id, bool $withTrashed = false): ?Komisyon
+    {
+        $query = $this->komisyonQuery($withTrashed);
+
+        return $query->find($id);
+    }
+
+    /**
      * List all commissions
      *
      * @return \Illuminate\Http\JsonResponse
@@ -35,7 +94,7 @@ class KomisyonController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Komisyon::with(['ilan', 'kisi', 'danisman', 'saticiDanisman', 'aliciDanisman']);
+            $query = $this->komisyonQuery();
 
             // Filters
             if ($request->has('odeme_statusu')) {
@@ -75,9 +134,11 @@ class KomisyonController extends Controller
     public function show(int $id)
     {
         try {
-            $komisyon = Komisyon::with([
-                'ilan', 'kisi', 'danisman', 'saticiDanisman', 'aliciDanisman'
-            ])->findOrFail($id);
+            $komisyon = $this->findKomisyon($id);
+
+            if (!$komisyon) {
+                return ResponseService::notFound('Komisyon bulunamadı');
+            }
 
             return ResponseService::success($komisyon, 'Komisyon başarıyla getirildi');
         } catch (\Exception $e) {
@@ -178,7 +239,11 @@ class KomisyonController extends Controller
         }
 
         try {
-            $komisyon = Komisyon::findOrFail($id);
+            $komisyon = $this->findKomisyon($id);
+
+            if (!$komisyon) {
+                return ResponseService::notFound('Komisyon bulunamadı');
+            }
 
             // Oran veya fiyat değiştiyse yeniden hesapla
             if ($request->has('komisyon_orani') || $request->has('ilan_fiyati')) {
@@ -207,14 +272,19 @@ class KomisyonController extends Controller
     }
 
     /**
-     * Delete commission
+     * Delete commission (soft delete)
      *
      * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(int $id)
     {
         try {
-            $komisyon = Komisyon::findOrFail($id);
+            $komisyon = $this->findKomisyon($id);
+
+            if (!$komisyon) {
+                return ResponseService::notFound('Komisyon bulunamadı');
+            }
+
             $komisyon->delete();
 
             LogService::action('komisyon_deleted', 'komisyon', $id);
@@ -226,6 +296,30 @@ class KomisyonController extends Controller
     }
 
     /**
+     * Restore soft-deleted commission
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function restore(int $id)
+    {
+        try {
+            $komisyon = $this->findKomisyon($id, true);
+
+            if (!$komisyon || !$komisyon->trashed()) {
+                return ResponseService::notFound('Komisyon bulunamadı veya silinmemiş');
+            }
+
+            $komisyon->restore();
+
+            LogService::action('komisyon_restored', 'komisyon', $id);
+
+            return ResponseService::success($komisyon->fresh(), 'Komisyon başarıyla geri yüklendi');
+        } catch (\Exception $e) {
+            return ResponseService::serverError('Komisyon geri yüklenemedi', $e);
+        }
+    }
+
+    /**
      * Approve commission
      *
      * @return \Illuminate\Http\JsonResponse
@@ -233,7 +327,12 @@ class KomisyonController extends Controller
     public function approve(int $id)
     {
         try {
-            $komisyon = Komisyon::findOrFail($id);
+            $komisyon = $this->findKomisyon($id);
+
+            if (!$komisyon) {
+                return ResponseService::notFound('Komisyon bulunamadı');
+            }
+
             $komisyon->onayla();
 
             LogService::action('komisyon_approved', 'komisyon', $id);
@@ -252,7 +351,12 @@ class KomisyonController extends Controller
     public function pay(int $id)
     {
         try {
-            $komisyon = Komisyon::findOrFail($id);
+            $komisyon = $this->findKomisyon($id);
+
+            if (!$komisyon) {
+                return ResponseService::notFound('Komisyon bulunamadı');
+            }
+
             $komisyon->ode();
 
             LogService::action('komisyon_paid', 'komisyon', $id);
@@ -271,7 +375,12 @@ class KomisyonController extends Controller
     public function recalculate(int $id)
     {
         try {
-            $komisyon = Komisyon::findOrFail($id);
+            $komisyon = $this->findKomisyon($id);
+
+            if (!$komisyon) {
+                return ResponseService::notFound('Komisyon bulunamadı');
+            }
+
             $komisyon->hesaplaKomisyon();
 
             LogService::action('komisyon_recalculated', 'komisyon', $id);
@@ -322,7 +431,12 @@ class KomisyonController extends Controller
     public function aiOptimize(int $id)
     {
         try {
-            $komisyon = Komisyon::findOrFail($id);
+            $komisyon = $this->findKomisyon($id);
+
+            if (!$komisyon) {
+                return ResponseService::notFound('Komisyon bulunamadı');
+            }
+
             $result = $this->komisyonService->optimizeCommission($komisyon);
 
             return ResponseService::success($result, 'AI komisyon optimizasyonu tamamlandı');

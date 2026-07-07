@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Log;
 class KisiService
 {
     use GuardsAgentWrites;
+
+    public function __construct(
+        private readonly \App\Repositories\KisiRepository $kisiRepository
+    ) {}
     /**
      * Yeni bir kişi oluşturur veya email/telefon eşleşiyorsa mevcut olanı döndürür (Idempotency Patch).
      * ✅ SAB: kisi_tipi required field kontrolü
@@ -74,6 +78,19 @@ class KisiService
         Log::info("{$kisi->id} ID'li kişi siliniyor.");
 
         return $kisi->delete();
+    }
+
+    /**
+     * Sprint 4.2: Restore Kisi from soft delete
+     *
+     * @param int $id
+     * @return bool
+     */
+    public function restoreKisi(int $id): bool
+    {
+        $this->blockAgentWrite('restoreKisi');
+
+        return $this->kisiRepository->restore($id);
     }
 
     /**

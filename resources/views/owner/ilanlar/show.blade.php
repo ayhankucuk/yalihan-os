@@ -24,7 +24,7 @@
         @else
             <span class="inline-flex items-center gap-1.5 rounded-md bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700">
                 <span class="h-1.5 w-1.5 rounded-full bg-gray-400"></span>
-                {{ ucfirst($ilan->yayin_durumu ?? 'Pasif') }}
+                {{ $ilan->yayin_durumu?->label() ?? 'Pasif' }}
             </span>
         @endif
     </div>

@@ -186,5 +186,15 @@ Route::get('/cortex/dashboard', function () {
     ]);
 });
 
+// ─── AI Workforce Dashboard — Sprint 4.3 ───────────────────────────
+Route::prefix('workforce')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Api\WorkforceDashboardController::class, 'metrics'])
+        ->name('api.workforce.dashboard');
+    Route::get('/chains', [\App\Http\Controllers\Api\WorkforceDashboardController::class, 'chains'])
+        ->name('api.workforce.chains');
+    Route::get('/agents', [\App\Http\Controllers\Api\WorkforceDashboardController::class, 'agents'])
+        ->name('api.workforce.agents');
+});
+
 // Route Listing Endpoint (Directly under /api/routes)
 require __DIR__ . '/api/v1/routes-list.php';

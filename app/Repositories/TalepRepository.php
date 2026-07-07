@@ -200,9 +200,25 @@ class TalepRepository
     public function setOneCikan(int $id, bool $value, ?User $actor = null): Talep
     {
         $talep = $this->findOrFail($id);
-        
+
         /** @var \App\Services\CRM\TalepAuthorityService $service */
         $service = app(\App\Services\CRM\TalepAuthorityService::class);
         return $service->setOneCikan($talep, $value, $actor);
+    }
+
+    /**
+     * Sprint 4.2: Restore soft-deleted Talep
+     *
+     * @param int $id
+     * @param User|null $actor
+     * @return bool
+     */
+    public function restore(int $id, ?User $actor = null): bool
+    {
+        $talep = $this->findOrFail($id);
+
+        /** @var \App\Services\CRM\TalepAuthorityService $service */
+        $service = app(\App\Services\CRM\TalepAuthorityService::class);
+        return $service->restoreTalep($talep, $actor ?? auth()->user());
     }
 }

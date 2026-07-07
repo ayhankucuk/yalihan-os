@@ -180,6 +180,28 @@ class TalepController extends Controller
     }
 
     /**
+     * Sprint 4.2: Restore soft-deleted Talep
+     */
+    public function restore(Request $request, $id): RedirectResponse
+    {
+        $talep = $this->repository->findOrFail((int) $id);
+        $this->authorize('restore', $talep);
+
+        $baslik = $talep->baslik;
+        $restored = $this->repository->restore((int) $id);
+
+        if (!$restored) {
+            return redirect()
+                ->route('admin.talepler.index')
+                ->with('error', '"' . $baslik . '" geri yüklenemedi.');
+        }
+
+        return redirect()
+            ->route('admin.talepler.index')
+            ->with('success', '"' . $baslik . '" başarıyla geri yüklendi.');
+    }
+
+    /**
      * 🎯 Eşleşme Radarı - Matching Cockpit
      */
     public function showMatches($id): View

@@ -4,6 +4,8 @@ namespace App\Services\Hermes\Registry;
 
 use App\Domain\Hermes\Enums\HermesCapability;
 use App\Domain\Hermes\Enums\HermesEventVocabulary;
+use App\Domain\Hermes\Enums\HermesWorkforceCapability;
+use App\Domain\Hermes\Enums\HermesWorkforceEventVocabulary;
 use App\Domain\Hermes\Models\CapabilityBinding;
 use Illuminate\Support\Facades\Log;
 
@@ -133,6 +135,82 @@ class CapabilityRegistry
             routingStrategy: 'all',
         ));
 
+        // ─── AI Workforce Bindings — Sprint 4.5 Workspace-First Chain ──────
+        //
+        // portfolio.created → DriveAgent (creates workspace, emits workspace.created)
+        $this->bind(new CapabilityBinding(
+            eventName: HermesEventVocabulary::PORTFOLIO_CREATED->value,
+            capabilitiesRequired: [
+                HermesWorkforceCapability::CREATE_DRIVE_WORKSPACE->value,
+            ],
+            capabilitiesOptional: [
+                HermesWorkforceCapability::MANAGE_DRIVE_WORKSPACE->value,
+            ],
+            routingStrategy: 'all',
+        ));
+
+        // workspace.created → PhotoAgent
+        $this->bind(new CapabilityBinding(
+            eventName: HermesWorkforceEventVocabulary::WORKFORCE_WORKSPACE_CREATED->value,
+            capabilitiesRequired: [
+                HermesWorkforceCapability::ANALYZE_PHOTOS->value,
+            ],
+            capabilitiesOptional: [
+                HermesWorkforceCapability::SUGGEST_PHOTO_IMPROVEMENTS->value,
+            ],
+            routingStrategy: 'all',
+        ));
+
+        // photo_analysis.completed → DescriptionAgent + PropertyScoreAgent
+        $this->bind(new CapabilityBinding(
+            eventName: HermesWorkforceEventVocabulary::WORKFORCE_PHOTO_ANALYSIS_COMPLETED->value,
+            capabilitiesRequired: [
+                HermesWorkforceCapability::GENERATE_DESCRIPTION->value,
+                HermesWorkforceCapability::CALCULATE_PROPERTY_SCORE->value,
+            ],
+            capabilitiesOptional: [
+                HermesWorkforceCapability::IMPROVE_DESCRIPTION->value,
+                HermesWorkforceCapability::ANALYZE_QUALITY->value,
+            ],
+            routingStrategy: 'all',
+        ));
+
+        // description.completed → PropertyScoreAgent
+        $this->bind(new CapabilityBinding(
+            eventName: HermesWorkforceEventVocabulary::WORKFORCE_DESCRIPTION_COMPLETED->value,
+            capabilitiesRequired: [
+                HermesWorkforceCapability::CALCULATE_PROPERTY_SCORE->value,
+            ],
+            capabilitiesOptional: [
+                HermesWorkforceCapability::ANALYZE_QUALITY->value,
+            ],
+            routingStrategy: 'all',
+        ));
+
+        // property_score.calculated → PublishDecisionAgent
+        $this->bind(new CapabilityBinding(
+            eventName: HermesWorkforceEventVocabulary::WORKFORCE_PROPERTY_SCORE_CALCULATED->value,
+            capabilitiesRequired: [
+                HermesWorkforceCapability::DECIDE_PUBLISHING->value,
+            ],
+            capabilitiesOptional: [
+                HermesWorkforceCapability::EVALUATE_LISTING_QUALITY->value,
+            ],
+            routingStrategy: 'all',
+        ));
+
+        // publishing.decision_ready → NotificationAgent
+        $this->bind(new CapabilityBinding(
+            eventName: HermesWorkforceEventVocabulary::WORKFORCE_PUBLISHING_DECISION_READY->value,
+            capabilitiesRequired: [
+                HermesWorkforceCapability::SEND_PORTFOLIO_NOTIFICATION->value,
+            ],
+            capabilitiesOptional: [
+                HermesWorkforceCapability::SEND_CHAIN_COMPLETE_NOTIFICATION->value,
+            ],
+            routingStrategy: 'all',
+        ));
+
         Log::debug('[CapabilityRegistry] Default bindings bootstrapped', [
             'binding_count' => count($this->bindings),
         ]);
@@ -246,14 +324,17 @@ class CapabilityRegistry
         $issues = [];
 
         foreach (array_keys($this->bindings) as $eventName) {
-            if (!HermesEventVocabulary::isValid($eventName)) {
+            if (!HermesEventVocabulary::isValid($eventName)
+                && !\App\Domain\Hermes\Enums\HermesWorkforceEventVocabulary::isValid($eventName)) {
                 $issues[] = "Event '{$eventName}' is bound but not in vocabulary";
             }
         }
 
         foreach ($this->bindings as $binding) {
             foreach ($binding->allCapabilities() as $capability) {
-                if (!HermesCapability::isValid($capability)) {
+                $inBase = HermesCapability::isValid($capability);
+                $inWorkforce = \App\Domain\Hermes\Enums\HermesWorkforceCapability::isValid($capability);
+                if (!$inBase && !$inWorkforce) {
                     $issues[] = "Capability '{$capability}' is bound but not in vocabulary";
                 }
             }

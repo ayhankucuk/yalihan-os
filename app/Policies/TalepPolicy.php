@@ -59,4 +59,16 @@ class TalepPolicy
 
         return $user->id === $talep->danisman_id;
     }
+
+    /**
+     * Sprint 4.2: Restore soft-deleted Talep
+     */
+    public function restore(User $user, Talep $talep): bool
+    {
+        if ($user->hasRole(['admin', 'super-admin']) || (method_exists($user, 'isAdmin') && $user->isAdmin())) {
+            return true;
+        }
+
+        return $user->id === $talep->danisman_id;
+    }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Owner;
 
 use App\Enums\IlanDurumu;
+use App\Models\Il;
 use App\Models\Ilan;
 use App\Models\IlanKategori;
 use App\Models\User;
@@ -38,22 +39,25 @@ class OwnerIlanCrudTest extends TestCase
         $this->owner      = User::factory()->owner()->create();
         $this->otherOwner = User::factory()->owner()->create();
 
+        // Kategori ve il ilişkileri oluştur (factory sabit ID = 1 olabilir, bu yüzden veritabanında da olmalı)
+        $this->kategori = IlanKategori::factory()->create(['parent_id' => null]);
+        Il::firstOrCreate(['id' => 1], ['il_adi' => 'Aydın', 'plaka_kodu' => '09']);
+
         // Owner'a ait ilan: user_id = owner->id, yayin_durumu = taslak
         $this->ilan = Ilan::factory()->create([
-            'user_id'      => $this->owner->id,
-            'yayin_durumu' => IlanDurumu::TASLAK->value,
+            'user_id'          => $this->owner->id,
+            'yayin_durumu'     => IlanDurumu::TASLAK->value,
+            'ana_kategori_id'  => $this->kategori->id,
         ]);
 
-        $kategori = IlanKategori::factory()->create(['parent_id' => null]);
-
         $this->validPayload = [
-            'baslik'               => 'Güncellenen Test İlanı',
-            'aciklama'             => 'Güncelleme testi açıklaması.',
-            'fiyat'                => 1500000,
-            'para_birimi'          => 'TRY',
-            'fiyat_gosterim_modu'  => 'exact',
-            'ana_kategori_id'      => $kategori->id,
-            'il_id'                => 1,
+            'baslik'              => 'Güncellenen Test İlanı',
+            'aciklama'            => 'Güncelleme testi açıklaması.',
+            'fiyat'               => 1500000,
+            'para_birimi'         => 'TRY',
+            'fiyat_gosterim_modu' => 'exact',
+            'ana_kategori_id'     => $this->kategori->id,
+            'il_id'               => 1,
         ];
     }
 

@@ -5,20 +5,24 @@ declare(strict_types=1);
 namespace App\Models\SaaS;
 
 use App\Models\BaseModel;
+use App\Traits\HasCountryScope;
 
 class FeatureFlag extends BaseModel
 {
+    /** @use HasCountryScope<FeatureFlag> */
+    use HasCountryScope;
+
     protected $table = 'feature_flags';
 
     protected $fillable = [
         'key',
-        'is_enabled',
+        'aktiflik_durumu',
         'rules',
-        'description',
+        'aciklama',
     ];
 
     protected $casts = [
-        'is_enabled' => 'boolean',
+        'aktiflik_durumu' => 'boolean',
         'rules' => 'array',
     ];
 }

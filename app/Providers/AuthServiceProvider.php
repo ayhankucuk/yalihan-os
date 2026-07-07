@@ -106,20 +106,20 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('manage-settings', function (User $user) {
-            $allowed = ['Süper Admin', 'superadmin', 'süper admin', 'admin'];
+            $allowed = ['Süper Admin', 'superadmin', 'süper admin', 'super-admin', 'admin'];
             return $user->hasAnyRole($allowed) ||
                    ($user->role && in_array(strtolower(trim($user->role->name)), array_map('strtolower', $allowed)));
         });
 
         Gate::define('manage-ilanlar', function (User $user) {
-            $allowed = ['Süper Admin', 'superadmin', 'admin', 'Danışman', 'danışman', 'danisman'];
+            $allowed = ['Süper Admin', 'superadmin', 'super-admin', 'admin', 'Danışman', 'danışman', 'danisman'];
             return $user->hasAnyRole($allowed) ||
                    ($user->role && in_array(strtolower(trim($user->role->name)), array_map('strtolower', $allowed)));
         });
 
         Gate::define('edit-ilanlar', function (User $user) {
             $allowed = [
-                'Süper Admin', 'superadmin', 'admin',
+                'Süper Admin', 'superadmin', 'super-admin', 'admin',
                 'Danışman', 'danışman', 'danisman', 'Editör', 'editor', 'editör',
             ];
             return $user->hasAnyRole($allowed) ||
@@ -135,7 +135,7 @@ class AuthServiceProvider extends ServiceProvider
         // ✅ SECURITY FIX (2026-01-17): Resource-aware gate with ownership control
         Gate::define('edit-ilan', function (User $user, \App\Models\Ilan $ilan) {
             // Superadmin bypass
-            $superadminRoles = ['superadmin', 'süper admin', 'süperadmin', 'admin'];
+            $superadminRoles = ['superadmin', 'süper admin', 'süperadmin', 'super-admin', 'admin'];
             if ($user->role && in_array(strtolower(trim($user->role->name)), $superadminRoles)) {
                 return true;
             }

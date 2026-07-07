@@ -475,6 +475,8 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])-
     // ✅ Mahrem Bilgiler ve Portal ID Yönetimi (Resource dışı özel route'lar)
     Route::post('/ilanlar/{ilan}/owner-private', [\App\Http\Controllers\Admin\IlanCrudController::class, 'ownerPrivate'])->name('ilanlar.owner-private')->middleware('can:viewPrivateListingData,ilan');
     Route::post('/ilanlar/{ilan}/portal-ids', [\App\Http\Controllers\Admin\IlanCrudController::class, 'updatePortalIds'])->name('ilanlar.portal-ids')->middleware('can:edit-ilanlar');
+    Route::post('/ilanlar/{ilan}/restore', [\App\Http\Controllers\Admin\IlanCrudController::class, 'restore'])->name('ilanlar.restore');
+    Route::post('/ilanlar/{ilan}/archive', [\App\Http\Controllers\Admin\IlanCrudController::class, 'archive'])->name('ilanlar.archive');
 
 
     // Test route for category cascading
@@ -709,6 +711,7 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])-
         Route::get('/{kisiId}/edit', [KisiController::class, 'edit'])->whereNumber('kisiId')->name('edit');
         Route::put('/{kisiId}', [KisiController::class, 'update'])->whereNumber('kisiId')->name('update');
         Route::delete('/{kisiId}', [KisiController::class, 'destroy'])->whereNumber('kisiId')->name('destroy');
+        Route::post('/{kisiId}/restore', [KisiController::class, 'restore'])->whereNumber('kisiId')->name('restore');
     });
 
     // 🗑️ Site Özellikleri - REMOVED (Now using Polymorphic Features System)
@@ -759,6 +762,7 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])-
         Route::get('/{talep}/edit', [TalepController::class, 'edit'])->name('edit');
         Route::put('/{talep}', [TalepController::class, 'update'])->name('update');
         Route::delete('/{talep}', [TalepController::class, 'destroy'])->name('destroy');
+        Route::post('/{talep}/restore', [TalepController::class, 'restore'])->name('restore');
         Route::get('/{talep}/eslesen', [TalepController::class, 'eslesen'])->name('eslesen');
         Route::get('/{talep}/matches', [TalepController::class, 'showMatches'])->name('matches'); // 🎯 Eşleşme Kokpiti
         Route::get('/search', [TalepController::class, 'search'])->name('search');
@@ -983,7 +987,21 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])-
             Route::post('/ai/summary', [\App\Modules\Finans\Controllers\FinansalIslemController::class, 'aiGenerateSummary'])->name('ai.summary');
         });
 
-        // Komisyonlar (Commissions) - REMOVED (views deleted, module deprecated)
+        // Komisyonlar (Commissions)
+        Route::prefix('/komisyonlar')->name('komisyonlar.')->group(function () {
+            Route::get('/', function () {
+                return view('admin.finans.komisyonlar.index');
+            })->name('index');
+            Route::get('/create', function () {
+                return view('admin.finans.komisyonlar.create');
+            })->name('create');
+            Route::get('/{id}', function ($id) {
+                return view('admin.finans.komisyonlar.show', ['id' => $id]);
+            })->name('show');
+            Route::get('/{id}/edit', function ($id) {
+                return view('admin.finans.komisyonlar.edit', ['id' => $id]);
+            })->name('edit');
+        });
     });
 
     // Sistem Ayarları

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\IlanRestored;
 use App\Http\Requests\Admin\Ilan\StoreIlanRequest;
 use App\Http\Requests\Admin\Ilan\UpdateIlanRequest;
 use App\Models\Ilan;
@@ -108,6 +109,49 @@ class IlanCrudController extends AdminController
 
         $this->ilanService->deleteListing($ilan);
         return to_route('admin.ilanlar.index')->with('success', 'İlan silindi.');
+    }
+
+    /**
+     * Restore listing from archive — ARSIV → TASLAK
+     *
+     * Sprint 4.2: Real CRUD Certification
+     * P0 fix: Missing restore endpoint
+     */
+    public function restore(int $id): RedirectResponse|JsonResponse
+    {
+        $ilan = $this->ilanRepository->findOrFail($id);  // Layer 2: 404 concealment
+        $this->authorize('restore', $ilan);             // Layer 1: Capability check
+
+        $ilan = $this->ilanService->restoreListing($ilan);
+        event(new IlanRestored($ilan->id));
+
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true, 'ilan' => $ilan]);
+        }
+
+        return to_route('admin.ilanlar.index')
+            ->with('success', 'İlan arşivden geri alındı.');
+    }
+
+    /**
+     * Archive listing — YAYINDA/TASLAK → ARSIV
+     *
+     * Sprint 4.2: Real CRUD Certification
+     * Adds route for repository archive() method
+     */
+    public function archive(int $id): RedirectResponse|JsonResponse
+    {
+        $ilan = $this->ilanRepository->findOrFail($id);  // Layer 2: 404 concealment
+        $this->authorize('archive', $ilan);             // Layer 1: Capability check
+
+        $ilan = $this->ilanService->archiveListing($ilan);
+
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true, 'ilan' => $ilan]);
+        }
+
+        return to_route('admin.ilanlar.index')
+            ->with('success', 'İlan arşivlendi.');
     }
 
     public function getAiPriceRecommendation(Request $request): JsonResponse

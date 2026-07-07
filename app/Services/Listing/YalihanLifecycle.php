@@ -110,6 +110,26 @@ class YalihanLifecycle
     }
 
     /**
+     * Restore listing from archive — ARSIV → TASLAK
+     *
+     * Sprint 4.2: Real CRUD Certification
+     * P0 fix: Missing restore endpoint
+     */
+    public function restore(Ilan $ilan): Ilan
+    {
+        $this->blockAgentWrite(__FUNCTION__);
+
+        $mevcutRaw = $ilan->getOriginal('yayin_durumu') ?? $ilan->yayin_durumu;
+        $mevcutStr = $mevcutRaw instanceof IlanDurumu ? $mevcutRaw->value : (string) $mevcutRaw;
+
+        if ($mevcutStr !== IlanDurumu::ARSIV->value) {
+            return $ilan; // Idempotent: only restore from ARSIV
+        }
+
+        return $this->transition($ilan, IlanDurumu::TASLAK, null, ['source' => 'restore']);
+    }
+
+    /**
      * Toplu geçiş — bireysel hata izolasyonu
      *
      * @return array{basarili: int, hatali: int, hatalar: array}

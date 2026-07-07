@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\TKGMParselController;
 use App\Http\Controllers\Api\BulkOperationsController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Modules\Finans\Controllers\KomisyonController;
 use App\Http\Controllers\Api\ConfigOptionController;
 use App\Http\Controllers\Api\FeatureController;
 use App\Http\Controllers\Api\FieldDependencyController;
@@ -646,5 +647,21 @@ Route::prefix('admin')->name('api.admin.')->middleware(['auth', 'admin', 'role:a
     // 📊 Admin Observability API
     Route::prefix('observability')->name('observability.')->group(function () {
         Route::get('/stats', [\App\Http\Controllers\Api\Admin\ObservabilityController::class, 'stats'])->name('stats');
+    });
+
+    // 💰 Komisyonlar API
+    Route::prefix('komisyonlar')->name('komisyonlar.')->group(function () {
+        Route::get('/', [KomisyonController::class, 'index'])->name('index');
+        Route::get('/{id}', [KomisyonController::class, 'show'])->name('show');
+        Route::post('/', [KomisyonController::class, 'store'])->name('store');
+        Route::put('/{id}', [KomisyonController::class, 'update'])->name('update');
+        Route::delete('/{id}', [KomisyonController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/restore', [KomisyonController::class, 'restore'])->name('restore');
+        Route::post('/{id}/approve', [KomisyonController::class, 'approve'])->name('approve');
+        Route::post('/{id}/pay', [KomisyonController::class, 'pay'])->name('pay');
+        Route::post('/{id}/recalculate', [KomisyonController::class, 'recalculate'])->name('recalculate');
+        Route::post('/ai/suggest-rate', [KomisyonController::class, 'aiSuggestRate'])->name('ai.suggest-rate');
+        Route::post('/{id}/ai/optimize', [KomisyonController::class, 'aiOptimize'])->name('ai.optimize');
+        Route::post('/ai/analyze', [KomisyonController::class, 'aiAnalyze'])->name('ai.analyze');
     });
 });

@@ -42,7 +42,7 @@
                             </span>
                         @else
                             <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                                {{ ucfirst($ilan->yayin_durumu ?? 'Pasif') }}
+                                {{ $ilan->yayin_durumu?->label() ?? 'Pasif' }}
                             </span>
                         @endif
                     </div>

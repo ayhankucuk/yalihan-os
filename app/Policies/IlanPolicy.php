@@ -44,7 +44,8 @@ class IlanPolicy
             return true;
         }
 
-        return $user->id === ($ilan->danisman_id ?? 0);
+        // Owner: user_id üzerinden ownership kontrolü
+        return $user->id === $ilan->user_id;
     }
 
     /**
@@ -60,6 +61,30 @@ class IlanPolicy
     }
 
     public function viewPrivateListingData(User $user, Ilan $ilan): bool
+    {
+        if ($user->hasRole(['admin', 'super-admin'])) {
+            return true;
+        }
+
+        return $user->id === ($ilan->danisman_id ?? 0);
+    }
+
+    /**
+     * Sprint 4.2: Real CRUD Certification — Restore action
+     */
+    public function restore(User $user, Ilan $ilan): bool
+    {
+        if ($user->hasRole(['admin', 'super-admin'])) {
+            return true;
+        }
+
+        return $user->id === ($ilan->danisman_id ?? 0);
+    }
+
+    /**
+     * Sprint 4.2: Real CRUD Certification — Archive action
+     */
+    public function archive(User $user, Ilan $ilan): bool
     {
         if ($user->hasRole(['admin', 'super-admin'])) {
             return true;

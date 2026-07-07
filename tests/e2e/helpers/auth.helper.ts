@@ -27,14 +27,16 @@ export class AuthHelper {
         const adminEmail = process.env.ADMIN_EMAIL || 'ayhankucuk@gmail.com';
         const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
 
-        // Existing storage state may contain stale/unauthorized session.
-        await this.page.goto('/admin/dashboard/index', { waitUntil: 'domcontentloaded' });
-        const onAdminRoute = this.page.url().includes('/admin');
-        if (onAdminRoute && !(await this.isForbiddenPage())) {
+        // Check if already on login page — if NOT on login page, assume already authenticated
+        await this.page.goto('/', { waitUntil: 'domcontentloaded' });
+        const url = this.page.url();
+        const onLoginPage = /\/login/i.test(url);
+
+        if (!onLoginPage) {
+            // Not on login page — assume already authenticated
             return;
         }
-
-        await this.page.goto('/login', { waitUntil: 'domcontentloaded' });
+        // On login page — proceed with login
 
         const emailField = this.page.getByLabel(/E-posta Adresi|Email/i);
         if ((await emailField.count()) > 0) {

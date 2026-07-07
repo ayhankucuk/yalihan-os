@@ -5,12 +5,13 @@ namespace App\Modules\Finans\Models;
 use App\Models\Kisi;
 use App\Modules\BaseModule\Models\BaseModel;
 use App\Models\Ilan; // Context7: musteri → kisi
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Komisyon extends BaseModel
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, BelongsToTenant;
 
     public const DURUM_HESAPLANDI = 'hesaplandi';
     public const DURUM_ONAYLANDI = 'onaylandi';
@@ -29,6 +30,7 @@ class Komisyon extends BaseModel
      * @var array
      */
     protected $fillable = [
+        'tenant_id',
         'ilan_id',
         'kisi_id', // Context7: kisi_id → kisi_id
         'danisman_id',
