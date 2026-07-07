@@ -5,6 +5,8 @@ namespace App\Services\Workspace;
 use App\Domain\Workspace\Enums\WorkspaceState;
 use App\Models\Ilan;
 use App\Models\PortfolioDriveWorkspace;
+use App\Services\Workspace\TemplateEngineService;
+use App\Services\Workspace\ReadinessEvaluatorService;
 
 /**
  * WorkspaceSummaryService
@@ -25,6 +27,8 @@ class WorkspaceSummaryService
         private readonly WorkspaceHealthService $healthService,
         private readonly WorkspaceTimelineService $timelineService,
         private readonly WorkspaceExecutionService $executionService,
+        private readonly TemplateEngineService $templateEngine,
+        private readonly ReadinessEvaluatorService $readinessEvaluator,
     ) {}
 
     /**
@@ -44,6 +48,7 @@ class WorkspaceSummaryService
             'finance'    => $ilan ? $this->financeInfo($ilan) : null,
             'reservations' => $ilan ? $this->reservationsInfo($ilan) : null,
             'executions' => $this->executionService->getSummary($workspace->id),
+            'readiness'  => $this->readinessInfo($workspace, $ilan),
             'generated_at' => now()->toIso8601String(),
         ];
     }
@@ -175,7 +180,7 @@ class WorkspaceSummaryService
                 'channel_id'    => $channel['channel_id'] ?? null,
                 'webhook_url'   => $channel['webhook_url'] ?? null,
                 'expiration'    => $channel['expiration'] ?? null,
-                'expiration_ts' => $channel['expiration']
+                'expiration_ts' => ($channel['expiration'] ?? null)
                     ? now()->parse($channel['expiration'])->timestamp
                     : null,
                 'last_sync_at'  => $channel['last_sync_at'] ?? null,
@@ -278,5 +283,117 @@ class WorkspaceSummaryService
             'publish_decision_agent' => 'Yayın Kararı',
             default                 => $key,
         };
+    }
+
+    /**
+     * Get readiness evaluation info for the workspace (Sprint 6.1-E04).
+     */
+    private function readinessInfo(PortfolioDriveWorkspace $workspace, ?Ilan $ilan): ?array
+    {
+        if (!$ilan) {
+            return null;
+        }
+
+        // 1. Resolve intent (PropertyWorkspace table -> falls back to Ilan characteristics)
+        $propWorkspace = \App\Models\PropertyWorkspace::where('ilan_id', $ilan->id)->first();
+        $intent = $propWorkspace?->intent;
+
+        if (!$intent) {
+            if ($ilan->islem_tipi === 'kiralama' || $ilan->ilan_turu === 'kiralik') {
+                $intent = 'kiralik';
+                // Check if it's a seasonal/holiday rental
+                $kategoriSlug = strtolower($ilan->anaKategori?->slug ?? '');
+                if ($kategoriSlug === 'yazlık' || $kategoriSlug === 'yazlik') {
+                    $intent = 'sezonluk';
+                }
+            } else {
+                $intent = 'satilik';
+            }
+        }
+
+        try {
+            $template = $this->templateEngine->resolveTemplate($intent);
+        } catch (\InvalidArgumentException $e) {
+            \Illuminate\Support\Facades\Log::warning('WorkspaceSummaryService: template resolution failed, falling back to satilik', [
+                'intent' => $intent,
+                'error'  => $e->getMessage(),
+            ]);
+            $template = $this->templateEngine->resolveTemplate('satilik');
+        }
+
+        // 3. Gather workspace data from Ilan model attributes
+        $workspaceData = [
+            'baslik'          => $ilan->baslik,
+            'aciklama'        => $ilan->aciklama,
+            'fiyat'           => $ilan->fiyat,
+            'para_birimi'     => $ilan->para_birimi,
+            'kapak_resmi'     => $ilan->kapak_fotografi ? 'present' : null,
+            'il'              => $ilan->il?->adi ?? $ilan->il_adi,
+            'ilce'            => $ilan->ilce?->adi ?? $ilan->ilce_adi,
+            'lat'             => $ilan->lat,
+            'lng'             => $ilan->lng,
+            'brut_metrekare'  => $ilan->brut_m2,
+            'net_metrekare'   => $ilan->net_m2,
+            'oda_sayisi'      => $ilan->oda_sayisi,
+            'bina_yasi'       => $ilan->bina_yasi,
+            'kat'             => $ilan->kat,
+            'toplam_kat'      => $ilan->toplam_kat,
+            'isitma_tipi'     => $ilan->isitma,
+            'tapusu_var'      => $ilan->tapu_id ? 'present' : null,
+            'depozito'        => $ilan->depozito,
+            'aidat'           => $ilan->aidat,
+            'esyali'          => $ilan->esyali,
+        ];
+
+        // If seasonal, merge additional fields from turizmDetail/yazlikDetail
+        if ($intent === 'sezonluk' || $intent === 'gunluk') {
+            $turizmDetail = $ilan->turizmDetail;
+            $yazlikDetail = $ilan->yazlikDetail;
+
+            $workspaceData['kapasite']      = $turizmDetail?->max_misafir ?? $yazlikDetail?->max_misafir;
+            $workspaceData['yatak_odasi']   = $ilan->yatak_odasi;
+            $workspaceData['banyo_sayisi']  = $ilan->banyo_sayisi;
+            $workspaceData['havuz']         = $turizmDetail?->havuz_var ?? $yazlikDetail?->havuz;
+            $workspaceData['min_konaklama'] = $turizmDetail?->min_konaklama ?? $yazlikDetail?->min_konaklama;
+            $workspaceData['musait_tarihler'] = ($ilan->propertyAvailabilities()->exists() || $ilan->yazlikFiyatlandirma()->exists()) ? 'present' : null;
+        }
+
+        // 4. Gather uploaded documents from belgeler table
+        $uploadedDocuments = \App\Models\Belge::where('ilan_id', $ilan->id)
+            ->pluck('belge_turu')
+            ->filter()
+            ->toArray();
+
+        // 5. Gather completed AI hooks mapped from workspace AI agent flags
+        $completedAiHooks = [];
+        if ($workspace->isAgentComplete('photo_agent')) {
+            $completedAiHooks[] = 'detect_property_type';
+        }
+        if ($workspace->isAgentComplete('description_agent')) {
+            $completedAiHooks[] = 'generate_title';
+            $completedAiHooks[] = 'generate_description';
+        }
+        if ($workspace->isAgentComplete('property_score_agent')) {
+            $completedAiHooks[] = 'suggest_price';
+        }
+
+        // 6. Evaluate readiness
+        $evaluation = $this->readinessEvaluator->evaluate(
+            $workspaceData,
+            $template,
+            $uploadedDocuments,
+            $completedAiHooks
+        );
+
+        return [
+            'intent'            => $intent,
+            'template_id'       => $template['template_id'],
+            'readiness_score'   => $evaluation['score'],
+            'readiness_status'  => $evaluation['status'], // context7-ignore
+            'missing_fields'    => $evaluation['missing_fields'],
+            'missing_documents' => $evaluation['missing_documents'],
+            'missing_ai_hooks'  => $evaluation['missing_ai_hooks'],
+            'summary'           => $evaluation['summary'],
+        ];
     }
 }
