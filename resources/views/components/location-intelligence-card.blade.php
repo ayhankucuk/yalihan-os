@@ -255,7 +255,7 @@ function locationIntelligenceCard(ilanId) {
 
             this.loading = true;
             try {
-                const response = await fetch('/api/location/analyze', {
+                const response = await fetch('/api/location-intelligence/analyze', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

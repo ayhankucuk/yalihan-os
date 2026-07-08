@@ -197,14 +197,14 @@ Route::prefix('workforce')->group(function () {
 });
 
 // ─── Location Intelligence — Sprint 6.2 ─────────────────────────────
-Route::prefix('location')->group(function () {
-    Route::post('/analyze', [\App\Http\Controllers\Api\LocationController::class, 'analyze'])
-        ->name('api.location.analyze');
-    Route::get('/score/{ilanId}', [\App\Http\Controllers\Api\LocationController::class, 'score'])
+Route::prefix('location-intelligence')->group(function () {
+    Route::post('/analyze', [\App\Http\Controllers\Api\LocationIntelligenceController::class, 'analyze'])
+        ->name('api.location-intelligence.analyze');
+    Route::get('/score/{ilanId}', [\App\Http\Controllers\Api\LocationIntelligenceController::class, 'score'])
         ->where('ilanId', '[0-9]+')
-        ->name('api.location.score');
-    Route::post('/batch', [\App\Http\Controllers\Api\LocationController::class, 'batch'])
-        ->name('api.location.batch');
+        ->name('api.location-intelligence.score');
+    Route::post('/batch', [\App\Http\Controllers\Api\LocationIntelligenceController::class, 'batch'])
+        ->name('api.location-intelligence.batch');
 });
 
 // Route Listing Endpoint (Directly under /api/routes)
