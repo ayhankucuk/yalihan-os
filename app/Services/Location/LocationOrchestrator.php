@@ -7,6 +7,7 @@ use App\DTOs\Location\LocationAnalysisResultDTO;
 use App\DTOs\MarketIntelligence\LocationInsightDTO;
 use App\Models\Ilan;
 use App\Services\AI\YalihanCortex;
+use App\Services\MarketIntelligence\LocationIntelligenceService;
 use Illuminate\Support\Facades\Log;
 
 /**
