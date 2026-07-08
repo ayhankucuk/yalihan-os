@@ -334,6 +334,7 @@ class GeocodingService
                 fromCache: true,
             );
         } catch (\Throwable) {
+            /** @sab-ignore-catch: Cache read failure = graceful miss */
             return null;
         }
     }
@@ -343,7 +344,7 @@ class GeocodingService
         try {
             Cache::put($key, $result->toArray(), now()->addDays(self::CACHE_TTL_DAYS));
         } catch (\Throwable) {
-            // Cache hatası pipeline'ı engellemez
+            /** @sab-ignore-catch: Cache write failure = non-critical, pipeline continues */
         }
     }
 }

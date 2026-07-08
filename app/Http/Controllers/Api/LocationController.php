@@ -40,6 +40,7 @@ class LocationController extends Controller
 
             return response()->json($result->toApiResponse(), $result->isOk() ? 200 : 422);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            /** @sab-ignore-catch: 404 = expected flow */
             return response()->json([
                 'status' => 'ilan_not_found',
                 'message' => 'İlan bulunamadı.',
@@ -73,6 +74,7 @@ class LocationController extends Controller
             $summary = $this->orchestrator->getScoreSummary($ilanId);
             return response()->json($summary);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            /** @sab-ignore-catch: 404 = expected flow */
             return response()->json(['error' => 'İlan bulunamadı.'], 404);
         } catch (\Throwable $e) {
             Log::error('LocationController: score error', ['ilan_id' => $ilanId, 'error' => $e->getMessage()]);
