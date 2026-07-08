@@ -74,6 +74,7 @@ class IlanCrudController extends AdminController
         $this->authorize('view', $ilan);                  // Layer 1: Capability check
 
         $data = $this->ilanService->getDetailedListingAnalysis($ilan);
+        $data['ilan'] = $ilan; // backward compat: view uses $ilan directly
         return view('admin.ilanlar.show', $data);
     }
 

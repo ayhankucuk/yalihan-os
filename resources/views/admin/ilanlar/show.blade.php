@@ -9,6 +9,16 @@
         {{-- 🛰️ Tactical Vitals (Sticky) --}}
         @include('admin.ilanlar.components.cockpit.vitals', ['ilan' => $ilan])
 
+        {{-- 🖼️ Media Intelligence — Sprint 6.3 --}}
+        @if (isset($media))
+            <div class="max-w-[1700px] mx-auto p-4 md:p-6">
+                <x-media-intelligence-card
+                    :ilan="$ilan"
+                    :media-summary="$media"
+                />
+            </div>
+        @endif
+
         <div class="max-w-[1700px] mx-auto p-4 md:p-6 space-y-6">
 
             {{-- 🎯 SAB Executive Strip: Tek satır karar özeti --}}

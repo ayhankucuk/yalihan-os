@@ -799,6 +799,76 @@ class IlanService
             'locationInsight' => $locationInsight,
             'actionMode' => $actionMode,
             'trustBreakdown' => $trustBreakdown,
+            'media' => $this->getMediaSummary($ilan),
+        ];
+    }
+
+    /**
+     * Media Intelligence özetini döndür — Sprint 6.3
+     */
+    private function getMediaSummary(Ilan $ilan): array
+    {
+        if ($ilan->media_health_score === null) {
+            return [
+                'health' => 'MISSING',
+                'health_score' => 0,
+                'quality_score' => 0,
+                'coverage' => 0.0,
+                'hero_image_url' => null,
+                'detected_rooms' => [],
+                'missing_rooms' => [],
+                'total_photos' => 0,
+            ];
+        }
+
+        $detectedRooms = [];
+        $roomRows = $ilan->fotograflar()
+            ->whereNotNull('oda_turu')
+            ->selectRaw('oda_turu, COUNT(*) as cnt, MAX(oda_turu_guven) as max_guven')
+            ->groupBy('oda_turu')
+            ->get();
+
+        $labels = [
+            'pool' => 'Havuz', 'view' => 'Manzara', 'living_room' => 'Salon',
+            'bedroom' => 'Yatak Odası', 'kitchen' => 'Mutfak', 'bathroom' => 'Banyo',
+            'terrace' => 'Teras', 'garden' => 'Bahçe', 'exterior' => 'Dış Cephe',
+        ];
+
+        foreach ($roomRows as $row) {
+            $detectedRooms[] = [
+                'oda_turu' => $row->oda_turu,
+                'label' => $labels[$row->oda_turu] ?? ucfirst($row->oda_turu),
+                'count' => (int) $row->cnt,
+                'guven_skoru' => (int) $row->max_guven,
+            ];
+        }
+
+        $heroUrl = null;
+        if ($ilan->hero_fotograf_id) {
+            $hero = $ilan->fotograflar()->where('id', $ilan->hero_fotograf_id)->first();
+            $heroUrl = $hero?->url;
+        }
+
+        $detectedTypes = count($detectedRooms);
+        $coverage = min(1.0, $detectedTypes / 9);
+
+        $health = match (true) {
+            $ilan->media_health_score >= 80 => 'EXCELLENT',
+            $ilan->media_health_score >= 60 => 'GOOD',
+            $ilan->media_health_score >= 40 => 'FAIR',
+            $ilan->media_health_score >= 20 => 'POOR',
+            default => 'MISSING',
+        };
+
+        return [
+            'health' => $health,
+            'health_score' => (int) $ilan->media_health_score,
+            'quality_score' => (int) ($ilan->media_quality_score ?? 0),
+            'coverage' => round($coverage, 2),
+            'hero_image_url' => $heroUrl,
+            'detected_rooms' => $detectedRooms,
+            'missing_rooms' => $ilan->eksik_odalar ?? [],
+            'total_photos' => $ilan->fotograflar()->count(),
         ];
     }
 
