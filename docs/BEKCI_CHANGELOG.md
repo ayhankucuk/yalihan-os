@@ -2021,6 +2021,68 @@ SAB integrity scan blokerleri giderildi, ilan_favorileri FK uyumsuzluğu düzelt
 
 ---
 
+## Oturum 68 — 2026-07-08 | Sprint 6.3 — Media Intelligence Core
+
+### ✅ Tamamlanan İşler
+
+#### 1. Sprint 6.2 Closure
+- `v6.2-location-intelligence-certified` Git tag ✅
+- Pipeline test: Score 45, Confidence HIGH ✅
+
+#### 2. Sprint 6.3 Media Intelligence — Core Infrastructure
+Tam pipeline: Photo Upload → Room Detection → Quality Analysis → Coverage → Hero Selection → Media Health
+
+**Yeni Dosyalar:**
+- `app/Services/Media/MediaIntelligenceEngine.php` — orchestrator
+- `app/Services/Media/RoomDetectionService.php` — kural tabanlı 10 oda türü
+- `app/Services/Media/ImageQualityEngine.php` — Laplacian/blur/brightness/exposure/sharpness
+- `app/Services/Media/CoverageAnalyzer.php` — eksik oda tespiti
+- `app/Services/Media/HeroImageSelector.php` — hero score formula
+- `app/Services/Media/WorkspaceMediaService.php` — workspace payload
+- `app/DTOs/Media/MediaRoomDTO.php`
+- `app/DTOs/Media/MediaPhotoDTO.php`
+- `app/DTOs/Media/MediaAnalysisDTO.php`
+- `app/DTOs/Media/MediaSummaryDTO.php`
+- `app/Events/Media/MediaAnalyzed.php`
+- `app/Events/Media/HeroImageSelected.php`
+- `app/Events/Media/MediaHealthUpdated.php`
+- `app/Jobs/AnalyzeMediaJob.php` — async, idempotent, 2 tries
+- `app/Http/Controllers/Api/MediaController.php`
+- `app/Http/Requests/MediaAnalyzeRequest.php`
+- `resources/views/components/media-intelligence-card.blade.php`
+- `database/migrations/2026_07_08_000002_add_media_intelligence_to_ilan_fotograflari_table.php`
+- `database/migrations/2026_07_08_000003_add_media_health_to_ilanlar_table.php`
+
+**Migrations çalıştırıldı:**
+- ilan_fotograflari: oda_turu, kalite_puani, kalite_ayrinti, hero_skoru, media_data
+- ilanlar: media_health_score, media_quality_score, media_tamamlanma_oran, eksik_odalar, hero_fotograf_id
+
+**API Routes:**
+- `POST /api/media/analyze` — full analysis (sync/async)
+- `GET /api/media/score/{id}` — cached health
+
+**Tests:**
+- Unit: CoverageAnalyzerTest (5) + HeroImageSelectorTest (5) + MediaDTOsTest (7) = **17 tests, 65 assertions — ALL GREEN**
+
+### 📊 Guard Sonuçları
+- Tüm yeni dosyalar syntax check ✅
+- Pipeline zinciri: Photo → Room → Quality → Coverage → Hero → Health ✅
+- SAB Write Authority: MediaIntelligenceEngine tek write authority ✅
+
+### 🛡️ SAB Uyumu
+- Thin Controller: MediaController sadece HTTP katmanı ✅
+- IlanFotografi fillable güncellendi (oda_turu, kalite_puani, hero_skoru, media_data) ✅
+- Event replay-safe: tüm event'ler `Dispatchable + InteractsWithSockets` ✅
+
+### 📅 Sprint 6.3 Kalan İşler
+- [ ] AI Vision API entegrasyonu (GPT-4 Vision — sonraki sprint)
+- [ ] Gerçek fotoğraf ile pipeline test
+- [ ] Feature testler
+- [ ] WorkspaceSummaryService tam entegrasyonu
+- [ ] Sprint 6.3 Closure raporu
+
+---
+
 ## Oturum 67 — 2026-07-08 | Sprint 6.2 — Location Intelligence Core
 
 ### ✅ Tamamlanan İşler
