@@ -28,11 +28,22 @@ class IlanFotografi extends BaseModel
         'display_order',
         'kapak_fotografi',
         'aciklama',
+        // Media Intelligence — Sprint 6.3
+        'oda_turu',
+        'oda_turu_guven',
+        'kalite_puani',
+        'kalite_ayrinti',
+        'hero_skoru',
+        'media_data',
     ];
 
     protected $casts = [
         'kapak_fotografi' => 'boolean',
         'display_order' => 'integer',
+        // Media Intelligence — Sprint 6.3
+        'oda_turu_guven' => 'float',
+        'kalite_puani' => 'integer',
+        'hero_skoru' => 'float',
     ];
 
     /**

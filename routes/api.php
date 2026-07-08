@@ -207,5 +207,14 @@ Route::prefix('location-intelligence')->group(function () {
         ->name('api.location-intelligence.batch');
 });
 
+// ─── Media Intelligence — Sprint 6.3 ────────────────────────────────
+Route::prefix('media')->group(function () {
+    Route::post('/analyze', [\App\Http\Controllers\Api\MediaController::class, 'analyze'])
+        ->name('api.media.analyze');
+    Route::get('/score/{ilanId}', [\App\Http\Controllers\Api\MediaController::class, 'score'])
+        ->where('ilanId', '[0-9]+')
+        ->name('api.media.score');
+});
+
 // Route Listing Endpoint (Directly under /api/routes)
 require __DIR__ . '/api/v1/routes-list.php';
