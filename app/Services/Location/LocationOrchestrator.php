@@ -231,7 +231,7 @@ class LocationOrchestrator
         ?string $aiSummary,
     ): LocationAnalysisResultDTO {
         return new LocationAnalysisResultDTO(
-            status: $status,
+            pipeline_durumu: $status,
             score: $insight->location_signal_score,
             confidence: $insight->confidence_label,
             poi_access_score: $insight->poi_access_score,

@@ -2,6 +2,8 @@
 
 namespace App\Services\Ilan;
 
+use App\DTOs\MarketIntelligence\LocationInsightDTO;
+
 use App\Models\Ilan;
 use App\Models\IlanKategori;
 use App\Models\IlanPriceHistory;
@@ -691,12 +693,34 @@ class IlanService
             Log::warning('MIE pricing insight failed for ilan ' . $ilan->id, ['error' => $e->getMessage()]);
         }
 
-        // MIE v4: Location Intelligence
+        // MIE v4: Location Intelligence — Sprint 6.2
+        // Önce cached location_data kullan, yoksa live analyze et
         $locationInsight = null;
 
         try {
-            $locationService = app(\App\Services\MarketIntelligence\LocationIntelligenceService::class);
-            $locationInsight = $locationService->analyze($ilan->lat, $ilan->lng);
+            $locationData = $ilan->location_data;
+            if ($locationData !== null) {
+                // location_signal.blade.php LocationInsightDTO beklediği için
+                // cached array'i LocationInsightDTO gibi davranan bir wrapper'a dönüştür
+                $locationInsight = new \App\DTOs\MarketIntelligence\LocationInsightDTO(
+                    location_signal_score: $locationData['score'] ?? null,
+                    confidence_score: $locationData['confidence'] === 'HIGH' ? 90 : ($locationData['confidence'] === 'MEDIUM' ? 65 : ($locationData['confidence'] === 'LOW' ? 40 : 15)),
+                    confidence_label: $locationData['confidence'] ?? 'VERY_LOW',
+                    data_status: ($locationData['score'] ?? null) !== null ? 'ok' : 'no_coordinates',
+                    poi_access_score: $locationData['sub_scores']['poi_access_score'] ?? 0,
+                    poi_density_score: $locationData['sub_scores']['poi_density_score'] ?? 0,
+                    poi_coverage_score: $locationData['sub_scores']['poi_coverage_score'] ?? 0,
+                    top_nearby_groups: $locationData['top_groups'] ?? [],
+                    reason_codes: $locationData['reason_codes'] ?? [],
+                    human_summary: $locationData['ai_summary'] ?? '',
+                    demand_modifier: $locationData['demand_modifier'] ?? 0,
+                );
+            } elseif ($ilan->lat && $ilan->lng && $ilan->lat != 0 && $ilan->lng != 0) {
+                // Cache yok → canlı analyze
+                $locationService = app(\App\Services\MarketIntelligence\LocationIntelligenceService::class);
+                $locationInsight = $locationService->analyze($ilan->lat, $ilan->lng);
+            }
+            // Koordinat yoksa null → location-signal.blade.php "no_coordinates" state gösterir
         } catch (\Exception $e) {
             Log::warning('MIE location insight failed for ilan ' . $ilan->id, ['error' => $e->getMessage()]);
         }
