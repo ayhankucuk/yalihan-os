@@ -2021,7 +2021,7 @@ SAB integrity scan blokerleri giderildi, ilan_favorileri FK uyumsuzluğu düzelt
 
 ---
 
-## Oturum 68 — 2026-07-08 | Sprint 6.3 — Media Intelligence Core
+## Oturum 68 — 2026-07-08 | Sprint 6.3 — Media Intelligence Core ✅ CLOSED
 
 ### ✅ Tamamlanan İşler
 
@@ -2074,12 +2074,26 @@ Tam pipeline: Photo Upload → Room Detection → Quality Analysis → Coverage 
 - IlanFotografi fillable güncellendi (oda_turu, kalite_puani, hero_skoru, media_data) ✅
 - Event replay-safe: tüm event'ler `Dispatchable + InteractsWithSockets` ✅
 
-### 📅 Sprint 6.3 Kalan İşler
-- [ ] AI Vision API entegrasyonu (GPT-4 Vision — sonraki sprint)
-- [ ] Gerçek fotoğraf ile pipeline test
-- [ ] Feature testler
-- [ ] WorkspaceSummaryService tam entegrasyonu
-- [ ] Sprint 6.3 Closure raporu
+### 📅 Sprint 6.3 Closure — 2026-07-08
+
+| Görev | Durum |
+|-------|-------|
+| MediaIntelligenceEngine pipeline | ✅ |
+| RoomDetectionService (10 oda türü) | ✅ |
+| ImageQualityEngine | ✅ |
+| CoverageAnalyzer + HeroImageSelector | ✅ |
+| Media API endpoints (analyze + score) | ✅ |
+| Cockpit card | ✅ |
+| IlanService media summary entegrasyonu | ✅ |
+| Unit tests (26 tests) | ✅ |
+| Feature tests (11 tests) | ✅ |
+| API contract update | ✅ |
+| Closure docs + Git tag | ✅ |
+
+**Sprint 6.3 Kalan İşler → Sprint 6.4:**
+- AI Vision API entegrasyonu (GPT-4 Vision)
+- Gerçek fotoğraf ile pipeline test
+- WorkspaceSummaryService tam entegrasyonu
 
 ---
 

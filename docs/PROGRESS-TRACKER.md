@@ -1,6 +1,55 @@
 # Governance Progress Tracker
-**Son Güncelleme:** 2026-07-03 (Oturum 67 — Sprint 4.2 Kapanışı)
-**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **Sprint 4.2 COMPLETE** + 🚀 **Faz 2 Ürün Aşaması**
+**Son Güncelleme:** 2026-07-08 (Oturum 68 — Sprint 6.3 Kapanışı)
+**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **Sprint 6.3 COMPLETE** + 🚀 **Faz 2 Ürün Aşaması** + 🏷️ **v6.3-media-intelligence-certified**
+---
+
+## ✅ Oturum 68 — Sprint 6.3 Media Intelligence Core (2026-07-08) ✅ FULLY CLOSED
+
+### Sprint 6.3 — Media Intelligence Pipeline Tamamlandı
+
+| Metric | Pre-Sprint | Post-Sprint | Change |
+|--------|------------|-------------|--------|
+| Media tests | 0 | **37 green** | +37 |
+| API contracts | eski format | **success/data/meta/error** | ✅ |
+| Migrations | eksik | **3 yeni** (ilan_metinleri, kapak_fotografi) | ✅ |
+| IlanService media | yok | **getMediaSummary()** | ✅ |
+
+### ✅ Tamamlanan İşler
+
+| Dosya | Değişiklik |
+|-------|------------|
+| `app/Services/Media/MediaIntelligenceEngine.php` | 6-step orchestrator |
+| `app/Services/Media/RoomDetectionService.php` | 10 oda türü |
+| `app/Services/Media/ImageQualityEngine.php` | 4 metrik |
+| `app/Services/Media/CoverageAnalyzer.php` | Eksik oda tespiti |
+| `app/Services/Media/HeroImageSelector.php` | Kapak fotoğrafı seçimi |
+| `app/Services/Media/WorkspaceMediaService.php` | Workspace payload |
+| `app/DTOs/Media/*.php` | 4 DTO (MediaRoom, MediaPhoto, MediaAnalysis, MediaSummary) |
+| `app/Events/Media/*.php` | 3 event (MediaAnalyzed, HeroImageSelected, MediaHealthUpdated) |
+| `app/Jobs/AnalyzeMediaJob.php` | Queue job (idempotent, 2 tries) |
+| `app/Http/Controllers/Api/MediaController.php` | API contract: success/data/meta/error |
+| `database/migrations/2026_07_08_163952_create_ilan_metinleri_table.php` | Test ortamı için |
+| `database/migrations/2026_07_08_164119_add_kapak_fotografi_to_ilan_fotograflari_table.php` | Test ortamı için |
+| `tests/Feature/Api/MediaIntelligenceApiTest.php` | 11 feature test |
+| `app/Models/Ilan.php` | `eksik_odalar` → array cast |
+
+### 📊 Test Sonuçları
+
+| Suite | Passed | Failed |
+|-------|--------|--------|
+| Unit (4 dosya) | 26 | 0 |
+| Feature (1 dosya) | 11 | 0 |
+| **TOPLAM** | **37** | **0** |
+
+### 🔒 Uyumluluk
+- ✅ Thin Controller: MediaController sadece HTTP katmanı
+- ✅ SAB Write Authority: Engine tek write authority
+- ✅ API Contract: success/data/meta/error standard
+- ✅ Event replay-safe: tüm event'ler Dispatchable
+
+### 🏷️ Git Tag
+`v6.3-media-intelligence-certified` → Sprint 6.3 Certified
+
 ---
 
 ## ✅ Oturum 67 — Sprint 4.2 Real CRUD Certification (2026-07-03) ✅ CLOSED

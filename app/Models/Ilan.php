@@ -563,6 +563,9 @@ class Ilan extends BaseModel
         'ekstra_ozellikler' => 'array',              // T-UPS-V2-FULL: Kategori bazlı dinamik alanlar (JSON)
         'visibility_score' => 'integer',
 
+        // Sprint 6.3: Media Intelligence
+        'eksik_odalar' => 'array',                   // JSON column: ['pool', 'view', ...]
+
         // ======================================================================
         // ⚠️ CONDITIONAL FIELDS - Casts
         // ======================================================================

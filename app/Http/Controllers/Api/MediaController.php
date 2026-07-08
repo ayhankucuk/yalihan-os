@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
  * Media Intelligence API Controller — Sprint 6.3
  *
  * Thin controller — sadece HTTP katmanı.
+ * API Contract: success | data | meta | error
  */
 class MediaController extends Controller
 {
@@ -37,34 +38,25 @@ class MediaController extends Controller
             if ($async) {
                 AnalyzeMediaJob::dispatch($ilanId);
 
-                return response()->json([
+                return $this->ok([
+                    'ilan_id' => $ilanId,
                     'status' => 'queued',
                     'message' => 'Fotoğraf analizi kuyruğa eklendi.',
-                    'ilan_id' => $ilanId,
-                ], 202);
+                ]);
             }
 
             $result = $this->engine->analyze($ilanId);
 
-            return response()->json([
-                'status' => 'ok',
-                'data' => $result->toArray(),
-            ]);
+            return $this->ok($result->toArray());
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
-            return response()->json([
-                'status' => 'ilan_not_found',
-                'message' => 'İlan bulunamadı.',
-            ], 404);
+            return $this->error('ilan_not_found', 'İlan bulunamadı.', 404);
         } catch (\Throwable $e) {
             Log::error('MediaController: analyze error', [
                 'ilan_id' => $request->validated('ilan_id'),
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Analiz sırasında hata oluştu.',
-            ], 500);
+            return $this->error('analyze_failed', 'Analiz sırasında hata oluştu.', 500);
         }
     }
 
@@ -79,20 +71,20 @@ class MediaController extends Controller
     public function score(int $ilanId): JsonResponse
     {
         try {
-            $ilan = \App\Models\Ilan::findOrFail($ilanId);
+            $ilan = \App\Models\Ilan::with('fotograflar')->findOrFail($ilanId);
 
-            return response()->json([
+            return $this->ok([
                 'ilan_id' => $ilanId,
                 'media_health_score' => $ilan->media_health_score,
                 'health' => $this->healthLabel($ilan->media_health_score ?? 0),
                 'quality_score' => $ilan->media_quality_score,
-                'total_photos' => $ilan->fotograflar()->count(),
+                'total_photos' => $ilan->fotograflar->count(),
                 'missing_rooms' => $ilan->eksik_odalar ?? [],
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
-            return response()->json(['error' => 'İlan bulunamadı.'], 404);
+            return $this->error('ilan_not_found', 'İlan bulunamadı.', 404);
         } catch (\Throwable $e) {
-            return response()->json(['error' => 'Sunucu hatası.'], 500);
+            return $this->error('server_error', 'Sunucu hatası.', 500);
         }
     }
 
@@ -105,5 +97,38 @@ class MediaController extends Controller
             $score >= 20 => 'POOR',
             default => 'MISSING',
         };
+    }
+
+    /**
+     * Build a success response conforming to API contract.
+     */
+    private function ok(array $data, int $httpStatus = 200): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+            'meta' => [
+                'timestamp' => now()->toIso8601String(),
+            ],
+            'error' => null,
+        ], $httpStatus);
+    }
+
+    /**
+     * Build an error response conforming to API contract.
+     */
+    private function error(string $code, string $message, int $httpStatus = 400): JsonResponse
+    {
+        return response()->json([
+            'success' => false,
+            'data' => null,
+            'meta' => [
+                'timestamp' => now()->toIso8601String(),
+            ],
+            'error' => [
+                'code' => $code,
+                'message' => $message,
+            ],
+        ], $httpStatus);
     }
 }
