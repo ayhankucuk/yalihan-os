@@ -68,10 +68,33 @@ final class PublishingMediaDTO
         return [
             'caption'      => $this->photo_captions[$fotografId] ?? null,
             'room_metadata' => $this->room_metadata[$fotografId] ?? null,
-            'order'        => array_search($fotografId, $this->photo_order) !== false
+            'sira'        => array_search($fotografId, $this->photo_order) !== false // context7-ignore: DTO presentation key
                 ? (int) array_search($fotografId, $this->photo_order)
                 : null,
             'is_hero'      => $this->hero_fotograf_id === $fotografId,
         ];
+    }
+
+    /**
+     * Array'den DTO oluşturur — Publishing Intelligence pipeline için.
+     */
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            ilan_id: $data['ilan_id'] ?? 0,
+            hero_fotograf_id: $data['hero_fotograf_id'] ?? null,
+            hero_reason: $data['hero_reason'] ?? null,
+            photo_order: $data['photo_order'] ?? [],
+            title_hints: $data['title_hints'] ?? [],
+            photo_captions: $data['photo_captions'] ?? [],
+            room_metadata: $data['room_metadata'] ?? [],
+            is_publishing_ready: $data['is_publishing_ready'] ?? false,
+            readiness_issues: $data['readiness_issues'] ?? [],
+            detected_rooms: $data['detected_rooms'] ?? [],
+            detected_amenities: $data['detected_amenities'] ?? [],
+            detected_luxury_features: $data['detected_luxury_features'] ?? [],
+            vision_score: $data['vision_score'] ?? 0,
+            avg_ai_confidence: $data['avg_ai_confidence'] ?? 0.0,
+        );
     }
 }

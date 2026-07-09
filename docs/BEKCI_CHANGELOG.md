@@ -1,5 +1,62 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 70 — Sprint 6.5 Publishing Intelligence (2026-07-09) ✅ CERTIFIED
+
+### 🎯 Hedef
+Workspace içindeki doğrulanmış verileri kanal-agnostik Publishing Package'e dönüştürmek. **PUBLISH ETMEZ — sadece payload üretir.**
+
+### ✅ Tamamlanan İşler
+
+| Dosya | Açıklama |
+|-------|-----------|
+| `app/Contracts/Publishing/ChannelAdapterContract.php` | 4 metod: name, supports, buildPayload, requiredFields, validate |
+| `app/DTOs/Publishing/ChannelReadinessDTO.php` | Kanal hazırlık değerlendirmesi |
+| `app/DTOs/Publishing/ChannelReadinessItem.php` | Tek kanal readiness item |
+| `app/Services/Publishing/PublishingIntelligenceOrchestrator.php` | Pipeline koordinatörü |
+| `app/Services/Publishing/PublishingPackage.php` | Orchestrator çıktısı |
+| `app/Services/Publishing/Transformers/DescriptionTransformer.php` | AI content → kanal formatı |
+| `app/Services/Publishing/Transformers/AmenityMapper.php` | Amenities → kanal-özgü özellikler |
+| `app/Services/Publishing/Transformers/RoomTypeMapper.php` | Rooms → kanal kategori eşleşmesi |
+| `app/Services/Publishing/Adapters/AirbnbAdapter.php` | Airbnb format transformer |
+| `app/Services/Publishing/Adapters/SahibindenAdapter.php` | Sahibinden format transformer |
+| `app/Services/Publishing/Adapters/HepsiemlakAdapter.php` | Hepsiemlak format transformer |
+| `app/Jobs/PreparePublishingJob.php` | Async, idempotent, replay-safe job |
+| `app/Events/Publishing/PublishingPackageReady.php` | Pipeline tamam eventi |
+| `tests/Unit/Services/Publishing/PublishingDTOTest.php` | DTO unit testleri |
+| `tests/Unit/Services/Publishing/PublishingTransformerTest.php` | Transformer unit testleri |
+| `tests/Unit/Services/Publishing/ChannelAdapterTest.php` | Adapter unit testleri |
+| `tests/Feature/Publishing/PublishingIntelligenceTest.php` | 13 feature test |
+
+### 📊 Test Sonuçları
+
+| Suite | Geçen | Kalan |
+|-------|--------|--------|
+| Unit Publishing (3 dosya) | 26 | 0 |
+| Feature Publishing (1 dosya) | 13 | 0 |
+| Vision Prep (inherit) | 5 | 0 |
+| **TOPLAM** | **44** | **0** |
+
+### 🔒 Quality Gates
+
+| Kural | Durum |
+|--------|--------|
+| No real API call | ✅ HTTP client yok |
+| No actual publish | ✅ Sadece payload üretir |
+| No withoutGlobalScopes() | ✅ TenantScope korunur |
+| No inline publish decision arrays | ✅ PublishingDecisionDTO kullanılıyor |
+| Adapters transform only | ✅ Business rules Orchestrator'da |
+| Tenant Isolation | ✅ TenantScope korunur |
+| Replay/Idempotency | ✅ uniqueId() + reject path |
+| Channel separation | ✅ 3 bağımsız adapter |
+
+### ⚠️ SAB Scan Notu
+68 LOW: Channel API field isimleri (`description`, `title`, `summary` — Airbnb/Sahibinden/Hepsiemlak native field). **DB field değil, AI channel content.** Naming Authority kapsamı dışında.
+
+### 🏷️ Git Tag
+`v6.5-publishing-intelligence-certified`
+
+---
+
 ## Oturum 69 — Sprint 6.4 AI Vision Intelligence (2026-07-09) ✅ CERTIFIED
 
 ### 🎯 Hedef
