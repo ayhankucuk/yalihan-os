@@ -528,6 +528,14 @@ class Ilan extends BaseModel
         'investor_target_roi',
         'country_code',
         'source_locale',
+
+        // Sprint 6.4: AI Vision Intelligence
+        'vision_score',
+        'vision_ai_confidence',
+        'vision_rooms',
+        'vision_amenities',
+        'vision_luxury',
+        'vision_media',
     ];
 
     /**
@@ -756,6 +764,14 @@ class Ilan extends BaseModel
         'operating_expenses_annual' => 'float',
         'investor_target_roi'       => 'float',
         'source_locale'             => 'string',
+
+        // Sprint 6.4: AI Vision Intelligence
+        'vision_score'           => 'integer',
+        'vision_ai_confidence'   => 'float',
+        'vision_rooms'          => 'array',
+        'vision_amenities'      => 'array',
+        'vision_luxury'         => 'array',
+        'vision_media'          => 'array',
     ];
 
     // ======================================================================

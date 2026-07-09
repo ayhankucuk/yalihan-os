@@ -3,34 +3,24 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | Default Vision Provider
+    | Default Vision Provider Driver
     |--------------------------------------------------------------------------
-    | Supported: "openai", "vertex", "mock"
+    | Supported: "openai", "mock"
+    | Future: "gemini", "azure", "local"
     */
-    'provider' => env('VISION_PROVIDER', 'mock'),
+    'driver' => env('VISION_DRIVER', 'mock'),
 
     /*
     |--------------------------------------------------------------------------
-    | OpenAI Vision Settings
+    | OpenAI Vision Settings — Sprint 6.4
     |--------------------------------------------------------------------------
     */
     'openai' => [
-        'api_key' => env('OPENAI_API_KEY'),
-        'model' => env('OPENAI_VISION_MODEL', 'gpt-4o'),
-        'max_tokens' => 500,
-        'temperature' => 0.2,
-        'detail' => 'low', // low, high, auto (low is cheaper)
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Vertex AI (Gemini) settings
-    |--------------------------------------------------------------------------
-    */
-    'vertex' => [
-        'project_id' => env('GOOGLE_CLOUD_PROJECT'),
-        'location' => env('GOOGLE_CLOUD_LOCATION', 'us-central1'),
-        'model' => env('VERTEX_VISION_MODEL', 'gemini-1.5-flash'),
+        'api_key'      => env('OPENAI_API_KEY'),
+        'model'        => env('OPENAI_VISION_MODEL', 'gpt-4o'),
+        'max_tokens'    => (int) env('OPENAI_VISION_MAX_TOKENS', 1024),
+        'temperature'   => (float) env('OPENAI_VISION_TEMPERATURE', 0.3),
+        'detail'        => env('OPENAI_VISION_DETAIL', 'high'), // low, high, auto
     ],
 
     /*
@@ -40,9 +30,9 @@ return [
     */
     'limits' => [
         'max_images_per_request' => 5,
-        'max_file_size_mb' => 4,
-        'timeout_seconds' => 60,
+        'max_file_size_mb'      => 4,
+        'timeout_seconds'        => 30,
     ],
 
-    'enable_kill_switch' => env('VISION_KILL_SWITCH', false),
+    'kill_switch' => env('VISION_KILL_SWITCH', false),
 ];

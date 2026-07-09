@@ -35,6 +35,8 @@ class IlanFotografi extends BaseModel
         'kalite_ayrinti',
         'hero_skoru',
         'media_data',
+        // Sprint 6.4: AI Vision Intelligence
+        'vision_data',
     ];
 
     protected $casts = [

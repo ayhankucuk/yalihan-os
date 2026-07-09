@@ -1,6 +1,67 @@
 # Governance Progress Tracker
-**Son Güncelleme:** 2026-07-08 (Oturum 68 — Sprint 6.3 Kapanışı)
-**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **Sprint 6.3 COMPLETE** + 🚀 **Faz 2 Ürün Aşaması** + 🏷️ **v6.3-media-intelligence-certified**
+**Son Güncelleme:** 2026-07-09 (Oturum 69 — Sprint 6.4 Kapanışı)
+**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **Sprint 6.4 COMPLETE** + 🚀 **AI Vision Intelligence** + 🏷️ **v6.4-ai-vision-certified**
+---
+
+## ✅ Oturum 69 — Sprint 6.4 AI Vision Intelligence (2026-07-09) ✅ CERTIFIED
+
+### Sprint 6.4 — AI Vision Intelligence Pipeline Tamamlandı
+
+| Metric | Pre-Sprint | Post-Sprint | Change |
+|--------|------------|-------------|--------|
+| AI Vision tests | 0 | **26 green** | +26 |
+| Vision DTOs | 0 | **3 new** | +3 |
+| Vision Events | 0 | **3 new** | +3 |
+| Vision Services | 0 | **6 new** | +6 |
+| Vision Providers | 0 | **2** (OpenAI + Mock) | +2 |
+| Migrations | 0 | **1 new** | +1 |
+| SAB Integrity | PASS | **PASS** | ✅ |
+
+### ✅ Tamamlanan İşler
+
+| Dosya | Değişiklik |
+|-------|------------|
+| `app/DTOs/Vision/VisionAnalysisDTO.php` | AI Vision analiz sonuç DTO |
+| `app/DTOs/Vision/VisionObjectDTO.php` | Nesne/oda/amenity DTO |
+| `app/DTOs/Vision/PublishingMediaDTO.php` | Publishing hazırlık DTO |
+| `app/Services/Vision/Contracts/VisionProviderContract.php` | Provider interface |
+| `app/Services/Vision/Providers/OpenAIVisionProvider.php` | GPT-4o Vision implementation |
+| `app/Services/Vision/Providers/MockVisionProvider.php` | Test/development mock |
+| `app/Services/Vision/VisionFusionEngine.php` | AI + Rule confidence fusion |
+| `app/Services/Vision/MetadataExtractionService.php` | AI metadata extraction |
+| `app/Services/Vision/PublishingPreparationService.php` | Publishing prep (NOT publishing) |
+| `app/Services/Vision/VisionOrchestrator.php` | Vision pipeline coordinator |
+| `app/Events/Vision/VisionAnalyzed.php` | Per-photo vision event |
+| `app/Events/Vision/MetadataExtracted.php` | Aggregate metadata event |
+| `app/Events/Vision/PublishingPrepared.php` | Publishing prep event |
+| `app/Jobs/AnalyzeVisionJob.php` | Queue job (async, idempotent, 3 tries) |
+| `app/Models/Ilan.php` | vision kolonları ($fillable, $casts) |
+| `app/Models/IlanFotografi.php` | vision_data kolonu |
+| `database/migrations/2026_07_09_140000_add_vision_intelligence_columns.php` | Vision migration |
+| `tests/Unit/Vision/VisionFusionEngineTest.php` | 4 unit test |
+| `tests/Unit/Vision/PublishingPreparationServiceTest.php` | 3 unit test |
+| `tests/Feature/Vision/VisionOrchestratorTest.php` | 19 feature test |
+| `docs/walkthroughs/S6.4_AI_VISION_WALKTHROUGH.md` | Sprint walkthrough |
+
+### 📊 Test Sonuçları
+
+| Suite | Passed | Failed |
+|-------|--------|--------|
+| Unit Vision (2 dosya) | 7 | 0 |
+| Feature Vision (1 dosya) | 19 | 0 |
+| **TOPLAM** | **26** | **0** |
+
+### 🔒 Uyumluluk
+- ✅ SAB Integrity: PASS (baseline 4764 + 38, 0 new blocking)
+- ✅ Queue Safety: idempotent + retry + timeout + replay-safe
+- ✅ Tenant Isolation: korundu
+- ✅ Vision Provider abstraction: iş mantığı GPT-4o'ya bağlı değil
+- ✅ Event immutable: değiştirilemez
+- ✅ Thin Controller: sadece HTTP katmanı
+
+### 🏷️ Git Tag
+`v6.4-ai-vision-certified` → Sprint 6.4 Certified
+
 ---
 
 ## ✅ Oturum 68 — Sprint 6.3 Media Intelligence Core (2026-07-08) ✅ FULLY CLOSED
