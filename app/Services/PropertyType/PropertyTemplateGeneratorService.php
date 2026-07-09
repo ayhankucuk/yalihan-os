@@ -2,14 +2,16 @@
 
 namespace App\Services\PropertyType;
 
+use App\Models\UpsTemplate;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\File;
 
 /**
  * UPS Template Generator Service
  *
  * @deprecated Bu servis PropertyTypeConfiguration Aggregate Root lehine kullanımdan kaldırılmıştır.
  * Template cozumleme islemleri icin \App\Domain\PropertyHub\PropertyTypeConfiguration::resolveTemplate() kullaniniz.
+ *
+ * Veri kaynağı: ups_templates DB tablosu (config/ups_templates.json DEĞİL)
  *
  * @see \App\Domain\PropertyHub\PropertyTypeConfiguration
  */
@@ -27,25 +29,36 @@ class PropertyTemplateGeneratorService
     }
 
     /**
-     * Load templates from JSON file
+     * Load templates from database (not JSON file).
+     *
+     * P0 Fix: ups_templates tablosu DB'den okunur — config/ups_templates.json dosyası gerekmez.
      */
     private function loadTemplates(): void
     {
         $this->templates = Cache::remember('ups_templates_data', 3600, function () {
-            $path = config_path('ups_templates.json');
-
-            if (!File::exists($path)) {
-                throw new \RuntimeException('UPS Templates JSON not found: ' . $path);
-            }
-
-            $json = File::get($path);
-            $data = json_decode($json, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new \RuntimeException('Invalid JSON in UPS Templates: ' . json_last_error_msg());
-            }
-
-            return $data['template_listesi'] ?? [];
+            return UpsTemplate::aktif()
+                ->get()
+                ->map(function (UpsTemplate $template) {
+                    // DB model → eski JSON formatına çevir
+                    $json = $template->template_json ?? [];
+                    return [
+                        'kombinasyon' => [
+                            'kategori' => $template->kategori?->name ?? null,
+                            'yayin_tipi' => $template->yayinTipi?->name ?? null,
+                            'alt_tur' => $json['alt_tur'] ?? null,
+                        ],
+                        'zorunlu_alanlar' => $json['zorunlu_alanlar'] ?? [],
+                        'opsiyonel_alanlar' => $json['opsiyonel_alanlar'] ?? [],
+                        'gizli_alanlar' => $json['gizli_alanlar'] ?? [],
+                        'validasyon_kurallari' => $json['validasyon_kurallari'] ?? [],
+                        'ui_ipuclari' => $json['ui_ipuclari'] ?? [],
+                        'kosullu_kurallar' => $json['kosullu_kurallar'] ?? [],
+                        'ai_fiyat_onerisi' => $json['ai_fiyat_onerisi'] ?? null,
+                        'enumlar' => $json['enumlar'] ?? [],
+                    ];
+                })
+                ->values()
+                ->toArray();
         });
     }
 
