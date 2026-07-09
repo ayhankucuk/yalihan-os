@@ -1,6 +1,71 @@
 # Governance Progress Tracker
-**Son Güncelleme:** 2026-07-09 (Oturum 69 — Sprint 6.4 Kapanışı)
-**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **Sprint 6.4 COMPLETE** + 🚀 **AI Vision Intelligence** + 🏷️ **v6.4-ai-vision-certified**
+**Son Güncelleme:** 2026-07-09 (Oturum 71 — Sprint 6.5 Kapanışı)
+**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **Sprint 6.4 COMPLETE** + 🚀 **AI Vision Intelligence** + ✅ **Sprint 6.5 COMPLETE** + 📡 **Publishing Intelligence** + 🏷️ **v6.5-publishing-intelligence-certified**
+---
+
+## ✅ Oturum 71 — Sprint 6.5 Publishing Intelligence (2026-07-09) ✅ CERTIFIED
+
+### Sprint 6.5 — Publishing Intelligence Pipeline Tamamlandı
+
+| Metric | Pre-Sprint | Post-Sprint | Change |
+|--------|------------|-------------|--------|
+| Publishing tests | 0 | **59 green** | +59 |
+| Publishing DTOs | 0 | **7 new** | +7 |
+| Transformers | 0 | **4 new** | +4 |
+| Channel adapters | 0 | **3 new** | +3 |
+| Orchestrator | 0 | **1 new** | +1 |
+| Walkthrough | yok | **1 new** | +1 |
+
+### ✅ Tamamlanan İşler
+
+| Dosya | Açıklama |
+|-------|-----------|
+| `app/Contracts/Publishing/ChannelAdapterContract.php` | 4 metod: name, supports, buildPayload, requiredFields, validate |
+| `app/DTOs/Publishing/ChannelReadinessDTO.php` | Kanal hazırlık değerlendirmesi |
+| `app/DTOs/Publishing/ChannelReadinessItem.php` | Tek kanal readiness item |
+| `app/Services/Publishing/PublishingIntelligenceOrchestrator.php` | Pipeline koordinatörü |
+| `app/Services/Publishing/PublishingPackage.php` | Orchestrator çıktısı |
+| `app/Services/Publishing/Transformers/TitleTransformer.php` | AI content → kanal formatı |
+| `app/Services/Publishing/Transformers/DescriptionTransformer.php` | AI açıklama parçacıkları → kanal formatı |
+| `app/Services/Publishing/Transformers/AmenityMapper.php` | Amenities → kanal-özgü özellikler |
+| `app/Services/Publishing/Transformers/RoomTypeMapper.php` | Rooms → kanal kategori eşleşmesi |
+| `app/Services/Publishing/Adapters/AirbnbAdapter.php` | Airbnb format transformer |
+| `app/Services/Publishing/Adapters/SahibindenAdapter.php` | Sahibinden format transformer |
+| `app/Services/Publishing/Adapters/HepsiemlakAdapter.php` | Hepsiemlak format transformer |
+| `app/Jobs/PreparePublishingJob.php` | Async, idempotent, replay-safe job |
+| `app/Events/Publishing/PublishingPackageReady.php` | Pipeline tamam eventi |
+| `tests/Unit/Services/Publishing/PublishingDTOTest.php` | DTO unit testleri (11 test) |
+| `tests/Unit/Services/Publishing/PublishingTransformerTest.php` | Transformer unit testleri (24 test) |
+| `tests/Unit/Services/Publishing/ChannelAdapterTest.php` | Adapter unit testleri (3 test) |
+| `tests/Feature/Publishing/PublishingIntelligenceTest.php` | 14 feature test |
+| `docs/walkthroughs/S6.5_PUBLISHING_INTELLIGENCE_WALKTHROUGH.md` | Sprint walkthrough |
+
+### 📊 Test Sonuçları
+
+| Suite | Geçen | Kalan |
+|-------|--------|--------|
+| Unit Publishing (3 dosya) | 38 | 0 |
+| Feature Publishing (1 dosya) | 14 | 0 |
+| Vision Prep (inherit) | 5 | 0 |
+| ListingLifecycleFinalSealTest (inherit) | 2 | 0 |
+| **TOPLAM** | **59** | **0** |
+
+### 🔒 Quality Gates
+
+| Kural | Durum |
+|-------|-------|
+| No real API call | ✅ HTTP client yok |
+| No actual publish | ✅ Sadece payload üretir |
+| No withoutGlobalScopes() | ✅ TenantScope korunur |
+| No inline publish decision arrays | ✅ PublishingDecisionDTO kullanılıyor |
+| Adapters transform only | ✅ Business rules Orchestrator'da |
+| Tenant Isolation | ✅ TenantScope korunur |
+| Replay/Idempotency | ✅ uniqueId() + reject path |
+| Channel separation | ✅ 3 bağımsız adapter |
+
+### 🏷️ Git Tag
+`v6.5-publishing-intelligence-certified`
+
 ---
 
 ## ✅ Oturum 69 — Sprint 6.4 AI Vision Intelligence (2026-07-09) ✅ CERTIFIED
