@@ -107,7 +107,8 @@ class UpsTemplate extends BaseModel
      */
     public function scopeAktif($query)
     {
-        return $query->where('is_active', 1)->orderBy('id', 'desc'); // context7-ignore
+        return $query->where('aktiflik_durumu', 1)->orderBy('id', 'desc');
+    }
     }
 
     /**
