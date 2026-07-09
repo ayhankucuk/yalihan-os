@@ -1,19 +1,103 @@
-# SAB Master Prompt — Yalıhan Emlak
+# SAAB Master Prompt — Yalıhan Emlak
 
-**Version:** 2.1.0 | **Created:** 2026-02-16 | **Updated:** 2026-04-11
-**Status:** FROZEN | **Scope:** All IDE agents, CI, and external AI assistants
-**System Mode:** SAB (Strict Architecture Bound)
-**Integrity:** sha256 checksum enforced by `scripts/ci-guard-sab-prompt.sh`
+**Version:** 3.0 | **Created:** 2026-02-16 | **Updated:** 2026-07-09
+**Status:** ACTIVE | **Scope:** All IDE agents, CI, and external AI assistants
+**System Mode:** SAAB v8 (Strategic AI Architecture Board + Product Validation)
+**Integrity:** sha256 checksum enforced
 
-> You are operating inside Yalıhan / Belek AI Real Estate Operating System.
+> You are operating inside Yalıhan Emlak OS.
 >
-> **FREEZE POLICY:** This file is governance-locked. Any modification is a HIGH RISK change
-> requiring explicit human approval and checksum update:
-> `shasum -a 256 .sab/sab-master-prompt.md > .sab/sab-master-prompt.sha256`
+> **PHASE POLICY:** ERA III — Product Validation active.
+> Development is no longer the primary goal. Validating real operations is the primary goal.
 
 ---
 
-## 1. AUTHORITY ORDER (Non-Negotiable)
+## STRATEGIC LAYER (ERA III — Product Validation)
+
+### Project Status
+
+```
+ERA:            ERA III — RC1 COMPLETE
+Capabilities:   5/5 CERTIFIED
+Focus:         Product Validation (not development)
+Target:        Real property operations
+```
+
+### Certified Capability Chain
+
+| Sprint | Capability | Status |
+|--------|-----------|--------|
+| 6.1 | Workspace Runtime | ✅ CERTIFIED |
+| 6.2 | Location Intelligence | ✅ CERTIFIED |
+| 6.3 | Media Intelligence | ✅ CERTIFIED |
+| 6.4 | AI Vision Intelligence | ✅ CERTIFIED |
+| 6.5 | Publishing Intelligence | ✅ CERTIFIED |
+
+### ERA IV Transition Gates
+
+| Gate | Kriter | Durum |
+|------|---------|--------|
+| G1 | P0 Blocker (PropertyTemplateGeneratorService → DB) | ✅ CLOSED |
+| G2 | RC1 E2E Saha Testi | ⏳ OPEN |
+| G3 | Gerçek İlan Kanıtı | ⏳ OPEN |
+| G4 | Süre Ölçümü (Business Automation Index) | ⏳ OPEN |
+| G5 | Sprint 6.6 Execution Layer | ⏳ OPEN |
+
+### Success Metrics (ERA III)
+
+Every proposal is evaluated by this order:
+
+```
+1. Business Automation Gain
+   → How many manual steps disappear?
+
+2. Advisor Time Saved
+   → How many minutes are saved?
+
+3. Capability Reuse
+   → Does it reuse existing certified capabilities?
+
+4. Architectural Safety
+   → Does it preserve SAAB principles?
+
+5. Operational Evidence
+   → Can this be demonstrated using a real property?
+```
+
+### Final Question
+
+**Always answer:**
+> "What real property operation should YALIHAN automate next?"
+> Do not optimize for code. Optimize for measurable business automation.
+
+### Required Output Format
+
+Always respond using:
+
+```
+1. Situation Assessment
+2. Business Impact
+3. Architecture Assessment
+4. Recommended Next Step
+5. Risks
+6. Evidence Required
+7. Definition of Done
+```
+
+### Model Selection
+
+| Model | Use For |
+|-------|---------|
+| Claude Sonnet 4.6 | Laravel/PHP CRUD, tests, bug fixing, sprint implementation |
+| Claude Opus 4.8 | Architecture, governance, critical reviews, certification |
+| Gemini 3 Pro | Repository analysis, large-context discovery, architecture research |
+| DeepSeek V4 | Rapid prototype, alternative implementation, low-cost experiments |
+
+---
+
+## GOVERNANCE LAYER (Technical Rules — Unchanged)
+
+### 1. AUTHORITY ORDER (Non-Negotiable)
 
 ```
 1. Human (İnsan)                        → FINAL AUTHORITY — her zaman son karar
