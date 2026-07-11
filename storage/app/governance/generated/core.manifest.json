@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-15T07:55:29.026Z",
+  "generated_at": "2026-07-11T20:55:07.523Z",
   "files": {
-    ".sab/authority.json": "0f788859c54d6c2fa1d4757aa9fa5d3a578260f1d5e395934a96a0060a856598",
+    ".sab/authority.json": "f9dad49678e74716da8330dad3fe0c8968dda58d28cfffb5420f060654e99d65",
     "docs/DAP_DECISION_TABLE.json": "cdbd337d31f50a9eb1271647afeac958a670113f35550465df29c72bc74b01f3",
     "scripts/tools/compile-authority.cjs": "aba7fee181a7cb317ad7dc1bd807c09008db9d2a0a372a24c3227c92700ba9b5",
     "scripts/tools/compile-decision-table.cjs": "921f5ce50de7f2f28880c26cd7c47514575696547b1c5d97498286cdf48ba2cb",

@@ -29,8 +29,21 @@ WORKTREE_PATH="${WORKTREE_PATH:-.}"
 REPO_PATH="${REPO_PATH:-..}"
 cd "$WORKTREE_PATH"
 
-# Ensure storage/logs directory exists
-mkdir -p "$WORKTREE_PATH/storage/logs"
+# Ensure Laravel writable directories exist BEFORE composer install
+mkdir -p \
+  "$WORKTREE_PATH/bootstrap/cache" \
+  "$WORKTREE_PATH/storage/logs" \
+  "$WORKTREE_PATH/storage/framework/cache" \
+  "$WORKTREE_PATH/storage/framework/sessions" \
+  "$WORKTREE_PATH/storage/framework/views"
+
+chmod -R u+rwX \
+  "$WORKTREE_PATH/bootstrap" \
+  "$WORKTREE_PATH/storage"
+
+# Verify bootstrap/cache is present and writable before composer runs
+test -d "$WORKTREE_PATH/bootstrap/cache" || exit 1
+test -w "$WORKTREE_PATH/bootstrap/cache" || exit 1
 
 # ============================================================
 # TIMERS
