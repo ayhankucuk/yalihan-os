@@ -178,3 +178,5 @@ bootstrap/cache/*.php
 .DS_Store
 /test-results/
 /test_results*.log
+
+.kilo/worktrees/
