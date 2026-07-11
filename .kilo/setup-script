@@ -23,7 +23,7 @@
 #   - Smoke test failure = WARN, not FAIL
 #   - All reports saved to storage/logs/
 
-set -e
+set -eu
 
 WORKTREE_PATH="${WORKTREE_PATH:-.}"
 REPO_PATH="${REPO_PATH:-..}"
@@ -31,6 +31,16 @@ cd "$WORKTREE_PATH"
 
 # Ensure storage/logs directory exists
 mkdir -p "$WORKTREE_PATH/storage/logs"
+
+# Marker: prevent re-execution of this script
+MARKER_FILE="$WORKTREE_PATH/storage/logs/kilo-setup-auto-ran.log"
+if [ -f "$MARKER_FILE" ]; then
+    echo "Setup already ran. Remove $MARKER_FILE to re-run."
+    exit 0
+fi
+
+# Write marker to prove auto-ran
+date '+%Y-%m-%d %H:%M:%S' > "$MARKER_FILE"
 
 # ============================================================
 # TIMERS
