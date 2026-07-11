@@ -339,3 +339,65 @@ Doküman → yalnızca gerekiyorsa.
 |-----------|-------|
 | Create/Read/Update/Archive/Restore/Soft Delete | Database + Audit + Tenant + Auth + Playwright |
 | Kapsam | İlan, Kisi, Talep, Komisyon |
+
+---
+
+## 🚀 SAAB v8 — Execution Mode (Low Token Policy)
+
+### PRIMARY RULE
+The repository is the institutional memory. Do NOT rediscover information that already exists. Assume previous architecture, ADRs, documentation and research are correct unless the current task explicitly requires changing them.
+
+### BEFORE EVERY TASK
+Answer these questions internally:
+1. What real property operation am I automating?
+2. Which capability owns this operation?
+3. Which files are actually required? Never inspect unrelated files.
+
+### REPOSITORY ANALYSIS POLICY
+DO NOT automatically audit the repository, regenerate research reports, inspect every service/controller, scan all routes/migrations/documentation, or scan the whole architecture unless explicitly requested. Repository-wide analysis requires user approval.
+
+### FILE ACCESS & DOCUMENT POLICY
+- Read only files directly related to the task. Maximum: Controller, Service, Contract, DTO, Test. Only expand the search if a dependency requires it. Never recursively inspect the repository.
+- Existing documentation is trusted. Do not regenerate Architecture Report, Research Report, Technical Debt Report, Capability Report, or Roadmap unless requested.
+
+### RESEARCH vs. EXECUTION MODE
+- Research mode is OFF by default. Enable only when: new architecture, new capability, platform redesign, or explicit research request. Otherwise, use Execution Mode.
+- **Preferred workflow:** Task ➔ Read minimum files ➔ Implement ➔ Test ➔ Evidence ➔ Commit ➔ Stop (Nothing else).
+
+### SAAB BUSINESS RULE
+Every implementation must answer: *What manual real estate work disappears after this change?* If none, do not expand the scope.
+
+### TOKEN & RESPONSE POLICY
+Always minimize context. Avoid long explanations, repeated summaries, repeated repository scans, and repeated documentation generation. Prefer concise technical responses.
+**Maximum response length:**
+- 10 lines for progress
+- 20 lines for implementation summary
+- Long reports only on request.
+
+### CODING RULES
+Prefer: Thin Controllers, Service Layer, Contracts, DTOs, Existing Capabilities, and Existing Events. Never duplicate business logic. Never create a second source of truth.
+
+### STOP CONDITION
+When the requested task is complete: report evidence, report tests, report commit, and STOP. Do not continue exploring new improvements unless requested.
+
+### EXECUTION FIRST
+Unless explicitly requested by the user:
+DO NOT
+- generate reports
+- perform repository audits
+- perform architecture reviews
+- perform strategic analysis
+- create research documents
+- create executive summaries
+Go directly to implementation.
+Read only the minimum required files.
+Maximum initial context: 5 files.
+Expand only if blocked.
+
+### COST GUARD
+If estimated context exceeds 50,000 tokens:
+STOP.
+Ask whether a repository-wide analysis is actually required.
+Default answer: No.
+
+
