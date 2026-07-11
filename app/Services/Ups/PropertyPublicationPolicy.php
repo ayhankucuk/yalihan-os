@@ -302,6 +302,7 @@ class PropertyPublicationPolicy
         // DB may use long slugs (e.g. 'gunluk-kiralama').
         // YayinTipiRules::canonicalizeSlug() is the SSOT for this mapping.
         $allTemplates = YayinTipiSablonu::where('aktiflik_durumu', true)
+            ->whereIn('kategori_id', $searchIds)
             ->get(['id', 'slug']);
 
         foreach ($allTemplates as $tmpl) {

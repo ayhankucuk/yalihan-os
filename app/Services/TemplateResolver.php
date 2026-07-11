@@ -127,15 +127,21 @@ class TemplateResolver implements TemplateResolverInterface
         ) {
             $query = YayinTipiSablonu::active();
 
+            $typeSlugUnderscore = str_replace('-', '_', $typeSlug);
+            $categoryPrefixedSlugUnderscore = $categoryPrefixedSlug ? str_replace('-', '_', $categoryPrefixedSlug) : null;
+
             if ($categoryPrefixedSlug) {
-                $query->where(function ($q) use ($categoryPrefixedSlug, $typeSlug, $yayinTipi) {
+                $query->where(function ($q) use ($categoryPrefixedSlug, $categoryPrefixedSlugUnderscore, $typeSlug, $typeSlugUnderscore, $yayinTipi) {
                     $q->where('slug', $categoryPrefixedSlug)
+                      ->orWhere('slug', $categoryPrefixedSlugUnderscore)
                       ->orWhere('slug', $typeSlug)
+                      ->orWhere('slug', $typeSlugUnderscore)
                       ->orWhere('ad', $yayinTipi);
                 });
             } else {
-                $query->where(function ($q) use ($typeSlug, $yayinTipi) {
+                $query->where(function ($q) use ($typeSlug, $typeSlugUnderscore, $yayinTipi) {
                     $q->where('slug', $typeSlug)
+                      ->orWhere('slug', $typeSlugUnderscore)
                       ->orWhere('ad', $yayinTipi);
                 });
             }

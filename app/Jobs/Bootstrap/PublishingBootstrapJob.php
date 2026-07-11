@@ -39,7 +39,7 @@ class PublishingBootstrapJob implements ShouldQueue
     {
         Log::info('[PublishingBootstrapJob] Starting', ['ilan_id' => $this->ilanId]);
 
-        $ilan = Ilan::with(['ilanDetay', 'kisi'])->find($this->ilanId); // @sab-ignore — Laravel relationship
+        $ilan = Ilan::with(['kisi'])->find($this->ilanId); // @sab-ignore — Laravel relationship
         if (!$ilan) {
             Log::warning('[PublishingBootstrapJob] Ilan not found', ['ilan_id' => $this->ilanId]);
             return;
@@ -88,7 +88,7 @@ class PublishingBootstrapJob implements ShouldQueue
         }
 
         // Sahip bilgisi varsa Kisi oluştur
-        $sahip = $ilan->ilanDetay?->sahip_adi;
+        $sahip = $ilan->kisi?->tam_adi ?? null;
         if (!$sahip) {
             return null;
         }
@@ -127,7 +127,7 @@ class PublishingBootstrapJob implements ShouldQueue
                 '%s %s — %s — Ref: %s',
                 $isRental ? 'Kiralık' : 'Satılık',
                 $kategori,
-                $ilan->ilanDetay?->mahalle?->mahalle_adi ?? '',
+                $ilan->mahalle?->mahalle_adi ?? '',
                 $ilan->referans_no ?? ''
             ),
             'talep_durumu' => 'yeni',
@@ -206,7 +206,7 @@ class PublishingBootstrapJob implements ShouldQueue
                 $ilan->referans_no ?? 'N/A',
                 number_format($ilan->fiyat ?? 0),
                 $ilan->para_birimi ?? 'TL',
-                $ilan->ilanDetay?->mahalle?->mahalle_adi ?? 'Bodrum',
+                $ilan->mahalle?->mahalle_adi ?? 'Bodrum',
                 $talep
                     ? "Talep oluşturuldu: #{$talep->id}"
                     : "Workspace + Drive + AI hazır"

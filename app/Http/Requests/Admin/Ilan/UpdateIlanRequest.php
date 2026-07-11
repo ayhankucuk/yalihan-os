@@ -96,6 +96,8 @@ class UpdateIlanRequest extends FormRequest
 
             // Status
             'yayin_durumu' => 'required|in:' . implode(',', \App\Enums\IlanDurumu::values()),
+            'fotograflar' => 'nullable|array',
+            'fotograflar.*' => 'nullable|file|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:5120',
 
             // Property Details
             'oda_sayisi' => 'nullable|integer|min:0|max:20',

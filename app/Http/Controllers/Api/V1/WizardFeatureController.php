@@ -8,14 +8,21 @@ use App\Services\Wizard\DynamicFieldValueMapper;
 use App\Services\Wizard\EffectiveListingTypeResolver;
 use App\Services\Wizard\FeatureTemplateResolver; // Wizard-scoped resolver; system SSOT = Ups\FeatureTemplateResolver
 use App\Services\Wizard\FieldEngine\FieldResolver;
+use App\Services\Wizard\YayinTipiSablonuResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
  * WizardFeatureController — Production-grade features API endpoint.
  *
- * Returns scoped feature schema for Wizard Step 2 based on:
- *   ana_kategori_id + alt_kategori_id + yayin_tipi_id
+ * SAAB v8.0 Sprint 6.9: ID sözleşmesi düzeltildi.
+ *
+ * Artık iki tür ID kullanılıyor:
+ *  - yayin_tipleri.id (1, 2, 3) — yayın tipi (Satılık, Kiralık, etc.)
+ *  - yayin_tipi_sablonu.id (13, 14, 15) — junction/template ID
+ *
+ * YayinTipiSablonuResolver: yayin_tipi_id → sablon_id çözümler.
+ * Negative sablon_id: yayin_tipi_id direkt kullanılabilir (veri gap durumu).
  *
  * Endpoints:
  *   GET  /api/v1/wizard/features              — CREATE mode (empty form)
@@ -32,6 +39,7 @@ class WizardFeatureController extends Controller
         protected DynamicFieldValueMapper $valueMapper,
         protected AiFieldSuggestionEngine $suggestionEngine,
         protected FieldResolver $fieldResolver,
+        protected YayinTipiSablonuResolver $sablonResolver,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -44,15 +52,38 @@ class WizardFeatureController extends Controller
 
         $mainCategoryId = (int) $validated['ana_kategori_id'];
         $subCategoryId = isset($validated['alt_kategori_id']) ? (int) $validated['alt_kategori_id'] : null;
-        $listingTypeId = (int) $validated['yayin_tipi_id'];
+        
+        $rawPublicationTypeId = (int) $validated['yayin_tipi_id'];
+        $publicationTypeId = $this->sablonResolver->resolvePublicationTypeId($rawPublicationTypeId);
 
-        abort_unless(
-            $this->listingTypeResolver->isAllowed($mainCategoryId, $subCategoryId, $listingTypeId),
-            422,
-            'Seçilen yayın tipi bu kategori için geçerli değil.'
-        );
+        // SAAB v8.0 Sprint 6.9: YayinTipiSablonuResolver ile sablon_id çöz
+        // Positive = junction/template ID → policy.isAllowed kontrolü yap
+        // Negative = yayin_tipi_id direkt kullanılabilir → policy kontrolü atla
+        try {
+            $sablonId = $this->sablonResolver->resolveTemplateId(
+                mainCategoryId: $mainCategoryId,
+                subCategoryId: $subCategoryId,
+                publicationTypeId: $publicationTypeId,
+            );
+        } catch (\InvalidArgumentException $e) {
+            \Illuminate\Support\Facades\Log::warning('WizardFeatureController template resolution failed', [
+                'error' => $e->getMessage(),
+                'main_category_id' => $mainCategoryId,
+                'sub_category_id' => $subCategoryId,
+                'publication_type_id' => $publicationTypeId,
+            ]);
+            return response()->json([
+                'success' => false,
+                'error' => [
+                    'code' => 'TEMPLATE_NOT_FOUND',
+                    'message' => $e->getMessage(),
+                ],
+            ], 422);
+        }
 
-        $fields = $this->resolveFieldsWithFallback($mainCategoryId, $subCategoryId, $listingTypeId);
+        // SAAB v8.0 Sprint 6.10: YayinTipiSablonuResolver kombinasyonu zaten doğruladı.
+        // Ek policy.isAllowed() çağrısına GEREK YOK.
+        $fields = $this->resolveFieldsWithFallback($mainCategoryId, $subCategoryId, $publicationTypeId);
 
         $grouped = $fields->groupBy('group')->map(fn ($items, $group) => [
             'group' => $group,
@@ -68,7 +99,8 @@ class WizardFeatureController extends Controller
                     'required_count' => $fields->where('required', true)->count(),
                     'main_category_id' => $mainCategoryId,
                     'sub_category_id' => $subCategoryId,
-                    'listing_type_id' => $listingTypeId,
+                    'listing_type_id' => $publicationTypeId,
+                    'sablon_id' => $sablonId,
                 ],
             ],
         ]);
@@ -93,16 +125,44 @@ class WizardFeatureController extends Controller
 
         $mainCategoryId = (int) $validated['ana_kategori_id'];
         $subCategoryId = isset($validated['alt_kategori_id']) ? (int) $validated['alt_kategori_id'] : null;
-        $listingTypeId = (int) $validated['yayin_tipi_id'];
+        
+        $rawPublicationTypeId = (int) $validated['yayin_tipi_id'];
+        $publicationTypeId = $this->sablonResolver->resolvePublicationTypeId($rawPublicationTypeId);
+
         $ilanId = (int) $validated['ilan_id'];
 
-        abort_unless(
-            $this->listingTypeResolver->isAllowed($mainCategoryId, $subCategoryId, $listingTypeId),
-            422,
-            'Seçilen yayın tipi bu kategori için geçerli değil.'
-        );
+        // SAAB v8.0 Sprint 6.9: YayinTipiSablonuResolver kullan
+        try {
+            $sablonId = $this->sablonResolver->resolveTemplateId(
+                mainCategoryId: $mainCategoryId,
+                subCategoryId: $subCategoryId,
+                publicationTypeId: $publicationTypeId,
+            );
+        } catch (\InvalidArgumentException $e) {
+            \Illuminate\Support\Facades\Log::warning('WizardFeatureController featuresWithValues resolution failed', [
+                'error' => $e->getMessage(),
+                'main_category_id' => $mainCategoryId,
+                'sub_category_id' => $subCategoryId,
+                'publication_type_id' => $publicationTypeId,
+            ]);
+            return response()->json([
+                'success' => false,
+                'error' => [
+                    'code' => 'TEMPLATE_NOT_FOUND',
+                    'message' => $e->getMessage(),
+                ],
+            ], 422);
+        }
 
-        $fields = $this->resolveFieldsWithFallback($mainCategoryId, $subCategoryId, $listingTypeId);
+        if ($sablonId > 0) {
+            abort_unless(
+                $this->listingTypeResolver->isAllowed($mainCategoryId, $subCategoryId, $sablonId),
+                422,
+                'Seçilen yayın tipi bu kategori için geçerli değil.'
+            );
+        }
+
+        $fields = $this->resolveFieldsWithFallback($mainCategoryId, $subCategoryId, $publicationTypeId, $sablonId);
 
         $grouped = $fields->groupBy('group')->map(fn ($items, $group) => [
             'group' => $group,
@@ -121,52 +181,70 @@ class WizardFeatureController extends Controller
                     'required_count' => $fields->where('required', true)->count(),
                     'main_category_id' => $mainCategoryId,
                     'sub_category_id' => $subCategoryId,
-                    'listing_type_id' => $listingTypeId,
+                    'listing_type_id' => $publicationTypeId,
                     'ilan_id' => $ilanId,
+                    'sablon_id' => $sablonId,
                 ],
             ],
         ]);
     }
 
     /**
-     * Resolve fields with fallback from feature_assignments → kategori_yayin_tipi_field_dependencies.
+     * Resolve fields for Wizard Step 2.
+     *
+     * SAAB v8.0 Sprint 6.10: YayinTipiSablonuResolver başarılıysa kombinasyon geçerlidir.
+     * YayinTipiSablonuCanonicalSeeder tüm eksik kayıtları oluşturdu.
      */
-    private function resolveFieldsWithFallback(int $mainCategoryId, ?int $subCategoryId, int $listingTypeId): \Illuminate\Support\Collection
+    private function resolveFields(int $mainCategoryId, ?int $subCategoryId, int $publicationTypeId): \Illuminate\Support\Collection
     {
-        $fields = $this->featureTemplateResolver->resolveFeatures(
-            $mainCategoryId,
-            $subCategoryId,
-            $listingTypeId
-        );
+        $kategoriSlug = $this->resolveKategoriSlug($mainCategoryId, $subCategoryId);
+        $yayinTipiSlug = $this->resolveYayinTipiSlug($publicationTypeId);
 
-        // Fallback to FieldEngine when feature_assignments table is empty
-        if ($fields->isEmpty()) {
-            $kategoriId = $subCategoryId ?? $mainCategoryId;
-            $fieldDefs = $this->fieldResolver->resolveWithoutCache($kategoriId, $listingTypeId);
+        // FieldResolver slug tabanlı çözümleme
+        $fieldDefs = $this->fieldResolver->resolveBySlug($kategoriSlug, $yayinTipiSlug, $publicationTypeId);
 
-            if (!empty($fieldDefs)) {
-                $fields = collect($fieldDefs)->map(function ($fd) {
-                    $arr = $fd->toArray();
-                    return [
-                        'feature_id' => $arr['id'] ?? $arr['slug'],
-                        'slug' => $arr['slug'],
-                        'label' => $arr['name'],
-                        'type' => $arr['type'],
-                        'group' => $arr['category'] ?? 'Genel',
-                        'required' => $arr['required'],
-                        'options' => $arr['options'],
-                        'unit' => $arr['unit'],
-                        'icon' => $arr['icon'],
-                        'description' => $arr['help_text'],
-                        'visible_if' => $arr['visible_if'],
-                        'required_if' => $arr['required_if'],
-                        'display_order' => $arr['display_order'],
-                    ];
-                });
-            }
+        if (!empty($fieldDefs)) {
+            return collect($fieldDefs)->map(fn ($fd) => $fd->toArray());
         }
 
-        return $fields;
+        return collect();
+    }
+
+    /**
+     * Resolve fields with fallback.
+     */
+    private function resolveFieldsWithFallback(
+        int $mainCategoryId,
+        ?int $subCategoryId,
+        int $publicationTypeId,
+        ?int $sablonId = null
+    ): \Illuminate\Support\Collection {
+        return $this->resolveFields($mainCategoryId, $subCategoryId, $publicationTypeId);
+    }
+
+    /**
+     * Kategori slug'ini çözümle.
+     */
+    private function resolveKategoriSlug(int $mainCategoryId, ?int $subCategoryId): string
+    {
+        $targetId = $subCategoryId ?? $mainCategoryId;
+
+        // Zincir: önce alt kategori, sonra ana kategori, sonra parent
+        $kategori = \App\Models\IlanKategori::find($targetId);
+        if ($kategori) {
+            return $kategori->slug;
+        }
+
+        $kategori = \App\Models\IlanKategori::find($mainCategoryId);
+        return $kategori?->slug ?? 'genel';
+    }
+
+    /**
+     * Yayın tipi slug'ini çözümle.
+     */
+    private function resolveYayinTipiSlug(int $publicationTypeId): string
+    {
+        return $this->sablonResolver->resolveYayinTipiSlug($publicationTypeId);
     }
 
     /**
@@ -184,10 +262,13 @@ class WizardFeatureController extends Controller
             'min_score' => ['nullable', 'integer', 'min:0', 'max:100'],
         ]);
 
+        $rawPublicationTypeId = (int) $validated['yayin_tipi_id'];
+        $publicationTypeId = $this->sablonResolver->resolvePublicationTypeId($rawPublicationTypeId);
+
         $result = $this->suggestionEngine->suggest(
             (int) $validated['ana_kategori_id'],
             isset($validated['alt_kategori_id']) ? (int) $validated['alt_kategori_id'] : null,
-            (int) $validated['yayin_tipi_id'],
+            $publicationTypeId,
             [
                 'max_suggestions' => $validated['max_suggestions'] ?? 15,
                 'min_score' => $validated['min_score'] ?? 20,

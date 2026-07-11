@@ -12,6 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::table('komisyonlar', function (Blueprint $table) {
             $table->foreignId('tenant_id')
                 ->nullable()
@@ -21,6 +22,7 @@ return new class extends Migration
 
             $table->index('tenant_id');
         });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

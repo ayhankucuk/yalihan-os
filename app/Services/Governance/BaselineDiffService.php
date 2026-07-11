@@ -18,6 +18,7 @@ use App\Services\Logging\LogService;
  */
 class BaselineDiffService
 {
+    private static array $cachedFingerprints = [];
     protected array $baselineFingerprints = [];
     private string $baselinePath;
 
@@ -32,6 +33,12 @@ class BaselineDiffService
      */
     private function loadBaseline(): void
     {
+        $cacheKey = $this->baselinePath;
+        if (isset(self::$cachedFingerprints[$cacheKey])) {
+            $this->baselineFingerprints = self::$cachedFingerprints[$cacheKey];
+            return;
+        }
+
         $path = base_path($this->baselinePath);
 
         if (!File::exists($path)) {
@@ -42,11 +49,12 @@ class BaselineDiffService
             $content = json_decode(File::get($path), true);
             $ignored = $content['ignored_violations'] ?? [];
 
+            $fingerprints = [];
             foreach ($ignored as $file => $violations) {
                 foreach ($violations as $v) {
                     $fp = $v['fingerprint'] ?? null;
                     if ($fp) {
-                        $this->baselineFingerprints[$fp][] = [
+                        $fingerprints[$fp][] = [
                             'file'           => $file,
                             'line'           => $v['line'] ?? 0,
                             'violation_kind' => $v['type'] ?? '', // context7-ignore — reads baseline JSON schema field
@@ -55,6 +63,9 @@ class BaselineDiffService
                     }
                 }
             }
+            
+            self::$cachedFingerprints[$cacheKey] = $fingerprints;
+            $this->baselineFingerprints = $fingerprints;
         } catch (\Exception $e) {
             // Log at ERROR level — never swallow governance failures silently.
             Log::error('BaselineDiffService: Baseline load failed', [

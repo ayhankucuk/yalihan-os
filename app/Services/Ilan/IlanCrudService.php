@@ -37,6 +37,7 @@ class IlanCrudService
         private IlanReferansService  $refService,
         private NumberToTextConverter $numberToText,
         private \App\Services\Listing\YalihanLifecycle $lifecycle,
+        private IlanPhotoService $photoService,
     ) {}
 
     /**
@@ -80,6 +81,10 @@ class IlanCrudService
             $this->handleVerticalDetails($ilan, $data);
             $this->handleEkstraOzellikler($ilan, $data);
             $this->syncFeatures($ilan, $data);
+
+            if (isset($data['fotograflar']) && is_array($data['fotograflar'])) {
+                $this->photoService->uploadPhotos($ilan, $data['fotograflar']);
+            }
 
             // 🆕 Authority Transition: TASLAK (Create)
             $targetEnum = IlanDurumu::normalize($data['yayin_durumu'] ?? $data['status'] ?? 'taslak'); // context7-ignore: legacy API fallback
@@ -133,6 +138,10 @@ class IlanCrudService
             $this->handleVerticalDetails($ilan, $data);
             $this->handleEkstraOzellikler($ilan, $data);
             $this->syncFeatures($ilan, $data);
+
+            if (isset($data['fotograflar']) && is_array($data['fotograflar'])) {
+                $this->photoService->uploadPhotos($ilan, $data['fotograflar']);
+            }
 
             // 🆕 Authority Transition: Update State if requested
             if (isset($data['yayin_durumu']) || isset($data['status'])) { // context7-ignore: legacy API fallback
@@ -241,6 +250,10 @@ class IlanCrudService
             if ($value !== null) {
                 $ilan->{$field} = $value;
             }
+        }
+
+        if (isset($data['metadata'])) {
+            $ilan->metadata = array_merge($ilan->metadata ?? [], $data['metadata']);
         }
     }
 

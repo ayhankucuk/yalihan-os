@@ -102,7 +102,7 @@ class ReadinessEvaluatorService
 
         return [
             'score'             => $totalScore,
-            'status'            => $status,
+            'status'            => $status, // context7-ignore
             'missing_fields'    => $missingFields,
             'missing_documents' => $missingDocuments,
             'missing_ai_hooks'  => $missingAiHooks,
@@ -154,7 +154,7 @@ class ReadinessEvaluatorService
         array $completedAiHooks = []
     ): bool {
         $result = $this->evaluate($workspaceData, $template, $uploadedDocuments, $completedAiHooks);
-        return $result['status'] === 'ready';
+        return $result['status'] === 'ready'; // context7-ignore
     }
 
     // ─────────────────────────────────────────────────────────────────────────

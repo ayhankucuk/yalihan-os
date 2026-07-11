@@ -15,6 +15,8 @@ use App\Models\Feature;
 use App\Models\FeatureCategory;
 use App\Models\FeaturePack;
 use App\Models\IlanKategori;
+use App\Models\KategoriYayinTipiFieldDependency;
+use App\Models\Ozellik;
 use App\Models\YayinTipiSablonu;
 use App\Services\PropertyHub\PropertyHubOrchestrator;
 use App\Actions\PropertyHub\CreateFeatureAction;
@@ -24,6 +26,7 @@ use App\Actions\PropertyHub\ArchiveFeatureAction;
 use App\Actions\PropertyHub\DeleteFeatureAction;
 use App\Actions\PropertyHub\ApplyPackAction;
 use App\Actions\PropertyHub\SyncPivotAssignmentsAction;
+use App\Contracts\PropertyConfigurationContract;
 use App\Services\AI\YalihanCortex;
 use App\Services\Response\ResponseService;
 use App\Http\Controllers\Api\Concerns\ApiResponds;
@@ -36,7 +39,8 @@ class PropertyHubController extends Controller
 
     public function __construct(
         private PropertyHubOrchestrator $hub,
-        private YalihanCortex $cortex
+        private YalihanCortex $cortex,
+        private PropertyConfigurationContract $propertyConfig,
     ) {}
 
     /**
@@ -49,6 +53,15 @@ class PropertyHubController extends Controller
         $stats = $dashboard['stats'];
         $healthScore = $dashboard['health_score'];
 
+        // Sprint 6.8: Canonical feature catalog stats
+        // ozellikler (22 aktif) — master katalog
+        // kategori_yayin_tipi_field_dependencies (42 kayıt) — field schema
+        $catalogStats = [
+            'ozellik_catalog' => Ozellik::where('aktiflik_durumu', 1)->count(),
+            'field_schema' => KategoriYayinTipiFieldDependency::active()->count(),
+            'combinations' => $this->propertyConfig->getAvailableCombinations(),
+        ];
+
         $recentChanges = \App\Models\TemplateChangeLog::with('user')
             ->latest()
             ->take(10)
@@ -56,6 +69,7 @@ class PropertyHubController extends Controller
 
         return view('admin.property-hub.index', compact(
             'stats',
+            'catalogStats',
             'recentChanges',
             'healthScore'
         ));

@@ -31,14 +31,14 @@ class Ozellik extends BaseModel
         'zorunlu',
         'arama_filtresi',
         'ilan_kartinda_goster',
-        'is_active', // ✅ SAB standard active field
+        'aktiflik_durumu', // ✅ SAB standard active field
         // 'display_order', // ❌ REMOVED: Column does not exist in DB (Context7 LOOP DANGER fix)
         // 'aktif_mi', // Legacy
         // 'is_readonly', // Cortex ROI
     ];
 
     protected $casts = [
-        'is_active' => \App\Enums\AktiflikDurumu::class, // ✅ SAB standard
+        'aktiflik_durumu' => \App\Enums\AktiflikDurumu::class, // ✅ SAB standard
         // 'aktif_mi' => 'boolean',
         // 'is_readonly' => 'boolean',
         // 'display_order' => 'integer', // ❌ REMOVED: Column does not exist in DB

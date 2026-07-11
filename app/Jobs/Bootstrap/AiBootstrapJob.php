@@ -40,7 +40,7 @@ class AiBootstrapJob implements ShouldQueue
     ): void {
         Log::info('[AiBootstrapJob] Starting', ['ilan_id' => $this->ilanId]);
 
-        $ilan = Ilan::with(['fotograflar', 'ilanDetay'])->find($this->ilanId); // @sab-ignore — Laravel relationship
+        $ilan = Ilan::with(['fotograflar'])->find($this->ilanId); // @sab-ignore — Laravel relationship
         if (!$ilan) {
             Log::warning('[AiBootstrapJob] Ilan not found', ['ilan_id' => $this->ilanId]);
             return;

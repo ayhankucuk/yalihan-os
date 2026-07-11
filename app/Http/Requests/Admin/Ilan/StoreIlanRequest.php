@@ -82,6 +82,8 @@ class StoreIlanRequest extends FormRequest
             // Status
             'yayin_durumu' => 'required|in:' . implode(',', $durumValues),
             'crm_only' => 'nullable|boolean',
+            'fotograflar' => 'nullable|array',
+            'fotograflar.*' => 'nullable|file|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:5120',
 
             // GeoJSON & POI Data
             'nearby_distances' => 'nullable|string',

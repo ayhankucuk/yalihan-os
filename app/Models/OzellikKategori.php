@@ -43,7 +43,7 @@ class OzellikKategori extends BaseModel
         'parent_id',
         'icon',
         'display_order',
-        'is_active',
+        'aktiflik_durumu',
         // ✅ SAB: display_order, aktiflik_durumu added
     ];
 
@@ -52,7 +52,7 @@ class OzellikKategori extends BaseModel
      * Context7 Mühürlü
      */
     protected $casts = [
-        'is_active' => \App\Enums\AktiflikDurumu::class,
+        'aktiflik_durumu' => \App\Enums\AktiflikDurumu::class,
     ];
 
     /**
@@ -97,7 +97,7 @@ class OzellikKategori extends BaseModel
      */
     public function scopeActive($query)
     {
-        return $query->where('is_active', \App\Enums\AktiflikDurumu::AKTIF); // ✅ Aktif kategoriler (Context7)
+        return $query->where('aktiflik_durumu', \App\Enums\AktiflikDurumu::AKTIF); // ✅ Aktif kategoriler (Context7)
     }
 
     /**

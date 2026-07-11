@@ -38,6 +38,7 @@ class YalihanLifecycle
     public function __construct(
         private readonly ListingStateMachine $stateMachine,
         private readonly TemplateResolverInterface $templateResolver,
+        private readonly ListingScoreService $scoreService,
     ) {}
 
     /**
@@ -67,11 +68,24 @@ class YalihanLifecycle
                 return $ilan;
             }
 
+            // Auto-chain: Taslak -> Beklemede -> Yayında
+            if ($mevcutInt === ListingStateMachine::TASLAK && $hedefInt === ListingStateMachine::YAYINDA) {
+                $this->transition($ilan, IlanDurumu::BEKLEMEDE, $aktanId, array_merge($meta, ['chained' => true]));
+                $ilan->refresh();
+                $mevcutRaw  = $ilan->yayin_durumu;
+                $mevcutStr  = $mevcutRaw instanceof IlanDurumu ? $mevcutRaw->value : (string) $mevcutRaw;
+                $mevcutInt  = $this->stateMachine->normalizeToInt($mevcutStr); // context7-ignore
+            }
+
             // 1. StateMachine geçiş kuralı
             $this->stateMachine->gecisYap($mevcutInt, $hedefInt); // context7-ignore
 
             // 2. YAYINDA hard-guards (Phase 8)
             if ($hedef === IlanDurumu::YAYINDA) {
+                // Refresh scores before running guards to ensure they reflect freshly persisted values
+                $ilan->completion_score = $this->scoreService->computeCompletionScore($ilan);
+                $ilan->quality_score    = $this->scoreService->computeQualityScore($ilan);
+
                 $this->completionGuard($ilan);
                 $this->qualityGuard($ilan);
                 $this->templateGuard($ilan);
@@ -182,7 +196,9 @@ class YalihanLifecycle
     {
         $this->stateMachine->yayinIcinKontrolEt(
             (int) $ilan->quality_score,
-            (int) $ilan->completion_score
+            (int) $ilan->completion_score,
+            $ilan->lat !== null ? (float) $ilan->lat : null,
+            $ilan->lng !== null ? (float) $ilan->lng : null
         );
     }
 

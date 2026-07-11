@@ -119,6 +119,12 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\Notification\NotificationAuthorityInterface::class,
             \App\Services\Notification\NotificationAuthorityService::class
         );
+
+        // ✅ Sprint 6.8: Property Configuration
+        $this->app->singleton(
+            \App\Contracts\PropertyConfigurationContract::class,
+            \App\Services\Property\PropertyConfigurationQueryService::class
+        );
     }
 
     /**

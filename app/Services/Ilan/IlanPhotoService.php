@@ -36,19 +36,20 @@ class IlanPhotoService
             $fileName = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
             $path = $photo->storeAs('ilan-fotograflari/' . $ilan->id, $fileName, 'public');
 
-            $fotografModel = IlanFotografi::create([
-                'ilan_id' => $ilan->id,
-                'dosya_yolu' => $path,
-                'orijinal_ad' => $photo->getClientOriginalName(),
-                'boyut' => $photo->getSize(),
-                'sira' => IlanFotografi::where('ilan_id', $ilan->id)->count() + 1,
-            ]);
+            $fotografModel = new IlanFotografi();
+            $fotografModel->ilan_id = $ilan->id;
+            $fotografModel->dosya_yolu = $path;
+            $fotografModel->dosya_adi = $photo->getClientOriginalName();
+            $fotografModel->dosya_boyutu = $photo->getSize();
+            $fotografModel->mime_type = $photo->getMimeType();
+            $fotografModel->display_order = IlanFotografi::where('ilan_id', $ilan->id)->count() + 1;
+            $fotografModel->save();
 
             $uploadedPhotos[] = [
                 'id' => $fotografModel->id,
                 'url' => Storage::disk('public')->url($path),
-                'name' => $fotografModel->orijinal_ad,
-                'size' => $fotografModel->boyut,
+                'name' => $fotografModel->dosya_adi,
+                'size' => $fotografModel->dosya_boyutu,
             ];
         }
 

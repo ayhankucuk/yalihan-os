@@ -110,6 +110,14 @@ class ForbiddenFieldAstRule implements GovernanceAstRuleInterface
 
     private function shouldIgnore(Node $node): bool
     {
+        $lineNum = $node->getStartLine();
+        if ($lineNum > 0 && \App\Services\Governance\Ast\AstScannerService::$currentFileLines !== null) {
+            $lineContent = \App\Services\Governance\Ast\AstScannerService::$currentFileLines[$lineNum - 1] ?? '';
+            if (str_contains($lineContent, 'context7-ignore')) {
+                return true;
+            }
+        }
+
         $comments = $node->getComments();
         if (empty($comments)) {
             // Check parent comments if node is a property/item

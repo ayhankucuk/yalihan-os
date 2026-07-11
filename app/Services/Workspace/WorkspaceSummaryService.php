@@ -7,6 +7,7 @@ use App\Models\Ilan;
 use App\Models\PortfolioDriveWorkspace;
 use App\Services\Workspace\TemplateEngineService;
 use App\Services\Workspace\ReadinessEvaluatorService;
+use App\Services\Workspace\AutomationTelemetryService;
 
 /**
  * WorkspaceSummaryService
@@ -29,6 +30,8 @@ class WorkspaceSummaryService
         private readonly WorkspaceExecutionService $executionService,
         private readonly TemplateEngineService $templateEngine,
         private readonly ReadinessEvaluatorService $readinessEvaluator,
+        private readonly AutomationTelemetryService $telemetryService,
+        private readonly CapabilityRuntimeEngine $capabilityEngine,
     ) {}
 
     /**
@@ -39,16 +42,20 @@ class WorkspaceSummaryService
         $ilan = $this->resolveIlan($workspace);
 
         return [
-            'workspace'   => $this->workspaceCore($workspace),
-            'ilan'       => $ilan ? $this->ilanCore($ilan) : null,
-            'health'     => $this->healthService->calculate($workspace),
-            'lifecycle'  => $this->lifecycleInfo($workspace),
-            'ai'         => $this->aiInfo($workspace),
-            'drive'      => $this->driveInfo($workspace),
-            'finance'    => $ilan ? $this->financeInfo($ilan) : null,
+            'workspace'    => $this->workspaceCore($workspace),
+            'ilan'        => $ilan ? $this->ilanCore($ilan) : null,
+            'health'      => $this->healthService->calculate($workspace),
+            'lifecycle'   => $this->lifecycleInfo($workspace),
+            'ai'          => $this->aiInfo($workspace),
+            'drive'       => $this->driveInfo($workspace),
+            'finance'     => $ilan ? $this->financeInfo($ilan) : null,
             'reservations' => $ilan ? $this->reservationsInfo($ilan) : null,
-            'executions' => $this->executionService->getSummary($workspace->id),
-            'readiness'  => $this->readinessInfo($workspace, $ilan),
+            'executions'  => $this->executionService->getSummary($workspace->id),
+            'readiness'   => $this->readinessInfo($workspace, $ilan),
+            'capabilities'=> $this->capabilityEngine->evaluate($workspace),
+            'telemetry'   => [
+                'bai_score' => $this->telemetryService->calculateBusinessAutomationIndex($workspace->tenant_id),
+            ],
             'generated_at' => now()->toIso8601String(),
         ];
     }
@@ -86,11 +93,25 @@ class WorkspaceSummaryService
             'lifecycle_label'    => $w->lifecycle_state?->label(),
             'lifecycle_color'    => $w->lifecycle_state?->color(),
             'ai_completion_pct'  => $w->ai_completion_percent,
-            'state_changed_at'   => $w->state_changed_at?->toIso8601String(),
-            'workspace_created_at'=> $w->workspace_created_at?->toIso8601String(),
-            'created_at'         => $w->created_at?->toIso8601String(),
-            'updated_at'         => $w->updated_at?->toIso8601String(),
+            'state_changed_at'   => $this->parseDate($w->state_changed_at),
+            'workspace_created_at'=> $this->parseDate($w->workspace_created_at),
+            'created_at'         => $this->parseDate($w->created_at),
+            'updated_at'         => $this->parseDate($w->updated_at),
         ];
+    }
+
+    private function parseDate($date): ?string
+    {
+        if ($date === null) {
+            return null;
+        }
+        if ($date instanceof \Carbon\Carbon) {
+            return $date->toIso8601String();
+        }
+        if (is_string($date)) {
+            return \Carbon\Carbon::parse($date)->toIso8601String();
+        }
+        return (string) $date;
     }
 
     private function ilanCore(Ilan $ilan): array
@@ -102,15 +123,15 @@ class WorkspaceSummaryService
             'para_birimi'     => $ilan->para_birimi,
             'yayin_durumu'    => $ilan->yayin_durumu?->value,
             'yayin_durumu_label' => $ilan->yayin_durumu?->label(),
-            'il_adi'          => $ilan->il?->adi ?? null,
-            'ilce_adi'        => $ilan?->ilce?->adi ?? null,
+            'il_adi'          => $this->getRelationModel($ilan, 'il')?->il_adi ?? $this->getRelationModel($ilan, 'il')?->adi ?? (is_string($ilan->il) ? $ilan->il : null),
+            'ilce_adi'        => $this->getRelationModel($ilan, 'ilce')?->ilce_adi ?? $this->getRelationModel($ilan, 'ilce')?->adi ?? (is_string($ilan->ilce) ? $ilan->ilce : null),
             'kategori'        => $ilan->altKategori?->adi ?? $ilan->anaKategori?->adi ?? null,
             'danisman'        => $ilan->danisman?->name ?? null,
             'ilan_sahibi'     => $ilan->ilanSahibi?->ad_soyad ?? null,
             'photo_count'     => $ilan->fotograflar()->count(),
             'has_video'       => !empty($ilan->youtube_video_url),
             'view_count'      => $ilan->view_count,
-            'created_at'      => $ilan->created_at?->toIso8601String(),
+            'created_at'      => $this->parseDate($ilan->created_at),
         ];
     }
 
@@ -204,18 +225,43 @@ class WorkspaceSummaryService
         if (!$w->ilan_id) {
             return null;
         }
-        return Ilan::query()
+        $ilan = Ilan::query()
             ->withoutGlobalScopes()
             ->with([
-                'il',
-                'ilce',
-            'anaKategori',    // context7-ignore
-            'altKategori',    // context7-ignore
-            'danisman',
-            'ilanSahibi',     // context7-ignore
+                'anaKategori',    // context7-ignore
+                'altKategori',    // context7-ignore
+                'danisman',
+                'ilanSahibi',     // context7-ignore
                 'fotograflar',
             ])
             ->find($w->ilan_id);
+
+        if ($ilan) {
+            $directIl = \App\Models\Il::withoutGlobalScopes()->find($ilan->il_id);
+            $directIlce = \App\Models\Ilce::withoutGlobalScopes()->find($ilan->ilce_id);
+            if ($directIl) {
+                $ilan->setRelation('il', $directIl);
+            }
+            if ($directIlce) {
+                $ilan->setRelation('ilce', $directIlce);
+            }
+        }
+
+        return $ilan;
+    }
+
+    /**
+     * Safely resolve relation model bypassing any attribute name collisions.
+     */
+    private function getRelationModel(Ilan $ilan, string $relation): ?\Illuminate\Database\Eloquent\Model
+    {
+        if ($ilan->relationLoaded($relation)) {
+            $model = $ilan->getRelation($relation);
+            if ($model instanceof \Illuminate\Database\Eloquent\Model) {
+                return $model;
+            }
+        }
+        return null;
     }
 
     private function financeInfo(Ilan $ilan): array
@@ -294,6 +340,7 @@ class WorkspaceSummaryService
             return null;
         }
 
+
         // 1. Resolve intent (PropertyWorkspace table -> falls back to Ilan characteristics)
         $propWorkspace = \App\Models\PropertyWorkspace::where('ilan_id', $ilan->id)->first();
         $intent = $propWorkspace?->intent;
@@ -328,8 +375,8 @@ class WorkspaceSummaryService
             'fiyat'           => $ilan->fiyat,
             'para_birimi'     => $ilan->para_birimi,
             'kapak_resmi'     => $ilan->kapak_fotografi ? 'present' : null,
-            'il'              => $ilan->il?->adi ?? $ilan->il_adi,
-            'ilce'            => $ilan->ilce?->adi ?? $ilan->ilce_adi,
+            'il'              => $this->getRelationModel($ilan, 'il')?->il_adi ?? $this->getRelationModel($ilan, 'il')?->adi ?? $ilan->il_adi ?? (is_string($ilan->il) ? $ilan->il : null),
+            'ilce'            => $this->getRelationModel($ilan, 'ilce')?->ilce_adi ?? $this->getRelationModel($ilan, 'ilce')?->adi ?? $ilan->ilce_adi ?? (is_string($ilan->ilce) ? $ilan->ilce : null),
             'lat'             => $ilan->lat,
             'lng'             => $ilan->lng,
             'brut_metrekare'  => $ilan->brut_m2,
@@ -339,7 +386,7 @@ class WorkspaceSummaryService
             'kat'             => $ilan->kat,
             'toplam_kat'      => $ilan->toplam_kat,
             'isitma_tipi'     => $ilan->isitma,
-            'tapusu_var'      => $ilan->tapu_id ? 'present' : null,
+            'tapusu_var'      => $ilan->metadata['tapu_durumu'] ?? $ilan->tapu_durumu ?? ($ilan->tapu_id ? 'present' : null),
             'depozito'        => $ilan->depozito,
             'aidat'           => $ilan->aidat,
             'esyali'          => $ilan->esyali,

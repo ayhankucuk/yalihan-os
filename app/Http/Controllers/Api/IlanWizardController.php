@@ -196,7 +196,7 @@ class IlanWizardController extends Controller
         $validated = $request->validate([
             'fotolar' => 'required|array|min:1|max:20',
             'fotolar.*' => 'image|mimes:jpeg,png,webp|max:10240',
-            'video_url' => 'nullable|url|regex:/^(https?:\/\/)?(www\.)?(youtube|vimeo)\.com/i',
+            'video_url' => ['nullable', 'url', 'regex:/^(https?:\/\/)?(www\.)?(youtube|vimeo)\.com/i'],
         ]);
 
         $uploadedPhotos = [];

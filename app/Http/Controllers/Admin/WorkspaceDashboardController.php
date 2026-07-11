@@ -53,7 +53,55 @@ class WorkspaceDashboardController extends Controller
 
         try {
             $summary = $this->summaryService->getSummary($workspace);
-            return view('admin.workspace.cockpit', ['workspace' => $summary]);
+
+            $ilan = $workspace->ilan_id ? \App\Models\Ilan::query()->withoutGlobalScopes()->find($workspace->ilan_id) : null;
+            $intent = $workspace->intent ?? ($ilan?->islem_tipi === 'kiralama' ? 'kiralik' : 'satilik');
+            $template = app(\App\Services\Workspace\TemplateEngineService::class)->resolveTemplate($intent);
+
+            $ilModel = $ilan?->il()->withoutGlobalScopes()->first();
+            $ilceModel = $ilan?->ilce()->withoutGlobalScopes()->first();
+            $ilName = ($ilan?->il_id && $ilModel && $ilModel->il_adi !== 'Belirtilmemiş') ? $ilModel->il_adi : null;
+            $ilceName = ($ilan?->ilce_id && $ilceModel && $ilceModel->ilce_adi !== 'Belirtilmemiş') ? $ilceModel->ilce_adi : null;
+
+            $workspace_data = $ilan ? [
+                'baslik'          => $ilan->baslik,
+                'aciklama'        => $ilan->aciklama,
+                'fiyat'           => $ilan->fiyat,
+                'para_birimi'     => $ilan->para_birimi,
+                'kapak_resmi'     => $ilan->kapak_fotografi ? 'present' : null,
+                'il'              => $ilName,
+                'ilce'            => $ilceName,
+                'lat'             => $ilan->lat,
+                'lng'             => $ilan->lng,
+                'brut_metrekare'  => $ilan->brut_m2,
+                'net_metrekare'   => $ilan->net_m2,
+                'oda_sayisi'      => $ilan->oda_sayisi,
+                'bina_yasi'       => $ilan->bina_yasi,
+                'kat'             => $ilan->kat,
+                'toplam_kat'      => $ilan->toplam_kat,
+                'isitma_tipi'     => $ilan->isinma_tipi ?? $ilan->isitma,
+                'tapusu_var'      => $ilan->tapu_durumu ?? null,
+                'depozito'        => $ilan->depozito,
+                'aidat'           => $ilan->aidat,
+                'esyali'          => $ilan->esyali,
+            ] : [];
+
+            if ($ilan && ($intent === 'sezonluk' || $intent === 'gunluk')) {
+                $turizmDetail = $ilan->turizmDetail;
+                $yazlikDetail = $ilan->yazlikDetail;
+                $workspace_data['kapasite']      = $turizmDetail?->max_misafir ?? $yazlikDetail?->max_misafir;
+                $workspace_data['yatak_odasi']   = $ilan->yatak_odasi;
+                $workspace_data['banyo_sayisi']  = $ilan->banyo_sayisi;
+                $workspace_data['havuz']         = $turizmDetail?->havuz_var ?? $yazlikDetail?->havuz;
+                $workspace_data['min_konaklama'] = $turizmDetail?->min_konaklama ?? $yazlikDetail?->min_konaklama;
+                $workspace_data['musait_tarihler'] = ($ilan->propertyAvailabilities()->exists() || $ilan->yazlikFiyatlandirma()->exists()) ? 'present' : null;
+            }
+
+            return view('admin.workspace.cockpit', [
+                'workspace'      => $summary,
+                'template_fields' => $template['fields'] ?? [],
+                'workspace_data'  => $workspace_data,
+            ]);
         } catch (\Exception $e) {
             Log::error('WorkspaceDashboardController: cockpit render failed', [
                 'workspace_id' => $id,
@@ -111,6 +159,205 @@ class WorkspaceDashboardController extends Controller
         } catch (\Exception $e) {
             Log::error('WorkspaceDashboard: events API failed', ['id' => $id, 'msg' => $e->getMessage()]);
             return $this->apiError($e);
+        }
+    }
+
+    /**
+     * Workspace dynamic fields save handler.
+     * POST /admin/workspace/{id}/save
+     */
+    public function save(int $id, Request $request)
+    {
+        try {
+            $workspace = $this->findWorkspace($id);
+        if (!$workspace) {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'Workspace bulunamadı'], 404);
+            }
+            abort(404);
+        }
+
+        $this->authorizeWorkspace($workspace);
+
+        $ilan = \App\Models\Ilan::query()->withoutGlobalScopes()->find($workspace->ilan_id);
+        if (!$ilan) {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'İlan bulunamadı'], 404);
+            }
+            abort(404);
+        }
+
+        // Find or create PropertyWorkspace aggregate record linked to this Ilan
+        $propertyWorkspaceService = app(\App\Services\PropertyWorkspace\PropertyWorkspaceService::class);
+        $propWorkspace = \App\Models\PropertyWorkspace::where('ilan_id', $ilan->id)->first();
+        if (!$propWorkspace) {
+            $intent = $ilan->islem_tipi === 'kiralama' ? 'kiralik' : 'satilik';
+            $propWorkspace = $propertyWorkspaceService->createWorkspace($ilan->id, $intent);
+        }
+
+        $submittedData = $request->get('data', []);
+
+        // Resolve template schema
+        $templateEngine = app(\App\Services\Workspace\TemplateEngineService::class);
+        $intent = $propWorkspace->intent ?? ($ilan->islem_tipi === 'kiralama' ? 'kiralik' : 'satilik');
+
+        try {
+            $template = $templateEngine->resolveTemplate($intent);
+        } catch (\InvalidArgumentException $e) {
+            \Illuminate\Support\Facades\Log::warning('WorkspaceDashboardController: template resolution failed, falling back to satilik', [
+                'intent' => $intent,
+                'error'  => $e->getMessage(),
+            ]);
+            $template = $templateEngine->resolveTemplate('satilik');
+        }
+
+        $fields = $template['fields'] ?? [];
+
+        // Dynamic validation against template field attributes
+        $validationErrors = [];
+        foreach ($fields as $field) {
+            $key = $field['key'];
+            
+            // Only validate fields that are present in the submitted payload (allows partial draft saves)
+            if (!array_key_exists($key, $submittedData)) {
+                continue;
+            }
+
+            $val = $submittedData[$key] ?? null;
+
+            if (($field['required'] ?? false) && ($val === null || $val === '')) {
+                $validationErrors[$key] = [sprintf('%s alanı zorunludur.', $field['label'])];
+                continue;
+            }
+
+            if ($val !== null && $val !== '') {
+                if (isset($field['max']) && strlen((string)$val) > $field['max']) {
+                    $validationErrors[$key] = [sprintf('%s alanı en fazla %d karakter olmalıdır.', $field['label'], $field['max'])];
+                }
+                if (isset($field['min']) && (float)$val < $field['min']) {
+                    $validationErrors[$key] = [sprintf('%s alanı en az %d olmalıdır.', $field['label'], $field['min'])];
+                }
+                if (isset($field['options']) && !in_array($val, $field['options'], true)) {
+                    $validationErrors[$key] = [sprintf('Geçersiz %s seçimi.', $field['label'])];
+                }
+            }
+        }
+
+        if (!empty($validationErrors)) {
+            if ($request->expectsJson()) {
+                return response()->json(['errors' => $validationErrors], 422);
+            }
+            return redirect()->back()->withErrors($validationErrors)->withInput();
+        }
+
+        // Map dynamic fields to Ilan properties safely
+        $ilanFieldsMap = [
+            'baslik' => 'baslik',
+            'aciklama' => 'aciklama',
+            'fiyat' => 'fiyat',
+            'para_birimi' => 'para_birimi',
+            'brut_metrekare' => 'brut_m2',
+            'net_metrekare' => 'net_m2',
+            'oda_sayisi' => 'oda_sayisi',
+            'bina_yasi' => 'bina_yasi',
+            'kat' => 'kat',
+            'toplam_kat' => 'toplam_kat',
+            'isitma_tipi' => 'isinma_tipi',
+            'depozito' => 'depozito',
+            'aidat' => 'aidat',
+            'esyali' => 'esyali',
+            'lat' => 'lat',
+            'lng' => 'lng',
+            'yatak_odasi' => 'yatak_odasi',
+            'banyo_sayisi' => 'banyo_sayisi',
+            'tapusu_var' => 'tapu_durumu',
+        ];
+
+        // Prepare raw data update, merging with existing values to satisfy IlanCrudService expectations
+        $updateData = [
+            'baslik' => $submittedData['baslik'] ?? $ilan->baslik,
+            'aciklama' => $submittedData['aciklama'] ?? $ilan->aciklama,
+            'danisman_id' => $ilan->danisman_id ?? \Illuminate\Support\Facades\Auth::id(),
+            'ana_kategori_id' => $ilan->ana_kategori_id,
+            'alt_kategori_id' => $ilan->alt_kategori_id,
+            'yayin_tipi_id' => $ilan->yayin_tipi_id,
+            'il' => $ilan->il,
+            'ilce' => $ilan->ilce,
+            'mahalle' => $ilan->mahalle,
+            'il_id' => $ilan->il_id,
+            'ilce_id' => $ilan->ilce_id,
+            'mahalle_id' => $ilan->mahalle_id,
+            'lat' => $submittedData['lat'] ?? $ilan->lat,
+            'lng' => $submittedData['lng'] ?? $ilan->lng,
+            'adres' => $submittedData['adres'] ?? $ilan->adres,
+        ];
+
+        foreach ($fields as $field) {
+            $key = $field['key'];
+            if (array_key_exists($key, $submittedData)) {
+                $val = $submittedData[$key];
+                if (isset($ilanFieldsMap[$key])) {
+                    $mappedColumn = $ilanFieldsMap[$key];
+                    $updateData[$mappedColumn] = $val;
+                    if ($mappedColumn === 'isinma_tipi') {
+                        // Pass both warm-up properties for backward compatibility
+                        $updateData['isitma'] = $val;
+                    }
+                }
+            }
+        }
+
+        // Persist flexible/metadata fields to Ilan metadata via CrudService
+        if (isset($updateData['tapu_durumu'])) {
+            $updateData['metadata'] = ['tapu_durumu' => $updateData['tapu_durumu']];
+        }
+
+        // Call IlanCrudService to persist updates to the database safely
+        $ilanCrudService = app(\App\Services\Ilan\IlanCrudService::class);
+        call_user_func([$ilanCrudService, 'update'], $ilan, $updateData);
+
+        // Re-evaluate readiness
+        $summary = $this->summaryService->getSummary($workspace);
+        $readiness = $summary['readiness'] ?? null;
+
+        if ($readiness) {
+            $status = $readiness['readiness_status'] ?? 'incomplete'; // context7-ignore
+
+            // Transition aggregate state
+            if ($status === 'ready') {
+                if ($propWorkspace->state === \App\Domain\PropertyWorkspace\PropertyWorkspaceAggregate::STATE_WORKSPACE_CREATED) { // context7-ignore
+                    $propertyWorkspaceService->transitionToDraft($propWorkspace->workspace_uuid);
+                    $propWorkspace->refresh();
+                }
+                if ($propWorkspace->state === \App\Domain\PropertyWorkspace\PropertyWorkspaceAggregate::STATE_DRAFT) { // context7-ignore
+                    $propertyWorkspaceService->transitionToReadyForReview($propWorkspace->workspace_uuid);
+                }
+            } else {
+                if ($propWorkspace->state === \App\Domain\PropertyWorkspace\PropertyWorkspaceAggregate::STATE_WORKSPACE_CREATED) { // context7-ignore
+                    $propertyWorkspaceService->transitionToDraft($propWorkspace->workspace_uuid);
+                } elseif ($propWorkspace->state === \App\Domain\PropertyWorkspace\PropertyWorkspaceAggregate::STATE_READY_FOR_REVIEW) { // context7-ignore
+                    $propertyWorkspaceService->transitionToDraft($propWorkspace->workspace_uuid);
+                }
+            }
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Workspace başarıyla güncellendi.',
+                'readiness' => $readiness,
+                'lifecycle_state' => $propWorkspace->fresh()->state, // context7-ignore
+            ]);
+        }
+        return redirect()->back()->with('success', 'Değişiklikler başarıyla kaydedildi.');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('WorkspaceDashboardController save failed: ' . $e->getMessage(), [
+                'exception' => $e,
+            ]);
+            return response()->json([
+                'error_class' => get_class($e),
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+            ], 500);
         }
     }
 

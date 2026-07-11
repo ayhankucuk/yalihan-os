@@ -111,6 +111,94 @@ class FieldResolver
     }
 
     /**
+     * SAAB v8.0 Sprint 6.9: Slug tabanlı çözümleme.
+     *
+     * YayinTipiSablonuResolver'dan gelen yayin_tipi_id (yayin_tipleri tablosundan)
+     * ile yayin_tipi_slug (yayin_tipleri tablosundan) kullanır.
+     *
+     * Örnek: resolveBySlug('villa', 'satilik', 1)
+     *
+     * @param string $kategoriSlug  Kategori slug (örn. 'villa', 'konut')
+     * @param string $yayinTipiSlug  Yayın tipi slug (örn. 'satilik', 'kiralik')
+     * @param int $publicationTypeId Yayın tipi ID (yayin_tipleri tablosundan)
+     * @return array<FieldDefinition>
+     */
+    public function resolveBySlug(string $kategoriSlug, string $yayinTipiSlug, int $publicationTypeId): array
+    {
+        return $this->doResolveBySlug($kategoriSlug, $yayinTipiSlug, $publicationTypeId);
+    }
+
+    /**
+     * Internal slug tabanlı resolve logic.
+     *
+     * Match logic:
+     *  1. Exact: kategori_slug + yayin_tipi slug → en spesifik
+     *  2. kategori_slug + yayin_tipi_id (numeric)
+     *  3. Parent kategori slug + yayin_tipi
+     *  4. kategori_slug + NULL/empty yayin_tipi (global fields)
+     */
+    private function doResolveBySlug(string $kategoriSlug, string $yayinTipiSlug, int $publicationTypeId): array
+    {
+        // Adım 1: Doğrudan eşleşme
+        $rows = $this->queryFields($kategoriSlug, $yayinTipiSlug, $publicationTypeId);
+        if ($rows->isNotEmpty()) {
+            return $this->mapToFieldDefinitions($rows);
+        }
+
+        // Adım 2: Parent kategori zinciri — Villa → Konut
+        $kategori = IlanKategori::where('slug', $kategoriSlug)->first();
+        if ($kategori && $kategori->parent_id) {
+            $parent = IlanKategori::find($kategori->parent_id);
+            if ($parent) {
+                $rows = $this->queryFields($parent->slug, $yayinTipiSlug, $publicationTypeId);
+                if ($rows->isNotEmpty()) {
+                    Log::info('FieldResolver: Fallback to parent slug', [
+                        'child_slug' => $kategoriSlug,
+                        'parent_slug' => $parent->slug,
+                        'yayin_tipi' => $yayinTipiSlug,
+                        'found' => $rows->count(),
+                    ]);
+                    return $this->mapToFieldDefinitions($rows);
+                }
+            }
+        }
+
+        // Adım 3: Global fields — yayin_tipi NULL/empty
+        $rows = KategoriYayinTipiFieldDependency::where('kategori_slug', $kategoriSlug)
+            ->where(function ($query) {
+                $query->whereNull('yayin_tipi')
+                    ->orWhere('yayin_tipi', '');
+            })
+            ->where('aktiflik_durumu', AktiflikDurumu::AKTIF)
+            ->orderBy('display_order')
+            ->orderBy('field_name')
+            ->get();
+
+        Log::debug('FieldResolver: Slug resolve (with global fallback)', [
+            'kategori_slug' => $kategoriSlug,
+            'yayin_tipi' => $yayinTipiSlug,
+            'publication_type_id' => $publicationTypeId,
+            'field_count' => $rows->count(),
+        ]);
+
+        return $this->mapToFieldDefinitions($rows);
+    }
+
+    /**
+     * Satır FieldDefinition dizisine çevir.
+     */
+    private function mapToFieldDefinitions(Collection $rows): array
+    {
+        $fields = $rows->map(fn (KategoriYayinTipiFieldDependency $row) => FieldDefinition::fromDbRow($row->toArray()))->toArray();
+
+        usort($fields, fn (FieldDefinition $a, FieldDefinition $b) =>
+            $a->display_order <=> $b->display_order ?: strcmp($a->name, $b->name)
+        );
+
+        return $fields;
+    }
+
+    /**
      * Query fields from DB.
      *
      * Match logic:

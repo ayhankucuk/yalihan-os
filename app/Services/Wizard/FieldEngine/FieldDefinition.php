@@ -162,10 +162,15 @@ final class FieldDefinition
     {
         return [
             'id' => $this->id,
+            'assignment_id' => $this->id,
+            'feature_id' => $this->id,
             'slug' => $this->slug,
             'name' => $this->name,
+            'label' => $this->name,
             'type' => $this->type, // context7-ignore
             'category' => $this->category,
+            'group' => $this->category,
+            'group_slug' => Str::slug($this->category),
             'required' => $this->required,
             'display_order' => $this->display_order,
             'options' => $this->options,
@@ -184,6 +189,8 @@ final class FieldDefinition
             'min' => $this->min,
             'max' => $this->max,
             'step' => $this->step,
+            'scope_type' => 'listing_type',
+            'source_type' => 'kategori_yayin_tipi_field_dependencies',
         ];
     }
 

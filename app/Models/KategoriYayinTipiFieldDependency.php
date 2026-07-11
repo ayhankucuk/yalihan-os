@@ -13,10 +13,10 @@ class KategoriYayinTipiFieldDependency extends BaseModel
 
     protected $table = 'kategori_yayin_tipi_field_dependencies';
 
-    protected $fillable = [
+     protected $fillable = [
         'kategori_slug',
-        'yayin_tipi_id', // WFC-002
-        'yayin_tipi',    // Legacy/Sync
+        'yayin_tipi_id',
+        'yayin_tipi',
         'field_slug',
         'field_name',
         'field_type',
@@ -24,9 +24,9 @@ class KategoriYayinTipiFieldDependency extends BaseModel
         'field_options',
         'field_unit',
         'field_icon',
-        'is_active', // Context7
+        'aktiflik_durumu',
         'required',
-        'display_order', // ord&#101;r
+        'display_order',
         'ai_auto_fill',
         'ai_suggestion',
         'ai_prompt_key',
@@ -36,22 +36,22 @@ class KategoriYayinTipiFieldDependency extends BaseModel
 
     protected $casts = [
         'field_options' => 'array',
-        'is_active' => \App\Enums\AktiflikDurumu::class,
+        'aktiflik_durumu' => \App\Enums\AktiflikDurumu::class,
         'yayin_tipi_id' => 'integer',
         'required' => 'boolean',
         'ai_auto_fill' => 'boolean',
         'ai_suggestion' => 'boolean',
         'searchable' => 'boolean',
         'show_in_card' => 'boolean',
-        'display_order' => 'integer', // ord&#101;r
+        'display_order' => 'integer',
     ];
 
     /**
      * Scope: Aktif field'ları getir
      */
-    public function scopeActive($query)
+    public function scopeAktif($query)
     {
-        return $query->where('is_active', \App\Enums\AktiflikDurumu::AKTIF);
+        return $query->where('aktiflik_durumu', \App\Enums\AktiflikDurumu::AKTIF);
     }
 
     /**

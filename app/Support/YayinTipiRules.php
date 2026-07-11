@@ -39,6 +39,19 @@ class YayinTipiRules
             'kat-karsiligi' => 'kat-karsiligi',
             'kat-karsiligi-satis' => 'kat-karsiligi',
 
+            // Composite Slugs
+            'konut-satilik' => 'satilik',
+            'villa-satilik' => 'satilik',
+            'villa-kiralik' => 'kiralik',
+            'daire-satilik' => 'satilik',
+            'daire-kiralik' => 'kiralik',
+            'mustakil-ev-satilik' => 'satilik',
+            'mustakil-ev-kiralik' => 'kiralik',
+            'dubleks-satilik' => 'satilik',
+            'dubleks-kiralik' => 'kiralik',
+            'isyeri-satilik' => 'satilik',
+            'isyeri-kiralik' => 'kiralik',
+
             // Günlük kiralama
             'gunluk' => 'gunluk',
             'gunluk-kiralik' => 'gunluk',

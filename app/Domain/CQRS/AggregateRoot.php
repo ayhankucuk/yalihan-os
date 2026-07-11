@@ -157,7 +157,7 @@ abstract class AggregateRoot
     protected function getLastSequenceNumber(): int
     {
         $lastEvent = EtkiAlaniOlayi::forAggregate($this->aggregateType, $this->aggregateId)
-            ->orderByDesc('sequence_number')
+            ->reorder('sequence_number', 'desc')
             ->first();
 
         return $lastEvent ? $lastEvent->sequence_number : 0;

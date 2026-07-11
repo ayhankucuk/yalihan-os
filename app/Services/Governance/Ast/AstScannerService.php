@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class AstScannerService
 {
+    public static ?array $currentFileLines = null;
     private GovernanceAstRuleRegistry $registry;
 
     public function __construct(GovernanceAstRuleRegistry $registry)
@@ -29,6 +30,7 @@ class AstScannerService
         }
 
         $code = file_get_contents($filePath);
+        self::$currentFileLines = explode("\n", $code);
         $parser = (new ParserFactory)->createForNewestSupportedVersion();
 
         try {

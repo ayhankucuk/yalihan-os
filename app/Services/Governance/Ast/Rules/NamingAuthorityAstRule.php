@@ -56,6 +56,10 @@ class NamingAuthorityAstRule implements GovernanceAstRuleInterface
 
     public function analyze(Node $node): ?array
     {
+        if ($this->shouldIgnore($node)) {
+            return null;
+        }
+
         // We look for string literals that represent column names in migrations or $fillable in models
         if ($node instanceof String_) {
             $value = $node->value;
@@ -97,5 +101,33 @@ class NamingAuthorityAstRule implements GovernanceAstRuleInterface
         }
 
         return null;
+    }
+
+    private function shouldIgnore(Node $node): bool
+    {
+        $lineNum = $node->getStartLine();
+        if ($lineNum > 0 && \App\Services\Governance\Ast\AstScannerService::$currentFileLines !== null) {
+            $lineContent = \App\Services\Governance\Ast\AstScannerService::$currentFileLines[$lineNum - 1] ?? '';
+            if (str_contains($lineContent, 'context7-ignore')) {
+                return true;
+            }
+        }
+
+        $comments = $node->getComments();
+        if (empty($comments)) {
+            // Check parent comments if node is a property/item
+            $parent = $node->getAttribute('parent');
+            if ($parent instanceof Node) {
+                $comments = $parent->getComments();
+            }
+        }
+
+        foreach ($comments as $comment) {
+            if (str_contains($comment->getText(), 'context7-ignore')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

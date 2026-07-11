@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Models\SaaS;
 
 use App\Models\BaseModel;
-use App\Models\Traits\HasCountryScope;
+use App\Traits\HasCountryScope;
 
 class FeatureFlag extends BaseModel
 {

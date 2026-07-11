@@ -119,7 +119,7 @@ class ListingStateMachine
      * Yayında'ya geçiş için validation engine kontrolü
      * QualityEngine entegrasyonu için hook noktası
      */
-    public function yayinIcinKontrolEt(int $kaliteSkoru, int $tamamlanmaSkoru): void
+    public function yayinIcinKontrolEt(int $kaliteSkoru, int $tamamlanmaSkoru, ?float $lat = null, ?float $lng = null): void
     {
         if ($tamamlanmaSkoru < 100) {
             throw new DomainException(
@@ -130,6 +130,23 @@ class ListingStateMachine
         if ($kaliteSkoru < 40) {
             throw new DomainException(
                 "Yayın için minimum kalite skoru %40 olmalıdır. Mevcut: %{$kaliteSkoru}."
+            );
+        }
+
+        if ($lat === null || $lng === null || ($lat === 0.0 && $lng === 0.0)) {
+            throw new DomainException(
+                "Yayınlama başarısız: Geçerli coğrafi koordinatlar (enlem/boylam) eksik veya sıfır."
+            );
+        }
+
+        $validator = app(\App\Services\Location\LocationValidationCapability::class);
+        if (!$validator->isValid($lat, $lng)) {
+            throw new DomainException(
+                sprintf(
+                    "Yayınlama başarısız: Koordinat değerleri Muğla il sınırları dışındadır (Lat: %s, Lng: %s).",
+                    $lat,
+                    $lng
+                )
             );
         }
     }
