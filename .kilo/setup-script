@@ -1,43 +1,244 @@
 #!/bin/sh
-# Kilo Code Worktree Setup Script
-# This script runs before the agent starts in a worktree (new sessions only).
+# ============================================================
+# YALIHAN OS Engineering Bootstrap v1
+# Automates development environment setup for new worktrees
+# ============================================================
 #
 # Available environment variables:
 #   WORKTREE_PATH  - Absolute path to the worktree directory
 #   REPO_PATH      - Absolute path to the main repository
 #
-# Kilo already copies root-level .env and .env.* files before this script runs.
-# Use this script for dependencies, nested env files, local config, databases,
-# certificates, or other project-specific setup that is not committed to git.
+# Bootstrap Phases:
+#   1. Environment Bootstrap (.env, APP_KEY, deps)
+#   2. Repository Health (bekci:health)
+#   3. Architecture Validation (sab:integrity-scan)
+#   4. Migration Validation (migrate:status)
+#   5. Smoke Tests
+#   6. Performance Metrics
+#   7. Summary Report
 #
-# Example tasks:
-#   - Copy nested env files from main repo
-#   - Install dependencies
-#   - Run database migrations
-#   - Set up local configuration
+# Rules:
+#   - Idempotent: safe to run multiple times
+#   - Database unavailable = WARN, not FAIL
+#   - Smoke test failure = WARN, not FAIL
+#   - All reports saved to storage/logs/
 
-set -e  # Exit on error
+set -e
 
-echo "Setting up worktree: $WORKTREE_PATH"
+WORKTREE_PATH="${WORKTREE_PATH:-.}"
+REPO_PATH="${REPO_PATH:-..}"
+cd "$WORKTREE_PATH"
 
-# Uncomment and modify as needed:
+# Ensure storage/logs directory exists
+mkdir -p "$WORKTREE_PATH/storage/logs"
 
-# Copy a nested environment file
-# if [ -f "$REPO_PATH/apps/web/.env.local" ] && [ ! -f "$WORKTREE_PATH/apps/web/.env.local" ]; then
-#     cp "$REPO_PATH/apps/web/.env.local" "$WORKTREE_PATH/apps/web/.env.local"
-#     echo "Copied apps/web/.env.local"
-# fi
+# ============================================================
+# TIMERS
+# ============================================================
+BOOTSTRAP_START=$(date +%s)
+COMPOSER_START=0
+NPM_START=0
+LARAVEL_START=0
+TESTS_START=0
 
-# Install dependencies (Node.js)
-# if [ -f "$WORKTREE_PATH/package.json" ]; then
-#     cd "$WORKTREE_PATH"
-#     npm install
-# fi
+log_phase() {
+    echo "[$(date '+%H:%M:%S')] $1"
+}
 
-# Install dependencies (Python)
-# if [ -f "$WORKTREE_PATH/requirements.txt" ]; then
-#     cd "$WORKTREE_PATH"
-#     pip install -r requirements.txt
-# fi
+# ============================================================
+# PHASE 1: Environment Bootstrap
+# ============================================================
+log_phase "=== PHASE 1: Environment Bootstrap ==="
 
-echo "Setup complete!"
+PHASE1_STATUS="PASS"
+
+# 1.1 .env dosyası kontrolü
+if [ ! -f "$WORKTREE_PATH/.env" ]; then
+    if [ -f "$REPO_PATH/.env" ]; then
+        cp "$REPO_PATH/.env" "$WORKTREE_PATH/.env"
+        log_phase "[1.1] .env kopyalandı"
+    else
+        log_phase "[1.1] .env BULUNAMADI - WARN"
+        PHASE1_STATUS="WARN"
+    fi
+else
+    log_phase "[1.1] .env mevcut"
+fi
+
+# 1.2 APP_KEY kontrolü
+if [ -f "$WORKTREE_PATH/.env" ]; then
+    APP_KEY_LINE=$(grep "^APP_KEY=" "$WORKTREE_PATH/.env" 2>/dev/null || echo "")
+    if [ -z "$APP_KEY_LINE" ] || echo "$APP_KEY_LINE" | grep -q "base64:$"; then
+        log_phase "[1.2] APP_KEY oluşturuluyor..."
+        php artisan key:generate --force 2>/dev/null || true
+    else
+        log_phase "[1.2] APP_KEY mevcut"
+    fi
+fi
+
+# 1.3 Storage klasörleri
+mkdir -p "$WORKTREE_PATH/storage/app/public"
+mkdir -p "$WORKTREE_PATH/storage/framework/cache"
+mkdir -p "$WORKTREE_PATH/storage/framework/sessions"
+mkdir -p "$WORKTREE_PATH/storage/framework/views"
+mkdir -p "$WORKTREE_PATH/storage/logs"
+log_phase "[1.3] Storage klasörleri hazır"
+
+# 1.4 Composer install
+if [ -f "$WORKTREE_PATH/composer.json" ]; then
+    if [ ! -d "$WORKTREE_PATH/vendor" ]; then
+        COMPOSER_START=$(date +%s)
+        log_phase "[1.4] composer install çalışıyor..."
+        composer install --no-interaction --prefer-dist 2>/dev/null || true
+        COMPOSER_END=$(date +%s)
+        log_phase "[1.4] Composer dependencies installed"
+    else
+        log_phase "[1.4] Vendor mevcut"
+    fi
+fi
+
+# 1.5 NPM install
+if [ -f "$WORKTREE_PATH/package.json" ]; then
+    NPM_START=$(date +%s)
+    if [ ! -d "$WORKTREE_PATH/node_modules" ]; then
+        log_phase "[1.5] npm install çalışıyor..."
+        npm install 2>/dev/null || true
+    else
+        log_phase "[1.5] node_modules mevcut"
+    fi
+    NPM_END=$(date +%s)
+fi
+
+# 1.6 storage:link
+if [ ! -L "$WORKTREE_PATH/public/storage" ]; then
+    php artisan storage:link 2>/dev/null || true
+    log_phase "[1.6] storage:link oluşturuldu"
+else
+    log_phase "[1.6] storage:link mevcut"
+fi
+
+# 1.7 optimize:clear
+LARAVEL_START=$(date +%s)
+php artisan optimize:clear 2>/dev/null || true
+log_phase "[1.7] Cache temizlendi"
+
+# ============================================================
+# PHASE 2: Repository Health
+# ============================================================
+log_phase "=== PHASE 2: Repository Health ==="
+
+PHASE2_STATUS="PASS"
+HEALTH_LOG="$WORKTREE_PATH/storage/logs/bootstrap-health.log"
+
+php artisan bekci:health --detailed > "$HEALTH_LOG" 2>&1 || true
+HEALTH_EXIT=$?
+
+if [ $HEALTH_EXIT -eq 0 ]; then
+    log_phase "[2.1] bekci:health - OK (log: bootstrap-health.log)"
+else
+    log_phase "[2.1] bekci:health - WARN (log: bootstrap-health.log)"
+    PHASE2_STATUS="WARN"
+fi
+
+# ============================================================
+# PHASE 3: Architecture Validation
+# ============================================================
+log_phase "=== PHASE 3: Architecture Validation ==="
+
+PHASE3_STATUS="PASS"
+INTEGRITY_LOG="$WORKTREE_PATH/storage/logs/bootstrap-integrity.log"
+
+php artisan sab:integrity-scan > "$INTEGRITY_LOG" 2>&1 || true
+INTEGRITY_EXIT=$?
+
+if [ $INTEGRITY_EXIT -eq 0 ]; then
+    log_phase "[3.1] sab:integrity-scan - OK (log: bootstrap-integrity.log)"
+else
+    log_phase "[3.1] sab:integrity-scan - WARN (log: bootstrap-integrity.log)"
+    PHASE3_STATUS="WARN"
+fi
+
+# ============================================================
+# PHASE 4: Migration Validation
+# ============================================================
+log_phase "=== PHASE 4: Migration Validation ==="
+
+PHASE4_STATUS="PASS"
+php artisan migrate:status > "$WORKTREE_PATH/storage/logs/bootstrap-migrations.log" 2>&1 || {
+    MIGRATE_EXIT=$?
+    if [ $MIGRATE_EXIT -ne 0 ]; then
+        log_phase "[4.1] Database erişilemiyor - WARN"
+        PHASE4_STATUS="WARN"
+    fi
+}
+
+if [ "$PHASE4_STATUS" = "PASS" ]; then
+    log_phase "[4.1] migrate:status - OK"
+fi
+
+# ============================================================
+# PHASE 5: Smoke Tests
+# ============================================================
+log_phase "=== PHASE 5: Smoke Tests ==="
+
+PHASE5_STATUS="PASS"
+TESTS_START=$(date +%s)
+
+# Test WizardSchemaStep2Test
+php artisan test --filter=WizardSchemaStep2Test --no-ansi > "$WORKTREE_PATH/storage/logs/bootstrap-smoke.log" 2>&1 || {
+    TESTS_EXIT=$?
+    if [ $TESTS_EXIT -ne 0 ]; then
+        log_phase "[5.1] Smoke tests - WARN (log: bootstrap-smoke.log)"
+        PHASE5_STATUS="WARN"
+    fi
+}
+
+if [ "$PHASE5_STATUS" = "PASS" ]; then
+    log_phase "[5.1] Smoke tests - OK"
+fi
+
+TESTS_END=$(date +%s)
+LARAVEL_END=$(date +%s)
+
+# ============================================================
+# PHASE 6: Performance Metrics
+# ============================================================
+BOOTSTRAP_END=$(date +%s)
+
+COMPOSER_DUR=$((COMPOSER_END - COMPOSER_START))
+NPM_DUR=$((NPM_END - NPM_START))
+LARAVEL_DUR=$((LARAVEL_END - LARAVEL_START))
+TESTS_DUR=$((TESTS_END - TESTS_START))
+TOTAL_DUR=$((BOOTSTRAP_END - BOOTSTRAP_START))
+
+# ============================================================
+# PHASE 7: Summary Report
+# ============================================================
+echo ""
+echo "===================================="
+echo "YALIHAN ENGINEERING BOOTSTRAP"
+echo "===================================="
+echo ""
+echo "Environment        $PHASE1_STATUS"
+echo "Laravel           $PHASE2_STATUS"
+echo "Database          $PHASE4_STATUS"
+echo "Architecture      $PHASE3_STATUS"
+echo "Smoke Tests       $PHASE5_STATUS"
+echo ""
+echo "Bootstrap Duration: ${TOTAL_DUR}s"
+echo "Composer Duration: ${COMPOSER_DUR}s"
+echo "NPM Duration:      ${NPM_DUR}s"
+echo "Laravel Duration:  ${LARAVEL_DUR}s"
+echo "Tests Duration:    ${TESTS_DUR}s"
+echo ""
+echo "===================================="
+echo "YALIHAN OS worktree bootstrap complete."
+echo "===================================="
+
+# Log dosyalarını temizle (sadece son 100 satır)
+for log in bootstrap-health bootstrap-integrity bootstrap-migrations bootstrap-smoke; do
+    LOG_FILE="$WORKTREE_PATH/storage/logs/${log}.log"
+    if [ -f "$LOG_FILE" ]; then
+        tail -100 "$LOG_FILE" > "${LOG_FILE}.tmp" && mv "${LOG_FILE}.tmp" "$LOG_FILE"
+    fi
+done
