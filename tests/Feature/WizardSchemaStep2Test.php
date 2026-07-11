@@ -48,12 +48,12 @@ class WizardSchemaStep2Test extends TestCase
 
     private function seedTestData(): void
     {
-        // Yayin tipi
-        $satilik = $this->ensureYayinTipi('satilik', ['id' => 1]);
-
         // Categories
         $this->ensureKategori('konut', ['id' => 1, 'seviye' => 0]);
         $this->ensureKategori('daire', ['id' => 7, 'seviye' => 1, 'parent_id' => 1]);
+
+        // Yayin tipi
+        $satilik = $this->ensureYayinTipi('satilik', ['id' => 1, 'kategori_id' => 1, 'yayin_tipi_id' => 1]);
 
         // Minimal locations
         $muğla = $this->ensureIl(48, ['il_adi' => 'Muğla']);
@@ -92,6 +92,61 @@ class WizardSchemaStep2Test extends TestCase
                     'is_required' => ($fid != 3), 'is_visible' => true, 'display_order' => $idx + 1, 'aktiflik_durumu' => true,
                 ]
             );
+        }
+
+        // 🛡️ Seed kategori_yayin_tipi_field_dependencies table for FieldResolver
+        foreach ([
+            [
+                'kategori_slug' => 'konut',
+                'yayin_tipi' => 'satilik',
+                'yayin_tipi_id' => 1,
+                'field_slug' => 'brut-metrekare',
+                'field_name' => 'Brüt Metrekare',
+                'field_type' => 'number',
+                'field_category' => 'Temel Bilgiler',
+                'required' => true,
+                'display_order' => 1,
+                'aktiflik_durumu' => true,
+            ],
+            [
+                'kategori_slug' => 'konut',
+                'yayin_tipi' => 'satilik',
+                'yayin_tipi_id' => 1,
+                'field_slug' => 'tapu-durumu',
+                'field_name' => 'Tapu Durumu',
+                'field_type' => 'select',
+                'field_options' => json_encode(['Müstakil Tapu', 'Kat Mülkiyeti', 'Kat İrtifakı', 'Hisseli Tapu']),
+                'field_category' => 'Temel Bilgiler',
+                'required' => true,
+                'display_order' => 2,
+                'aktiflik_durumu' => true,
+            ],
+            [
+                'kategori_slug' => 'konut',
+                'yayin_tipi' => 'satilik',
+                'yayin_tipi_id' => 1,
+                'field_slug' => 'balkon',
+                'field_name' => 'Balkon',
+                'field_type' => 'boolean',
+                'field_category' => 'Oda ve Alan',
+                'required' => false,
+                'display_order' => 3,
+                'aktiflik_durumu' => true,
+            ],
+            [
+                'kategori_slug' => 'konut',
+                'yayin_tipi' => 'satilik',
+                'yayin_tipi_id' => 1,
+                'field_slug' => 'oda-sayisi',
+                'field_name' => 'Oda Sayısı',
+                'field_type' => 'text',
+                'field_category' => 'Oda ve Alan',
+                'required' => true,
+                'display_order' => 4,
+                'aktiflik_durumu' => true,
+            ],
+        ] as $dep) {
+            \Illuminate\Support\Facades\DB::table('kategori_yayin_tipi_field_dependencies')->insert($dep);
         }
     }
 

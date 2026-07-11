@@ -26,6 +26,10 @@ class WizardCopilotActionApiTest extends TestCase
         parent::setUp();
         \Illuminate\Database\Eloquent\Model::unguard();
 
+        // 🛡️ Seed required category and yayin tipi for Wizard Context
+        $this->ensureKategori('konut', ['id' => 1, 'seviye' => 0]);
+        $this->ensureYayinTipi('satilik', ['id' => 1, 'kategori_id' => 1, 'yayin_tipi_id' => 1]);
+
         $this->user = User::factory()->create(['email' => 'copilot-test@yalihan.com']);
         $this->otherUser = User::factory()->create(['email' => 'other-test@yalihan.com']);
 

@@ -79,7 +79,7 @@ class ListingStateMachineTest extends TestCase
     /** @test */
     public function tam_kalite_skoruyla_yayin_kontrolu_gecer(): void
     {
-        $this->machine->yayinIcinKontrolEt(kaliteSkoru: 75, tamamlanmaSkoru: 100);
+        $this->machine->yayinIcinKontrolEt(kaliteSkoru: 75, tamamlanmaSkoru: 100, lat: 37.0, lng: 27.0);
         $this->assertTrue(true);
     }
 

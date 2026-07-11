@@ -78,6 +78,9 @@ class WorkspaceSummaryServiceTest extends TestCase
         $this->assertArrayHasKey('missing_documents', $readiness);
         $this->assertArrayHasKey('missing_ai_hooks', $readiness);
         $this->assertArrayHasKey('summary', $readiness);
+
+        $this->assertArrayHasKey('telemetry', $summary);
+        $this->assertArrayHasKey('bai_score', $summary['telemetry']);
     }
 
     public function test_readiness_score_updates_when_fields_are_filled(): void

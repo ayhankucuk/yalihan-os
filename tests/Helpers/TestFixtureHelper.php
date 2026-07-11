@@ -36,9 +36,24 @@ trait TestFixtureHelper
             $role->save();
         }
 
+        $tenantId = $attributes['tenant_id'] ?? null;
+        if (!$tenantId) {
+            $tenant = \App\Models\SaaS\Tenant::first();
+            if (!$tenant) {
+                $tenant = \App\Models\SaaS\Tenant::create([
+                    'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                    'name' => 'Default Tenant',
+                    'domain' => 'default.yalihan.test',
+                    'status' => 'active',
+                ]);
+            }
+            $tenantId = $tenant->id;
+        }
+
         $user = User::factory()->create(array_merge([
             'role_id' => $role->id,
             'email_verified_at' => now(),
+            'tenant_id' => $tenantId,
         ], $attributes));
 
         // 🛡️ Spatie Permissions
@@ -76,6 +91,8 @@ trait TestFixtureHelper
             'quality_score' => 85,
             'ana_kategori_id' => $kategori->id,
             'yayin_tipi_id' => $sablon->id,
+            'lat' => 37.0,
+            'lng' => 27.0,
         ], $attributes));
     }
 
@@ -132,6 +149,23 @@ trait TestFixtureHelper
      */
     protected function ensureKategori(string $slug, array $attributes = []): IlanKategori
     {
+        $id = $attributes['id'] ?? null;
+        if ($id) {
+            $cat = IlanKategori::withTrashed()->find($id);
+            if ($cat) {
+                if ($cat->trashed()) {
+                    $cat->restore();
+                }
+                $cat->update($attributes);
+                return $cat;
+            }
+            return IlanKategori::forceCreate(array_merge([
+                'slug' => $slug,
+                'name' => ucfirst($slug),
+                'aktiflik_durumu' => true,
+            ], $attributes));
+        }
+
         return IlanKategori::withTrashed()->updateOrCreate(
             ['slug' => $slug],
             array_merge([
@@ -143,15 +177,48 @@ trait TestFixtureHelper
 
     /**
      * Ensure a specific YayinTipiSablonu exists.
-     * Uses updateOrCreate to avoid unique constraint violations.
+     * Uses updateOrCreate/forceCreate to avoid unique constraint violations and force IDs.
      */
     protected function ensureYayinTipi(string $slug, array $attributes = []): YayinTipiSablonu
     {
+        $id = $attributes['id'] ?? null;
+        $yayinTipiId = $attributes['yayin_tipi_id'] ?? $id;
+
+        // Ensure the matching entry in yayin_tipleri exists
+        if ($yayinTipiId && !\Illuminate\Support\Facades\DB::table('yayin_tipleri')->where('id', $yayinTipiId)->exists()) {
+            \Illuminate\Support\Facades\DB::table('yayin_tipleri')->insert([
+                'id' => $yayinTipiId,
+                'name' => ucfirst($slug),
+                'slug' => $slug,
+                'aktiflik_durumu' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        if ($id) {
+            $tmpl = YayinTipiSablonu::withTrashed()->find($id);
+            if ($tmpl) {
+                if ($tmpl->trashed()) {
+                    $tmpl->restore();
+                }
+                $tmpl->update($attributes);
+                return $tmpl;
+            }
+            return YayinTipiSablonu::forceCreate(array_merge([
+                'slug' => $slug,
+                'ad' => ucfirst(str_replace('-', ' ', $slug)),
+                'aktiflik_durumu' => \App\Enums\AktiflikDurumu::AKTIF,
+                'yayin_tipi_id' => $yayinTipiId,
+            ], $attributes));
+        }
+
         return YayinTipiSablonu::withTrashed()->updateOrCreate(
             ['slug' => $slug],
             array_merge([
                 'ad' => ucfirst(str_replace('-', ' ', $slug)),
                 'aktiflik_durumu' => \App\Enums\AktiflikDurumu::AKTIF,
+                'yayin_tipi_id' => $yayinTipiId,
             ], $attributes)
         );
     }
