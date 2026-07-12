@@ -9,171 +9,123 @@ use App\Domain\Workforce\Events\ListingAnalyzed;
 use App\Enums\AgentType;
 use App\Models\Ilan;
 use App\Models\PortfolioDriveWorkspace;
-use Illuminate\Support\Facades\DB;
 
 /**
- * PublishingAgent — Sprint 7.2 Phase 3
+ * PublishingAgent — Sprint 7.4
  *
- * ListingAgent sonucunu alır ve yayınlama package oluşturur.
- * Kanalları doğrudan bilmez — PublishingCapability ile çalışır.
+ * ListingAgent sonucunu alir, PublishPackage olusturur,
+ * kanallari yonlendirir ve sonuclari loglar.
  */
 class PublishingAgent extends BaseWorkforceAgent
 {
     public const AGENT_TYPE = AgentType::PUBLISHING_AGENT;
 
-    public function __construct()
-    {
+    public function __construct(
+        private readonly ChannelRouter $router,
+        private readonly NotificationHook $notifier,
+    ) {
         parent::__construct(app(\App\Services\AI\YalihanCortex::class));
     }
 
     public function description(): string
     {
-        return 'Yayınlama ajanı: ListingAgent sonucunu alır, yayınlama package oluşturur ve kanal yürütmesini tetikler.';
+        return 'Yayinlama ajani: ListingAgent sonucunu alir, PublishPackage olusturur ve kanal yurutmesini tetikler.';
     }
 
     protected function execute(WorkforceContext $context): WorkforceResult
     {
-        $ilanId = $context->sharedData['ilan_id'] ?? $context->workspace?->ilan_id;
+        // ListingAgent sonucunu al
+        $ilanId = $context->sharedData['ilan_id']
+            ?? $context->workspace?->ilan_id
+            ?? $context->workspace?->ilan?->getKey();
 
-        if (!$ilanId) {
-            return WorkforceResult::failure(
-                agent: $this->getType(),
-                error: 'İlan ID bulunamadı',
-            );
-        }
+        $ilan = $ilanId ? Ilan::find($ilanId) : null;
 
-        $ilan = Ilan::find($ilanId);
         if (!$ilan) {
             return WorkforceResult::failure(
                 agent: $this->getType(),
-                error: "İlan #{$ilanId} bulunamadı",
+                error: 'Ilan ID bulunamadi',
             );
         }
+
+        $listingResult = $context->sharedData['listing_agent_result'] ?? [];
+        $qualityScore = $listingResult['quality_score']['score'] ?? 50;
+        $publishingReady = $listingResult['publishing_readiness']['ready'] ?? false;
+        $coverPhoto = $listingResult['publishing_readiness']['cover_photo'] ?? null;
 
         // Workspace al
         $workspace = PortfolioDriveWorkspace::where('ilan_id', $ilan->getKey())->first();
 
-        // ListingAgent sonucunu al (sharedData'dan)
-        $listingResult = $context->sharedData['listing_agent_result'] ?? [];
+        // Kanal routing
+        $channels = $this->router->route($ilan, $qualityScore);
+        $routingExplanation = $this->router->explain($ilan, $qualityScore, $channels);
 
-        // Publishing package oluştur
-        $package = $this->buildPublishingPackage($ilan, $listingResult, $workspace);
+        // PublishPackage olustur
+        $package = PublishPackage::build(
+            ilan: $ilan,
+            userId: auth()->id() ?? 0,
+            qualityScore: $qualityScore,
+            channels: $channels,
+            payload: [
+                'ilan_data' => $ilan->toArray(),
+                'listing_result' => $listingResult,
+            ],
+            coverPhoto: $coverPhoto,
+            metadata: [
+                'routing' => $routingExplanation,
+                'publishing_ready' => $publishingReady,
+                'workspace_id' => $workspace?->getKey(),
+            ],
+        );
 
-        // Workspace'e kaydet (audit trail için)
-        if ($workspace) {
-            $this->savePublishingPackage($workspace, $package);
-        }
+        // Workspace'e kaydet (audit trail)
+        $this->persistPackage($workspace, $package);
 
-        // ListingAnalyzed event'ini tetikle
-        event(new ListingAnalyzed($workspace ?? $ilan, $package));
+        // Notification
+        $this->notifier->notify($ilan, auth()->id() ?? 0, [], $package->id);
+
+        // ListingAnalyzed event tetikle
+        event(new ListingAnalyzed($workspace ?? $ilan, $package->toArray()));
 
         $this->log('PublishingAgent package olusturuldu', [
             'ilan_id' => $ilan->getKey(),
-            'package_id' => $package['id'],
-            'channels' => implode(', ', $package['channels']),
+            'package_id' => $package->id,
+            'channels' => array_map(fn($c) => $c->value, $channels),
+            'quality_score' => $qualityScore,
+            'publishing_ready' => $publishingReady,
         ]);
 
         return WorkforceResult::success(
             agent: $this->getType(),
             payload: [
                 'ilan_id' => $ilan->getKey(),
-                'package' => $package,
+                'package_id' => $package->id,
+                'package' => $package->toArray(),
+                'channels' => array_map(fn($c) => [
+                    'value' => $c->value,
+                    'label' => $c->label(),
+                    'type' => $c->type(),
+                    'threshold' => $c->minQualityScore(),
+                ], $channels),
+                'routing' => $routingExplanation,
+                'publishing_ready' => $publishingReady,
+                'quality_score' => $qualityScore,
             ],
             metadata: [
                 'ilan_id' => $ilan->getKey(),
-                'channel_count' => count($package['channels']),
+                'channel_count' => count($channels),
+                'package_status' => $package->status,
             ],
         );
     }
 
-    /**
-     * Yayınlama package oluştur.
-     *
-     * @param array<string, mixed> $listingResult
-     */
-    private function buildPublishingPackage(
-        Ilan $ilan,
-        array $listingResult,
-        ?PortfolioDriveWorkspace $workspace
-    ): array {
-        // Kanal seçimi — yayın durumuna göre
-        $channels = $this->selectChannels($ilan, $listingResult);
-
-        // Paket ID
-        $packageId = 'PKG-' . strtoupper(uniqid());
-
-        return [
-            'id' => $packageId,
-            'ilan_id' => $ilan->getKey(),
-            'workspace_id' => $workspace?->getKey(),
-            'ilan_baslik' => $ilan->baslik,
-            'ilan_fiyat' => $ilan->fiyat,
-            'yayin_tipi' => $ilan->yayin_tipi,
-            'kategori' => $ilan->kategori,
-            'channels' => $channels,
-            'quality_score' => $listingResult['quality_score']['score'] ?? null,
-            'publishing_ready' => $listingResult['publishing_readiness']['ready'] ?? false,
-            'blocking_issues' => $listingResult['publishing_readiness']['blocking_missing'] ?? [],
-            'recommended_pack' => $listingResult['recommended_pack']['name'] ?? null,
-            'status' => 'draft',
-            'created_at' => now()->toIso8601String(),
-            'created_by' => $this->resolveUserId(),
-        ];
-    }
-
-    /**
-     * Hangi kanallara yayınlanacağını belirle.
-     *
-     * @param array<string, mixed> $listingResult
-     * @return array<string>
-     */
-    private function selectChannels(Ilan $ilan, array $listingResult): array
+    private function persistPackage(?PortfolioDriveWorkspace $workspace, PublishPackage $package): void
     {
-        $channels = ['yalihan']; // Her zaman Yalıhan
+        if (!$workspace) return;
 
-        // Kalite skoru yüksekse dış kanalları ekle
-        $qualityScore = $listingResult['quality_score']['score'] ?? 0;
-
-        if ($qualityScore >= 60) {
-            $channels[] = 'sahibinden';
-        }
-
-        if ($qualityScore >= 70) {
-            $channels[] = 'hepsiemlak';
-        }
-
-        if ($qualityScore >= 80) {
-            $channels[] = 'emlakjet';
-        }
-
-        // Yayın tipine göre ek kanallar
-        $yayinTipi = mb_strtolower($ilan->yayin_tipi ?? '');
-
-        if (str_contains($yayinTipi, 'kiralık') || str_contains($yayinTipi, 'günlük')) {
-            // Kiralık için ek platformlar
-            if ($qualityScore >= 75) {
-                $channels[] = 'airbnb';
-            }
-        }
-
-        return array_unique($channels);
-    }
-
-    /**
-     * Publishing package'ı workspace'e kaydet.
-     */
-    private function savePublishingPackage(PortfolioDriveWorkspace $workspace, array $package): void
-    {
-        $metadata = $workspace->metadata_json ?? [];
-        $metadata['publishing_package'] = $package;
-        $workspace->updateQuietly(['metadata_json' => $metadata]);
-    }
-
-    /**
-     * Kullanıcı ID'sini çöz.
-     */
-    private function resolveUserId(): ?int
-    {
-        return auth()->id();
+        $meta = $workspace->metadata_json ?? [];
+        $meta['last_publishing_package'] = $package->toArray();
+        $meta['last_published_at'] = now()->toIso8601String();
+        $workspace->updateQuietly(['metadata_json' => $meta]);
     }
 }
