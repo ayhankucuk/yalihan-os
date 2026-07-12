@@ -30,9 +30,10 @@ class QualityScorer
      *
      * @param array<string, mixed> $ilanData
      * @param array<array{field: string, severity: string}> $missingFields
+     * @param array<string, mixed> $photoAnalysis Sprint 7.3 ile eklenen fotoğraf analizi
      * @return array{score: int, breakdown: array<string, array{score: int, max: int, weight: float, label: string}>}
      */
-    public function score(Ilan $ilan, array $ilanData, array $missingFields): array
+    public function score(Ilan $ilan, array $ilanData, array $missingFields, array $photoAnalysis = []): array
     {
         $breakdown = [];
         $totalScore = 0.0;
@@ -57,8 +58,8 @@ class QualityScorer
         $totalScore += $pricing['score'] * self::WEIGHTS['pricing'];
         $breakdown['pricing'] = $pricing;
 
-        // 5. Media (varsayılan)
-        $media = $this->scoreMedia($ilan);
+        // 5. Media (Sprint 7.3: fotoğraf analizi ile)
+        $media = $this->scoreMedia($ilan, $photoAnalysis);
         $totalScore += $media['score'] * self::WEIGHTS['media'];
         $breakdown['media'] = $media;
 
@@ -187,17 +188,37 @@ class QualityScorer
     }
 
     /**
-     * Medya skoru (varsayılan — fotoğraf sayısı bilinmiyorsa).
+     * Medya skoru — fotoğraf analizi ile.
+     *
+     * @param array<string, mixed> $photoAnalysis
      */
-    private function scoreMedia(Ilan $ilan): array
+    private function scoreMedia(Ilan $ilan, array $photoAnalysis = []): array
     {
-        // Fotoğraf sayısı workspace'ten alınabilir ama şimdilik varsayılan
+        $toplam = $photoAnalysis['toplam_foto'] ?? 0;
+        $eksikler = count($photoAnalysis['eksikler'] ?? []);
+        $puan = $photoAnalysis['puan'] ?? 0;
+
+        if ($toplam === 0) {
+            return [
+                'score' => 0,
+                'max' => 100,
+                'weight' => self::WEIGHTS['media'],
+                'label' => 'Medya',
+                'detail' => 'Fotoğraf yok',
+            ];
+        }
+
+        $detail = "{$toplam} fotoğraf";
+        if ($eksikler > 0) {
+            $detail .= ", {$eksikler} eksik kategori";
+        }
+
         return [
-            'score' => 50, // Belirsiz = orta
+            'score' => $puan,
             'max' => 100,
             'weight' => self::WEIGHTS['media'],
             'label' => 'Medya',
-            'detail' => 'Medya kontrolü gerekiyor',
+            'detail' => $detail,
         ];
     }
 
