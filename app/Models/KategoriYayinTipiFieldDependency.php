@@ -54,6 +54,12 @@ class KategoriYayinTipiFieldDependency extends BaseModel
         return $query->where('aktiflik_durumu', \App\Enums\AktiflikDurumu::AKTIF);
     }
 
+    /** @scopeAlias active */
+    public function scopeActive($query)
+    {
+        return $query->where('aktiflik_durumu', \App\Enums\AktiflikDurumu::AKTIF);
+    }
+
     /**
      * Scope: Kategori ve yayın tipine göre filtrele
      */

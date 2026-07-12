@@ -60,6 +60,7 @@ class PropertyHubController extends Controller
             'ozellik_catalog' => Ozellik::where('aktiflik_durumu', 1)->count(),
             'field_schema' => KategoriYayinTipiFieldDependency::active()->count(),
             'combinations' => $this->propertyConfig->getAvailableCombinations(),
+            'feature_packs' => FeaturePack::aktif()->count(), // Sprint 7.1B
         ];
 
         $recentChanges = \App\Models\TemplateChangeLog::with('user')

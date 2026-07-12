@@ -2,56 +2,39 @@
 
 namespace App\Models;
 
-use App\Models\BaseModel;
-use App\Traits\HasCountryScope;
-use App\Traits\SabGuard;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * UPS Feature Pack Item Model
- *
- * Context7 Compliance: Join table for pack ↔ features
- * - display_order: canonical integer flag
- */
-class FeaturePackItem extends BaseModel
+class FeaturePackItem extends Model
 {
     use HasFactory;
-    use SabGuard;
-    use HasCountryScope;
 
-    protected $table = 'ups_feature_pack_items';
+    protected $table = 'feature_pack_items';
 
     protected $fillable = [
         'feature_pack_id',
-        'feature_id',
+        'ozellik_id',
+        'template_ref',
+        'field_slug',
+        'value',
         'display_order',
+        'notes',
     ];
 
     protected $casts = [
-        'display_order' => 'integer',
+        'ozellik_id'     => 'integer',
+        'feature_pack_id' => 'integer',
+        'display_order'   => 'integer',
     ];
 
-    /**
-     * Get parent pack
-     */
-    public function pack()
+    public function pack(): BelongsTo
     {
         return $this->belongsTo(FeaturePack::class, 'feature_pack_id');
     }
 
-    /**
-     * Get feature
-     */
-    public function feature()
+    public function ozellik(): BelongsTo
     {
-        return $this->belongsTo(Feature::class);
-    }
-
-    /**
-     * Scope: Ordered
-     */
-    public function scopeOrdered($query)
-    {
-        return $query->orderBy('display_order'); // context7-ignore
+        return $this->belongsTo(Ozellik::class, 'ozellik_id');
     }
 }
