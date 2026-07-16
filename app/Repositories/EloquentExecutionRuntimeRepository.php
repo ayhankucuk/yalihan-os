@@ -138,6 +138,22 @@ class EloquentExecutionRuntimeRepository implements ExecutionRuntimeRepositoryIn
             ->get();
     }
 
+    public function getActiveExecutions(?int $tenantId = null): Collection
+    {
+        $query = $this->model
+            ->whereIn('execution_status', [
+                WorkforceExecution::STATUS_REQUESTED,
+                WorkforceExecution::STATUS_RUNNING,
+            ])
+            ->orderBy('created_at', 'desc');
+
+        if ($tenantId !== null) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        return $query->get();
+    }
+
     private function findByUuidOrFail(string $uuid): WorkforceExecution
     {
         return $this->model->where('uuid', $uuid)->firstOrFail();

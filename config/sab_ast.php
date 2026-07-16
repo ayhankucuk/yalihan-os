@@ -106,6 +106,8 @@ return [
                 'app/Services/Hermes/',        // HermesDispatcher, HermesReplayService
                 'app/Jobs/Hermes/',           // AsyncHandlerDispatchJob
                 'app/Http/Controllers/Admin/HermesReplayController.php', // Sprint 4.7
+                // Sprint 15: Runtime Operations Console — 'status'/'active' are HTTP query params + API contract keys
+                'app/Http/Controllers/Admin/OperationsConsoleController.php',
             ],
         ],
 
@@ -124,6 +126,8 @@ return [
                 'app/Services/Hermes/',
                 'app/Jobs/Hermes/',
                 'app/Http/Controllers/Admin/HermesReplayController.php',
+                // Sprint 15: Runtime Operations Console — 'status'/'active' are HTTP query params + API contract keys
+                'app/Http/Controllers/Admin/OperationsConsoleController.php',
             ],
         ],
     ],

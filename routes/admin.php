@@ -46,6 +46,8 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])-
             ->whereNumber('id')->name('events');
         Route::get('/{id}/health', [\App\Http\Controllers\Admin\WorkspaceDashboardController::class, 'health'])
             ->whereNumber('id')->name('health');
+        Route::post('/{id}/save', [\App\Http\Controllers\Admin\WorkspaceDashboardController::class, 'save'])
+            ->whereNumber('id')->name('save');
     });
 
     // SPRINT 4.7: Workspace Execution Engine
@@ -66,6 +68,26 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])-
                 ->whereNumber('exec')->name('retry');
             Route::post('/{exec}/cancel', [App\Http\Controllers\Admin\WorkspaceExecutionController::class, 'cancel'])
                 ->whereNumber('exec')->name('cancel');
+        });
+
+    // SPRINT 15: Runtime Operations Console
+    Route::prefix('/operations')
+        ->name('operations.')
+        ->group(function () {
+            Route::get('/', [App\Http\Controllers\Admin\OperationsConsoleController::class, 'index'])
+                ->name('index');
+            Route::get('/api/overview', [App\Http\Controllers\Admin\OperationsConsoleController::class, 'overview'])
+                ->name('api.overview');
+            Route::get('/api/executions', [App\Http\Controllers\Admin\OperationsConsoleController::class, 'executions'])
+                ->name('api.executions');
+            Route::get('/api/executions/{uuid}', [App\Http\Controllers\Admin\OperationsConsoleController::class, 'show'])
+                ->name('api.executions.show');
+            Route::post('/api/executions/{uuid}/recover', [App\Http\Controllers\Admin\OperationsConsoleController::class, 'recover'])
+                ->name('api.executions.recover');
+            Route::get('/api/metrics/capability', [App\Http\Controllers\Admin\OperationsConsoleController::class, 'capabilityMetrics'])
+                ->name('api.metrics.capability');
+            Route::get('/api/recovery-queue', [App\Http\Controllers\Admin\OperationsConsoleController::class, 'recoveryQueue'])
+                ->name('api.recovery-queue');
         });
 
     // SPRINT 4.7: Async Queue + Event Replay
@@ -135,6 +157,20 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])-
 
         // ✅ Phase 4C: Governance Health Dashboard
         Route::get('/governance-dashboard', \App\Http\Livewire\Admin\GovernanceDashboard::class)->name('governance.dashboard');
+    });
+
+    // ✅ Sprint 6.8: Property Configuration — Dynamic Field Schema
+    Route::prefix('/property-config')->name('property-config.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PropertyConfigurationController::class, 'index'])
+            ->name('index');
+
+        Route::get('/fields/{category}/{subCategory}/{listingType}', [
+            \App\Http\Controllers\Admin\PropertyConfigurationController::class, 'fields',
+        ])->name('fields');
+
+        Route::get('/{category}/{subCategory}/{listingType}', [
+            \App\Http\Controllers\Admin\PropertyConfigurationController::class, 'show',
+        ])->name('show');
     });
 
 
@@ -558,6 +594,14 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])-
     Route::delete('/ilanlar/draft', [\App\Http\Controllers\Admin\IlanDraftController::class, 'clear'])
         ->name('ilanlar.draft.clear')
         ->middleware(['auth', 'throttle:10,1']);
+
+    Route::prefix('/ilan-ai/draft')->name('ilan-ai.draft.')->group(function () {
+        Route::post('/generate/{ilan}', [\App\Http\Controllers\Admin\DescriptionDraftController::class, 'generate'])->name('generate');
+        Route::get('/{ilan}', [\App\Http\Controllers\Admin\DescriptionDraftController::class, 'show'])->name('show');
+        Route::get('/{ilan}/history', [\App\Http\Controllers\Admin\DescriptionDraftController::class, 'history'])->name('history');
+        Route::post('/{draft}/approve', [\App\Http\Controllers\Admin\DescriptionDraftController::class, 'approve'])->name('approve');
+        Route::post('/{draft}/reject', [\App\Http\Controllers\Admin\DescriptionDraftController::class, 'reject'])->name('reject');
+    });
 
     Route::prefix('/changelog')->name('changelog.')->group(function () {
         Route::post('/', [\App\Http\Controllers\Admin\ChangelogController::class, 'store'])->name('store');

@@ -62,6 +62,11 @@ interface ExecutionRuntimeRepositoryInterface
     public function getFailedByTenant(int $tenantId): \Illuminate\Database\Eloquent\Collection;
 
     /**
+     * Tenant bazında aktif (RUNNING veya REQUESTED) execution'ları getir.
+     */
+    public function getActiveExecutions(?int $tenantId = null): \Illuminate\Database\Eloquent\Collection;
+
+    /**
      * Recovery execution başlatıldığında recovery metadata set et.
      * @param array{recovery_of_uuid?: string, failure_classification?: string,
      *                retry_policy?: string, retry_count?: int,
