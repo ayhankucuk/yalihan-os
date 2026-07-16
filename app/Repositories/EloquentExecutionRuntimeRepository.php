@@ -197,4 +197,12 @@ class EloquentExecutionRuntimeRepository implements ExecutionRuntimeRepositoryIn
         $exec->save();
         return $exec->fresh();
     }
+
+    public function getChildExecutions(string $uuid): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->model
+            ->where('parent_uuid', $uuid)
+            ->orderBy('created_at', 'asc')
+            ->get();
+    }
 }

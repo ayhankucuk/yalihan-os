@@ -136,7 +136,7 @@ class OperationsConsoleController extends Controller
 
         return response()->json([
             'execution'     => $this->formatOne($exec),
-            'replay_chain' => $this->formatMany($chain),
+            'replay_chain' => $this->formatMany(collect($chain)),
             'recovery_plan' => $recoveryPlan,
         ]);
     }
@@ -261,36 +261,30 @@ class OperationsConsoleController extends Controller
 
     private function getReplayChain(WorkforceExecution $exec): array
     {
-        $chain = [$exec];
+        // replay_of_uuid always points to the ROOT execution.
+        //
+        // Strategy: Find the root UUID, collect all executions where
+        // replay_of_uuid = root (all replays) plus the root itself.
+        // Order by id ascending for deterministic chronological sequence.
 
-        // transitive closure — follow replay_of_uuid root
-        $current = $exec;
-        while ($current->replay_of_uuid !== null) {
-            $parent = $this->repository->findByUuid($current->replay_of_uuid);
-            if (!$parent) {
-                break;
-            }
-            $chain[] = $parent;
-            $current = $parent;
+        $rootUuid = $exec->replay_of_uuid ?? $exec->uuid;
+        $root = $this->repository->findByUuid($rootUuid);
+
+        if (!$root) {
+            return [$exec];
         }
 
-        // parent chain
-        $current = $exec;
-        while ($current->parent_uuid !== null) {
-            $child = $this->repository->findByUuid($current->parent_uuid);
-            if (!$child) {
-                break;
-            }
-            $chain[] = $child;
-            $current = $child;
-        }
+        // Replays: replay_of_uuid = rootUuid. Root: replay_of_uuid = NULL.
+        $chain = \App\Models\WorkforceExecution::query()
+            ->where('replay_of_uuid', $rootUuid)
+            ->orderBy('id', 'asc')
+            ->get();
 
-        // Sort by created_at
-        usort($chain, fn (WorkforceExecution $a, WorkforceExecution $b) =>
-            $a->created_at->timestamp <=> $b->created_at->timestamp
-        );
+        // Prepend root, then sort by id to ensure correct sequence
+        $chain->prepend($root);
+        $chain = $chain->sortBy(fn ($e) => $e->id)->values();
 
-        return $chain;
+        return $chain->all();
     }
 
     private function buildSummary(array $report, $failed, $recoveryQueue): array

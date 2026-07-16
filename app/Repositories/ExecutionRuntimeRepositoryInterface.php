@@ -79,4 +79,10 @@ interface ExecutionRuntimeRepositoryInterface
      * Recovery fields güncelle (retry_count, max_retries, next_retry_at, classification).
      */
     public function updateRecoveryFields(string $uuid, array $fields): WorkforceExecution;
+
+    /**
+     * Belirli bir execution'ın child (replay/retry) execution'larını getir.
+     * @return \Illuminate\Database\Eloquent\Collection<int, WorkforceExecution>
+     */
+    public function getChildExecutions(string $uuid): \Illuminate\Database\Eloquent\Collection;
 }
