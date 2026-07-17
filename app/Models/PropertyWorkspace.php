@@ -48,7 +48,7 @@ class PropertyWorkspace extends Model
      */
     protected $fillable = [
         'tenant_id',
-        'ilan_id',
+        'property_id',
         'workspace_uuid',
         'intent',
         'template_id',
@@ -62,7 +62,7 @@ class PropertyWorkspace extends Model
      */
     protected $casts = [
         'tenant_id' => 'integer',
-        'ilan_id' => 'integer',
+        'property_id' => 'integer',
         'workspace_uuid' => 'string',
         'intent' => 'string',
         'template_id' => 'string',
@@ -126,15 +126,23 @@ class PropertyWorkspace extends Model
     }
 
     /**
-     * Scope: by ilan
+     * Scope: by Property
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param int $ilanId
+     * @param int $propertyId
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeByIlan($query, int $ilanId)
+    public function scopeByProperty($query, int $propertyId)
     {
-        return $query->where('ilan_id', $ilanId);
+        return $query->where('property_id', $propertyId);
+    }
+
+    /**
+     * Relationship: Workspace → Property (canonical ownership)
+     */
+    public function property(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Property::class, 'property_id');
     }
 
     /**
@@ -159,7 +167,7 @@ class PropertyWorkspace extends Model
 
         return new self([
             'tenant_id' => $state['tenant_id'],
-            'ilan_id' => $state['ilan_id'],
+            'property_id' => $state['property_id'],
             'workspace_uuid' => $state['workspace_id'],
             'intent' => $state['intent'],
             'template_id' => $state['template_id'],

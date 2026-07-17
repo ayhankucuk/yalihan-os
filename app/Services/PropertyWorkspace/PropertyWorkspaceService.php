@@ -37,23 +37,37 @@ class PropertyWorkspaceService
     /**
      * Create a new workspace
      *
-     * @param int $ilanId
-     * @param string $intent
-     * @param string|null $templateId
+     * @param int $propertyId The canonical Property ID
+     * @param string $intent Workspace intent
+     * @param string|null $templateId Optional template ID
      * @return PropertyWorkspace
+     *
+     * @throws \DomainException If Property already has an active workspace
      */
-    public function createWorkspace(int $ilanId, string $intent, ?string $templateId = null): PropertyWorkspace
+    public function createWorkspace(int $propertyId, string $intent, ?string $templateId = null): PropertyWorkspace
     {
         $this->blockAgentWrite(__FUNCTION__);
 
-        return DB::transaction(function () use ($ilanId, $intent, $templateId) {
+        return DB::transaction(function () use ($propertyId, $intent, $templateId) {
             $tenantId = $this->getTenantId();
             $workspaceUuid = (string) Str::uuid();
+
+            // Workspace Invariant: One Property = One Active Workspace
+            $existingWorkspace = PropertyWorkspace::where('property_id', $propertyId)
+                ->whereNotIn('state', ['archived'])
+                ->first();
+
+            if ($existingWorkspace) {
+                throw new \DomainException(
+                    "Property {$propertyId} already has an active workspace. " .
+                    "Archive the existing workspace before creating a new one."
+                );
+            }
 
             // Create workspace record FIRST to get DB ID
             $workspace = PropertyWorkspace::create([
                 'tenant_id' => $tenantId,
-                'ilan_id' => $ilanId,
+                'property_id' => $propertyId,
                 'workspace_uuid' => $workspaceUuid,
                 'intent' => $intent,
                 'template_id' => $templateId,
@@ -62,7 +76,7 @@ class PropertyWorkspaceService
 
             // Now create aggregate with correct ID
             $aggregate = new PropertyWorkspaceAggregate($workspace->id, $tenantId);
-            $aggregate->initializeWorkspace($workspaceUuid, $ilanId, $intent, $templateId);
+            $aggregate->initializeWorkspace($workspaceUuid, $propertyId, $intent, $templateId);
 
             // Commit events to event store
             $aggregate->commit();
@@ -177,17 +191,17 @@ class PropertyWorkspaceService
     }
 
     /**
-     * Get workspaces by ilan ID
+     * Get workspaces by Property ID
      *
-     * @param int $ilanId
+     * @param int $propertyId
      * @return \Illuminate\Database\Eloquent\Collection<int, PropertyWorkspace>
      */
-    public function getWorkspacesByIlan(int $ilanId)
+    public function getWorkspacesByProperty(int $propertyId)
     {
         $tenantId = $this->getTenantId();
 
         return PropertyWorkspace::tenantScope($tenantId)
-            ->byIlan($ilanId)
+            ->where('property_id', $propertyId)
             ->orderBy('created_at', 'desc')
             ->get();
     }

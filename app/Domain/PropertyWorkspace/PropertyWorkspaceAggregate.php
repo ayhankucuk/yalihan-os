@@ -62,23 +62,23 @@ class PropertyWorkspaceAggregate extends AggregateRoot
     protected array $state = [
         'workspace_id' => null,
         'tenant_id' => null,
-        'ilan_id' => null,
+        'property_id' => null,
         'intent' => null,
         'template_id' => null,
         'state' => self::STATE_WORKSPACE_CREATED,
         'created_at' => null,
     ];
 
-     /**
-      * Set ilan_id after workspace creation
-      *
-      * @param int $ilanId
-      * @return void
-      */
-     public function setIlanId(int $ilanId): void
-     {
-         $this->state['ilan_id'] = $ilanId;
-     }
+    /**
+     * Set property_id after workspace creation
+     *
+     * @param int $propertyId
+     * @return void
+     */
+    public function setPropertyId(int $propertyId): void
+    {
+        $this->state['property_id'] = $propertyId;
+    }
 
     /**
      * Factory: create new workspace (requires DB record to be created first, then call initializeWorkspace)
@@ -86,50 +86,50 @@ class PropertyWorkspaceAggregate extends AggregateRoot
      * Tenant ID must be passed explicitly from the application/service layer.
      * Domain layer must NOT resolve tenant from auth session (S6.1-E01).
      *
-     * @param int $ilanId
-     * @param string $intent
+     * @param int $propertyId The canonical Property ID
+     * @param string $intent Workspace intent
      * @param int $tenantId Tenant ID — must be passed by caller, never resolved via auth() here
      * @param string|null $templateId
      * @return self
      */
-     public static function createWorkspace(int $ilanId, string $intent, int $tenantId = 0, ?string $templateId = null): self
-     {
-         $aggregate = new self(0, $tenantId);
-         $aggregate->state['tenant_id'] = $tenantId;
-         $aggregate->state['ilan_id'] = $ilanId;
-         $aggregate->state['intent'] = $intent;
-         $aggregate->state['template_id'] = $templateId;
-         $aggregate->state['state'] = self::STATE_WORKSPACE_CREATED;
-         $aggregate->state['created_at'] = now()->toIso8601String();
-         return $aggregate;
-     }
+    public static function createWorkspace(int $propertyId, string $intent, int $tenantId = 0, ?string $templateId = null): self
+    {
+        $aggregate = new self(0, $tenantId);
+        $aggregate->state['tenant_id'] = $tenantId;
+        $aggregate->state['property_id'] = $propertyId;
+        $aggregate->state['intent'] = $intent;
+        $aggregate->state['template_id'] = $templateId;
+        $aggregate->state['state'] = self::STATE_WORKSPACE_CREATED;
+        $aggregate->state['created_at'] = now()->toIso8601String();
+        return $aggregate;
+    }
 
-     /**
+    /**
       * Initialize workspace after DB record created - records the event
       *
       * @param string $workspaceId
-      * @param int $ilanId
+      * @param int $propertyId The canonical Property ID
       * @param string $intent
       * @param string|null $templateId
       * @return void
       */
-     public function initializeWorkspace(string $workspaceId, int $ilanId, string $intent, ?string $templateId): void
-     {
-         $this->state['workspace_id'] = $workspaceId;
-         $this->state['ilan_id'] = $ilanId;
-         $this->state['intent'] = $intent;
-         $this->state['template_id'] = $templateId;
-         $this->state['created_at'] = now()->toIso8601String();
+    public function initializeWorkspace(string $workspaceId, int $propertyId, string $intent, ?string $templateId): void
+    {
+        $this->state['workspace_id'] = $workspaceId;
+        $this->state['property_id'] = $propertyId;
+        $this->state['intent'] = $intent;
+        $this->state['template_id'] = $templateId;
+        $this->state['created_at'] = now()->toIso8601String();
 
-         $this->recordEvent('WorkspaceCreated', [
-             'workspace_id' => $workspaceId,
-             'tenant_id' => $this->tenantId,
-             'ilan_id' => $ilanId,
-             'intent' => $intent,
-             'template_id' => $templateId,
-             'timestamp' => now()->toIso8601String(),
-         ]);
-     }
+        $this->recordEvent('WorkspaceCreated', [
+            'workspace_id' => $workspaceId,
+            'tenant_id' => $this->tenantId,
+            'property_id' => $propertyId,
+            'intent' => $intent,
+            'template_id' => $templateId,
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
 
      /**
       * Select workspace intent
@@ -239,7 +239,7 @@ class PropertyWorkspaceAggregate extends AggregateRoot
     {
         $this->state['workspace_id'] = $payload['workspace_id'];
         $this->state['tenant_id'] = (int) $payload['tenant_id'];
-        $this->state['ilan_id'] = (int) $payload['ilan_id'];
+        $this->state['property_id'] = (int) $payload['property_id'];
         $this->state['intent'] = $payload['intent'];
         $this->state['template_id'] = $payload['template_id'];
         $this->state['state'] = self::STATE_WORKSPACE_CREATED;
@@ -320,7 +320,7 @@ class PropertyWorkspaceAggregate extends AggregateRoot
         $aggregate = new self((int) $model->id, (int) $model->tenant_id);
         $aggregate->state['workspace_id'] = $model->workspace_uuid;
         $aggregate->state['tenant_id'] = (int) $model->tenant_id;
-        $aggregate->state['ilan_id'] = (int) $model->ilan_id;
+        $aggregate->state['property_id'] = (int) $model->property_id;
         $aggregate->state['intent'] = $model->intent;
         $aggregate->state['template_id'] = $model->template_id;
         $aggregate->state['state'] = $model->state;
