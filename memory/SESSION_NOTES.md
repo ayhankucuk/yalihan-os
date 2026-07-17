@@ -6,6 +6,128 @@
 
 ---
 
+## OTURUM 110 | 2026-07-16 | M2 PROPERTY RUNTIME — 🟢 CERTIFIED ✅
+
+**Agent:** Kilo
+**Konu:** Sprint 15 Program B — Operations Console Product Validation
+
+### M2 Property Runtime — CERTIFICATION COMPLETE
+
+**Commit:** `2b653d5c` | **Tag:** `vM2-certified` | **Board Resolution:** BR-20260715-SAABv11
+
+**Status:** 🟢 M2 CERTIFIED
+
+### Sprint 15 Sonuç
+
+| Alan | Durum |
+|------|-------|
+| Runtime Engine | ✅ Certified |
+| Execution Tracking | ✅ Certified |
+| Replay Engine | ✅ Certified |
+| Recovery Policy | ✅ Certified |
+| Tenant Safety | ✅ Certified |
+| Operations Console | ✅ Certified |
+| BAI Metrics | ✅ Certified |
+
+### Kanıt Tablosu
+
+| # | Kontrol | Kanıt | Durum |
+|---|---------|--------|-------|
+| 1 | Execution lifecycle | 9/9 test PASS + live COMPLETED/FAILED/RECOVERED | ✅ |
+| 2 | Recovery mekanizması | TIMEOUT→TRANSIENT→retry, new UUID `a54cca7e` | ✅ |
+| 3 | Replay immutability | Original unchanged after replay (trigger=MANUAL, status=COMPLETED) | ✅ |
+| 4 | Konsol görünürlüğü | API 200 OK, all endpoints functional | ✅ |
+| 5 | BAI metrics | Live: 60% success / 20% failure / 40% replay | ✅ |
+| 6 | Tenant isolation | DomainException "Cross-tenant replay forbidden" | ✅ |
+
+### Teslimatlar
+
+| Parça | Dosya |
+|-------|-------|
+| Product Validation Test | `tests/Feature/Execution/M2ProductValidationTest.php` |
+| Console Bug Fix (getReplayChain) | `app/Http/Controllers/Admin/OperationsConsoleController.php` |
+| Repository Interface | `app/Repositories/ExecutionRuntimeRepositoryInterface.php` |
+| Repository Impl | `app/Repositories/EloquentExecutionRuntimeRepository.php` |
+| Milestone Kanıt | `.sab/milestones/M2-PROPERTY-RUNTIME.md` |
+
+### Quality Gates
+- sab:integrity-scan → PASS (0 new violations)
+- php artisan test M2ProductValidationTest → 9/9 PASS ✅
+- php artisan test ExecutionRuntimeServiceTest → 12/12 PASS ✅
+- php artisan test ExecutionMetricsServiceTest → 8/8 PASS ✅
+
+### Sprint 16 Odak Önerisi
+BAI artıran capability'ler üzerine yeni iş akışları. Her sprint için sertifikasyon disiplini uygula.
+
+---
+
+## OTURUM 109 | 2026-07-16 | Sprint 14 Task 001 COMPLETE
+
+**Agent:** Kilo
+**Konu:** Sprint 14 Task 001 — Execution Metrics Foundation
+
+### Sprint 14 Task 001 — Execution Metrics Foundation
+
+**Status:** ✅ CERTIFIED (11/11 tests, 30 assertions)
+
+**Teslimatlar:**
+| Parça | Dosya |
+|-------|-------|
+| Repository Interface | `app/Repositories/ExecutionMetricsRepositoryInterface.php` |
+| Repository Impl | `app/Repositories/EloquentExecutionMetricsRepository.php` |
+| Service | `app/Services/Execution/ExecutionMetricsService.php` |
+| Tests | `tests/Unit/Execution/ExecutionMetricsServiceTest.php` |
+
+**Metrics hesaplanan:**
+- ortalama execution süresi (capability bazlı)
+- başarı oranı (0.0–1.0)
+- hata oranı (0.0–1.0)
+- replay oranı (0.0–1.0)
+- ortalama retry derinliği
+- capability bazlı gruplama
+
+**BAI Engine Input contract:**
+```php
+$service->generateReport(tenantId: 1) → tenant_id, total_executions, success_rate, failure_rate, replay_rate, avg_retry_count, by_capability[]
+```
+
+**Quality Gates:** sab:integrity-scan PASS (0 new violations)
+
+---
+
+## OTURUM 108 | 2026-07-16 | Sprint 13 Task 002 COMPLETE
+
+**Agent:** Kilo
+**Konu:** Sprint 13 Task 002 — Execution Runtime Foundation
+
+### Sprint 13 Task 002 — Execution Runtime Foundation
+
+**Status:** ✅ CERTIFIED (12/12 tests, 45 assertions)
+
+**Teslimatlar:**
+| Parça | Dosya |
+|-------|-------|
+| Migration | `2026_07_15_232856_create_workforce_executions_table` |
+| Model | `app/Models/WorkforceExecution.php` |
+| Factory | `database/factories/WorkforceExecutionFactory.php` |
+| Repository Interface | `app/Repositories/ExecutionRuntimeRepositoryInterface.php` |
+| Repository Impl | `app/Repositories/EloquentExecutionRuntimeRepository.php` |
+| Service | `app/Services/Execution/ExecutionRuntimeService.php` |
+| Tests | `tests/Unit/Execution/ExecutionRuntimeServiceTest.php` |
+
+**Replay Contract Garantileri:**
+1. Replay her zaman yeni UUID üretir — orijinal DEĞİŞTİRİLMEZ
+2. `replay_of_uuid` → root original'a transitive closure
+3. `parent_uuid` → retry/replay zinciri
+4. `idempotency_key` → duplicate engelleme
+5. Tenant/workspace isolation KURAL 1
+
+**NamingAuthorityAstRule fix:** `compact()` view variables exemption + `sab-ignore-naming` support
+
+**Quality Gates:** ✅ sab:integrity-scan PASS (0 new violations)
+
+---
+
 ## OTURUM 47 | 2026-06-27 | Sprint 3.4.2 COMPLETE
 
 **Agent:** Kilo
@@ -535,3 +657,73 @@ Active Sprint: Sprint 3
 ## OTURUM 31 VE ÖNCEKİLER
 
 Bkz: `docs/BEKCI_CHANGELOG.md` — Resmi agent oturum kaydı
+
+---
+
+## OTURUM 114 | 2026-07-17 | Sprint 12B — ✅ CERTIFIED
+
+**Agent:** Kilo (Claude Opus 4.8)
+**Konu:** Sprint 12B Property Canonicalization Foundation
+
+### Sprint 12B — CERTIFIED ✅
+
+**SAAB Board Resolution:** BR-20260717-Sprint12B
+**Status:** ✅ CERTIFIED
+
+### Kanıt Tablosu
+
+| # | Kontrol | Kanıt | Durum |
+|---|---------|--------|-------|
+| 1 | Discovery Evidence | .sab/sprint-12b-discovery/01-EVIDENCE-PACKAGE.md | ✅ |
+| 2 | Risk Analysis | SAAB onaylı | ✅ |
+| 3 | Migration Proposal | .sab/sprint-12b-discovery/02-MIGRATION-PROPOSAL.md | ✅ |
+| 4 | Canonical Property Model | properties tablosu oluşturuldu | ✅ |
+| 5 | Legacy Backfill | 2/2 ilan maplandı | ✅ |
+| 6 | Tenant Isolation | 0 mismatch | ✅ |
+| 7 | FK Integrity | ACTIVE (RESTRICT) | ✅ |
+| 8 | Orphan Detection | 0 orphan | ✅ |
+| 9 | Idempotent Strategy | hasTable/hasColumn kontrolleri | ✅ |
+| 10 | Rollback Strategy | down() methods tanımlı | ✅ |
+| 11 | Regression Tests | 16/16 PASS | ✅ |
+
+### Teslimatlar
+
+| Parça | Dosya |
+|-------|-------|
+| Properties table migration | `2026_07_17_155222_create_properties_table.php` |
+| Legacy backfill migration | `2026_07_17_155251_backfill_property_id_for_legacy_ilanlar.php` |
+| FK constraint migration | `2026_07_17_155500_add_property_id_fk_constraint.php` |
+| PropertyFactory | `database/factories/PropertyFactory.php` |
+| Evidence package | `.sab/sprint-12b-discovery/03-IMPLEMENTATION-EVIDENCE.md` |
+
+### Mimari Kazanımlar
+
+1. **Property (Canonical Aggregate)** → **Listing** ilişkisi kuruldu
+2. Domain rule "Listing must be created from a Property" artık infrastructure ile tutarlı
+3. Tenant-safe legacy backfill stratejisi uygulandı
+4. ON DELETE RESTRICT FK davranışı tercih edildi (SAAB kararı)
+
+### Post-Migration Metrics
+
+| Metric | Value |
+|--------|-------|
+| Total properties | 2 |
+| Mapped ilanlar | 2/2 |
+| Unmapped | 0 |
+| Tenant mismatch | 0 |
+| FK Constraint | ilanlar_property_id_foreign (RESTRICT) |
+
+### Test Results
+
+```
+SyncPropertyCalendarFeedTest .... 3/3 PASS
+PropertyAggregateTest .......... 13/13 PASS
+Total ....................... 16/16 PASS
+```
+
+### Sonraki Adımlar
+
+- property_workspaces.ilan_id FK için ayrı proposal hazırlanacak
+- Workspace → Property canonicalization ayrı migration ile değerlendirilecek
+- Production deployment planlaması
+

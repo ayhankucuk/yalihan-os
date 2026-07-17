@@ -6,6 +6,92 @@
 
 ---
 
+## 2026-07-16 | Oturum Sprint 15 | M2 Property Runtime — 🟢 CERTIFIED ✅
+
+### Sprint 15 Program B: Operations Console Product Validation
+
+**Milestone:** M2 – Property Runtime
+**Status:** 🟢 CERTIFIED
+**Commit:** `2b653d5c`
+**Tag:** `vM2-certified`
+**Board Resolution:** BR-20260715-SAABv11
+
+---
+
+### Certification Gate — Tüm Kontroller Geçti
+
+| # | Control | Evidence | Status |
+|---|---------|----------|--------|
+| 1 | Property → Listing lifecycle uçtan uca çalışıyor mu? | `successful_execution_lifecycle` test ✅ | ✅ |
+| 2 | Hatalı işlem otomatik kurtarılıyor mu? | `failed_execution_and_recovery` + live UUID proof ✅ | ✅ |
+| 3 | Replay geçmişi değiştirmiyor mu? | `replay_chain_does_not_mutate_history` + live immutability ✅ | ✅ |
+| 4 | Operatör sorunları konsoldan görebiliyor mu? | `console_shows_active_and_failed_executions` + API 200 OK ✅ | ✅ |
+| 5 | BAI ve metrikler gerçek veriden hesaplanıyor mu? | `bai_metrics_calculated_from_real_execution_data` + live rates (60%/20%/40%) ✅ | ✅ |
+| 6 | Tenant isolation UI ve API katmanında korunuyor mu? | `tenant_isolation_blocks_cross_tenant_access` + live DomainException ✅ | ✅ |
+
+### Live Execution Evidence (Test Environment)
+
+```
+SCENARIO 1: Successful Execution
+  UUID: bd3fe30c | Status: COMPLETED | Duration: 706ms
+
+SCENARIO 2: Failed + Recovery
+  Failed UUID: 617d7117 | Error: TIMEOUT | Classification: TRANSIENT | Can Retry: YES
+  Recovery UUID: a54cca7e | Replay of original: YES (new UUID) ✅
+  Original unchanged: YES ✅
+
+SCENARIO 3: Replay Chain Immutability
+  Original archive UUID: ccf43a85 | After replay: Still exists ✅
+  Original status unchanged: YES ✅ | Original trigger unchanged: YES ✅
+
+SCENARIO 4: Tenant Isolation
+  Tenant 1 total: 5 | Tenant 2 total: 1
+  Cross-tenant replay blocked: "Cross-tenant replay forbidden" ✅
+
+API OVERVIEW (tenant_id=1):
+  Total: 5 | Success Rate: 60% | Failure Rate: 20% | Replay Rate: 40%
+```
+
+### Automated Test Results
+
+```
+File: tests/Feature/Execution/M2ProductValidationTest.php
+Tests: 9 passed (137 assertions) | Duration: ~7s
+```
+
+### Architecture Artifacts Delivered
+
+| Artifact | Status |
+|----------|--------|
+| `WorkforceExecution` model | ✅ |
+| `ExecutionRuntimeService` (replay-safe) | ✅ |
+| `RecoveryEngineService` (TRANSIENT/PERMANENT/CONFIG/UNKNOWN) | ✅ |
+| `ExecutionMetricsService` (BAI engine input) | ✅ |
+| `OperationsConsoleController` (API endpoints) | ✅ |
+| `ExecutionRuntimeRepositoryInterface` + `EloquentExecutionRuntimeRepository` | ✅ |
+| `ExecutionMetricsRepositoryInterface` + `EloquentExecutionMetricsRepository` | ✅ |
+
+### Key Bug Fixes
+
+- `OperationsConsoleController::getReplayChain()` — correct transitive closure algorithm
+- `OperationsConsoleController::show()` — `formatMany()` Collection type fix
+- `ExecutionRuntimeRepositoryInterface` — added `getChildExecutions()`
+- `EloquentExecutionRuntimeRepository` — implemented `getChildExecutions()`
+
+### Sprint 15 Sprint Result
+
+| Alan | Durum |
+|------|-------|
+| Runtime Engine | ✅ Certified |
+| Execution Tracking | ✅ Certified |
+| Replay Engine | ✅ Certified |
+| Recovery Policy | ✅ Certified |
+| Tenant Safety | ✅ Certified |
+| Operations Console | ✅ Certified |
+| BAI Metrics | ✅ Certified |
+
+---
+
 ## 2026-07-07 | Phase 2 Derin Araştırma | 5 Kritik Mimari Güvenlik Açığı Tespit Edildi
 
 ### Mimari Güvenlik Bulguları — Chief Engineer Raporu
@@ -925,3 +1011,34 @@ Tam repository analizi raporu:
 ## 2026-06-XX | Oturum XX
 
 [Sonraki oturumlar buraya eklenir...]
+
+## OTURUM 114 | 2026-07-17 | Sprint 12B — CERTIFIED
+
+### Değişiklikler
+
+| Tür | Dosya | Değişiklik |
+|-----|-------|------------|
+| CREATE | `database/migrations/2026_07_17_155222_create_properties_table.php` | Sprint 12B properties tablosu |
+| CREATE | `database/migrations/2026_07_17_155251_backfill_property_id_for_legacy_ilanlar.php` | Legacy backfill |
+| CREATE | `database/migrations/2026_07_17_155500_add_property_id_fk_constraint.php` | FK constraint |
+| CREATE | `database/factories/PropertyFactory.php` | Property factory |
+| MODIFY | `database/migrations/2026_07_16_000001_add_property_foreign_key_cascade.php` | Idempotent guard |
+| MODIFY | `database/factories/IlanFactory.php` | Auto Property creation |
+| MODIFY | `app/Models/Property.php` | skipWorkspaceIdGuard flag |
+| MODIFY | `tests/Feature/Property/PropertyAggregateTest.php` | Schema setup fix |
+| CREATE | `.sab/sprint-12b-discovery/01-EVIDENCE-PACKAGE.md` | Discovery evidence |
+| CREATE | `.sab/sprint-12b-discovery/02-MIGRATION-PROPOSAL.md` | Migration proposal |
+| CREATE | `.sab/sprint-12b-discovery/03-IMPLEMENTATION-EVIDENCE.md` | Implementation evidence |
+
+### Öğrenilenler
+
+1. **Factory event ordering:** `afterMaking` vs `afterCreating` — Model events (`creating`) `afterMaking`'dan önce çalışır
+2. **Test database isolation:** CI schema ile migration'lar çakışabilir — idempotent kontrol şart
+3. **Model guard bypass:** Factory'lerde static flag kullanarak model event guard'ını atlatmak mümkün
+4. **FK constraint ordering:** Migration timestamp'leri önemli — 2026_07_16 < 2026_07_17 olmalı
+
+### Test Durumu
+
+- SyncPropertyCalendarFeedTest: 3/3 PASS ✅
+- PropertyAggregateTest: 13/13 PASS ✅
+
