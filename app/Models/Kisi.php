@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\KisiDurumu;
 use App\Enums\KisiTipi;
 use App\Enums\YatirimciProfili;
+use App\Scopes\TenantScope;
+use App\Traits\BelongsToTenant;
 use App\Traits\HasActiveScope;
 use App\Traits\HasCountryScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -41,6 +43,16 @@ use Spatie\Activitylog\LogOptions;
  * @property int|null $il_id
  * @property int|null $ilce_id
  * @property int|null $mahalle_id
+ *
+ * // Tenant Isolation (Sprint 12D — TenantScope)
+ * @property int $tenant_id
+ *
+ * // Legal Entity Fields (Sprint 12D — Company/Organization support)
+ * @property string|null $vergi_kimlik_no
+ * @property string|null $kurum_unvani
+ * @property string|null $mersis_no
+ * @property string|null $sicil_no
+ *
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -69,10 +81,14 @@ class Kisi extends BaseModel
     use HasActiveScope;
     use LogsActivity;
     use HasCountryScope;
+    use BelongsToTenant;
 
     protected $table = 'kisiler';
 
     protected $fillable = [
+        // Tenant (Sprint 12D — mandatory)
+        'tenant_id',
+
         // Temel Kişi Bilgileri
         'ad',
         'soyad',
@@ -105,6 +121,12 @@ class Kisi extends BaseModel
         'kaynak', // Context7: website, telefon, referans, etc.
         'ulke_id',
         'sesli_onay_verildi',
+
+        // Legal Entity Fields (Sprint 12D — Company/Organization support)
+        'vergi_kimlik_no',
+        'kurum_unvani',
+        'mersis_no',
+        'sicil_no',
     ];
 
     protected $appends = ['tam_ad', 'danisman_verisi'];
@@ -119,6 +141,7 @@ class Kisi extends BaseModel
         'yatirimci_profili' => \App\Casts\NullableYatirimciProfiliCast::class, // PHP 8.4 safe cast
         'ulke_id' => 'integer',
         'sesli_onay_verildi' => 'boolean',
+        'tenant_id' => 'integer', // Sprint 12D: TenantScope enforcement
     ];
 
     // ======================================================================
@@ -458,6 +481,14 @@ class Kisi extends BaseModel
         return $query->where('kisi_tipi', $kisiTipi);
     }
 
+    /**
+     * Tenant bazlı filtrele (Sprint 12D — explicit tenant query).
+     */
+    public function scopeByTenant($query, int $tenantId)
+    {
+        return $query->where('tenant_id', $tenantId);
+    }
+
     // ======================================================================
     // HELPER METHODS (Context7 Uyumlu)
     // ======================================================================
@@ -552,7 +583,7 @@ class Kisi extends BaseModel
     }
 
     /**
-     * Kişinin satıcı olma durumunu kontrol eder (Context7 uyumlu).
+     * Kişinin satıcı olma durumunu kontrol et
      */
     public function isSeller(): bool
     {
@@ -560,6 +591,27 @@ class Kisi extends BaseModel
         $tip = $this->kisi_tipi ?? $this->musteri_tipi;
         return in_array($tip, ['satici', 'ev_sahibi']) &&
             $this->aktiflik_durumu === true;
+    }
+
+    /**
+     * Sprint 12D: Bu kişi bir tüzel kişilik (şirket/organizasyon) mi?
+     */
+    public function isLegalEntity(): bool
+    {
+        return !empty($this->vergi_kimlik_no) || !empty($this->kurum_unvani);
+    }
+
+    /**
+     * Sprint 12D: Tüzel kişilik bilgilerini döndürür.
+     */
+    public function getLegalEntityInfo(): array
+    {
+        return [
+            'vergi_kimlik_no' => $this->vergi_kimlik_no,
+            'kurum_unvani' => $this->kurum_unvani,
+            'mersis_no' => $this->mersis_no,
+            'sicil_no' => $this->sicil_no,
+        ];
     }
 
     /**

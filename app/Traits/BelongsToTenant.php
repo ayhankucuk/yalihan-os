@@ -22,12 +22,15 @@ trait BelongsToTenant
         });
 
         // Re-assign tenant_id on restore so scope can find the record
-        static::restoring(function ($model) {
-            $tenantService = app(TenantContextService::class);
-            if ($tenantService->hasTenant() && empty($model->tenant_id)) {
-                $model->tenant_id = $tenantService->getTenant()->id;
-            }
-        });
+        // Only register if the model uses SoftDeletes (has restoring() method)
+        if (method_exists(static::class, 'restoring')) {
+            static::restoring(function ($model) {
+                $tenantService = app(TenantContextService::class);
+                if ($tenantService->hasTenant()) {
+                    $model->tenant_id = $tenantService->getTenant()->id;
+                }
+            });
+        }
     }
 
     /**
