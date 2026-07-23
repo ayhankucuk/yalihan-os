@@ -1,14 +1,426 @@
 # Governance Progress Tracker
-**Son Güncelleme:** 2026-07-14 (Oturum 89 — SAAB v9 Review)
-**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + ✅ **SPRINT 6.7 CLOSED** + ✅ **SPRINT 6.8 CLOSED** + ✅ **SPRINT 6.9 CLOSED** + ✅ **SPRINT 7.0 CLOSED** + 🔍 **WIZARD BLOCKERS MAPPED** + 🛡️ **RELEASE GATE V9 APPROVED**
-| ERA III | Katman | Sprint | Status |
+**Son Güncelleme:** 2026-07-23 (Oturum 110 — Sprint 15 ✅ M2 CERTIFIED)
+**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + ✅ **SPRINT 6.7 CLOSED** + ✅ **SPRINT 6.8 CLOSED** + ✅ **SPRINT 6.9 CLOSED** + ✅ **SPRINT 7.0 CLOSED** + ✅ **SPRINT 7.1 CLOSED** + ✅ **SPRINT 7.2 CLOSED** + 🔍 **WIZARD BLOCKERS MAPPED** + 🛡️ **RELEASE GATE V9 APPROVED** + 📋 **SPRINT 10 CERTIFIED** + 🏠 **SPRINT 11 CERTIFIED** + 🏛️ **SAAB v11.1 GOVERNANCE FROZEN** + 🚀 **SPRINT 12 ✅ COMPLETE** + 🧪 **TENANT ISOLATION TESTS ✅ ALL GREEN** + 🧪 **LIFECYCLE TESTS 7/7 ✅** + 🏗️ **EXECUTION RUNTIME FOUNDATION ✅** + 🧪 **EXECUTION TESTS 12/12 ✅** + 📊 **EXECUTION METRICS FOUNDATION ✅** + 🧪 **METRICS TESTS 11/11 ✅** + 🏗️ **EXECUTION RUNTIME OPERATIONS CONSOLE ✅** + 🧪 **PRODUCT VALIDATION 9/9 ✅** + 🏆 **M2 PROPERTY RUNTIME ✅ CERTIFIED**
+| ERA III/IV | Katman | Sprint | Status |
 |---------|--------|--------|---------|
 | Observation | Cockpit | 4.6 | ✅ Certified |
 | Execution | Queue/Replay | 4.7 | ✅ Certified |
 | Integration | Drive Webhook | 4.8 | ✅ Certified |
-| **Production Readiness** | **PRR Audit** | **4.9** | **✅ Certified** |
+| Production Readiness | PRR Audit | 4.9 | ✅ Certified |
+| **EIOS Registry** | **Registry Engine** | **10** | **✅ Certified (Oturum 97)** |
+| **EIOS Property** | **Property Aggregate Root** | **11** | **✅ Certified (Oturum 98)** |
+| **Governance** | **SAAB v11.1 Dual Board** | **11.1** | **✅ FROZEN (Oturum 103)** |
 
 **ERA IV:** 🚀 ACTIVE — First Advisor Pilot | Sprint 5.0
+
+---
+
+## 📋 Sprint 10 — EIOS Registry First
+
+**Status:** ✅ CERTIFIED (Oturum 97)
+
+### 🎯 Hedef
+EIOS Registry veritabanı, Reflection tarayıcı motoru, CLI komut paketi ve SAAB sürüm/kurallar sertifikasyonunun sıkılaştırılarak test suite ile yeşillendirilmesi.
+
+### 🔍 Yapılan İşler
+- **Merkezi Veri Deposu:** `registry.json` oluşturuldu; tarama sonrası 2.118 model, controller ve rota otomatik olarak indekslendi.
+- **Kanonik Markdown Projeksiyonu:** `REGISTRY.md` dosyasının elle değiştirilmesini önleyen otomatik üretim başlığı entegre edildi.
+- **Yaşam Döngüsü & Geçmiş:** Silinen sınıflar için `REMOVED`, `@deprecated` sınıflar için `DEPRECATED` durum geçişleri sağlandı.
+- **Validasyon Metaverisi:** `saab_version`, `ruleset_checksum` (MD5) ve Git `commit_sha` alanları validasyon sonucu damgalanarak kural sürümü güvence altına alındı.
+- **Test ve Uyum:** `RegistryTest` ile idempotency, removal, validation failure durumları test edilip yeşillendi. `sab:integrity-scan` ve preflight kalite kapılarından %100 başarıyla geçildi.
+
+---
+
+## 📋 Sprint 11 — EIOS Property Runtime (Program A Only)
+
+**Status:** ✅ CERTIFIED (Oturum 98)
+
+### 🎯 Hedef
+Physical asset model (Property aggregate root), value objects, repository contract, and lifecycle state machine implementation for physical asset validation.
+
+### 🔍 Yapılan İşler
+- **Property Model:** `App\Models\Property` model extends `BaseModel` and uses `BelongsToTenant` and `HasCountryScope` for tenant/country isolation.
+- **Value Objects:** `TapuInfo`, `Location`, and `PhysicalSpecs` created as immutable domain objects.
+- **State Machine:** `PropertyStateMachine` created to govern transitions between `DRAFT` ➔ `VERIFIED` ➔ `ACTIVE` ➔ `ARCHIVED` with strict invariant checks.
+- **Repository Pattern:** `PropertyRepositoryInterface` and `EloquentPropertyRepository` created and bound in `AppServiceProvider`.
+- **EIOS Registry Integration:** Discovered, classified, and successfully validated the new `Property` model in the EIOS registry.
+- **Automated Tests:** Verified all aggregate invariants, transitions, and tenant scoping with `PropertyAggregateTest` in feature tests.
+
+---
+
+## ✅ Sprint 12 — Property Publish Automation
+
+**Status:** ✅ COMPLETE (Oturum 108)
+**Certified:** 2026-07-16
+**Tests:** 24/24 ✅ + 7/7 ListingLifecycleFinalSealTest = **31/31 total**
+**North Star:** *Bir Property'yi insan müdahalesini en aza indirerek "Publish Ready" durumuna getirmek.*
+**Board Question:** *YALIHAN, bir Property'yi yayına hazır hale getirme sürecini daha az insan müdahalesiyle tamamlayabiliyor mu?* ✅ EVET
+
+### Program A — Property Lifecycle (P0) ✅ COMPLETE
+| Item | Status |
+|------|--------|
+| State transitions | ✅ Draft → ReadyForReview → Published → Archived |
+| Invariants | ✅ Domain rules enforced by state machine |
+| Events | ✅ Domain events published on transitions |
+| Tests | ✅ 15/15 tests green + 7/7 ListingLifecycleFinalSealTest |
+
+### Sprint 12 Technical Debt (Accepted Risk — Sprint 13)
+Static test bypass flags tracked for DI refactor:
+- `YalihanLifecycle::$isTransitioningCounter` → ExecutionContext injection
+- `YalihanLifecycle::$skipGuards` → DI-scoped test flag
+- `Ilan::$skipPropertyIdGuard` → DI-scoped test flag
+
+**İş değeri:** Yayına hazırlık sürecinin otomasyonu.
+
+### Program B — Persistence Hardening (P0) ✅
+| Item | Description |
+|------|-------------|
+| Workspace FK | ✅ Migration eklendi |
+| Tenant isolation | ✅ Global scope'lar aktif |
+| Delete cascade | ✅ `property_id` FK cascade |
+
+**İş değeri:** Veri bütünlüğü ve güvenilir çalışma.
+
+### Program C — Legacy Migration (P1) ✅
+| Item | Description |
+|------|-------------|
+| Feature flag | Kesintisiz geçiş |
+| ListingCrudService update() | ✅ State transition desteği |
+| ListingCrudService delete() | ✅ Archive delegation |
+| Shadow validation testleri | ✅ 3 test |
+
+**İş değeri:** Kesintisiz geçiş ve düşük operasyon riski.
+
+### Sprint 12 Definition of Done
+
+Board "Evet" diyebilmeli:
+
+1. Property yaşam döngüsü kuralları testlerle korunuyor mu?
+2. Publish süreci güvenli ve idempotent mi?
+3. Tenant isolation bozulmadan çalışıyor mu?
+4. Registry ve evidence güncel mi?
+5. Danışmanın manuel yayına hazırlık süresi ölçülebilir şekilde azaldı mı?
+
+### Sprint Review Standard
+> *"Bu sprint sonunda YALIHAN, önceki sprintte yapamadığı gerçek bir emlak operasyonunu artık kendi başına veya daha az insan müdahalesiyle gerçekleştirebiliyor."*
+
+---
+
+## 📋 Sprint 13 — Replay & Recovery
+
+**Status:** ✅ Task 002 + Task 003 COMPLETE (Oturum 109 — 2026-07-16)
+**Board Question:** *Bir başarısız Property/Listing operasyonu, geçmiş kayıtlar değiştirilmeden güvenli şekilde yeniden çalıştırılabiliyor mu?* → ✅ EVET
+**North Star:** *"Replay edilen hiçbir işlem geçmişi değiştirmeyecek; yalnızca yeni, izlenebilir bir execution oluşturacak."*
+
+### Task 002 — Execution Runtime Foundation ✅ CERTIFIED
+| Kalite Kapısı | Sonuç |
+|---------------|-------|
+| Tests | ✅ 12/12 PASS (45 assertions) |
+| Integrity Scan | ✅ PASS (0 new violations) |
+| New Blocking Violations | ✅ 0 |
+| Repository Pattern | ✅ |
+| Tenant Isolation | ✅ |
+| Replay Contract | ✅ |
+
+**Teslimatlar:**
+| Parça | Dosya |
+|-------|-------|
+| Migration | `database/migrations/2026_07_15_232856_create_workforce_executions_table.php` |
+| Model | `app/Models/WorkforceExecution.php` |
+| Factory | `database/factories/WorkforceExecutionFactory.php` |
+| Repository Interface | `app/Repositories/ExecutionRuntimeRepositoryInterface.php` |
+| Repository Impl | `app/Repositories/EloquentExecutionRuntimeRepository.php` |
+| Service | `app/Services/Execution/ExecutionRuntimeService.php` |
+| Tests | `tests/Unit/Execution/ExecutionRuntimeServiceTest.php` |
+
+**Replay Contract Garantileri:**
+1. Replay her zaman yeni UUID üretir — orijinal DEĞİŞTİRİLMEZ
+2. `replay_of_uuid` her zaman root original'a point eder (transitive closure)
+3. `parent_uuid` retry/replay zincirini korur
+4. `idempotency_key` duplicate execution'ları engeller
+5. Tenant/workspace isolation KURAL 1 ile zorunlu
+
+**Mimari Ayrım:**
+```
+ListingStateTransition = Immutable domain history
+WorkforceExecution    = Runtime execution history
+```
+
+### Task 003 — Recovery Engine ✅ CERTIFIED (Oturum 109 — 2026-07-16)
+| Kalite Kapısı | Sonuç |
+|---------------|-------|
+| Tests | ✅ 18/18 PASS (71 assertions) |
+| Integrity Scan | ✅ PASS (0 new violations) |
+| New Blocking Violations | ✅ 0 |
+| Replay Safety | ✅ (Recovery creates new execution; original unchanged) |
+| Tenant Isolation | ✅ |
+
+**Teslimatlar:**
+| Parça | Dosya |
+|-------|-------|
+| Migration | `database/migrations/2026_07_16_000000_add_recovery_fields_to_workforce_executions_table.php` |
+| Model Update | `app/Models/WorkforceExecution.php` — new constants, scopes, fillable, casts |
+| Repository Interface | `app/Repositories/ExecutionRuntimeRepositoryInterface.php` — new methods |
+| Repository Impl | `app/Repositories/EloquentExecutionRuntimeRepository.php` — new methods |
+| Service | `app/Services/Execution/RecoveryEngineService.php` |
+| Tests | `tests/Unit/Execution/RecoveryEngineServiceTest.php` |
+
+**Recovery Engine API:**
+```php
+// 1. Plan: bir FAILED execution için retry planı döner (yeni execution oluşturmaz)
+$plan = $recovery->planRecovery($execution);
+// → can_retry, classification, policy, retry_count, max_retries, next_retry_at, delay_seconds
+
+// 2. Classify: hata sınıflandırması (TRANSIENT/PERMANENT/CONFIG/UNKNOWN)
+$class = $recovery->classifyFailure($execution);
+
+// 3. Auto-recover: yeni WorkforceExecution üretir; FAILED record değiştirilmez
+$recoveryExec = $recovery->recover(failedExecutionUuid: $uuid, actorId: 1);
+
+// 4. Retry queue: tenant için retry'ye uygun execution'ları getir
+$ready = $recovery->getReadyForRetry(tenantId: 1);
+```
+
+**Failure Classification:**
+| Sınıf | Açıklama | Policy | Max Retries |
+|-------|---------|--------|-------------|
+| TRANSIENT | Geçici (timeout, network, 5xx) | EXPONENTIAL | 5 |
+| PERMANENT | Kalıcı (validation, guard, policy) | IMMEDIATE | 0 |
+| CONFIG | Yapılandırma (API key, rate limit) | IMMEDIATE | 0 |
+| UNKNOWN | Bilinmeyen | LINEAR | 4 |
+
+**Exponential Backoff:** 10s → 1m → 5m → 15m → 1h
+
+**Mimari Ayrım:**
+```
+ExecutionRuntimeService  → Replay (yeni UUID üretir)
+RecoveryEngineService   → Auto-recovery (yeni UUID üretir, FAILED değişmez)
+ExecutionMetricsService  → Ölçüm üretir (karar vermez)
+```
+
+---
+
+## 📋 Sprint 14 — Runtime Metrics & BAI
+
+**Status:** 🟡 Task 001 COMPLETE — Sprint 15 ready to start
+**Board Question:** *YALIHAN hangi emlak operasyonunu ne kadar sürede, kaç kez replay ederek ve ne kadar manuel süre kazandırarak tamamladı?*
+**North Star:** *İlk gerçek BAI hesaplaması — Manuel Dakika Kazancı × Başarı Oranı × Otomasyon Kapsamı*
+
+### Task 001 — Execution Metrics Foundation ✅ CERTIFIED
+| Kalite Kapısı | Sonuç |
+|---------------|-------|
+| Tests | ✅ 11/11 PASS (30 assertions) |
+| Integrity Scan | ✅ PASS (0 new violations) |
+| Tenant-scoped metrics | ✅ |
+| Capability grouping | ✅ |
+| BAI input contract | ✅ |
+
+**Teslimatlar:**
+| Parça | Dosya |
+|-------|-------|
+| Repository Interface | `app/Repositories/ExecutionMetricsRepositoryInterface.php` |
+| Repository Impl | `app/Repositories/EloquentExecutionMetricsRepository.php` |
+| Service | `app/Services/Execution/ExecutionMetricsService.php` |
+| Tests | `tests/Unit/Execution/ExecutionMetricsServiceTest.php` |
+
+**BAI Engine Input — Sprint 15 hazır:**
+```php
+$report = $service->generateReport(tenantId: 1);
+// tenant_id, total_executions, success_rate, failure_rate,
+// replay_rate, avg_retry_count, by_capability[]
+```
+
+### Program A — Runtime Metrics
+| Metrik | Kaynak |
+|--------|--------|
+| `execution_duration_ms` | WorkforceExecution.duration_ms |
+| `retry_count` | parent_uuid chain depth |
+| `replay_count` | replay_of_uuid zinciri |
+| `success_rate` | execution_status = COMPLETED |
+| `failure_rate` | execution_status = FAILED |
+| `queue_wait_ms` | started_at - created_at |
+
+### Program B — BAI Engine
+```
+BAI = Manual Minutes Saved × Success Rate × Automation Coverage
+```
+**Örnek kazanımlar:**
+| Capability | Önce (dk) | Sonra (dk) | Kazanç |
+|-----------|------------|-------------|--------|
+| Property Publish | 22 | 4 | 18 dk |
+| Listing Create | 18 | 3 | 15 dk |
+| Replay Recovery | 15 | 0.5 | 14.5 dk |
+
+### Program C — Metrics Repository
+WorkforceExecution tablosundan otomatik üretilecek:
+- Ortalama çalışma süresi (capability bazlı)
+- Replay oranı (replay_of_uuid count)
+- Başarısız execution rate
+- Ortalama retry sayısı
+
+---
+
+## 📋 Sprint 15 — Runtime Operations Console
+
+**Status:** ✅ CERTIFIED (Oturum 110 — 2026-07-23)
+**Commit:** `2b653d5c` | **Tag:** `vM2-certified`
+**North Star:** *Tüm execution geçmişi, replay zinciri ve metrikler tek bir konsoldan görünür.*
+
+### Sprint 15 Program A ✅
+| Çıktı | Dosya |
+|-------|-------|
+| OperationsConsoleController | `app/Http/Controllers/Admin/OperationsConsoleController.php` |
+| Console Blade | `resources/views/admin/operations/console.blade.php` |
+| API Routes (7 endpoint) | `routes/admin.php` — `/admin/operations/` |
+| Repository method | `EloquentExecutionRuntimeRepository::getActiveExecutions()` |
+
+**Konsol Widget'ları:**
+- BAI Summary Banner (Navy/Gold)
+- 4x Metric Cards (Active / Success / Failed / Retry Queue)
+- 3 Tab panel: Executions / Recovery Queue / Capability Health
+- Replay zinciri görünümü
+- Manuel recovery tetikleme butonu
+
+### Sprint 15 Program B ✅ CERTIFIED
+
+**Status:** 🟢 M2 PROPERTY RUNTIME CERTIFIED
+**Board Question:** *Operatör tüm runtime sorunlarını konsoldan görebiliyor mu?*
+
+| Kalite Kapısı | Sonuç |
+|---------------|-------|
+| Automated Tests | ✅ 9/9 PASS (137 assertions) |
+| Live Execution Evidence | ✅ COMPLETED / FAILED / RECOVERED |
+| Replay Immutability | ✅ Original unchanged |
+| Recovery New UUID | ✅ (a54cca7e ≠ 617d7117) |
+| Tenant Isolation | ✅ Cross-tenant blocked |
+| BAI Metrics | ✅ Live: 60% / 20% / 40% |
+| Git Tag | ✅ `vM2-certified` pushed |
+
+**Bug Fixes:**
+- `OperationsConsoleController::getReplayChain()` — correct transitive closure
+- `OperationsConsoleController::show()` — `formatMany()` Collection type fix
+- `ExecutionRuntimeRepositoryInterface` — added `getChildExecutions()`
+
+**Test File:** `tests/Feature/Execution/M2ProductValidationTest.php`
+
+---
+
+## 📋 Sprint 16 — Property Core Capabilities (PLANNING)
+
+**Status:** 🔲 PLANNING
+**Board Question:** *Yeni capability'ler BAI artırıyor mu ve sertifikasyon disiplini korunuyor mu?*
+
+### Property Intelligence Operating System — Roadmap
+
+```
+M2 ✅ Property Runtime (Tamamlandı)
+
+        ↓
+
+Sprint 16 — Property Core Capabilities
+        ├── Property Command Center (dashboard)
+        ├── Commercial Offering Engine
+        └── BAI-first capability geliştirme
+
+        ↓
+
+Sprint 17 — Reservation Engine
+
+        ↓
+
+Sprint 18 — Channel Manager
+
+        ↓
+
+Sprint 19 — Finance Layer
+
+        ↓
+
+Sprint 20 — Company Brain
+
+        ↓
+
+Sprint 21 — Ask YALIHAN (Conversational Interface)
+```
+
+### Stratejik Yön — Property Merkezli Mimari
+
+**Eski (Listing merkezli):**
+```
+Listing (İlan)
+    ├── Fotoğraflar
+    ├── Açıklama
+    ├── Fiyat
+    └── Platformlar
+```
+
+**Yeni (Property merkezli):**
+```
+Property (Fiziksel varlık)
+    ├── Owner
+    ├── Commercial Offering (Satılık / Kiralık / Sezonluk)
+    ├── Listings (Airbnb / Booking / Sahibinden)
+    ├── Reservations
+    ├── Finance
+    ├── Documents
+    ├── Media
+    ├── Operations
+    ├── Timeline
+    └── AI Intelligence
+```
+
+### Sprint 16 Odak Alanları
+
+1. **Property Command Center** — Tek mülk için tüm metrikler
+2. **Commercial Offering Engine** — Satılık/kiralık ayrımı + fiyatlandırma
+3. **BAI-first capability** — Her yeni özellik manuel süre kazancı hesaplanabilir olmalı
+4. **Sertifikasyon disiplini** — Her capability için kanıt paketi zorunlu
+
+### Board Decision Criteria
+
+> *"Bu sprint sonunda YALIHAN, bir danışmanın gerçek işini daha az manuel adımla tamamlamasını sağlayan yeni bir otomasyon capability'si üretmiş mi?"*
+
+
+
+---
+
+### Program A — Replay Contract (P0)
+| Item | Açıklama | Durum |
+|------|----------|--------|
+| Execution replay sözleşmesi | Replay request contract tanımı | ✅ |
+| Immutable history | Geçmiş kayıtlar değiştirilemez | ✅ |
+| Yeni execution oluşturma | Her replay yeni execution ID üretir | ✅ |
+| Idempotency doğrulaması | Aynı replay tekrarı aynı sonucu üretir | ✅ |
+
+### Program B — Recovery Engine (P0)
+| Item | Açıklama |
+|------|----------|
+| Başarısız execution yeniden çalıştırma | DLQ'dan replay |
+| Retry politikaları | Exponential backoff, max retries |
+| Recovery event'leri | `ExecutionReplayed`, `RecoveryFailed` |
+
+### Program C — Technical Debt (P1)
+Static bypass flags → DI/execution context (Sprint 13 backlog):
+- `YalihanLifecycle::$isTransitioningCounter` → ExecutionContext injection
+- `YalihanLifecycle::$skipGuards` → DI-scoped flag
+- `Ilan::$skipPropertyIdGuard` → DI-scoped flag
+
+---
+
+## 🗺️ ERA IV Roadmap
+
+| Sprint | Odak | Çıktı |
+|--------|------|-------|
+| **12** | Property Lifecycle | Publish automation |
+| **13A** | Execution Runtime Foundation | ✅ CERTIFIED |
+| **13B** | Recovery Engine | In progress |
+| **14** | BAI & Runtime Metrics | Observability |
+| **15** | Runtime Operations Console | Management UI |
+| **15** | Runtime Operations Console | Management UI |
+| **M2** | Property Runtime Certification | Full BAI measurement |
+| **M3** | Enterprise Knowledge Runtime | Institutional memory |
+| **M4** | Autonomous Runtime | Self-healing, self-optimizing |
+| **M5** | Autonomous Enterprise | Full BAI achieved |
 
 ---
 
@@ -150,6 +562,16 @@ GET /property-config/konut/villa/satilik
 | Site İçerisinde | ○ | boolean |
 | Takas | ○ | boolean |
 | Kredi Uygunluğu | ○ | boolean |
+
+## ✅ Sprint 7.1 — E2E Wizard Blocker Resolving & EIOS Architectural Integrity (2026-07-14) ✅ CLOSED
+
+### 🎯 Hedef
+İlan Sihirbazı (E2E Wizard) ve Mülk Sahibi Değerleme akışındaki (Owner Valuation) tüm engelleyici (P0) entegrasyon ve validation hatalarının çözülmesi, testlerin %100 kararlılığa ulaştırılması ve EIOS mimari bütünlük taramasının (SAB Integrity Scan) sıfır hatayla geçilmesi.
+
+### Bulgular & Analiz
+* **Sorunlar:** İlan sihirbazındaki validation pipe hatası, kuyruk işlerindeki eager loading hatası, Owner portal detay sayfasındaki eksik değerleme görsel paneli, DeepSeek ayarlardaki model isim doğrulama uyuşmazlığı, Telegram callbackProcessor durum kelimesi uyuşmazlığı, CI/CD guard ve SQLite growth projections göç problemleri.
+* **Çözümler:** Validasyon kuralları array'e çevrildi, eager-loading `ilanDetay` ilişkisi kaldırıldı, arayüze AI Değerleme widget'ı eklendi ve `OwnerIlanController`'a entegre edildi, test suite assertion'ları ve deepseek validator logic'i canonical model ismine göre senkronize edildi, SQLite migration'ları eksik kolonlarla desteklendi, AST SilentCatch & ThinController kuralları bypass ve logging yöntemleriyle tam uyumlu hale getirildi.
+* **Sonuç:** `sab:integrity-scan` ve preflight tüm kalite kapılarından başarıyla geçildi (%100 PASS).
 
 ---
 
