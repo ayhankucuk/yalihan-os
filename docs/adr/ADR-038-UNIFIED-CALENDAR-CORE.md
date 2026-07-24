@@ -1,6 +1,6 @@
-# ADR-038: Unified Calendar Core Read Model & Channel Adapter Architecture
+# ADR-038: Unified Calendar Projection & Segregated Channel Adapter Architecture
 
-* **Status:** APPROVED (SAAB v11.1 Ratified)
+* **Status:** RATIFIED (SAAB v11.1 Final Approval)
 * **Date:** 2026-07-24
 * **Author:** SAAB Enterprise Architecture Board
 * **Deciders:** Strategic Architecture & Automation Board (SAAB), Lead Platform Architect
@@ -9,14 +9,15 @@
 
 ## Context and Problem Statement
 
-YALIHAN OS requires multi-channel calendar synchronization across OTA channels (Airbnb, Booking.com, VRBO) and direct bookings.
+YALIHAN OS requires multi-channel calendar synchronization across OTA channels (Airbnb, Booking.com, VRBO, iCal feeds) and direct bookings.
 Without a clear architectural boundary, channel integrations risk mutating availability states directly or creating redundant canonical representations.
 
 We need to establish:
-1. Why Calendar is a **Read Model / Projection** and NOT a canonical aggregate root.
-2. The distinction between **Availability Engine** and **Unified Calendar Core**.
-3. The contract for **Channel Adapters** (Airbnb, Booking.com).
-4. Event flow from external channels into **Timeline / Audit**.
+1. Why Calendar is a **Canonical Calendar Projection (Read Model)** and NOT a canonical aggregate root.
+2. Rebuildability and Replay safety guarantees.
+3. The distinction between **Availability Engine (Write-Side)** and **Unified Calendar Core (Read-Side)**.
+4. Segregated **Channel Adapter Contracts** (`ChannelReservationImporter`, `ChannelAvailabilityPublisher`, `ChannelCalendarReader`).
+5. Normalized inbound webhook processing pipeline into **Timeline / Audit**.
 
 ---
 
@@ -29,31 +30,54 @@ Property (Physical Aggregate Root)
 Commercial Offering (Terms & Price Aggregate)
     │
     ▼
-Reservation Lifecycle (Booking Aggregate Root)
+Reservation Lifecycle (Booking Aggregate Root: PENDING -> CONFIRMED -> CHECKED_IN -> CHECKED_OUT -> CLOSED)
     │
     ▼
-Availability Engine (Write-Side Conflict & Range Locks)
+Availability Engine (Write-Side Conflict & Range Locks: property_availability_blocks)
     │
     ▼
-Unified Calendar Core (Canonical Read Model & Projection)
-    ├─────────────────────────┐
-    ▼                         ▼
-Airbnb Adapter          Booking Adapter
-    │                         │
-    └───────────┬─────────────┘
-                ▼
-      External Channel Events
-                ▼
-          Timeline / Audit
+Unified Calendar Core (Canonical Calendar Projection & Rebuildable Read Model)
+    ├─────────────────────────────────┐
+    ▼                                 ▼
+iCal / Airbnb Adapter           Booking.com Adapter
+    │                                 │
+    └────────────────┬────────────────┘
+                     ▼
+        Raw External Channel Webhook
+                     │
+                     ▼
+          Signature Verification
+                     │
+                     ▼
+           Webhook Inbox Receipt
+                     │
+                     ▼
+             Deduplication
+                     │
+                     ▼
+      Channel Payload Normalization
+                     │
+                     ▼
+             Canonical Command
+                     │
+                     ▼
+     Reservation / Availability Lock
+                     │
+                     ▼
+        Unified Calendar Projection
+                     │
+                     ▼
+             Workspace Timeline
 ```
 
 ---
 
 ## Decision Outcomes
 
-### 1. Calendar is NOT Canonical Aggregate Root
-*   **Decision:** Calendar is a **projection (read model)** compiled from write-side source aggregates (`PropertyReservation`, `PropertyAvailabilityBlock`).
-*   **Rationale:** The canonical source of truth for physical availability is `PropertyAvailabilityBlock`. The canonical source of truth for booking contracts is `PropertyReservation`. Calendar provides a fast, query-optimized read projection for UI cockpits and channel sync endpoints.
+### 1. Unified Calendar is a "Canonical Calendar Projection"
+*   **Decision:** Calendar is a **read-model projection** compiled from write-side source aggregates (`PropertyReservation`, `PropertyAvailabilityBlock`).
+*   **Rebuildability Guarantee:** If the calendar projection store is cleared or dropped, it can be 100% reconstructed by replaying `PropertyReservation`, `PropertyAvailabilityBlock`, and Immutable Domain Events without any data loss.
+*   **Rationale:** `PropertyAvailabilityBlock` is the SSOT for physical availability; `PropertyReservation` is the SSOT for booking contracts. Unified Calendar provides a query-optimized projection for cockpits, iCal feeds, and sync endpoints.
 
 ### 2. Availability Engine vs. Unified Calendar Core
 *   **Availability Engine (Write-Side):**
@@ -61,38 +85,47 @@ Airbnb Adapter          Booking Adapter
     - Validates date range overlaps using half-open intervals `[starts_at, ends_at)`.
     - Manages `property_availability_blocks` records (`RESERVATION`, `OWNER_BLOCK`, `MAINTENANCE`, `CLEANING`, `OPTION_HOLD`, `MANUAL_BLOCK`).
 *   **Unified Calendar Core (Read-Side):**
-    - Aggregates multi-channel schedules into unified chronological timeline feeds.
+    - Aggregates multi-channel schedules into unified chronological calendar feeds.
     - Projects availability status, nightly rates, and min/max stay rules per date.
-    - Serves iCal feeds and WebSocket sync updates.
+    - Serves iCal feeds, cockpit views, and WebSocket sync updates.
 
-### 3. Channel Adapter Contract (`ChannelAdapterInterface`)
-External OTA providers (Airbnb, Booking.com, VRBO) must implement a unified interface contract:
+### 3. Segregated Channel Adapter Contracts (Interface Segregation Principle)
+To prevent "god interfaces" and support channels with varying capabilities (e.g. iCal read-only vs full OTA API), adapters implement segregated interfaces:
 
 ```php
 namespace App\Services\ChannelManager\Contracts;
 
-use App\Services\ChannelManager\DTOs\CalendarSyncPayload;
-use App\Services\ChannelManager\DTOs\ExternalReservationDTO;
-
-interface ChannelAdapterInterface
+interface ChannelAdapter
 {
-    public function importReservations(int $tenantId, int $propertyId): array;
+    public function channelCode(): string;
+    public function capabilities(): array;
+}
 
-    public function pushAvailability(int $tenantId, int $propertyId, CalendarSyncPayload $payload): bool;
+interface ChannelReservationImporter
+{
+    public function importReservation(array $payload): array;
+}
 
-    public function handleWebhook(array $headers, array $payload): ExternalReservationDTO;
+interface ChannelAvailabilityPublisher
+{
+    public function publishAvailability(int $tenantId, int $propertyId, array $availabilityData): bool;
+}
+
+interface ChannelCalendarReader
+{
+    public function fetchCalendar(int $tenantId, int $propertyId): array;
 }
 ```
 
-### 4. External Event Flow into Timeline & Audit
-*   All inbound webhooks and sync actions from external channels dispatch `ExternalChannelEvent` to `HermesEventLog`.
-*   Timeline listeners project external booking facts onto `WorkspaceTimelineRecord`.
-*   Replay safety is enforced via `UNIQUE (tenant_id, source_event_id, projection_type)`.
+### 4. Normalized Inbound Webhook Pipeline
+*   **Raw Webhook Receipt:** Inbound HTTP requests land in `WebhookInbox` with signature verification.
+*   **Deduplication & Normalization:** Payloads are deduplicated and normalized into canonical DTOs before entering application services.
+*   **Event & Projection:** Successful transactions dispatch events to `HermesEventLog` and project onto `WorkspaceTimeline` with `UNIQUE (tenant_id, source_event_id, projection_type)` replay protection.
 
 ---
 
 ## Consequences
 
 *   **Positive:** Channel adapters do not touch raw DB models directly; they communicate through `UnifiedCalendarCore` and `ReservationApplicationService`.
-*   **Positive:** Adding new OTAs (e.g. VRBO, Expedia, Direct Engine) requires only implementing `ChannelAdapterInterface`.
+*   **Positive:** Adding new OTAs (e.g. iCal Import, VRBO, Expedia) requires only implementing appropriate segregated interfaces.
 *   **Governance Compliance:** Complies 100% with SAB Rule 1 (Tenant Isolation) and Thin Controller guidelines.
