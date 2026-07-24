@@ -6,7 +6,6 @@ use App\Domain\Property\Events\CommercialOfferingCreated;
 use App\Domain\Property\Events\CommercialOfferingActivated;
 use App\Domain\Property\Events\CommercialOfferingPriceChanged;
 use App\Models\Hermes\HermesEventLog;
-use Illuminate\Support\Str;
 
 class RecordCommercialOfferingOnTimeline
 {
@@ -16,8 +15,12 @@ class RecordCommercialOfferingOnTimeline
     public function handleCreated(CommercialOfferingCreated $event): void
     {
         $offering = $event->offering;
+        if (empty($offering->tenant_id)) {
+            throw new \InvalidArgumentException('Workspace timeline projection requires valid tenant_id context.');
+        }
+
         $projectionType = 'CommercialOfferingCreated';
-        $sourceEventId = 'offering-' . $offering->id . '-created';
+        $sourceEventId = $event->eventId;
 
         $exists = HermesEventLog::where('tenant_id', $offering->tenant_id)
             ->where(function ($q) use ($projectionType, $sourceEventId, $offering) {
@@ -50,7 +53,9 @@ class RecordCommercialOfferingOnTimeline
                 ],
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
-            // Suppress duplicate constraint exception for concurrent executions
+            if (!$this->isDuplicateKeyViolation($e)) {
+                throw $e;
+            }
         }
     }
 
@@ -60,8 +65,12 @@ class RecordCommercialOfferingOnTimeline
     public function handleActivated(CommercialOfferingActivated $event): void
     {
         $offering = $event->offering;
+        if (empty($offering->tenant_id)) {
+            throw new \InvalidArgumentException('Workspace timeline projection requires valid tenant_id context.');
+        }
+
         $projectionType = 'CommercialOfferingActivated';
-        $sourceEventId = 'offering-' . $offering->id . '-activated';
+        $sourceEventId = $event->eventId;
 
         $exists = HermesEventLog::where('tenant_id', $offering->tenant_id)
             ->where(function ($q) use ($projectionType, $sourceEventId, $offering) {
@@ -92,7 +101,9 @@ class RecordCommercialOfferingOnTimeline
                 ],
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
-            // Suppress duplicate constraint exception for concurrent executions
+            if (!$this->isDuplicateKeyViolation($e)) {
+                throw $e;
+            }
         }
     }
 
@@ -102,8 +113,12 @@ class RecordCommercialOfferingOnTimeline
     public function handlePriceChanged(CommercialOfferingPriceChanged $event): void
     {
         $offering = $event->offering;
+        if (empty($offering->tenant_id)) {
+            throw new \InvalidArgumentException('Workspace timeline projection requires valid tenant_id context.');
+        }
+
         $projectionType = 'CommercialOfferingPriceChanged';
-        $sourceEventId = 'offering-' . $offering->id . '-price-' . $event->oldPrice->getAmount() . '-' . $event->newPrice->getAmount();
+        $sourceEventId = $event->eventId;
 
         $exists = HermesEventLog::where('tenant_id', $offering->tenant_id)
             ->where('projection_type', $projectionType)
@@ -131,7 +146,20 @@ class RecordCommercialOfferingOnTimeline
                 ],
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
-            // Suppress duplicate constraint exception for concurrent executions
+            if (!$this->isDuplicateKeyViolation($e)) {
+                throw $e;
+            }
         }
+    }
+
+    /**
+     * Helper to verify if QueryException is a duplicate unique constraint violation.
+     */
+    private function isDuplicateKeyViolation(\Illuminate\Database\QueryException $e): bool
+    {
+        $message = $e->getMessage();
+        return str_contains($message, 'hermes_logs_tenant_projection_source_unique') ||
+               str_contains($message, 'UNIQUE constraint failed') ||
+               str_contains($message, '1062 Duplicate entry');
     }
 }

@@ -14,7 +14,7 @@
 | **CD-002** | Fresh vs Incremental schema parity audit | Sprint 18 | Sprint 19 | DB Architect | Automated `migrate:fresh` vs incremental schema diff report producing 0 column/index drift. | `OPEN` | Pending |
 | **CD-003** | DB-level UUID constraint verification | Sprint 18 | Sprint 19 | DB Architect | DB audit query output showing `null count = 0`, `duplicate count = 0`, and active `NOT NULL` DB constraint. | `OPEN` | Pending |
 | **CD-004** | Migration rollback step-by-step verification | Sprint 18 | Sprint 19 | Platform Team | Safe `php artisan migrate:rollback` execution logs and forward-fix verification. | `OPEN` | Pending |
-| **CD-005** | Timeline projection DB-level unique constraint | Sprint 18 | Sprint 19 | AI / Pipeline | `UNIQUE (tenant_id, projection_type, source_event_id)` DB constraint on `hermes_event_logs` table via `2026_07_25_000007_add_uniqueness_to_hermes_event_logs_table.php` & `CD005TimelineUniquenessTest.php` (6/6 PASS). | `CLOSED` | Feature Branch `feature/sprint-19-unified-calendar-core` |
+| **CD-005** | Timeline projection DB-level unique constraint | Sprint 18 | Sprint 19 | AI / Pipeline | `UNIQUE (tenant_id, projection_type, source_event_id)` DB constraint on `hermes_event_logs` table via `2026_07_25_000007_add_uniqueness_to_hermes_event_logs_table.php` & `CD005TimelineUniquenessTest.php` (10/10 PASS: tenant context invariant, selective duplicate exception handling, immutable event UUIDs, reconciliation guard & multi-connection DB concurrency). | `CLOSED` | Feature Branch `feature/sprint-19-unified-calendar-core` |
 | **CD-006** | Measured BAI improvement report | Sprint 18 | Pilot Phase | Business Analyst | Quantitative before/after step ratio measurement and operational time saved evidence. | `OPEN` | Pending |
 
 ---

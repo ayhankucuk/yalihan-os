@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Domain\Reservation\Events;
+namespace App\Domain\Property\Events;
 
-use App\Models\PropertyReservation;
+use App\Models\CommercialOffering;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Str;
 
-class ReservationCreated
+class CommercialOfferingActivated
 {
     use Dispatchable;
     use SerializesModels;
@@ -15,7 +15,7 @@ class ReservationCreated
     public string $eventId;
 
     public function __construct(
-        public PropertyReservation $reservation,
+        public CommercialOffering $offering,
         ?string $eventId = null
     ) {
         $this->eventId = $eventId ?? (string) Str::uuid();
