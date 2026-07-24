@@ -94,8 +94,90 @@ Every output in YALIHAN OS must pass through all four evidence layers. No layer 
 
 ---
 
+---
+
+## Sprint Packaging Standard (v1)
+
+**Mandatory for all sprint delivery packages from Sprint 21 onward.**
+
+### 1. Implementation Evidence
+
+**Content:**
+- Git commit hash(es)
+- Branch name
+- List of changed files
+- Scope summary
+
+**Purpose:** Clearly shows what changed.
+
+---
+
+### 2. Execution Evidence
+
+**Content:**
+- Raw PHPUnit output
+- Total test count
+- Total assertion count
+- Skip / Fail count
+- CI output when applicable
+
+**Purpose:** Proves the code actually runs.
+
+---
+
+### 3. Documentation Evidence
+
+**Content:**
+- BEKCI_CHANGELOG.md update (session record)
+- Certification Debt Register changes
+- ADR updates
+- Governance document changes
+- Sprint reports
+
+**Purpose:** Proves documentation is in sync with code.
+
+---
+
+### 4. Certification Package
+
+**Content:**
+- Open risks
+- Closed risks
+- Certification scope
+- Final decision
+
+**Decision must be exactly one of:**
+- `APPROVED`
+- `CERTIFIED`
+- `REJECTED`
+
+---
+
+## Evidence Principles
+
+- No layer may certify the output of another layer.
+- Raw evidence must be preserved.
+- Documentation does not replace execution evidence.
+- Certification is distinct from reporting.
+- All sprints use the same packaging standard.
+
+---
+
+## Why This Matters
+
+This structure ensures:
+- Sprint comparisons are easy
+- Audit trail is strong
+- Certification process is consistent
+- Future Quality Gates can be automated
+
+Compatible with the SAAB v8 lifecycle: Evidence → Testing → Certification → Handoff.
+
+---
+
 ## Revision History
 
 | Version | Date | Change |
 |---------|------|--------|
+| 1.1 | 2026-07-24 | Added Sprint Packaging Standard (v1) as mandatory section |
 | 1.0 | 2026-07-24 | Initial — Ratified by SAAB |
