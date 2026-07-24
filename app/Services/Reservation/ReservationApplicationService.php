@@ -2,6 +2,7 @@
 
 namespace App\Services\Reservation;
 
+use App\Models\CommercialOffering;
 use App\Models\Property;
 use App\Models\PropertyAvailabilityBlock;
 use App\Models\PropertyReservation;
@@ -39,28 +40,41 @@ class ReservationApplicationService
             }
         }
 
+        // 2. Cross-Aggregate Offering–Property–Tenant Invariant Guard
+        $offeringId = $data['commercial_offering_id'] ?? null;
+        if ($offeringId !== null) {
+            $offering = CommercialOffering::where('tenant_id', $property->tenant_id)
+                ->where('property_id', $property->id)
+                ->whereKey($offeringId)
+                ->first();
+
+            if (! $offering) {
+                throw new DomainException("Commercial Offering #{$offeringId} does not belong to Property #{$property->id} or Tenant #{$property->tenant_id}.");
+            }
+        }
+
         $dateRange = new DateRange($data['start_date'], $data['end_date']);
         $amount = $data['islem_tutari'] ?? $data['total_amount'] ?? 0;
         $currency = $data['currency'] ?? 'TRY';
         $money = new Money((float) $amount, $currency);
 
-        return DB::transaction(function () use ($property, $data, $dateRange, $money, $idempotencyKey) {
-            // 2. Pessimistic Row Lock to prevent race conditions
+        return DB::transaction(function () use ($property, $data, $dateRange, $money, $idempotencyKey, $offeringId) {
+            // 3. Pessimistic Row Lock to prevent race conditions
             Property::where('tenant_id', $property->tenant_id)
                 ->whereKey($property->id)
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            // 3. Transactional Conflict Detection
+            // 4. Transactional Conflict Detection
             if ($this->conflictDetector->hasConflict($property, $dateRange)) {
                 throw new DomainException("Date conflict detected: Property #{$property->id} is not available between {$dateRange->getStartsAtString()} and {$dateRange->getEndsAtString()}.");
             }
 
-            // 4. Create PropertyReservation
+            // 5. Create PropertyReservation
             $reservation = PropertyReservation::create([
                 'tenant_id' => $property->tenant_id,
                 'property_id' => $property->id,
-                'commercial_offering_id' => $data['commercial_offering_id'] ?? null,
+                'commercial_offering_id' => $offeringId,
                 'idempotency_key' => $idempotencyKey,
                 'start_date' => $dateRange->getStartsAt()->toDateString(),
                 'end_date' => $dateRange->getEndsAt()->toDateString(),
@@ -77,7 +91,7 @@ class ReservationApplicationService
                 'confirmed_at' => now(),
             ]);
 
-            // 5. Create Range Availability Block
+            // 6. Create Range Availability Block
             PropertyAvailabilityBlock::create([
                 'tenant_id' => $property->tenant_id,
                 'property_id' => $property->id,
@@ -90,7 +104,7 @@ class ReservationApplicationService
                 'idempotency_key' => $idempotencyKey,
             ]);
 
-            // 6. Record WorkforceExecution Audit Trail
+            // 7. Record WorkforceExecution Audit Trail with Classification
             WorkforceExecution::create([
                 'uuid' => (string) Str::uuid(),
                 'tenant_id' => $property->tenant_id,
@@ -106,12 +120,57 @@ class ReservationApplicationService
                     'reservation_id' => $reservation->id,
                     'nights' => $dateRange->getNights(),
                 ],
+                'metadata' => [
+                    'execution_type' => 'APPLICATION',
+                    'subsystem' => 'RESERVATION_CORE',
+                ],
             ]);
 
-            // 7. Commit-Safe Event Dispatching
+            // 8. Commit-Safe Event Dispatching
             DB::afterCommit(function () use ($reservation) {
                 ReservationCreated::dispatch($reservation);
             });
+
+            return $reservation;
+        });
+    }
+
+    /**
+     * Transactionally cancels a reservation and releases associated availability blocks.
+     */
+    public function cancelReservation(PropertyReservation $reservation): PropertyReservation
+    {
+        return DB::transaction(function () use ($reservation) {
+            $reservation->cancelled_at = now();
+            $reservation->reservation_state = ReservationState::CANCELLED;
+            $reservation->save();
+
+            // Release availability blocks
+            PropertyAvailabilityBlock::where('reservation_id', $reservation->id)
+                ->update([
+                    'status' => 'RELEASED',
+                    'released_at' => now(),
+                ]);
+
+            // Record execution audit
+            WorkforceExecution::create([
+                'uuid' => (string) Str::uuid(),
+                'tenant_id' => $reservation->tenant_id,
+                'aggregate_type' => 'PropertyReservation',
+                'aggregate_id' => $reservation->id,
+                'capability' => 'cancel_reservation',
+                'execution_status' => 'SUCCESS',
+                'started_at' => now(),
+                'finished_at' => now(),
+                'result_snapshot' => [
+                    'reservation_id' => $reservation->id,
+                    'status' => 'CANCELLED',
+                ],
+                'metadata' => [
+                    'execution_type' => 'APPLICATION',
+                    'subsystem' => 'RESERVATION_CORE',
+                ],
+            ]);
 
             return $reservation;
         });

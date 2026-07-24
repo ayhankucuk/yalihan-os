@@ -11,11 +11,21 @@ use Illuminate\Support\Str;
 class RecordCommercialOfferingOnTimeline
 {
     /**
-     * Handles CommercialOfferingCreated event.
+     * Handles CommercialOfferingCreated event. Replay-safe via payload offering_id lookup.
      */
     public function handleCreated(CommercialOfferingCreated $event): void
     {
         $offering = $event->offering;
+
+        $exists = HermesEventLog::where('tenant_id', $offering->tenant_id)
+            ->where('event_class', get_class($event))
+            ->where('event_name', 'Commercial Offering Created')
+            ->where('payload->offering_id', $offering->id)
+            ->exists();
+
+        if ($exists) {
+            return;
+        }
 
         HermesEventLog::create([
             'tenant_id' => $offering->tenant_id,
@@ -34,11 +44,21 @@ class RecordCommercialOfferingOnTimeline
     }
 
     /**
-     * Handles CommercialOfferingActivated event.
+     * Handles CommercialOfferingActivated event. Replay-safe.
      */
     public function handleActivated(CommercialOfferingActivated $event): void
     {
         $offering = $event->offering;
+
+        $exists = HermesEventLog::where('tenant_id', $offering->tenant_id)
+            ->where('event_class', get_class($event))
+            ->where('event_name', 'Commercial Offering Activated')
+            ->where('payload->offering_id', $offering->id)
+            ->exists();
+
+        if ($exists) {
+            return;
+        }
 
         HermesEventLog::create([
             'tenant_id' => $offering->tenant_id,
@@ -55,7 +75,7 @@ class RecordCommercialOfferingOnTimeline
     }
 
     /**
-     * Handles CommercialOfferingPriceChanged event.
+     * Handles CommercialOfferingPriceChanged event. Replay-safe.
      */
     public function handlePriceChanged(CommercialOfferingPriceChanged $event): void
     {
