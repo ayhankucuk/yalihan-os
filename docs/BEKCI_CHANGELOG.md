@@ -1,5 +1,21 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 111 — Sprint 19 Task 2: Reservation Lifecycle State Machine & Remediation (2026-07-24)
+
+### SAAB Kararı: ✅ TASK 2 COMPLETE (Reservation Lifecycle State Machine Ratified)
+
+**Geliştirme & Sertifikasyon Değişiklikleri:**
+
+| Bileşen | Dosya | Açıklama |
+|---|---|---|
+| Reservation State Enum | `app/Enums/ReservationState.php` | Canonical durumlar (`PENDING`, `CONFIRMED`, `CHECKED_IN`, `CHECKED_OUT`, `CLOSED`, `EXPIRED`, `CANCELLED`, `BLOCKED`) ve `canTransitionTo()` kural matrisi eklendi. |
+| Immutable Domain Events | `app/Domain/Reservation/Events/...` | Immutable `$eventId` UUID içeren `ReservationStateTransitioned` ve `ReservationDatesChanged` olayları tanımlandı. |
+| Application Service | `app/Services/Reservation/ReservationApplicationService.php` | Transactional `transitionState()`, `confirmReservation()`, `checkIn()`, `checkOut()`, `closeReservation()`, `expireReservation()`, `cancelReservation()`, `modifyReservationDates()` metotları eklendi. |
+| CD-005 Remediation | `app/Listeners/Property/RecordCommercialOfferingOnTimeline.php` | Sadece duplicate unique ihlalleri yakalandı; tenant_id NOT NULL zorunluluğu ve immutable `$event->eventId` eklendi. |
+| Test Suite | `tests/Feature/Reservation/Sprint19/ReservationLifecycleStateMachineTest.php` | Canonical sıralı geçişler, yasak geçişlerin reddi, iptal/zaman aşımı blok salınımı ve tarih güncellemeleri doğrulandı (%100 PASS). |
+
+---
+
 ## Oturum 110 — Sprint 19 Task 1: Closure of Certification Debt CD-005 (2026-07-24)
 
 ### SAAB Kararı: ✅ CD-005 CLOSED (DB Timeline Uniqueness Invariant Ratified)
