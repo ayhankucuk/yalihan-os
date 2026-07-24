@@ -9,7 +9,7 @@ This index catalogs the recovered architectural decisions for Yalıhan AI OS. It
 
 ## ADR Candidate Catalog
 
-### ADR-022: Workspace Is the Business Aggregate
+### [ADR-022](adr/ADR-022-workspace-business-aggregate.md): Workspace Is the Business Aggregate
 *   **Domain:** PropertyWorkspace
 *   **Proposed Status:** Proposed
 *   **Evidence Confidence:** High (100%)
@@ -17,9 +17,10 @@ This index catalogs the recovered architectural decisions for Yalıhan AI OS. It
     *   [PropertyWorkspace model](../app/Models/PropertyWorkspace.php)
     *   [TenantIsolationSafetyTest](../tests/Feature/Security/TenantIsolationSafetyTest.php)
 *   **Unresolved Conflict:** None
-*   **Readiness:** READY FOR DRAFT
+*   **Draft Date:** 2026-07-24
+*   **Readiness:** DRAFTED (Awaiting SAAB Review)
 
-### ADR-023: Property Is the Canonical Real-Estate Aggregate
+### [ADR-023](adr/ADR-023-property-canonical-aggregate.md): Property Is the Canonical Real-Estate Aggregate
 *   **Domain:** Property
 *   **Proposed Status:** Proposed
 *   **Evidence Confidence:** High (100%)
@@ -27,7 +28,8 @@ This index catalogs the recovered architectural decisions for Yalıhan AI OS. It
     *   [Property model](../app/Models/Property.php)
     *   [M2 Milestone report](../.sab/milestones/M2-PROPERTY-RUNTIME.md)
 *   **Unresolved Conflict:** None
-*   **Readiness:** READY FOR DRAFT
+*   **Draft Date:** 2026-07-24
+*   **Readiness:** DRAFTED (Awaiting SAAB Review)
 
 ### ADR-024: Property Classification Is Multi-Dimensional
 *   **Domain:** Property
@@ -48,7 +50,7 @@ This index catalogs the recovered architectural decisions for Yalıhan AI OS. It
 *   **Unresolved Conflict:** Pricing and commercial attributes remain coupled to the Listings model ([Ilan.php](../app/Models/Ilan.php)).
 *   **Readiness:** REQUIRES SAAB DECISION (Implementation pending)
 
-### ADR-026: Listing Is a Publication Representation
+### [ADR-026](adr/ADR-026-listing-publication-representation.md): Listing Is a Publication Representation
 *   **Domain:** Listing
 *   **Proposed Status:** Proposed
 *   **Evidence Confidence:** High (100%)
@@ -56,9 +58,10 @@ This index catalogs the recovered architectural decisions for Yalıhan AI OS. It
     *   [Ilan model](../app/Models/Ilan.php)
     *   [ListingLifecycleFinalSealTest](../tests/Feature/ListingLifecycle/ListingLifecycleFinalSealTest.php)
 *   **Unresolved Conflict:** Couples transactional pricing data (`fiyat`, `lansman_fiyati`) due to the absence of the Commercial Offering aggregate.
-*   **Readiness:** READY FOR DRAFT
+*   **Draft Date:** 2026-07-24
+*   **Readiness:** DRAFTED (Awaiting SAAB Review)
 
-### ADR-027: Important State Changes Use Immutable Events
+### [ADR-027](adr/ADR-027-immutable-state-change-events.md): Important State Changes Use Immutable Events
 *   **Domain:** Hermes / Core
 *   **Proposed Status:** Proposed
 *   **Evidence Confidence:** High (100%)
@@ -66,7 +69,8 @@ This index catalogs the recovered architectural decisions for Yalıhan AI OS. It
     *   [ListingStateTransition model](../app/Models/ListingStateTransition.php)
     *   [ListingStateMachine](../app/Services/Listing/ListingStateMachine.php)
 *   **Unresolved Conflict:** None
-*   **Readiness:** READY FOR DRAFT
+*   **Draft Date:** 2026-07-24
+*   **Readiness:** DRAFTED (Awaiting SAAB Review)
 
 ### ADR-028: Executions Are Auditable and Replay-Safe
 *   **Domain:** Hermes / Execution
@@ -78,25 +82,27 @@ This index catalogs the recovered architectural decisions for Yalıhan AI OS. It
 *   **Unresolved Conflict:** Coexistence of `WorkspaceExecution` (legacy, auto-increment based) and `WorkforceExecution` (EIOS-canonical, UUID-based).
 *   **Readiness:** REQUIRES SAAB DECISION (For model integration plan)
 
-### ADR-029: Finance Uses Append-Only Financial Events
+### [ADR-029](adr/ADR-029-append-only-financial-events.md): Finance Uses Append-Only Financial Events
 *   **Domain:** Finance
 *   **Proposed Status:** Proposed
 *   **Evidence Confidence:** High (100%)
 *   **Primary Evidence Paths:**
     *   Financial event log streams documented under Sprint 12E
 *   **Unresolved Conflict:** None
-*   **Readiness:** READY FOR DRAFT
+*   **Draft Date:** 2026-07-24
+*   **Readiness:** DRAFTED (Awaiting SAAB Review)
 
-### ADR-030: Monetary Values Avoid Floating-Point Arithmetic
+### [ADR-030](adr/ADR-030-no-floating-point-money.md): Monetary Values Avoid Floating-Point Arithmetic
 *   **Domain:** Finance
 *   **Proposed Status:** Proposed
 *   **Evidence Confidence:** High (100%)
 *   **Primary Evidence Paths:**
-    *   Money, BasisPoints, and Currency VOs implemented in Sprint 12E
-*   **Unresolved Conflict:** None
-*   **Readiness:** READY FOR DRAFT
+    *   Precision dec/int constraints verified in [EnterpriseMoneyTest.php](../tests/Feature/Rental/EnterpriseMoneyTest.php)
+*   **Unresolved Conflict:** Money, BasisPoints, and Currency class value objects do not exist in PHP codebase.
+*   **Draft Date:** 2026-07-24
+*   **Readiness:** DRAFTED (Awaiting SAAB Review)
 
-### ADR-031: Tenant Isolation Is Mandatory
+### [ADR-031](adr/ADR-031-mandatory-tenant-isolation.md): Tenant Isolation Is Mandatory
 *   **Domain:** Core / Security
 *   **Proposed Status:** Proposed
 *   **Evidence Confidence:** High (100%)
@@ -104,7 +110,8 @@ This index catalogs the recovered architectural decisions for Yalıhan AI OS. It
     *   [BelongsToTenant trait](../app/Traits/BelongsToTenant.php)
     *   [KomisyonControllerTenantIsolationTest](../tests/Feature/Admin/KomisyonControllerTenantIsolationTest.php)
 *   **Unresolved Conflict:** None
-*   **Readiness:** READY FOR DRAFT
+*   **Draft Date:** 2026-07-24
+*   **Readiness:** DRAFTED (Awaiting SAAB Review)
 
 ### ADR-032: Hermes Orchestrates and Agents Execute
 *   **Domain:** AI / Hermes
@@ -115,14 +122,15 @@ This index catalogs the recovered architectural decisions for Yalıhan AI OS. It
 *   **Unresolved Conflict:** None
 *   **Readiness:** READY FOR DRAFT
 
-### ADR-033: Repository Is the Highest Operational Source of Truth
+### [ADR-033](adr/ADR-033-repository-operational-source-of-truth.md): Repository Is the Highest Operational Source of Truth
 *   **Domain:** Governance
 *   **Proposed Status:** Proposed
 *   **Evidence Confidence:** High (100%)
 *   **Primary Evidence Paths:**
     *   [SAB.md Section 2](SAB.md#L78-L105)
 *   **Unresolved Conflict:** None
-*   **Readiness:** READY FOR DRAFT
+*   **Draft Date:** 2026-07-24
+*   **Readiness:** DRAFTED (Awaiting SAAB Review)
 
 ### ADR-034: EIOS Defines Standard Execution Semantics
 *   **Domain:** EIOS
@@ -144,7 +152,7 @@ This index catalogs the recovered architectural decisions for Yalıhan AI OS. It
 *   **Unresolved Conflict:** None
 *   **Readiness:** READY FOR DRAFT
 
-### ADR-036: SAAB Governs Strategic Architecture
+### [ADR-036](adr/ADR-036-saab-architecture-governance.md): SAAB Governs Strategic Architecture
 *   **Domain:** Governance
 *   **Proposed Status:** Proposed
 *   **Evidence Confidence:** High (100%)
@@ -152,13 +160,24 @@ This index catalogs the recovered architectural decisions for Yalıhan AI OS. It
     *   [SAB.md](SAB.md)
     *   [.sab/authority.json](../.sab/authority.json)
 *   **Unresolved Conflict:** None
-*   **Readiness:** READY FOR DRAFT
+*   **Draft Date:** 2026-07-24
+*   **Readiness:** DRAFTED (Awaiting SAAB Review)
 
-### ADR-037: Repository Atlas Guides Workspace Rationalization
+### [ADR-037](adr/ADR-037-repository-atlas-rationalization.md): Repository Atlas Guides Workspace Rationalization
 *   **Domain:** Repository / Governance
 *   **Proposed Status:** Proposed
 *   **Evidence Confidence:** High (100%)
 *   **Primary Evidence Paths:**
     *   [Repository Atlas](REPOSITORY_ATLAS.md)
 *   **Unresolved Conflict:** Contains archive-candidate folders and obsolete scripts that need review before removal.
-*   **Readiness:** READY FOR DRAFT
+*   **Draft Date:** 2026-07-24
+*   **Readiness:** DRAFTED (Awaiting SAAB Review)
+
+### ADR-038: Execution Model Integration Design
+*   **Domain:** Hermes / Execution
+*   **Proposed Status:** Proposed
+*   **Evidence Confidence:** High (100%)
+*   **Primary Evidence Paths:**
+    *   Coexistence details mapped under Sprint 13 evidence reports
+*   **Unresolved Conflict:** Integrates auto-incrementing integer key WorkspaceExecution with UUID-key WorkforceExecution.
+*   **Readiness:** REQUIRES SAAB DECISION (Integration pending)
