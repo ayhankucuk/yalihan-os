@@ -1,5 +1,21 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 110 — Sprint 19 Task 1: Closure of Certification Debt CD-005 (2026-07-24)
+
+### SAAB Kararı: ✅ CD-005 CLOSED (DB Timeline Uniqueness Invariant Ratified)
+
+**Yapılan Değişiklikler:**
+
+| Bileşen | Dosya | Açıklama |
+|---|---|---|
+| Additive Migration | `database/migrations/2026_07_25_000007_add_uniqueness_to_hermes_event_logs_table.php` | `projection_type` ve `source_event_id` kolonları eklendi. `UNIQUE(tenant_id, projection_type, source_event_id)` indeks oluşturuldu. Reversible `down()` eklendi. |
+| Model Update | `app/Models/Hermes/HermesEventLog.php` | `$fillable` dizisine `projection_type` ve `source_event_id` eklendi. |
+| Listener Update | `app/Listeners/Property/RecordCommercialOfferingOnTimeline.php` | `projection_type` ve `source_event_id` popüle edildi. `QueryException` idempotent olarak yakalandı. |
+| Test Suite | `tests/Feature/Governance/Sprint19/CD005TimelineUniquenessTest.php` | 6/6 test geçti (%100 PASS). İdempotent replay, eşzamanlı ekleme, tenant izolasyonu ve rollback doğrulandı. |
+| SSOT Register | `docs/governance/CERTIFICATION_DEBT_REGISTER.md` | `CD-005` statüsü `CLOSED` olarak güncellendi. |
+
+---
+
 ## Oturum 109 — Sprint 18: Reservation-to-Availability Core & Certification (2026-07-24)
 
 ### SAAB Kararı: ✅ CERTIFIED WITH RECORDED LIMITATIONS

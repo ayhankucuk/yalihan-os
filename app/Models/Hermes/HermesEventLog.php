@@ -24,6 +24,8 @@ class HermesEventLog extends BaseModel
     protected $fillable = [
         'event_name',
         'event_class',
+        'projection_type',
+        'source_event_id',
         'payload',
         'tenant_id',
         'occurred_at',
