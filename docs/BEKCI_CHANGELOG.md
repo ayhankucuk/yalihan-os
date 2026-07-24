@@ -2,7 +2,9 @@
 
 ## Oturum 113 — Sprint 20: Stabilization & Certification Sprint (2026-07-24)
 
-### SAAB Kararı: ✅ SPRINT 20 COMPLETE — PROPERTY-FIRST RESERVATION PATH VERIFIED
+### SAAB Kararı: ✅ SPRINT 20 — CERTIFIED (subject to independently verified evidence as reported)
+
+> Bağımsız doğrulama: Git commit (8e3e769, 48c1a8d), PHPUnit çıktıları (35 PASS, 1 SKIP, 117 assertions), CD-001–004 diff — SAAB kurulu tarafından repository üzerinden yapılacak.
 
 **Görev Özeti:**
 
