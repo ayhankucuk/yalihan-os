@@ -1,5 +1,21 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 112 — Sprint 19 Task 3: Unified Calendar Projection Schema & Listener (2026-07-24)
+
+### SAAB Kararı: ✅ TASK 3 COMPLETE (Unified Calendar Projection Implemented)
+
+**Geliştirme & Sertifikasyon Değişiklikleri:**
+
+| Bileşen | Dosya | Açıklama |
+|---|---|---|
+| Projection Migration | `database/migrations/2026_07_25_000008_create_unified_calendar_projections_table.php` | `unified_calendar_projections` tablosu, daily bucket alanları ve `UNIQUE(tenant_id, property_id, calendar_date, source_type, reservation_id)` bileşik indeksi oluşturuldu. |
+| Projection Model | `app/Models/Calendar/UnifiedCalendarProjection.php` | Property, Reservation, Offering ilişkileri ve `$fillable` alanları tanımlandı. |
+| Projection Listener | `app/Listeners/Calendar/ProjectReservationOnUnifiedCalendar.php` | `ReservationCreated`, `ReservationStateTransitioned`, `ReservationDatesChanged` olaylarını dinleyerek `hermes_event_logs` Event Store'a append eder ve günlük takvim bucket'larını günceller. |
+| Replay Service | `app/Services/Calendar/UnifiedCalendarProjectionService.php` | `rebuildForProperty()` ile takvim projection verilerini sıfırdan deterministik olarak yeniden üretir ve `getCalendarDaysForProperty()` ile sorgular. |
+| Test Suite | `tests/Feature/Calendar/Sprint19/UnifiedCalendarProjectionTest.php` | Günlük takvim projeksiyonu, Event Store log kaydı, state transition güncellemeleri, tarih güncellemeleri ve replay determinizmi doğrulandı (%100 PASS). |
+
+---
+
 ## Oturum 111 — Sprint 19 Task 2: Reservation Lifecycle State Machine & Remediation (2026-07-24)
 
 ### SAAB Kararı: ✅ TASK 2 COMPLETE (Reservation Lifecycle State Machine Ratified)
