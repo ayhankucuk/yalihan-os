@@ -173,6 +173,7 @@ return new class extends Migration
                 $table->json('varsayilan_ozellikler')->nullable();
                 $table->json('fiyat_ayarlari')->nullable();
                 $table->foreignId('kategori_id')->nullable()->constrained('ilan_kategorileri')->nullOnDelete();
+                $table->unsignedBigInteger('yayin_tipi_id')->nullable();
                 $table->timestamps();
                 $table->softDeletes();
             });

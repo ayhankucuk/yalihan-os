@@ -46,12 +46,29 @@ return new class extends Migration
 
         Schema::create('properties', function (Blueprint $table) {
             $table->id();
-            $table->uuid('uuid')->unique();
+            $table->uuid('uuid')->nullable()->unique();
             $table->unsignedBigInteger('tenant_id');
             $table->unsignedBigInteger('workspace_id')->nullable()
                 ->comment('Link to PropertyWorkspace');
+            $table->string('idempotency_key', 64)->nullable()->unique();
             $table->string('canonical_reference', 64)->nullable()->unique()
                 ->comment('Deterministic identifier for legacy mapping');
+            $table->string('tkgm_id')->nullable();
+            $table->string('ada')->nullable();
+            $table->string('parsel')->nullable();
+            $table->unsignedBigInteger('il_id')->nullable();
+            $table->unsignedBigInteger('ilce_id')->nullable();
+            $table->unsignedBigInteger('mahalle_id')->nullable();
+            $table->decimal('lat', 10, 8)->nullable();
+            $table->decimal('lng', 11, 8)->nullable();
+            $table->decimal('alan_m2', 10, 2)->nullable();
+            $table->integer('bina_yasi')->nullable();
+            $table->integer('kat_sayisi')->nullable();
+            $table->integer('bulundugu_kat')->nullable();
+            $table->integer('oda_sayisi')->nullable();
+            $table->integer('banyo_sayisi')->nullable();
+            $table->string('kapak_resmi')->nullable();
+            $table->string('nitelik')->nullable();
             $table->string('lifecycle_state')->default('DRAFT')
                 ->comment('DRAFT | ACTIVE | ARCHIVED');
             $table->string('aktiflik_durumu')->default('DRAFT')
@@ -63,6 +80,7 @@ return new class extends Migration
             // Indexes
             $table->index(['tenant_id', 'lifecycle_state'], 'properties_tenant_state_idx');
             $table->index(['tenant_id', 'canonical_reference'], 'properties_tenant_canonical_idx');
+            $table->index(['tenant_id', 'idempotency_key'], 'properties_tenant_idempotency_idx');
         });
     }
 

@@ -69,9 +69,11 @@ return new class extends Migration
                 $table->unsignedBigInteger('property_id');
                 $table->decimal('yearly_growth_rate', 8, 4)->nullable();
                 $table->integer('projection_years')->default(1);
+                $table->string('projection_type', 30)->default('standard');
+                $table->boolean('aktiflik_durumu')->default(true);
                 $table->timestamps();
 
-                $table->index('property_id');
+                $table->index(['property_id', 'aktiflik_durumu'], 'property_growth_projections_property_id_aktiflik_durumu_index');
             });
         }
     }

@@ -36,10 +36,21 @@ return new class extends Migration
         if (!Schema::hasTable('copilot_action_logs')) {
             Schema::create('copilot_action_logs', function (Blueprint $table) {
                 $table->id();
-                $table->string('action_type')->nullable();
-                $table->string('user_id')->nullable();
+                $table->string('action_type', 50);
+                $table->unsignedBigInteger('user_id')->nullable();
+                $table->unsignedBigInteger('ilan_id')->nullable();
+                $table->unsignedBigInteger('main_category_id')->nullable();
+                $table->unsignedInteger('listing_type_id')->nullable();
                 $table->json('request_payload')->nullable();
                 $table->json('response_payload')->nullable();
+                $table->json('applied_fields')->nullable();
+                $table->json('diff_snapshot')->nullable();
+                $table->string('aksiyon_durumu', 30)->default('preview');
+                $table->double('confidence_score')->nullable();
+                $table->unsignedInteger('duration_ms')->nullable();
+                $table->text('rejection_reason')->nullable();
+                $table->timestamp('applied_at')->nullable();
+                $table->timestamp('undone_at')->nullable();
                 $table->timestamps();
             });
         }
@@ -71,6 +82,72 @@ return new class extends Migration
                 $table->timestamp('expires_at')->nullable();
                 $table->timestamps();
                 $table->unique(['agent_name', 'memory_key']);
+            });
+        }
+
+        // Restore 'ilan_goruntulenme_gunluk' table if missing
+        if (!Schema::hasTable('ilan_goruntulenme_gunluk')) {
+            Schema::create('ilan_goruntulenme_gunluk', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('ilan_id')->constrained('ilanlar')->onDelete('cascade');
+                $table->date('tarih');
+                $table->string('cihaz', 20)->nullable();
+                $table->integer('adet')->default(0);
+                $table->timestamps();
+
+                $table->index(['ilan_id', 'tarih']);
+                $table->index('tarih');
+            });
+        }
+
+        // Restore 'ai_query_telemetry' table if missing
+        if (!Schema::hasTable('ai_query_telemetry')) {
+            Schema::create('ai_query_telemetry', function (Blueprint $table) {
+                $table->id();
+                $table->text('query_text');
+                $table->string('intent_detected');
+                $table->string('location_il')->nullable();
+                $table->string('location_ilce')->nullable();
+                $table->string('location_mahalle')->nullable();
+                $table->string('asset_type')->nullable();
+                $table->integer('area_m2')->nullable();
+                $table->double('confidence_score', 8, 2)->nullable();
+                $table->string('engine_called')->nullable();
+                $table->integer('execution_time_ms')->nullable();
+                $table->json('metadata')->nullable();
+                $table->timestamp('created_at')->useCurrent();
+
+                $table->index('intent_detected');
+            });
+        }
+
+        // Restore 'kategori_yayin_tipi_field_dependencies' table if missing
+        if (!Schema::hasTable('kategori_yayin_tipi_field_dependencies')) {
+            Schema::create('kategori_yayin_tipi_field_dependencies', function (Blueprint $table) {
+                $table->id();
+                $table->string('kategori_slug');
+                $table->unsignedBigInteger('yayin_tipi_id')->nullable();
+                $table->string('yayin_tipi');
+                $table->string('field_slug');
+                $table->string('field_name');
+                $table->string('field_type')->default('text');
+                $table->string('field_category')->nullable();
+                $table->json('field_options')->nullable();
+                $table->json('dependencies')->nullable();
+                $table->string('field_unit')->nullable();
+                $table->string('field_icon')->nullable();
+                $table->boolean('required')->default(false);
+                $table->integer('display_order')->default(0);
+                $table->boolean('ai_auto_fill')->default(false);
+                $table->boolean('ai_suggestion')->default(false);
+                $table->string('ai_prompt_key')->nullable();
+                $table->boolean('searchable')->default(false);
+                $table->boolean('show_in_card')->default(false);
+                $table->boolean('aktiflik_durumu')->default(true);
+                $table->timestamps();
+
+                $table->unique(['kategori_slug', 'yayin_tipi', 'field_slug'], 'idx_kytfd_unique_restore');
+                $table->index(['kategori_slug', 'yayin_tipi'], 'idx_kytfd_lookup_restore');
             });
         }
 
@@ -323,8 +400,10 @@ return new class extends Migration
                 $table->string('source_system')->default('internal'); // Added for CI
                 $table->string('external_ref')->nullable(); // Added for CI
                 $table->string('block_reason')->nullable(); // Added for CI
+                $table->unsignedBigInteger('reservation_id')->nullable();
                 $table->decimal('price', 10, 2)->nullable();
                 $table->timestamps();
+                $table->unique(['property_id', 'date'], 'property_availabilities_property_id_date_unique');
             });
         }
 
@@ -355,12 +434,18 @@ return new class extends Migration
         if (!Schema::hasTable('property_config_versions')) {
             Schema::create('property_config_versions', function (Blueprint $table) {
                 $table->id();
+                $table->string('tenant_id')->default('SYSTEM');
                 $table->string('version_hash')->nullable(); // Added for CI
-                $table->text('description')->nullable(); // Added for CI
                 $table->string('governance_state')->nullable(); // Added for CI
+                $table->integer('risk_score')->nullable();
+                $table->text('description')->nullable(); // Added for CI
                 $table->json('snapshot_json')->nullable(); // Added for CI
                 $table->string('signature')->nullable(); // Added for CI
+                $table->boolean('is_immutable')->default(false);
+                $table->boolean('is_approved_by_dual_control')->default(false);
                 $table->unsignedBigInteger('created_by')->nullable(); // Added for CI
+                $table->string('parent_version_hash')->nullable();
+                $table->timestamp('applied_at')->nullable();
                 $table->unsignedBigInteger('property_id')->nullable();
                 $table->integer('version')->default(1);
                 $table->json('config_data')->nullable();
@@ -641,6 +726,7 @@ return new class extends Migration
                 $table->string('ad');
                 $table->string('slug')->unique();
                 $table->unsignedBigInteger('kategori_id')->nullable(); // Added for CI - foreign key reference
+                $table->unsignedBigInteger('yayin_tipi_id')->nullable();
                 $table->text('aciklama')->nullable();
                 $table->json('sablonlar')->nullable();
                 $table->integer('display_order')->default(0);
