@@ -117,10 +117,10 @@ interface ChannelCalendarReader
 }
 ```
 
-### 4. Normalized Inbound Webhook Pipeline
-*   **Raw Webhook Receipt:** Inbound HTTP requests land in `WebhookInbox` with signature verification.
+### 4. Normalized Inbound Webhook Pipeline & Timeline Isolation
+*   **Raw Webhook Receipt & Audit:** Inbound HTTP requests land in `WebhookInbox` with signature verification. Raw HTTP payloads stay strictly in `WebhookInbox` / `Integration Audit` logs and MUST NEVER be written directly to `WorkspaceTimeline`.
 *   **Deduplication & Normalization:** Payloads are deduplicated and normalized into canonical DTOs before entering application services.
-*   **Event & Projection:** Successful transactions dispatch events to `HermesEventLog` and project onto `WorkspaceTimeline` with `UNIQUE (tenant_id, source_event_id, projection_type)` replay protection.
+*   **Business Event & Projection:** Only verified business-level facts (e.g., "Airbnb reservation received", "Dates updated by external channel") dispatch domain events to `HermesEventLog` and project onto `WorkspaceTimeline` with `UNIQUE (tenant_id, source_event_id, projection_type)` replay protection.
 
 ---
 
