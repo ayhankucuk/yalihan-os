@@ -1,6 +1,6 @@
 # Governance Progress Tracker
-**Son Güncelleme:** 2026-07-23 (Oturum 110 — Sprint 15 ✅ M2 CERTIFIED)
-**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + ✅ **SPRINT 6.7 CLOSED** + ✅ **SPRINT 6.8 CLOSED** + ✅ **SPRINT 6.9 CLOSED** + ✅ **SPRINT 7.0 CLOSED** + ✅ **SPRINT 7.1 CLOSED** + ✅ **SPRINT 7.2 CLOSED** + 🔍 **WIZARD BLOCKERS MAPPED** + 🛡️ **RELEASE GATE V9 APPROVED** + 📋 **SPRINT 10 CERTIFIED** + 🏠 **SPRINT 11 CERTIFIED** + 🏛️ **SAAB v11.1 GOVERNANCE FROZEN** + 🚀 **SPRINT 12 ✅ COMPLETE** + 🧪 **TENANT ISOLATION TESTS ✅ ALL GREEN** + 🧪 **LIFECYCLE TESTS 7/7 ✅** + 🏗️ **EXECUTION RUNTIME FOUNDATION ✅** + 🧪 **EXECUTION TESTS 12/12 ✅** + 📊 **EXECUTION METRICS FOUNDATION ✅** + 🧪 **METRICS TESTS 11/11 ✅** + 🏗️ **EXECUTION RUNTIME OPERATIONS CONSOLE ✅** + 🧪 **PRODUCT VALIDATION 9/9 ✅** + 🏆 **M2 PROPERTY RUNTIME ✅ CERTIFIED**
+**Son Güncelleme:** 2026-07-24 (Oturum 109 — Sprint 18 Reservation-to-Availability Core ✅ CERTIFIED WITH LIMITATIONS)
+**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + ✅ **SPRINT 10 CERTIFIED** + 🏠 **SPRINT 11 CERTIFIED** + 🏛️ **SAAB v11.1 GOVERNANCE FROZEN** + 🚀 **SPRINT 12 ✅ COMPLETE** + 🧪 **TENANT ISOLATION TESTS ✅ ALL GREEN** + 🏦 **SPRINT 17B ✅ CERTIFIED** + 📅 **SPRINT 18 ✅ CERTIFIED WITH LIMITATIONS**
 | ERA III/IV | Katman | Sprint | Status |
 |---------|--------|--------|---------|
 | Observation | Cockpit | 4.6 | ✅ Certified |
@@ -10,6 +10,8 @@
 | **EIOS Registry** | **Registry Engine** | **10** | **✅ Certified (Oturum 97)** |
 | **EIOS Property** | **Property Aggregate Root** | **11** | **✅ Certified (Oturum 98)** |
 | **Governance** | **SAAB v11.1 Dual Board** | **11.1** | **✅ FROZEN (Oturum 103)** |
+| **Commercial Core** | **Commercial Offering** | **17B** | **✅ Certified (Oturum 109)** |
+| **Reservation Core** | **Reservation & Availability** | **18** | **✅ Certified with Limitations (Oturum 109)** |
 
 **ERA IV:** 🚀 ACTIVE — First Advisor Pilot | Sprint 5.0
 
@@ -421,6 +423,8 @@ Static bypass flags → DI/execution context (Sprint 13 backlog):
 | **M3** | Enterprise Knowledge Runtime | Institutional memory |
 | **M4** | Autonomous Runtime | Self-healing, self-optimizing |
 | **M5** | Autonomous Enterprise | Full BAI achieved |
+| **M2.1** | Financial Domain | Double-entry ledger, allocation, projection |
+| **12E** | Sprint 12E Financial Domain | I1-I5 ✅ CERTIFIED, I6 ⏳ IN PROGRESS, I7 📋 PLANNED |
 
 ---
 
@@ -1698,3 +1702,134 @@ The Repository Authority Pattern is now a **validated operational contract** pro
 | #20-25 | Oracle Cloud deploy | 🔴 | 3 |
 | #14 | 175 Context7 ihlali rename | 🟠 | 4 |
 | #26 | `bekci:pattern:sync` komutu | 🟡 | 4 |
+
+---
+
+## 🏦 Sprint 12E — Financial Domain (Oturum 116 — 2026-07-24)
+
+**Status:** ⏳ I6 IN PROGRESS — I7 Planning ✅ COMPLETE
+**Amaç:** Property-Centric Financial Domain: Double-entry ledger, allocation engine, projection layer
+
+### Sprint 12E Incremental Durumu
+
+| Incremental | Açıklama | Status | Test Coverage |
+|-------------|----------|--------|---------------|
+| **I1 Domain Primitives** | Money, BasisPoints, Currency VOs | ✅ CERTIFIED | 15 tests |
+| **I2 Event Store** | Append-only financial events | ✅ CERTIFIED | Idempotency tests |
+| **I3 Ledger Engine** | Double-entry bookkeeping | ✅ CERTIFIED | 20 tests, 96 assertions |
+| **I4 Allocation Engine** | Ownership distribution | ✅ CERTIFIED | 11 tests, 48 assertions |
+| **I5 Projection Layer** | Read models, wallet calculations | ✅ CERTIFIED | 22 tests, 57 assertions |
+| **I6 Migration Tooling** | Legacy → canonical migration | ⏳ IN PROGRESS | — |
+| **I7 Planning** | Certification governance framework | ✅ COMPLETE | — |
+| **I7 Execution** | Certification evidence collection | ⛔ BLOCKED BY I6 | — |
+
+### SAAB Durum Değerlendirmesi (Oturum 116)
+
+```
+┌────────────────────────────────────────────────────────┐
+│ SPRINT 12E — FINANCIAL INTELLIGENCE                   │
+├────────────────────────────────────────────────────────┤
+│ I1 Domain Primitives       ✅ CERTIFIED              │
+│ I2 Event Store             ✅ CERTIFIED              │
+│ I3 Ledger Engine           ✅ CERTIFIED              │
+│ I4 Allocation Engine       ✅ CERTIFIED              │
+│ I5 Projection Layer        ✅ CERTIFIED              │
+│ I6 Migration Tooling       ⏳ IN PROGRESS            │
+│ I7 Planning                ✅ COMPLETE                │
+│ I7 Execution               ⛔ BLOCKED BY I6          │
+│ Sprint Certification       ⛔ NOT YET ELIGIBLE       │
+└────────────────────────────────────────────────────────┘
+```
+
+### I7 Certification Governance Dokümanları
+
+| Doküman | Path | Durum |
+|---------|------|--------|
+| I7_CERTIFICATION_PLAN | `eios/docs/certification/I7_CERTIFICATION_PLAN.md` | ✅ CREATED |
+| EVIDENCE_CHECKLIST | `eios/docs/certification/EVIDENCE_CHECKLIST.md` | ✅ CREATED |
+| AUDIT_TRAIL | `eios/docs/certification/AUDIT_TRAIL.md` | ✅ CREATED |
+| I6_COMPLETION_CRITERIA | `eios/docs/certification/I6_COMPLETION_CRITERIA.md` | ✅ CREATED |
+| I7/Evidence Package | `eios/docs/certification/evidence/I7/` | 📋 STRUCTURE CREATED |
+
+### I7 Evidence Package Yapısı
+
+```
+eios/docs/certification/evidence/I7/
+├── 01_TEST_RESULTS.md           ⬜ Pending
+├── 02_REPLAY_EVIDENCE.md        ⬜ Pending
+├── 03_DOUBLE_ENTRY_EVIDENCE.md   ⬜ Pending
+├── 04_ALLOCATION_EVIDENCE.md    ⬜ Pending
+├── 05_RECONCILIATION_REPORT.md  ⬜ Pending (I6 gerekli)
+├── 06_TENANT_ISOLATION.md       ⬜ Pending
+├── 07_AUDIT_TRAIL.md           ⬜ Pending
+├── 08_KNOWN_LIMITATIONS.md      ⬜ Pending
+└── 09_SAAB_RESOLUTION.md        ⬜ Pending
+```
+
+### I6 Minimum Tamamlanma Kriterleri
+
+| # | Kriter | Kanıt Türü | Status |
+|---|--------|------------|--------|
+| 1 | Migration dry-run | CLI çıktısı | ⬜ |
+| 2 | Idempotent ikinci çalıştırma | CLI çıktısı | ⬜ |
+| 3 | Legacy/canonical kayıt sayıları | Tablo karşılaştırma | ⬜ |
+| 4 | Tutar bazında delta raporu | YAML/JSON | ⬜ |
+| 5 | Orphan kayıt raporu | Liste | ⬜ |
+| 6 | Quarantine kayıt raporu | Liste | ⬜ |
+| 7 | Tenant-scoped migration | CLI çıktısı | ⬜ |
+| 8 | Rollback stratejisi | CLI çıktısı | ⬜ |
+| 9 | Execution ID ve audit trail | Log | ⬜ |
+| 10 | Veri çoğalma önleme | Test sonucu | ⬜ |
+
+### I7 Product Verification Gates
+
+| Gate | Soru | Başarı Kriteri | Status | Öncelik |
+|------|------|----------------|--------|---------|
+| **Gate 1** | Replay safety | `@group finance-projection` tests pass | ⬜ | P1 |
+| **Gate 2** | Double-entry invariant | SUM(DEBIT) = SUM(CREDIT) | ⬜ | P1 |
+| **Gate 3** | Allocation integrity | Basis points SUM = 10000 | ⬜ | P1 |
+| **Gate 4** | Migration reconciliation | Legacy ↔ Canonical delta < 0.01 TRY | ⬜ | P1 — **I6 gerekli** |
+| **Gate 5** | SAAB governance | Board resolution | ⬜ | P1 |
+
+### Kritik Yol
+
+```
+I6 Migration Tooling
+        ↓
+Legacy → Canonical migration run
+        ↓
+Reconciliation (Gate 4)
+        ↓
+Replay test (Gate 1)
+        ↓
+Evidence package
+        ↓
+SAAB human review
+        ↓
+Sprint 12E CERTIFIED
+```
+
+### Model Seçimi
+
+| Görev | Model |
+|-------|-------|
+| Laravel migration kodu | Claude Sonnet 4.6 |
+| Finansal invariant değerlendirmesi | Claude Opus 4.8 |
+| Legacy ↔ Canonical karşılaştırması | Gemini 3 Pro |
+
+### Sonraki Adımlar
+
+| Adım | Durum | Sorumlu |
+|------|-------|---------|
+| I6 Migration Tooling implementasyonu | ⏳ In Progress | Agent |
+| I6 Kapanış kanıtları toplama | ⏳ Pending | Agent |
+| Gate 4 Reconciliation | ⛔ BLOCKED BY I6 | — |
+| I7.a Replay Test | ⏳ Pending | Agent |
+| I7 Evidence Package | ⏳ Pending | Agent |
+| SAAB Review | ⏳ Pending | Human |
+
+### SAAB Kararı
+
+> I7 Certification Planning kabul edildi. I7 execution, I6 Migration Tooling ve reconciliation kanıtları tamamlanana kadar başlatılabilir ancak sertifikalandırılamaz.
+
+**En doğru sonraki görev:** I6 Migration Tooling'i tamamlayıp Gate 4 için reconciliation artefaktını üretmek.
