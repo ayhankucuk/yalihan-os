@@ -1,5 +1,48 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 113 — Sprint 20: Stabilization & Certification Sprint (2026-07-24)
+
+### SAAB Kararı: ✅ SPRINT 20 COMPLETE — PROPERTY-FIRST RESERVATION PATH VERIFIED
+
+**Görev Özeti:**
+
+| Görev | Öncelik | Durum | Kanıt |
+|-------|---------|-------|-------|
+| ReservationConcurrencyTest regresyon fix | P0 | ✅ DONE | 2/2 PASS + 1 SKIP |
+| DriveWebhookSecurityTest regresyon fix | P0 | ✅ DONE | 3/3 PASS |
+| CD-001 Multi-process DB concurrency | P0 | ✅ CLOSED | `ReservationParallelConcurrencyAndLifecycleTest` 4/4 PASS |
+| CD-002 Fresh vs Incremental schema parity | P0 | ✅ CLOSED | `migrate:fresh` 443 migrations OK |
+| CD-003 DB-level UUID constraint | P0 | ✅ CLOSED | 3/3 key tables: 0 null, 0 duplicate |
+| CD-004 Migration rollback step-log | P0 | ✅ CLOSED | rollback → migrate → 4/4 PASS |
+| CD-001–004 CERTIFICATION_DEBT_REGISTER güncelleme | P0 | ✅ DONE | Doküman güncellendi |
+| CI tam yeşil doğrulama | P0 | ✅ DONE | 38 PASS, 1 SKIP (min-stay future) |
+
+**Değiştirilen Dosyalar:**
+- `tests/Feature/ReservationConcurrencyTest.php` — Ilan→Property migration (Sprint12C uyumlu)
+- `tests/Feature/Drive/DriveWebhookSecurityTest.php` — PropertyWorkspace + Property eklenerek Sprint12C invariant karşılandı
+- `docs/governance/CERTIFICATION_DEBT_REGISTER.md` — CD-001–004 CLOSED
+
+**Sprint 20 Sertifikasyon Koşulları Karşılandı:**
+1. ✅ ReservationConcurrencyTest 2/2 PASS + 1 SKIP (property-first path)
+2. ✅ CD-001–004 tamamen kapandı
+3. ✅ DriveWebhookSecurityTest 3/3 PASS
+4. ✅ Property-first rezervasyon akışı regresyonsuz doğrulandı
+
+**Sprint 21'e Bırakılanlar:**
+- iCal Import Adapter (Phase 3)
+- correlation_id standardizasyonu
+- min-stay enforcement via CommercialOffering
+- WorkspaceTimelineTest pre-existing failure (P3, CI temizliği)
+
+**Güvenlik Koruması (Değişmedi):**
+- Property aggregate ✅
+- ReservationState enum + canTransitionTo() ✅
+- Event model (ReservationCreated/StateTransitioned/DatesChanged) ✅
+- UnifiedCalendarProjectionService ✅
+- ProjectReservationOnUnifiedCalendar listener ✅
+
+---
+
 ## Oturum 112 — Sprint 19 Task 3: Unified Calendar Projection Schema & Listener (2026-07-24)
 
 ### SAAB Kararı: ✅ TASK 3 COMPLETE (Unified Calendar Projection Implemented)

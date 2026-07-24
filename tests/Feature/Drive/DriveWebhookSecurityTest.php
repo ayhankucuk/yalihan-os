@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature\Drive;
 
 use App\Models\PortfolioDriveWorkspace;
+use App\Models\Property;
+use App\Models\PropertyWorkspace;
 use App\Models\SaaS\Tenant;
 use App\Models\Ilan;
 use App\Models\Hermes\HermesEventLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class DriveWebhookSecurityTest extends TestCase
@@ -28,8 +31,22 @@ class DriveWebhookSecurityTest extends TestCase
             'aktiflik_durumu' => 1,
         ]);
 
+        $workspace = PropertyWorkspace::create([
+            'tenant_id' => $this->tenant->id,
+            'workspace_uuid' => (string) Str::uuid(),
+            'name' => 'Drive Security WS',
+            'code' => 'DS-WS-01',
+        ]);
+
+        $property = Property::create([
+            'tenant_id' => $this->tenant->id,
+            'workspace_id' => $workspace->id,
+            'idempotency_key' => 'drive-prop-1',
+        ]);
+
         $ilan = Ilan::create([
             'tenant_id' => $this->tenant->id,
+            'property_id' => $property->id,
             'baslik' => 'Drive Security Listing',
             'yayin_durumu' => 'aktif',
             'aktiflik_durumu' => 1,
