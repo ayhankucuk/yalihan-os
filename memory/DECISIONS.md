@@ -1,5 +1,34 @@
 # DECISIONS — Mimari Kararlar
 
+---
+
+## 2026-07-16 | Test İzolasyon + Lifecycle Yetkilendirme | Oturum 108
+
+### Karar: Counter-based Lifecycle Authorization
+
+**Problem:** `YalihanLifecycle::$isAuthorized` (bool) cross-test-class contamination yaratiyordu. Static boolean PHP OpCache ve process reuse nedeniyle testler arası sızıyordu.
+
+**Çözüm:** Bool → Counter
+
+```php
+// Önce (problem)
+public static bool $isAuthorized = false;
+
+// Sonra (çözüm)
+public static int $isTransitioningCounter = 0;
+```
+
+**Neden counter daha güvenli:**
+- Nested `transition()` çağrılarında (auto-chain): her increment/decrement dengeli
+- `finally` block her zaman counter'ı azaltır
+- `TestCase::tearDown()` counter'ı sıfırlar
+
+**İlişkili karar:** `parent::tearDown()` çağrısı eklendi — `RefreshDatabase` trait cleanup zinciri çalışsın diye.
+
+**Kabul edilen risk:** Static state hâlâ DI yerine global. Sprint 13'te `ExecutionContext` injection planlandı.
+
+---
+
 > Proje için alınan önemli mimari kararlar
 > Her karar: Tarih | Karar | Gerekçe | Sonuç
 > Format: Yıl-Ay-Gün
@@ -712,3 +741,66 @@ Controller → Service → Projection Tables (listing_search_projection)
 ```
 
 **Düzeltme:** Projection'a direkt yazma YASAK — sadece Event ile tetikle
+
+---
+
+## 2026-07-25 | EIOS Katmanları ve Evidence Model | Oturum 113
+
+### Karar: Antigravity Rol Yeniden Tanımı
+
+**Eski rol:** Kod doğrulama + mimari sertifikasyon
+**Yeni rol:** `Documentation & Governance Auditor`
+**Kapsam:** Markdown, ADR, Roadmap, Changelog, Canonical belgeler, dokümantasyon kalitesi
+
+---
+
+### Karar: Evidence Layer Model Oluşturuldu
+
+Her sprint çıktısı dört kanıt katmanından geçer. Hiçbir katman başka bir katmanın çıktısını tek başına sertifikalandıramaz.
+
+| Katman | Sahibi | Soru |
+|--------|--------|------|
+| Layer 1: Implementation | Claude Sonnet / Kilo | "Kod doğru mu?" |
+| Layer 2: Execution Evidence | CI (PHPUnit) | "Kod gerçekten çalışıyor mu?" |
+| Layer 3: Documentation | Antigravity | "Dokümantasyon doğru mu?" |
+| Layer 4: Certification | SAAB | "Bu kanıtlarla sertifikasyon verilebilir mi?" |
+
+Sertifikasyon durumları: `APPROVED` / `CERTIFIED` / `REJECTED`
+
+---
+
+### Karar: Sprint Packaging Standard v1.2
+
+Sprint 21'den itibaren tüm sprint teslimatları dört artefakt içermelidir:
+
+1. **Implementation Evidence** — commit hash, branch, dosyalar, kapsam
+2. **Execution Evidence** — executed command, PHPUnit ham çıktısı, assertion/skip/fail
+3. **Documentation Evidence** — CHANGELOG, Register, ADR, governance değişiklikleri
+4. **Certification Package** — riskler, Decision Authority: SAAB, final decision
+
+**v1.2'de kilitlendi.** Semantik versiyonlama: patch (v1.2.x), minor (v1.3), major (v2.0).
+
+---
+
+### Karar: EIOS Sprint Yaşam Döngüsü
+
+```
+Charter → Implementation → Evidence → Testing → Documentation → Certification → Handoff
+```
+
+SAAB v8 lifecycle ile uyumlu. Sprint 20'den itibaren tüm sprintler bu zinciri takip eder.
+
+---
+
+### Karar: Documentation Governance Modernization — Sprint 21 Odağı
+
+Kod yazmak yerine EIOS altyapısı inşası:
+
+1. Documentation Metadata Standard — her belge için zorunlu meta alanları
+2. Documentation Lifecycle Pipeline — yaşam döngüsü kuralları
+3. Canonical Inference Engine — otomatik kanoinik belirleme
+4. Documentation Risk Engine — risk analizi
+5. Semantic Duplicate Engine — anlamsal tekrar tespiti
+6. Documentation Health Dashboard — tek sayı sağlık skoru
+
+**Doküman artık sadece yazı değil.** Belgenin sahibi, durumu, yaşam döngüsü, kanıtı ve ilişkileri olan yönetilebilir varlık.
