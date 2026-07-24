@@ -1,7 +1,7 @@
 # Evidence Layer Model
 
 **Ratified By:** SAAB
-**Version:** 1.0
+**Version:** 1.1
 **Ratified:** 2026-07-24
 **Status:** ACTIVE
 
@@ -94,8 +94,6 @@ Every output in YALIHAN OS must pass through all four evidence layers. No layer 
 
 ---
 
----
-
 ## Sprint Packaging Standard (v1)
 
 **Mandatory for all sprint delivery packages from Sprint 21 onward.**
@@ -115,6 +113,7 @@ Every output in YALIHAN OS must pass through all four evidence layers. No layer 
 ### 2. Execution Evidence
 
 **Content:**
+- Executed command (e.g., `php artisan test --filter=Sprint21`)
 - Raw PHPUnit output
 - Total test count
 - Total assertion count
@@ -144,6 +143,7 @@ Every output in YALIHAN OS must pass through all four evidence layers. No layer 
 - Open risks
 - Closed risks
 - Certification scope
+- Decision Authority: SAAB
 - Final decision
 
 **Decision must be exactly one of:**
@@ -179,5 +179,6 @@ Compatible with the SAAB v8 lifecycle: Evidence → Testing → Certification �
 
 | Version | Date | Change |
 |---------|------|--------|
+| 1.2 | 2026-07-24 | F1: Added Decision Authority field to Certification Package. F2: Added Executed Command field to Execution Evidence. Fixed cosmetic duplicate `---`. |
 | 1.1 | 2026-07-24 | Added Sprint Packaging Standard (v1) as mandatory section |
 | 1.0 | 2026-07-24 | Initial — Ratified by SAAB |
