@@ -25,6 +25,21 @@
 
 ---
 
+## 🚦 SAAB Quality Gates Matrix
+
+| Gate | Success Criteria | Verification Method |
+|---|---|---|
+| **1. Architecture** | 100% compliant with ADR-038 taxonomy & layers | Preflight AST / Structural audit |
+| **2. Tenant Isolation** | Zero cross-tenant data leakage (`tenant_id` scope) | Automated PHPUnit feature tests |
+| **3. Replay Safety** | Projection 100% rebuildable from write-side source DB | Replay projection unit tests |
+| **4. Idempotency** | Re-importing exact same external event produces 0 duplicate records | Idempotency integration tests |
+| **5. Concurrency** | Double booking & range overlap prevented under row lock | Parallel concurrency tests |
+| **6. Integration** | Empirical iCal feed import proof creating availability blocks | Automated iCal integration test |
+| **7. Documentation** | ADR-038 + Progress Tracker + Bekçi Changelog fully updated | Governance preflight check |
+| **8. Certification Debt** | `CD-001` through `CD-005` preconditions reviewed and recorded | Governance Gate |
+
+---
+
 ## 🏗️ Architectural Topology & Source of Truth Hierarchy
 
 ```
