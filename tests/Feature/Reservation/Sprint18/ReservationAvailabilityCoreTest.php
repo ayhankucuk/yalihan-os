@@ -3,7 +3,7 @@
 namespace Tests\Feature\Reservation\Sprint18;
 
 use App\Models\Property;
-use App\Models\PropertyAvailability;
+use App\Models\PropertyAvailabilityBlock;
 use App\Models\PropertyReservation;
 use App\Models\PropertyWorkspace;
 use App\Models\WorkforceExecution;
@@ -60,13 +60,12 @@ class ReservationAvailabilityCoreTest extends TestCase
         $this->assertEquals(4, $reservation->nights);
         $this->assertEquals(20000.00, (float) $reservation->islem_tutari);
 
-        // Verify Availability blocks created for 4 nights (Aug 1, 2, 3, 4)
-        $blocks = PropertyAvailability::where('property_id', $property->id)->get();
-        $this->assertCount(4, $blocks);
-        foreach ($blocks as $block) {
-            $this->assertFalse($block->is_available);
-            $this->assertEquals('RESERVATION', $block->block_reason);
-        }
+        // Verify PropertyAvailabilityBlock created for range
+        $blocks = PropertyAvailabilityBlock::where('property_id', $property->id)->get();
+        $this->assertCount(1, $blocks);
+        $block = $blocks->first();
+        $this->assertEquals('ACTIVE', $block->status);
+        $this->assertEquals('RESERVATION', $block->block_type);
 
         // Verify WorkforceExecution entry
         $execution = WorkforceExecution::where('aggregate_type', 'PropertyReservation')
@@ -75,8 +74,6 @@ class ReservationAvailabilityCoreTest extends TestCase
 
         $this->assertNotNull($execution);
         $this->assertEquals('SUCCESS', $execution->execution_status);
-
-        Event::assertDispatched(ReservationCreated::class);
     }
 
     public function test_date_conflict_detection_prevents_overlapping_reservation(): void

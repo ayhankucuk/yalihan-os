@@ -16,6 +16,7 @@ class PropertyReservation extends BaseModel
     protected $fillable = [
         'tenant_id',
         'ilan_id',
+        'property_id',
         'start_date',
         'end_date',
         'nights',
@@ -38,12 +39,14 @@ class PropertyReservation extends BaseModel
         'booking_currency',
         'booking_fx_rate',
         'booking_country_code',
+        'idempotency_key',
         'ulke_id',
     ];
 
     protected $casts = [
         'tenant_id'        => 'integer',
         'ilan_id'          => 'integer',
+        'property_id'      => 'integer',
         'cancelled_at'     => 'datetime',
         'confirmed_at'     => 'datetime',
         'islem_tutari'     => 'decimal:2',

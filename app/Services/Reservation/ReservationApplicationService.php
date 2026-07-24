@@ -3,14 +3,13 @@
 namespace App\Services\Reservation;
 
 use App\Models\Property;
-use App\Models\PropertyAvailability;
+use App\Models\PropertyAvailabilityBlock;
 use App\Models\PropertyReservation;
 use App\Models\WorkforceExecution;
 use App\Domain\Reservation\Events\ReservationCreated;
+use App\Domain\Shared\ValueObjects\DateRange;
 use App\Domain\Shared\ValueObjects\Money;
 use App\Enums\ReservationState;
-use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use DomainException;
@@ -22,35 +21,50 @@ class ReservationApplicationService
     }
 
     /**
-     * Transactionally creates a reservation, locks availability dates, logs execution audit, and dispatches domain event.
+     * Transactionally creates a reservation with pessimistic row locking, idempotency check, range availability block, and commit-safe event dispatching.
      */
     public function createReservation(Property $property, array $data): PropertyReservation
     {
-        $startDate = $data['start_date'];
-        $endDate = $data['end_date'];
+        $idempotencyKey = $data['idempotency_key'] ?? null;
 
-        // 1. Conflict detection guard
-        if ($this->conflictDetector->hasConflict($property, $startDate, $endDate)) {
-            throw new DomainException("Date conflict detected: Property #{$property->id} is not available between {$startDate} and {$endDate}.");
+        // 1. Idempotency Replay Check
+        if (! empty($idempotencyKey)) {
+            $existing = PropertyReservation::where('tenant_id', $property->tenant_id)
+                ->where('idempotency_key', $idempotencyKey)
+                ->orderBy('id')
+                ->first();
+
+            if ($existing) {
+                return $existing;
+            }
         }
 
-        $start = Carbon::parse($startDate);
-        $end = Carbon::parse($endDate);
-        $nights = $start->diffInDays($end);
-
+        $dateRange = new DateRange($data['start_date'], $data['end_date']);
         $amount = $data['islem_tutari'] ?? $data['total_amount'] ?? 0;
         $currency = $data['currency'] ?? 'TRY';
         $money = new Money((float) $amount, $currency);
 
-        return DB::transaction(function () use ($property, $data, $startDate, $endDate, $nights, $money) {
-            // Create reservation
+        return DB::transaction(function () use ($property, $data, $dateRange, $money, $idempotencyKey) {
+            // 2. Pessimistic Row Lock to prevent race conditions
+            Property::where('tenant_id', $property->tenant_id)
+                ->whereKey($property->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // 3. Transactional Conflict Detection
+            if ($this->conflictDetector->hasConflict($property, $dateRange)) {
+                throw new DomainException("Date conflict detected: Property #{$property->id} is not available between {$dateRange->getStartsAtString()} and {$dateRange->getEndsAtString()}.");
+            }
+
+            // 4. Create PropertyReservation
             $reservation = PropertyReservation::create([
                 'tenant_id' => $property->tenant_id,
                 'property_id' => $property->id,
                 'commercial_offering_id' => $data['commercial_offering_id'] ?? null,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'nights' => $nights,
+                'idempotency_key' => $idempotencyKey,
+                'start_date' => $dateRange->getStartsAt()->toDateString(),
+                'end_date' => $dateRange->getEndsAt()->toDateString(),
+                'nights' => $dateRange->getNights(),
                 'guest_name' => $data['guest_name'] ?? 'Direct Client',
                 'guest_phone' => $data['guest_phone'] ?? null,
                 'guest_email' => $data['guest_email'] ?? null,
@@ -63,20 +77,20 @@ class ReservationApplicationService
                 'confirmed_at' => now(),
             ]);
 
-            // Lock availability dates (excluding checkout date)
-            $period = CarbonPeriod::create($startDate, Carbon::parse($endDate)->subDay()->toDateString());
-            foreach ($period as $date) {
-                PropertyAvailability::create([
-                    'property_id' => $property->id,
-                    'date' => $date->toDateString(),
-                    'is_available' => false,
-                    'block_reason' => 'RESERVATION',
-                    'source_system' => 'DIRECT_BOOKING',
-                    'reservation_id' => $reservation->id,
-                ]);
-            }
+            // 5. Create Range Availability Block
+            PropertyAvailabilityBlock::create([
+                'tenant_id' => $property->tenant_id,
+                'property_id' => $property->id,
+                'reservation_id' => $reservation->id,
+                'block_type' => 'RESERVATION',
+                'starts_at' => $dateRange->getStartsAtString(),
+                'ends_at' => $dateRange->getEndsAtString(),
+                'status' => 'ACTIVE',
+                'source' => 'DIRECT_BOOKING',
+                'idempotency_key' => $idempotencyKey,
+            ]);
 
-            // Record WorkforceExecution audit
+            // 6. Record WorkforceExecution Audit Trail
             WorkforceExecution::create([
                 'uuid' => (string) Str::uuid(),
                 'tenant_id' => $property->tenant_id,
@@ -90,13 +104,14 @@ class ReservationApplicationService
                 'input_snapshot' => $data,
                 'result_snapshot' => [
                     'reservation_id' => $reservation->id,
-                    'nights' => $nights,
-                    'locked_dates_count' => count($period),
+                    'nights' => $dateRange->getNights(),
                 ],
             ]);
 
-            // Dispatch domain event
-            ReservationCreated::dispatch($reservation);
+            // 7. Commit-Safe Event Dispatching
+            DB::afterCommit(function () use ($reservation) {
+                ReservationCreated::dispatch($reservation);
+            });
 
             return $reservation;
         });
