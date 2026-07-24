@@ -1,0 +1,101 @@
+# Evidence Layer Model
+
+**Ratified By:** SAAB
+**Version:** 1.0
+**Ratified:** 2026-07-24
+**Status:** ACTIVE
+
+---
+
+## Overview
+
+Every output in YALIHAN OS must pass through all four evidence layers. No layer may certify the output of another layer.
+
+---
+
+## Layer 1 — Implementation
+
+| | |
+|---|---|
+| **Owner** | Claude Sonnet / Kilo Agent |
+| **Question** | "Is the code correct?" |
+| **Output** | Production code, tests, migrations |
+| **Standard** | SAAB coding rules, thin controllers, service layer, strong typing, replay-safe events |
+
+---
+
+## Layer 2 — Execution Evidence
+
+| | |
+|---|---|
+| **Owner** | CI (PHPUnit) |
+| **Question** | "Does the code actually run?" |
+| **Output** | PHPUnit results, coverage, build logs, runtime evidence |
+| **Standard** | All Sprint-critical tests must pass. 0 regressions on certified code. |
+
+---
+
+## Layer 3 — Documentation
+
+| | |
+|---|---|
+| **Owner** | Antigravity |
+| **Question** | "Is the documentation correct?" |
+| **Output** | Changelog, Progress Tracker, Certification Debt Register, ADR consistency, governance audit |
+| **Standard** | Every completed sprint produces a session record in BEKCI_CHANGELOG.md. CD items are closed with evidence references. |
+
+---
+
+## Layer 4 — Certification
+
+| | |
+|---|---|
+| **Owner** | SAAB |
+| **Question** | "Can certification be granted based on this evidence?" |
+| **Output** | `APPROVED` / `CERTIFIED` / `REJECTED` |
+| **Standard** | All mandatory exit criteria met. All required evidence present. |
+
+---
+
+## Certification States
+
+| State | Meaning |
+|---|---|
+| `APPROVED BASED ON REPORTED EVIDENCE` | Report is internally consistent; independent evidence not yet verified by SAAB |
+| `CERTIFIED` | All four layers passed; SAAB has verified evidence |
+| `REJECTED` | One or more layers failed; remediation required |
+
+---
+
+## Rule
+
+> **No layer may certify the output of another layer.**
+
+- Layer 1 (Code) cannot claim Layer 2 (CI) passed
+- Layer 3 (Docs) cannot claim Layer 2 (CI) passed
+- Layer 4 (SAAB) must independently evaluate all layers before certifying
+- Agents report to their layer. SAAB judges across all layers.
+
+---
+
+## Evidence Requirements by Sprint Type
+
+### Stabilization Sprint (e.g. Sprint 20)
+- Layer 1: Test fixes, no new capability
+- Layer 2: PHPUnit — all Sprint-critical tests pass, regression count = 0
+- Layer 3: CD items closed in CERTIFICATION_DEBT_REGISTER.md, BEKCI_CHANGELOG.md updated
+- Layer 4: SAAB reviews and certifies
+
+### Feature Sprint
+- Layer 1: New capability implemented
+- Layer 2: New tests written and passing, all existing tests still passing
+- Layer 3: New ADR if architecture changed, BEKCI_CHANGELOG.md updated, Charter closed
+- Layer 4: SAAB reviews and certifies
+
+---
+
+## Revision History
+
+| Version | Date | Change |
+|---------|------|--------|
+| 1.0 | 2026-07-24 | Initial — Ratified by SAAB |
