@@ -1,237 +1,139 @@
 # Architectural Decision Records (ADR)
-
-**Purpose:** Document significant architectural decisions to prevent context drift and enable self-protecting governance.
-
-**Status:** Mandatory for L5 (Self-Protecting System) maturity.
-
----
-
-## Why ADRs?
-
-**Without ADRs:**
-
-- 6 months later: "Why did we do this?" → nobody remembers
-- New developers: weeks to understand architecture
-- AI agents: drift and make contradictory decisions
-- Tech debt: accumulates silently
-
-**With ADRs:**
-
-- Instant answer to "why" questions
-- Onboarding: days instead of weeks
-- AI agent alignment: consistent with past decisions
-- Tech debt: visible and trackable
+**Ratified Charter:** SAAB v11.1 (Governance Frozen)  
+**Status:** ACTIVE  
+**Last Updated:** 2026-07-24  
 
 ---
 
-## When to Write an ADR
+## Purpose
 
-**Required for:**
-
-- Database schema changes (new tables, column renames)
-- API contract changes (new endpoints, breaking changes)
-- Framework upgrades (Laravel, Vite, Alpine.js)
-- Architecture patterns (new module structure, service extraction)
-- Security policies (auth flow changes, permission model)
-- Performance optimizations (caching strategy, query optimization)
-- Context7 rule additions (new canonical fields)
-
-**Not required for:**
-
-- Bug fixes (unless they reveal architectural issue)
-- UI tweaks (color changes, spacing adjustments)
-- Content updates (text changes, translations)
-- Routine maintenance (dependency updates, log rotation)
+Architectural Decision Records (ADRs) document significant architectural decisions to prevent context drift and enable self-protecting governance. They capture the context, alternatives considered, decision details, consequences, and primary codebase evidence.
 
 ---
 
-## ADR Template
+## Status Lifecycle
+
+Every ADR transitions through the following lifecycle states:
+
+```
+Proposed ➔ Accepted ➔ Implemented ➔ Certified ➔ Active ➔ Superseded / Rejected / Deprecated
+```
+
+*   **Proposed:** The ADR has been drafted and is under review by the SAAB.
+*   **Accepted:** The decision has been approved by the SAAB, and implementation is authorized.
+*   **Implemented:** The decision has been coded and merged into the repository.
+*   **Certified:** The implementation has passed all automated quality gates and tests.
+*   **Active:** The decision is currently in effect across the codebase.
+*   **Superseded:** Replaced by a newer ADR (must reference the successor ADR).
+*   **Rejected:** The proposal was reviewed and declined by the SAAB.
+*   **Deprecated:** Kept for historical reference, but no longer enforced or active.
+
+---
+
+## Naming Convention
+
+ADRs are stored in this directory (`docs/adr/`) and follow the naming format:
+```
+NNN-kebab-case-title.md
+```
+Where `NNN` is a zero-padded, three-digit sequential integer (e.g. `001-workspace-business-aggregate.md`).
+
+---
+
+## Enforcement & Code Integration
+
+*   **SAAB Approval Requirement:** No ADR can transition to `Accepted` or `Active` without a recorded Board Resolution and approval check.
+*   **Relationship to Code & Tests:** Every `Accepted` or `Active` ADR must reference concrete codebase classes, database columns, or feature tests that demonstrate compliance.
+*   **Relationship to ARCHITECTURE.md:** When an ADR changes state, [ARCHITECTURE.md](../ARCHITECTURE.md) must be updated to reflect the new component states.
+*   **Superseding Process:** Historical records must not be edited or deleted. When a decision changes, a new ADR is created, and the old ADR is updated to `Superseded by ADR-NNN`.
+
+---
+
+## Standard Template
+
+All future ADRs must be written using the following template:
 
 ```markdown
-# ADR-XXX: [Short Decision Title]
+# ADR-NNN: Title
 
-**Date:** YYYY-MM-DD
-**Status:** [Proposed | Accepted | Deprecated | Superseded by ADR-YYY]
-**Deciders:** [Names or roles]
-**Related:** [Links to PRs, issues, other ADRs]
+## Status
+[Proposed | Accepted | Implemented | Certified | Active | Superseded by ADR-YYY | Deprecated | Rejected]
 
----
+## Date
+YYYY-MM-DD
 
 ## Context
-
-[What is the issue we're addressing? What is the current state? What constraints exist?]
-
-Example:
-
-> Multiple field naming conventions (English + Turkish) causing Context7 violations. Scanner fails on `status`, `http_status_code`, `ok` fields. Team debates whether to keep English or fully migrate to Turkish canonical naming.
-
----
+[What is the problem or opportunity? What constraints, options, or legacy issues exist?]
 
 ## Decision
-
-[What did we decide? Be clear and specific.]
-
-Example:
-
-> All telemetry fields will use Context7 canonical Turkish naming:
->
-> - `http_status_code` → `http_durum_kodu`
-> - `ok` / `success` → `basarili`
-> - `url` → `istek_url`
-> - `error` / `message` → `hata_mesaji`
-
----
-
-## Consequences
-
-### Positive
-
-- [What benefits does this decision bring?]
-
-### Negative
-
-- [What trade-offs or costs does this decision have?]
-
-### Neutral
-
-- [What changes without clear benefit or cost?]
-
-Example:
-**Positive:**
-
-- Context7 scanner passes consistently (0 violations)
-- Long-term maintenance clarity (no "status" ambiguity)
-- AI agents align with canonical naming
-
-**Negative:**
-
-- Migration effort: ~200 lines of code changed
-- Team learning curve: Turkish field names
-
-**Neutral:**
-
-- Frontend API contracts unchanged (payload structure same)
-
----
+[What is the chosen design or pattern? Be specific and clear.]
 
 ## Alternatives Considered
+### Option 1: [Name]
+*   **Pros:** [Benefits]
+*   **Cons:** [Drawbacks]
+*   **Reason for Rejection:** [Why not chosen]
 
-### Option 1: [Alternative approach]
+### Option 2: [Name]
+*   **Pros:** [Benefits]
+*   **Cons:** [Drawbacks]
+*   **Reason for Rejection:** [Why not chosen]
 
-**Pros:** [Benefits]
-**Cons:** [Drawbacks]
-**Reason for rejection:** [Why we didn't choose this]
+## Consequences
+### Positive
+*   [Expected improvements]
 
-### Option 2: [Another alternative]
+### Negative
+*   [Trade-offs and costs]
 
-**Pros:** [Benefits]
-**Cons:** [Drawbacks]
-**Reason for rejection:** [Why we didn't choose this]
+### Risks
+*   [Known risks and mitigations]
 
-Example:
-**Option 1: Keep English Fields**
+## Evidence
+*   **Classes/Interfaces:** [FQCN path]
+*   **Database Migrations:** [Migration file names]
+*   **Automated Tests:** [Test names/paths]
 
-- Pros: No code changes required
-- Cons: Context7 violations continue, scanner fails
-- Rejected: Technical debt grows, governance breaks
+## Related Decisions
+*   [ADR-XXX](XXX-title.md)
 
-**Option 2: Dual Field Mapping**
+## Supersedes
+*   [ADR-YYY]
 
-- Pros: Backward compatibility
-- Cons: 2x complexity, maintenance nightmare
-- Rejected: Complexity overhead outweighs benefits
+## Superseded By
+*   [ADR-ZZZ]
 
----
-
-## Implementation Notes
-
-[Step-by-step guidance for implementing this decision. What files need to change? What scripts to run?]
-
-Example:
-
-1. Update `resources/js/wizard/core/telemetry.js` → canonical fields
-2. Update `resources/js/admin/ilan-wizard-page.js` → canonical fields
-3. Update `config/telemetry-events.php` → schema definitions
-4. Run `php artisan sab:integrity-scan` → verify 0 violations
-5. Run `php artisan test --filter TelemetryEndpointTest` → verify tests pass
-
----
-
-## References
-
-- [Link to Context7 Authority](../../.sab/authority.json)
-- [Related GitHub Issue #XXX](https://github.com/...)
-- [Related PR #XXX](https://github.com/...)
-- [External documentation](https://...)
+## SAAB Approval
+*   **Board Resolution:** [BR-YYYYMMDD-ID]
+*   **Status:** [APPROVED | AWAITING REVIEW]
 ```
 
 ---
 
-## Existing ADRs
+## Existing ADR Registry
 
-| # | Dosya | Başlık | Tarih | Durum |
-|---|-------|--------|-------|-------|
-| 001 | [context7-canonical-turkish-fields](2026-02-15-context7-canonical-turkish-fields.md) | Context7 Kanonik Türkçe Alan Adları | 2026-02-15 | ✅ Kabul |
-| 002 | [performance-regression-ci-gate](2026-02-15-performance-regression-ci-gate.md) | Performance Regression CI Gate | 2026-02-15 | ✅ Kabul |
-| 003 | [no-raw-fetch-policy](2026-02-15-no-raw-fetch-policy.md) | Ham Fetch Yasağı Politikası | 2026-02-15 | ✅ Kabul |
-| 004 | [governance-simplification-analysis](2026-02-15-governance-simplification-analysis.md) | Governance Basitleştirme Analizi | 2026-02-15 | ✅ Kabul |
-| 005 | [api-contract-freeze](2026-02-15-api-contract-freeze.md) | API Kontrat Dondurma | 2026-02-15 | ✅ Kabul |
-| 006 | [feature-assignments-architectural-freeze](2026-02-21-feature-assignments-architectural-freeze.md) | Feature Assignment Mimari Dondurma | 2026-02-21 | ✅ Kabul |
-| 007 | [governance-enforcement-layer](2026-02-21-governance-enforcement-layer.md) | Governance Uygulama Katmanı | 2026-02-21 | ✅ Kabul |
-| 008 | [ssot-determinism-constitution](2026-02-21-ssot-determinism-constitution.md) | SSOT Determinizm Anayasası | 2026-02-21 | ✅ Kabul |
-| 009 | [controller-mutation-delegation-batch5](2026-03-02-controller-mutation-delegation-batch5.md) | Controller Mutation Delegation | 2026-03-02 | ✅ Kabul |
-| 010 | [sab-production-seal-v1](2026-03-03-sab-production-seal-v1.md) | SAB Production Seal v1 | 2026-03-03 | ✅ Kabul |
-| 011 | [ai-decision-engine](2026-04-03-ai-decision-engine.md) | AI Karar Motoru | 2026-04-03 | ✅ Kabul |
-| 012 | [sidebar-5-layer-architecture](2026-04-03-sidebar-5-layer-architecture.md) | Sidebar 5 Katmanlı Mimari | 2026-04-03 | ✅ Kabul |
-| 013 | [sab4-multi-agent-orchestration](2026-04-04-sab4-multi-agent-orchestration.md) | SAB4 Multi-Agent Orkestrasyon | 2026-04-04 | ✅ Kabul |
-| 014 | [sab8-decision-action-feedback-loop](2026-04-04-sab8-decision-action-feedback-loop.md) | SAB8 Karar-Aksiyon Döngüsü | 2026-04-04 | ✅ Kabul |
-| 015 | [env-drift-guard-contract](2026-04-10-env-drift-guard-contract.md) | Env Drift Guard Kontratı | 2026-04-10 | ✅ Kabul |
-| 016 | [h1-ledger-legacy-import-migration](2026-04-21-h1-ledger-legacy-import-migration.md) | Ledger Legacy Import Migration | 2026-04-21 | ✅ Kabul |
-| 017 | [h4-testing-environment-schema-authority](2026-04-21-h4-testing-environment-schema-authority.md) | Test Ortamı Schema Otoritesi | 2026-04-21 | ✅ Kabul |
-| 018 | [h7-problem-analyzer-v1-pack-p0](2026-04-21-h7-problem-analyzer-v1-pack-p0.md) | Problem Analyzer v1 Pack P0 | 2026-04-21 | ✅ Kabul |
-| 019 | [bekci-v2-1-cognitive-guardian-ast](2026-05-15-bekci-v2-1-cognitive-guardian-ast.md) | Bekçi v2.1 Bilişsel Muhafız AST | 2026-05-15 | ✅ Kabul |
-| 020 | [governance-diff-viewer-cli-read-model](020-governance-diff-viewer-cli-read-model.md) | Governance Diff Viewer CLI Read Model | — | ✅ Kabul |
-| **021** | [**sprint2-architecture-decisions**](2026-06-15-sprint2-architecture-decisions.md) | **Sprint 2 Mimari Kararları (#19,#28,#58,#60)** | 2026-06-15 | ✅ Kabul |
-
----
-
-## ADR Lifecycle
-
-1. **Proposed:** ADR written, under review
-2. **Accepted:** Team approved, implementation in progress
-3. **Deprecated:** Decision no longer valid, kept for history
-4. **Superseded:** Replaced by newer ADR (link to successor)
-
----
-
-## Enforcement
-
-**Quality Gate:** ADRs are checked during PR review. Structural changes without ADR reference = PR rejection.
-
-**Automated Check:**
-
-```bash
-# .github/workflows/adr-check.yml
-if [[ $(git diff --name-only | grep -E 'database|config|app/Http|routes') ]]; then
-  if ! grep -q "ADR-" "$PR_BODY"; then
-    echo "❌ Structural change detected without ADR reference"
-    exit 1
-  fi
-fi
-```
-
----
-
-## Best Practices
-
-1. **Write ADRs early:** Before implementation, not after.
-2. **Be specific:** Avoid vague language like "improve performance."
-3. **Document alternatives:** Show you considered trade-offs.
-4. **Link everything:** PRs, issues, related ADRs.
-5. **Update when superseded:** Don't delete old ADRs, mark as deprecated.
-6. **Keep it short:** Target 1 page (300-500 words).
-7. **Use examples:** Show concrete code snippets.
-
----
-
-**Result:** With ADRs, the system becomes **self-documenting** and **drift-resistant**. Future engineers (and AI agents) can understand "why" instantly, not just "what."
+| # | File | Title | Date | Status |
+|---|---|---|---|---|
+| 001 | [context7-canonical-turkish-fields](2026-02-15-context7-canonical-turkish-fields.md) | Context7 Kanonik Türkçe Alan Adları | 2026-02-15 | ✅ Active |
+| 002 | [performance-regression-ci-gate](2026-02-15-performance-regression-ci-gate.md) | Performance Regression CI Gate | 2026-02-15 | ✅ Active |
+| 003 | [no-raw-fetch-policy](2026-02-15-no-raw-fetch-policy.md) | Ham Fetch Yasağı Politikası | 2026-02-15 | ✅ Active |
+| 004 | [governance-simplification-analysis](2026-02-15-governance-simplification-analysis.md) | Governance Basitleştirme Analizi | 2026-02-15 | ✅ Active |
+| 005 | [api-contract-freeze](2026-02-15-api-contract-freeze.md) | API Kontrat Dondurma | 2026-02-15 | ✅ Active |
+| 006 | [feature-assignments-architectural-freeze](2026-02-21-feature-assignments-architectural-freeze.md) | Feature Assignment Mimari Dondurma | 2026-02-21 | ✅ Active |
+| 007 | [governance-enforcement-layer](2026-02-21-governance-enforcement-layer.md) | Governance Uygulama Katmanı | 2026-02-21 | ✅ Active |
+| 008 | [ssot-determinism-constitution](2026-02-21-ssot-determinism-constitution.md) | SSOT Determinizm Anayasası | 2026-02-21 | ✅ Active |
+| 009 | [controller-mutation-delegation-batch5](2026-03-02-controller-mutation-delegation-batch5.md) | Controller Mutation Delegation | 2026-03-02 | ✅ Active |
+| 010 | [sab-production-seal-v1](2026-03-03-sab-production-seal-v1.md) | SAB Production Seal v1 | 2026-03-03 | ✅ Active |
+| 011 | [ai-decision-engine](2026-04-03-ai-decision-engine.md) | AI Karar Motoru | 2026-04-03 | ✅ Active |
+| 012 | [sidebar-5-layer-architecture](2026-04-03-sidebar-5-layer-architecture.md) | Sidebar 5 Katmanlı Mimari | 2026-04-03 | ✅ Active |
+| 013 | [sab4-multi-agent-orchestration](2026-04-04-sab4-multi-agent-orchestration.md) | SAB4 Multi-Agent Orkestrasyon | 2026-04-04 | ✅ Active |
+| 014 | [sab8-decision-action-feedback-loop](2026-04-04-sab8-decision-action-feedback-loop.md) | SAB8 Karar-Aksiyon Döngüsü | 2026-04-04 | ✅ Active |
+| 015 | [env-drift-guard-contract](2026-04-10-env-drift-guard-contract.md) | Env Drift Guard Kontratı | 2026-04-10 | ✅ Active |
+| 016 | [h1-ledger-legacy-import-migration](2026-04-21-h1-ledger-legacy-import-migration.md) | Ledger Legacy Import Migration | 2026-04-21 | ✅ Active |
+| 017 | [h4-testing-environment-schema-authority](2026-04-21-h4-testing-environment-schema-authority.md) | Test Ortamı Schema Otoritesi | 2026-04-21 | ✅ Active |
+| 018 | [h7-problem-analyzer-v1-pack-p0](2026-04-21-h7-problem-analyzer-v1-pack-p0.md) | Problem Analyzer v1 Pack P0 | 2026-04-21 | ✅ Active |
+| 019 | [bekci-v2-1-cognitive-guardian-ast](2026-05-15-bekci-v2-1-cognitive-guardian-ast.md) | Bekçi v2.1 Bilişsel Muhafız AST | 2026-05-15 | ✅ Active |
+| 020 | [governance-diff-viewer-cli-read-model](020-governance-diff-viewer-cli-read-model.md) | Governance Diff Viewer CLI Read Model | — | ✅ Active |
+| 021 | [sprint2-architecture-decisions](2026-06-15-sprint2-architecture-decisions.md) | Sprint 2 Mimari Kararları (#19,#28,#58,#60) | 2026-06-15 | ✅ Active |
+| 041 | [context-isolation-standard](2026-06-28-adr041-context-isolation-standard.md) | Context Isolation Standard | 2026-06-28 | ✅ Active |
+| 042 | [adr042-property-aggregate-root-design](2026-07-15-adr042-property-aggregate-root-design.md) | Property Aggregate Root Design | 2026-07-15 | ✅ Active |
