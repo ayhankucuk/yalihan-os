@@ -1,9 +1,9 @@
 # Evidence Layer Model
 
 **Ratified By:** SAAB
-**Version:** 1.1
+**Version:** 1.2
 **Ratified:** 2026-07-24
-**Status:** ACTIVE
+**Status:** ACTIVE — Locked at v1.2. No new mandatory fields. Changes follow semantic versioning: patch (v1.2.x) for cosmetics/examples, minor (v1.3) for backward-compatible additions, major (v2.0) for breaking changes.
 
 ---
 
