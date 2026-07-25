@@ -1,3 +1,19 @@
+---
+id: progress-tracker
+schema_version: 1.0
+version: "1.0"
+status: canonical
+owner: saab
+domain: governance
+created_at: 2026-06-01
+reviewed_at: 2026-07-25
+review_due: 2027-07-25
+supersedes: []
+superseded_by: []
+evidence: {}
+tags: []
+---
+
 # Governance Progress Tracker
 **Son Güncelleme:** 2026-07-25 (Oturum 113 — Sprint 20 Stabilization ✅ COMPLETE + EIOS Evidence Model ✅ ACTIVE + Sprint 21 Charter ✅ APPROVED)
 **Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + ✅ **SPRINT 10 CERTIFIED** + 🏠 **SPRINT 11 CERTIFIED** + 🏛️ **SAAB GOVERNANCE FROZEN** + 🚀 **SPRINT 12 ✅ COMPLETE** + 🧪 **TENANT ISOLATION TESTS ✅ ALL GREEN** + 🏦 **SPRINT 17B ✅ CERTIFIED** + 📅 **SPRINT 18 ✅ CERTIFIED WITH LIMITATIONS** + 🛡️ **CD-005 ✅ CLOSED** + 🎫 **RESERVATION STATE MACHINE ✅ COMPLETE** + 📅 **UNIFIED CALENDAR PROJECTION ✅ COMPLETE** + 🛡️ **SPRINT 20 ✅ COMPLETE** + 📋 **EVIDENCE MODEL v1.2 🔒 LOCKED** + 📅 **SPRINT 21 CHARTER ✅ APPROVED**

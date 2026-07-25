@@ -1,3 +1,19 @@
+---
+id: memory-decisions
+schema_version: 1.0
+version: "1.0"
+status: canonical
+owner: agent
+domain: governance
+created_at: 2026-06-01
+reviewed_at: 2026-07-25
+review_due: 2027-07-25
+supersedes: []
+superseded_by: []
+evidence: {}
+tags: []
+---
+
 # DECISIONS — Mimari Kararlar
 
 ---

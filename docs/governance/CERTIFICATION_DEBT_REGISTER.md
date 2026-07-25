@@ -1,3 +1,19 @@
+---
+id: certification-debt-register
+schema_version: 1.0
+version: "1.0"
+status: canonical
+owner: saab
+domain: governance
+created_at: 2026-07-15
+reviewed_at: 2026-07-24
+review_due: 2027-07-24
+supersedes: []
+superseded_by: []
+evidence: {}
+tags: []
+---
+
 # 🏛️ Yalıhan OS — Certification Debt Register (SSOT)
 
 **Ratified By:** Strategic Architecture & Automation Board (SAAB)  

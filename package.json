@@ -71,7 +71,9 @@
     "seeder:verify": "node scripts/guards/seeder-gate.cjs",
     "seeder:baseline": "node scripts/guards/seeder-gate.cjs --baseline",
     "sab:check": "php artisan sab:integrity-scan && php artisan guard:actions:v10_9 && php artisan quality:gate",
-    "sab:gate": "./scripts/guards/quality-gate.sh"
+    "sab:gate": "./scripts/guards/quality-gate.sh",
+    "docs:metadata:lint": "node scripts/guards/doc-metadata-linter.cjs",
+    "docs:metadata:lint:verbose": "node scripts/guards/doc-metadata-linter.cjs --verbose"
   },
   "dependencies": {
     "@alpinejs/collapse": "^3.15.0",

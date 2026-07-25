@@ -1,3 +1,29 @@
+---
+id: sprint-21-charter
+schema_version: 1.0
+version: "1.0"
+status: approved
+owner: saab
+domain: governance
+created_at: 2026-07-25
+reviewed_at: 2026-07-25
+review_due: 2026-08-25
+supersedes: []
+superseded_by: []
+evidence:
+  commits:
+    - a3e86ac
+  tests: []
+  adr: []
+  changelog:
+    - Oturum 113
+tags:
+  - sprint
+  - charter
+  - sprint-21
+  - governance
+---
+
 # 📜 Sprint 21 Charter: Documentation Governance Modernization
 
 **Sprint:** Sprint 21  

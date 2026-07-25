@@ -1,3 +1,30 @@
+---
+id: evidence-model-v1
+schema_version: 1.0
+version: "1.2"
+status: canonical
+owner: saab
+domain: governance
+created_at: 2026-07-24
+reviewed_at: 2026-07-25
+review_due: 2027-07-25
+supersedes: []
+superseded_by: []
+evidence:
+  commits:
+    - f9075ac
+    - 5f6026a
+    - 8c79040
+  tests: []
+  adr: []
+  changelog:
+    - Oturum 113
+tags:
+  - evidence
+  - governance
+  - sprint-21
+---
+
 # Evidence Layer Model
 
 **Ratified By:** SAAB
