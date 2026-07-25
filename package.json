@@ -73,7 +73,10 @@
     "sab:check": "php artisan sab:integrity-scan && php artisan guard:actions:v10_9 && php artisan quality:gate",
     "sab:gate": "./scripts/guards/quality-gate.sh",
     "docs:metadata:lint": "node scripts/guards/doc-metadata-linter.cjs",
-    "docs:metadata:lint:verbose": "node scripts/guards/doc-metadata-linter.cjs --verbose"
+    "docs:metadata:lint:verbose": "node scripts/guards/doc-metadata-linter.cjs --verbose",
+    "docs:lifecycle:pipeline": "node scripts/guards/doc-lifecycle-pipeline.cjs",
+    "docs:lifecycle:pipeline:verbose": "node scripts/guards/doc-lifecycle-pipeline.cjs --verbose",
+    "docs:governance:all": "npm run docs:metadata:lint && npm run docs:lifecycle:pipeline"
   },
   "dependencies": {
     "@alpinejs/collapse": "^3.15.0",
