@@ -80,7 +80,9 @@
     "docs:inference:canonical": "node scripts/guards/doc-canonical-inference.cjs",
     "docs:inference:canonical:verbose": "node scripts/guards/doc-canonical-inference.cjs --verbose",
     "docs:risk:engine": "node scripts/guards/doc-risk-engine.cjs",
-    "docs:risk:engine:verbose": "node scripts/guards/doc-risk-engine.cjs --verbose"
+    "docs:risk:engine:verbose": "node scripts/guards/doc-risk-engine.cjs --verbose",
+    "docs:semantic:duplicate": "node scripts/guards/doc-semantic-duplicate.cjs",
+    "docs:semantic:duplicate:verbose": "node scripts/guards/doc-semantic-duplicate.cjs --verbose"
   },
   "dependencies": {
     "@alpinejs/collapse": "^3.15.0",
