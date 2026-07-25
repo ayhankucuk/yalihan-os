@@ -76,7 +76,9 @@
     "docs:metadata:lint:verbose": "node scripts/guards/doc-metadata-linter.cjs --verbose",
     "docs:lifecycle:pipeline": "node scripts/guards/doc-lifecycle-pipeline.cjs",
     "docs:lifecycle:pipeline:verbose": "node scripts/guards/doc-lifecycle-pipeline.cjs --verbose",
-    "docs:governance:all": "npm run docs:metadata:lint && npm run docs:lifecycle:pipeline"
+    "docs:governance:all": "npm run docs:metadata:lint && npm run docs:lifecycle:pipeline",
+    "docs:inference:canonical": "node scripts/guards/doc-canonical-inference.cjs",
+    "docs:inference:canonical:verbose": "node scripts/guards/doc-canonical-inference.cjs --verbose"
   },
   "dependencies": {
     "@alpinejs/collapse": "^3.15.0",
