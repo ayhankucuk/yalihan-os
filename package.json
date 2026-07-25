@@ -82,7 +82,10 @@
     "docs:risk:engine": "node scripts/guards/doc-risk-engine.cjs",
     "docs:risk:engine:verbose": "node scripts/guards/doc-risk-engine.cjs --verbose",
     "docs:semantic:duplicate": "node scripts/guards/doc-semantic-duplicate.cjs",
-    "docs:semantic:duplicate:verbose": "node scripts/guards/doc-semantic-duplicate.cjs --verbose"
+    "docs:semantic:duplicate:verbose": "node scripts/guards/doc-semantic-duplicate.cjs --verbose",
+    "docs:health:dashboard": "node scripts/guards/doc-health-dashboard.cjs",
+    "docs:health:dashboard:verbose": "node scripts/guards/doc-health-dashboard.cjs --verbose",
+    "docs:governance:run": "node scripts/guards/doc-metadata-linter.cjs && node scripts/guards/doc-lifecycle-pipeline.cjs && node scripts/guards/doc-canonical-inference.cjs && node scripts/guards/doc-risk-engine.cjs && node scripts/guards/doc-semantic-duplicate.cjs && node scripts/guards/doc-health-dashboard.cjs"
   },
   "dependencies": {
     "@alpinejs/collapse": "^3.15.0",
