@@ -86,6 +86,9 @@ class IlanCrudService
                 $this->photoService->uploadPhotos($ilan, $data['fotograflar']);
             }
 
+            // 9. Handle Yazlık Fiyatlandırma (Seasonal Pricing)
+            $this->handleSeasonalPricing($ilan, $data);
+
             // 🆕 Authority Transition: TASLAK (Create)
             $targetEnum = IlanDurumu::normalize($data['yayin_durumu'] ?? $data['status'] ?? 'taslak'); // context7-ignore: legacy API fallback
             $this->lifecycle->transition($ilan, $targetEnum, null, ['source' => 'crud_store']);
@@ -201,7 +204,7 @@ class IlanCrudService
         // Ham veri burada sadece yetki kontrolü veya başlangıç değeri için saklanabilir.
         $ilan->danisman_id = $data['danisman_id'] ?? Auth::id();
         $ilan->ilan_sahibi_id = $data['ilan_sahibi_id'] ?? null;
-        $ilan->danisman_id = $data['danisman_id'] ?? Auth::id();
+        $ilan->user_id = $data['user_id'] ?? $ilan->user_id ?? null;
         $ilan->crm_only = $data['crm_only'] ?? false;
 
         // ======================================================================
@@ -486,6 +489,63 @@ class IlanCrudService
                     'taks' => $data['taks'] ?? null,
                 ]
             );
+        }
+    }
+
+    /**
+     * Handle Yazlık Fiyatlandırma (Seasonal Pricing)
+     *
+     * Sprint 12C Wave 2: Migration
+     *
+     * Creates seasonal pricing records for vacation rental listings.
+     * Supports two input formats:
+     * 1. $data['periods'] - array of structured period data
+     * 2. $data['yazlik_fiyatlandirma_json'] - JSON string
+     *
+     * @param Ilan $ilan
+     * @param array $data
+     */
+    private function handleSeasonalPricing(Ilan $ilan, array $data): void
+    {
+        $periods = $data['periods'] ?? null;
+
+        // Parse JSON format if periods not directly provided
+        if (!$periods && !empty($data['yazlik_fiyatlandirma_json'])) {
+            $decoded = json_decode($data['yazlik_fiyatlandirma_json'], true);
+            if (is_array($decoded)) {
+                $periods = $decoded;
+            }
+        }
+
+        if (empty($periods) || !is_array($periods)) {
+            return;
+        }
+
+        foreach ($periods as $period) {
+            if (!is_array($period)) {
+                continue;
+            }
+
+            // Normalize field names (support both English and Turkish keys)
+            $seasonType = $period['season_type'] ?? $period['sezon_tipi'] ?? 'low';
+            $startDate = $period['start_date'] ?? $period['baslangic_tarihi'] ?? null;
+            $endDate = $period['end_date'] ?? $period['bitis_tarihi'] ?? null;
+            $dailyPrice = $period['price'] ?? $period['gunluk_fiyat'] ?? 0;
+            $minStay = $period['min_stay'] ?? $period['minimum_konaklama'] ?? 1;
+
+            if (!$startDate || !$endDate) {
+                continue;
+            }
+
+            \App\Models\YazlikFiyatlandirma::create([
+                'ilan_id' => $ilan->id,
+                'sezon_tipi' => $seasonType,
+                'baslangic_tarihi' => $startDate,
+                'bitis_tarihi' => $endDate,
+                'gunluk_fiyat' => $dailyPrice,
+                'minimum_konaklama' => $minStay,
+                'is_active' => \App\Enums\AktiflikDurumu::AKTIF,
+            ]);
         }
     }
 

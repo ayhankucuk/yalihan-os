@@ -2,47 +2,46 @@
 
 namespace App\Http\Controllers\Api;
 
-/**
- * @sab-ignore-thin
- */
-
+use App\Application\Listing\Commands\SubmitIlanWizardCommand;
+use App\Application\Listing\Services\IlanWizardApplicationService;
 use App\Http\Controllers\Controller;
-use App\Exceptions\TemplateCategoryMismatchException;
-use App\Exceptions\TemplateNotFoundException;
 use App\Models\IlanKategori;
 use App\Models\YayinTipiSablonu;
 use App\Rules\CoordinateRequiredRule;
 use App\Services\Category\CategoryTreeService;
-use App\Services\Ilan\IlanCrudService;
 use App\Services\Wizard\FieldEngine\FieldResolver;
 use App\Services\Wizard\WizardDraftService;
 use App\Services\Response\ResponseService;
 use App\Services\Wizard\DynamicFieldValueHydrator;
 use App\Services\Wizard\DynamicFieldValueMapper;
-use App\Services\Wizard\EffectiveListingTypeResolver;
 use App\Services\Wizard\EffectiveWizardSchemaResolver;
-use App\Services\Wizard\WizardGateService;
 use App\Services\Wizard\WizardAIAssistantService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * 🧙 İlan Sihirbazı Controller - 5 Aşamalı Validasyon
+ * IlanWizardController
  *
- * ✅ SAB L5 Compliance: Pure delegation — no DB::transaction
- * ✅ SAB Phase 17B: Template guard on submit
- * ✅ UPS: Publication type policy validation on submit
- * Controller = orchestration only. Service = atomic boundary.
+ * Sprint 12C Wave 2: Migration to Application Service
+ *
+ * Responsibilities:
+ * - HTTP request/response handling
+ * - Session read/write
+ * - Request validation
+ * - Application service invocation
+ * - HTTP response generation
+ *
+ * HTTP Orchestration Only — no business logic, no persistence.
+ *
+ * @see IlanWizardApplicationService for business orchestration
  */
 class IlanWizardController extends Controller
 {
     public function __construct(
-        private readonly WizardGateService $gateService,
-        private readonly EffectiveListingTypeResolver $listingTypeResolver,
+        private readonly IlanWizardApplicationService $wizardService,
         private readonly EffectiveWizardSchemaResolver $schemaResolver,
         private readonly DynamicFieldValueMapper $fieldMapper,
         private readonly DynamicFieldValueHydrator $fieldHydrator,
-        private readonly IlanCrudService $ilanCrudService,
         private readonly CategoryTreeService $categoryTreeService,
         private readonly FieldResolver $fieldResolver,
         private readonly WizardDraftService $draftService,
@@ -234,12 +233,20 @@ class IlanWizardController extends Controller
     /**
      * 💾 Tüm Aşamaları Tamamlayıp İlan Oluştur
      *
-     * ✅ SAB L5: Pure delegation
-     * ✅ SAB Phase 17B: Template guard — mapping yoksa ilan oluşturulamaz
+     * Sprint 12C Wave 2: Application Service Migration
+     *
+     * Controller Responsibilities:
+     * - HTTP request/response handling
+     * - Session extraction
+     * - Idempotency guards (session-based)
+     * - Application service delegation
+     * - Session cleanup
+     *
+     * @see IlanWizardApplicationService for business orchestration
      */
     public function submitWizard(Request $request): JsonResponse
     {
-        // ✅ Server-side idempotency guard: prevent duplicate submissions
+        // Server-side idempotency guard: prevent duplicate submissions
         $submissionToken = $request->input('_submission_token');
         $sessionTokenKey = 'wizard_submission_token';
 
@@ -250,112 +257,88 @@ class IlanWizardController extends Controller
             }
         }
 
-        // Fingerprint-based dedup: hash step data to prevent identical submissions
-        $step1 = session('wizard_step_1');
-        $step2 = session('wizard_step_2');
-        $step3 = session('wizard_step_3');
-        $step4 = session('wizard_step_4');
-        $step5 = session('wizard_step_5');
+        // Read wizard session data
+        $step1 = session('wizard_step_1', []);
+        $step2 = session('wizard_step_2', []);
+        $step3 = session('wizard_step_3', []);
+        $step4 = session('wizard_step_4', []);
+        $step5 = session('wizard_step_5', []);
 
-        if (!$step1 || !$step3) {
+        // Validate required steps
+        if (empty($step1) || empty($step3)) {
             return ResponseService::error('Tüm zorunlu aşamalar tamamlanmamıştır.', 422);
         }
 
-        // ✅ Content fingerprint dedup: prevent identical ilan creation within same session
+        // Content fingerprint dedup: prevent identical ilan creation within same session
         $fingerprint = md5(json_encode([$step1, $step3]));
         $lastFingerprint = session('wizard_last_fingerprint');
         if ($lastFingerprint === $fingerprint) {
             return ResponseService::error('Aynı ilan bilgileriyle tekrar gönderim yapılamaz.', 409);
         }
 
-        // ✅ SAB Phase 17B: Template Guard on Submit
-        $yayinTipiId = $step1['yayin_tipi_id'] ?? session('wizard.yayin_tipi_id');
-        $kategoriId = $step1['kategori_id'] ?? null;
-        $anaKategoriId = $step1['ana_kategori_id'] ?? session('wizard.ana_kategori_id');
-        $altKategoriId = $step1['alt_kategori_id'] ?? session('wizard.alt_kategori_id') ?? $kategoriId;
+        // Get actor from authenticated user
+        $actorId = auth()->id() ?? 0;
+        $workspaceId = $this->getWorkspaceId();
 
-        // ✅ UPS Policy Guard: Validate category + yayın tipi combination
-        if ($yayinTipiId && $altKategoriId) {
-            $mainCatId = $anaKategoriId ? (int) $anaKategoriId : (int) $altKategoriId;
-            $subCatId = $anaKategoriId ? (int) $altKategoriId : null;
-            if (!$this->listingTypeResolver->isAllowed($mainCatId, $subCatId, (int) $yayinTipiId)) {
-                return ResponseService::error(
-                    'Seçilen yayın tipi bu kategori için izin verilmiyor.',
-                    422
-                );
-            }
-        }
+        // Build command
+        $command = new SubmitIlanWizardCommand(
+            actorId: $actorId,
+            workspaceId: $workspaceId,
+            step1: $step1,
+            step2: $step2,
+            step3: $step3,
+            step4: $step4,
+            step5: $step5,
+            submissionToken: $submissionToken,
+        );
 
-        if ($yayinTipiId) {
-            try {
-                $this->gateService->dogrulaWizardGirisi((int) $yayinTipiId, $kategoriId ? (int) $kategoriId : null);
-            } catch (TemplateNotFoundException $e) {
-                return ResponseService::error('Geçerli bir yayın tipi şablonu bulunamadı. İlan oluşturulamaz.', yanitKodu: 422);
-            } catch (TemplateCategoryMismatchException $e) {
-                return ResponseService::error('Seçilen şablon bu kategori ile uyuşmuyor.', yanitKodu: 422);
-            }
-        }
+        // Delegate to application service
+        $result = $this->wizardService->submit($command);
 
-        try {
-            // Phase3-WA: delegated to IlanCrudService as single write authority
-            // Wizard prepares and normalizes payload — persistence goes through authority
-            $ilanData = array_merge(
-                $step1 ?? [],
-                $step2 ?? [],
-                $step3 ?? [],
-                $step5 ?? [],
-            );
-
-            $ilan = $this->ilanCrudService->store($ilanData);
-
-            // ✅ Lock submission token to prevent duplicate
+        // Handle result
+        if ($result->isSuccess()) {
+            // Lock submission token to prevent duplicate
             if ($submissionToken) {
                 session([$sessionTokenKey => $submissionToken]);
             }
             session(['wizard_last_fingerprint' => $fingerprint]);
 
-            // Fotoğraf yükleme
-            if (!empty($step4['fotolar'])) {
-                foreach ($step4['fotolar'] as $index => $path) {
-                    $ilan->fotograflar()->create([
-                        'dosya_adi' => basename($path),
-                        'dosya_yolu' => $path,
-                        'display_order' => $index + 1,
-                    ]);
-                }
-            }
+            // Session cleanup
+            session()->forget([
+                'wizard_step_1',
+                'wizard_step_2',
+                'wizard_step_3',
+                'wizard_step_4',
+                'wizard_step_5',
+                'wizard_submission_token',
+                'wizard_last_fingerprint',
+            ]);
 
-            // Yazlık Fiyatlandırma (Periods)
-            if (!empty($step2['periods'])) {
-                foreach ($step2['periods'] as $period) {
-                    \App\Models\YazlikFiyatlandirma::create(array_merge($period, [
-                        'ilan_id' => $ilan->id,
-                        'aktiflik_durumu' => \App\Enums\AktiflikDurumu::AKTIF
-                    ]));
-                }
-            } elseif (!empty($step2['yazlik_fiyatlandirma_json'])) {
-                $periods = json_decode($step2['yazlik_fiyatlandirma_json'], true);
-                if (is_array($periods)) {
-                    foreach ($periods as $period) {
-                        \App\Models\YazlikFiyatlandirma::create([
-                            'ilan_id' => $ilan->id,
-                            'sezon_tipi' => $period['season_type'] ?? $period['sezon_tipi'] ?? 'low',
-                            'baslangic_tarihi' => $period['start_date'] ?? $period['baslangic_tarihi'],
-                            'bitis_tarihi' => $period['end_date'] ?? $period['bitis_tarihi'],
-                            'gunluk_fiyat' => $period['price'] ?? $period['gunluk_fiyat'],
-                            'minimum_konaklama' => $period['min_stay'] ?? $period['minimum_konaklama'] ?? 1,
-                            'aktiflik_durumu' => \App\Enums\AktiflikDurumu::AKTIF
-                        ]);
-                    }
-                }
-            }
+            return ResponseService::success(
+                ['id' => $result->ilanId],
+                'İlan başarıyla oluşturuldu.',
+                201
+            );
+        }
 
-            // Session temizle
-            session()->forget(['wizard_step_1', 'wizard_step_2', 'wizard_step_3', 'wizard_step_4', 'wizard_step_5', 'wizard_submission_token', 'wizard_last_fingerprint']);
+        // Error response
+        if ($result->isServerError()) {
+            return ResponseService::serverError($result->error ?? 'İlan oluşturulamadı.');
+        }
 
-            return ResponseService::success(['id' => $ilan->id], 'İlan başarıyla oluşturuldu.', 201);
-        } catch (\Exception $e) {
-            return ResponseService::serverError('İlan oluşturulamadı: ' . $e->getMessage(), $e);
+        return ResponseService::error($result->error ?? 'Bir hata oluştu.', $result->errorCode);
+    }
+
+    /**
+     * Get current workspace ID
+     */
+    protected function getWorkspaceId(): ?int
+    {
+        try {
+            $workspace = app(\App\Services\SaaS\TenantContextService::class)->getWorkspace();
+            return $workspace?->id;
+        } catch (\Throwable) {
+            return null;
         }
     }
 
