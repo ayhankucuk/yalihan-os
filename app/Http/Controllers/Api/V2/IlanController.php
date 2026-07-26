@@ -15,6 +15,7 @@ use App\Enums\IlanDurumu;
 use App\Actions\Api\V2\Ilan\DestroyIlanAction;
 use App\Actions\Api\V2\Ilan\PublishIlanAction;
 use App\Actions\Api\V2\Ilan\StoreIlanAction;
+use App\Actions\Api\V2\Ilan\SubmitIlanForReviewAction;
 use App\Actions\Api\V2\Ilan\UnpublishIlanAction;
 use App\Actions\Api\V2\Ilan\UpdateIlanAction;
 use App\Http\Controllers\Controller;
@@ -162,19 +163,57 @@ class IlanController extends Controller
     }
 
     /**
+     * Submit listing for review
+     * PATCH /api/v1/ilanlar/{id}/submit
+     *
+     * Sprint 12A: Publish Workflow
+     * Transitions: Draft → ReadyForReview
+     */
+    public function submitForReview(\App\Models\Ilan $ilan, SubmitIlanForReviewAction $action): JsonResponse
+    {
+        // Basic authorization: owner can manage their own listings
+        $auth = auth('sanctum');
+        if ($auth->check()) {
+            $authId = $auth->id();
+            $ilanDanismanId = $ilan->getAttribute('danisman_id');
+
+            // Null danisman_id means no ownership restriction
+            if ($ilanDanismanId !== null && $ilanDanismanId !== $authId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bu ilana erişim izniniz yok',
+                ], 403);
+            }
+        }
+
+        // Reload model from database to ensure we have latest state
+        $ilan = \App\Models\Ilan::findOrFail($ilan->id);
+        $ilan = $action->handle($ilan);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'İlan incelemeye gönderildi',
+            'data' => $ilan,
+        ]);
+    }
+
+    /**
      * Publish listing
      * PATCH /api/v1/ilanlar/{id}/publish
      */
-    public function publish(Ilan $ilan, PublishIlanAction $action): JsonResponse
+    public function publish(\App\Models\Ilan $ilan, PublishIlanAction $action): JsonResponse
     {
-        if ($ilan->danisman_id !== auth('sanctum')->id()) {
+        $authId = auth('sanctum')->id();
+        $ilanDanismanId = $ilan->danisman_id;
+
+        if ($authId !== null && $ilanDanismanId !== $authId) {
             return response()->json([
                 'success' => false,
                 'message' => 'Bu ilana erişim izniniz yok',
             ], 403);
         }
 
-        $action->handle($ilan);
+        $ilan = $action->handle($ilan);
 
         return response()->json([
             'success' => true,
@@ -187,16 +226,19 @@ class IlanController extends Controller
      * Unpublish listing
      * PATCH /api/v1/ilanlar/{id}/unpublish
      */
-    public function unpublish(Ilan $ilan, UnpublishIlanAction $action): JsonResponse
+    public function unpublish(\App\Models\Ilan $ilan, UnpublishIlanAction $action): JsonResponse
     {
-        if ($ilan->danisman_id !== auth('sanctum')->id()) {
+        $authId = auth('sanctum')->id();
+        $ilanDanismanId = $ilan->danisman_id;
+
+        if ($authId !== null && $ilanDanismanId !== $authId) {
             return response()->json([
                 'success' => false,
                 'message' => 'Bu ilana erişim izniniz yok',
             ], 403);
         }
 
-        $action->handle($ilan);
+        $ilan = $action->handle($ilan);
 
         return response()->json([
             'success' => true,

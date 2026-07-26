@@ -24,7 +24,8 @@ Route::prefix('ilanlar')->group(function () {
         Route::put('{id}', [IlanController::class, 'update'])->name('api.ilanlar.update');
         Route::delete('{id}', [IlanController::class, 'destroy'])->name('api.ilanlar.destroy');
 
-        // Publish/unpublish listing
+        // Publish workflow: Draft → ReadyForReview → Published
+        Route::patch('{id}/submit', [IlanController::class, 'submitForReview'])->name('api.ilanlar.submit');
         Route::patch('{id}/publish', [IlanController::class, 'publish'])->name('api.ilanlar.publish');
         Route::patch('{id}/unpublish', [IlanController::class, 'unpublish'])->name('api.ilanlar.unpublish');
     });
