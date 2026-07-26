@@ -154,7 +154,7 @@ class HomeController extends Controller
 
         // Popüler mahalleler — ilan sayısına göre sıralı, max 6 kart
         $populerMahalleler = \App\Models\Mahalle::withCount(['ilanlar as ilan_sayisi' => fn ($q) => $q->where('yayin_durumu', IlanDurumu::YAYINDA->value)])
-            ->having('ilan_sayisi', '>', 0)
+            ->whereHas('ilanlar', fn ($q) => $q->where('yayin_durumu', IlanDurumu::YAYINDA->value))
             ->orderByDesc('ilan_sayisi')
             ->with('ilce:id,ilce_adi')
             ->take(6)
