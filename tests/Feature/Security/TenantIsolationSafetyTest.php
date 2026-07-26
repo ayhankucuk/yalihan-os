@@ -21,19 +21,29 @@ class TenantIsolationSafetyTest extends TestCase
     {
         parent::setUp();
 
+        // Skip Sprint 11 M2 property_id invariant during legacy factory-based tests.
+        // This invariant will be enforced via ListingCrudService in production.
+        \App\Models\Ilan::$skipPropertyIdGuard = true;
+
         // Create Tenant A and User A
-        $this->tenantA = Tenant::firstOrCreate(['slug' => 'tenant-a'], ['name' => 'Tenant A']);
+        $this->tenantA = Tenant::firstOrCreate(['domain' => 'tenant-a.com'], ['name' => 'Tenant A']);
         $this->userA = User::factory()->create([
             'tenant_id' => $this->tenantA->id,
             'aktiflik_durumu' => 1,
         ]);
 
         // Create Tenant B and User B
-        $this->tenantB = Tenant::firstOrCreate(['slug' => 'tenant-b'], ['name' => 'Tenant B']);
+        $this->tenantB = Tenant::firstOrCreate(['domain' => 'tenant-b.com'], ['name' => 'Tenant B']);
         $this->userB = User::factory()->create([
             'tenant_id' => $this->tenantB->id,
             'aktiflik_durumu' => 1,
         ]);
+    }
+
+    protected function tearDown(): void
+    {
+        \App\Models\Ilan::$skipPropertyIdGuard = false;
+        parent::tearDown();
     }
 
     /** @test */

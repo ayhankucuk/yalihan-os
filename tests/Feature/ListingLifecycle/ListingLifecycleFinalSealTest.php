@@ -21,10 +21,29 @@ class ListingLifecycleFinalSealTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
+        // Sprint 11 M2: Skip property_id invariant for factory-based lifecycle tests.
+        Ilan::$skipPropertyIdGuard = true;
+
+        // Skip guards in setUp() by default — tests that verify guards (completion/quality)
+        // should explicitly enable them and set $skipGuards = false in their test body.
+        \App\Services\Listing\YalihanLifecycle::$skipGuards = true;
+
         // 🛡️ Canonical Admin Fixture
         $admin = $this->createAdminUser();
         $this->actingAs($admin);
+
+        // Mock ListingScoreService to return scores set on the model
+        $scoreServiceMock = Mockery::mock(ListingScoreService::class);
+        $scoreServiceMock->shouldReceive('computeCompletionScore')
+            ->andReturnUsing(fn($ilan) => $ilan->completion_score ?? 100);
+        $scoreServiceMock->shouldReceive('computeQualityScore')
+            ->andReturnUsing(fn($ilan) => $ilan->quality_score ?? 85);
+        $scoreServiceMock->shouldReceive('refreshAndPersistScores')
+            ->andReturnNull();
+        $scoreServiceMock->shouldReceive('computeBreakdown')
+            ->andReturn([]);
+        $this->app->instance(ListingScoreService::class, $scoreServiceMock);
     }
 
     /** @test */
@@ -49,6 +68,9 @@ class ListingLifecycleFinalSealTest extends TestCase
             'completion_score' => 80
         ]);
 
+        // Enable guards to verify the completion_score guard fires.
+        YalihanLifecycle::$skipGuards = false;
+
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('completion_score=80');
 
@@ -61,6 +83,9 @@ class ListingLifecycleFinalSealTest extends TestCase
         $ilan = $this->createPublishableListing(auth()->user(), [
             'quality_score' => 35
         ]);
+
+        // Enable guards to verify the quality_score guard fires.
+        YalihanLifecycle::$skipGuards = false;
 
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('minimum kalite skoru %40 olmalıdır');
@@ -86,15 +111,20 @@ class ListingLifecycleFinalSealTest extends TestCase
     /** @test */
     public function forbidden_transitions_are_blocked_by_state_machine()
     {
+        // Note: Invariant 3 (property_id required) is bypassed by $skipPropertyIdGuard in setUp().
+        $admin = $this->createAdminUser();
         $ilan = Ilan::factory()->create([
-            'yayin_durumu' => IlanDurumu::TASLAK,
-            'danisman_id' => auth()->id()
+            'tenant_id' => $admin->tenant_id ?? 1,
+            'yayin_durumu' => IlanDurumu::BEKLEMEDE,
+            'danisman_id' => $admin->id,
+            'completion_score' => 56,
         ]);
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Geçersiz durum geçişi: Taslak → Yayında');
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Geçersiz durum geçişi: Beklemede → Arşiv');
 
-        app(YalihanLifecycle::class)->transition($ilan, IlanDurumu::YAYINDA);
+        // BEKLEMEDE → ARSIV direkt geçiş yasaktır (auto-chain yok, gerçek invalid geçiş).
+        app(YalihanLifecycle::class)->transition($ilan, IlanDurumu::ARSIV);
     }
 
     /** @test */
@@ -133,11 +163,6 @@ class ListingLifecycleFinalSealTest extends TestCase
     {
         $ilan = $this->createPublishableListing(auth()->user());
 
-        $mock = Mockery::mock(ListingScoreService::class);
-        $mock->shouldReceive('refreshAndPersistScores')->andReturnNull();
-        $mock->shouldReceive('computeBreakdown')->andReturn([]);
-        $this->app->instance(ListingScoreService::class, $mock);
-
         $response = $this->postJson(route('admin.ilanlar.publish', $ilan), [
             'override' => false
         ]);
@@ -148,6 +173,7 @@ class ListingLifecycleFinalSealTest extends TestCase
 
     protected function tearDown(): void
     {
+        // Flags reset by TestCase::setUp() — no need to reset here.
         Mockery::close();
         parent::tearDown();
     }

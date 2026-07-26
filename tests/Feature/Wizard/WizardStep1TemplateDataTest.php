@@ -86,13 +86,51 @@ class WizardStep1TemplateDataTest extends TestCase
         // Yayın tipleri (YayinTipiSablonu - Global Master Templates)
         YayinTipiSablonu::firstOrCreate(
             ['slug' => 'satilik'],
-            ['ad' => 'Satılık', 'aktiflik_durumu' => true, 'display_order' => 1]
+            [
+                'ad' => 'Satılık',
+                'aktiflik_durumu' => true,
+                'display_order' => 1,
+                'kategori_id' => $this->konutKategori->id,
+            ]
         );
 
         YayinTipiSablonu::firstOrCreate(
             ['slug' => 'kiralik'],
-            ['ad' => 'Kiralık', 'aktiflik_durumu' => true, 'display_order' => 2]
+            [
+                'ad' => 'Kiralık',
+                'aktiflik_durumu' => true,
+                'display_order' => 2,
+                'kategori_id' => $this->konutKategori->id,
+            ]
         );
+
+        // Seviye 2 kategoriler (Yayın Tipleri)
+        IlanKategori::create([
+            'name' => 'Satılık',
+            'slug' => 'satilik-konut',
+            'parent_id' => $this->konutKategori->id,
+            'seviye' => 2,
+            'aktiflik_durumu' => true,
+            'display_order' => 1,
+        ]);
+
+        IlanKategori::create([
+            'name' => 'Kiralık',
+            'slug' => 'kiralik-konut',
+            'parent_id' => $this->konutKategori->id,
+            'seviye' => 2,
+            'aktiflik_durumu' => true,
+            'display_order' => 2,
+        ]);
+
+        IlanKategori::create([
+            'name' => 'Satılık',
+            'slug' => 'satilik-arsa',
+            'parent_id' => $this->arsaKategori->id,
+            'seviye' => 2,
+            'aktiflik_durumu' => true,
+            'display_order' => 1,
+        ]);
 
         $this->actingAs($this->admin);
     }

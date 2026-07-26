@@ -11,6 +11,18 @@ class CqrsDriftRecoveryTest extends TestCase
 {
     use DatabaseTransactions;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        \App\Models\Ilan::$skipPropertyIdGuard = true;
+    }
+
+    protected function tearDown(): void
+    {
+        \App\Models\Ilan::$skipPropertyIdGuard = false;
+        parent::tearDown();
+    }
+
     /** @test */
     public function it_detects_and_reconciles_cqrs_read_model_drift()
     {

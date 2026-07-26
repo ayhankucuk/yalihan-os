@@ -29,7 +29,7 @@ class DeepSeekSettingsTest extends TestCase
             ->withoutMiddleware()
             ->postJson('/admin/ai-settings/update-provider-model', [
                 'provider' => 'deepseek',
-                'model' => DeepSeekModel::V4_FLASH->value,
+                'model' => DeepSeekModel::CHAT->value,
             ])
             ->assertSuccessful();
 
@@ -43,7 +43,7 @@ class DeepSeekSettingsTest extends TestCase
             ->withoutMiddleware()
             ->postJson('/admin/ai-settings/update-provider-model', [
                 'provider' => 'deepseek',
-                'model' => 'deepseek-chat',
+                'model' => DeepSeekModel::V4_FLASH->value,
             ])
             ->assertStatus(422)
             ->assertJsonValidationErrors(['model']);

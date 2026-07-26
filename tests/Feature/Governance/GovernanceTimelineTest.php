@@ -5,15 +5,18 @@ namespace Tests\Feature\Governance;
 use App\Domain\PropertyHub\Observability\GovernanceTimelineService;
 use App\Models\GovernanceIncident;
 use App\Models\PropertyConfigVersion;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class GovernanceTimelineTest extends TestCase
 {
+    use RefreshDatabase;
 
     /** @test */
     public function it_calculates_lineage_and_drift_overlay()
     {
         $v1 = PropertyConfigVersion::create([
+            'tenant_id' => 'SYSTEM',
             'version_hash' => 'h1',
             'governance_state' => 'ARSIVLENDI',
             'snapshot_json' => ['rules' => []],
@@ -21,6 +24,7 @@ class GovernanceTimelineTest extends TestCase
         ]);
 
         $v2 = PropertyConfigVersion::create([
+            'tenant_id' => 'SYSTEM',
             'version_hash' => 'h2',
             'parent_version_hash' => 'h1',
             'governance_state' => 'AKTIF',
