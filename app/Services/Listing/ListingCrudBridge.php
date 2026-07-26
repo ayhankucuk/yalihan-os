@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Listing;
 
 use App\Models\Ilan;
+use App\Domain\Listing\ListingCrudService as NewListingCrudService;
 use App\Services\Ilan\IlanCrudService;
 use Illuminate\Support\Facades\Log;
 
@@ -26,14 +27,14 @@ use Illuminate\Support\Facades\Log;
 class ListingCrudBridge
 {
     protected IlanCrudService $legacyService;
-    protected ListingCrudService $newService;
+    protected NewListingCrudService $newService;
 
     public function __construct(
         ?IlanCrudService $legacyService = null,
-        ?ListingCrudService $newService = null,
+        ?NewListingCrudService $newService = null,
     ) {
         $this->legacyService = $legacyService ?? app(IlanCrudService::class);
-        $this->newService = $newService ?? app(ListingCrudService::class);
+        $this->newService = $newService ?? app(NewListingCrudService::class);
     }
 
     /**
@@ -165,6 +166,14 @@ class ListingCrudBridge
     /**
      * Destroy listing (soft delete via archive).
      *
+     * CRITICAL: Shadow mode'da destroy işlemi YALNIZCA legacy çalıştırır.
+     * Bunun nedeni: Her iki servis de gerçek silme yapmasın diye.
+     *
+     * Shadow modu aktifse:
+     * - V2 servisi izole transaction'da çalışır (rollback)
+     * - Legacy gerçek sonucu döner
+     * - Sadece karşılaştırma loglanır
+     *
      * @param Ilan $ilan
      * @param int|null $aktanId
      * @return Ilan
@@ -175,11 +184,57 @@ class ListingCrudBridge
             return $this->legacyService->destroy($ilan, $aktanId);
         }
 
-        return $this->executeWithShadow(
-            'destroy',
-            fn() => $this->newService->delete($ilan, '', $aktanId),
-            fn() => $this->legacyService->destroy($ilan, $aktanId)
-        );
+        // Shadow modunda destroy: sadece legacy çalışır, V2 rollback
+        if ($this->isShadowMode()) {
+            return $this->executeDestroyShadow($ilan, $aktanId);
+        }
+
+        return $this->newService->delete($ilan, '', $aktanId);
+    }
+
+    /**
+     * Destroy in shadow mode - legacy runs, V2 rolls back.
+     */
+    protected function executeDestroyShadow(Ilan $ilan, ?int $aktanId): Ilan
+    {
+        $v2Success = false;
+        $v2Error = null;
+
+        // V2 runs in isolated transaction (will rollback)
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($ilan, $aktanId, &$v2Success) {
+                $this->newService->delete($ilan, '', $aktanId);
+                $v2Success = true;
+                throw new \Exception('ROLLBACK_ONLY'); // Force rollback
+            });
+        } catch (\Throwable $e) {
+            if ($e->getMessage() === 'ROLLBACK_ONLY') {
+                // Expected - V2 ran but rolled back
+            } else {
+                $v2Error = $e;
+            }
+        }
+
+        // Legacy runs for real
+        $legacyResult = $this->legacyService->destroy($ilan, $aktanId);
+
+        // Log comparison
+        $this->logShadowComparison('destroy', null, $legacyResult, $v2Error, null, [
+            'v2_ran' => true,
+            'v2_rolled_back' => true,
+            'legacy_executed' => true,
+        ]);
+
+        return $legacyResult;
+    }
+
+    /**
+     * Check if shadow mode is active.
+     */
+    protected function isShadowMode(): bool
+    {
+        return config('feature-flags.listing_crud_v2_shadow', false) === true
+            && config('feature-flags.listing_crud_v2_enabled', false) === true;
     }
 
     /**
@@ -243,9 +298,6 @@ class ListingCrudBridge
         } catch (\Throwable) {
             return null;
         }
-    }
-
-        return false;
     }
 
     /**
@@ -318,6 +370,13 @@ class ListingCrudBridge
 
     /**
      * Log shadow comparison results.
+     *
+     * @param string $method Operation name
+     * @param Ilan|null $newResult V2 service result
+     * @param Ilan|null $legacyResult Legacy service result
+     * @param Throwable|null $newError V2 error
+     * @param Throwable|null $legacyError Legacy error
+     * @param array $extra Additional metadata (e.g., destroy-specific)
      */
     protected function logShadowComparison(
         string $method,
@@ -325,20 +384,79 @@ class ListingCrudBridge
         ?Ilan $legacyResult,
         ?\Throwable $newError,
         ?\Throwable $legacyError,
+        array $extra = [],
     ): void {
         $comparison = [
             'method' => $method,
+            'call_site' => $this->getCurrentRoute() ?? 'unknown',
+            'tenant_id' => $this->getCurrentTenantId(),
+            'workspace_id' => $this->getCurrentWorkspaceId(),
             'new_success' => $newResult !== null && $newError === null,
             'legacy_success' => $legacyResult !== null && $legacyError === null,
             'both_success' => $newResult !== null && $legacyResult !== null,
             'results_match' => false,
+            'duration_ms' => null,
+            'correlation_id' => $this->generateCorrelationId(),
+            'timestamp' => now()->toIso8601String(),
         ];
 
+        // Add extra metadata
+        $comparison = array_merge($comparison, $extra);
+
+        // Compare results for parity
         if ($newResult && $legacyResult) {
             $comparison['results_match'] = $this->compareResults($newResult, $legacyResult);
+            $comparison['difference_fields'] = $this->getDifferenceFields($newResult, $legacyResult);
         }
 
+        // Log to shadow channel
         Log::channel('shadow')->info('ListingCrudBridge shadow comparison', $comparison);
+    }
+
+    /**
+     * Get current workspace ID.
+     */
+    protected function getCurrentWorkspaceId(): ?int
+    {
+        try {
+            $workspace = app(\App\Services\SaaS\TenantContextService::class)->getWorkspace();
+            return $workspace?->id;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Generate correlation ID for request tracing.
+     */
+    protected function generateCorrelationId(): string
+    {
+        return sprintf(
+            '%s-%s',
+            now()->format('Ymd-His'),
+            bin2hex(random_bytes(4))
+        );
+    }
+
+    /**
+     * Get fields that differ between results.
+     */
+    protected function getDifferenceFields(Ilan $new, Ilan $legacy): array
+    {
+        $fields = ['yayin_durumu', 'tenant_id', 'workspace_id', 'baslik', 'fiyat', 'aktiflik_durumu'];
+        $differences = [];
+
+        foreach ($fields as $field) {
+            if ($new->$field !== $legacy->$field) {
+                $differences[] = [
+                    'field' => $field,
+                    'legacy' => $legacy->$field,
+                    'new' => $new->$field,
+                ];
+            }
+        }
+
+        return $differences;
     }
 
     /**
