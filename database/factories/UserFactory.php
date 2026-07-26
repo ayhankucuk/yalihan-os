@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\SaaS\Tenant;
 use App\Models\User;
 use App\Modules\Auth\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -34,6 +35,7 @@ class UserFactory extends Factory
             // role_id dinamik atanacak; varsayılanı admin yerine null bırakıyoruz.
             // Test senaryolarında state() ile spesifik rol set edilecek.
             'role_id' => null,
+            'tenant_id' => Tenant::factory(),
         ];
     }
 
