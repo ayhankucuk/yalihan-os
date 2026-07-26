@@ -115,8 +115,8 @@ class CategoryController extends Controller
             }
 
             $mappedTypes = $yayinTipleri->map(function ($type) {
-                // ✅ YayinTipiSablonu
-                $name = $type->ad;
+                // ✅ Support both YayinTipiSablonu (ad) and IlanKategori (name)
+                $name = $type->ad ?? $type->name;
                 return [
                     'id' => $type->id,
                     'name' => $name,
