@@ -35,17 +35,17 @@ class FollowUpAutomationService
             $this->gorevRepository->deletePendingByLeadId($lead->id, auth()->user());
 
             // Schedule new follow-up based on status
-            match ($lead->crm_status) {
-                'new' => $this->scheduleNewLeadFollowUp($lead),
-                'contacted' => $this->scheduleContactedFollowUp($lead),
-                'qualified' => $this->scheduleQualifiedFollowUp($lead),
-                'lost' => $this->scheduleReEngagementFollowUp($lead),
+            match ((int) $lead->crm_durumu) {
+                Lead::CRM_NEW => $this->scheduleNewLeadFollowUp($lead),
+                Lead::CRM_REACHED => $this->scheduleContactedFollowUp($lead),
+                Lead::CRM_QUALIFIED => $this->scheduleQualifiedFollowUp($lead),
+                Lead::CRM_LOST => $this->scheduleReEngagementFollowUp($lead),
                 default => null,
             };
 
             Log::info('Follow-up scheduled', [
                 'lead_id' => $lead->id,
-                'status' => $lead->crm_status, // context7-ignore
+                'status' => $lead->crm_durumu, // context7-ignore
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to schedule follow-up', [
@@ -244,7 +244,9 @@ class FollowUpAutomationService
 
             // Re-schedule if needed
             $lead = $task->lead;
-            $this->scheduleFollowUp($lead);
+            if ($lead) {
+                $this->scheduleFollowUp($lead);
+            }
 
             Log::info('Follow-up task completed', [
                 'task_id' => $task->id,
