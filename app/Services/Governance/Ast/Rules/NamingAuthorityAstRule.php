@@ -5,32 +5,32 @@ namespace App\Services\Governance\Ast\Rules;
 use App\Services\Governance\Ast\GovernanceAstRuleInterface;
 use PhpParser\Node;
 use PhpParser\Node\Scalar\String_;
-use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Identifier;
+use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name;
 
 class NamingAuthorityAstRule implements GovernanceAstRuleInterface
 {
     private const FORBIDDEN_ENGLISH = [
-        'is_active' => 'aktiflik_durumu',
-        'is_enabled' => 'aktiflik_durumu',
-        'is_deleted' => 'silinme_durumu',
+        'is_active'    => 'aktiflik_durumu',
+        'is_enabled'   => 'aktiflik_durumu',
+        'is_deleted'   => 'silinme_durumu',
         'is_published' => 'yayin_durumu',
-        'is_verified' => 'dogrulama_durumu',
-        'status' => 'durum',
-        'type' => 'tip',
-        'category' => 'kategori',
-        'description' => 'aciklama',
-        'title' => 'baslik',
-        'address' => 'adres',
-        'phone' => 'telefon',
-        'notes' => 'notlar',
+        'is_verified'  => 'dogrulama_durumu',
+        'status'       => 'durum',
+        'type'         => 'tip',
+        'category'     => 'kategori',
+        'description'  => 'aciklama',
+        'title'        => 'baslik',
+        'address'      => 'adres',
+        'phone'        => 'telefon',
+        'notes'        => 'notlar',
     ];
 
     private const FORBIDDEN_TURKISH_FRAMEWORK = [
         'olusturma_tarihi' => 'created_at',
         'guncelleme_tarihi' => 'updated_at',
-        'silme_tarihi' => 'deleted_at',
-        'hatirla_token' => 'remember_token',
+        'silme_tarihi'      => 'deleted_at',
+        'hatirla_token'     => 'remember_token',
         'dogrulama_tarihi' => 'email_verified_at',
     ];
 
@@ -60,7 +60,6 @@ class NamingAuthorityAstRule implements GovernanceAstRuleInterface
             return null;
         }
 
-        // We look for string literals that represent column names in migrations or $fillable in models
         if ($node instanceof String_) {
             $value = $node->value;
 
@@ -88,8 +87,12 @@ class NamingAuthorityAstRule implements GovernanceAstRuleInterface
 
             // 3. Check for camelCase in DB strings (should be snake_case)
             if (preg_match('/[a-z][A-Z]/', $value)) {
-                // Heuristic: only flag if it looks like a column name (lowercase start, no spaces)
                 if (preg_match('/^[a-z]+[A-Z][a-zA-Z]*$/', $value)) {
+                    // Exception: compact() string arguments are Blade view variables — not DB columns.
+                    // Fallback: check by file+line (works even if parent chain is not set).
+                    if ($this->isCompactStringArg($node, $value)) {
+                        return null;
+                    }
                     return [
                         'message' => sprintf(
                             "Naming Authority Violation: Field '%s' uses camelCase. Database columns must use snake_case.",
@@ -103,6 +106,29 @@ class NamingAuthorityAstRule implements GovernanceAstRuleInterface
         return null;
     }
 
+    /**
+     * Check if a string node is an argument to compact().
+     * compact() arguments are Blade view variables, not DB columns.
+     *
+     * Uses line-based scanning to avoid AST parent-chain issues.
+     */
+    private function isCompactStringArg(Node $node, string $value): bool
+    {
+        $lineNum = $node->getStartLine();
+        if ($lineNum < 1 || \App\Services\Governance\Ast\AstScannerService::$currentFileLines === null) {
+            return false;
+        }
+
+        $lines = \App\Services\Governance\Ast\AstScannerService::$currentFileLines;
+        // Look for "compact(" in the same line or within 2 lines before
+        for ($i = max(0, $lineNum - 3); $i < $lineNum; $i++) {
+            if (isset($lines[$i]) && str_contains($lines[$i], "compact(")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private function shouldIgnore(Node $node): bool
     {
         $lineNum = $node->getStartLine();
@@ -111,11 +137,13 @@ class NamingAuthorityAstRule implements GovernanceAstRuleInterface
             if (str_contains($lineContent, 'context7-ignore')) {
                 return true;
             }
+            if (str_contains($lineContent, 'sab-ignore-naming')) {
+                return true;
+            }
         }
 
         $comments = $node->getComments();
         if (empty($comments)) {
-            // Check parent comments if node is a property/item
             $parent = $node->getAttribute('parent');
             if ($parent instanceof Node) {
                 $comments = $parent->getComments();
@@ -124,6 +152,9 @@ class NamingAuthorityAstRule implements GovernanceAstRuleInterface
 
         foreach ($comments as $comment) {
             if (str_contains($comment->getText(), 'context7-ignore')) {
+                return true;
+            }
+            if (str_contains($comment->getText(), 'sab-ignore-naming')) {
                 return true;
             }
         }
