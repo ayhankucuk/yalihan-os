@@ -1333,6 +1333,16 @@ class YalihanCortex
     }
 
     /**
+     * 🤖 AI İlan Başlığı Üretimi (Cortex Integration)
+     */
+    public function generateIlanTitle($ilan, array $options = []): array
+    {
+        $this->guardCostBudget('ollama');
+        $ilanData = $ilan instanceof Ilan ? $ilan->toArray() : (array) $ilan;
+        return $this->optimizeIlanTitle($ilanData);
+    }
+
+    /**
      * 🤖 AI İlan Açıklaması Üretimi (Cortex Integration)
      */
     public function generateIlanDescription($ilan, array $options = []): array
