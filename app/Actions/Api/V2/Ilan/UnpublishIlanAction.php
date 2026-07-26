@@ -3,25 +3,29 @@
 namespace App\Actions\Api\V2\Ilan;
 
 use App\Models\Ilan;
-use App\Models\V2\Ilan as V2Ilan;
-use App\Enums\IlanDurumu;
-use App\Services\Ilan\IlanCrudService;
+use App\Domain\Listing\ListingCrudService;
 
+/**
+ * UnpublishIlanAction
+ *
+ * Sprint 12A: Publish Workflow
+ *
+ * Transitions a listing from Published to Pasif state.
+ * Uses ListingCrudService::unpublish() which:
+ * - Validates listing is in Published state
+ * - Dispatches ListingUnpublished domain event
+ */
 class UnpublishIlanAction
 {
     public function __construct(
-        private readonly IlanCrudService $ilanCrudService,
+        private readonly ListingCrudService $listingCrudService,
     ) {}
 
-    // Phase3-WA: delegated to IlanCrudService as single write authority
-    // Bridge: V2\Ilan → App\Models\Ilan for IlanCrudService compatibility
-    public function handle(V2Ilan $v2Ilan): Ilan
+    /**
+     * Unpublish listing (Published → Pasif).
+     */
+    public function handle(Ilan $ilan): Ilan
     {
-        $ilan = Ilan::findOrFail($v2Ilan->id);
-
-        return $this->ilanCrudService->update($ilan, [
-            'baslik' => $ilan->baslik,
-            'yayin_durumu' => IlanDurumu::PASIF->value,
-        ]);
+        return $this->listingCrudService->unpublish($ilan);
     }
 }

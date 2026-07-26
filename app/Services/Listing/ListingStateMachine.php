@@ -49,9 +49,9 @@ class ListingStateMachine
      * Hangi durumdan hangilerine geçilebilir?
      */
     protected array $allowedTransitions = [
-        self::TASLAK    => [self::BEKLEMEDE],
+        self::TASLAK    => [self::BEKLEMEDE, self::ARSIV], // ARSIV: delete/archive from draft
         self::BEKLEMEDE => [self::YAYINDA, self::PASIF],
-        self::YAYINDA   => [self::ARSIV, self::PASIF],
+        self::YAYINDA   => [self::ARSIV, self::PASIF, self::BEKLEMEDE], // PAUSE → review → re-publish
         self::ARSIV     => [self::TASLAK], // Yeniden ilana alma
         self::PASIF     => [self::TASLAK, self::YAYINDA],
     ];

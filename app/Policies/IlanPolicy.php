@@ -44,8 +44,8 @@ class IlanPolicy
             return true;
         }
 
-        // Owner: user_id üzerinden ownership kontrolü
-        return $user->id === $ilan->user_id;
+        // Owner: danisman_id veya user_id üzerinden ownership kontrolü
+        return $user->id === ($ilan->danisman_id ?? 0) || $user->id === ($ilan->user_id ?? 0);
     }
 
     /**

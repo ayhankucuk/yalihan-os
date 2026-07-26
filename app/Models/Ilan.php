@@ -119,6 +119,13 @@ class Ilan extends BaseModel
     ];
 
     /**
+     * When true, the property_id invariant guard is skipped during model creation.
+     * Used by factory-based tests that create listings without a Property (legacy test fixtures).
+     * @internal For testing only.
+     */
+    public static bool $skipPropertyIdGuard = false;
+
+    /**
      * Context7 Accessors & Mutators
      */
 
@@ -188,7 +195,7 @@ class Ilan extends BaseModel
     public function setYayinDurumuAttribute($value): void
     {
         // 1. Authority Guard: Block direct write if not via YalihanLifecycle (only for existing models)
-        if ($this->exists && ! \App\Services\Listing\YalihanLifecycle::$isAuthorized) {
+        if ($this->exists && \App\Services\Listing\YalihanLifecycle::$isTransitioningCounter <= 0) {
             $current = $this->getOriginal('yayin_durumu');
             // Allow if values are same (idempotent assignment)
             if ($current !== $value && \App\Enums\IlanDurumu::normalize($current) !== \App\Enums\IlanDurumu::normalize($value)) {
@@ -528,6 +535,13 @@ class Ilan extends BaseModel
         'investor_target_roi',
         'country_code',
         'source_locale',
+
+        // ======================================================================
+        // Sprint 11 M2: Property Runtime — Listing Aggregate
+        // ======================================================================
+        'property_id',      // FK to Property (canonical physical truth source)
+        'workspace_id',     // FK to Workspace (owner context)
+        'idempotency_key',  // unique key for idempotent create
     ];
 
     /**
@@ -753,6 +767,11 @@ class Ilan extends BaseModel
         'operating_expenses_annual' => 'float',
         'investor_target_roi'       => 'float',
         'source_locale'             => 'string',
+
+        // Sprint 11 M2: Property Runtime — Listing Aggregate
+        'property_id'   => 'integer',
+        'workspace_id'  => 'integer',
+        'uuid'          => 'string',  // Always cast UUID to string for event dispatching
     ];
 
     // ======================================================================
@@ -816,6 +835,36 @@ class Ilan extends BaseModel
     public function userDanisman(): BelongsTo
     {
         return $this->belongsTo(User::class, 'danisman_id');
+    }
+
+    // ======================================================================
+    // Sprint 11 M2: Property Runtime — Listing Aggregate
+    // ======================================================================
+
+    /**
+     * Listing → Property relation (canonical physical truth source).
+     * Every Listing belongs to exactly one Property.
+     */
+    public function property(): BelongsTo
+    {
+        return $this->belongsTo(Property::class, 'property_id');
+    }
+
+    /**
+     * Listing → PropertyWorkspace relation (owner context).
+     */
+    public function propertyWorkspace(): BelongsTo
+    {
+        return $this->belongsTo(PropertyWorkspace::class, 'workspace_id');
+    }
+
+    /**
+     * Scope: by idempotency key.
+     * Invariant 6: Same idempotency key returns existing Listing, no duplicate.
+     */
+    public function scopeByIdempotencyKey($query, string $key)
+    {
+        return $query->where('idempotency_key', $key);
     }
 
     // --- Adres İlişkileri ---
@@ -1820,6 +1869,20 @@ class Ilan extends BaseModel
             if (auth()->check()) {
                 $ilan->created_by = auth()->id();
                 $ilan->updated_by = auth()->id();
+            }
+
+            // Sprint 11 M2: Listing Aggregate Invariants
+            // Invariant 3: Every Listing must have a Property.
+            // Skipped when $skipPropertyIdGuard is set.
+            if (empty($ilan->property_id) && !self::$skipPropertyIdGuard) {
+                throw new \DomainException('Listing must be created from a Property.');
+            }
+        });
+
+        // Invariant: property_id cannot be changed after creation
+        static::updating(function ($ilan) {
+            if ($ilan->isDirty('property_id') && $ilan->getOriginal('property_id') !== null) {
+                throw new \DomainException('Property reference cannot be changed after Listing creation.');
             }
         });
 
