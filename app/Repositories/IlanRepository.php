@@ -95,7 +95,7 @@ class IlanRepository
     public function getAdminListings(array $filters = [], int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         $query = $this->applyOwnershipScope($this->model->newQuery())
-            ->with(['kategori', 'il', 'danisman'])
+            ->with(['kategori', 'il', 'ilce', 'danisman', 'fotograflar'])
             ->latest();
 
         if (!empty($filters['search'])) {
