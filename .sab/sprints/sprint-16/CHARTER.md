@@ -1,6 +1,6 @@
 # Sprint 16 Charter — Property Core Capabilities
 
-**Status:** 🔲 PLANNING
+**Status:** 🟢 READY FOR IMPLEMENTATION
 **Milestone:** M2 Property Runtime (Sprint 15 — 🟢 CERTIFIED)
 **Board Resolution:** BR-20260723-SPRINT16
 **Date:** 2026-07-23
