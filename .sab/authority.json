@@ -1,7 +1,12 @@
 {
-  "version": "6.1.1",
+  "version": "11.0.0",
   "name": "Yalıhan Bekçi Context7 Authority",
   "description": "Centralized authority file for Context7 compliance and IDE integrations",
+  "sab_version": "v11",
+  "sab_board_resolution": "BR-20260715-SAABv11",
+  "sab_ratified": "2026-07-15T05:40:19+03:00",
+  "sab_status": "ACTIVE",
+  "sab_target_sprints": "Sprint 10+",
   "bootstrap_entrypoint": ".sab/ONBOARDING.md",
   "project": {
     "name": "YalihanAI EmlakPro",
@@ -247,6 +252,7 @@
     "violation_tracking": true
   },
   "governance": {
+    "sab_version": "v11",
     "authority_sync": "resync_from_source",
     "version_freshness": {
       "age_days": 0
