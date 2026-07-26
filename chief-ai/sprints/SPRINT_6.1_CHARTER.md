@@ -11,11 +11,11 @@
 |------|-------|
 | **Sprint** | Sprint 6.1 |
 | **Başlangıç** | 2026-07-07 |
-| **Bitiş** | TBD |
+| **Bitiş** | 2026-07-08 |
 | **Sahip** | 🏛 SAAB |
 | **Engineering** | 💻 VS Code AI |
 | **Quality** | 🔬 Antigravity |
-| **Status** | 🔄 ACTIVE |
+| **Status** | ✅ CLOSED & CERTIFIED |
 
 ---
 
@@ -145,19 +145,19 @@ Sprint 6.1 Sonunda:
 
 ## SPRINT 6.1 RETRO
 
-> Sprint sonunda doldurulacak
-
 ### Ne İyi Gitti?
 
--
+- Dinamik doğrulama ve şablon çözücü entegrasyonu tamamen otomatik testlerle doğrulandı.
+- SQLite test veritabanındaki sequence numarası hatası `.reorder()` ile kalıcı olarak giderildi.
+- Telemetry servisi (BAI) başarıyla koda işlendi ve kokpit paneli modern mediterranen renk paletiyle zenginleştirildi.
 
 ### Ne İyileştirilebilir?
 
--
+- Controller katmanındaki model mutasyonları ve linter uyarıları daha erken aşamalarda temizlenebilirdi.
 
 ### Bir Sonraki Sprint İçin Öneriler
 
--
+- Sprint 6.2'de TKGM ve konum yetenekleri geliştirilirken baştan kuyruk tabanlı ve asenkron mimari tercih edilmeli.
 
 ---
 
@@ -176,5 +176,5 @@ Sprint 6.1 Sonunda:
 | Rol | Onaylayan | Tarih |
 |-----|-----------|-------|
 | 🏛 SAAB | ChatGPT | 2026-07-07 |
-| 💻 Engineering | VS Code AI | TBD |
-| 🔬 Quality | Antigravity | TBD |
+| 💻 Engineering | VS Code AI | 2026-07-08 |
+| 🔬 Quality | Antigravity | 2026-07-08 |

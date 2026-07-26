@@ -320,25 +320,55 @@ KATEGORİ 4: Local PHP değişkenleri (camelCase)
   → context7-ignore (DB alanı değil)
 ```
 
-### Devam Eden İşler (Oturum 66 — 2026-07-03)
-- [ ] **Sprint 4.2: Real CRUD Certification** — Create/Read/Update/Archive/Restore/Soft Delete + Playwright
-- [ ] 89 fail test → yeşile çek
-- [ ] Context7 baseline reduce (4650 → 3000)
-- [ ] Sprint 4.3: AI Workforce Zinciri (Hermes → Photo Agent → Description Agent → Dashboard)
-- [x] Sprint 4.1: Alpine.js UI Stabilization ✅
-- [x] Sprint 4.0: Reliability Hardening ✅
+### Devam Eden İşler (Oturum 92 — 2026-07-15)
 
-### Faz 2 Sprint Zinciri
-```
-Kod → Test → Playwright → Commit → Production
-```
-Doküman → yalnızca gerekiyorsa.
+#### SAAB v11 ACTIVE — Stable Governance
+- **Board Resolution:** BR-20260715-SAABv11
+- **Version:** v11 (Strategic Architecture & Automation Board)
+- **Status:** ACTIVE — Sprint 10+ için kullanımda
+- **Key Focus:** Business Automation Index (BAI), Implementation Discipline, EIOS Relationship
+- **Governance Policy:** SAAB v11 stable. No new sections per sprint. Ideas → ADR → Board Resolution.
 
-### Sprint 4.2 — Real CRUD Certification
-| Operasyon | Hedef |
-|-----------|-------|
-| Create/Read/Update/Archive/Restore/Soft Delete | Database + Audit + Tenant + Auth + Playwright |
-| Kapsam | İlan, Kisi, Talep, Komisyon |
+#### Document Lifecycle Policy (SAAB v11)
+| Doküman | Lifecycle | Anlamı |
+|---------|-----------|--------|
+| **SAAB** | Stable | Donmuş governance charter. Değişiklik = Board Resolution. |
+| **ADR** | Experimental | Önerilen, tartışılan, onaylanan. Stable veya REMOVED olabilir. |
+| **Blueprint** | Living | Sprint bazlı implementasyon detayları. |
+| **Registry** | Generated | tooling tarafından üretilir (manuel yazılmaz). |
+| **Evidence** | Immutable | Kaydedildi mi değiştirilemez. Düzeltme için append-only. |
+
+#### Sprint Zinciri (SAAB v11 M1-M5) — Output-Oriented
+| MS | İsim | Çıktı |
+|----|------|-------|
+| M1 | ERA IV Foundation | Core infrastructure operational |
+| M2 | Property Runtime | Physical asset truth fully captured |
+| M3 | Enterprise Knowledge | All institutional knowledge indexed |
+| M4 | Autonomous Runtime | Self-healing, self-optimizing operations |
+| M5 | Autonomous Enterprise | Full Business Automation Index achieved |
+
+#### Sprint 10 Başarı Kriterleri (SAAB v11 §Sprint 10 Success Criteria)
+| # | Kriter | Kanıt |
+|---|--------|-------|
+| 1 | Working `Property` aggregate | CRUD operations pass, tests green |
+| 2 | Working state machine | State transitions validated |
+| 3 | Registry updated | DISCOVERED → CLASSIFIED entries exist |
+| 4 | Replay-safe tests | DLQ replay verified |
+| 5 | BAI impact visible | First BAI metric improvement recorded |
+
+**Başarı = Çalışan kod + ölçülebilir iş değeri + kanıt zinciri. Başka bir şey değil.**
+
+#### Sprint 10+ Öncelikli İşler
+- [x] Sprint 10: M1 ERA IV Foundation ✅ (Oturum 98) — Property aggregate root, Value Objects, State Machine, Repository, Registry
+- [x] Sprint 11 M2 ✅ CERTIFICATION READY — Property → Listing Bridge, 21/21 tests
+- [ ] **Sprint 12A** — Publish workflow: Draft → ReadyForReview → Published
+- [ ] **Sprint 12B** — Persistence hardening: workspaces FK, tenant integrity, delete cascade
+- [ ] **Sprint 12C** — Legacy migration: IlanCrudService → ListingCrudService (feature flag + shadow)
+- [ ] Sprint 12: M3 Enterprise Knowledge — Evidence First certification
+- [ ] Sprint 13: M4 Autonomous Runtime — Hermes orchestration
+- [ ] Sprint 14: M5 Autonomous Enterprise — AI Workforce full integration
+- [x] SAAB v11 upgrade ✅ (Oturum 92) — Stable Governance, Document Lifecycle Policy, Sprint 10 Success Criteria
+- [x] SAAB v11 Skill Alignment ✅ (Oturum 100) — 6 skill EIOS v1.0 aligned
 
 ---
 

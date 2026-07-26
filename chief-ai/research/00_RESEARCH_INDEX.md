@@ -49,7 +49,8 @@ All documents are classified into four main tiers:
 | **33** | [33_AI_MEMORY_ARCHITECTURE.md](file:///Users/macbookpro/dev/yalihan2026/chief-ai/research/33_AI_MEMORY_ARCHITECTURE.md) | **A** | P1 | Multi-Tier Memory | 🔵 Research (Planned) | Sprint 6.5 |
 | **34** | [34_MULTI_AGENT_COORDINATION.md](file:///Users/macbookpro/dev/yalihan2026/chief-ai/research/34_MULTI_AGENT_COORDINATION.md) | **A** | P1 | Multi-Agent Locks | 🔵 Research (Planned) | Sprint 6.6 |
 | **35** | [35_WIZARD_BLOCKERS.md](file:///Users/macbookpro/dev/yalihan2026/chief-ai/research/35_WIZARD_BLOCKERS.md) | **F** | P0 | Listing Wizard / CRM | 🔵 Research (Planned) | Sprint 6.2 |
-| **36** | [29_ENTERPRISE_INTELLIGENCE_SKILLS.md](file:///Users/macbookpro/dev/yalihan2026/chief-ai/research/29_ENTERPRISE_INTELLIGENCE_SKILLS.md) | **A** | P0 | EIS Strategy Blueprint | ✅ Implemented | Sprint 7.0 |
+| **36** | [29_ENTERPRISE_INTELLIGENCE_OPERATING_SYSTEM.md](file:///Users/macbookpro/dev/yalihan2026/chief-ai/research/29_ENTERPRISE_INTELLIGENCE_OPERATING_SYSTEM.md) | **A** | P0 | EIOS Strategy Blueprint | ✅ Implemented | Sprint 7.0 |
+| **37** | [eios_runtime_tasks.md](file:///Users/macbookpro/dev/yalihan2026/chief-ai/sprints/eios_runtime_tasks.md) | **A** | P0 | EIOS Runtime & Curator v3 | 🔄 Active (Handoff) | Sprint 7.3 |
 
 ---
 

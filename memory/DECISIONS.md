@@ -891,3 +891,288 @@ Kod yazmak yerine EIOS altyapısı inşası:
 6. Documentation Health Dashboard — tek sayı sağlık skoru
 
 **Doküman artık sadece yazı değil.** Belgenin sahibi, durumu, yaşam döngüsü, kanıtı ve ilişkileri olan yönetilebilir varlık.
+
+---
+
+## 2026-07-26 | Wave 2 — IlanWizardController Remediation
+
+### Karar: Sprint 12C Wave 2 Onayı
+
+**Tarih:** 2026-07-26
+**Board Question:** YALIHAN, IlanWizardController'ı SAB write-chain uyumlu hale getirebiliyor mu?
+**Karar:** ✅ APPROVED FOR IMPLEMENTATION
+**Charter:** BR-20260726-WAVE2
+**Model:** Claude Sonnet 4.6
+**Status:** 🚀 ACTIVE — IMPLEMENTATION AUTHORIZED
+**SAAB Durumu:** 🟢 EXECUTION IN PROGRESS
+**İlerleme:** ~50-60%
+**Risk:** 🟡 Düşük-Orta
+
+---
+
+### SAAB Değerlendirmesi
+
+| Alan | Durum |
+|------|-------|
+| Mimari problem tanımlandı | ✅ PASS |
+| Hedef write-chain tanımlandı | ✅ PASS |
+| Dokümantasyon güncellendi | ✅ PASS |
+| Wave 2 kapsamı net | ✅ PASS |
+| Implementasyona hazır | ✅ APPROVED |
+
+---
+
+### Wave 2 Başarı Ölçütleri
+
+Wave 2 tamamlandığını söyleyebilmek için aşağıdaki mimari hedeflerin doğrulanması gerekir:
+
+| # | Hedef | Açıklama |
+|---|-------|----------|
+| 1 | submitWizard() ORM write kaldırıldı | Doğrudan ORM yazma işlemleri kaldırılmış olmalı |
+| 2 | Controller orchestration only | Controller yalnızca HTTP orchestration görevini üstlenmeli |
+| 3 | Application Service entry point | Tüm yazma işlemleri IlanWizardApplicationService üzerinden başlamalı |
+| 4 | Bridge as canonical entry | ListingCrudBridge tek canonical write entry point olarak kullanılmalı |
+| 5 | Transaction boundary | İlan, fotoğraflar ve fiyatlandırma tek transaction içinde yönetilmeli |
+| 6 | Feature flags preserved | OFF / ON / SHADOW modlarının davranışı korunmalı |
+| 7 | Tests green | Mevcut testler yeşil kalmalı ve regresyon testleri eklenmeli |
+
+### Wave 2 Done Kriterleri
+
+| Kriter | Durum |
+|--------|-------|
+| Controller'da ORM write yok | ☐ |
+| Controller'da doğrudan CrudService çağrısı yok | ☐ |
+| IlanWizardApplicationService aktif | ☐ |
+| ListingCrudBridge tek write entry point | ☐ |
+| Tek transaction sınırı | ☐ |
+| **Idempotency doğrulandı** | ☐ |
+| **Shadow side-effect isolation doğrulandı** | ☐ |
+| OFF / ON / SHADOW testleri geçti | ☐ |
+| Tenant Isolation regresyonu geçti | ☐ |
+| Authorization regresyonu geçti | ☐ |
+| Rollback testleri geçti | ☐ |
+| Wizard Feature Tests geçti | ☐ |
+| Shadow parity raporu üretildi | ☐ |
+
+### Ek Kalite Kapıları
+
+**1. Idempotency**
+submitWizard() aynı istek nedeniyle iki kez çalışırsa ikinci bir ilan oluşmamalı.
+
+Test senaryoları:
+- Aynı draft'ın tekrar submit edilmesi
+- Ağ zaman aşımı sonrası retry
+- Kullanıcının çift tıklaması
+
+**2. Shadow Mode Side-Effect Isolation**
+SHADOW modunda yalnızca karşılaştırma yapılmalı; ikinci bir gerçek iş etkisi oluşmamalı.
+
+Yan etkiler tek kez gerçekleşmeli:
+- Listing kaydı
+- Fotoğraf kayıtları
+- Fiyatlandırma kayıtları
+- Event dispatch
+- Queue job
+- Audit log
+- Timeline kayıtları
+
+### Kalite Kapısı — Doğrulama Sırası
+
+1. **Feature Tests** — Wizard submit akışı
+2. **Shadow Parity Validation** — Legacy ↔ V2 sonuç karşılaştırması
+3. **Transaction ve Rollback doğrulaması** — Rollback senaryoları
+4. **Tenant Isolation ve Authorization regresyon testleri** — Authorization regresyonu
+5. **Idempotency testleri** — Draft tekrar submit, retry, çift tıklama
+6. **Side-effect isolation doğrulaması** — Shadow mode yan etki kontrolü
+7. **Wave 2 Certification Review** — SAAB final kararı
+
+---
+
+### Bir Sonraki Değerlendirme Noktası
+
+Analiz ve plan değil; **IlanWizardApplicationService implementasyonu** ile birlikte sunulacak test ve parity kanıtları. Bu kanıtlar başarıyla sunulduğunda Wave 2 için **CERTIFIED** değerlendirmesi yapılabilir.
+
+---
+
+### Mimari Hedef Yapı
+
+```
+HTTP
+    ↓
+Controller (Thin — orchestration only)
+    ↓
+Application Service (IlanWizardApplicationService)
+    ↓
+ListingCrudBridge (Feature Flag: OFF→IlanCrudService, ON→ListingCrudService, SHADOW→Both)
+    ↓
+Canonical Service
+    ↓
+Domain Writers
+    ↓
+Persistence (Transaction: Ilan + Fotoğraflar + Fiyatlandırma)
+```
+
+### Wave 2 Yönetim Kuralları
+
+| # | Kural |
+|---|-------|
+| 1 | Her commit küçük ve geri alınabilir olsun |
+| 2 | Her adım test edilebilir bir iş değeri üretsin |
+| 3 | Bridge katmanı dışında yeni write path oluşturulmasın |
+| 4 | Feature Flag davranışı hiçbir aşamada bozulmasın |
+| 5 | Legacy davranışı parity doğrulanmadan kaldırılmasın |
+
+### ⚠️ Scope Creep Uyarısı
+
+> Şu anda en büyük risk mimari değil, **scope creep** olacaktır.
+
+Wave 2 devam ederken:
+- ❌ Yeni capability eklenmemeli
+- ❌ Yeni mimari tartışmaları açılmamalı
+- ❌ Yeni roadmap oluşturulmamalı
+- ❌ Backlog büyütülmemeli
+
+**Odak:** Yalnızca mevcut blueprint'in çalışan koda dönüşmesi.
+
+### Phase 4 Geçiş Şartı
+
+Phase 4 (Parity Validation) ancak şu soru "evet" cevabını alıyorsa başlamalıdır:
+
+> **Legacy ve V2 aynı girdiler için aynı iş sonucunu üretiyor mu?**
+
+Bu kanıt olmadan legacy temizliğine geçmek risk oluşturur.
+
+### Wave 2 Exit Checklist
+
+| # | Madde | Durum |
+|---|-------|-------|
+| 1 | Controller yalnızca HTTP orchestration yapıyor | ☐ |
+| 2 | İş mantığı IlanWizardApplicationService içinde | ☐ |
+| 3 | Tüm write işlemleri ListingCrudBridge üzerinden geçiyor | ☐ |
+| 4 | OFF / ON / SHADOW modları aynı davranışı koruyor | ☐ |
+| 5 | Transaction sınırı listing + photo + pricing işlemlerini kapsıyor | ☐ |
+| 6 | Actor ve Workspace sunucu tarafında atanıyor | ☐ |
+| 7 | Feature testleri ve regression testleri yeşil | ☐ |
+| 8 | Rollback senaryosu doğrulanmış | ☐ |
+| 9 | Shadow parity raporu üretilmiş | ☐ |
+
+### Yönetim Seviyeleri
+
+| Seviye | Hedef | Başarı Ölçütü |
+|--------|-------|---------------|
+| Engineering | IlanWizardController write-chain dönüşümü | Kod + Test |
+| Architecture | Tek canonical write path | Shadow parity |
+| Business | Manuel işin azalması | BAI artışı |
+
+### Sprint 12C Çıkış Kriteri
+
+| Kanıt Grubu | İçerik |
+|-------------|--------|
+| **1. Implementation Evidence** | Değiştirilen dosyalar, yeni write-chain, kaldırılan legacy write'lar |
+| **2. Testing Evidence** | Feature testleri, regression testleri, transaction/rollback testleri |
+| **3. Operational Evidence** | OFF/ON/SHADOW doğrulaması, rollback senaryosu, idempotency, side-effect isolation |
+| **4. Certification Evidence** | 13 done kriteri, parity raporu, legacy cleanup onayı |
+
+---
+
+### Öncelik Sıralaması
+
+| # | Adım | Öncelik |
+|---|------|---------|
+| 1 | submitWizard içindeki tüm ORM write'ları kaldır | P0 |
+| 2 | IlanWizardApplicationService oluştur | P0 |
+| 3 | Authenticated user_id ve workspace_id server-side ata | P0 |
+| 4 | Typed DTO/Command kullanımı (SubmitWizardCommand) | P1 |
+| 5 | Tek transaction sınırı | P1 |
+| 6 | Idempotency + lockForUpdate | P1 |
+| 7 | Shadow mode duplicate prevention | P2 |
+| 8 | Event üretimi (ListingCreated, PhotosImported, SeasonalPricingConfigured) | P2 |
+| 9 | Timeline entries (Wizard Submitted → Listing Created → Photos Added → Pricing Added) | P2 |
+
+---
+
+### DTO/Command Yapısı
+
+```php
+// SubmitWizardCommand — typed command object
+final readonly class SubmitWizardCommand
+{
+    public function __construct(
+        public int $draftId,
+        public int $actorId,
+        public int $workspaceId,
+        public ListingData $listing,
+        public array $photos,
+        public ?SeasonalPricingData $pricing,
+    ) {}
+}
+
+final readonly class ListingData
+{
+    public function __construct(
+        public int $kategoriId,
+        public int $yayinTipiId,
+        public string $baslik,
+        public string $aciklama,
+        public float $fiyat,
+        public array $location,
+        // ...
+    ) {}
+}
+```
+
+---
+
+### Transaction Sınırı
+
+```php
+// Application Service içinde
+return DB::transaction(function () use ($command) {
+    // 1. Draft ownership doğrulama (lockForUpdate)
+    $draft = IlanDraft::whereKey($command->draftId)
+        ->lockForUpdate()
+        ->firstOrFail();
+
+    $this->draftPolicy->assertCanSubmit($command->actorId, $draft);
+
+    // 2. Idempotency kontrolü
+    if ($draft->submitted_at !== null) {
+        throw new DraftAlreadySubmittedException($draft->id);
+    }
+
+    // 3. Listing oluştur
+    $listing = $this->bridge->store($command->listing);
+
+    // 4. Fotoğraflar
+    $this->photoWriter->replaceForListing($listing, $command->photos);
+
+    // 5. Fiyatlandırma
+    if ($command->pricing) {
+        $this->pricingWriter->upsertForListing($listing, $command->pricing);
+    }
+
+    // 6. Events
+    event(new ListingCreated($listing));
+    event(new PhotosImported($listing, count($command->photos)));
+    event(new SeasonalPricingConfigured($listing));
+
+    // 7. Timeline
+    $listing->timeline()->create([
+        'event' => 'wizard_submitted',
+        'actor_id' => $command->actorId,
+    ]);
+
+    return $listing;
+});
+```
+
+---
+
+### Nihai Hedef
+
+Remediation tamamlandığında:
+- **Owner Controller** ✅ (zaten SAB uyumlu)
+- **Wizard Controller** → aynı write chain üzerinden çalışacak
+- **API Actions** → aynı write chain üzerinden çalışacak
+
+Bu da Sprint 12C'nin temel hedefi olan **tek, feature-flag kontrollü, geri alınabilir ve test edilebilir Listing yazma yolu** oluşturma amacını ilerletecektir.

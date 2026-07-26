@@ -92,6 +92,50 @@ Eski servis ile yeni servis arasında geçiş yapılabilir olmalı.
 
 ---
 
+---
+
+## Wave 1 — V2 API Actions ✅ COMPLETE
+
+| Action | Status | Commit |
+|--------|---------|--------|
+| StoreIlanAction | ✅ Bridge | `044f85f` |
+| UpdateIlanAction | ✅ Bridge | `044f85f` |
+| DestroyIlanAction | ✅ Bridge | `d7f90fd` |
+
+---
+
+## Wave 2 — Admin Controllers 🔄 NEXT
+
+### Hedef
+
+Admin controller refactor + Bridge entegrasyonu. Controller'lar ince kalmalı.
+
+### Thin Controller Kuralları
+
+Controller içinde şunlar OLMAMALI:
+- Feature flag kararı
+- Legacy/V2 servis seçimi
+- Tenant ownership business logic
+- State transition mantığı
+- Audit/event üretimi
+
+### Wave 2 Sırası
+
+| # | Controller | Öncelik | Durum |
+|---|------------|---------|--------|
+| 1 | OwnerIlanController | P1 | ⏳ |
+| 2 | IlanWizardController | P1 | ⏳ |
+| 3 | BulkListingController | P1 | ⏳ |
+| 4 | IlanPublishController | P2 | ⏳ |
+| 5 | IlanSegmentController | P2 | ⏳ |
+| 6 | WorkspaceDashboardController | P3 | ⏳ |
+
+### Duplicate İşlemi Ayrı İzlenir
+
+duplicate() yan etkileri: child relations, media, identifiers, events
+
+---
+
 ## Phase 3 — Migration
 
 ### Görev

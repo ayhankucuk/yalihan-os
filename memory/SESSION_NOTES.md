@@ -6,6 +6,120 @@
 
 ---
 
+## OTURUM 116 | 2026-07-26 | IlanWizardController SAAB Analizi — ✅ APPROVED
+
+**Agent:** Kilo
+**Konu:** IlanWizardController SAB Write-Chain İhlal Analizi + Wave 2 Remediation Planı
+
+### Analiz Sonuçları
+
+| Controller | Durum |
+|------------|-------|
+| OwnerIlanController | ✅ SAB Uyumlu — Ownership + delegation doğru |
+| IlanWizardController::submitWizard | ❌ SAB İhlal — Direct ORM write |
+
+### IlanWizardController İhlalleri
+
+1. **Direct IlanCrudService çağrısı** — `IlanService` atlanıyor
+2. **Direct ORM write** — `$ilan->fotograflar()->create()` (satır 320)
+3. **Direct ORM write** — `YazlikFiyatlandirma::create()` (satır 331-350)
+
+### SAAB Kararı
+
+**Durum:** 🟢 EXECUTION IN PROGRESS
+**Charter:** BR-20260726-WAVE2
+**SAAB Durumu:** 🟢 ON TRACK
+**Board Question:** IlanWizardController SAB write-chain uyumlu hale getirilebilir mi? → EVET
+
+### Phase 4 Geçiş Şartı
+
+Phase 4 ancak şu soru "evet" cevabını alıyorsa başlamalıdır:
+
+> **Legacy ve V2 aynı girdiler için aynı iş sonucunu üretiyor mu?**
+
+### Wave 2 Exit Criteria
+
+| # | Kriter |
+|---|--------|
+| 1 | IlanWizardApplicationService oluşturuldu |
+| 2 | Controller'da business logic kalmadı |
+| 3 | Doğrudan ORM write'lar kaldırıldı |
+| 4 | ListingCrudBridge tek giriş noktası oldu |
+| 5 | Atomic transaction sağlandı |
+| 6 | OFF / ON / SHADOW modları çalışıyor |
+| 7 | Idempotency doğrulandı |
+| 8 | Shadow side-effect isolation doğrulandı |
+| 9 | Regression testleri yeşil |
+
+### Sonraki Yönetim İncelemesinde Beklenen
+
+1. Gerçek kod değişiklikleri (diff)
+2. Test sonuçları
+3. Parity raporu
+4. OFF / ON / SHADOW doğrulaması
+5. Sertifikasyon için evidence paketi
+
+### Yol Haritası
+
+```
+Wave 2 → Parity Validation → Legacy Cleanup → Sprint 12C Certification
+```
+
+> ⚠️ Parity tamamlanmadan legacy kod kaldırılmamalı.
+
+### Wave 2 Öncelik Listesi
+
+| # | Adım | Öncelik |
+|---|------|---------|
+| 1 | submitWizard içindeki tüm ORM write'ları kaldır | P0 |
+| 2 | IlanWizardApplicationService oluştur | P0 |
+| 3 | Authenticated user_id ve workspace_id server-side ata | P0 |
+| 4 | Typed DTO/Command kullanımı (SubmitWizardCommand) | P1 |
+| 5 | Tek transaction sınırı | P1 |
+| 6 | Idempotency + lockForUpdate | P1 |
+| 7 | Shadow mode duplicate prevention | P2 |
+| 8 | Event üretimi | P2 |
+| 9 | Timeline entries | P2 |
+
+### Wave 2 Ek Kalite Kapıları
+
+| # | Kalite Kapısı | Test Senaryoları |
+|---|--------------|------------------|
+| 1 | **Idempotency** | Aynı draft tekrar submit, ağ retry, çift tıklama |
+| 2 | **Shadow Side-Effect Isolation** | Listing, fotoğraflar, fiyatlandırma, event, queue, audit, timeline — tek kez |
+
+### Wave 2 Done Kriterleri (13 kriter)
+
+| Kriter | Durum |
+|--------|-------|
+| Controller'da ORM write yok | ☐ |
+| Controller'da doğrudan CrudService çağrısı yok | ☐ |
+| IlanWizardApplicationService aktif | ☐ |
+| ListingCrudBridge tek write entry point | ☐ |
+| Tek transaction sınırı | ☐ |
+| Idempotency doğrulandı | ☐ |
+| Shadow side-effect isolation doğrulandı | ☐ |
+| OFF / ON / SHADOW testleri geçti | ☐ |
+| Tenant Isolation regresyonu geçti | ☐ |
+| Authorization regresyonu geçti | ☐ |
+| Rollback testleri geçti | ☐ |
+| Wizard Feature Tests geçti | ☐ |
+| Shadow parity raporu üretildi | ☐ |
+
+### Güncellenen Belgeler
+
+| Dosya | Değişiklik |
+|-------|------------|
+| `memory/CHANGELOG_AGENT.md` | SAAB bulgu detayları + Wave 2 planı |
+| `memory/DECISIONS.md` | Wave 2 mimari kararı + DTO yapısı |
+| `docs/PROGRESS-TRACKER.md` | Wave 2 remediation planı |
+
+### Sonraki Adım
+
+Wave 2 implementasyonu başlatılabilir. Önce `IlanWizardApplicationService` oluşturulması gerekiyor.
+
+---
+
 ## OTURUM 110 | 2026-07-16 | M2 PROPERTY RUNTIME — 🟢 CERTIFIED ✅
 
 **Agent:** Kilo
