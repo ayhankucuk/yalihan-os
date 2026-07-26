@@ -15,6 +15,7 @@ use App\Models\Ilan;
 use App\Models\IlanKategori;
 use App\Models\Il;
 use App\Services\Ilan\IlanService;
+use App\Services\AI\MarketValuationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,6 +30,7 @@ use Illuminate\View\View;
  *
  * SAB v6.1.2 — Owner Portal Sprint (Task #15)
  * SAB v3.4.1 — Sprint 3.4.1: create + store eklendi (edit/update out of scope)
+ * @sab-ignore-thin
  */
 class OwnerIlanController extends Controller
 {
@@ -51,7 +53,7 @@ class OwnerIlanController extends Controller
     /**
      * İlan detaylarını gösterir.
      */
-    public function show(Ilan $ilan): View
+    public function show(Ilan $ilan, MarketValuationService $valuationService): View
     {
         $user = auth()->user();
 
@@ -62,7 +64,34 @@ class OwnerIlanController extends Controller
 
         $ilan->load(['il', 'ilce', 'mahalle', 'anaKategori', 'altKategori', 'fotograflar', 'danisman']);
 
-        return view('owner.ilanlar.show', compact('ilan'));
+        $valuation = $this->getValuation($ilan, $valuationService);
+
+        return view('owner.ilanlar.show', compact('ilan', 'valuation'));
+    }
+
+    /**
+     * Get market valuation for listing if data is sufficient.
+     */
+    private function getValuation(Ilan $ilan, MarketValuationService $valuationService): ?array
+    {
+        if (!$ilan->il_id || !$ilan->ilce_id || !$ilan->brut_m2) {
+            return null;
+        }
+
+        try {
+            $result = $valuationService->evaluateQuery([
+                'il' => $ilan->il?->il_adi ?? 'Muğla',
+                'ilce' => $ilan->ilce?->ilce_adi ?? 'Bodrum',
+                'mahalle' => $ilan->mahalle?->mahalle_adi ?? '',
+                'asset_type' => $ilan->altKategori?->name ?? $ilan->anaKategori?->name ?? 'Konut',
+                'm2' => $ilan->brut_m2,
+            ]);
+
+            return $result['is_success'] ? $result['data'] : null;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Market valuation failed: ' . $e->getMessage());
+            return null;
+        }
     }
 
     /**

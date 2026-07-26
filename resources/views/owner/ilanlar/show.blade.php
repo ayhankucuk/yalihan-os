@@ -392,6 +392,116 @@
             </div>
         </div>
 
+        @if(isset($valuation))
+        {{-- AI Market Valuation Widget (Sprint 6.8 / Owner Portal) --}}
+        <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <div class="mb-3 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-slate-700">
+                <h3 class="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                    <span>🤖</span> AI Piyasa Analizi
+                </h3>
+                <span class="rounded bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">cortex</span>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <div class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wider font-semibold">TAHMİNİ PİYASA DEĞERİ</div>
+                    <div class="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">
+                        {{ number_format($valuation['estimated_value'], 0, ',', '.') }} {{ $ilan->para_birimi }}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 border-t border-gray-100 pt-3 dark:border-slate-700">
+                    <div>
+                        <div class="text-xs text-gray-400 dark:text-slate-500">M² Medyan Fiyat</div>
+                        <div class="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">
+                            {{ number_format($valuation['median_m2_price'], 0, ',', '.') }} {{ $ilan->para_birimi }}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-400 dark:text-slate-500">Emsal Sayısı</div>
+                        <div class="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">
+                            {{ $valuation['comparable_count'] }} adet
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-100 pt-3 dark:border-slate-700">
+                    <div class="text-xs text-gray-400 dark:text-slate-500 mb-1">Tahmin Aralığı</div>
+                    <div class="text-xs text-gray-600 dark:text-slate-300">
+                        {{ number_format($valuation['price_range_low'], 0, ',', '.') }} - {{ number_format($valuation['price_range_high'], 0, ',', '.') }}
+                    </div>
+                </div>
+
+                @php
+                    $deviation = 0;
+                    if ($valuation['estimated_value'] > 0) {
+                        $deviation = (($ilan->fiyat - $valuation['estimated_value']) / $valuation['estimated_value']) * 100;
+                    }
+                @endphp
+                <div class="border-t border-gray-100 pt-3 dark:border-slate-700">
+                    <div class="text-xs text-gray-400 dark:text-slate-500 mb-1">Fiyat Durumu</div>
+                    <div class="text-xs font-semibold">
+                        @if($deviation > 5)
+                            <span class="text-red-600 dark:text-red-400">Piyasanın Üstünde (%{{ round($deviation) }} pahalı)</span>
+                        @elseif($deviation < -5)
+                            <span class="text-green-600 dark:text-green-400">Piyasanın Altında (%{{ round(abs($deviation)) }} ucuz)</span>
+                        @else
+                            <span class="text-blue-600 dark:text-blue-400">Piyasa Değerinde</span>
+                        @endif
+                    </div>
+                </div>
+
+                @if(isset($valuation['confidence_score']))
+                <div class="border-t border-gray-100 pt-3 dark:border-slate-700">
+                    <div class="text-xs text-gray-400 dark:text-slate-500 mb-1 flex justify-between">
+                        <span>Güven Skoru</span>
+                        <span class="font-bold text-gray-700 dark:text-slate-300">%{{ $valuation['confidence_score'] }}</span>
+                    </div>
+                    <div class="text-xs font-bold mt-1">
+                        @if($valuation['confidence_score'] >= 80)
+                            <span class="text-green-600 dark:text-green-400">Yüksek Güven</span>
+                        @elseif($valuation['confidence_score'] >= 50)
+                            <span class="text-amber-600 dark:text-amber-400">Orta Güven</span>
+                        @else
+                            <span class="text-red-600 dark:text-red-400">Düşük Güven</span>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
+                @if(isset($valuation['market_trend']))
+                <div class="border-t border-gray-100 pt-3 dark:border-slate-700">
+                    <div class="text-xs text-gray-400 dark:text-slate-500 mb-1">Piyasa Trendi</div>
+                    <div class="text-xs font-semibold">
+                        @if($valuation['market_trend'] > 2)
+                            <span class="text-green-600 dark:text-green-400">↑ Yükselişte (%{{ $valuation['market_trend'] }})</span>
+                        @elseif($valuation['market_trend'] < -2)
+                            <span class="text-red-600 dark:text-red-400">↓ Düşüşte (%{{ abs($valuation['market_trend']) }})</span>
+                        @else
+                            <span class="text-gray-600 dark:text-gray-400">→ Stabil (%{{ $valuation['market_trend'] }})</span>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
+                @if(isset($valuation['liquidity_score']))
+                <div class="border-t border-gray-100 pt-3 dark:border-slate-700">
+                    <div class="text-xs text-gray-400 dark:text-slate-500 mb-1">Likidite Skoru</div>
+                    <div class="text-xs font-bold">
+                        @if($valuation['liquidity_score'] === 'HIGH' || $valuation['liquidity_score'] === 'YÜKSEK')
+                            <span class="text-green-600 dark:text-green-400">Yüksek</span>
+                        @elseif($valuation['liquidity_score'] === 'MED' || $valuation['liquidity_score'] === 'ORTA')
+                            <span class="text-amber-600 dark:text-amber-400">Orta</span>
+                        @else
+                            <span class="text-red-600 dark:text-red-400">Düşük</span>
+                        @endif
+                    </div>
+                </div>
+                @endif
+            </div>
+        </div>
+        @endif
+
         {{-- Portföy Hazırlık Analizi (Sprint 3.4.3) --}}
         <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800"
              x-data="ownerReadiness()"
