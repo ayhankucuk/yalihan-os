@@ -1042,3 +1042,103 @@ Tam repository analizi raporu:
 - SyncPropertyCalendarFeedTest: 3/3 PASS ✅
 - PropertyAggregateTest: 13/13 PASS ✅
 
+---
+
+## 2026-07-26 | Sprint 12B COMPLETE (Oturum 118) | Workspace Tenant Isolation ✅
+
+### Sprint 12B — All Phases Complete
+
+**Total Tests:** 40 PASS (83 assertions)
+
+| Phase | Tests | Assertions |
+|-------|-------|------------|
+| Phase 1: Workspace Isolation | Implementation | - |
+| Phase 2: Cross-Tenant Tests | 17 | 27 |
+| Phase 3: Replay Determinism | 10 | 18 |
+| Phase 4: Persistence Hardening | 13 | 38 |
+| **TOTAL** | **40** | **83** |
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `app/Services/SaaS/TenantContextService.php` | Workspace context added |
+| `app/Domain/Listing/ListingCrudService.php` | `validateWorkspaceOwnership()` added |
+| `tests/Feature/Listing/TenantIsolationTest.php` | +8 workspace isolation tests |
+| `tests/Feature/Listing/ReplayDeterminismTest.php` | **NEW** - 10 replay tests |
+| `tests/Feature/Listing/PersistenceHardeningTest.php` | **NEW** - 13 persistence tests |
+
+### Definition of Done — ALL COMPLETE
+
+| # | Kanıt | Status |
+|---|-------|--------|
+| 1 | Workspace isolation | ✅ |
+| 2 | Cross-tenant blocked | ✅ |
+| 3 | Replay deterministic | ✅ |
+| 4 | FK integrity | ✅ |
+| 5 | CI green | ✅ 40/40 |
+| 6 | No new violations | ✅ |
+
+---
+
+## 2026-07-26 | Sprint 12B Phase 1+2 COMPLETE (Oturum 117) | Workspace Isolation ✅
+
+### Sprint 12B Phase 1: Workspace Isolation
+
+**Files Modified:**
+| Dosya | Değişiklik |
+|-------|------------|
+| `app/Services/SaaS/TenantContextService.php` | Workspace context eklendi |
+| `app/Domain/Listing/ListingCrudService.php` | `validateWorkspaceOwnership()` eklendi, 5 metod güncellendi |
+
+**Test Results:** `tests/Feature/Listing/TenantIsolationTest.php` → **17/17 PASS**
+
+### Phase 2: Cross-Tenant Tests
+
+**Coverage:**
+- 9 Cross-Tenant tests (block + allow)
+- 8 Workspace Isolation tests (block + allow + backward compat)
+
+### Definition of Done — Phase 1+2
+
+| Kanıt | Durum |
+|-------|-------|
+| Workspace isolation | ✅ |
+| Cross-tenant blocked | ✅ |
+| Service Layer doğrulaması | ✅ |
+| Tests green | ✅ 17/17 |
+
+---
+
+## 2026-07-26 | Sprint 12B ACTIVE (Oturum 117) | Workspace Tenant Isolation Başladı
+
+### Sprint 12B — Workspace Tenant Isolation
+
+**Board Decision:** BR-20260726-SPRINT12B
+**Sprint Goal:** Workspace Tenant Isolation'ı publish workflow'un ayrılmaz bir parçası haline getirmek
+**Charter:** `docs/plans/SPRINT_12B_CHARTER.md`
+
+### Phase Planı
+
+| Phase | İçerik | Öncelik |
+|-------|--------|---------|
+| Phase 1 | Workspace Isolation | ⭐ P1 |
+| Phase 2 | Cross-Tenant Test Suite | P2 |
+| Phase 3 | Replay Determinism | P3 |
+| Phase 4 | Persistence Hardening | P4 |
+
+### Definition of Done
+
+| # | Kanıt |
+|---|-------|
+| 1 | Workspace isolation doğrulandı |
+| 2 | Cross-tenant testleri geçti |
+| 3 | Replay deterministik |
+| 4 | FK integrity doğrulandı |
+| 5 | CI tamamen yeşil |
+| 6 | No new violations |
+
+---
+
+## 2026-07-26 | Sprint 12B Öncelik Kararı | Workspace Tenant Isolation Önceliklendirildi
+

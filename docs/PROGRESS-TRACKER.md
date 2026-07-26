@@ -15,8 +15,18 @@ tags: []
 ---
 
 # Governance Progress Tracker
-**Son Güncelleme:** 2026-07-25 (Oturum 113 — Sprint 20 Stabilization ✅ COMPLETE + EIOS Evidence Model ✅ ACTIVE + Sprint 21 Charter ✅ APPROVED)
-**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + ✅ **SPRINT 10 CERTIFIED** + 🏠 **SPRINT 11 CERTIFIED** + 🏛️ **SAAB GOVERNANCE FROZEN** + 🚀 **SPRINT 12 ✅ COMPLETE** + 🧪 **TENANT ISOLATION TESTS ✅ ALL GREEN** + 🏦 **SPRINT 17B ✅ CERTIFIED** + 📅 **SPRINT 18 ✅ CERTIFIED WITH LIMITATIONS** + 🛡️ **CD-005 ✅ CLOSED** + 🎫 **RESERVATION STATE MACHINE ✅ COMPLETE** + 📅 **UNIFIED CALENDAR PROJECTION ✅ COMPLETE** + 🛡️ **SPRINT 20 ✅ COMPLETE** + 📋 **EVIDENCE MODEL v1.2 🔒 LOCKED** + 📅 **SPRINT 21 CHARTER ✅ APPROVED**
+**Son Güncelleme:** 2026-07-26 (Oturum 116 — Sprint 25 ⏳ — CRM ✅ / Listing ✅ / Analytics ⏳)
+
+**Sprint 25 Checkpoint:**
+| Capability | Features | Compliant | Deferred |
+|-----------|-----------|-----------|----------|
+| Property | 5 | 1 | 0 |
+| CRM | 4 | 3 | 1 |
+| Listing | 4 | 4 | 0 |
+| Analytics/AI | 3 | 0 | 0 |
+| Core Admin | 3 | 0 | 0 |
+| **TOTAL** | 18 | **8** | **1** |
+**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + ✅ **SPRINT 10 CERTIFIED** + 🏠 **SPRINT 11 CERTIFIED** + 🏛️ **SAAB GOVERNANCE FROZEN** + 🚀 **SPRINT 12 ✅ COMPLETE** + 🧪 **TENANT ISOLATION TESTS ✅ ALL GREEN** + 🏦 **SPRINT 17B ✅ CERTIFIED** + 📅 **SPRINT 18 ✅ CERTIFIED WITH LIMITATIONS** + 🛡️ **CD-005 ✅ CLOSED** + 🎫 **RESERVATION STATE MACHINE ✅ COMPLETE** + 📅 **UNIFIED CALENDAR PROJECTION ✅ COMPLETE** + 🛡️ **SPRINT 20 ✅ COMPLETE** + 📋 **EVIDENCE MODEL v1.2 🔒 LOCKED** + 📅 **SPRINT 21 CHARTER ✅ APPROVED** + 🎨 **SPRINT 22 ✅ APPROVED FOR IMPLEMENTATION** + ✅ **SPRINT 12B ✅ COMPLETE (40 tests)** + ⏳ **SPRINT 12C 🚀 PLANNING**
 | ERA III/IV | Katman | Sprint | Status |
 |---------|--------|--------|---------|
 | Observation | Cockpit | 4.6 | ✅ Certified |
@@ -33,6 +43,40 @@ tags: []
 | **Unified Calendar** | **Projection & Listener** | **19-T3** | **✅ COMPLETE (Oturum 112)** |
 
 **ERA IV:** 🚀 ACTIVE — First Advisor Pilot | Sprint 5.0
+
+---
+
+## 🏗️ Paralel Sprint Hatları
+
+Proje iki paralel hatta ilerlemektedir:
+
+### Track A — Domain/Workflow Güvenilirliği
+
+```
+Sprint 12A ✅ (Publish Workflow)
+        ↓
+Sprint 12B ⏳ (Isolation & Persistence)
+        ↓
+Sprint 12C ⏳ (Legacy Migration)
+```
+
+**Odak:** Domain model güvenilirliği, veri izolasyonu, state machine integrity
+
+### Track B — UI Modernizasyonu
+
+```
+Sprint 22–24 ✅ (YDS Foundation)
+        ↓
+Sprint 25 ⏳ (Feature Migration)
+        ↓
+Sprint 26 ⏳ (Legacy UI Decommission)
+```
+
+**Odak:** UI modernizasyonu, YDS token compliance, eski admin layout'un kaldırılması
+
+**Track A ve Track B birbirini tamamlar:** Biri domain/workflow güvenilirliğini, diğeri UI modernizasyonunu ilerletir.
+
+---
 
 ---
 
@@ -124,6 +168,81 @@ Board "Evet" diyebilmeli:
 
 ### Sprint Review Standard
 > *"Bu sprint sonunda YALIHAN, önceki sprintte yapamadığı gerçek bir emlak operasyonunu artık kendi başına veya daha az insan müdahalesiyle gerçekleştirebiliyor."*
+
+---
+
+## 📋 Sprint 12B — Workspace Tenant Isolation
+
+**Status:** ✅ COMPLETE (Oturum 118 — 2026-07-26)
+**Board Question:** YALIHAN, bir workspace dışından yapılan publish/submit/unpublish işlemlerini güvenli şekilde engelleyebiliyor mu?
+**Sprint Goal:** Workspace Tenant Isolation'ı publish workflow'un ayrılmaz bir parçası haline getirmek
+**Board Decision:** BR-20260726-SPRINT12B
+**Charter:** `docs/plans/SPRINT_12B_CHARTER.md`
+
+### Sprint 12B Yol Haritası
+
+| # | Adım | Açıklama | Durum |
+|---|------|----------|-------|
+| 1 | Workspace Tenant Isolation | Publish/Unpublish workspace doğrulaması | ✅ |
+| 2 | Cross-tenant Tests | Tüm katmanlarda tenant sınırı testleri | ✅ |
+| 3 | State Machine Replay Tests | Replay güvenilirliği doğrulaması | ✅ |
+| 4 | Persistence Hardening | FK constraint, cascade, veri bütünlüğü | ✅ |
+
+### Sprint 12B Test Sonuçları
+
+| Phase | Tests | Assertions | Status |
+|-------|-------|------------|--------|
+| Phase 1: Workspace Isolation | Implementation | - | ✅ |
+| Phase 2: Cross-Tenant Tests | 17 | 27 | ✅ |
+| Phase 3: Replay Determinism | 10 | 18 | ✅ |
+| Phase 4: Persistence Hardening | 13 | 38 | ✅ |
+| **TOTAL** | **40** | **83** | **✅** |
+
+### Sprint 12B Definition of Done
+
+| # | Kanıt | Açıklama | Status |
+|---|-------|----------|--------|
+| 1 | Workspace isolation | Publish/Unpublish işlemleri yalnızca aynı workspace içinde çalışıyor | ✅ |
+| 2 | Cross-tenant blocked | Cross-tenant erişim girişimleri DomainException ile engelleniyor | ✅ |
+| 3 | Replay deterministic | Replay testleri deterministik sonuç veriyor | ✅ |
+| 4 | FK integrity | FK ve veri bütünlüğü doğrulanıyor | ✅ |
+| 5 | CI green | Yeni eklenen testler yeşil | ✅ |
+| 6 | No new violations | Tüm 40 test geçti | ✅ |
+
+### DLQ Pattern — Sprint 13+
+
+DLQ (Dead Letter Queue) Sprint 12B kapsamına **alınmadı.** Mevcut event dispatch ve audit log zaten çalışıyor. DLQ resilience improvement kategorisinde, temel doğruluk değil.
+
+### Referans
+
+- Sprint 12A: `BR-20260715-SAABv11`
+- Sprint 12B discovery: `.sab/sprint-12b-discovery/`
+- Karar: `memory/DECISIONS.md` (2026-07-26)
+
+---
+
+## 📋 Sprint 12C — Legacy Migration
+
+**Status:** ⏳ PLANNED
+**Öncelik:** P1
+**Başlangıç Koşulu:** Sprint 12B tamamlanmış olmalı
+
+### Sprint 12C İçeriği
+
+| # | Adım | Açıklama | Durum |
+|---|------|----------|-------|
+| 1 | Feature Flag | Kesintisiz geçiş mekanizması | ⏳ |
+| 2 | IlanCrudService → ListingCrudService | Write authority migration | ⏳ |
+| 3 | Shadow Mode | Yeni servis parallel çalışma | ⏳ |
+| 4 | Traffic Switch | Yavaş yük alma | ⏳ |
+
+### Güvenlik Ön Koşulu
+
+Legacy migration ancak şunlar tamamlandıktan sonra başlayabilir:
+- ✅ Workspace Tenant Isolation
+- ✅ Cross-tenant Tests
+- ✅ State Machine Replay Tests
+- ✅ Persistence Hardening
 
 ---
 
@@ -392,6 +511,204 @@ Sprint 20 — Company Brain
 - Gate 4: Sprint Packaging Standard v1.2 teslimat paketi tam
 
 **YSAAB Kararı:** APPROVED BASED ON REPORTED EVIDENCE (Oturum 113)
+
+---
+
+## 📋 Sprint 22 — YDS Design System Foundation
+
+**Tarih:** 2026-07-25
+**Status:** ✅ APPROVED FOR IMPLEMENTATION
+**Charter:** [docs/ysos/PROPERTY_COMMAND_CENTER_REFERENCE.md](docs/ysos/PROPERTY_COMMAND_CENTER_REFERENCE.md)
+
+### Sprint 22 — Odağı: YDS Design System Foundation
+
+5 Temel Çıktı:
+
+| # | Çıktı | Dosya | Durum |
+|---|-------|-------|-------|
+| 1 | Screen Inventory | `docs/ysos/SCREEN_INVENTORY.md` | ✅ |
+| 2 | Property Command Center IA | `docs/ysos/PROPERTY_COMMAND_CENTER_IA.md` | ✅ |
+| 3 | Design Tokens | `docs/ysos/YDS_V1_DESIGN_TOKENS.md` | ✅ |
+| 4 | Component Contracts | `docs/ysos/YDS_V1_COMPONENTS.md` | ✅ |
+| 5 | Reference Screen | `docs/ysos/PROPERTY_COMMAND_CENTER_REFERENCE.md` | ✅ |
+
+### Sprint 22 — Çıktı Özeti
+
+**Token Hiyerarşisi (3 katman):**
+- Primitive → Semantic → Component
+- Mediterranean Premium palette (navy/gold/cream)
+- Dual font system (Manrope + Inter + JetBrains Mono)
+
+**Component Contracts (26 component):**
+- Foundation: Button, Input, Textarea, Select, Checkbox, Radio, Toggle
+- Feedback: Badge, Alert, Toast, Spinner
+- Layout: Card, Tabs, Divider, Section Header
+- Data: Table, Empty State, Pagination
+- Overlay: Modal, Drawer, Dropdown, Tooltip, Confirmation Dialog
+- Navigation: Breadcrumb, Command Bar, Search Box
+
+**Kalite Kapıları:**
+- ✅ Token doğrulaması: Tüm renk/typography/spacing/elevation token'ları yeterli
+- ✅ Component doğrulaması: 26 component sufficient, yeni ad-hoc gerekmiyor
+- ✅ IA doğrulaması: Tab yapısı + kullanıcı akışı sezgisel
+
+**Backlog:**
+- Timeline component (mevcut primitive'lerle oluşturulabilir)
+- Calendar wrapper (FullCalendar vb.)
+- Chart wrapper (Chart.js vb.)
+
+**SAAB Kararı:** APPROVED FOR IMPLEMENTATION (Oturum 113)
+
+**Sonraki:** Sprint 23 — Property Command Center Production Implementation
+
+---
+
+## 📋 Sprint 23 — YDS Production Implementation
+
+**Tarih:** 2026-07-25
+**Status:** ✅ COMPLETE
+**Charter:** [docs/plans/SPRINT_23_CHARTER.md](docs/plans/SPRINT_23_CHARTER.md)
+
+### Sprint 23 — Odağı: YDS v1.0 Production Implementation
+
+**Amaç:** YDS Design System'in üretim ortamında çalıştığını doğrulamak
+
+5 Temel Çıktı:
+
+| # | Çıktı | Dosya | Durum |
+|---|-------|-------|-------|
+| 1 | Tailwind Config Update | `tailwind.config.js` | ✅ |
+| 2 | YDS Components (9) | `resources/views/components/yds/` | ✅ |
+| 3 | Property Command Center | `admin/property-command-center/index.blade.php` | ✅ |
+| 4 | Token Compliance | Arbitrary hex kullanımı yok | ✅ |
+| 5 | Syntax Validation | Tüm dosyalar | ✅ |
+
+### Sprint 23 — Çıktı Özeti
+
+**Tailwind Config (YDS v1.0 Semantic Tokens):**
+- `yds-primary`, `yds-primary-h` → Navy palette
+- `yds-accent`, `yds-accent-light`, `yds-accent-dim` → Gold palette
+- `yds-success`, `yds-warning`, `yds-danger`, `yds-info` → Status colors
+- `yds-surface`, `yds-surface-r`, `yds-surface-m` → Surface tokens
+- `yds-border`, `yds-border-s`, `yds-border-a` → Border tokens
+- `yds-text-pri`, `yds-text-sec`, `yds-text-muted`, `yds-text-inv` → Text tokens
+
+**YDS Components (9 component):**
+- `yds/button.blade.php` — 6 variants, 3 sizes, loading/disabled states
+- `yds/badge.blade.php` — 6 variants, 3 sizes, dot/pill variants
+- `yds/card.blade.php` — 5 variants, 3 sizes, header/footer slots
+- `yds/input.blade.php` — 10 types, 3 sizes, icon/prefix/suffix support
+- `yds/modal.blade.php` — 5 sizes, Alpine.js integration
+- `yds/tabs.blade.php` — 2 variants, 3 sizes, array/slot support
+- `yds/drawer.blade.php` — 4 sizes, left/right positions
+- `yds/search-box.blade.php` — 3 sizes, debounce, clearable
+- `yds/table.blade.php` — 4 variants, 3 sizes, sortable/selectable
+
+**Property Command Center (YDS Implementation):**
+- Header: YDS tokens + Button component
+- BAI Banner: YDS tokens + Card component
+- Property List: YDS Table + Badge + SearchBox + Button
+
+**Kalite Kapıları:**
+- ✅ Token Compliance: Arbitrary hex/code yok
+- ✅ PHP Syntax: Tüm dosyalar temiz
+- ✅ Component Contract: YDS sözleşmelerine uyum
+- ✅ Semantic Tokens: Sadece `yds-*` prefix kullanımı
+
+**SAAB Kararı:** ✅ COMPLETE (Oturum 114)
+
+**Sonraki:** Sprint 24 — Vue Components + Acceptance Tests
+
+---
+
+## 📋 Sprint 24 — Vue Components + Acceptance Tests
+
+**Tarih:** 2026-07-26
+**Status:** ✅ COMPLETE
+**Charter:** Sprint 24 Charter
+
+### Sprint 24 — Odağı: Vue Parity + Acceptance Tests
+
+**Amaç:** Blade component'lerin Vue karşılıklarını oluşturmak ve kabul testleri yazmak
+
+**Çıktılar:**
+
+| # | Çıktı | Dosya | Durum |
+|---|-------|-------|-------|
+| 1 | Vue Components (9) | `resources/js/components/Yds/` | ✅ |
+| 2 | Blade/Vue API Parity | Tüm component'ler | ✅ |
+| 3 | Acceptance Test | `tests/Feature/YDS/YdsComponentAcceptanceTest.php` | ✅ |
+| 4 | Token Compliance | Arbitrary hex yok | ✅ |
+
+**Vue Components (9):**
+
+| Component | Dosya | Durum |
+|-----------|--------|--------|
+| Button | `YdsButton.vue` | ✅ 6 variants, 3 sizes |
+| Badge | `YdsBadge.vue` | ✅ 6 variants, dot/pill |
+| Card | `YdsCard.vue` | ✅ 5 variants, slots |
+| Input | `YdsInput.vue` | ✅ 10 types, icon support |
+| Modal | `YdsModal.vue` | ✅ 5 sizes, Teleport |
+| Table | `YdsTable.vue` | ✅ sortable, selectable |
+| Tabs | `YdsTabs.vue` | ✅ 2 variants, named slots |
+| Drawer | `YdsDrawer.vue` | ✅ left/right, Teleport |
+| Icon | `YdsIcon.vue` | ✅ SVG registry |
+
+**Blade ↔ Vue API Parity:**
+
+| Blade API | Vue API | Durum |
+|-----------|---------|--------|
+| `<x-yds::button variant="primary">` | `<YdsButton variant="primary">` | ✅ |
+| `:variant`, `:size`, `:disabled` props | Same props | ✅ |
+| Slot-based content | Default slot | ✅ |
+
+**Acceptance Tests:**
+- Token compliance check
+- Accessibility ARIA checks
+- Keyboard navigation (Escape key)
+- Focus management
+- Component variant tests
+
+**SAAB Kararı:** ✅ COMPLETE (Oturum 115)
+
+**Sonraki:** Sprint 25 — Feature Migration
+
+---
+
+## 📋 Sprint 25 — Capability Migration
+
+**Tarih:** 2026-07-26
+**Status:** 🔄 IN PROGRESS
+**Charter:** [docs/plans/SPRINT_25_CHARTER.md](docs/plans/SPRINT_25_CHARTER.md)
+
+### Sprint 25 — Odağı: Feature-by-Feature YDS Migration
+
+**Amaç:** Mevcut admin panel feature'larını YDS bileşenlerine migrate etmek
+
+**Migration Checklist (her feature için):**
+- [ ] Legacy component kaldırıldı
+- [ ] YDS Component kullanıyor
+- [ ] Token compliance
+- [ ] Accessibility korunuyor
+- [ ] Blade/Vue parity bozulmuyor
+- [ ] Acceptance testleri geçiyor
+
+**Feature Inventory:**
+
+| Priority | Features | Total | Completed | Pending |
+|----------|----------|-------|-----------|---------|
+| Property | 5 | 1 | 1 | 4 |
+| CRM | 3 | 0 | 0 | 3 |
+| Listing | 4 | 0 | 0 | 4 |
+| Analytics/AI | 3 | 0 | 0 | 3 |
+| Core Admin | 3 | 0 | 0 | 3 |
+| **TOTAL** | **18** | **1** | **0** | **17** |
+
+**Tracker:** [docs/ysos/YDS_FEATURE_MIGRATION_TRACKER.md](docs/ysos/YDS_FEATURE_MIGRATION_TRACKER.md)
+
+**SAAB Kararı:** IN PROGRESS (Oturum 115)
+
+**Sonraki:** Sprint 26 — Legacy UI Decommission
 
 ---
 

@@ -18,6 +18,77 @@ tags: []
 
 ---
 
+## 2026-07-26 | Sprint 12B Öncelik Sıralaması — Workspace Tenant Isolation
+
+### Karar: Sprint 12B İçin Önceliklendirme
+
+**Tarih:** 2026-07-26
+**Gerekçe:** SAAB v8 kalite kapılarından biri Tenant Isolation. Sprint 12A (publish workflow) doğrulandıktan sonra veri izolasyonunu güçlendirmek uygun zemin oluşturuyor.
+
+### Öncelik Sırası
+
+| # | Adım | Açıklama |
+|---|------|----------|
+| 1 | **Workspace Tenant Isolation** | Publish/Unpublish'te workspace doğrulaması, cross-tenant erişim engeli, API tenant authorization testleri, event/audit kayıtlarında doğru workspace ilişkisi |
+| 2 | **Cross-tenant Tests** | Tenant sınırlarının tüm katmanlarda (UI, API, Service) korunduğunu doğrulayan test suite |
+| 3 | **State Machine Replay Tests** | Mevcut state transition kayıtlarından aynı geçişin güvenle yeniden oynatılabildiğinin doğrulanması |
+| 4 | **Persistence Hardening Certification** | FK constraint, cascade delete, veri bütünlüğü sertifikasyonu |
+| 5 | **Sprint 12C: Legacy Migration** | Güvenlik ve bütünlük tamamlandıktan sonra: IlanCrudService → ListingCrudService (feature flag + shadow) |
+
+### Sprint 12B Definition of Done
+
+Sprint tamamlanmış sayılmak için aşağıdaki kanıtlar üretilmelidir:
+
+| # | Kanıt | Açıklama |
+|---|-------|----------|
+| 1 | Workspace isolation | Publish/Unpublish işlemleri yalnızca aynı workspace içinde çalışıyor |
+| 2 | Cross-tenant blocked | Cross-tenant erişim girişimleri 403/404 ile engelleniyor |
+| 3 | Replay deterministic | Replay testleri deterministik sonuç veriyor |
+| 4 | FK integrity | FK ve veri bütünlüğü doğrulanıyor |
+| 5 | CI green | Yeni eklenen testler CI'da yeşil |
+| 6 | No new violations | bekci:health ve sab:integrity-scan sonuçlarında Sprint 12B ihlali yok |
+
+### Paralel Sprint Hatları
+
+| Track | Odak | Sprint'ler |
+|-------|------|------------|
+| A | Domain/Workflow Güvenilirliği | 12A→12B→12C |
+| B | UI Modernizasyonu | 22-24→25→26 |
+
+### Yol Haritası
+
+```
+Workspace Tenant Isolation
+        ↓
+Cross-tenant Tests
+        ↓
+State Machine Replay Tests
+        ↓
+Persistence Hardening Certification
+        ↓
+Sprint 12C Legacy Migration
+```
+
+### Neden Bu Sıralama?
+
+1. **Tenant Isolation önce:** SAAB kalite kapısı, tüm veri erişiminin temeli. Önce bu sağlamlaştırılmalı.
+2. **Cross-tenant Tests ikinci:** Isolation'ın tüm katmanlarda korunduğu bağımsız olarak doğrulanmalı.
+3. **Replay Tests üçüncü:** State machine replay güvenilirliği, sonraki migration'ların güvenliğini garantiler.
+4. **Hardening dördüncü:** Veritabanı constraint ve cascade kuralları, migration öncesi son kontroller.
+5. **Legacy Migration en son:** Tüm güvenlik katmanları yerinde olduktan sonra refactoring yapılmalı.
+
+### DLQ Pattern Hakkında
+
+DLQ (Dead Letter Queue) pattern Sprint 12B kapsamına **alınmadı.** Mevcut `event dispatch` ve `audit log` zaten çalışıyor. DLQ bir sonraki sertleştirme adımı (Sprint 13+) olarak değerlendirilecek.
+
+### Referans
+
+- Sprint 12A: `BR-20260715-SAABv11` — Publish workflow certified
+- Sprint 12B discovery: `.sab/sprint-12b-discovery/`
+- Sprint 12C: Legacy IlanCrudService → ListingCrudService migration
+
+---
+
 ## 2026-07-16 | Test İzolasyon + Lifecycle Yetkilendirme | Oturum 108
 
 ### Karar: Counter-based Lifecycle Authorization
