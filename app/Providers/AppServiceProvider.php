@@ -12,6 +12,7 @@ use App\Observers\IlanObserver;
 use App\Services\AIService;
 use App\Services\CurrencyConversionService;
 use App\Services\PlanNotlariAIService;
+use App\Services\Listing\ListingCrudBridge;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
@@ -38,6 +39,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\SaaS\BillingLedgerService::class);
         $this->app->singleton(\App\Services\SaaS\UsageMeteringService::class);
         $this->app->singleton(\App\Services\SaaS\AiMonetizationService::class);
+
+        // Sprint 12C: ListingCrudBridge singleton
+        $this->app->singleton(\App\Services\Listing\ListingCrudBridge::class);
 
         // Modül servisini kaydediyoruz
         $this->app->register(ModuleServiceProvider::class);
@@ -102,6 +106,23 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             \App\Contracts\Governance\TelemetryPublisherInterface::class,
             \App\Services\Governance\Telemetry\LogTelemetryPublisher::class
+        );
+
+        $this->app->bind(
+            \App\Repositories\PropertyRepositoryInterface::class,
+            \App\Repositories\EloquentPropertyRepository::class
+        );
+
+        // ✅ Sprint 13: Execution Runtime — Replay & Recovery
+        $this->app->bind(
+            \App\Repositories\ExecutionRuntimeRepositoryInterface::class,
+            \App\Repositories\EloquentExecutionRuntimeRepository::class
+        );
+
+        // ✅ Sprint 14: BAI Metrics Foundation
+        $this->app->bind(
+            \App\Repositories\ExecutionMetricsRepositoryInterface::class,
+            \App\Repositories\EloquentExecutionMetricsRepository::class
         );
 
         // 🛡️ SAB S1 - Settings Authority

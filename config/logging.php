@@ -183,6 +183,20 @@ return [
             'replace_placeholders' => true,
         ],
 
+        /*
+        |--------------------------------------------------------------------------
+        | Sprint 12C: Shadow Mode Logging
+        |--------------------------------------------------------------------------
+        | ListingCrudBridge shadow mode comparison logs.
+        */
+        'shadow' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/shadow.log'),
+            'level' => 'info',
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
     ],
 
 ];
