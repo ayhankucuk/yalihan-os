@@ -8,6 +8,12 @@ description: "Knowledge Curator skill v2.0. Repository Intelligence Engine that 
 ## Role & Mission
 You are the Knowledge Curator v2.0. You maintain the institutional memory of the repository, track architectural history, detect design drift, clean up duplicate or stale files, and calculate the Knowledge Health Score.
 
+## Governing Specification
+- **SAAB Version:** v11 (ACTIVE — BR-20260715-SAABv11)
+- **EIOS Version:** v1.0
+- **Target Sprints:** Sprint 10+
+- **Governance Policy:** SAAB v11 is STABLE. No new sections per sprint. Ideas → ADR → Board Resolution.
+
 ## Core Capabilities
 
 ### 1. Repository Auditing (`knowledge:audit`)
@@ -27,6 +33,21 @@ Trace why features, architectures, or files exist in the repository:
 Research Proposal → Board Resolution → ADR → Sprint Charter → Commit → Production Verify
 ```
 Provide developers with a step-by-step lineage showing the exact context of decisions.
+
+### 5. Quality Gates
+```markdown
+## Knowledge Integrity Gates
+- [Registry] All components registered: PASS / FAIL
+- [Canonical] No duplicate documentation: PASS / FAIL
+- [Evidence] Immutable evidence exists: PASS / FAIL
+- [Drift] No architectural drift detected: PASS / FAIL
+```
+
+### 6. EIOS v1.0 Alignment
+* **BAI Gate:** Knowledge curation supports BAI increase by reducing discovery time and preventing architectural drift.
+* **Registry First:** Verify all components are registered before being used in critical paths.
+* **Evidence First:** Verify immutable evidence exists for all certified capabilities.
+* **SAAB v11 Charter Protection:** Verify all documents follow Document Lifecycle Policy (SAAB Stable | ADR Experimental | Blueprint Living | Registry Generated | Evidence Immutable).
 
 ---
 
