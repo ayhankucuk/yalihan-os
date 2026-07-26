@@ -341,7 +341,9 @@ class IlanCrudService
                 }
             }
         } elseif ($ilan->lat && $ilan->lng) {
-            $ilan->geometry_type = 'point';
+            if (Schema::hasColumn($ilan->getTable(), 'geometry_type')) {
+                $ilan->geometry_type = 'point';
+            }
         }
 
         if (empty($ilan->slug) || $ilan->isDirty('baslik')) {
@@ -537,15 +539,29 @@ class IlanCrudService
                 continue;
             }
 
-            \App\Models\YazlikFiyatlandirma::create([
+            $seasonData = [
                 'ilan_id' => $ilan->id,
-                'sezon_tipi' => $seasonType,
                 'baslangic_tarihi' => $startDate,
                 'bitis_tarihi' => $endDate,
                 'gunluk_fiyat' => $dailyPrice,
-                'minimum_konaklama' => $minStay,
-                'is_active' => \App\Enums\AktiflikDurumu::AKTIF,
-            ]);
+            ];
+
+            // Only set sezon_tipi if the column exists in the database
+            if (Schema::hasColumn('yazlik_fiyatlandirma', 'sezon_tipi')) {
+                $seasonData['sezon_tipi'] = $seasonType;
+            }
+
+            // Only set minimum_konaklama if the column exists in the database
+            if (Schema::hasColumn('yazlik_fiyatlandirma', 'minimum_konaklama')) {
+                $seasonData['minimum_konaklama'] = $minStay;
+            }
+
+            // Only set is_active if the column exists in the database
+            if (Schema::hasColumn('yazlik_fiyatlandirma', 'is_active')) {
+                $seasonData['is_active'] = \App\Enums\AktiflikDurumu::AKTIF;
+            }
+
+            \App\Models\YazlikFiyatlandirma::create($seasonData);
         }
     }
 
