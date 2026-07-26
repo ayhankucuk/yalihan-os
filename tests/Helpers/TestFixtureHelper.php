@@ -84,16 +84,22 @@ trait TestFixtureHelper
         $kategori = IlanKategori::factory()->create();
         $sablon = YayinTipiSablonu::factory()->create(['kategori_id' => $kategori->id]);
 
-        return Ilan::factory()->create(array_merge([
-            'danisman_id' => $owner->id,
-            'yayin_durumu' => IlanDurumu::BEKLEMEDE,
-            'completion_score' => 100,
-            'quality_score' => 85,
-            'ana_kategori_id' => $kategori->id,
-            'yayin_tipi_id' => $sablon->id,
-            'lat' => 37.0,
-            'lng' => 27.0,
-        ], $attributes));
+        // Sprint 11 M2: Skip property_id invariant for fixture-based listing creation.
+        Ilan::$skipPropertyIdGuard = true;
+        try {
+            return Ilan::factory()->create(array_merge([
+                'danisman_id' => $owner->id,
+                'yayin_durumu' => IlanDurumu::BEKLEMEDE,
+                'completion_score' => 100,
+                'quality_score' => 85,
+                'ana_kategori_id' => $kategori->id,
+                'yayin_tipi_id' => $sablon->id,
+                'lat' => 37.0,
+                'lng' => 27.0,
+            ], $attributes));
+        } finally {
+            Ilan::$skipPropertyIdGuard = false;
+        }
     }
 
     /**

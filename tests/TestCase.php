@@ -165,6 +165,13 @@ abstract class TestCase extends BaseTestCase
 
     protected function tearDown(): void
     {
+        // 🛡️ Phase T2: Reset static lifecycle flags after each test.
+        // tearDown() runs in reverse order: child first, then parent.
+        // This ensures flags are cleared AFTER the child's tearDown runs.
+        \App\Services\Listing\YalihanLifecycle::$isTransitioningCounter = 0;
+        \App\Services\Listing\YalihanLifecycle::$skipGuards = false;
+        \App\Models\Ilan::$skipPropertyIdGuard = false;
+
         parent::tearDown();
     }
 }
