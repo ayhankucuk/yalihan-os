@@ -4,15 +4,21 @@ namespace App\Actions\Api\V2\Ilan;
 
 use App\Models\Ilan;
 use App\Enums\IlanDurumu;
-use App\Services\Ilan\IlanCrudService;
+use App\Services\Listing\ListingCrudBridge;
 
+/**
+ * StoreIlanAction
+ *
+ * Sprint 12C Phase 3 Wave 1: API Actions Migration
+ * Uses ListingCrudBridge for controlled migration.
+ */
 class StoreIlanAction
 {
     public function __construct(
-        private readonly IlanCrudService $ilanCrudService,
+        private readonly ListingCrudBridge $bridge,
     ) {}
 
-    // Phase3-WA: delegated to IlanCrudService as single write authority
+    // Phase3-WA: delegated to Bridge (controlled migration)
     public function handle(array $data): Ilan
     {
         $ilanData = [
@@ -31,6 +37,6 @@ class StoreIlanAction
             'aktiflik_durumu' => true,
         ];
 
-        return $this->ilanCrudService->store($ilanData);
+        return $this->bridge->store($ilanData);
     }
 }

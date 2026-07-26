@@ -195,13 +195,55 @@ class ListingCrudBridge
         // Check allowlist
         $allowlist = config('feature-flags.listing_crud_v2_allowlist', []);
 
-        // No allowlist = all allowed
+        // No allowlist = all allowed with new service
         if (empty($allowlist['tenant_ids']) && empty($allowlist['routes'])) {
             return false;
         }
 
-        // TODO: Check current tenant/route against allowlist
-        // For now, all allowed when feature flag is on
+        // Check tenant allowlist
+        if (!empty($allowlist['tenant_ids'])) {
+            $currentTenantId = $this->getCurrentTenantId();
+            if ($currentTenantId && in_array($currentTenantId, $allowlist['tenant_ids'])) {
+                return false; // Use new service
+            }
+        }
+
+        // Check route allowlist
+        if (!empty($allowlist['routes'])) {
+            $currentRoute = $this->getCurrentRoute();
+            if ($currentRoute && in_array($currentRoute, $allowlist['routes'])) {
+                return false; // Use new service
+            }
+        }
+
+        // Not in allowlist = use legacy
+        return true;
+    }
+
+    /**
+     * Get current tenant ID from context.
+     */
+    protected function getCurrentTenantId(): ?int
+    {
+        try {
+            $tenant = app(\App\Services\SaaS\TenantContextService::class)->getTenant();
+            return $tenant?->id;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Get current route name.
+     */
+    protected function getCurrentRoute(): ?string
+    {
+        try {
+            return \Illuminate\Support\Facades\Route::currentRouteName();
+        } catch (\Throwable) {
+            return null;
+        }
+    }
 
         return false;
     }
