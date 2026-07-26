@@ -236,26 +236,406 @@ DLQ (Dead Letter Queue) Sprint 12B kapsamına **alınmadı.** Mevcut event dispa
 
 ## 📋 Sprint 12C — Legacy Migration
 
-**Status:** ⏳ PLANNED
-**Öncelik:** P1
-**Başlangıç Koşulu:** Sprint 12B tamamlanmış olmalı
+**Status:** 🚀 ACTIVE (2026-07-26)
+**Board Question:** YALIHAN, IlanCrudService write operasyonlarını ListingCrudService üzerinden tek bir write path ile çalıştırabiliyor mu?
+**Charter:** `docs/plans/SPRINT_12C_CHARTER.md`
+**Precondition:** Sprint 12B ✅ CERTIFIED
+**İlerleme:** ~50-60% tamamlanmış
+**Risk:** 🟡 Düşük-Orta (feature flag sayesinde)
+**SAAB Durumu:** 🟢 EXECUTION IN PROGRESS
+**Wave 2 Status:** 🟢 START AUTHORIZED
+**Yönetişim:** ✅ LOCKED
+**Program Fazı:** ▶ EXECUTION
+**Mimari Kararlar:** ✅ Frozen
+**Scope:** ✅ Controlled
+**Geliştirme Yetkisi:** ✅ Active
+**Sertifikasyon:** ⏳ Evidence Pending
+**Sonraki Kilometre Taşı:** Wave 2 Implementation Evidence Review
+
+### SAAB Executive Assessment
+
+| Alan | Sonuç |
+|------|-------|
+| Governance | ✅ COMPLETE |
+| Execution Authority | ✅ ACTIVE |
+| Architecture Baseline | ✅ FROZEN |
+| Scope Control | ✅ ACTIVE |
+| Certification Model | ✅ EVIDENCE-BASED |
+
+### Yönetim Sorusu
+
+> Artık "Ne planlandı?" değil, **"Hangi capability üretim kodu olarak çalışıyor ve bunu hangi kanıt doğruluyor?"**
+
+### Güncel Yönetim Durumu
+
+| Alan | Değerlendirme |
+|------|---------------|
+| Governance | ✅ Tamamlandı |
+| Charter | ✅ Locked |
+| Architecture | ✅ Frozen |
+| Scope | ✅ Controlled |
+| Implementation Authority | ✅ Active |
+| Certification | ⏳ Evidence Pending |
+
+### SAAB Executive Status
+
+| Alan | Durum | Değerlendirme |
+|------|-------|---------------|
+| Governance | ✅ COMPLETE | Yönetim baseline kilitlendi |
+| Execution | 🟢 IN PROGRESS | Wave 2 implementasyonu başlayabilir |
+| Architecture | ✅ FROZEN | Yeni mimari karar beklenmiyor |
+| Scope | ✅ CONTROLLED | Charter dışına çıkılmamalı |
+| Certification | ⏳ EVIDENCE PENDING | Kanıt paketi sonrası değerlendirilecek |
+
+### Sonuç
+
+* **Yönetişim:** ✅ Tamamlandı
+* **Implementasyon:** ▶ Devam Ediyor
+* **Sertifikasyon:** ⏳ Henüz verilmez; kanıt paketinin sunulması beklenir
+* **Sonraki Kilometre Taşı:** Wave 2 Implementation Evidence Review
+
+> Bundan sonraki ilerleme raporlarında ağırlık merkezi:
+> - Çalışan Laravel implementasyonu
+> - Doğrulanabilir test sonuçları
+> - Parity raporları
+> - Sertifikasyon kanıtları
+
+### Executive Status
+
+| Alan | Durum |
+|------|-------|
+| Program Fazı | ▶ EXECUTION |
+| Charter | ✅ Locked |
+| Architecture | ✅ Frozen |
+| Scope | ✅ Controlled |
+| Implementation Authority | ✅ Active |
+| Sertifikasyon | ⏳ Evidence Pending |
+
+### Yönetim Kapıları
+
+```
+Implementation
+        ↓
+Evidence Collection
+        ↓
+Testing
+        ↓
+Parity Validation
+        ↓
+Legacy Cleanup Approval
+        ↓
+SAAB Certification
+```
+
+### Sprint KPI'ları
+
+| KPI | Hedef |
+|-----|-------|
+| Canonical write-chain kapsamı | %100 |
+| Feature test başarısı | %100 |
+| Regression test başarısı | %100 |
+| OFF / ON / SHADOW parity | PASS |
+| Rollback doğrulaması | PASS |
+| 13 Done Criteria | PASS |
+
+### Executive Status (Detay)
+
+| Faz | Durum | Değerlendirme |
+|-----|-------|---------------|
+| Phase 1 – Discovery | ✅ | Tamamlandı |
+| Phase 2 – Feature Flag | ✅ | Tamamlandı |
+| Wave 1 – API Actions | ✅ | Bridge mimarisi doğrulandı |
+| Wave 2 – Wizard/Admin | ▶ EXECUTION IN PROGRESS | En kritik implementasyon dalgası |
+| Phase 4 – Parity Validation | ⏳ | Wave 2 sonrası |
+| Phase 5 – Legacy Cleanup | ⏳ | Parity tamamlandıktan sonra |
+
+### Yönetim Seviyeleri
+
+| Seviye | Hedef | Başarı Ölçütü |
+|--------|-------|---------------|
+| Engineering | IlanWizardController write-chain dönüşümü | Kod + Test |
+| Architecture | Tek canonical write path | Shadow parity |
+| Business | Manuel işin azalması | BAI artışı |
+
+### Yol Haritası
+
+```
+Wave 2
+  ↓
+Parity Validation
+  ↓
+Legacy Cleanup
+  ↓
+Sprint 12C Certification
+```
+
+> ⚠️ Parity tamamlanmadan legacy kod kaldırılmamalı. Cleanup yalnızca davranış eşitliği kanıtlandıktan sonra başlamalı.
+
+#### İlerleme Ölçümü
+
+> Artık aşağıdaki çıktılar sprint ilerlemesini gösterecek ana kanıtlardır:
+
+| Kanıt Türü | Beklenen Çıktı |
+|------------|----------------|
+| Implementation | Değiştirilen kod ve canonical write-chain |
+| Testing | Feature ve regression testlerinin başarılı olması |
+| Operational | OFF/ON/SHADOW davranış doğrulaması, rollback, idempotency |
+| Certification | 13 Done kriteri ve parity doğrulaması |
+
+> Dokümanlar bu süreci destekleyen **artefaktlardır**; sprint başarısı artık bunların sayısıyla değil, çalışan sistem davranışıyla ölçülmelidir.
+
+#### Phase 4 Geçiş Şartı
+
+Phase 4 (Parity Validation) yalnızca şu koşullar sağlandıktan sonra başlatılmalıdır:
+
+- ✅ Canonical write-chain tamamlanmış
+- ✅ Legacy ve V2 aynı iş sonucunu üretiyor
+- ✅ Shadow davranışı doğrulanmış
+- ✅ Feature ve regression testleri başarılı
+- ✅ Rollback senaryosu kanıtlanmış
+
+> Bu doğrulamalar tamamlanmadan **Legacy Cleanup'a geçilmemelidir.**
+
+#### Wave 2 Exit Checklist
+
+| # | Madde | Durum |
+|---|-------|-------|
+| 1 | Controller yalnızca HTTP orchestration yapıyor | ☐ |
+| 2 | İş mantığı IlanWizardApplicationService içinde | ☐ |
+| 3 | Tüm write işlemleri ListingCrudBridge üzerinden geçiyor | ☐ |
+| 4 | OFF / ON / SHADOW modları aynı davranışı koruyor | ☐ |
+| 5 | Transaction sınırı listing + photo + pricing işlemlerini kapsıyor | ☐ |
+| 6 | Actor ve Workspace sunucu tarafında atanıyor | ☐ |
+| 7 | Feature testleri ve regression testleri yeşil | ☐ |
+| 8 | Rollback senaryosu doğrulanmış | ☐ |
+| 9 | Shadow parity raporu üretilmiş | ☐ |
+
+#### Wave 2 Implementation Charter
+
+**Commit 1 — IlanWizardApplicationService**
+- Amaç: submitWizard() için tek Application Service oluşturmak
+- Çıkış: Controller → ApplicationService delegasyonu tamamlanmış
+
+**Commit 2 — submitWizard() iş mantığını taşı**
+- Amaç: İş akışını IlanWizardApplicationService içinde toplamak
+- Çıkış: Tek canonical write-chain, Transaction sınırı korunmuş
+
+**Commit 3 — Direct ORM write'ları kaldır**
+- Amaç: Model::create() gibi direct write'ları kaldırmak
+- Çıkış: Controller'da direct ORM write yok, Legacy parity korunmuş
+
+**Commit 4 — Feature Test**
+- Kapsam: Wizard başarısı, canonical chain, OFF/ON flag, rollback, tenant isolation
+
+#### Wave 2 Definition of Done
+
+| # | Kriter |
+|---|--------|
+| 1 | Thin Controller |
+| 2 | IlanWizardApplicationService aktif |
+| 3 | Controller'da business logic yok |
+| 4 | Direct ORM write yok |
+| 5 | Canonical write-chain kullanılıyor |
+| 6 | Feature testleri PASS |
+| 7 | Regression PASS |
+| 8 | OFF / ON davranışı doğrulandı |
+| 9 | Küçük ve geri alınabilir commit geçmişi |
 
 ### Sprint 12C İçeriği
 
 | # | Adım | Açıklama | Durum |
 |---|------|----------|-------|
-| 1 | Feature Flag | Kesintisiz geçiş mekanizması | ⏳ |
-| 2 | IlanCrudService → ListingCrudService | Write authority migration | ⏳ |
-| 3 | Shadow Mode | Yeni servis parallel çalışma | ⏳ |
-| 4 | Traffic Switch | Yavaş yük alma | ⏳ |
+| 1 | Discovery | IlanCrudService kullanım envanteri | ✅ |
+| 2 | Feature Flag | Kesintisiz geçiş mekanizması | ✅ |
+| 3 | Migration | IlanCrudService → ListingCrudService | 🔄 WAVE 1 |
+| 4 | Parity Validation | Aynı davranış doğrulaması | ⏳ |
+| 5 | Legacy Cleanup | Deprecated etmek/kaldırmak | ⏳ |
 
-### Güvenlik Ön Koşulu
+### Migration Waves
 
-Legacy migration ancak şunlar tamamlandıktan sonra başlayabilir:
-- ✅ Workspace Tenant Isolation
-- ✅ Cross-tenant Tests
-- ✅ State Machine Replay Tests
-- ✅ Persistence Hardening
+| Wave | Kapsam | Durum | Commit |
+|------|--------|-------|--------|
+| Wave 1 | V2 API Actions | ✅ | `044f85f` |
+| Wave 2 | Admin Controllers (IlanWizardController öncelikli) | 🚀 REFACTOR COMPLETE | `7dd23c5` |
+| Wave 3 | Domain Services | ⏳ | - |
+| Wave 4 | Jobs/Commands | ⏳ | - |
+| Wave 5 | Legacy Removal | ⏳ | - |
+
+### Wave 2 — Wizard Application Service Migration
+
+**Charter:** BR-20260726-WAVE2
+**Status:** ✅ Architecture Refactor Complete
+**Commit:** `7dd23c5`
+**Model:** Claude Sonnet 4.6
+
+#### Certification Status
+
+| Kriter | Durum |
+|---------|-------|
+| ✅ Architecture refactor complete | Controller → Application Service katmanı taşındı |
+| ✅ Controller direct ORM writes removed | `$ilan->fotograflar()->create()` ve `YazlikFiyatlandirma::create()` kaldırıldı |
+| ✅ ListingCrudBridge integration complete | Tek write entry point olarak çalışıyor |
+| ✅ Legacy OFF-path behavioral tests | **11/11 PASS** |
+| ⚠️ V2 ON-path certification | Property → Listing zinciri kanıtlanacak |
+| ⚠️ SHADOW-mode certification | Duplicate/event izolasyonu doğrulanacak |
+| ⚠️ Schema parity review | `Schema::hasColumn()` runtime kontrolleri değerlendirilecek |
+| ⛔ Full Wave 2 Certification | **Pending — ek kanıt gerekli** |
+
+#### İlk Implementasyon Paketi
+
+Odak: Küçük, geri alınabilir, test edilebilir
+
+| # | Adım |
+|---|------|
+| 1 | IlanWizardApplicationService oluşturulması |
+| 2 | submitWizard() iş mantığının servise taşınması |
+| 3 | Doğrudan ORM write'ların kaldırılması |
+| 4 | ListingCrudBridge üzerinden ilan oluşturulması |
+| 5 | Fotoğraf ve fiyatlandırmanın aynı transaction sınırına alınması |
+| 6 | Authenticated actor ve workspace sahipliğinin sunucu tarafında atanması |
+| 7 | Mevcut davranışı koruyan ilk feature testlerinin eklenmesi |
+
+> Idempotency ve shadow izolasyonu tasarımda baştan dikkate alınmalı.
+
+#### Wave 2 Yönetim Kuralları
+
+| # | Kural |
+|---|-------|
+| 1 | Her commit küçük ve geri alınabilir olsun |
+| 2 | Her adım test edilebilir bir iş değeri üretsin |
+| 3 | Bridge katmanı dışında yeni write path oluşturulmasın |
+| 4 | Feature Flag davranışı hiçbir aşamada bozulmasın |
+| 5 | Legacy davranışı parity doğrulanmadan kaldırılmasın |
+
+#### ⚠️ Scope Creep Uyarısı
+
+> Şu anda en büyük risk mimari değil, **scope creep** olacaktır.
+
+Wave 2 devam ederken:
+- ❌ Yeni capability eklenmemeli
+- ❌ Yeni mimari tartışmaları açılmamalı
+- ❌ Backlog büyütülmemeli
+
+**Odak:** IlanWizardController akışını tek, canonical, transaction-safe ve test edilmiş write-chain'e dönüştürmek.
+
+#### Sprint 12C Çıkış Kriteri
+
+Sprint 12C tamamlandı denebilmesi için aşağıdaki dört kanıt grubunun birlikte sunulması gerekir:
+
+**1. Implementation Evidence**
+- Değiştirilen dosyalar
+- Yeni write-chain
+- Kaldırılan legacy write'lar
+
+**2. Testing Evidence**
+- Feature testleri
+- Regression testleri
+- Transaction/rollback testleri
+
+**3. Operational Evidence**
+- OFF / ON / SHADOW doğrulaması
+- Rollback senaryosu
+- Idempotency
+- Shadow side-effect isolation
+
+**4. Certification Evidence**
+- 13 Done kriterinin tamamlanması
+- Parity raporu
+- Legacy cleanup onayı
+
+#### Wave 2 Başarı Ölçütleri
+
+| # | Hedef | Açıklama |
+|---|-------|----------|
+| 1 | submitWizard() ORM write kaldırıldı | Doğrudan ORM yazma işlemleri kaldırılmış olmalı |
+| 2 | Controller orchestration only | Controller yalnızca HTTP orchestration görevini üstlenmeli |
+| 3 | Application Service entry point | Tüm yazma işlemleri IlanWizardApplicationService üzerinden başlamalı |
+| 4 | Bridge as canonical entry | ListingCrudBridge tek canonical write entry point olarak kullanılmalı |
+| 5 | Transaction boundary | İlan, fotoğraflar ve fiyatlandırma tek transaction içinde yönetilmeli |
+| 6 | Feature flags preserved | OFF / ON / SHADOW modlarının davranışı korunmalı |
+| 7 | Tests green | Mevcut testler yeşil kalmalı ve regresyon testleri eklenmeli |
+
+#### Wave 2 Done Kriterleri
+
+| Kriter | Durum |
+|--------|-------|
+| Controller'da ORM write yok | ☐ |
+| Controller'da doğrudan CrudService çağrısı yok | ☐ |
+| IlanWizardApplicationService aktif | ☐ |
+| ListingCrudBridge tek write entry point | ☐ |
+| Tek transaction sınırı | ☐ |
+| **Idempotency doğrulandı** | ☐ |
+| **Shadow side-effect isolation doğrulandı** | ☐ |
+| OFF / ON / SHADOW testleri geçti | ☐ |
+| Tenant Isolation regresyonu geçti | ☐ |
+| Authorization regresyonu geçti | ☐ |
+| Rollback testleri geçti | ☐ |
+| Wizard Feature Tests geçti | ☐ |
+| Shadow parity raporu üretildi | ☐ |
+
+#### Ek Kalite Kapıları
+
+**1. Idempotency**
+submitWizard() aynı istek nedeniyle iki kez çalışırsa ikinci bir ilan oluşmamalı.
+
+Test senaryoları:
+- Aynı draft'ın tekrar submit edilmesi
+- Ağ zaman aşımı sonrası retry
+- Kullanıcının çift tıklaması
+
+**2. Shadow Mode Side-Effect Isolation**
+SHADOW modunda yalnızca karşılaştırma yapılmalı; ikinci bir gerçek iş etkisi oluşmamalı.
+
+Yan etkiler tek kez gerçekleşmeli:
+- Listing kaydı
+- Fotoğraf kayıtları
+- Fiyatlandırma kayıtları
+- Event dispatch
+- Queue job
+- Audit log
+- Timeline kayıtları
+
+#### Wave 2 Kalite Kapısı — Doğrulama Sırası
+
+1. **Feature Tests** — Wizard submit akışı
+2. **Shadow Parity Validation** — Legacy ↔ V2 sonuç karşılaştırması
+3. **Transaction ve Rollback doğrulaması** — Rollback senaryoları
+4. **Tenant Isolation ve Authorization regresyon testleri** — Authorization regresyonu
+5. **Idempotency testleri** — Draft tekrar submit, retry, çift tıklama
+6. **Side-effect isolation doğrulaması** — Shadow mode yan etki kontrolü
+7. **Wave 2 Certification Review** — SAAB final kararı
+
+#### Wave 2 Uygulama Adımları
+
+| # | Adım | Öncelik |
+|---|------|---------|
+| 1 | submitWizard içindeki tüm ORM write'ları kaldır | P0 |
+| 2 | IlanWizardApplicationService oluştur | P0 |
+| 3 | Authenticated user_id ve workspace_id server-side ata | P0 |
+| 4 | Fotoğraf ve yazlık fiyatlandırmayı typed DTO içinde taşı | P1 |
+| 5 | Tek transaction sınırı | P1 |
+| 6 | Draft ownership + idempotency | P1 |
+| 7 | Shadow mode duplicate prevention | P2 |
+| 8 | Controller'ı HTTP orchestration seviyesine indir | P2 |
+
+### Sprint 12C Definition of Done
+
+| Gate | Beklenen | Durum |
+|------|----------|-------|
+| Discovery | Repository envanteri tamamlandı | ✅ |
+| Feature Flag | Kontrollü geçiş mümkün | ✅ |
+| Wave 1 | API Actions migrated | ✅ |
+| Wave 2-4 | Remaining waves | ⏳ |
+| Tenant Isolation | Korundu | ✅ (Sprint 12B) |
+| Parity | Shadow mode comparison | ⏳ |
+| Legacy Usage | 0 aktif kullanım | ⏳ |
+| CI | PASS | ⏳ |
+
+### Mimari Hedef
+
+```
+API → Actions → ListingCrudService → TenantContext → State Machine → Immutable Audit
+```
 
 ---
 

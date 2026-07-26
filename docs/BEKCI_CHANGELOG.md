@@ -1,5 +1,65 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 117 — Sprint 12C Wave 2 Wizard Migration (2026-07-26)
+
+### Mimari Refactoring — Tamamlandı
+
+- `IlanWizardController::submitWizard()` → Application Service katmanına taşındı
+- `SubmitIlanWizardCommand` ve `IlanWizardSubmissionResult` eklendi
+- Yazma işlemleri `ListingCrudBridge` üzerinden yönlendirildi
+- Controller seviyesindeki doğrudan fotoğraf ve sezonluk fiyatlandırma ORM yazımları kaldırıldı (`$ilan->fotograflar()->create()`, `YazlikFiyatlandirma::create()`)
+- Sezonluk fiyatlandırma `IlanCrudService` transaction sınırına taşındı
+
+### Test Sonuçları
+
+```
+IlanWizardSubmissionTest: 11/11 PASS (45 assertions)
+- Legacy OFF-path behavioral tests: ✓
+- Feature flag routing: ✓
+- Event semantics: ✓
+- Tenant ownership: ✓
+```
+
+**Commit:** `7dd23c5` — `feat(wizard): route submission through application service`
+
+### Certification Durumu
+
+| Alan | Durum |
+|------|-------|
+| Architecture + Legacy OFF path | ✅ Complete |
+| V2 Property-first ON path | ⚠️ Pending |
+| SHADOW-mode duplicate/event isolation | ⚠️ Pending |
+| Schema parity review | ⚠️ Pending |
+| Full Wave 2 Certified | ⛔ **Not yet granted** |
+
+---
+
+## Oturum 119 — Sprint 12C ACTIVE (2026-07-26)
+
+### Sprint 12C — Legacy Migration Başladı
+
+**Board Decision:** BR-20260726-SPRINT12C
+**Charter:** `docs/plans/SPRINT_12C_CHARTER.md`
+
+### Phase Planı
+
+| Phase | İçerik | Durum |
+|-------|---------|-------|
+| 1 | Discovery — IlanCrudService envanteri | ⏳ |
+| 2 | Feature Flag — Kontrollü geçiş | ⏳ |
+| 3 | Migration — Write path taşıma | ⏳ |
+| 4 | Parity Validation — Davranış doğrulama | ⏳ |
+| 5 | Legacy Cleanup — Kaldırma/deprecated | ⏳ |
+
+### Mimari Hedef
+
+Tek canonical write path:
+```
+API → Actions → ListingCrudService → TenantContext → State Machine → Immutable Audit
+```
+
+---
+
 ## Oturum 118 — Sprint 12B COMPLETE (2026-07-26)
 
 ### Sprint 12B Phase 3: Replay Determinism ✅ COMPLETE
