@@ -58,8 +58,8 @@ class KomisyonControllerTenantIsolationTest extends TestCase
         }
 
         // Create tenants
-        $this->tenantA = Tenant::create(['name' => 'Tenant A', 'slug' => 'tenant-a']);
-        $this->tenantB = Tenant::create(['name' => 'Tenant B', 'slug' => 'tenant-b']);
+        $this->tenantA = Tenant::create(['name' => 'Tenant A', 'domain' => 'tenant-a.com']);
+        $this->tenantB = Tenant::create(['name' => 'Tenant B', 'domain' => 'tenant-b.com']);
 
         // Set tenant context BEFORE creating users (required for BelongsToTenant scope)
         $this->tenantContext = app(TenantContextService::class);

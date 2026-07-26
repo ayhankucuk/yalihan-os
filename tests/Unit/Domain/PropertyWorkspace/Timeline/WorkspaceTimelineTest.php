@@ -45,6 +45,9 @@ class WorkspaceTimelineTest extends TestCase
     {
         parent::setUp();
 
+        // Sprint 11 M2: Skip property_id invariant for timeline fixture tests.
+        Ilan::$skipPropertyIdGuard = true;
+
         $this->tenant = Tenant::create([
             'name' => 'Timeline Test Tenant',
             'domain' => 'timeline.test',
@@ -87,6 +90,12 @@ class WorkspaceTimelineTest extends TestCase
         ]);
 
         $this->timeline = new WorkspaceTimeline();
+    }
+
+    protected function tearDown(): void
+    {
+        Ilan::$skipPropertyIdGuard = false;
+        parent::tearDown();
     }
 
     /** @test */
