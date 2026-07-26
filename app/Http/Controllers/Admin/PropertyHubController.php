@@ -67,6 +67,7 @@ class PropertyHubController extends Controller
             ->take(10)
             ->get();
 
+        // @sab-ignore-naming: catalogStats — Blade view variable, not a DB column
         return view('admin.property-hub.index', compact(
             'stats',
             'catalogStats',
