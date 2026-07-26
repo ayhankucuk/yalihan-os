@@ -336,7 +336,7 @@ class AISettingsController extends Controller
 
         if ($validated['provider'] === 'deepseek') {
             $request->validate([
-                'model' => ['required', \Illuminate\Validation\Rule::in(\App\Enums\AI\DeepSeekModel::values())],
+                'model' => ['required', \Illuminate\Validation\Rule::in(\App\Enums\AI\DeepSeekModel::validApiValues())],
             ]);
         }
 
