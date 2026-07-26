@@ -90,6 +90,39 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])-
                 ->name('api.recovery-queue');
         });
 
+    // SPRINT 16: Property Command Center
+    Route::prefix('/property-command-center')
+        ->name('property-command-center.')
+        ->group(function () {
+            Route::get('/', [App\Http\Controllers\Admin\PropertyCommandCenterController::class, 'index'])
+                ->name('index');
+            Route::get('/{propertyId}', [App\Http\Controllers\Admin\PropertyCommandCenterController::class, 'show'])
+                ->whereNumber('propertyId')->name('show');
+            Route::get('/api/properties-list', [App\Http\Controllers\Admin\PropertyCommandCenterController::class, 'apiPropertiesList'])
+                ->name('api.properties-list');
+            Route::get('/api/{propertyId}/summary', [App\Http\Controllers\Admin\PropertyCommandCenterController::class, 'apiSummary'])
+                ->whereNumber('propertyId')->name('api.summary');
+            Route::get('/api/{propertyId}/executions', [App\Http\Controllers\Admin\PropertyCommandCenterController::class, 'apiExecutions'])
+                ->whereNumber('propertyId')->name('api.executions');
+            Route::get('/api/{propertyId}/timeline', [App\Http\Controllers\Admin\PropertyCommandCenterController::class, 'apiTimeline'])
+                ->whereNumber('propertyId')->name('api.timeline');
+            Route::get('/api/{propertyId}/replay-chain/{uuid}', [App\Http\Controllers\Admin\PropertyCommandCenterController::class, 'apiReplayChain'])
+                ->name('api.replay-chain');
+            Route::post('/api/{propertyId}/recover/{uuid}', [App\Http\Controllers\Admin\PropertyCommandCenterController::class, 'recover'])
+                ->whereNumber('propertyId')->name('api.recover');
+        });
+
+    // SPRINT 16: Property Command Center (short-form routes)
+    Route::prefix('/property/{property}/command-center')
+        ->name('property.command-center.')
+        ->group(function () {
+            Route::get('/', [App\Http\Controllers\Admin\PropertyCommandCenterController::class, 'show'])
+                ->name('index');
+            Route::get('/{tab}', [App\Http\Controllers\Admin\PropertyCommandCenterController::class, 'show'])
+                ->where('tab', 'executions|timeline|listings|summary')
+                ->name('tab');
+        });
+
     // SPRINT 4.7: Async Queue + Event Replay
     Route::prefix('/hermes')->name('hermes.')->group(function () {
         // Failed event list
