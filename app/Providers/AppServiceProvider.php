@@ -125,6 +125,12 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\EloquentExecutionMetricsRepository::class
         );
 
+        // ✅ Sprint 20: CommercialOffering Aggregate
+        $this->app->bind(
+            \App\Repositories\CommercialOfferingRepositoryInterface::class,
+            \App\Repositories\EloquentCommercialOfferingRepository::class
+        );
+
         // 🛡️ SAB S1 - Settings Authority
         $this->app->singleton(
             \App\Contracts\Settings\ConfigurationRegistryInterface::class,

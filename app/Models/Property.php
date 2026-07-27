@@ -185,15 +185,27 @@ class Property extends BaseModel
         return $query->where('idempotency_key', $key);
     }
 
-    /**
-     * Property → Listings relation (1:N).
-     *
-     * ADR-042 / SAAB v11 Sprint 11 M2:
-     * A Property can have multiple Listings (e.g., Yalıhan satılık,
-     * Sahibinden satılık, Airbnb günlük kiralama).
-     */
-    public function listings(): HasMany
-    {
-        return $this->hasMany(Ilan::class, 'property_id');
-    }
+/**
+ * Property → Listings relation (1:N).
+ *
+ * ADR-042 / SAAB v11 Sprint 11 M2:
+ * A Property can have multiple Listings (e.g., Yalıhan satılık,
+ * Sahibinden satılık, Airbnb günlük kiralama).
+ */
+public function listings(): HasMany
+{
+    return $this->hasMany(Ilan::class, 'property_id');
+}
+
+/**
+ * Property → CommercialOfferings relation (1:N).
+ *
+ * Sprint 20:
+ * A Property can have multiple Commercial Offerings
+ * (e.g., SATILIK, KIRALIK, SEZONLUK).
+ */
+public function commercialOfferings(): HasMany
+{
+    return $this->hasMany(CommercialOffering::class, 'property_id');
+}
 }
