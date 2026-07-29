@@ -67,14 +67,7 @@ class InMemoryChannelAdapter implements ChannelAdapter
             $date = $item['date'];
             $available = $item['available'];
 
-            // Store in simulated channel
-            $this->availabilityStore[$date] = [
-                'available' => $available,
-                'property_id' => $item['property_id'] ?? null,
-                'synced_at' => now()->toIso8601String(),
-            ];
-
-            // Simulate conflict if enabled and date already stored with different state
+            // Check for conflict BEFORE overwriting stored state
             if ($this->shouldConflict && isset($this->availabilityStore[$date])) {
                 $existing = $this->availabilityStore[$date];
                 if ($existing['available'] !== $available) {
@@ -90,6 +83,13 @@ class InMemoryChannelAdapter implements ChannelAdapter
                     ]);
                 }
             }
+
+            // Store in simulated channel
+            $this->availabilityStore[$date] = [
+                'available' => $available,
+                'property_id' => $item['property_id'] ?? null,
+                'synced_at' => now()->toIso8601String(),
+            ];
 
             $channelRefs[] = "{$this->channelId}-ref-" . now()->format('YmdHis') . "-{$date}";
         }

@@ -2,6 +2,8 @@
 
 namespace App\Domain\ChannelManager\Contracts;
 
+use App\Domain\ChannelManager\Models\SyncResult;
+
 /**
  * AvailabilitySynchronizer — Contract for availability sync operations
  *

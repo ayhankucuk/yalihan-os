@@ -2,6 +2,8 @@
 
 namespace App\Domain\ChannelManager\Contracts;
 
+use App\Domain\ChannelManager\Models\ChannelApiResponse;
+
 /**
  * ChannelAdapter — Interface for external channel integrations
  *
