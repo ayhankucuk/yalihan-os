@@ -40,9 +40,10 @@ return new class extends Migration
             $table->index('correlation_id');
             $table->index('processed_at');
 
-            // Foreign keys
-            $table->foreign('property_id')->references('id')->on('ilans')->cascadeOnDelete();
-            $table->foreign('reservation_id')->references('id')->on('property_reservations')->nullOnDelete();
+            // Foreign keys intentionally omitted
+            // - property_id: domain-level enforcement via AvailabilitySynchronizationService
+            // - reservation_id: nullable, domain-level handling
+            // FK constraints added by DBA for production MySQL if required
         });
     }
 

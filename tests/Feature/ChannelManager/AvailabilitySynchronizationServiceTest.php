@@ -16,8 +16,11 @@ use App\Models\Ilan;
 use App\Models\IlanTakvimSync;
 use App\Models\PropertyAvailability;
 use Carbon\Carbon;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 /**
@@ -47,6 +50,13 @@ class AvailabilitySynchronizationServiceTest extends TestCase
 
     protected function setUp(): void
     {
+        // Bind TenantContextService as singleton so app() resolves the same instance
+        // This fixes BelongsToTenant::creating which calls app(TenantContextService::class)
+        $tenant = new \App\Models\SaaS\Tenant(['id' => 1]);
+        $tenant->ulke_id = 1;
+        $tenantService = app(\App\Services\SaaS\TenantContextService::class);
+        $tenantService->setTenant($tenant);
+
         parent::setUp();
 
         $this->adapter = new InMemoryChannelAdapter('airbnb', 'Airbnb Test');
@@ -77,8 +87,11 @@ class AvailabilitySynchronizationServiceTest extends TestCase
         $result = $this->service->synchronize($command, userId: 1);
 
         // Assert
-        $this->assertTrue($result->success);
-        $this->assertEquals(3, $result->syncedCount); // 5, 6, 7 = 3 nights
+        $msg = $result->success
+            ? ''
+            : "Sync failed: {$result->errorMessage} | syncedCount={$result->syncedCount}";
+        $this->assertTrue($result->success, $msg);
+        $this->assertEquals(3, $result->syncedCount);
 
         $blocked = PropertyAvailability::where('property_id', $property->id)
             ->where('is_available', false)
@@ -400,7 +413,9 @@ class AvailabilitySynchronizationServiceTest extends TestCase
 
     private function createProperty(int $tenantId): Ilan
     {
-        return Ilan::create([
+        // Use withoutGlobalScopes to bypass BelongsToTenant::creating and TenantScope
+        // Set both tenant_id AND ulke_id to prevent HasCountryScope filtering in reads
+        $ilan = Ilan::withoutGlobalScopes()->create([
             'baslik' => 'Test Property ' . uniqid(),
             'fiyat' => 1000,
             'para_birimi' => 'TRY',
@@ -408,7 +423,10 @@ class AvailabilitySynchronizationServiceTest extends TestCase
             'min_stay_nights' => 1,
             'yayin_durumu' => 'yayinda',
             'tenant_id' => $tenantId,
+            'ulke_id' => 1, // Required by HasCountryScope for reads
         ]);
+
+        return $ilan;
     }
 }
 

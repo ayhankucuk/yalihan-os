@@ -82,11 +82,10 @@ class AirbnbChannelAdapter implements ChannelAdapter
             return ChannelApiResponse::failure('property_id is required', 'MISSING_PROPERTY');
         }
 
-        // Load IlanTakvimSync with tenant-scoped listing
+        // Load IlanTakvimSync for the property
         $channelSync = IlanTakvimSync::where('ilan_id', $propertyId)
             ->where('platform', self::CHANNEL_ID)
             ->where('is_sync_active', true)
-            ->with('ilan')
             ->first();
 
         if ($channelSync === null) {
@@ -101,7 +100,16 @@ class AirbnbChannelAdapter implements ChannelAdapter
         }
 
         // ─── Tenant isolation: verify ownership ─────────────────────
-        $tenantId = $channelSync->ilan->tenant_id ?? null;
+        // Query Ilan directly (not via relation) to avoid TenantScope dependency issues
+        $property = Ilan::withoutGlobalScopes()
+            ->where('id', $propertyId)
+            ->first(['id', 'tenant_id']);
+
+        if ($property === null) {
+            return ChannelApiResponse::failure('Property not found', 'PROPERTY_NOT_FOUND');
+        }
+
+        $tenantId = $property->tenant_id ?? null;
         if ($tenantId === null) {
             return ChannelApiResponse::failure('Tenant not found for property', 'TENANT_NOT_FOUND');
         }

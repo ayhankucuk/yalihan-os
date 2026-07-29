@@ -13,6 +13,7 @@ use App\Domain\ChannelManager\Models\SyncResult;
 use App\Jobs\ChannelManager\SynchronizeAvailabilityJob;
 use App\Models\Ilan;
 use App\Models\IlanTakvimSync;
+use App\Models\ChannelSyncExecution;
 use App\Models\PropertyAvailability;
 use App\Traits\BelongsToTenant;
 use Carbon\Carbon;
@@ -295,7 +296,7 @@ class AvailabilitySynchronizationService
     {
         $conflicts = $sync->conflicts ?? [];
         return SyncResult::success(
-            syncedCount: $sync->synced_count,
+            syncedCount: $sync->synced_count ?? 0,
             conflicts: is_array($conflicts) ? $conflicts : [],
             metadata: [
                 'sync_record_id' => $sync->id,

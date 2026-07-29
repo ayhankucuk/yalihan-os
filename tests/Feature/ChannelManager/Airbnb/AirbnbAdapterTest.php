@@ -319,7 +319,7 @@ class AirbnbAdapterTest extends TestCase
             ['date' => '2026-08-01', 'available' => false, 'property_id' => $property->id],
         ]);
 
-        $this->assertTrue($response->success);
+        $this->assertTrue($response->success, "Got: {$response->errorCode} — {$response->errorMessage}");
         $this->assertStringStartsWith('sandbox:', $response->channelReference);
     }
 
@@ -445,14 +445,18 @@ class AirbnbAdapterTest extends TestCase
 
     private function createProperty(int $tenantId): Ilan
     {
-        return Ilan::create([
+        // tenant_id is not in Ilan's $fillable — use property assignment
+        $ilan = Ilan::withoutGlobalScopes()->create([
             'baslik' => 'Test Property ' . uniqid(),
             'fiyat' => 1000,
             'para_birimi' => 'TRY',
             'rental_enabled' => true,
             'min_stay_nights' => 1,
             'yayin_durumu' => 'yayinda',
-            'tenant_id' => $tenantId,
         ]);
+        $ilan->tenant_id = $tenantId;
+        $ilan->save();
+
+        return $ilan;
     }
 }
