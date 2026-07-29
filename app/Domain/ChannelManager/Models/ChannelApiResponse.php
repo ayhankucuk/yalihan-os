@@ -60,4 +60,18 @@ readonly class ChannelApiResponse
 
         return $this->metadata['conflict'] ?? null;
     }
+
+    /**
+     * Return a new response with additional metadata (clone)
+     */
+    public function withMetadata(array $additional): self
+    {
+        return new self(
+            success: $this->success,
+            channelReference: $this->channelReference,
+            errorMessage: $this->errorMessage,
+            errorCode: $this->errorCode,
+            metadata: array_merge($this->metadata, $additional),
+        );
+    }
 }
