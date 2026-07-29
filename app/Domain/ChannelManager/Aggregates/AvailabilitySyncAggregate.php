@@ -198,6 +198,26 @@ class AvailabilitySyncAggregate extends AggregateRoot
     }
 
     /**
+     * Resolve a previously recorded conflict
+     *
+     * @param string $resolution 'local_wins' | 'remote_wins' | 'manual'
+     * @param array $resolvedData The resolved availability state
+     */
+    public function resolveConflict(string $resolution, array $resolvedData): void
+    {
+        $this->recordEvent(ChannelManagerEventVocabulary::AVAILABILITY_CONFLICT_RESOLVED->value, [
+            'channel_id' => $this->state['channel_id'],
+            'property_id' => $this->state['property_id'],
+            'resolution' => $resolution,
+            'resolved_availability' => $resolvedData,
+            'resolved_at' => now()->toIso8601String(),
+        ]);
+
+        // Decrement conflict count since we're resolving one
+        $this->state['conflict_count'] = max(0, $this->state['conflict_count'] - 1);
+    }
+
+    /**
      * @inheritDoc
      */
     protected function applyEvent(string $eventType, array $payload): void
