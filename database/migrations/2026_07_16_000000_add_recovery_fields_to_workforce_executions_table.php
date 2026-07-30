@@ -26,6 +26,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasTable('workforce_executions')) {
+            return;
+        }
         Schema::table('workforce_executions', function (Blueprint $table) {
             // ── Retry Tracking ──────────────────────────────────────────────
             if (!Schema::hasColumn('workforce_executions', 'retry_count')) {
@@ -93,6 +96,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasTable('workforce_executions')) {
+            return;
+        }
         Schema::table('workforce_executions', function (Blueprint $table) {
             try {
                 $table->dropIndex('exec_recovery_idx');
