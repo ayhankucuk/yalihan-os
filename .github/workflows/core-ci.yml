@@ -110,7 +110,7 @@ jobs:
       - name: 🧪 PHP Tests (Parallel)
         run: php artisan test --parallel --recreate-databases
 
-      - name: 🛡️ Phase 4B.3: Tenant Isolation Tests
+      - name: "🛡️ Phase 4B.3: Tenant Isolation Tests"
         run: |
           echo "🔒 Running Phase 4B.3 Tenant Isolation Validation..."
           php artisan test tests/Unit/Repositories/CRMTenantIsolationTest.php --stop-on-failure
