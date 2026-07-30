@@ -1008,6 +1008,95 @@ Tam repository analizi raporu:
 
 ---
 
+## 2026-07-30 | Oturum 104 | Sprint 14 E01 Property Command Center Skeleton ✅ IMPLEMENTED
+
+### Değişiklik
+
+Sprint 14 Launch — Property Command Center application composition layer başlatıldı.
+
+**E01 Üretilen Dosyalar:**
+- `resources/views/admin/property/show.blade.php` — 853 satır PCC view
+- `resources/views/admin/property/index.blade.php` — Property list view
+
+**Test Aktivasyonu:**
+- 4 yeni test aktif edildi
+- 36 passed · 130 assertions · 0 failures
+
+**SAAB Değerlendirmesi:**
+- Sprint 13 servisleri yeniden yazılmadı — application composition katmanı oluşturuldu
+- "Workspace/Property is the source of truth" prensibi korundu
+- 0 yeni SAB ihlali
+
+**E02 Hedefi:**
+- Sprint 13 Availability Synchronization → PCC'e canlı bağlantı
+- Reservation + Availability state, Last Sync, Conflict Status, Execution History, Retry Action
+
+**Refactoring Adayı (non-blocking):**
+- `show.blade.php` → tab-based ayrıştırma (`tabs/general.blade.php`, `tabs/reservations.blade.php`, vb.)
+
+**SAAB Mimari Değerlendirme (E01 Sonrası):**
+- foamy-fire branch: PropertyCommandCenterController + routes EKSİK (feature branch'de mevcut)
+- E01 = View skeleton sadece — controller yok → E02 başlayamaz
+- Sprint 13 entegrasyonu: data bağlantısı yok (loadAvailability placeholder)
+- SAAB dokümanı: `docs/ERA_V/Phase_Reports/SAAB-SPRINT14-E01-REVIEW.md`
+
+**SAAB Kararı:**
+- E01: ✅ VIEW FOUNDATION ONLY
+- E02: 🟡 KOŞULLU — controller + routes önce oluşturulmalı
+- Mimari: Application composition uyumlu ✅
+
+---
+
+## 2026-07-30 | Oturum 104b | SAAB E01 Mimari Değerlendirme + E02 Hazırlık
+
+### Değişiklik
+
+Sprint 14 E01 SAAB Mimari Değerlendirmesi tamamlandı.
+
+**E01 Eksik Bileşenler:**
+- `PropertyCommandCenterController` — foamy-fire'da BULUNAMADI
+- routes/admin.php PCC route tanımı — BULUNAMADI
+- `PropertyCommandCenterQueryService` — BULUNAMADI
+
+**E02 İçin Sprint 13 Veri Kaynakları:**
+- `ChannelSyncExecution::forProperty($propertyId)` → last sync, health, conflicts
+- `PropertyAvailability::forProperty($propertyId)` → availability state
+- `IlanTakvimSync` → platform bilgisi, sync durumu
+
+**Üretilen Dosyalar:**
+- `docs/ERA_V/Phase_Reports/SAAB-SPRINT14-E01-REVIEW.md` — SAAB mimari değerlendirme
+
+**BEKCI_CHANGELOG Güncellemesi:**
+- E01 SAAB kararı: VIEW FOUNDATION ONLY
+- E02: koşullu yetkilendirme
+
+---
+
+## 2026-07-30 | Oturum 104c | SAAB E01 Option B — Sprint 14 PCC Worktree
+
+### Değişiklik
+
+SAAB Option B Controlled uygulandı:
+- foamy-fire "view-only" branch olarak bırakıldı
+- Yeni git branch + worktree oluşturuldu:
+  - `feature/sprint-14-property-command-center` (f5b5e8a bazlı)
+  - Worktree path: `/Users/macbookpro/dev/yalihan2026/.kilo/worktrees/sprint-14-property-command-center`
+- Eksik modeller (Property, WorkforceExecution, CommercialOffering) zaten mevcut ✅
+- Agent Manager oturumu başlatıldı: `am-1785408941862-ifkz2l`
+
+### E01.1 Hedefi
+
+- PropertyCommandCenterController (index, show, api*)
+- PropertyCommandCenterQueryService (Provider decomposition)
+- Baseline test: PCC açılış testi
+
+### Üretilen Dokümanlar
+
+- `docs/ERA_V/Phase_Reports/SAAB-SPRINT14-E01-WIRING-BLOCKER.md` — Mimari seçenek analizi
+- `docs/ERA_V/Phase_Reports/SAAB-SPRINT14-E01-REVIEW.md` — Mimari değerlendirme
+
+---
+
 ## 2026-06-XX | Oturum XX
 
 [Sonraki oturumlar buraya eklenir...]
