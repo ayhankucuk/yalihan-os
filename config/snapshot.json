@@ -1,0 +1,11 @@
+{
+    "ai": {
+        "ollama": {
+            "url": "http:\/\/localhost:11434",
+            "enforce_tls": false
+        }
+    },
+    "database": {
+        "default": "sqlite"
+    }
+}
