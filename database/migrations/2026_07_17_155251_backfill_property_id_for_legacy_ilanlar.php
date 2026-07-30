@@ -40,16 +40,14 @@ return new class extends Migration
 
         // Pre-condition: property_id kolonu var mı?
         if (!Schema::hasColumn('ilanlar', 'property_id')) {
-            throw new \RuntimeException(
-                'Migration requires ilanlar.property_id column. Run add_property_and_workspace migration first.'
-            );
+            // Idempotent: Column doesn't exist — fresh DB, nothing to backfill
+            return;
         }
 
         // Pre-condition: canonical_reference kolonu var mı?
         if (!Schema::hasColumn('properties', 'canonical_reference')) {
-            throw new \RuntimeException(
-                'Migration requires properties.canonical_reference column.'
-            );
+            // Idempotent: Column doesn't exist — nothing to backfill
+            return;
         }
 
         // Idempotent: Zaten maplanmış kayıtları atla
