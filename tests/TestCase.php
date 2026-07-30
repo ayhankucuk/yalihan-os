@@ -42,7 +42,7 @@ abstract class TestCase extends BaseTestCase
 
         if ($needsBootstrap || $isSqliteMemory) {
             $this->initializeTestDatabase();
-            
+
             if (!$isSqliteMemory) {
                 self::$schemaInitialized = true;
             }
@@ -52,6 +52,11 @@ abstract class TestCase extends BaseTestCase
             $this->baseBeginDatabaseTransaction();
         }
 
+        // 🛡️ Phase T5: Tenant Context Injection
+        // BelongsToTenant trait auto-sets tenant_id on model creation via TenantContextService.
+        // Without this, NOT NULL constraint violations occur onkisiler.tenant_id, talepler.tenant_id, etc.
+        $this->injectDefaultTenantContext();
+
         // 🛡️ Phase T1: Queue Stabilization
         // Fake ALL queues by default for speed.
         Queue::fake();
@@ -59,6 +64,45 @@ abstract class TestCase extends BaseTestCase
         $this->beforeApplicationDestroyed(function () {
             DB::disconnect();
         });
+    }
+
+    /**
+     * Inject default tenant context for all tests.
+     *
+     * 🛡️ Phase T5: This is the single-point fix for 89 test failures caused by
+     * NOT NULL constraint violations on tenant_id columns.
+     *
+     * Mechanism: BelongsToTenant::creating() calls TenantContextService::hasTenant()
+     * to decide whether to auto-set tenant_id. With no context, hasTenant() returns
+     * false and the model is created without tenant_id, violating NOT NULL constraints.
+     *
+     * This method establishes a default tenant so that all factory-created
+     * and Eloquent::create() models get tenant_id automatically.
+     */
+    protected function injectDefaultTenantContext(): void
+    {
+        $tenant = \App\Models\SaaS\Tenant::first();
+        if (!$tenant) {
+            $tenant = \App\Models\SaaS\Tenant::create([
+                'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                'name' => 'Test Tenant',
+                'domain' => 'test.yalihan.local',
+                'status' => 'active',
+            ]);
+        }
+        app(\App\Services\SaaS\TenantContextService::class)->setTenant($tenant);
+    }
+
+    /**
+     * Get the current test tenant ID.
+     *
+     * Use this when inserting test records via DB::table()->insert() instead of
+     * Eloquent models. Eloquent creates (via factory) auto-set tenant_id via
+     * BelongsToTenant::creating() hook, but direct DB inserts need the ID explicitly.
+     */
+    protected function getDefaultTenantId(): int
+    {
+        return app(\App\Services\SaaS\TenantContextService::class)->getTenant()->id;
     }
 
     /**

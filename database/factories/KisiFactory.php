@@ -14,6 +14,7 @@ class KisiFactory extends Factory
     public function definition(): array
     {
         return [
+            'tenant_id' => 1, // 🛡️ Phase T5: Default tenant — BelongsToTenant trait auto-sets via TenantContextService
             'ad' => $this->faker->firstName(),
             'soyad' => $this->faker->lastName(),
             'eposta' => $this->faker->unique()->safeEmail(), // Context7: email → eposta
