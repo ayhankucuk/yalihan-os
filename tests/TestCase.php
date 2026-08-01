@@ -36,6 +36,9 @@ abstract class TestCase extends BaseTestCase
 
         parent::setUp();
 
+        // 🛡️ Skip Vite asset build in tests — no frontend assets compiled in CI
+        $this->withoutVite();
+
         // 🛡️ Phase T2: Schema Authority Unification
         $connection = config('database.default');
         $isSqliteMemory = $connection === 'sqlite' && config('database.connections.sqlite.database') === ':memory:';

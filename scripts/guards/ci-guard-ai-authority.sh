@@ -18,7 +18,8 @@
 
 set -euo pipefail
 
-BASE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+BASE_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 CONTROLLERS_DIR="${BASE_DIR}/app/Http/Controllers"
 
 PASS=0

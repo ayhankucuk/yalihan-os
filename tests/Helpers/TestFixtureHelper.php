@@ -209,7 +209,6 @@ trait TestFixtureHelper
                 'slug' => $slug,
                 'ad' => ucfirst(str_replace('-', ' ', $slug)),
                 'aktiflik_durumu' => \App\Enums\AktiflikDurumu::AKTIF,
-                'yayin_tipi_id' => $yayinTipiId,
             ], $attributes));
         }
 
@@ -218,7 +217,6 @@ trait TestFixtureHelper
             array_merge([
                 'ad' => ucfirst(str_replace('-', ' ', $slug)),
                 'aktiflik_durumu' => \App\Enums\AktiflikDurumu::AKTIF,
-                'yayin_tipi_id' => $yayinTipiId,
             ], $attributes)
         );
     }
