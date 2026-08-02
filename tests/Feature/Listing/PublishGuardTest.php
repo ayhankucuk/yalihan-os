@@ -6,9 +6,11 @@ use App\Contracts\TemplateResolverInterface;
 use App\Enums\IlanDurumu;
 use App\Exceptions\TemplateNotFoundException;
 use App\Models\Ilan;
+use App\Models\IlanKategori;
 use App\Services\Listing\ListingScoreService;
 use App\Services\Listing\YalihanLifecycle;
 use DomainException;
+use Tests\Helpers\TestFixtureHelper;
 use Tests\TestCase;
 
 /**
@@ -23,6 +25,7 @@ use Tests\TestCase;
  */
 class PublishGuardTest extends TestCase
 {
+    use TestFixtureHelper;
 
     private YalihanLifecycle $service;
 
@@ -44,11 +47,11 @@ class PublishGuardTest extends TestCase
 
         $service = $this->buildService($mockTemplate);
 
-        // Completion score < 100
-        $ilan = $this->beklemedeliIlan(['yayin_tipi_id' => 1, 'completion_score' => 99]);
+        // Minimal listing - completion will be recalculated as < 100
+        $ilan = $this->eksikIlan(['yayin_tipi_id' => 1]);
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessageMatches('/completion_score=99/');
+        $this->expectExceptionMessageMatches('/completion_score=\d+/');
 
         $service->transition($ilan, IlanDurumu::YAYINDA);
     }
@@ -62,11 +65,11 @@ class PublishGuardTest extends TestCase
 
         $service = $this->buildService($mockTemplate);
 
-        // Completion score < 100
-        $ilan = $this->beklemedeliIlan(['yayin_tipi_id' => 1, 'completion_score' => 99]);
+        // Minimal listing - completion will be recalculated as < 100
+        $ilan = $this->eksikIlan(['yayin_tipi_id' => 1]);
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessageMatches('/completion_score=99/');
+        $this->expectExceptionMessageMatches('/completion_score=\d+/');
 
         $service->transition($ilan, IlanDurumu::YAYINDA);
     }
@@ -91,12 +94,36 @@ class PublishGuardTest extends TestCase
     /** @test */
     public function yayin_tipi_id_eksik_yayinda_publish_fail(): void
     {
+        // Mock template resolver - will never be called because templateGuard checks null first
         $mockTemplate = $this->createMock(TemplateResolverInterface::class);
+        // Mock score service to return 100 (bypass completion guard)
+        $mockScore = $this->getMockBuilder(ListingScoreService::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['computeCompletionScore', 'computeQualityScore'])
+            ->getMock();
+        $mockScore->method('computeCompletionScore')->willReturn(100);
+        $mockScore->method('computeQualityScore')->willReturn(50.0);
 
-        $service = $this->buildService($mockTemplate);
+        $service = new YalihanLifecycle(
+            app(\App\Services\Listing\ListingStateMachine::class),
+            $mockTemplate,
+            $mockScore,
+        );
 
-        // Completion Score >= 100
-        $ilan = $this->beklemedeliIlan(['yayin_tipi_id' => null, 'completion_score' => 100, 'quality_score' => 41]);
+        // Create listing with null yayin_tipi_id (but other required fields present)
+        $ilan = Ilan::factory()->create([
+            'danisman_id' => $this->createAdminUser()->id,
+            'yayin_durumu' => IlanDurumu::BEKLEMEDE,
+            'yayin_tipi_id' => null,  // Missing required field
+            'baslik' => 'Test Ilan Yayin Tipi Eksik',
+            'fiyat' => 1000,
+            'aciklama' => 'Test aciklama for yayin_tipi_id eksik test with enough chars',
+            'il_id' => 1,
+            'ilce_id' => 1,
+            'ana_kategori_id' => IlanKategori::factory()->create()->id,
+            'lat' => 37.0344,
+            'lng' => 27.4305,
+        ]);
 
         $this->expectException(DomainException::class);
         $this->expectExceptionMessageMatches('/yayin_tipi_id.*seçilmemiş/');
@@ -182,17 +209,35 @@ class PublishGuardTest extends TestCase
         );
     }
 
+    /**
+     * Create a publishable listing (100% completion).
+     * For success test: completion_100_ve_gecerli_template_publish_pass
+     */
     private function beklemedeliIlan(array $extra = []): Ilan
     {
-        $dispatcher = Ilan::getEventDispatcher();
-        Ilan::unsetEventDispatcher();
+        $user = $this->createAdminUser();
 
-        $ilan = \Illuminate\Support\Facades\Schema::withoutForeignKeyConstraints(function () use ($extra) {
-            return Ilan::factory()->create(array_merge(['yayin_durumu' => 'beklemede'], $extra));
-        });
+        return $this->createPublishableListing($user, array_merge([
+            'yayin_durumu' => IlanDurumu::BEKLEMEDE,
+        ], $extra));
+    }
 
-        Ilan::setEventDispatcher($dispatcher);
-        return $ilan;
+    /**
+     * Create an INCOMPLETE listing (completion < 100).
+     * For failure tests: completion_99, bos_olan_ilan
+     */
+    private function eksikIlan(array $extra = []): Ilan
+    {
+        $user = $this->createAdminUser();
+
+        // Minimal listing - missing required fields will result in low completion score
+        return Ilan::factory()->create(array_merge([
+            'danisman_id' => $user->id,
+            'yayin_durumu' => IlanDurumu::BEKLEMEDE,
+            'baslik' => 'Test',
+            'fiyat' => 1000,
+            // Missing: aciklama, il_id, ilce_id, ana_kategori_id, yayin_tipi_id, ilan_sahibi_id, fotograf
+        ], $extra));
     }
 
     private function taslakIlan(array $extra = []): Ilan

@@ -78,22 +78,58 @@ trait TestFixtureHelper
     /**
      * Create a publishable listing (ready for transition to YAYINDA).
      * Includes valid category, template, completion & quality scores.
+     *
+     * Phase T3: Ensures all 9 mandatory fields + 1 photo for 100% completion score.
+     * ZORUNLU fields: baslik, aciklama, fiyat, il_id, ilce_id, ana_kategori_id,
+     *                 yayin_tipi_id, ilan_sahibi_id, fotograf
      */
     protected function createPublishableListing(User $owner, array $attributes = []): Ilan
     {
-        $kategori = IlanKategori::factory()->create();
-        $sablon = YayinTipiSablonu::factory()->create(['kategori_id' => $kategori->id]);
+        $kategori = $this->ensureKategori('daire');
+        $sablon = $this->ensureYayinTipi('satilik');
 
-        return Ilan::factory()->create(array_merge([
+        // Ensure required geographic data
+        $il = $this->ensureIl(1);
+        $ilce = $this->ensureIlce(1, $il->id);
+
+        // Create ilan_sahibi (Kisi) using factory - required for 100% completion
+        $kisi = \App\Models\Kisi::factory()->create([
+            'tenant_id' => $owner->tenant_id,
+            'ad' => 'Test',
+            'soyad' => 'Sahibi',
+        ]);
+
+        // Create listing with all required fields for 100% completion score
+        $ilan = Ilan::factory()->create(array_merge([
             'danisman_id' => $owner->id,
             'yayin_durumu' => IlanDurumu::BEKLEMEDE,
-            'completion_score' => 100,
-            'quality_score' => 85,
             'ana_kategori_id' => $kategori->id,
             'yayin_tipi_id' => $sablon->id,
-            'lat' => 37.0,
-            'lng' => 27.0,
+            'il_id' => $il->id,
+            'ilce_id' => $ilce->id,
+            'ilan_sahibi_id' => $kisi->id,
+            'lat' => 37.0344,  // Bodrum
+            'lng' => 27.4305,
+            // Completion fields (baslik, aciklama, fiyat)
+            'baslik' => 'Lüks Bodrum Villa Deniz Manzaralı Satılık',
+            'fiyat' => 4500000,
+            'aciklama' => 'Mükemmel konumda, deniz manzaralı, 4+1 lüks villa. '
+                . 'Yatırıma uygun. Tam donanımlı mutfak, geniş salon, balkon.',
         ], $attributes));
+
+        // Add at least one photo (required for 100% completion)
+        $fotografId = uniqid();
+        \Illuminate\Support\Facades\DB::table('ilan_fotograflari')->insert([
+            'ilan_id' => $ilan->id,
+            'dosya_adi' => 'fotograf-' . $fotografId . '.jpg',
+            'dosya_yolu' => 'ilanlar/' . $fotografId . '.jpg',
+            'display_order' => 1,
+            'kapak_mi' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return $ilan;
     }
 
     /**
