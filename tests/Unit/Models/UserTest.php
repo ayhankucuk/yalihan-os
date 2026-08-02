@@ -88,12 +88,15 @@ class UserTest extends TestCase
      */
     public function test_user_has_ilanlar(): void
     {
+        $tenantId = $this->getDefaultTenantId();
+
         // Create user
         $userId = DB::table('users')->insertGetId([
             'name' => 'Test Danışman',
             'email' => 'danisman@example.com',
             'password' => Hash::make('password'),
             'aktiflik_durumu' => 1,
+            'tenant_id' => $tenantId,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -107,6 +110,7 @@ class UserTest extends TestCase
                 'para_birimi' => 'TL',
                 'yayin_durumu' => 'yayinda',
                 'danisman_id' => $userId,
+                'tenant_id' => $tenantId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -117,6 +121,7 @@ class UserTest extends TestCase
                 'para_birimi' => 'TL',
                 'yayin_durumu' => 'yayinda',
                 'danisman_id' => $userId,
+                'tenant_id' => $tenantId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

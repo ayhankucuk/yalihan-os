@@ -22,7 +22,6 @@ class DemandMatchingEngineTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Event::fake();
         
         // Manual cleanup for domain tables (no transactions used)
         DB::table('eslesmeler')->delete();
