@@ -114,6 +114,8 @@ class Ilan extends BaseModel
 
     protected $table = 'ilanlar';
 
+    protected static ?bool $skipPropertyIdGuard = null;
+
     protected $attributes = [
         'yayin_durumu' => IlanDurumu::TASLAK->value
     ];

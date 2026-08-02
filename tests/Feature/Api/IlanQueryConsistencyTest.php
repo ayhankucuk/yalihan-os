@@ -243,7 +243,7 @@ class IlanQueryConsistencyTest extends TestCase
         try {
             $responsePost = $this->postJson('/api/v1/command/ilanlar', $payload);
         } catch (\Throwable $e) {
-            file_put_contents('/Users/macbookpro/dev/yalihan2026/storage/logs/test_error.txt', $e->getMessage() . "\n" . $e->getTraceAsString());
+            file_put_contents(storage_path('logs/test_error.txt'), $e->getMessage() . "\n" . $e->getTraceAsString());
             throw $e;
         }
         
