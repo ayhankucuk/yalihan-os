@@ -17,7 +17,7 @@ class BulkListingAuthorityBridgeTest extends TestCase
 {
     public function test_bulk_import_uses_ilan_crud_store_and_keeps_response_shape(): void
     {
-        $user = User::factory()->create();
+        $user = $this->createTenantUser();
         $kategori = IlanKategori::factory()->create();
 
         $record = [
@@ -86,7 +86,7 @@ class BulkListingAuthorityBridgeTest extends TestCase
 
     public function test_bulk_update_uses_ilan_crud_update_with_partial_payload_parity(): void
     {
-        $user = User::factory()->create();
+        $user = $this->createTenantUser();
         $ilan = Ilan::factory()->create([
             'baslik' => 'Eski Baslik',
             'aciklama' => 'Eski Aciklama',
@@ -147,7 +147,7 @@ class BulkListingAuthorityBridgeTest extends TestCase
 
     public function test_bulk_update_preserves_null_and_empty_assignment_semantics(): void
     {
-        $user = User::factory()->create();
+        $user = $this->createTenantUser();
         $ilan = Ilan::factory()->create([
             'baslik' => 'Lokasyon Test',
             'il' => 'Mugla',

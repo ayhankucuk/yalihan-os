@@ -20,14 +20,18 @@ class AdvisorPhotoUploadTest extends TestCase
     {
         parent::setUp();
 
+        $tenant = \Database\Factories\SaaS\TenantFactory::new()->create();
+        app(\App\Services\SaaS\TenantContextService::class)->setTenant($tenant);
+
         // Create admin role and test user
-        $role = Role::create(['name' => 'admin']);
+        $role = Role::where('name', 'admin')->first() ?: Role::create(['name' => 'admin']);
         $this->user = User::create([
             'name' => 'Admin User',
             'email' => 'test@example.com',
             'password' => bcrypt('password'),
             'role_id' => $role->id,
             'email_verified_at' => now(),
+            'tenant_id' => $tenant->id,
         ]);
 
         // Create test advisor (Kişi)
@@ -38,6 +42,7 @@ class AdvisorPhotoUploadTest extends TestCase
             'telefon' => '05551234567',
             'kisi_tipi' => 'danisman',
             'aktiflik_durumu' => true,
+            'tenant_id' => $tenant->id,
         ]);
 
         Storage::fake('public');
@@ -197,7 +202,7 @@ class AdvisorPhotoUploadTest extends TestCase
                 ['photo' => $photo1]
             );
 
-        $response1->assertStatus(200);
+        $response1->assertStatus(201);
         $this->assertNotNull($response1->json('data.photo.id'), 'Photo1 upload should return photo ID');
 
         $response2 = $this->actingAs($this->user)
@@ -206,7 +211,7 @@ class AdvisorPhotoUploadTest extends TestCase
                 ['photo' => $photo2]
             );
 
-        $response2->assertStatus(200);
+        $response2->assertStatus(201);
         $this->assertNotNull($response2->json('data.photo.id'), 'Photo2 upload should return photo ID');
 
         $photoId1 = $response1->json('data.photo.id');

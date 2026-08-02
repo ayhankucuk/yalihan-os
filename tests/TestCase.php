@@ -159,6 +159,28 @@ abstract class TestCase extends BaseTestCase
         if ($connection === 'sqlite') {
             try {
                 Artisan::call('migrate', ['--force' => true]);
+
+                Schema::dropIfExists('advisor_photos');
+                Schema::create('advisor_photos', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->id();
+                    $table->foreignId('kisi_id')->constrained('kisiler')->cascadeOnDelete();
+                    $table->string('path');
+                    $table->string('filename');
+                    $table->string('mime_type');
+                    $table->integer('width');
+                    $table->integer('height');
+                    $table->integer('file_size');
+                    $table->decimal('quality_score', 5, 2)->default(0);
+                    $table->json('quality_metrics')->nullable();
+                    $table->json('analysis_details')->nullable();
+                    $table->integer('display_order')->default(0);
+                    $table->boolean('featured')->default(false);
+                    $table->json('improvement_suggestions')->nullable();
+                    $table->json('visual_keywords')->nullable();
+                    $table->timestamp('analyzed_at')->nullable();
+                    $table->timestamp('featured_at')->nullable();
+                    $table->timestamps();
+                });
             } catch (\Throwable $e) {
                 file_put_contents('/tmp/bootstrap_error.log', $e->getMessage() . "\n" . $e->getTraceAsString());
                 throw $e;

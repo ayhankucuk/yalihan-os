@@ -19,6 +19,33 @@ use Spatie\Permission\Models\Permission;
 trait TestFixtureHelper
 {
     /**
+     * Create a tenant-scoped User for testing.
+     */
+    protected function createTenantUser(array $attributes = []): User
+    {
+        $tenant = $attributes['tenant'] ?? null;
+        if (!$tenant) {
+            $tenant = \Database\Factories\SaaS\TenantFactory::new()->create();
+        }
+        unset($attributes['tenant']);
+
+        // Set the active tenant context
+        app(\App\Services\SaaS\TenantContextService::class)->setTenant($tenant);
+
+        return User::factory()->forTenant($tenant)->create($attributes);
+    }
+
+    /**
+     * Create a tenant-scoped User and authenticate them via Sanctum.
+     */
+    protected function actingAsTenantUser(array $attributes = []): User
+    {
+        $user = $this->createTenantUser($attributes);
+        \Laravel\Sanctum\Sanctum::actingAs($user);
+        return $user;
+    }
+
+    /**
      * Create a canonical Admin user with required roles and permissions.
      *
      * Uses the same pattern that was proven in ListingLifecycleFinalSealTest:
@@ -86,7 +113,7 @@ trait TestFixtureHelper
     protected function createPublishableListing(User $owner, array $attributes = []): Ilan
     {
         $kategori = $this->ensureKategori('daire');
-        $sablon = $this->ensureYayinTipi('satilik');
+        $sablon = $this->ensureYayinTipi('satilik', ['kategori_id' => $kategori->id]);
 
         // Ensure required geographic data
         $il = $this->ensureIl(1);

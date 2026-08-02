@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use App\Models\SaaS\Tenant;
 use App\Modules\Auth\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -123,5 +124,15 @@ class UserFactory extends Factory
                 $user->assignRole('owner');
             }
         });
+    }
+
+    /**
+     * Indicate that the user belongs to a specific tenant.
+     */
+    public function forTenant(Tenant $tenant): static
+    {
+        return $this->state(fn () => [
+            'tenant_id' => $tenant->getKey(),
+        ]);
     }
 }

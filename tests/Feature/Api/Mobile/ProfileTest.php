@@ -16,7 +16,7 @@ class ProfileTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->user = $this->createTenantUser();
     }
 
     /** @test */
@@ -73,5 +73,35 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($this->user->fresh()->profile_photo_path);
         $this->assertTrue(Storage::disk('public')->exists($this->user->fresh()->profile_photo_path));
+    }
+
+    /** @test */
+    public function it_denies_access_with_403_when_user_has_no_tenant_id()
+    {
+        $userWithoutTenant = User::factory()->create(['tenant_id' => null]);
+        Sanctum::actingAs($userWithoutTenant);
+
+        $response = $this->getJson(route('api.mobile.profile.show'));
+
+        $response->assertStatus(403)
+            ->assertJsonPath('hata_kodu', 'TENANT_CONTEXT_MISSING');
+    }
+
+    /** @test */
+    public function it_establishes_tenant_context_via_middleware_during_http_request()
+    {
+        $tenant = \App\Models\SaaS\Tenant::create([
+            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'name' => 'Middleware Test Tenant',
+            'domain' => 'middleware.yalihan.local',
+            'status' => 'active',
+        ]);
+        $user = User::factory()->forTenant($tenant)->create();
+        Sanctum::actingAs($user);
+
+        $response = $this->getJson(route('api.mobile.profile.show'));
+
+        $response->assertStatus(200);
+        $this->assertEquals($tenant->id, app(\App\Services\SaaS\TenantContextService::class)->getTenant()->id);
     }
 }
