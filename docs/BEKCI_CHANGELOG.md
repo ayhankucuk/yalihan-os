@@ -1,5 +1,47 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 91 — TS-01 F2 Waves 1B, 1C, 1D: Validation Harness, Lifecycle Fixtures & Unit Alignment (2026-08-02) ✅ CLOSED
+
+### 🎯 Hedef
+TS-01 F2 dalgalarının (1B: Validation Harness, 1C: Lifecycle Fixtures, 1D: Unit Tenant Alignment) tamamlanarak yetkilendirme, şablon eşleştirme ve tenant veri hizalama testlerinin %100 yeşile getirilmesi.
+
+### 🔍 Yapılan İşler & Çözümler
+* **Wave 1B — Validation Harness (`DeepSeekSettingsTest.php`):**
+  - `withoutMiddleware()` kaldırıldı.
+  - `createAdminUser()` ile kanonik admin yetkilendirmesi sağlandı.
+  - HTTP katmanından otantik `422 Unprocessable Entity` yanıtı ve validasyon hataları doğrulandı. (2/2 test geçti)
+* **Wave 1C — Lifecycle Fixtures (`ListingLifecycleFinalSealTest.php`):**
+  - `TestFixtureHelper::createPublishableListing` fonksiyonu, `YayinTipiSablonu` ile `IlanKategori` ID paritesini (`sablon.kategori_id === kategori.id`) garanti edecek şekilde güncellendi.
+  - Unchained state geçiş testi (`Arşiv → Yayında`) eklenerek durum makinesi koruması doğrulandı.
+  - Tamamlanma/kalite skorları ve `ListingScoreService` mocklama kontratları güncellendi. (7/7 test geçti)
+* **Wave 1D — Unit Tenant Data Alignment (`UserTest.php` & `DemandMatchingEngineTest.php`):**
+  - `UserTest::test_user_has_ilanlar` testindeki raw `DB::table` insert işlemlerine `$this->getDefaultTenantId()` eklenerek `TenantScope` hizalaması yapıldı.
+  - `DemandMatchingEngineTest::setUp()` içindeki blanket `Event::fake()` kaldırıldı. Böylece `BelongsToTenant` model observer `creating` hook'unun Eloquent modellerine `tenant_id` ataması sağlandı. (11/11 test geçti)
+* **Master Test Suite Sonucu:** Waves 1A, 1B, 1C ve 1D kapsamındaki 9 test dosyasında toplam **44 test (%100 başarı, 181 assertions)** sıfır hata ile geçti.
+* **Preflight Kontrolü:** `./scripts/tools/antigravity-preflight.sh` taraması %100 temiz sonuç verdi.
+
+---
+
+## Oturum 90 — TS-01 F2 Wave 1A: Tenant-Authenticated API Setup (2026-08-02) ✅ CLOSED
+
+### 🎯 Hedef
+TS-01 F2 kapsamındaki 22 adet `TENANT_CONTEXT_MISSING` (403) yetkilendirme ve kiracı (tenant) bağlam eksikliği hatasının, sabit/rasgele ID kullanmadan ve global varsayılanları bozmadan kanonik tenant-aware test altyapısı ile giderilmesi.
+
+### 🔍 Yapılan İşler & Çözümler
+* **Kanonik Factory State:** `UserFactory` sınıfına `forTenant(Tenant $tenant)` state metodu eklendi.
+* **Merkezi Test Helper'ları:** `TestFixtureHelper` trait'ine `createTenantUser(array $attributes = []): User` ve `actingAsTenantUser(array $attributes = []): User` metotları eklendi.
+* **SQLite Şema Hizalaması:** `TestCase::initializeTestDatabase()` içindeki SQLite moduna `advisor_photos` tablosunu `testing-schema.sql` ile birebir uyumlu şekilde yeniden oluşturma mantığı eklendi (`filename`, `mime_type`, `width`, `height`, `quality_score`, `kisi_id` vb. eksik kolonlar ve constraint'ler giderildi).
+* **Test Dönüşümleri (Wave 1A):** 
+  - `ProfileTest.php` (3 test)
+  - `NotificationTest.php` (6 test)
+  - `SavedSearchTest.php` (3 test)
+  - `BulkListingAuthorityBridgeTest.php` (4 test)
+  - `AdvisorPhotoUploadTest.php` (8 test)
+  Tüm 24 test `createTenantUser` ile güncellendi.
+* **Test Sonuçları:** İlgili 24 testin tamamı (%100 başarı) sıfır hata ile geçti.
+
+---
+
 ## Oturum 89 — Stratejik Araştırma: SAAB v9 Enterprise Architecture Review (2026-07-14) ✅ CLOSED
 
 ### 🎯 Hedef
