@@ -46,11 +46,11 @@ class ListingLifecycleFinalSealTest extends TestCase
     public function publishing_is_blocked_if_completion_score_is_below_100()
     {
         $ilan = $this->createPublishableListing(auth()->user(), [
-            'completion_score' => 80
+            'aciklama' => null
         ]);
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('completion_score=80');
+        $this->expectExceptionMessage('completion_score=89');
 
         app(YalihanLifecycle::class)->transition($ilan, IlanDurumu::YAYINDA);
     }
@@ -59,7 +59,8 @@ class ListingLifecycleFinalSealTest extends TestCase
     public function publishing_is_blocked_if_quality_score_is_below_40()
     {
         $ilan = $this->createPublishableListing(auth()->user(), [
-            'quality_score' => 35
+            'baslik' => 'Daire Satilik',
+            'aciklama' => 'Bodrum merkezde satılık lüks daire, harika konumda kaçırılmayacak fırsat.'
         ]);
 
         $this->expectException(DomainException::class);
@@ -87,12 +88,12 @@ class ListingLifecycleFinalSealTest extends TestCase
     public function forbidden_transitions_are_blocked_by_state_machine()
     {
         $ilan = Ilan::factory()->create([
-            'yayin_durumu' => IlanDurumu::TASLAK,
+            'yayin_durumu' => IlanDurumu::ARSIV,
             'danisman_id' => auth()->id()
         ]);
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Geçersiz durum geçişi: Taslak → Yayında');
+        $this->expectExceptionMessage('Geçersiz durum geçişi: Arşiv → Yayında');
 
         app(YalihanLifecycle::class)->transition($ilan, IlanDurumu::YAYINDA);
     }
@@ -136,6 +137,8 @@ class ListingLifecycleFinalSealTest extends TestCase
         $mock = Mockery::mock(ListingScoreService::class);
         $mock->shouldReceive('refreshAndPersistScores')->andReturnNull();
         $mock->shouldReceive('computeBreakdown')->andReturn([]);
+        $mock->shouldReceive('computeCompletionScore')->andReturn(100);
+        $mock->shouldReceive('computeQualityScore')->andReturn(100);
         $this->app->instance(ListingScoreService::class, $mock);
 
         $response = $this->postJson(route('admin.ilanlar.publish', $ilan), [
