@@ -30,11 +30,20 @@ class WizardStep1TemplateDataTest extends TestCase
     {
         parent::setUp();
 
+        // Disable all admin middleware for testing
+        $this->withoutMiddleware(\App\Http\Middleware\RoleMiddleware::class);
+        $this->withoutMiddleware(\App\Http\Middleware\SAB\GlobalWriteGuard::class);
+        $this->withoutMiddleware(\App\Http\Middleware\TenantResolver::class);
+        $this->withoutMiddleware(\App\Http\Middleware\AdminMiddleware::class);
+        $this->withoutMiddleware(\App\Http\Middleware\SAB\ComplianceMiddleware::class);
+
         $this->admin = User::factory()->create([
             'email' => 'test@yalihanai.com',
             'role_id' => 1,
             'aktiflik_durumu' => true,
         ]);
+
+        $this->actingAs($this->admin);
 
         // Ana kategoriler (seviye=0, parent_id=null)
         $this->konutKategori = IlanKategori::create([
@@ -101,7 +110,7 @@ class WizardStep1TemplateDataTest extends TestCase
     public function it_loads_subcategories_for_konut_category()
     {
         $this->withoutExceptionHandling();
-        $response = $this->getJson("/api/v1/categories/sub/{$this->konutKategori->id}");
+        $response = $this->getJson("/api/v1/sub/{$this->konutKategori->id}");
 
         $response->assertOk();
         $response->assertJson(['success' => true]);
@@ -118,7 +127,7 @@ class WizardStep1TemplateDataTest extends TestCase
     /** @test */
     public function it_loads_subcategories_for_arsa_category()
     {
-        $response = $this->getJson("/api/v1/categories/sub/{$this->arsaKategori->id}");
+        $response = $this->getJson("/api/v1/sub/{$this->arsaKategori->id}");
 
         $response->assertOk();
         $response->assertJson(['success' => true]);
@@ -135,7 +144,7 @@ class WizardStep1TemplateDataTest extends TestCase
     public function it_loads_publication_types_for_konut_category()
     {
         $this->withoutExceptionHandling();
-        $response = $this->getJson("/api/v1/categories/publication-types/{$this->konutKategori->id}");
+        $response = $this->getJson("/api/v1/admin/categories/publication-types/{$this->konutKategori->id}");
 
         $response->assertOk();
         $response->assertJson(['success' => true]);
@@ -153,7 +162,7 @@ class WizardStep1TemplateDataTest extends TestCase
     /** @test */
     public function it_loads_publication_types_for_arsa_category()
     {
-        $response = $this->getJson("/api/v1/categories/publication-types/{$this->arsaKategori->id}");
+        $response = $this->getJson("/api/v1/admin/categories/publication-types/{$this->arsaKategori->id}");
 
         $response->assertOk();
         $response->assertJson(['success' => true]);
