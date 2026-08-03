@@ -126,7 +126,7 @@ class PropertyEventApiController extends Controller
             ];
 
             $reservation = $this->reservationService->createReservation(
-                $validated['ilan_id'],
+                (int) $validated['ilan_id'],
                 $validated['check_in'],
                 $validated['check_out'],
                 $guestData,
