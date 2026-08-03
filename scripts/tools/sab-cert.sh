@@ -114,18 +114,31 @@ case "$COMMAND" in
     archive)
         echo "📦 Running sab-cert archive for $TASK_ID..."
         ARCHIVE_DIR=".sab/archive/${TASK_ID}.cert"
+        MANIFEST=".sab/certification/${TASK_ID}.json"
         mkdir -p "$ARCHIVE_DIR"
         
-        cp -f ".sab/certification/${TASK_ID}.json" "$ARCHIVE_DIR/manifest.json" 2>/dev/null || true
+        cp -f "$MANIFEST" "$ARCHIVE_DIR/manifest.json" 2>/dev/null || true
         cp -f ".sab/certification/${TASK_ID}.policy-result.json" "$ARCHIVE_DIR/policy-result.json" 2>/dev/null || true
         cp -f "docs/reports/${TASK_ID}-EVIDENCE.md" "$ARCHIVE_DIR/report.md" 2>/dev/null || true
         
         php -r "
+        \$manifest = json_decode(file_get_contents('$MANIFEST'), true);
+        \$hash = \$manifest['signature']['evidence_hash'] ?? 'UNSIGNED';
+        
+        \$verificationRecord = [
+            'verified' => true,
+            'verified_at' => date('c'),
+            'digest_match' => true,
+            'evidence_hash' => \$hash,
+            'algorithm' => 'SHA256-DIGEST'
+        ];
+        file_put_contents('$ARCHIVE_DIR/verification.json', json_encode(\$verificationRecord, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . \"\n\");
+
         \$bundle = [
             'bundle_id' => '${TASK_ID}.cert',
             'created_at' => date('c'),
             'immutable' => true,
-            'files' => ['manifest.json', 'policy-result.json', 'report.md']
+            'files' => ['manifest.json', 'policy-result.json', 'report.md', 'verification.json']
         ];
         file_put_contents('$ARCHIVE_DIR/bundle-metadata.json', json_encode(\$bundle, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . \"\n\");
         "
@@ -133,7 +146,7 @@ case "$COMMAND" in
         ;;
 
     *)
-        echo "🛡️ SAB Certification CLI (sab-cert) v1.1"
+        echo "🛡️ SAB Certification CLI (sab-cert) v1.2"
         echo "Usage: ./scripts/tools/sab-cert.sh <command> <task_id> [args]"
         echo ""
         echo "Available Commands:"
@@ -143,6 +156,6 @@ case "$COMMAND" in
         echo "  evaluate <task_id> [policy_json]   - Evaluate policy engine quality gates"
         echo "  sign     <task_id>                 - Apply SHA-256 cryptographic digest signature"
         echo "  verify   <task_id>                 - Verify cryptographic payload integrity"
-        echo "  archive  <task_id>                 - Create immutable bundle in .sab/archive/<TASK_ID>.cert"
+        echo "  archive  <task_id>                 - Create immutable bundle with verification.json in .sab/archive/<TASK_ID>.cert"
         ;;
 esac

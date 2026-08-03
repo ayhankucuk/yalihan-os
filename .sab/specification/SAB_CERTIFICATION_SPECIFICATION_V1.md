@@ -22,6 +22,8 @@ The certification architecture decouples **Structural Validation (Schema)** from
     certification.policy.json               # Quality Gate Business Rules (0 Regressions, PASS)
   certification/
     <TASK_ID>.json                          # Machine-Readable Output Manifest
+  archive/
+    <TASK_ID>.cert/                         # Immutable Bundle Archive
 docs/
   reports/
     <TASK_ID>-EVIDENCE.md                   # 10-Section Human-Readable Evidence Report
@@ -61,69 +63,54 @@ All certification evidence documents stored in `docs/reports/` MUST strictly fol
 
 ---
 
-## 🤖 3. Machine-Readable JSON Manifest Schema
+## 🤖 3. Machine-Readable JSON Manifest Schema & Source Mapping
 
-Every certified task must produce a JSON manifest placed in `.sab/certification/<TASK_ID>.json` validated against `.sab/schema/certification.schema.json`:
+Every certified task must produce a JSON manifest placed in `.sab/certification/<TASK_ID>.json` compiled from empirical runtime sources.
 
-```json
-{
-  "schema_version": "1.0",
-  "specification": "SAB Engineering Certification Specification v1.0",
-  "task": {
-    "id": "TS-01-F2",
-    "title": "STRING",
-    "phase": "STRING"
-  },
-  "verification": {
-    "total_tests": INTEGER,
-    "assertions": INTEGER,
-    "failures": INTEGER,
-    "errors": INTEGER,
-    "skipped": INTEGER,
-    "risky": INTEGER,
-    "incomplete": INTEGER,
-    "target_suite_pass_rate": "STRING",
-    "workspace_timeline_pass_rate": "STRING",
-    "new_regressions": INTEGER
-  },
-  "baseline": {
-    "exempted_failures": INTEGER,
-    "exempted_errors": INTEGER,
-    "known_debt_areas": ["ARRAY_OF_STRINGS"]
-  },
-  "audit": {
-    "repository": "STRING",
-    "branch": "STRING",
-    "head_sha": "STRING",
-    "preflight_status": "PASS",
-    "preflight_timestamp": "ISO8601_STRING",
-    "phpunit_harness": "STRING",
-    "evidence_markdown": "STRING"
-  },
-  "environment": {
-    "php_version": "STRING",
-    "laravel_version": "STRING",
-    "database_driver": "STRING",
-    "runner": "STRING"
-  },
-  "approval": {
-    "status": "APPROVED_FOR_MERGE | HOLD | REJECTED",
-    "certification_level": "CERTIFIED_WITHIN_EXISTING_BASELINE | FULL_PASS",
-    "reviewer": "STRING",
-    "approved_at": "ISO8601_STRING",
-    "approved_by": "SAAB (Strategic AI Architecture Board)",
-    "evidence_version": "STRING"
-  }
-}
+### 3.1 Empirical Source Mapping Table
+
+| Manifest Field | Empirical Source / Shell Command |
+|----------------|----------------------------------|
+| `audit.head_sha` | `git rev-parse HEAD` |
+| `audit.branch` | `git rev-parse --abbrev-ref HEAD` |
+| `audit.repository` | `git config --get remote.origin.url` |
+| `audit.preflight_status` | `./scripts/tools/antigravity-preflight.sh` exit code |
+| `environment.php_version` | `php -r "echo PHP_VERSION;"` |
+| `environment.runner` | `uname -s -m` |
+| `verification.total_tests` | PHPUnit CLI / log output parser |
+| `verification.assertions` | PHPUnit CLI / log output parser |
+| `approval.status` | Set explicitly via `sab-cert approve <TASK_ID>` |
+
+---
+
+## 🔐 3.2 Cryptographic Integrity Standards
+
+To preserve integrity without misleading cryptography terminology:
+
+1. **Local Development / Pilot (`SHA256-DIGEST`):** Computed SHA-256 digest over JSON payload to ensure untampered local state.
+2. **Internal CI (`HMAC-SHA256`):** Keyed hash using CI secret key (`SAB_SIGNING_SECRET`).
+3. **Release Gate (`Ed25519`):** Digital signature with asymmetric key pair.
+
+---
+
+## 📦 3.3 Certification Bundle Architecture
+
+`sab-cert archive <TASK_ID>` packages the certification into an immutable bundle directory `.sab/archive/<TASK_ID>.cert/`:
+
+```text
+.sab/archive/<TASK_ID>.cert/
+  ├── manifest.json         # SHA256-DIGEST signed manifest
+  ├── policy-result.json    # Quality gate policy engine evaluation result
+  ├── report.md             # 10-Section markdown evidence report
+  ├── verification.json     # Verification audit proof file
+  └── bundle-metadata.json  # Archive metadata & timestamps
 ```
 
 ---
 
-## 🚦 4. Decoupled Quality Gate & Policy Engine Rules
+## 🚦 4. Quality Gate Enforcement Rules
 
-Structural data types are validated by `.sab/schema/certification.schema.json`. Business merge criteria are evaluated by `.sab/policy/certification.policy.json`:
-
-1. **Zero New Regressions:** Policy Engine verifies `verification.new_regressions === 0`.
-2. **Preflight Rule:** Policy Engine verifies `audit.preflight_status === "PASS"`.
-3. **Approval Status:** Policy Engine verifies `approval.status === "APPROVED_FOR_MERGE"`.
-4. **Traceability:** Every row in the Baseline Comparison table must reference its target test file path.
+1. **Zero New Regressions:** `verification.new_regressions` MUST equal `0`.
+2. **Preflight Rule:** `audit.preflight_status` MUST equal `"PASS"`.
+3. **Approval Rule:** `approval.status` MUST equal `"APPROVED_FOR_MERGE"`.
+4. **Schema & Policy Validation:** Manifest must pass `.sab/schema/certification.schema.json` and `.sab/policy/certification.policy.json`.
