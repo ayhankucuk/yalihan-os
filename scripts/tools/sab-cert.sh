@@ -33,6 +33,13 @@ case "$COMMAND" in
         "
         ;;
 
+    evaluate)
+        echo "🛡️ Running sab-cert evaluate for $TASK_ID..."
+        MANIFEST=".sab/certification/${TASK_ID}.json"
+        POLICY="${3:-.sab/policy/certification.policy.json}"
+        ./scripts/tools/sab-policy-evaluator.sh "$MANIFEST" "$POLICY"
+        ;;
+
     approve)
         echo "🟢 Running sab-cert approve for $TASK_ID..."
         MANIFEST=".sab/certification/${TASK_ID}.json"
@@ -49,13 +56,6 @@ case "$COMMAND" in
         file_put_contents('$MANIFEST', json_encode(\$m, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . \"\n\");
         echo \"✅ Governance approval applied (APPROVED_FOR_MERGE)\n\";
         "
-        ;;
-
-    evaluate)
-        echo "🛡️ Running sab-cert evaluate for $TASK_ID..."
-        MANIFEST=".sab/certification/${TASK_ID}.json"
-        POLICY="${3:-.sab/policy/certification.policy.json}"
-        ./scripts/tools/sab-policy-evaluator.sh "$MANIFEST" "$POLICY"
         ;;
 
     sign)
@@ -130,7 +130,8 @@ case "$COMMAND" in
             'verified_at' => date('c'),
             'digest_match' => true,
             'evidence_hash' => \$hash,
-            'algorithm' => 'SHA256-DIGEST'
+            'algorithm' => 'SHA256-DIGEST',
+            'note' => 'Snapshot verification record at archive time. Re-verify dynamically via sab-cert verify.'
         ];
         file_put_contents('$ARCHIVE_DIR/verification.json', json_encode(\$verificationRecord, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . \"\n\");
 
@@ -146,16 +147,19 @@ case "$COMMAND" in
         ;;
 
     *)
-        echo "🛡️ SAB Certification CLI (sab-cert) v1.2"
+        echo "🛡️ SAB Certification CLI (sab-cert) v1.3"
         echo "Usage: ./scripts/tools/sab-cert.sh <command> <task_id> [args]"
+        echo ""
+        echo "Canonical Governance Order:"
+        echo "  generate ➔ validate ➔ evaluate ➔ approve ➔ sign ➔ verify ➔ archive"
         echo ""
         echo "Available Commands:"
         echo "  generate <task_id> [title] [phase]  - Compile empirical manifest JSON from runtime"
-        echo "  validate <task_id>                 - Validate manifest JSON layout"
+        echo "  validate <task_id>                 - Validate manifest JSON schema layout"
+        echo "  evaluate <task_id> [policy_json]   - Evaluate declarative policy engine quality gates"
         echo "  approve  <task_id>                 - Apply Board Governance Approval"
-        echo "  evaluate <task_id> [policy_json]   - Evaluate policy engine quality gates"
         echo "  sign     <task_id>                 - Apply SHA-256 cryptographic digest signature"
-        echo "  verify   <task_id>                 - Verify cryptographic payload integrity"
-        echo "  archive  <task_id>                 - Create immutable bundle with verification.json in .sab/archive/<TASK_ID>.cert"
+        echo "  verify   <task_id>                 - Dynamically re-compute SHA-256 payload integrity"
+        echo "  archive  <task_id>                 - Create immutable bundle in .sab/archive/<TASK_ID>.cert"
         ;;
 esac

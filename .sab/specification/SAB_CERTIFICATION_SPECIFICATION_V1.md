@@ -29,6 +29,11 @@ docs/
     <TASK_ID>-EVIDENCE.md                   # 10-Section Human-Readable Evidence Report
 ```
 
+### Governance Certification Lifecycle:
+```text
+generate  ➔  validate  ➔  evaluate  ➔  approve  ➔  sign  ➔  verify  ➔  archive
+```
+
 ### Core Certification Levels:
 1. `FULL_PASS`: Zero failures, zero errors across 100% of repository tests.
 2. `CERTIFIED_WITHIN_EXISTING_BASELINE`: Zero target bug family failures, zero new regressions introduced, with pre-existing baseline technical debt documented and isolated in Section 1.1.
@@ -65,11 +70,11 @@ All certification evidence documents stored in `docs/reports/` MUST strictly fol
 
 ## 🤖 3. Machine-Readable JSON Manifest Schema & Source Mapping
 
-Every certified task must produce a JSON manifest placed in `.sab/certification/<TASK_ID>.json` compiled from empirical runtime sources.
+Every certified task must produce a JSON manifest placed in `.sab/certification/<TASK_ID>.json` compiled from ampirik (empirical) runtime sources.
 
-### 3.1 Empirical Source Mapping Table
+### 3.1 Ampirik (Empirical) Source Mapping Table
 
-| Manifest Field | Empirical Source / Shell Command |
+| Manifest Field | Ampirik Kaynak / Kabuk Komutu |
 |----------------|----------------------------------|
 | `audit.head_sha` | `git rev-parse HEAD` |
 | `audit.branch` | `git rev-parse --abbrev-ref HEAD` |
@@ -102,7 +107,7 @@ To preserve integrity without misleading cryptography terminology:
   ├── manifest.json         # SHA256-DIGEST signed manifest
   ├── policy-result.json    # Quality gate policy engine evaluation result
   ├── report.md             # 10-Section markdown evidence report
-  ├── verification.json     # Verification audit proof file
+  ├── verification.json     # Verification audit proof snapshot
   └── bundle-metadata.json  # Archive metadata & timestamps
 ```
 
@@ -110,7 +115,8 @@ To preserve integrity without misleading cryptography terminology:
 
 ## 🚦 4. Quality Gate Enforcement Rules
 
-1. **Zero New Regressions:** `verification.new_regressions` MUST equal `0`.
-2. **Preflight Rule:** `audit.preflight_status` MUST equal `"PASS"`.
-3. **Approval Rule:** `approval.status` MUST equal `"APPROVED_FOR_MERGE"`.
-4. **Schema & Policy Validation:** Manifest must pass `.sab/schema/certification.schema.json` and `.sab/policy/certification.policy.json`.
+1. **Governance Order:** `generate ➔ validate ➔ evaluate ➔ approve ➔ sign ➔ verify ➔ archive`.
+2. **Zero New Regressions:** `verification.new_regressions` MUST equal `0`.
+3. **Preflight Rule:** `audit.preflight_status` MUST equal `"PASS"`.
+4. **Approval Rule:** `approval.status` MUST equal `"APPROVED_FOR_MERGE"`.
+5. **Schema & Policy Validation:** Manifest must pass `.sab/schema/certification.schema.json` and `.sab/policy/certification.policy.json`.
