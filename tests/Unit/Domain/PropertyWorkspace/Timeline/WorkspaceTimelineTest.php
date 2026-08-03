@@ -479,10 +479,17 @@ class WorkspaceTimelineTest extends TestCase
     {
         $this->actingAs($this->user);
 
+        $secondIlan = Ilan::create([
+            'tenant_id' => $this->tenant->id,
+            'baslik' => 'Second Ilan for Timeline',
+            'yayin_durumu' => 'aktif',
+            'aktiflik_durumu' => 1,
+        ]);
+
         // Create another workspace for the same tenant
         $secondWorkspace = PropertyWorkspace::create([
             'tenant_id' => $this->tenant->id,
-            'ilan_id' => $this->ilan->id,
+            'ilan_id' => $secondIlan->id,
             'workspace_uuid' => (string) \Illuminate\Support\Str::uuid(),
             'intent' => 'create',
             'state' => PropertyWorkspaceAggregate::STATE_WORKSPACE_CREATED,
@@ -492,7 +499,7 @@ class WorkspaceTimelineTest extends TestCase
         $this->timeline->append($secondWorkspace->workspace_uuid, new WorkspaceInitiated(
             workspaceId: $secondWorkspace->workspace_uuid,
             tenantId: $this->tenant->id,
-            ilanId: $this->ilan->id,
+            ilanId: $secondIlan->id,
             intent: 'enhance'
         ));
 

@@ -49,6 +49,7 @@ class PropertyWorkspace extends Model
     protected $fillable = [
         'tenant_id',
         'property_id',
+        'ilan_id',
         'workspace_uuid',
         'intent',
         'template_id',
@@ -213,5 +214,21 @@ class PropertyWorkspace extends Model
     public function isArchived(): bool
     {
         return $this->state === PropertyWorkspaceAggregate::STATE_ARCHIVED;
+    }
+
+    /**
+     * Alias accessor: ilan_id maps to property_id column
+     */
+    public function getIlanIdAttribute(): ?int
+    {
+        return isset($this->attributes['property_id']) ? (int) $this->attributes['property_id'] : null;
+    }
+
+    /**
+     * Alias mutator: ilan_id maps to property_id column
+     */
+    public function setIlanIdAttribute(?int $value): void
+    {
+        $this->attributes['property_id'] = $value;
     }
 }
