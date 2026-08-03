@@ -16,16 +16,16 @@ All waves have been completed and verified against the canonical codebase with z
 
 ## 📈 Baseline Comparison (Before vs. After TS-01 F2)
 
-| Metric | Pre-TS-01 F2 Baseline | Post-TS-01 F2 In-Memory Suite | Net Delta / Impact | Status |
-|--------|------------------------|-------------------------------|--------------------|--------|
-| **Target TS-01 403 Errors** | 22 Failures | 0 Failures | **-22 (Resolved)** | ✅ CLOSED |
-| **Validation Bypasses** | 1 (withoutMiddleware) | 0 | **-1 (Resolved)** | ✅ CLOSED |
-| **Category Junction Mismatches**| 5 Failures | 0 Failures | **-5 (Resolved)** | ✅ CLOSED |
-| **Unit Tenant Data Alignment** | 4 Failures | 0 Failures | **-4 (Resolved)** | ✅ CLOSED |
-| **Domain Event Sourcing (`ilan_id`)**| 1 Failure | 0 Failures | **-1 (Resolved)** | ✅ CLOSED |
-| **Focused Target Suite** | 44 Tests | 46 Tests (inc. 2 verifications) | **+2 Verifications** | ✅ 46/46 PASS (100%) |
-| **WorkspaceTimeline Suite** | 1 Failure | 24 Tests | **0 Failures** | ✅ 24/24 PASS (100%) |
-| **New Regressions Introduced** | N/A | **0 New Regressions** | **0** | 🛡️ SIFIR REGRESYON |
+| Metric | Pre-TS-01 F2 Baseline | Post-TS-01 F2 In-Memory Suite | Net Delta / Impact | Evidence File / Target Suite | Status |
+|--------|------------------------|-------------------------------|--------------------|------------------------------|--------|
+| **Target TS-01 403 Errors** | 22 Failures | 0 Failures | **-22 (Resolved)** | `tests/Feature/Api/Mobile/ProfileTest.php`, `NotificationTest.php`, `SavedSearchTest.php`, `BulkListingAuthorityBridgeTest.php`, `AdvisorPhotoUploadTest.php` | ✅ CLOSED |
+| **Validation Bypasses** | 1 (withoutMiddleware) | 0 | **-1 (Resolved)** | `tests/Feature/Admin/DeepSeekSettingsTest.php` | ✅ CLOSED |
+| **Category Junction Mismatches**| 5 Failures | 0 Failures | **-5 (Resolved)** | `tests/Feature/ListingLifecycle/ListingLifecycleFinalSealTest.php` | ✅ CLOSED |
+| **Unit Tenant Data Alignment** | 4 Failures | 0 Failures | **-4 (Resolved)** | `tests/Unit/Models/UserTest.php`, `tests/Unit/Services/Matching/DemandMatchingEngineTest.php` | ✅ CLOSED |
+| **Domain Event Sourcing (`ilan_id`)**| 1 Failure | 0 Failures | **-1 (Resolved)** | `tests/Unit/Domain/PropertyWorkspace/Timeline/WorkspaceTimelineTest.php` | ✅ CLOSED |
+| **Focused Target Suite** | 44 Tests | 46 Tests (inc. 2 verifications) | **+2 Verifications** | 9 Target Test Files (Waves 1A–1D) | ✅ 46/46 PASS |
+| **WorkspaceTimeline Suite** | 1 Failure | 24 Tests | **0 Failures** | `tests/Unit/Domain/PropertyWorkspace/Timeline/WorkspaceTimelineTest.php` | ✅ 24/24 PASS |
+| **New Regressions Introduced** | N/A | **0 New Regressions** | **0** | Full In-Memory Repository Suite (2,368 Tests) | 🛡️ SIFIR REGRESYON |
 
 ---
 
@@ -111,5 +111,26 @@ Time:        10:59
 Peak Memory: ~380 MB
 ```
 
-- **Preflight Check:** `./scripts/tools/antigravity-preflight.sh` ➔ **%100 PASS**
+---
+
+## 🔐 Git Audit Trail & Remote Sync Verification
+
+```bash
+# Branch & Remote Alignment
+Branch: integration/era-v-phase2a-e01
+Remote: https://github.com/ayhankucuk/yalihan-os.git (origin/integration/era-v-phase2a-e01)
+Status: Your branch is up to date with 'origin/integration/era-v-phase2a-e01'.
+
+# Atomic Commit History Log
+b94f6c2 fix(workspace): add ilan_id fillable alias to PropertyWorkspace and record post-baseline certification evidence
+b3c44dc docs(ts-01): record F2 wave evidence
+ed010d0 test(matching): restore tenant lifecycle events in matching tests
+49fb544 test(listing): align lifecycle fixtures with category junction contract
+6bdca87 test(ai): restore real validation pipeline for DeepSeek settings
+d94eb94 test(tenant): add explicit tenant-aware authenticated test setup
+
+# Preflight Guard Verification
+./scripts/tools/antigravity-preflight.sh ➔ PASS (%100 Clean)
+```
+
 
