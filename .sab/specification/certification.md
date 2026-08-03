@@ -147,4 +147,21 @@ To transition from `Architecturally Ready for Pilot Adoption` to `Operationally 
 | **Bundle Format** | `1.0` | 🟢 Active | Portable `.sab/archive/<TASK_ID>.cert` bundle layout |
 | **`sab-cert` CLI SDK** | `1.4` | 🟢 Active | 7-command governance lifecycle CLI |
 
+---
+
+## 🧊 7. Architecture Freeze Policy & Semantic Versioning Rules
+
+### 7.1 Architecture Freeze Policy
+To prevent scope creep and ensure operational stability during the **Pilot Validation Campaign**:
+
+1. **Feature Freeze:** No new CLI subcommands, schema fields, or structural layers will be added until the completion of the 5-sprint pilot adoption phase.
+2. **Maintenance Only:** Modifications are restricted to bug fixes, performance optimizations, and documentation updates.
+3. **Operational Metrics Collection:** The system will focus exclusively on collecting empirical runtime SLA metrics and determinism proofs.
+
+### 7.2 Specification Versioning Governance
+- **Major Version (`X.0`):** Breaking specification, schema, or lifecycle protocol changes.
+- **Minor Version (`1.X`):** Backwards-compatible manifest field extensions or policy rule additions.
+- **Patch Version (`1.0.X`):** Bug fixes, script refactoring, or documentation enhancements.
+
+
 
