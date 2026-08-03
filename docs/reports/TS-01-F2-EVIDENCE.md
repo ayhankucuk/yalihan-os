@@ -122,6 +122,7 @@ Remote: https://github.com/ayhankucuk/yalihan-os.git (origin/integration/era-v-p
 Status: Your branch is up to date with 'origin/integration/era-v-phase2a-e01'.
 
 # Atomic Commit History Log
+9c5349d docs(ts-01): add file traceability column and git audit log verification to F2 evidence
 b94f6c2 fix(workspace): add ilan_id fillable alias to PropertyWorkspace and record post-baseline certification evidence
 b3c44dc docs(ts-01): record F2 wave evidence
 ed010d0 test(matching): restore tenant lifecycle events in matching tests
@@ -132,5 +133,18 @@ d94eb94 test(tenant): add explicit tenant-aware authenticated test setup
 # Preflight Guard Verification
 ./scripts/tools/antigravity-preflight.sh ➔ PASS (%100 Clean)
 ```
+
+---
+
+## 📌 Evidence Sources & Audit Metadata
+
+- **Primary Repository:** `yalihan-os` (`ayhankucuk/yalihan-os`)
+- **Target Branch:** `integration/era-v-phase2a-e01`
+- **Head Commit SHA:** `9c5349ddb8a3a2b7f5fdcb582e7d9a0ea3fc1196`
+- **Preflight Run Timestamp:** `2026-08-03 22:56:58 +0300`
+- **Audit Verification Command:** `./scripts/tools/antigravity-preflight.sh`
+- **Full In-Memory PHPUnit Harness:** `DB_CONNECTION=sqlite DB_DATABASE=:memory: CACHE_STORE=array php -d memory_limit=4G vendor/bin/phpunit`
+- **Canonical Evidence File Path:** `docs/reports/TS-01-F2-EVIDENCE.md`
+
 
 
