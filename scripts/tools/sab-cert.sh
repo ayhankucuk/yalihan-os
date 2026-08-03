@@ -137,6 +137,7 @@ case "$COMMAND" in
 
         \$bundle = [
             'bundle_id' => '${TASK_ID}.cert',
+            'bundle_format_version' => '1.0',
             'created_at' => date('c'),
             'immutable' => true,
             'files' => ['manifest.json', 'policy-result.json', 'report.md', 'verification.json', 'README.md']
@@ -144,13 +145,15 @@ case "$COMMAND" in
         file_put_contents('$ARCHIVE_DIR/bundle-metadata.json', json_encode(\$bundle, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . \"\n\");
 
         \$readme = \"# 🛡️ SAB Certification Bundle: ${TASK_ID}\n\n\" .
+                  \"**Bundle Format Version:** 1.0  \n\" .
+                  \"**Created:** \" . date('c') . \"  \n\n\" .
                   \"This directory is an immutable SAB certification bundle packaging the full evidence lifecycle for **${TASK_ID}**.\n\n\" .
                   \"## 📄 Bundle Files\n\" .
                   \"- \`manifest.json\`: Machine-readable empirical runtime evidence and cryptographic signature.\n\" .
                   \"- \`policy-result.json\`: Quality gate policy engine rule evaluation results.\n\" .
                   \"- \`report.md\`: Canonical 10-section human-readable engineering evidence document.\n\" .
                   \"- \`verification.json\`: Archive-time verification proof snapshot.\n\" .
-                  \"- \`bundle-metadata.json\`: Archive bundle metadata and timestamp.\n\n\" .
+                  \"- \`bundle-metadata.json\`: Archive bundle metadata, format version (1.0) and timestamp.\n\n\" .
                   \"## 🔍 Integrity Verification\n\" .
                   \"To dynamically re-compute and verify the cryptographic payload integrity:\n\" .
                   \"\`\`\`bash\n./scripts/tools/sab-cert.sh verify ${TASK_ID}\n\`\`\`\n\";
@@ -173,6 +176,6 @@ case "$COMMAND" in
         echo "  approve  <task_id>                 - Apply Board Governance Approval"
         echo "  sign     <task_id>                 - Apply SHA-256 cryptographic digest signature"
         echo "  verify   <task_id>                 - Dynamically re-compute SHA-256 payload integrity"
-        echo "  archive  <task_id>                 - Create immutable bundle with README.md in .sab/archive/<TASK_ID>.cert"
+        echo "  archive  <task_id>                 - Create immutable bundle with bundle_format_version in .sab/archive/<TASK_ID>.cert"
         ;;
 esac

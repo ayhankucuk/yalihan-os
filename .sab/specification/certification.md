@@ -132,4 +132,19 @@ To transition from `Architecturally Ready for Pilot Adoption` to `Operationally 
 3. **100% Deterministic Compilation:** Produce identical manifest hashes from identical clean workspace states.
 4. **Automated CI Runner Validation:** Verify end-to-end execution in GitHub Actions CI runner environment.
 5. **Negative Integrity Verification:** Confirm that tampered manifests trigger `exit code 2` (REJECTED) during `sab-cert verify`.
+6. **Operational SLAs:**
+   - Manifest Compilation Duration: `< 30 seconds`
+   - Verification & Policy Evaluation Duration: `< 5 seconds`
+
+---
+
+## 🎛️ 6. System Compatibility Matrix
+
+| Component | Standard Version | Status | Backwards Compatibility Contract |
+|-----------|------------------|--------|----------------------------------|
+| **Manifest Schema** | `1.0` | 🟢 Active | Strict schema validation against `certification.schema.json` |
+| **Policy Engine** | `1.0` | 🟢 Active | Declarative JSON rule evaluation via `certification.policy.json` |
+| **Bundle Format** | `1.0` | 🟢 Active | Portable `.sab/archive/<TASK_ID>.cert` bundle layout |
+| **`sab-cert` CLI SDK** | `1.4` | 🟢 Active | 7-command governance lifecycle CLI |
+
 
