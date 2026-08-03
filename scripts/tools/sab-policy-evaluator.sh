@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 # =========================================================================
-# 🛡️ SAB Policy Evaluator & Quality Gate CLI
-# Evaluates certification manifests and emits machine-readable evaluation results.
+# 🛡️ SAB Policy Evaluator & Multi-Gate Quality Engine
+# Evaluates certification manifests against declarative policy rules.
+# Produces structured multi-gate JSON result (regression, health, governance, merge).
 # =========================================================================
 
 set -euo pipefail
@@ -31,7 +32,7 @@ php -r "
 \$policy = json_decode(file_get_contents('$POLICY_FILE'), true);
 
 \$ruleResults = [];
-\$allPassed = true;
+\$gates = ['regression' => true, 'repository_health' => true, 'governance' => true];
 
 foreach (\$policy['rules'] as \$rule) {
     \$keys = explode('.', \$rule['field']);
@@ -49,13 +50,35 @@ foreach (\$policy['rules'] as \$rule) {
     }
 
     \$passed = false;
+    \$waived = false;
     if (\$rule['operator'] === 'EQUALS') {
         \$passed = (\$val === \$rule['expected_value']);
     }
 
-    if (!\$passed) {
-        \$allPassed = false;
+    // Check baseline waiver for waivable rules
+    if (!\$passed && (\$rule['waivable'] ?? false) && isset(\$policy['baseline_waiver'])) {
+        if (\$rule['id'] === 'RULE_ZERO_FAILURES') {
+            \$exempted = \$manifest['baseline']['exempted_failures'] ?? null;
+            if (\$exempted !== null && \$val === \$exempted) {
+                \$waived = true;
+                \$passed = true;
+            }
+        }
+        if (\$rule['id'] === 'RULE_ZERO_ERRORS') {
+            \$exempted = \$manifest['baseline']['exempted_errors'] ?? null;
+            if (\$exempted !== null && \$val === \$exempted) {
+                \$waived = true;
+                \$passed = true;
+            }
+        }
     }
+
+    \$gate = \$rule['gate'] ?? 'governance';
+    if (!\$passed) {
+        \$gates[\$gate] = false;
+    }
+
+    \$status = \$passed ? (\$waived ? 'WAIVED' : 'PASS') : 'FAIL';
 
     \$ruleResults[] = [
         'rule_id' => \$rule['id'],
@@ -63,38 +86,52 @@ foreach (\$policy['rules'] as \$rule) {
         'operator' => \$rule['operator'],
         'expected' => \$rule['expected_value'],
         'actual' => \$val,
-        'status' => \$passed ? 'PASS' : 'FAIL',
+        'gate' => \$gate,
+        'status' => \$status,
+        'waived' => \$waived,
         'description' => \$rule['description']
     ];
 }
 
-\$decision = \$allPassed ? 'READY_FOR_MERGE' : 'REJECTED';
+\$mergeGate = (\$gates['regression'] && \$gates['repository_health'] && \$gates['governance']);
+\$decision = \$mergeGate ? 'READY_FOR_MERGE' : 'HOLD';
 
 \$output = [
     'task_id' => '$TASK_ID',
     'decision' => \$decision,
     'evaluated_at' => date('c'),
     'policy_version' => \$policy['policy_version'] ?? '1.0',
+    'gates' => [
+        'regression_gate' => \$gates['regression'] ? 'PASS' : 'FAIL',
+        'repository_health_gate' => \$gates['repository_health'] ? 'PASS' : 'FAIL',
+        'governance_gate' => \$gates['governance'] ? 'PASS' : 'FAIL',
+        'merge_gate' => \$mergeGate ? 'PASS' : 'HOLD'
+    ],
     'rules_evaluated' => count(\$ruleResults),
-    'rules_passed' => count(array_filter(\$ruleResults, fn(\$r) => \$r['status'] === 'PASS')),
+    'rules_passed' => count(array_filter(\$ruleResults, fn(\$r) => \$r['status'] !== 'FAIL')),
     'rules' => \$ruleResults
 ];
 
 file_put_contents('$RESULT_FILE', json_encode(\$output, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . \"\n\");
 
 echo \"📋 Task ID:              $TASK_ID\n\";
-echo \"🟢 Quality Gate Result:  \" . \$decision . \"\n\";
-echo \"-------------------------------------------------------------------------\n\";
+echo \"=========================================================================\n\";
+echo \"  Regression Gate:        \" . \$output['gates']['regression_gate'] . \"\n\";
+echo \"  Repository Health Gate: \" . \$output['gates']['repository_health_gate'] . \"\n\";
+echo \"  Governance Gate:        \" . \$output['gates']['governance_gate'] . \"\n\";
+echo \"  ─────────────────────────────────────────────────────────────────────\n\";
+echo \"  Merge Gate:             \" . \$output['gates']['merge_gate'] . \"\n\";
+echo \"=========================================================================\n\";
 
 foreach (\$ruleResults as \$r) {
-    \$symbol = (\$r['status'] === 'PASS') ? '✅' : '❌';
+    \$symbol = (\$r['status'] === 'PASS') ? '✅' : ((\$r['status'] === 'WAIVED') ? '🟡' : '❌');
     echo \"\$symbol [\" . \$r['rule_id'] . \"] \" . \$r['description'] . \": \" . \$r['status'] . \" (Actual: \" . json_encode(\$r['actual']) . \")\n\";
 }
 
 echo \"=========================================================================\n\";
 echo \"📄 Policy Result JSON saved to: $RESULT_FILE\n\";
 
-if (!\$allPassed) {
+if (!\$mergeGate) {
     exit(2);
 }
 "

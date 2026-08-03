@@ -1,5 +1,5 @@
 {
-  "policy_version": "1.0",
+  "policy_version": "1.1",
   "policy_name": "SAB Quality Gate Merge Policy",
   "rules": [
     {
@@ -7,13 +7,33 @@
       "field": "verification.new_regressions",
       "operator": "EQUALS",
       "expected_value": 0,
+      "gate": "regression",
       "description": "Zero new test regressions allowed outside documented baseline debt."
+    },
+    {
+      "id": "RULE_ZERO_FAILURES",
+      "field": "verification.failures",
+      "operator": "EQUALS",
+      "expected_value": 0,
+      "gate": "repository_health",
+      "waivable": true,
+      "description": "Repository test failures must be zero or explicitly waived via baseline debt register."
+    },
+    {
+      "id": "RULE_ZERO_ERRORS",
+      "field": "verification.errors",
+      "operator": "EQUALS",
+      "expected_value": 0,
+      "gate": "repository_health",
+      "waivable": true,
+      "description": "Repository test errors must be zero or explicitly waived via baseline debt register."
     },
     {
       "id": "RULE_PREFLIGHT_PASS",
       "field": "audit.preflight_status",
       "operator": "EQUALS",
       "expected_value": "PASS",
+      "gate": "governance",
       "description": "Preflight golden rules guard check must be PASS."
     },
     {
@@ -21,7 +41,13 @@
       "field": "approval.status",
       "operator": "EQUALS",
       "expected_value": "APPROVED_FOR_MERGE",
+      "gate": "governance",
       "description": "Approval status must be APPROVED_FOR_MERGE."
     }
-  ]
+  ],
+  "baseline_waiver": {
+    "waiver_field": "baseline.exempted_failures",
+    "waiver_errors_field": "baseline.exempted_errors",
+    "description": "When failures/errors match the documented baseline exemptions exactly, the repository_health gate is satisfied via waiver."
+  }
 }

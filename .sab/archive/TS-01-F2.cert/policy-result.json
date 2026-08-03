@@ -1,10 +1,16 @@
 {
     "task_id": "TS-01-F2",
     "decision": "READY_FOR_MERGE",
-    "evaluated_at": "2026-08-03T20:51:28+00:00",
-    "policy_version": "1.0",
-    "rules_evaluated": 3,
-    "rules_passed": 3,
+    "evaluated_at": "2026-08-03T20:55:09+00:00",
+    "policy_version": "1.1",
+    "gates": {
+        "regression_gate": "PASS",
+        "repository_health_gate": "PASS",
+        "governance_gate": "PASS",
+        "merge_gate": "PASS"
+    },
+    "rules_evaluated": 5,
+    "rules_passed": 5,
     "rules": [
         {
             "rule_id": "RULE_ZERO_REGRESSIONS",
@@ -12,8 +18,32 @@
             "operator": "EQUALS",
             "expected": 0,
             "actual": 0,
+            "gate": "regression",
             "status": "PASS",
+            "waived": false,
             "description": "Zero new test regressions allowed outside documented baseline debt."
+        },
+        {
+            "rule_id": "RULE_ZERO_FAILURES",
+            "field": "verification.failures",
+            "operator": "EQUALS",
+            "expected": 0,
+            "actual": 49,
+            "gate": "repository_health",
+            "status": "WAIVED",
+            "waived": true,
+            "description": "Repository test failures must be zero or explicitly waived via baseline debt register."
+        },
+        {
+            "rule_id": "RULE_ZERO_ERRORS",
+            "field": "verification.errors",
+            "operator": "EQUALS",
+            "expected": 0,
+            "actual": 226,
+            "gate": "repository_health",
+            "status": "WAIVED",
+            "waived": true,
+            "description": "Repository test errors must be zero or explicitly waived via baseline debt register."
         },
         {
             "rule_id": "RULE_PREFLIGHT_PASS",
@@ -21,7 +51,9 @@
             "operator": "EQUALS",
             "expected": "PASS",
             "actual": "PASS",
+            "gate": "governance",
             "status": "PASS",
+            "waived": false,
             "description": "Preflight golden rules guard check must be PASS."
         },
         {
@@ -30,7 +62,9 @@
             "operator": "EQUALS",
             "expected": "APPROVED_FOR_MERGE",
             "actual": "APPROVED_FOR_MERGE",
+            "gate": "governance",
             "status": "PASS",
+            "waived": false,
             "description": "Approval status must be APPROVED_FOR_MERGE."
         }
     ]
