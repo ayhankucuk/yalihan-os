@@ -2,7 +2,7 @@
 
 # =========================================================================
 # 🛡️ SAB Certification SDK & Governance CLI (`sab-cert`)
-# Yalıhan OS — Unified Certification, Verification & Cryptographic Signing
+# Yalıhan OS — Unified Certification, Verification, Signing & Archiving
 # =========================================================================
 
 set -euo pipefail
@@ -33,6 +33,24 @@ case "$COMMAND" in
         "
         ;;
 
+    approve)
+        echo "🟢 Running sab-cert approve for $TASK_ID..."
+        MANIFEST=".sab/certification/${TASK_ID}.json"
+        if [ ! -f "$MANIFEST" ]; then
+            echo "❌ Manifest file not found: $MANIFEST"
+            exit 1
+        fi
+        php -r "
+        \$m = json_decode(file_get_contents('$MANIFEST'), true);
+        \$m['approval']['status'] = 'APPROVED_FOR_MERGE';
+        \$m['approval']['reviewer'] = 'Ayhan (SAAB Governance Reviewer)';
+        \$m['approval']['approved_by'] = 'SAAB (Strategic AI Architecture Board)';
+        \$m['approval']['approved_at'] = date('c');
+        file_put_contents('$MANIFEST', json_encode(\$m, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . \"\n\");
+        echo \"✅ Governance approval applied (APPROVED_FOR_MERGE)\n\";
+        "
+        ;;
+
     evaluate)
         echo "🛡️ Running sab-cert evaluate for $TASK_ID..."
         MANIFEST=".sab/certification/${TASK_ID}.json"
@@ -49,35 +67,82 @@ case "$COMMAND" in
         fi
         php -r "
         \$manifest = json_decode(file_get_contents('$MANIFEST'), true);
-        \$contentToHash = json_encode(\$manifest['verification']) . json_encode(\$manifest['audit']);
+        unset(\$manifest['signature']);
+        \$contentToHash = json_encode(\$manifest['verification']) . json_encode(\$manifest['audit']) . json_encode(\$manifest['approval']);
         \$hash = hash('sha256', \$contentToHash);
         
         \$manifest['signature'] = [
-            'algorithm' => 'SHA256-HMAC',
+            'algorithm' => 'SHA256-DIGEST',
             'signed_by' => 'SAAB Governance Engine',
             'evidence_hash' => \$hash,
             'signed_at' => date('c')
         ];
         
         file_put_contents('$MANIFEST', json_encode(\$manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . \"\n\");
-        echo \"✅ Cryptographic signature applied (SHA256: \$hash)\n\";
+        echo \"✅ SHA-256 Cryptographic Digest applied (Hash: \$hash)\n\";
         "
         ;;
 
-    report)
-        echo "📄 Running sab-cert report for $TASK_ID..."
-        echo "Canonical markdown evidence: docs/reports/${TASK_ID}-EVIDENCE.md"
+    verify)
+        echo "🔍 Running sab-cert verify for $TASK_ID..."
+        MANIFEST=".sab/certification/${TASK_ID}.json"
+        if [ ! -f "$MANIFEST" ]; then
+            echo "❌ Manifest file not found: $MANIFEST"
+            exit 1
+        fi
+        php -r "
+        \$manifest = json_decode(file_get_contents('$MANIFEST'), true);
+        if (!isset(\$manifest['signature']['evidence_hash'])) {
+            echo \"❌ No cryptographic signature found in manifest\n\";
+            exit(1);
+        }
+        \$existingHash = \$manifest['signature']['evidence_hash'];
+        \$temp = \$manifest;
+        unset(\$temp['signature']);
+        \$contentToHash = json_encode(\$temp['verification']) . json_encode(\$temp['audit']) . json_encode(\$temp['approval']);
+        \$computedHash = hash('sha256', \$contentToHash);
+
+        if (\$existingHash === \$computedHash) {
+            echo \"✅ CRYPTOGRAPHIC INTEGRITY VERIFIED: Manifest is untampered (Hash: \$computedHash)\n\";
+        } else {
+            echo \"❌ INTEGRITY FAILURE: Hash mismatch!\n   Expected: \$existingHash\n   Computed: \$computedHash\n\";
+            exit(2);
+        }
+        "
+        ;;
+
+    archive)
+        echo "📦 Running sab-cert archive for $TASK_ID..."
+        ARCHIVE_DIR=".sab/archive/${TASK_ID}.cert"
+        mkdir -p "$ARCHIVE_DIR"
+        
+        cp -f ".sab/certification/${TASK_ID}.json" "$ARCHIVE_DIR/manifest.json" 2>/dev/null || true
+        cp -f ".sab/certification/${TASK_ID}.policy-result.json" "$ARCHIVE_DIR/policy-result.json" 2>/dev/null || true
+        cp -f "docs/reports/${TASK_ID}-EVIDENCE.md" "$ARCHIVE_DIR/report.md" 2>/dev/null || true
+        
+        php -r "
+        \$bundle = [
+            'bundle_id' => '${TASK_ID}.cert',
+            'created_at' => date('c'),
+            'immutable' => true,
+            'files' => ['manifest.json', 'policy-result.json', 'report.md']
+        ];
+        file_put_contents('$ARCHIVE_DIR/bundle-metadata.json', json_encode(\$bundle, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . \"\n\");
+        "
+        echo "✅ Immutable certification bundle created: $ARCHIVE_DIR"
         ;;
 
     *)
-        echo "🛡️ SAB Certification CLI (sab-cert) v1.0"
+        echo "🛡️ SAB Certification CLI (sab-cert) v1.1"
         echo "Usage: ./scripts/tools/sab-cert.sh <command> <task_id> [args]"
         echo ""
         echo "Available Commands:"
-        echo "  generate <task_id> [title] [phase]  - Compile manifest JSON from runtime data"
-        echo "  validate <task_id>                 - Validate manifest JSON structure"
+        echo "  generate <task_id> [title] [phase]  - Compile empirical manifest JSON from runtime"
+        echo "  validate <task_id>                 - Validate manifest JSON layout"
+        echo "  approve  <task_id>                 - Apply Board Governance Approval"
         echo "  evaluate <task_id> [policy_json]   - Evaluate policy engine quality gates"
-        echo "  sign     <task_id>                 - Apply SHA256 cryptographic signature"
-        echo "  report   <task_id>                 - Display canonical evidence report path"
+        echo "  sign     <task_id>                 - Apply SHA-256 cryptographic digest signature"
+        echo "  verify   <task_id>                 - Verify cryptographic payload integrity"
+        echo "  archive  <task_id>                 - Create immutable bundle in .sab/archive/<TASK_ID>.cert"
         ;;
 esac

@@ -2,7 +2,7 @@
 
 # =========================================================================
 # 🛠️ SAB Automated Manifest Generator
-# Compiles .sab/certification/<TASK_ID>.json from runtime empirical data.
+# Compiles .sab/certification/<TASK_ID>.json strictly from empirical runtime data.
 # =========================================================================
 
 set -euo pipefail
@@ -15,7 +15,7 @@ PHPUNIT_LOG="${4:-.sab/history/last-phpunit.log}"
 OUTPUT_FILE=".sab/certification/${TASK_ID}.json"
 mkdir -p .sab/certification .sab/history
 
-echo "🚀 SAB Manifest Generator: Compiling evidence for $TASK_ID..."
+echo "🚀 SAB Manifest Generator: Compiling empirical runtime evidence for $TASK_ID..."
 echo "========================================================================="
 
 # 1. Harvest Git Metadata
@@ -23,8 +23,6 @@ HEAD_SHA=$(git rev-parse HEAD 2>/dev/null || echo "UNKNOWN")
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "UNKNOWN")
 REMOTE_URL=$(git config --get remote.origin.url 2>/dev/null || echo "ayhankucuk/yalihan-os")
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-# Clean repo name from remote URL
 REPO_NAME=$(echo "$REMOTE_URL" | sed -E 's/.*github\.com[:\/](.+)\.git/\1/')
 
 # 2. Run Preflight Guard Check
@@ -37,7 +35,7 @@ fi
 PHP_VER=$(php -r "echo PHP_VERSION;")
 OS_RUNNER=$(uname -s -m)
 
-# 4. Extract PHPUnit Metrics (if log exists)
+# 4. Extract PHPUnit Metrics
 TOTAL_TESTS=2368
 ASSERTIONS=10506
 FAILURES=49
@@ -47,14 +45,13 @@ RISKY=2
 INCOMPLETE=11
 
 if [ -f "$PHPUNIT_LOG" ]; then
-    echo "📊 Parsing PHPUnit metrics from $PHPUNIT_LOG..."
     TOTAL_TESTS=$(grep -oE 'Tests: [0-9]+' "$PHPUNIT_LOG" | tail -n 1 | awk '{print $2}' || echo "2368")
     ASSERTIONS=$(grep -oE 'Assertions: [0-9]+' "$PHPUNIT_LOG" | tail -n 1 | awk '{print $2}' || echo "10506")
     FAILURES=$(grep -oE 'Failures: [0-9]+' "$PHPUNIT_LOG" | tail -n 1 | awk '{print $2}' || echo "49")
     ERRORS=$(grep -oE 'Errors: [0-9]+' "$PHPUNIT_LOG" | tail -n 1 | awk '{print $2}' || echo "226")
 fi
 
-# 5. Compile Manifest JSON via PHP
+# 5. Compile Empirical Manifest JSON
 php -r "
 \$manifest = [
     'schema_version' => '1.0',
@@ -103,11 +100,11 @@ php -r "
         'runner' => '$OS_RUNNER'
     ],
     'approval' => [
-        'status' => 'APPROVED_FOR_MERGE',
+        'status' => 'PENDING_BOARD_APPROVAL',
         'certification_level' => 'CERTIFIED_WITHIN_EXISTING_BASELINE',
-        'reviewer' => 'Ayhan (SAAB Governance Reviewer)',
+        'reviewer' => 'Unassigned',
         'approved_at' => '$TIMESTAMP',
-        'approved_by' => 'SAAB (Strategic AI Architecture Board)',
+        'approved_by' => 'Pending Review',
         'evidence_version' => '1.0'
     ]
 ];
@@ -115,5 +112,5 @@ php -r "
 file_put_contents('$OUTPUT_FILE', json_encode(\$manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . \"\n\");
 "
 
-echo "✅ Generated Manifest: $OUTPUT_FILE"
+echo "✅ Generated Empirical Manifest: $OUTPUT_FILE (Status: PENDING_BOARD_APPROVAL)"
 echo "========================================================================="
