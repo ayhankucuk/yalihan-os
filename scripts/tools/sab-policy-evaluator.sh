@@ -34,6 +34,41 @@ php -r "
 \$ruleResults = [];
 \$gates = ['regression' => true, 'repository_health' => true, 'governance' => true];
 
+// Pre-compute waiver eligibility: expiry + fingerprint
+\$waiverConfig = \$policy['baseline_waiver'] ?? [];
+\$waiverExpired = false;
+\$waiverFingerprintMismatch = false;
+\$waiverBlockReason = null;
+
+// Check waiver expiry
+if (\$waiverConfig['enforce_expiry'] ?? false) {
+    \$expiresAt = \$manifest['baseline']['expires_at'] ?? null;
+    if (\$expiresAt !== null) {
+        \$expiryDate = strtotime(\$expiresAt);
+        if (\$expiryDate !== false && \$expiryDate < time()) {
+            \$waiverExpired = true;
+            \$waiverBlockReason = 'WAIVER_EXPIRED (expires_at: ' . \$expiresAt . ')';
+        }
+    }
+}
+
+// Check waiver fingerprint
+if (\$waiverConfig['enforce_fingerprint'] ?? false) {
+    \$storedFingerprint = \$manifest['baseline']['fingerprint_hash'] ?? null;
+    if (\$storedFingerprint !== null) {
+        // Recompute fingerprint from known_debt_areas
+        \$debtAreas = \$manifest['baseline']['known_debt_areas'] ?? [];
+        sort(\$debtAreas);
+        \$currentFingerprint = hash('sha256', implode('|', \$debtAreas));
+        if (\$storedFingerprint !== \$currentFingerprint) {
+            \$waiverFingerprintMismatch = true;
+            \$waiverBlockReason = 'FINGERPRINT_MISMATCH (stored vs computed debt areas differ)';
+        }
+    }
+}
+
+\$waiverBlocked = \$waiverExpired || \$waiverFingerprintMismatch;
+
 foreach (\$policy['rules'] as \$rule) {
     \$keys = explode('.', \$rule['field']);
     \$current = \$manifest;
@@ -51,24 +86,30 @@ foreach (\$policy['rules'] as \$rule) {
 
     \$passed = false;
     \$waived = false;
+    \$statusOverride = null;
     if (\$rule['operator'] === 'EQUALS') {
         \$passed = (\$val === \$rule['expected_value']);
     }
 
     // Check baseline waiver for waivable rules
-    if (!\$passed && (\$rule['waivable'] ?? false) && isset(\$policy['baseline_waiver'])) {
-        if (\$rule['id'] === 'RULE_ZERO_FAILURES') {
-            \$exempted = \$manifest['baseline']['exempted_failures'] ?? null;
-            if (\$exempted !== null && \$val === \$exempted) {
-                \$waived = true;
-                \$passed = true;
+    if (!\$passed && (\$rule['waivable'] ?? false) && !empty(\$waiverConfig)) {
+        if (\$waiverBlocked) {
+            // Waiver exists but is blocked (expired or fingerprint mismatch)
+            \$statusOverride = \$waiverExpired ? 'EXPIRED' : 'FINGERPRINT_MISMATCH';
+        } else {
+            if (\$rule['id'] === 'RULE_ZERO_FAILURES') {
+                \$exempted = \$manifest['baseline']['exempted_failures'] ?? null;
+                if (\$exempted !== null && \$val === \$exempted) {
+                    \$waived = true;
+                    \$passed = true;
+                }
             }
-        }
-        if (\$rule['id'] === 'RULE_ZERO_ERRORS') {
-            \$exempted = \$manifest['baseline']['exempted_errors'] ?? null;
-            if (\$exempted !== null && \$val === \$exempted) {
-                \$waived = true;
-                \$passed = true;
+            if (\$rule['id'] === 'RULE_ZERO_ERRORS') {
+                \$exempted = \$manifest['baseline']['exempted_errors'] ?? null;
+                if (\$exempted !== null && \$val === \$exempted) {
+                    \$waived = true;
+                    \$passed = true;
+                }
             }
         }
     }
@@ -78,7 +119,7 @@ foreach (\$policy['rules'] as \$rule) {
         \$gates[\$gate] = false;
     }
 
-    \$status = \$passed ? (\$waived ? 'WAIVED' : 'PASS') : 'FAIL';
+    \$status = \$statusOverride ?? (\$passed ? (\$waived ? 'WAIVED' : 'PASS') : 'FAIL');
 
     \$ruleResults[] = [
         'rule_id' => \$rule['id'],
@@ -89,6 +130,7 @@ foreach (\$policy['rules'] as \$rule) {
         'gate' => \$gate,
         'status' => \$status,
         'waived' => \$waived,
+        'waiver_block_reason' => (\$statusOverride !== null) ? \$waiverBlockReason : null,
         'description' => \$rule['description']
     ];
 }
@@ -124,8 +166,15 @@ echo \"  Merge Gate:             \" . \$output['gates']['merge_gate'] . \"\n\";
 echo \"=========================================================================\n\";
 
 foreach (\$ruleResults as \$r) {
-    \$symbol = (\$r['status'] === 'PASS') ? '✅' : ((\$r['status'] === 'WAIVED') ? '🟡' : '❌');
-    echo \"\$symbol [\" . \$r['rule_id'] . \"] \" . \$r['description'] . \": \" . \$r['status'] . \" (Actual: \" . json_encode(\$r['actual']) . \")\n\";
+    \$symbol = match(\$r['status']) {
+        'PASS' => '✅',
+        'WAIVED' => '🟡',
+        'EXPIRED' => '⏰',
+        'FINGERPRINT_MISMATCH' => '🔴',
+        default => '❌'
+    };
+    \$extra = (\$r['waiver_block_reason'] ?? null) ? ' [' . \$r['waiver_block_reason'] . ']' : '';
+    echo \"\$symbol [\" . \$r['rule_id'] . \"] \" . \$r['description'] . \": \" . \$r['status'] . \" (Actual: \" . json_encode(\$r['actual']) . \")\" . \$extra . \"\n\";
 }
 
 echo \"=========================================================================\n\";

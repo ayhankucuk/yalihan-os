@@ -51,8 +51,37 @@ if [ -f "$PHPUNIT_LOG" ]; then
     ERRORS=$(grep -oE 'Errors: [0-9]+' "$PHPUNIT_LOG" | tail -n 1 | awk '{print $2}' || echo "226")
 fi
 
-# 5. Compile Empirical Manifest JSON
+# 5. Compute Baseline Fingerprint Hash
+# Extracts failing test class names from PHPUnit log, sorts and hashes them.
+# If no log, falls back to known_debt_areas as the fingerprint source.
+BASELINE_FINGERPRINT=$(php -r "
+\$logFile = '$PHPUNIT_LOG';
+\$lines = [];
+if (file_exists(\$logFile)) {
+    \$content = file_get_contents(\$logFile);
+    // Extract test class::method from 'FAIL' and 'ERROR' lines
+    preg_match_all('/^\\d+\\)\\s+(\\S+::\\S+)/m', \$content, \$matches);
+    if (!empty(\$matches[1])) {
+        \$lines = \$matches[1];
+    }
+}
+if (empty(\$lines)) {
+    // Fallback to known debt areas as fingerprint source
+    \$lines = [
+        'Owner Valuation Widget',
+        'Smart Provider Selection',
+        'Rental & iCal Sync',
+        'Performance N+1',
+        'Wizard Step 1 Template Data'
+    ];
+}
+sort(\$lines);
+echo hash('sha256', implode('|', \$lines));
+")
+
+# 6. Compile Empirical Manifest JSON
 php -r "
+\$baselineFingerprint = '$BASELINE_FINGERPRINT';
 \$manifest = [
     'schema_version' => '1.0',
     'specification' => 'SAB Engineering Certification Specification v1.0',
@@ -82,7 +111,10 @@ php -r "
             'Rental & iCal Sync',
             'Performance N+1',
             'Wizard Step 1 Template Data'
-        ]
+        ],
+        'expires_at' => date('Y-m-d', strtotime('+30 days')),
+        'max_age_days' => 30,
+        'fingerprint_hash' => \$baselineFingerprint
     ],
     'audit' => [
         'repository' => '$REPO_NAME',

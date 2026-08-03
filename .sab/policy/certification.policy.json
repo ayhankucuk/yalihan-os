@@ -48,6 +48,10 @@
   "baseline_waiver": {
     "waiver_field": "baseline.exempted_failures",
     "waiver_errors_field": "baseline.exempted_errors",
-    "description": "When failures/errors match the documented baseline exemptions exactly, the repository_health gate is satisfied via waiver."
+    "enforce_expiry": true,
+    "expiry_field": "baseline.expires_at",
+    "enforce_fingerprint": true,
+    "fingerprint_field": "baseline.fingerprint_hash",
+    "description": "When failures/errors match the documented baseline exemptions exactly, the repository_health gate is satisfied via waiver. Waiver must not be expired and fingerprint must match current test failure set."
   }
 }
