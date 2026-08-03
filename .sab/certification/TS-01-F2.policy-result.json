@@ -1,0 +1,37 @@
+{
+    "task_id": "TS-01-F2",
+    "decision": "READY_FOR_MERGE",
+    "evaluated_at": "2026-08-03T20:05:10+00:00",
+    "policy_version": "1.0",
+    "rules_evaluated": 3,
+    "rules_passed": 3,
+    "rules": [
+        {
+            "rule_id": "RULE_ZERO_REGRESSIONS",
+            "field": "verification.new_regressions",
+            "operator": "EQUALS",
+            "expected": 0,
+            "actual": 0,
+            "status": "PASS",
+            "description": "Zero new test regressions allowed outside documented baseline debt."
+        },
+        {
+            "rule_id": "RULE_PREFLIGHT_PASS",
+            "field": "audit.preflight_status",
+            "operator": "EQUALS",
+            "expected": "PASS",
+            "actual": "PASS",
+            "status": "PASS",
+            "description": "Preflight golden rules guard check must be PASS."
+        },
+        {
+            "rule_id": "RULE_APPROVAL_STATUS",
+            "field": "approval.status",
+            "operator": "EQUALS",
+            "expected": "APPROVED_FOR_MERGE",
+            "actual": "APPROVED_FOR_MERGE",
+            "status": "PASS",
+            "description": "Approval status must be APPROVED_FOR_MERGE."
+        }
+    ]
+}

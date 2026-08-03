@@ -2,72 +2,99 @@
 
 # =========================================================================
 # 🛡️ SAB Policy Evaluator & Quality Gate CLI
-# Yalıhan OS — Governance Automation
+# Evaluates certification manifests and emits machine-readable evaluation results.
 # =========================================================================
 
 set -euo pipefail
 
 MANIFEST_FILE="${1:-.sab/certification/TS-01-F2.json}"
+POLICY_FILE="${2:-.sab/policy/certification.policy.json}"
 
 if [ ! -f "$MANIFEST_FILE" ]; then
     echo "❌ ERROR: Manifest file not found: $MANIFEST_FILE"
     exit 1
 fi
 
-echo "🚀 SAB Policy Evaluator: Assessing $MANIFEST_FILE..."
+if [ ! -f "$POLICY_FILE" ]; then
+    echo "❌ ERROR: Policy file not found: $POLICY_FILE"
+    exit 1
+fi
+
+TASK_ID=$(php -r "\$j = json_decode(file_get_contents('$MANIFEST_FILE'), true); echo \$j['task']['id'] ?? 'UNKNOWN';")
+RESULT_FILE=".sab/certification/${TASK_ID}.policy-result.json"
+
+echo "🚀 SAB Policy Engine: Evaluating $MANIFEST_FILE against $POLICY_FILE..."
 echo "========================================================================="
 
-# 1. Read JSON values using php -r
-EVALUATION=$(php -r "
-\$json = json_decode(file_get_contents('$MANIFEST_FILE'), true);
-\$newRegressions = \$json['verification']['new_regressions'] ?? -1;
-\$preflightStatus = \$json['audit']['preflight_status'] ?? 'FAIL';
-\$approvalStatus = \$json['approval']['status'] ?? 'REJECTED';
-\$taskId = \$json['task']['id'] ?? 'UNKNOWN';
+php -r "
+\$manifest = json_decode(file_get_contents('$MANIFEST_FILE'), true);
+\$policy = json_decode(file_get_contents('$POLICY_FILE'), true);
 
-echo \"TASK_ID=\$taskId\n\";
-echo \"NEW_REGRESSIONS=\$newRegressions\n\";
-echo \"PREFLIGHT=\$preflightStatus\n\";
-echo \"APPROVAL=\$approvalStatus\n\";
-")
+\$ruleResults = [];
+\$allPassed = true;
 
-eval "$EVALUATION"
+foreach (\$policy['rules'] as \$rule) {
+    \$keys = explode('.', \$rule['field']);
+    \$current = \$manifest;
+    \$val = null;
+    
+    foreach (\$keys as \$k) {
+        if (isset(\$current[\$k])) {
+            \$current = \$current[\$k];
+            \$val = \$current;
+        } else {
+            \$val = null;
+            break;
+        }
+    }
 
-echo "📋 Task ID:              $TASK_ID"
-echo "🔍 Preflight Status:      $PREFLIGHT"
-echo "🛡️ New Regressions:       $NEW_REGRESSIONS"
-echo "🟢 Approval Status:       $APPROVAL"
-echo "-------------------------------------------------------------------------"
+    \$passed = false;
+    if (\$rule['operator'] === 'EQUALS') {
+        \$passed = (\$val === \$rule['expected_value']);
+    }
 
-FAILURES=0
+    if (!\$passed) {
+        \$allPassed = false;
+    }
 
-if [ "$NEW_REGRESSIONS" -ne 0 ]; then
-    echo "❌ POLICY VIOLATION: new_regressions is $NEW_REGRESSIONS (expected 0)"
-    FAILURES=$((FAILURES + 1))
-else
-    echo "✅ PASS: Zero new regressions verified (0)"
-fi
+    \$ruleResults[] = [
+        'rule_id' => \$rule['id'],
+        'field' => \$rule['field'],
+        'operator' => \$rule['operator'],
+        'expected' => \$rule['expected_value'],
+        'actual' => \$val,
+        'status' => \$passed ? 'PASS' : 'FAIL',
+        'description' => \$rule['description']
+    ];
+}
 
-if [ "$PREFLIGHT" != "PASS" ]; then
-    echo "❌ POLICY VIOLATION: preflight_status is $PREFLIGHT (expected PASS)"
-    FAILURES=$((FAILURES + 1))
-else
-    echo "✅ PASS: Preflight status verified (PASS)"
-fi
+\$decision = \$allPassed ? 'READY_FOR_MERGE' : 'REJECTED';
 
-if [ "$APPROVAL" != "APPROVED_FOR_MERGE" ]; then
-    echo "❌ POLICY VIOLATION: approval.status is $APPROVAL (expected APPROVED_FOR_MERGE)"
-    FAILURES=$((FAILURES + 1))
-else
-    echo "✅ PASS: Approval status verified (APPROVED_FOR_MERGE)"
-fi
+\$output = [
+    'task_id' => '$TASK_ID',
+    'decision' => \$decision,
+    'evaluated_at' => date('c'),
+    'policy_version' => \$policy['policy_version'] ?? '1.0',
+    'rules_evaluated' => count(\$ruleResults),
+    'rules_passed' => count(array_filter(\$ruleResults, fn(\$r) => \$r['status'] === 'PASS')),
+    'rules' => \$ruleResults
+];
 
-echo "========================================================================="
+file_put_contents('$RESULT_FILE', json_encode(\$output, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . \"\n\");
 
-if [ "$FAILURES" -eq 0 ]; then
-    echo "🟢 FINAL SAB QUALITY GATE DECISION: READY FOR MERGE"
-    exit 0
-else
-    echo "🔴 FINAL SAB QUALITY GATE DECISION: REJECTED ($FAILURES violations)"
-    exit 2
-fi
+echo \"📋 Task ID:              $TASK_ID\n\";
+echo \"🟢 Quality Gate Result:  \" . \$decision . \"\n\";
+echo \"-------------------------------------------------------------------------\n\";
+
+foreach (\$ruleResults as \$r) {
+    \$symbol = (\$r['status'] === 'PASS') ? '✅' : '❌';
+    echo \"\$symbol [\" . \$r['rule_id'] . \"] \" . \$r['description'] . \": \" . \$r['status'] . \" (Actual: \" . json_encode(\$r['actual']) . \")\n\";
+}
+
+echo \"=========================================================================\n\";
+echo \"📄 Policy Result JSON saved to: $RESULT_FILE\n\";
+
+if (!\$allPassed) {
+    exit(2);
+}
+"
