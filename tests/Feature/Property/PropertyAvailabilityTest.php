@@ -265,4 +265,117 @@ class PropertyAvailabilityTest extends TestCase
         $this->assertTrue($checkTenant2['is_available']);
         $this->assertEmpty($checkTenant2['conflicts']);
     }
+
+    /** @test */
+    public function it_rebuilds_projection_including_yazlik_rezervasyonlar()
+    {
+        // Create a yazlik reservation using the real DB column names from baseline migration:
+        // giris_tarihi, cikis_tarihi, toplam_tutar, durum
+        \Illuminate\Support\Facades\DB::table('yazlik_rezervasyonlar')->insert([
+            'ilan_id'       => $this->property->id,
+            'giris_tarihi'  => '2027-01-10',
+            'cikis_tarihi'  => '2027-01-14',
+            'toplam_tutar'  => 10000,
+            'durum'         => 'onaylandi',
+            'created_at'    => now(),
+            'updated_at'    => now(),
+        ]);
+
+        $rebuiltCount = $this->availabilityService->rebuildAvailabilityProjection(
+            $this->tenant->id,
+            $this->property->id,
+            '2027-01-10',
+            '2027-01-15'
+        );
+
+        $this->assertEquals(5, $rebuiltCount);
+
+        // Days 10-13 should be blocked (yazlik reservation), day 14 should be free
+        $blockedDay = PropertyAvailability::where('tenant_id', $this->tenant->id)
+            ->where('property_id', $this->property->id)
+            ->where('date', '2027-01-11')
+            ->first();
+
+        $this->assertNotNull($blockedDay);
+        $this->assertFalse($blockedDay->is_available);
+        $this->assertEquals(\App\Contracts\Property\PropertyAvailabilityContract::ORIGIN_YAZLIK, $blockedDay->origin);
+
+        $freeDay = PropertyAvailability::where('tenant_id', $this->tenant->id)
+            ->where('property_id', $this->property->id)
+            ->where('date', '2027-01-14')
+            ->first();
+
+        $this->assertNotNull($freeDay);
+        $this->assertTrue($freeDay->is_available);
+    }
+
+    /** @test */
+    public function it_returns_detailed_conflict_reason_code_on_rejection()
+    {
+        Event::fake([PropertyAvailabilityConflictDetectedEvent::class]);
+
+        // Create a Tier 2 (Reservation) block
+        $this->availabilityService->blockDateRange(
+            $this->tenant->id,
+            $this->property->id,
+            '2027-02-01',
+            '2027-02-05',
+            'Confirmed Booking',
+            PropertyAvailabilityContract::TIER_RESERVATION
+        );
+
+        // Attempt Tier 4 (External Sync) override — should be rejected with CONFLICT_HIGHER_PRIORITY
+        $result = $this->availabilityService->blockDateRange(
+            $this->tenant->id,
+            $this->property->id,
+            '2027-02-02',
+            '2027-02-04',
+            'Airbnb iCal',
+            PropertyAvailabilityContract::TIER_EXTERNAL_SYNC
+        );
+
+        $this->assertFalse($result['success']);
+        $this->assertEquals('CONFLICT_REJECTED', $result['status']);
+        $this->assertEquals(
+            PropertyAvailabilityContract::CONFLICT_HIGHER_PRIORITY,
+            $result['conflict_reason']
+        );
+
+        // Event should carry origin and conflict reason code
+        Event::assertDispatched(PropertyAvailabilityConflictDetectedEvent::class, function ($event) {
+            return $event->conflictReasonCode === PropertyAvailabilityContract::CONFLICT_HIGHER_PRIORITY;
+        });
+    }
+
+    /** @test */
+    public function it_stores_origin_field_on_blocked_records()
+    {
+        $this->availabilityService->blockDateRange(
+            $this->tenant->id,
+            $this->property->id,
+            '2027-03-01',
+            '2027-03-03',
+            'Airbnb Import',
+            PropertyAvailabilityContract::TIER_EXTERNAL_SYNC,
+            null,
+            'airbnb',
+            'AIRBNB_UID_12345',
+            \App\Contracts\Property\PropertyAvailabilityContract::ORIGIN_AIRBNB
+        );
+
+        $rec = PropertyAvailability::where('tenant_id', $this->tenant->id)
+            ->where('property_id', $this->property->id)
+            ->where('date', '2027-03-01')
+            ->first();
+
+        $this->assertNotNull($rec);
+        $this->assertFalse($rec->is_available);
+        $this->assertEquals(
+            \App\Contracts\Property\PropertyAvailabilityContract::ORIGIN_AIRBNB,
+            $rec->origin
+        );
+        $this->assertEquals('airbnb', $rec->source_system);
+        $this->assertNotNull($rec->projection_generated_at);
+        $this->assertEquals('block', $rec->projection_source);
+    }
 }

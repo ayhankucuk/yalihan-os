@@ -10,19 +10,30 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use App\Traits\GuardsAgentWrites;
 
+/**
+ * ReservationService — Internal reservation creation and cancellation.
+ *
+ * Sprint 22 E01: Added tenant_id scope to all queries (G1 fix).
+ * All reads and writes are scoped to both tenant_id AND property_id.
+ */
 class ReservationService
 {
     use GuardsAgentWrites;
+
     /**
-     * @param int $propertyId
-     * @param string $startDate
-     * @param string $endDate
-     * @param array $guestData
+     * Create a new confirmed reservation for a property.
+     *
+     * @param int      $tenantId
+     * @param int      $propertyId
+     * @param string   $startDate
+     * @param string   $endDate
+     * @param array    $guestData
      * @param int|null $userId
      * @return PropertyReservation
      * @throws Exception
      */
     public function createReservation(
+        int $tenantId,
         int $propertyId,
         string $startDate,
         string $endDate,
@@ -32,7 +43,7 @@ class ReservationService
         $this->blockAgentWrite(__FUNCTION__);
 
         $start = Carbon::parse($startDate)->startOfDay();
-        $end = Carbon::parse($endDate)->startOfDay();
+        $end   = Carbon::parse($endDate)->startOfDay();
 
         if ($start->gte($end)) {
             throw new Exception("Start date must be before end date.");
@@ -50,14 +61,15 @@ class ReservationService
             throw new Exception("Minimum stay is {$ilan->min_stay_nights} nights.");
         }
 
-        return DB::transaction(function () use ($propertyId, $start, $end, $nights, $guestData, $userId) {
+        return DB::transaction(function () use ($tenantId, $propertyId, $start, $end, $nights, $guestData, $userId) {
 
-            // Overlap Constraint (Strict User Requirement)
-            $overlapCount = PropertyReservation::where('property_id', $propertyId)
+            // G1: Overlap check scoped to BOTH tenant_id AND property_id
+            $overlapCount = PropertyReservation::where('tenant_id', $tenantId)
+                ->where('property_id', $propertyId)
                 ->where('start_date', '<', $end->format('Y-m-d'))
                 ->where('end_date', '>', $start->format('Y-m-d'))
                 ->where('reservation_state', '!=', 'cancelled')
-                ->lockForUpdate() // Prevent concurrent reading of overlapping rows before insertion
+                ->lockForUpdate()
                 ->count();
 
             if ($overlapCount > 0) {
@@ -66,35 +78,35 @@ class ReservationService
 
             $dates = [];
             $currentDate = $start->copy();
-
             while ($currentDate->lt($end)) {
                 $dates[] = $currentDate->format('Y-m-d');
                 $currentDate->addDay();
             }
 
-            // Ensure rows exist before locking using bulk insertOrIgnore
+            // Ensure rows exist before locking
             $now = now();
             $insertData = [];
             foreach ($dates as $dateStr) {
                 $insertData[] = [
-                    'property_id' => $propertyId,
-                    'date' => $dateStr,
-                    'is_available' => true,
+                    'tenant_id'     => $tenantId,
+                    'property_id'   => $propertyId,
+                    'date'          => $dateStr,
+                    'is_available'  => true,
                     'source_system' => 'internal',
-                    'created_at' => $now,
-                    'updated_at' => $now,
+                    'origin'        => 'system',
+                    'created_at'    => $now,
+                    'updated_at'    => $now,
                 ];
             }
             PropertyAvailability::insertOrIgnore($insertData);
 
-            // Lock existing rows for update
-            $existingAvailabilities = PropertyAvailability::where('property_id', $propertyId)
+            // G1: Lock existing rows scoped to tenant_id AND property_id
+            $existingAvailabilities = PropertyAvailability::where('tenant_id', $tenantId)
+                ->where('property_id', $propertyId)
                 ->whereIn('date', $dates)
                 ->lockForUpdate()
                 ->get()
-                ->keyBy(function ($item) {
-                    return Carbon::parse($item->date)->format('Y-m-d');
-                });
+                ->keyBy(fn($item) => Carbon::parse($item->date)->format('Y-m-d'));
 
             foreach ($dates as $dateStr) {
                 if (isset($existingAvailabilities[$dateStr])) {
@@ -105,30 +117,35 @@ class ReservationService
                 }
             }
 
-            // 2. Create reservation
+            // Create reservation
             $reservation = PropertyReservation::create([
-                'property_id' => $propertyId,
-                'start_date' => $start->format('Y-m-d'),
-                'end_date' => $end->format('Y-m-d'),
-                'nights' => $nights,
-                'guest_name' => $guestData['guest_name'],
-                'guest_phone' => $guestData['guest_phone'] ?? null,
-                'guest_email' => $guestData['guest_email'] ?? null,
-                'guest_count' => $guestData['guest_count'] ?? null,
-                'notes' => $guestData['notes'] ?? null,
-                'reservation_state' => 'confirmed',
-                'created_by_user_id' => $userId,
-                'confirmed_at' => now(),
+                'tenant_id'            => $tenantId,
+                'property_id'          => $propertyId,
+                'start_date'           => $start->format('Y-m-d'),
+                'end_date'             => $end->format('Y-m-d'),
+                'nights'               => $nights,
+                'guest_name'           => $guestData['guest_name'],
+                'guest_phone'          => $guestData['guest_phone'] ?? null,
+                'guest_email'          => $guestData['guest_email'] ?? null,
+                'guest_count'          => $guestData['guest_count'] ?? null,
+                'notes'                => $guestData['notes'] ?? null,
+                'reservation_state'    => 'confirmed',
+                'created_by_user_id'   => $userId,
+                'confirmed_at'         => now(),
             ]);
 
-            // 3. Update availability objects directly using locked models
+            // Mark availability records as blocked
             foreach ($dates as $dateStr) {
                 $avail = $existingAvailabilities[$dateStr];
                 $avail->update([
-                    'is_available' => false,
-                    'block_reason' => 'reservation',
-                    'source_system' => 'internal',
-                    'reservation_id' => $reservation->id,
+                    'is_available'            => false,
+                    'block_reason'            => 'reservation',
+                    'priority_tier'           => 2, // TIER_RESERVATION
+                    'source_system'           => 'internal',
+                    'origin'                  => 'reservation',
+                    'reservation_id'          => $reservation->id,
+                    'projection_generated_at' => $now,
+                    'projection_source'       => 'reservation',
                 ]);
             }
 
@@ -137,14 +154,19 @@ class ReservationService
     }
 
     /**
+     * Cancel an existing reservation and free its availability blocks.
+     *
      * @param int $reservationId
+     * @param int $tenantId       Required for tenant-scoped availability cleanup (G1)
      * @return void
      * @throws Exception
      */
-    public function cancelReservation(int $reservationId): void
+    public function cancelReservation(int $reservationId, int $tenantId): void
     {
-        DB::transaction(function () use ($reservationId) {
-            $reservation = PropertyReservation::lockForUpdate()->findOrFail($reservationId);
+        DB::transaction(function () use ($reservationId, $tenantId) {
+            $reservation = PropertyReservation::where('tenant_id', $tenantId)
+                ->lockForUpdate()
+                ->findOrFail($reservationId);
 
             if ($reservation->reservation_state === 'cancelled') {
                 return; // Idempotent behaviour
@@ -152,16 +174,21 @@ class ReservationService
 
             $reservation->update([
                 'reservation_state' => 'cancelled',
-                'cancelled_at' => now(),
+                'cancelled_at'      => now(),
             ]);
 
-            // Sadece Internal blockları (reservation bazlı) kaldır
-            PropertyAvailability::where('reservation_id', $reservationId)
+            // G1: Availability cleanup scoped to tenant_id
+            PropertyAvailability::where('tenant_id', $tenantId)
+                ->where('reservation_id', $reservationId)
                 ->where('source_system', 'internal')
                 ->update([
-                    'is_available' => true,
-                    'block_reason' => null,
-                    'reservation_id' => null,
+                    'is_available'            => true,
+                    'block_reason'            => null,
+                    'priority_tier'           => 5, // TIER_HOLD_PENDING
+                    'reservation_id'          => null,
+                    'origin'                  => null,
+                    'projection_generated_at' => now(),
+                    'projection_source'       => 'reservation',
                 ]);
         });
     }
