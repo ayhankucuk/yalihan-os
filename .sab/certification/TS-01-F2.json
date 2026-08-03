@@ -32,16 +32,24 @@
   "audit": {
     "repository": "ayhankucuk/yalihan-os",
     "branch": "integration/era-v-phase2a-e01",
-    "head_sha": "2cfa429828d11c97aee4490cf25ca315c15984aa",
+    "head_sha": "6d3c00e12d59ca12ec3d4dfa666992d9d8324e94",
     "preflight_status": "PASS",
     "preflight_timestamp": "2026-08-03T22:57:56+03:00",
     "phpunit_harness": "DB_CONNECTION=sqlite DB_DATABASE=:memory: CACHE_STORE=array php -d memory_limit=4G vendor/bin/phpunit",
     "evidence_markdown": "docs/reports/TS-01-F2-EVIDENCE.md"
   },
+  "environment": {
+    "php_version": "8.4.7",
+    "laravel_version": "10.x",
+    "database_driver": "sqlite (:memory:)",
+    "runner": "macOS (Apple Silicon)"
+  },
   "approval": {
     "status": "APPROVED_FOR_MERGE",
     "certification_level": "CERTIFIED_WITHIN_EXISTING_BASELINE",
+    "reviewer": "Ayhan (SAAB Governance Reviewer)",
     "approved_at": "2026-08-03T22:58:27+03:00",
-    "approved_by": "SAAB (Strategic AI Architecture Board)"
+    "approved_by": "SAAB (Strategic AI Architecture Board)",
+    "evidence_version": "1.0"
   }
 }

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://yalihan-os.local/schemas/sab-certification.schema.json",
   "title": "SAB Engineering Certification Manifest Schema",
-  "description": "Validation schema for SAB engineering certification manifest files in Yalıhan OS.",
+  "description": "Structural validation schema for SAB engineering certification manifests in Yalıhan OS.",
   "type": "object",
   "required": [
     "schema_version",
@@ -11,6 +11,7 @@
     "verification",
     "baseline",
     "audit",
+    "environment",
     "approval"
   ],
   "properties": {
@@ -54,7 +55,7 @@
         "incomplete": { "type": "integer", "minimum": 0 },
         "target_suite_pass_rate": { "type": "string" },
         "workspace_timeline_pass_rate": { "type": "string" },
-        "new_regressions": { "type": "integer", "const": 0 }
+        "new_regressions": { "type": "integer", "minimum": 0 }
       }
     },
     "baseline": {
@@ -90,9 +91,26 @@
         "evidence_markdown": { "type": "string" }
       }
     },
+    "environment": {
+      "type": "object",
+      "required": ["php_version", "laravel_version", "database_driver", "runner"],
+      "properties": {
+        "php_version": { "type": "string" },
+        "laravel_version": { "type": "string" },
+        "database_driver": { "type": "string" },
+        "runner": { "type": "string" }
+      }
+    },
     "approval": {
       "type": "object",
-      "required": ["status", "certification_level", "approved_at", "approved_by"],
+      "required": [
+        "status",
+        "certification_level",
+        "reviewer",
+        "approved_at",
+        "approved_by",
+        "evidence_version"
+      ],
       "properties": {
         "status": {
           "type": "string",
@@ -102,8 +120,10 @@
           "type": "string",
           "enum": ["CERTIFIED_WITHIN_EXISTING_BASELINE", "FULL_PASS"]
         },
+        "reviewer": { "type": "string" },
         "approved_at": { "type": "string" },
-        "approved_by": { "type": "string" }
+        "approved_by": { "type": "string" },
+        "evidence_version": { "type": "string" }
       }
     }
   }

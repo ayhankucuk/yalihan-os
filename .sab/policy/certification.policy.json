@@ -1,0 +1,27 @@
+{
+  "policy_version": "1.0",
+  "policy_name": "SAB Quality Gate Merge Policy",
+  "rules": [
+    {
+      "id": "RULE_ZERO_REGRESSIONS",
+      "field": "verification.new_regressions",
+      "operator": "EQUALS",
+      "expected_value": 0,
+      "description": "Zero new test regressions allowed outside documented baseline debt."
+    },
+    {
+      "id": "RULE_PREFLIGHT_PASS",
+      "field": "audit.preflight_status",
+      "operator": "EQUALS",
+      "expected_value": "PASS",
+      "description": "Preflight golden rules guard check must be PASS."
+    },
+    {
+      "id": "RULE_APPROVAL_STATUS",
+      "field": "approval.status",
+      "operator": "EQUALS",
+      "expected_value": "APPROVED_FOR_MERGE",
+      "description": "Approval status must be APPROVED_FOR_MERGE."
+    }
+  ]
+}
