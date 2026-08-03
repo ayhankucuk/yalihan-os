@@ -120,3 +120,16 @@ To preserve integrity without misleading cryptography terminology:
 3. **Preflight Rule:** `audit.preflight_status` MUST equal `"PASS"`.
 4. **Approval Rule:** `approval.status` MUST equal `"APPROVED_FOR_MERGE"`.
 5. **Schema & Policy Validation:** Manifest must pass `.sab/schema/certification.schema.json` and `.sab/policy/certification.policy.json`.
+
+---
+
+## 🎯 5. Pilot Exit Criteria & Operational Validation
+
+To transition from `Architecturally Ready for Pilot Adoption` to `Operationally Validated for CI Adoption`:
+
+1. **5 Consecutive Sprint Certifications:** Successfully certify 5 consecutive real engineering sprints using `sab-cert`.
+2. **Zero False Positives:** Produce zero false `READY_FOR_MERGE` quality gate decisions.
+3. **100% Deterministic Compilation:** Produce identical manifest hashes from identical clean workspace states.
+4. **Automated CI Runner Validation:** Verify end-to-end execution in GitHub Actions CI runner environment.
+5. **Negative Integrity Verification:** Confirm that tampered manifests trigger `exit code 2` (REJECTED) during `sab-cert verify`.
+

@@ -139,27 +139,40 @@ case "$COMMAND" in
             'bundle_id' => '${TASK_ID}.cert',
             'created_at' => date('c'),
             'immutable' => true,
-            'files' => ['manifest.json', 'policy-result.json', 'report.md', 'verification.json']
+            'files' => ['manifest.json', 'policy-result.json', 'report.md', 'verification.json', 'README.md']
         ];
         file_put_contents('$ARCHIVE_DIR/bundle-metadata.json', json_encode(\$bundle, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . \"\n\");
+
+        \$readme = \"# 🛡️ SAB Certification Bundle: ${TASK_ID}\n\n\" .
+                  \"This directory is an immutable SAB certification bundle packaging the full evidence lifecycle for **${TASK_ID}**.\n\n\" .
+                  \"## 📄 Bundle Files\n\" .
+                  \"- \`manifest.json\`: Machine-readable empirical runtime evidence and cryptographic signature.\n\" .
+                  \"- \`policy-result.json\`: Quality gate policy engine rule evaluation results.\n\" .
+                  \"- \`report.md\`: Canonical 10-section human-readable engineering evidence document.\n\" .
+                  \"- \`verification.json\`: Archive-time verification proof snapshot.\n\" .
+                  \"- \`bundle-metadata.json\`: Archive bundle metadata and timestamp.\n\n\" .
+                  \"## 🔍 Integrity Verification\n\" .
+                  \"To dynamically re-compute and verify the cryptographic payload integrity:\n\" .
+                  \"\`\`\`bash\n./scripts/tools/sab-cert.sh verify ${TASK_ID}\n\`\`\`\n\";
+        file_put_contents('$ARCHIVE_DIR/README.md', \$readme);
         "
         echo "✅ Immutable certification bundle created: $ARCHIVE_DIR"
         ;;
 
     *)
-        echo "🛡️ SAB Certification CLI (sab-cert) v1.3"
+        echo "🛡️ SAB Certification CLI (sab-cert) v1.4"
         echo "Usage: ./scripts/tools/sab-cert.sh <command> <task_id> [args]"
         echo ""
         echo "Canonical Governance Order:"
         echo "  generate ➔ validate ➔ evaluate ➔ approve ➔ sign ➔ verify ➔ archive"
         echo ""
         echo "Available Commands:"
-        echo "  generate <task_id> [title] [phase]  - Compile empirical manifest JSON from runtime"
+        echo "  generate <task_id> [title] [phase]  - Compile ampirik (empirical) manifest JSON"
         echo "  validate <task_id>                 - Validate manifest JSON schema layout"
         echo "  evaluate <task_id> [policy_json]   - Evaluate declarative policy engine quality gates"
         echo "  approve  <task_id>                 - Apply Board Governance Approval"
         echo "  sign     <task_id>                 - Apply SHA-256 cryptographic digest signature"
         echo "  verify   <task_id>                 - Dynamically re-compute SHA-256 payload integrity"
-        echo "  archive  <task_id>                 - Create immutable bundle in .sab/archive/<TASK_ID>.cert"
+        echo "  archive  <task_id>                 - Create immutable bundle with README.md in .sab/archive/<TASK_ID>.cert"
         ;;
 esac
