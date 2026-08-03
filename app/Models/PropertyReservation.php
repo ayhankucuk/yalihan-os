@@ -15,6 +15,7 @@ class PropertyReservation extends BaseModel
 
     protected $fillable = [
         'tenant_id',
+        'property_id',
         'ilan_id',
         'start_date',
         'end_date',

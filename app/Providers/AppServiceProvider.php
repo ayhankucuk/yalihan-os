@@ -125,6 +125,18 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\PropertyConfigurationContract::class,
             \App\Services\Property\PropertyConfigurationQueryService::class
         );
+
+        // 🏡 Sprint 22 E01: Property Availability SSOT Engine
+        $this->app->singleton(
+            \App\Contracts\Property\PropertyAvailabilityContract::class,
+            \App\Services\Property\CanonicalAvailabilityService::class
+        );
+
+        // ⚙️ Execution Runtime Repository Binding
+        $this->app->bind(
+            \App\Repositories\ExecutionRuntimeRepositoryInterface::class,
+            \App\Repositories\EloquentExecutionRuntimeRepository::class
+        );
     }
 
     /**

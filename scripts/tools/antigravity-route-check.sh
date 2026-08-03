@@ -30,7 +30,7 @@ case "$ACTION" in
         
         echo -e "Checking route: ${BOLD}${PARAM}${NC}"
         
-        ROUTE_EXISTS=$(php artisan route:list --json 2>/dev/null | python3 -c "
+        ROUTE_EXISTS=$(DB_CONNECTION=sqlite DB_DATABASE=:memory: CACHE_STORE=array php artisan route:list --json 2>/dev/null | python3 -c "
 import json, sys
 routes = json.load(sys.stdin)
 found = [r for r in routes if r.get('name') == '${PARAM}']
@@ -58,7 +58,7 @@ else:
         echo -e "Scanning for duplicate route names..."
         echo ""
         
-        DUPES=$(php artisan route:list --json 2>/dev/null | python3 -c "
+        DUPES=$(DB_CONNECTION=sqlite DB_DATABASE=:memory: CACHE_STORE=array php artisan route:list --json 2>/dev/null | python3 -c "
 import json, sys
 from collections import Counter
 routes = json.load(sys.stdin)
