@@ -1,8 +1,8 @@
 {
     "verified": true,
-    "verified_at": "2026-08-03T20:59:11+00:00",
+    "verified_at": "2026-08-03T21:08:35+00:00",
     "digest_match": true,
-    "evidence_hash": "25e112a51a8fc934300c6c80ca23f7cb57c904a4dd287836d06849a99989949f",
+    "evidence_hash": "f50714ac9dd11789ace07865fcbe5bd14f682b2c5fa1d910a2d7f7d7b67201ab",
     "algorithm": "SHA256-DIGEST",
     "note": "Snapshot verification record at archive time. Re-verify dynamically via sab-cert verify."
 }

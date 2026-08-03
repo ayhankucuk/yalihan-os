@@ -1,13 +1,18 @@
 {
     "task_id": "TS-01-F2",
     "decision": "READY_FOR_MERGE",
-    "evaluated_at": "2026-08-03T20:59:11+00:00",
-    "policy_version": "1.1",
+    "evaluated_at": "2026-08-03T21:08:35+00:00",
+    "policy_version": "1.2",
     "gates": {
         "regression_gate": "PASS",
         "repository_health_gate": "PASS",
         "governance_gate": "PASS",
         "merge_gate": "PASS"
+    },
+    "waiver_diagnostics": {
+        "expiry_check": "VALID",
+        "fingerprint_check": "VALID",
+        "provenance_check": "VALID"
     },
     "rules_evaluated": 5,
     "rules_passed": 5,

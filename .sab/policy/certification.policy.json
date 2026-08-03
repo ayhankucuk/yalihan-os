@@ -1,5 +1,5 @@
 {
-  "policy_version": "1.1",
+  "policy_version": "1.2",
   "policy_name": "SAB Quality Gate Merge Policy",
   "rules": [
     {
@@ -49,9 +49,12 @@
     "waiver_field": "baseline.exempted_failures",
     "waiver_errors_field": "baseline.exempted_errors",
     "enforce_expiry": true,
-    "expiry_field": "baseline.expires_at",
+    "expiry_field": "waiver.expires_at",
     "enforce_fingerprint": true,
     "fingerprint_field": "baseline.fingerprint_hash",
-    "description": "When failures/errors match the documented baseline exemptions exactly, the repository_health gate is satisfied via waiver. Waiver must not be expired and fingerprint must match current test failure set."
+    "fingerprint_source_field": "baseline.failing_test_identities",
+    "enforce_provenance": true,
+    "provenance_fields": ["waiver.approved_by", "waiver.reason", "waiver.commit_sha"],
+    "description": "Waiver requires: (1) count match, (2) valid expiry date, (3) canonical fingerprint match from failing_test_identities, (4) provenance fields present."
   }
 }
