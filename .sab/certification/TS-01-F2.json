@@ -1,13 +1,12 @@
 {
   "schema_version": "1.0",
   "specification": "SAB Engineering Certification Specification v1.0",
-  "task_id": "TS-01-F2",
-  "status": "APPROVED_FOR_MERGE",
-  "certification_level": "CERTIFIED_WITHIN_EXISTING_BASELINE",
-  "repository": "ayhankucuk/yalihan-os",
-  "branch": "integration/era-v-phase2a-e01",
-  "head_sha": "d16c2b920bf05b63c7bfe87cf454c7b884cebdcf",
-  "metrics": {
+  "task": {
+    "id": "TS-01-F2",
+    "title": "Tenant-authenticated API setup & Domain Event Sourcing Alignment",
+    "phase": "2A"
+  },
+  "verification": {
     "total_tests": 2368,
     "assertions": 10506,
     "failures": 49,
@@ -19,12 +18,30 @@
     "workspace_timeline_pass_rate": "24/24 (100%)",
     "new_regressions": 0
   },
+  "baseline": {
+    "exempted_failures": 49,
+    "exempted_errors": 226,
+    "known_debt_areas": [
+      "Owner Valuation Widget",
+      "Smart Provider Selection",
+      "Rental & iCal Sync",
+      "Performance N+1",
+      "Wizard Step 1 Template Data"
+    ]
+  },
   "audit": {
+    "repository": "ayhankucuk/yalihan-os",
+    "branch": "integration/era-v-phase2a-e01",
+    "head_sha": "2cfa429828d11c97aee4490cf25ca315c15984aa",
     "preflight_status": "PASS",
     "preflight_timestamp": "2026-08-03T22:57:56+03:00",
     "phpunit_harness": "DB_CONNECTION=sqlite DB_DATABASE=:memory: CACHE_STORE=array php -d memory_limit=4G vendor/bin/phpunit",
     "evidence_markdown": "docs/reports/TS-01-F2-EVIDENCE.md"
   },
-  "approved_at": "2026-08-03T22:58:27+03:00",
-  "approved_by": "SAAB (Strategic AI Architecture Board)"
+  "approval": {
+    "status": "APPROVED_FOR_MERGE",
+    "certification_level": "CERTIFIED_WITHIN_EXISTING_BASELINE",
+    "approved_at": "2026-08-03T22:58:27+03:00",
+    "approved_by": "SAAB (Strategic AI Architecture Board)"
+  }
 }

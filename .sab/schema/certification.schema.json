@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://yalihan-os.local/schemas/sab-certification.schema.json",
+  "title": "SAB Engineering Certification Manifest Schema",
+  "description": "Validation schema for SAB engineering certification manifest files in Yalıhan OS.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "specification",
+    "task",
+    "verification",
+    "baseline",
+    "audit",
+    "approval"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0", "1.1", "2.0"]
+    },
+    "specification": {
+      "type": "string"
+    },
+    "task": {
+      "type": "object",
+      "required": ["id", "title", "phase"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "phase": { "type": "string" }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": [
+        "total_tests",
+        "assertions",
+        "failures",
+        "errors",
+        "skipped",
+        "risky",
+        "incomplete",
+        "target_suite_pass_rate",
+        "workspace_timeline_pass_rate",
+        "new_regressions"
+      ],
+      "properties": {
+        "total_tests": { "type": "integer", "minimum": 0 },
+        "assertions": { "type": "integer", "minimum": 0 },
+        "failures": { "type": "integer", "minimum": 0 },
+        "errors": { "type": "integer", "minimum": 0 },
+        "skipped": { "type": "integer", "minimum": 0 },
+        "risky": { "type": "integer", "minimum": 0 },
+        "incomplete": { "type": "integer", "minimum": 0 },
+        "target_suite_pass_rate": { "type": "string" },
+        "workspace_timeline_pass_rate": { "type": "string" },
+        "new_regressions": { "type": "integer", "const": 0 }
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "required": ["exempted_failures", "exempted_errors", "known_debt_areas"],
+      "properties": {
+        "exempted_failures": { "type": "integer", "minimum": 0 },
+        "exempted_errors": { "type": "integer", "minimum": 0 },
+        "known_debt_areas": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "required": [
+        "repository",
+        "branch",
+        "head_sha",
+        "preflight_status",
+        "preflight_timestamp",
+        "phpunit_harness",
+        "evidence_markdown"
+      ],
+      "properties": {
+        "repository": { "type": "string" },
+        "branch": { "type": "string" },
+        "head_sha": { "type": "string" },
+        "preflight_status": { "type": "string", "enum": ["PASS", "FAIL"] },
+        "preflight_timestamp": { "type": "string" },
+        "phpunit_harness": { "type": "string" },
+        "evidence_markdown": { "type": "string" }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "required": ["status", "certification_level", "approved_at", "approved_by"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["APPROVED_FOR_MERGE", "HOLD", "REJECTED"]
+        },
+        "certification_level": {
+          "type": "string",
+          "enum": ["CERTIFIED_WITHIN_EXISTING_BASELINE", "FULL_PASS"]
+        },
+        "approved_at": { "type": "string" },
+        "approved_by": { "type": "string" }
+      }
+    }
+  }
+}
