@@ -163,5 +163,15 @@ To prevent scope creep and ensure operational stability during the **Pilot Valid
 - **Minor Version (`1.X`):** Backwards-compatible manifest field extensions or policy rule additions.
 - **Patch Version (`1.0.X`):** Bug fixes, script refactoring, or documentation enhancements.
 
+### 7.3 Freeze Exception Governance Hierarchy
+
+| Priority Level | Exception Condition Description | Freeze Exception Policy |
+|----------------|---------------------------------|-------------------------|
+| **P0** | False `READY_FOR_MERGE` or Incorrect Certification Decision | ✅ Allowed during Freeze |
+| **P1** | Pipeline Blocking Execution Error or Script Crash | ✅ Allowed during Freeze |
+| **P2** | Usability, Output Styling, or Formatting Polish | ⛔ Deferred until Post-Pilot |
+| **New Feature** | New CLI Subcommands, Schema Fields, or Architectural Layers | ⛔ Strictly Prohibited |
+
+
 
 
