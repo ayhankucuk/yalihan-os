@@ -1,17 +1,17 @@
 {
     "task_id": "TS-01-F2",
-    "decision": "READY_FOR_MERGE",
-    "evaluated_at": "2026-08-03T21:08:35+00:00",
-    "policy_version": "1.2",
+    "decision": "HUMAN_REVIEW_REQUIRED",
+    "evaluated_at": "2026-08-03T21:33:56+00:00",
+    "policy_version": "1.3",
     "gates": {
         "regression_gate": "PASS",
-        "repository_health_gate": "PASS",
+        "repository_health_gate": "PROVISIONAL_WAIVER",
         "governance_gate": "PASS",
-        "merge_gate": "PASS"
+        "merge_gate": "HUMAN_REVIEW_REQUIRED"
     },
     "waiver_diagnostics": {
         "expiry_check": "VALID",
-        "fingerprint_check": "VALID",
+        "fingerprint_check": "PROVISIONAL (FALLBACK_DEBT_AREAS)",
         "provenance_check": "VALID"
     },
     "rules_evaluated": 5,
@@ -26,6 +26,7 @@
             "gate": "regression",
             "status": "PASS",
             "waived": false,
+            "provisional": true,
             "waiver_block_reason": null,
             "description": "Zero new test regressions allowed outside documented baseline debt."
         },
@@ -36,8 +37,9 @@
             "expected": 0,
             "actual": 49,
             "gate": "repository_health",
-            "status": "WAIVED",
+            "status": "PROVISIONAL_WAIVER",
             "waived": true,
+            "provisional": true,
             "waiver_block_reason": null,
             "description": "Repository test failures must be zero or explicitly waived via baseline debt register."
         },
@@ -48,8 +50,9 @@
             "expected": 0,
             "actual": 226,
             "gate": "repository_health",
-            "status": "WAIVED",
+            "status": "PROVISIONAL_WAIVER",
             "waived": true,
+            "provisional": true,
             "waiver_block_reason": null,
             "description": "Repository test errors must be zero or explicitly waived via baseline debt register."
         },
@@ -62,6 +65,7 @@
             "gate": "governance",
             "status": "PASS",
             "waived": false,
+            "provisional": true,
             "waiver_block_reason": null,
             "description": "Preflight golden rules guard check must be PASS."
         },
@@ -74,6 +78,7 @@
             "gate": "governance",
             "status": "PASS",
             "waived": false,
+            "provisional": true,
             "waiver_block_reason": null,
             "description": "Approval status must be APPROVED_FOR_MERGE."
         }

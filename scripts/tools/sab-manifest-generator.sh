@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # =========================================================================
-# 🛠️ SAB Automated Manifest Generator v1.2
+# 🛠️ SAB Automated Manifest Generator v1.3
 # Compiles .sab/certification/<TASK_ID>.json strictly from empirical runtime data.
-# Includes canonical test-identity fingerprint and waiver provenance.
+# Includes canonical test-identity fingerprint and source commit provenance.
 # =========================================================================
 
 set -euo pipefail
@@ -20,7 +20,7 @@ echo "🚀 SAB Manifest Generator: Compiling empirical runtime evidence for $TAS
 echo "========================================================================="
 
 # 1. Harvest Git Metadata
-HEAD_SHA=$(git rev-parse HEAD 2>/dev/null || echo "UNKNOWN")
+SOURCE_COMMIT_SHA=$(git rev-parse HEAD 2>/dev/null || echo "UNKNOWN")
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "UNKNOWN")
 REMOTE_URL=$(git config --get remote.origin.url 2>/dev/null || echo "ayhankucuk/yalihan-os")
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -52,9 +52,8 @@ if [ -f "$PHPUNIT_LOG" ]; then
     ERRORS=$(grep -oE 'Errors: [0-9]+' "$PHPUNIT_LOG" | tail -n 1 | awk '{print $2}' || echo "226")
 fi
 
-# 5. Extract Canonical Test Identities and Compute Fingerprint
-# Priority: PHPUnit log test_class::method → fallback: known_debt_areas
-FINGERPRINT_RESULT=$(php -r "
+# 5. Extract Canonical Test Identities and Compile Empirical Manifest JSON
+php -r "
 \$logFile = '$PHPUNIT_LOG';
 \$testIdentities = [];
 \$fingerprintSource = 'FALLBACK_DEBT_AREAS';
@@ -64,7 +63,7 @@ if (file_exists(\$logFile)) {
     // Extract canonical test identities: TestClass::testMethod
     preg_match_all('/^\d+\)\s+(\S+::\S+)/m', \$content, \$matches);
     if (!empty(\$matches[1])) {
-        \$testIdentities = array_unique(\$matches[1]);
+        \$testIdentities = array_values(array_unique(array_map('trim', \$matches[1])));
         \$fingerprintSource = 'PHPUNIT_TEST_IDENTITIES';
     }
 }
@@ -80,24 +79,11 @@ if (empty(\$testIdentities)) {
 }
 
 sort(\$testIdentities);
-\$hash = hash('sha256', implode('|', \$testIdentities));
-// Output: hash|source|json_array
-echo \$hash . '|' . \$fingerprintSource . '|' . json_encode(array_values(\$testIdentities));
-")
-
-BASELINE_FINGERPRINT=$(echo "$FINGERPRINT_RESULT" | cut -d'|' -f1)
-FINGERPRINT_SOURCE=$(echo "$FINGERPRINT_RESULT" | cut -d'|' -f2)
-FINGERPRINT_IDENTITIES=$(echo "$FINGERPRINT_RESULT" | cut -d'|' -f3-)
-
-# 6. Compile Empirical Manifest JSON
-php -r "
-\$baselineFingerprint = '$BASELINE_FINGERPRINT';
-\$fingerprintSource = '$FINGERPRINT_SOURCE';
-\$fingerprintIdentities = json_decode('$FINGERPRINT_IDENTITIES', true) ?? [];
+\$baselineFingerprint = hash('sha256', implode('|', \$testIdentities));
 
 \$manifest = [
-    'schema_version' => '1.2',
-    'specification' => 'SAB Engineering Certification Specification v1.2',
+    'schema_version' => '1.3',
+    'specification' => 'SAB Engineering Certification Specification v1.3',
     'task' => [
         'id' => '$TASK_ID',
         'title' => '$TASK_TITLE',
@@ -125,10 +111,10 @@ php -r "
             'Performance N+1',
             'Wizard Step 1 Template Data'
         ],
-        'failing_test_identities' => \$fingerprintIdentities,
+        'failing_test_identities' => \$testIdentities,
         'fingerprint_hash' => \$baselineFingerprint,
         'fingerprint_source' => \$fingerprintSource,
-        'fingerprint_identity_count' => count(\$fingerprintIdentities)
+        'fingerprint_identity_count' => count(\$testIdentities)
     ],
     'waiver' => [
         'approved_by' => 'SAAB (Strategic AI Architecture Board)',
@@ -138,13 +124,14 @@ php -r "
         'reason' => 'Pre-existing repository baseline technical debt',
         'owner' => '$TASK_ID stabilization',
         'scope' => '$BRANCH',
-        'commit_sha' => '$HEAD_SHA',
+        'source_commit_sha' => '$SOURCE_COMMIT_SHA',
         'fingerprint_hash' => \$baselineFingerprint
     ],
     'audit' => [
         'repository' => '$REPO_NAME',
         'branch' => '$BRANCH',
-        'head_sha' => '$HEAD_SHA',
+        'source_commit_sha' => '$SOURCE_COMMIT_SHA',
+        'head_sha' => '$SOURCE_COMMIT_SHA',
         'preflight_status' => '$PREFLIGHT_STATUS',
         'preflight_timestamp' => '$TIMESTAMP',
         'phpunit_harness' => 'DB_CONNECTION=sqlite DB_DATABASE=:memory: CACHE_STORE=array php -d memory_limit=4G vendor/bin/phpunit',
@@ -162,13 +149,12 @@ php -r "
         'reviewer' => 'Unassigned',
         'approved_at' => '$TIMESTAMP',
         'approved_by' => 'Pending Review',
-        'evidence_version' => '1.2'
+        'evidence_version' => '1.3'
     ]
 ];
 
 file_put_contents('$OUTPUT_FILE', json_encode(\$manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . \"\n\");
+echo \"✅ Generated Empirical Manifest: $OUTPUT_FILE (Status: PENDING_BOARD_APPROVAL)\n\";
+echo \"   Fingerprint Source: \$fingerprintSource | Identies Count: \" . count(\$testIdentities) . \" | Hash: \" . substr(\$baselineFingerprint, 0, 16) . \"...\n\";
 "
-
-echo "✅ Generated Empirical Manifest: $OUTPUT_FILE (Status: PENDING_BOARD_APPROVAL)"
-echo "   Fingerprint Source: $FINGERPRINT_SOURCE | Hash: ${BASELINE_FINGERPRINT:0:16}..."
 echo "========================================================================="

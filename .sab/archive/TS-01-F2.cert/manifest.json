@@ -1,6 +1,6 @@
 {
-    "schema_version": "1.2",
-    "specification": "SAB Engineering Certification Specification v1.2",
+    "schema_version": "1.3",
+    "specification": "SAB Engineering Certification Specification v1.3",
     "task": {
         "id": "TS-01-F2",
         "title": "Tenant-authenticated API setup",
@@ -41,21 +41,22 @@
     },
     "waiver": {
         "approved_by": "SAAB (Strategic AI Architecture Board)",
-        "approved_at": "2026-08-03T21:08:35Z",
+        "approved_at": "2026-08-03T21:33:56Z",
         "expires_at": "2026-09-02",
         "max_age_days": 30,
         "reason": "Pre-existing repository baseline technical debt",
         "owner": "TS-01-F2 stabilization",
         "scope": "integration/era-v-phase2a-e01",
-        "commit_sha": "c496d22cf4ac15c77a48342c85f174308716d3b1",
+        "source_commit_sha": "f292df8e3da27f4f9b0a34541dbafdd08eb3ff75",
         "fingerprint_hash": "a0aa0eb7908f1e75be4493f5b8d8937052bf961f798add4e3d6433b828026167"
     },
     "audit": {
         "repository": "ayhankucuk/yalihan-os",
         "branch": "integration/era-v-phase2a-e01",
-        "head_sha": "c496d22cf4ac15c77a48342c85f174308716d3b1",
+        "source_commit_sha": "f292df8e3da27f4f9b0a34541dbafdd08eb3ff75",
+        "head_sha": "f292df8e3da27f4f9b0a34541dbafdd08eb3ff75",
         "preflight_status": "PASS",
-        "preflight_timestamp": "2026-08-03T21:08:35Z",
+        "preflight_timestamp": "2026-08-03T21:33:56Z",
         "phpunit_harness": "DB_CONNECTION=sqlite DB_DATABASE=:memory: CACHE_STORE=array php -d memory_limit=4G vendor/bin/phpunit",
         "evidence_markdown": "docs/reports/TS-01-F2-EVIDENCE.md"
     },
@@ -69,14 +70,14 @@
         "status": "APPROVED_FOR_MERGE",
         "certification_level": "CERTIFIED_WITHIN_EXISTING_BASELINE",
         "reviewer": "Ayhan (SAAB Governance Reviewer)",
-        "approved_at": "2026-08-03T21:08:35+00:00",
+        "approved_at": "2026-08-03T21:33:56+00:00",
         "approved_by": "SAAB (Strategic AI Architecture Board)",
-        "evidence_version": "1.2"
+        "evidence_version": "1.3"
     },
     "signature": {
         "algorithm": "SHA256-DIGEST",
         "signed_by": "SAAB Governance Engine",
-        "evidence_hash": "f50714ac9dd11789ace07865fcbe5bd14f682b2c5fa1d910a2d7f7d7b67201ab",
-        "signed_at": "2026-08-03T21:08:35+00:00"
+        "evidence_hash": "fcc771dd7e20353b3e03951fa8d02a28d21d3ccbe3d18e95ae7ce09319b17673",
+        "signed_at": "2026-08-03T21:33:56+00:00"
     }
 }
