@@ -3,7 +3,7 @@
     "specification": "SAB Engineering Certification Specification v1.0",
     "task": {
         "id": "TS-01-F2",
-        "title": "Tenant-authenticated API setup & Domain Event Sourcing Alignment",
+        "title": "Tenant-authenticated API setup",
         "phase": "2A"
     },
     "verification": {
@@ -32,9 +32,9 @@
     "audit": {
         "repository": "ayhankucuk/yalihan-os",
         "branch": "integration/era-v-phase2a-e01",
-        "head_sha": "c750eec0bcfd1e44bfdd32666a7aa64f1bfca13e",
+        "head_sha": "55907dbb6a0d1eae8765e3ffa330bdb543d47ccd",
         "preflight_status": "PASS",
-        "preflight_timestamp": "2026-08-03T20:05:09Z",
+        "preflight_timestamp": "2026-08-03T20:06:01Z",
         "phpunit_harness": "DB_CONNECTION=sqlite DB_DATABASE=:memory: CACHE_STORE=array php -d memory_limit=4G vendor/bin/phpunit",
         "evidence_markdown": "docs/reports/TS-01-F2-EVIDENCE.md"
     },
@@ -48,8 +48,14 @@
         "status": "APPROVED_FOR_MERGE",
         "certification_level": "CERTIFIED_WITHIN_EXISTING_BASELINE",
         "reviewer": "Ayhan (SAAB Governance Reviewer)",
-        "approved_at": "2026-08-03T20:05:09Z",
+        "approved_at": "2026-08-03T20:06:01Z",
         "approved_by": "SAAB (Strategic AI Architecture Board)",
         "evidence_version": "1.0"
+    },
+    "signature": {
+        "algorithm": "SHA256-HMAC",
+        "signed_by": "SAAB Governance Engine",
+        "evidence_hash": "1ace11ba62a05b47f987807010c6c3a709f6c67333e6f97e9406b0a634984a2a",
+        "signed_at": "2026-08-03T20:06:01+00:00"
     }
 }
