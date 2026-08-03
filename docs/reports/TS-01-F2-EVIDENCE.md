@@ -18,6 +18,18 @@ The scope of **TS-01-F2** covers resolving 32 test failures across authenticated
 - **Verification Suite:** 2 dedicated HTTP middleware context tests in `ProfileTest.php`
 - **Domain Event Sourcing Fix:** `tests/Unit/Domain/PropertyWorkspace/Timeline/WorkspaceTimelineTest.php` (24 tests)
 
+### 1.1 Assumptions, Limitations & Out of Scope
+
+- **Known Baseline Technical Debt (Exempted from TS-01-F2):**
+  - **Owner Valuation Widget (7 failures):** `OwnerIlanValuationTest` (Route/view missing in baseline)
+  - **Smart Provider Selection (6 failures):** `SmartProviderSelectionTest` (Telemetry scoring mock expectation drift)
+  - **Rental & iCal Sync (5 failures):** `RentalSyncTest`, `RentalLargeRangeSyncTest`, `GateAStressTest` (iCal sync mock & idempotency baseline)
+  - **Performance N+1 (1 failure):** `N1QueryOptimizationTest` (Loop relation query count limit)
+  - **Wizard Step 1 (3 failures):** `WizardStep1TemplateDataTest` (Category template data contract drift)
+- **Out of Scope for TS-01-F2:**
+  - Sprint 22+ future features and external API channel adapters.
+  - Performance optimization of non-target domain queries.
+
 ---
 
 ## 2. Root Cause
