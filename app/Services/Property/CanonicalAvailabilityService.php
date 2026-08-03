@@ -23,6 +23,20 @@ use Illuminate\Support\Facades\DB;
  * - E2: origin field on all domain events and daily records
  * - E3: projection_generated_at, projection_source, availability_version metadata
  * - E4: Detailed conflict reason codes
+ *
+ * Sprint 22 E01 Remediation (post-SAAB review):
+ * - BLOCKER-1: unblockDateRange now requires idempotency_key or explicit origin+source_system
+ *   to prevent cross-source ownership bypass (e.g. maintenance blocks cannot be
+ *   removed by an unrelated unblock caller).
+ * - BLOCKER-2: rebuildAvailabilityProjection is now origin-scoped: only rows with
+ *   origin IN (reservation, yazlik) are wiped and re-projected. Owner, maintenance,
+ *   operational, external, and manual blocks are preserved across rebuilds.
+ * - BLOCKER-3: yazlik_rezervasyonlar is now tenant-verified via ilanlar.tenant_id JOIN.
+ *   The legacy table has no tenant_id column; isolation is enforced through the
+ *   canonical property lookup (ilanlar.tenant_id = $tenantId).
+ * - REQUIRED-1: conflict_reason is event-only (not persisted on availability rows).
+ *   The field exists on the model/migration for future audit use; current contract
+ *   is: conflict details are carried on PropertyAvailabilityConflictDetectedEvent only.
  */
 class CanonicalAvailabilityService implements PropertyAvailabilityContract
 {
@@ -262,14 +276,31 @@ class CanonicalAvailabilityService implements PropertyAvailabilityContract
         int $propertyId,
         string $startDate,
         string $endDate,
-        ?string $idempotencyKey = null
+        ?string $idempotencyKey = null,
+        ?string $origin = null,
+        ?string $sourceSystem = null
     ): array {
         $this->blockAgentWrite(__FUNCTION__);
+
+        // BLOCKER-1 remediation: unblockDateRange must target a specific block by
+        // idempotency_key OR by origin+source_system. A caller without any targeting
+        // criteria cannot mass-clear blocks of unrelated sources (e.g. maintenance).
+        // At minimum, one targeting anchor is required.
+        if ($idempotencyKey === null && $origin === null && $sourceSystem === null) {
+            throw new Exception(
+                "unblockDateRange requires at least one ownership anchor: " .
+                "idempotencyKey, origin, or sourceSystem. " .
+                "Mass-clearing all blocks in a date range is not permitted."
+            );
+        }
 
         $start = Carbon::parse($startDate)->startOfDay();
         $end   = Carbon::parse($endDate)->startOfDay();
 
-        return DB::transaction(function () use ($tenantId, $propertyId, $start, $end, $idempotencyKey) {
+        return DB::transaction(function () use (
+            $tenantId, $propertyId, $start, $end,
+            $idempotencyKey, $origin, $sourceSystem
+        ) {
             $dates = [];
             $cursor = $start->copy();
             while ($cursor->lt($end)) {
@@ -277,25 +308,45 @@ class CanonicalAvailabilityService implements PropertyAvailabilityContract
                 $cursor->addDay();
             }
 
-            $affectedRows = PropertyAvailability::where('tenant_id', $tenantId)
+            // Build a targeted query that only removes blocks owned by this caller.
+            // Priority system integrity: a TIER_MAINTENANCE block placed by origin=maintenance
+            // cannot be removed by a caller passing origin=manual or origin=ical.
+            $query = PropertyAvailability::where('tenant_id', $tenantId)
                 ->where('property_id', $propertyId)
                 ->whereIn('date', $dates)
-                ->where('is_available', false)
-                ->update([
-                    'is_available'            => true,
-                    'block_reason'            => null,
-                    'priority_tier'           => self::TIER_HOLD_PENDING,
-                    'reservation_id'          => null,
-                    'idempotency_key'         => null,
-                    'origin'                  => null,
-                    'projection_generated_at' => now(),
-                    'projection_source'       => self::PROJECTION_SOURCE_BLOCK,
-                ]);
+                ->where('is_available', false);
+
+            if ($idempotencyKey !== null) {
+                // Idempotency key is the most precise ownership anchor.
+                $query->where('idempotency_key', $idempotencyKey);
+            } else {
+                // Origin + source_system based ownership targeting.
+                if ($origin !== null) {
+                    $query->where('origin', $origin);
+                }
+                if ($sourceSystem !== null) {
+                    $query->where('source_system', $sourceSystem);
+                }
+            }
+
+            $affectedRows = $query->update([
+                'is_available'            => true,
+                'block_reason'            => null,
+                // priority_tier and source_system are NOT NULL in DB schema.
+                // TIER_HOLD_PENDING (5) is the conventional "free slot" sentinel for
+                // available rows. source_system is preserved (not nulled out).
+                'priority_tier'           => self::TIER_HOLD_PENDING,
+                'reservation_id'          => null,
+                'idempotency_key'         => null,
+                'origin'                  => null,
+                'projection_generated_at' => now(),
+                'projection_source'       => self::PROJECTION_SOURCE_BLOCK,
+            ]);
 
             event(new PropertyAvailabilityUnblockedEvent(
                 $tenantId, $propertyId,
                 $start->format('Y-m-d'), $end->format('Y-m-d'),
-                $idempotencyKey
+                $idempotencyKey, null, $origin
             ));
 
             return [
@@ -314,6 +365,23 @@ class CanonicalAvailabilityService implements PropertyAvailabilityContract
     // rebuildAvailabilityProjection — G2: includes YazlikRezervasyon
     // -------------------------------------------------------------------------
 
+    /**
+     * Origin-scoped availability projection rebuild.
+     *
+     * CONTRACT (BLOCKER-2 remediation):
+     * This method performs a PARTIAL (origin-scoped) rebuild. Only rows with
+     * origin IN ('reservation', 'yazlik') are deleted and re-projected from their
+     * canonical sources. Rows with other origins (owner, maintenance, operational,
+     * external, manual, system) are preserved untouched.
+     *
+     * This is intentional: owner blocks, maintenance blocks, and external channel
+     * blocks have their own write paths (blockDateRange) and must not be silently
+     * destroyed by a reservation-triggered rebuild.
+     *
+     * If a full wipe-and-rebuild of ALL sources is ever needed, that must be a
+     * separate, explicitly named method (e.g. fullRebuildAvailabilityProjection)
+     * with appropriate authorization checks.
+     */
     public function rebuildAvailabilityProjection(int $tenantId, int $propertyId, string $startDate, string $endDate): int
     {
         $this->blockAgentWrite(__FUNCTION__);
@@ -329,10 +397,23 @@ class CanonicalAvailabilityService implements PropertyAvailabilityContract
                 $cursor->addDay();
             }
 
-            // Wipe existing projections for the range
+            // BLOCKER-2 remediation: Origin-scoped delete.
+            // Only wipe reservation and yazlik projection rows. Preserve all other
+            // origins (owner, maintenance, operational, external, manual, system).
             PropertyAvailability::where('tenant_id', $tenantId)
                 ->where('property_id', $propertyId)
                 ->whereIn('date', $dates)
+                ->whereIn('origin', [self::ORIGIN_RESERVATION, self::ORIGIN_YAZLIK])
+                ->delete();
+
+            // Also wipe rows where origin IS NULL and source is internal reservation
+            // (rows written before E2 origin field was added).
+            PropertyAvailability::where('tenant_id', $tenantId)
+                ->where('property_id', $propertyId)
+                ->whereIn('date', $dates)
+                ->whereNull('origin')
+                ->where('source_system', 'internal')
+                ->where('block_reason', 'reservation')
                 ->delete();
 
             // Source 1: property_reservations (canonical internal reservations)
@@ -344,13 +425,18 @@ class CanonicalAvailabilityService implements PropertyAvailabilityContract
                 ->whereNull('cancelled_at')
                 ->get();
 
-            // G2 — Source 2: yazlik_rezervasyonlar (legacy, ilan_id based)
-            // Real DB columns (baseline migration): giris_tarihi, cikis_tarihi, durum
+            // G2 + BLOCKER-3 remediation: yazlik_rezervasyonlar tenant isolation.
+            // The legacy table has no tenant_id column. Isolation is enforced via
+            // JOIN on ilanlar.tenant_id — only records whose property belongs to
+            // the requested tenant are included in the projection.
             $yazlikReservations = DB::table('yazlik_rezervasyonlar')
-                ->where('ilan_id', $propertyId)
-                ->where('giris_tarihi', '<', $end->format('Y-m-d'))
-                ->where('cikis_tarihi', '>', $start->format('Y-m-d'))
-                ->whereIn('durum', ['beklemede', 'onaylandi'])
+                ->join('ilanlar', 'yazlik_rezervasyonlar.ilan_id', '=', 'ilanlar.id')
+                ->where('yazlik_rezervasyonlar.ilan_id', $propertyId)
+                ->where('ilanlar.tenant_id', $tenantId)
+                ->where('yazlik_rezervasyonlar.giris_tarihi', '<', $end->format('Y-m-d'))
+                ->where('yazlik_rezervasyonlar.cikis_tarihi', '>', $start->format('Y-m-d'))
+                ->whereIn('yazlik_rezervasyonlar.durum', ['beklemede', 'onaylandi'])
+                ->select('yazlik_rezervasyonlar.*')
                 ->get();
 
             // Build a blocked-date index: date => [reservation_id, source, origin]

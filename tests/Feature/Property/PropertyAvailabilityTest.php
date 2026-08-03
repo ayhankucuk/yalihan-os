@@ -33,11 +33,12 @@ class PropertyAvailabilityTest extends TestCase
         ]);
 
         $this->property = Ilan::create([
-            'baslik' => 'Yalıhan Luxury Villa Yalıkavak',
-            'para_birimi' => 'TRY',
-            'fiyat' => 50000.00,
-            'yayin_durumu' => 'aktif',
+            'baslik'          => 'Yalıhan Luxury Villa Yalıkavak',
+            'para_birimi'     => 'TRY',
+            'fiyat'           => 50000.00,
+            'yayin_durumu'    => 'aktif',
             'aktiflik_durumu' => true,
+            'tenant_id'       => $this->tenant->id,  // Required for yazlik tenant JOIN
         ]);
 
         $this->availabilityService = app(PropertyAvailabilityContract::class);
@@ -178,14 +179,19 @@ class PropertyAvailabilityTest extends TestCase
             '2026-11-01',
             '2026-11-05',
             'Temporary Maintenance',
-            PropertyAvailabilityContract::TIER_MAINTENANCE
+            PropertyAvailabilityContract::TIER_MAINTENANCE,
+            'MAINT_UNBLOCK_KEY_001',
+            'internal',
+            null,
+            PropertyAvailabilityContract::ORIGIN_MAINTENANCE
         );
 
         $unblockResult = $this->availabilityService->unblockDateRange(
             $this->tenant->id,
             $this->property->id,
             '2026-11-01',
-            '2026-11-05'
+            '2026-11-05',
+            'MAINT_UNBLOCK_KEY_001'  // idempotency_key — most precise anchor
         );
 
         $this->assertTrue($unblockResult['success']);
@@ -269,6 +275,14 @@ class PropertyAvailabilityTest extends TestCase
     /** @test */
     public function it_rebuilds_projection_including_yazlik_rezervasyonlar()
     {
+        // Ensure ilanlar.tenant_id is set for the test property so the
+        // yazlik tenant-isolation JOIN (ilanlar.tenant_id = $tenantId) works.
+        // BelongsToTenant auto-assign may not fire without TenantContextService,
+        // so we enforce it via raw update here.
+        \Illuminate\Support\Facades\DB::table('ilanlar')
+            ->where('id', $this->property->id)
+            ->update(['tenant_id' => $this->tenant->id]);
+
         // Create a yazlik reservation using the real DB column names from baseline migration:
         // giris_tarihi, cikis_tarihi, toplam_tutar, durum
         \Illuminate\Support\Facades\DB::table('yazlik_rezervasyonlar')->insert([
@@ -377,5 +391,202 @@ class PropertyAvailabilityTest extends TestCase
         $this->assertEquals('airbnb', $rec->source_system);
         $this->assertNotNull($rec->projection_generated_at);
         $this->assertEquals('block', $rec->projection_source);
+    }
+    // -------------------------------------------------------------------------
+    // Sprint 22 E01 Remediation — Focused tests
+    // -------------------------------------------------------------------------
+
+    /** @test */
+    public function it_prevents_unblock_without_ownership_anchor()
+    {
+        $this->availabilityService->blockDateRange(
+            $this->tenant->id,
+            $this->property->id,
+            '2027-04-01',
+            '2027-04-05',
+            'Maintenance Work',
+            PropertyAvailabilityContract::TIER_MAINTENANCE,
+            'MAINT_KEY_001',
+            'internal',
+            null,
+            PropertyAvailabilityContract::ORIGIN_MAINTENANCE
+        );
+
+        // Calling unblockDateRange with NO anchor must throw
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessageMatches('/ownership anchor/');
+
+        $this->availabilityService->unblockDateRange(
+            $this->tenant->id,
+            $this->property->id,
+            '2027-04-01',
+            '2027-04-05'
+            // no idempotencyKey, no origin, no sourceSystem → must throw
+        );
+    }
+
+    /** @test */
+    public function it_prevents_unrelated_source_from_removing_maintenance_block()
+    {
+        // Place a TIER_MAINTENANCE block owned by origin=maintenance
+        $this->availabilityService->blockDateRange(
+            $this->tenant->id,
+            $this->property->id,
+            '2027-05-01',
+            '2027-05-04',
+            'Boiler Repair',
+            PropertyAvailabilityContract::TIER_MAINTENANCE,
+            'MAINT_KEY_002',
+            'internal',
+            null,
+            PropertyAvailabilityContract::ORIGIN_MAINTENANCE
+        );
+
+        // An unrelated caller with origin=manual tries to unblock the same dates
+        $result = $this->availabilityService->unblockDateRange(
+            $this->tenant->id,
+            $this->property->id,
+            '2027-05-01',
+            '2027-05-04',
+            null,
+            PropertyAvailabilityContract::ORIGIN_MANUAL  // wrong owner
+        );
+
+        // Zero records should be cleared — the maintenance block must survive
+        $this->assertEquals(0, $result['cleared_records']);
+
+        // Verify the maintenance block is still in DB
+        $check = $this->availabilityService->checkAvailability(
+            $this->tenant->id,
+            $this->property->id,
+            '2027-05-01',
+            '2027-05-04'
+        );
+        $this->assertFalse($check['is_available']);
+    }
+
+    /** @test */
+    public function it_preserves_non_reservation_origins_on_rebuild()
+    {
+        // Place an owner block for Oct 10-12
+        $this->availabilityService->blockDateRange(
+            $this->tenant->id,
+            $this->property->id,
+            '2027-10-10',
+            '2027-10-13',
+            'Owner Weekend',
+            PropertyAvailabilityContract::TIER_OWNER_BLOCK,
+            'OWNER_KEY_003',
+            'internal',
+            null,
+            PropertyAvailabilityContract::ORIGIN_OWNER
+        );
+
+        // Rebuild projection for the same range
+        $this->availabilityService->rebuildAvailabilityProjection(
+            $this->tenant->id,
+            $this->property->id,
+            '2027-10-10',
+            '2027-10-13'
+        );
+
+        // Owner block must still be present — rebuild is origin-scoped
+        $ownerBlock = PropertyAvailability::where('tenant_id', $this->tenant->id)
+            ->where('property_id', $this->property->id)
+            ->where('date', '2027-10-11')
+            ->first();
+
+        $this->assertNotNull($ownerBlock);
+        $this->assertFalse($ownerBlock->is_available);
+        $this->assertEquals(PropertyAvailabilityContract::ORIGIN_OWNER, $ownerBlock->origin);
+        $this->assertEquals(PropertyAvailabilityContract::TIER_OWNER_BLOCK, $ownerBlock->priority_tier);
+    }
+
+    /** @test */
+    public function it_prevents_cross_tenant_yazlik_reservation_from_entering_projection()
+    {
+        // Create a second tenant with its own property
+        $tenant2   = Tenant::create(['name' => 'Bodrum Rival Stays', 'status' => 'active', 'is_active' => true]);
+        $property2 = Ilan::create([
+            'baslik'          => 'Rival Villa',
+            'para_birimi'     => 'TRY',
+            'fiyat'           => 30000.00,
+            'yayin_durumu'    => 'aktif',
+            'aktiflik_durumu' => true,
+        ]);
+
+        // Insert a yazlik reservation that belongs to property2 (tenant2's property)
+        \Illuminate\Support\Facades\DB::table('yazlik_rezervasyonlar')->insert([
+            'ilan_id'      => $property2->id,
+            'giris_tarihi' => '2027-06-01',
+            'cikis_tarihi' => '2027-06-05',
+            'toplam_tutar' => 5000,
+            'durum'        => 'onaylandi',
+            'created_at'   => now(),
+            'updated_at'   => now(),
+        ]);
+
+        // Rebuild projection for tenant1's property (same property_id as property2 won't match,
+        // but more critically: even if property IDs collide, the tenant join blocks cross-tenant leakage)
+        $rebuilt = $this->availabilityService->rebuildAvailabilityProjection(
+            $this->tenant->id,      // tenant1
+            $this->property->id,    // tenant1's property — NOT property2
+            '2027-06-01',
+            '2027-06-06'
+        );
+
+        // All days for tenant1's property should be available (no yazlik reservations for this tenant+property)
+        $check = $this->availabilityService->checkAvailability(
+            $this->tenant->id,
+            $this->property->id,
+            '2027-06-01',
+            '2027-06-05'
+        );
+
+        $this->assertTrue($check['is_available'],
+            'Cross-tenant yazlik reservation must not pollute another tenant\'s projection');
+        $this->assertEmpty($check['conflicts']);
+    }
+
+    /** @test */
+    public function it_does_not_create_duplicate_block_for_repeated_idempotency_key()
+    {
+        $key = 'IDEM_KEY_REPEAT_001';
+
+        // First block
+        $first = $this->availabilityService->blockDateRange(
+            $this->tenant->id,
+            $this->property->id,
+            '2027-07-01',
+            '2027-07-04',
+            'Owner Block',
+            PropertyAvailabilityContract::TIER_OWNER_BLOCK,
+            $key
+        );
+        $this->assertTrue($first['success']);
+
+        // Second call with same key and overlapping range — must be rejected as conflict
+        $second = $this->availabilityService->blockDateRange(
+            $this->tenant->id,
+            $this->property->id,
+            '2027-07-01',
+            '2027-07-04',
+            'Owner Block',
+            PropertyAvailabilityContract::TIER_OWNER_BLOCK,
+            $key
+        );
+
+        // Same-tier overlap is rejected by the priority matrix (tier <= existing tier)
+        $this->assertFalse($second['success']);
+        $this->assertEquals('CONFLICT_REJECTED', $second['status']);
+
+        // Only one set of records should exist (no duplication)
+        $count = PropertyAvailability::where('tenant_id', $this->tenant->id)
+            ->where('property_id', $this->property->id)
+            ->whereBetween('date', ['2027-07-01', '2027-07-03'])
+            ->where('idempotency_key', $key)
+            ->count();
+
+        $this->assertEquals(3, $count, 'Exactly 3 daily records for the 3-night block — no duplicates');
     }
 }

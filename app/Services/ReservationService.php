@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\Property\PropertyAvailabilityContract;
 use App\Models\Ilan;
 use App\Models\PropertyAvailability;
 use App\Models\PropertyReservation;
@@ -140,12 +141,12 @@ class ReservationService
                 $avail->update([
                     'is_available'            => false,
                     'block_reason'            => 'reservation',
-                    'priority_tier'           => 2, // TIER_RESERVATION
+                    'priority_tier'           => PropertyAvailabilityContract::TIER_RESERVATION,
                     'source_system'           => 'internal',
-                    'origin'                  => 'reservation',
+                    'origin'                  => PropertyAvailabilityContract::ORIGIN_RESERVATION,
                     'reservation_id'          => $reservation->id,
                     'projection_generated_at' => $now,
-                    'projection_source'       => 'reservation',
+                    'projection_source'       => PropertyAvailabilityContract::PROJECTION_SOURCE_RESERVATION,
                 ]);
             }
 
@@ -178,17 +179,18 @@ class ReservationService
             ]);
 
             // G1: Availability cleanup scoped to tenant_id
+            // priority_tier is NOT NULL — use TIER_HOLD_PENDING as the "free slot" sentinel.
             PropertyAvailability::where('tenant_id', $tenantId)
                 ->where('reservation_id', $reservationId)
                 ->where('source_system', 'internal')
                 ->update([
                     'is_available'            => true,
                     'block_reason'            => null,
-                    'priority_tier'           => 5, // TIER_HOLD_PENDING
+                    'priority_tier'           => PropertyAvailabilityContract::TIER_HOLD_PENDING,
                     'reservation_id'          => null,
                     'origin'                  => null,
                     'projection_generated_at' => now(),
-                    'projection_source'       => 'reservation',
+                    'projection_source'       => PropertyAvailabilityContract::PROJECTION_SOURCE_RESERVATION,
                 ]);
         });
     }

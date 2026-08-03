@@ -109,19 +109,35 @@ interface PropertyAvailabilityContract
     /**
      * Unblock a date range for a property.
      *
+     * OWNERSHIP CONTRACT (Sprint 22 E01 Remediation — BLOCKER-1):
+     * At least one targeting anchor MUST be provided: idempotencyKey, origin, or sourceSystem.
+     * A caller without any anchor cannot mass-clear blocks of unrelated sources.
+     * Example: a maintenance block (origin=maintenance) cannot be removed by a caller
+     * passing origin=manual. Each source owns its own blocks.
+     *
+     * Targeting priority:
+     *  1. idempotencyKey  — most precise; targets the exact block write operation
+     *  2. origin          — targets all blocks from a given source (e.g. 'owner', 'ical')
+     *  3. sourceSystem    — targets all blocks from a given system (e.g. 'airbnb', 'internal')
+     *
      * @param int         $tenantId
      * @param int         $propertyId
-     * @param string      $startDate     YYYY-MM-DD
-     * @param string      $endDate       YYYY-MM-DD
-     * @param string|null $idempotencyKey
+     * @param string      $startDate      YYYY-MM-DD
+     * @param string      $endDate        YYYY-MM-DD
+     * @param string|null $idempotencyKey Most precise ownership anchor
+     * @param string|null $origin         One of ORIGIN_* constants
+     * @param string|null $sourceSystem   Source system identifier
      * @return array { success: bool, status: string, cleared_records: int }
+     * @throws \Exception if no ownership anchor is provided
      */
     public function unblockDateRange(
         int $tenantId,
         int $propertyId,
         string $startDate,
         string $endDate,
-        ?string $idempotencyKey = null
+        ?string $idempotencyKey = null,
+        ?string $origin = null,
+        ?string $sourceSystem = null
     ): array;
 
     /**
