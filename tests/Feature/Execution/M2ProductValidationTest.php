@@ -57,9 +57,9 @@ class M2ProductValidationTest extends TestCase
         // Create admin user for actingAs
         $this->adminUser = \App\Models\User::factory()->admin()->make();
 
-        Ilan::$skipPropertyIdGuard = true;
-        YalihanLifecycle::$skipGuards = true;
-        YalihanLifecycle::$isTransitioningCounter = 0;
+        // skipGuards and isTransitioningCounter no longer exist on YalihanLifecycle.
+        // The lifecycle is fully mocked below so these had no effect anyway.
+        Ilan::bypassPropertyIdGuard(true);
 
         // Runtime repository setup
         $this->runtimeRepository = new EloquentExecutionRuntimeRepository(new WorkforceExecution());
@@ -84,9 +84,7 @@ class M2ProductValidationTest extends TestCase
 
     protected function tearDown(): void
     {
-        Ilan::$skipPropertyIdGuard = false;
-        YalihanLifecycle::$skipGuards = false;
-        YalihanLifecycle::$isTransitioningCounter = 0;
+        Ilan::bypassPropertyIdGuard(false);
         Mockery::close();
         parent::tearDown();
     }

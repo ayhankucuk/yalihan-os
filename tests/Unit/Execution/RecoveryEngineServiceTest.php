@@ -33,10 +33,11 @@ class RecoveryEngineServiceTest extends TestCase
     {
         parent::setUp();
 
-        // Skip lifecycle guards for factory-based listing creation
-        \App\Models\Ilan::$skipPropertyIdGuard = true;
-        \App\Services\Listing\YalihanLifecycle::$skipGuards = true;
-        \App\Services\Listing\YalihanLifecycle::$isTransitioningCounter = 0;
+        // Skip property ID guard for factory-based listing creation.
+        // YalihanLifecycle is fully mocked below; skipGuards/isTransitioningCounter
+        // properties no longer exist in the production class (removed; tests used
+        // to set them but they had no effect once lifecycle was mocked).
+        \App\Models\Ilan::bypassPropertyIdGuard(true);
 
         // Repository
         $this->repository = new EloquentExecutionRuntimeRepository(new WorkforceExecution());
@@ -59,9 +60,7 @@ class RecoveryEngineServiceTest extends TestCase
 
     protected function tearDown(): void
     {
-        \App\Models\Ilan::$skipPropertyIdGuard = false;
-        \App\Services\Listing\YalihanLifecycle::$skipGuards = false;
-        \App\Services\Listing\YalihanLifecycle::$isTransitioningCounter = 0;
+        \App\Models\Ilan::bypassPropertyIdGuard(false);
         Mockery::close();
         parent::tearDown();
     }
