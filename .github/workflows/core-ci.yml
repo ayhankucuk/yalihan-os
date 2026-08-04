@@ -107,8 +107,32 @@ jobs:
       - name: 🗄️ Run Migrations (Memory DB)
         run: php artisan migrate --force
 
-      - name: 🧪 PHP Tests
-        run: php artisan test
+      - name: 🧪 PHPUnit Unit Tests
+        run: |
+          set -o pipefail
+          mkdir -p storage/test-results
+          php -d memory_limit=4G vendor/bin/phpunit \
+            --testsuite="Unit" \
+            --log-junit="storage/test-results/Unit.xml" \
+            2>&1 | tee "storage/test-results/Unit.log"
+
+      - name: 🧪 PHPUnit Feature Tests
+        run: |
+          set -o pipefail
+          mkdir -p storage/test-results
+          php -d memory_limit=4G vendor/bin/phpunit \
+            --testsuite="Feature" \
+            --log-junit="storage/test-results/Feature.xml" \
+            2>&1 | tee "storage/test-results/Feature.log"
+
+      - name: 📦 Upload Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-results-${{ github.run_id }}
+          path: |
+            storage/test-results/
+          retention-days: 7
 
       - name: "🛡️ Phase 4B.3: Tenant Isolation Tests"
         run: |
