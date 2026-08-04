@@ -98,9 +98,16 @@ class AvailabilitySynchronizationServiceTest extends TestCase
             ->count();
         $this->assertEquals(3, $blocked);
 
-        // Check each date
-        foreach (['2026-08-03', '2026-08-04', '2026-08-05'] as $date) {
-            $this->assertDatabaseHas('property_availability', [
+        // Check each date (dynamic date range from test)
+        $expectedDates = [];
+        $current = Carbon::parse($startDate);
+        $end = Carbon::parse($endDate);
+        while ($current <= $end) {
+            $expectedDates[] = $current->format('Y-m-d');
+            $current->addDay();
+        }
+        foreach ($expectedDates as $date) {
+            $this->assertDatabaseHas('property_availabilities', [
                 'property_id' => $property->id,
                 'date' => $date,
                 'is_available' => false,
