@@ -116,6 +116,15 @@ class Ilan extends BaseModel
 
     protected static ?bool $skipPropertyIdGuard = null;
 
+    /**
+     * Test-only helper: bypass the property ID guard without direct protected property access.
+     * Production encapsulation is preserved — the property remains protected.
+     */
+    public static function bypassPropertyIdGuard(bool $skip = true): void
+    {
+        static::$skipPropertyIdGuard = $skip;
+    }
+
     protected $attributes = [
         'yayin_durumu' => IlanDurumu::TASLAK->value
     ];
