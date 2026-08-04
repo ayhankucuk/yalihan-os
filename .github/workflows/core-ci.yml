@@ -107,8 +107,8 @@ jobs:
       - name: 🗄️ Run Migrations (Memory DB)
         run: php artisan migrate --force
 
-      - name: 🧪 PHP Tests (Parallel)
-        run: php artisan test --parallel --recreate-databases
+      - name: 🧪 PHP Tests
+        run: php artisan test
 
       - name: "🛡️ Phase 4B.3: Tenant Isolation Tests"
         run: |
