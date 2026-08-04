@@ -16,14 +16,14 @@ env:
   DB_DATABASE: ':memory:'
 
 jobs:
-  setup-and-verify:
-    name: 🛡️ Setup & Verify
+  setup-base:
+    name: 🛡️ Setup Base
     runs-on: ubuntu-latest
+    outputs:
+      setup_time: ${{ steps.setup.outputs.setup_time }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
       - name: 🛡️ Seal Baseline Guard
         run: |
@@ -33,8 +33,6 @@ jobs:
 
       - name: 🛡️ Workflow Drift Guard
         run: |
-          # Only core-ci.yml is allowed to change.
-          # Unauthorized workflow changes are blocked to maintain CI SSOT.
           changed=$(git diff --name-only HEAD~1 HEAD | grep '^.github/workflows/' || true)
           if [ ! -z "$changed" ] && echo "$changed" | grep -v '^.github/workflows/core-ci.yml$'; then
             echo "❌ Governance Violation: Unauthorized workflow drift detected."
@@ -77,14 +75,16 @@ jobs:
           echo "DB_CONNECTION=sqlite" >> .env
           echo "DB_DATABASE=:memory:" >> .env
 
-      - name: 🧱 Prepare Laravel Runtime Directories
+      - id: setup
+        name: 🧱 Prepare Laravel Runtime Directories
         run: |
           mkdir -p bootstrap/cache
           mkdir -p storage/framework/cache
           mkdir -p storage/framework/sessions
           mkdir -p storage/framework/views
           chmod -R 775 bootstrap/cache storage
-          echo "✅ Runtime directories prepared (Pre-Install)"
+          echo "setup_time=$(date +%s)" >> $GITHUB_OUTPUT
+          echo "✅ Runtime directories prepared"
 
       - name: 🔍 SSOT Guard (package-lock.json)
         run: |
@@ -98,16 +98,42 @@ jobs:
           composer install --no-interaction --prefer-dist --no-progress
           npm ci
 
-      - name: 🛡️ Validate Config (SSOT Enforcement)
-        run: php artisan config:validate
+  phpunit-unit:
+    name: 🧪 PHPUnit Unit Tests
+    runs-on: ubuntu-latest
+    needs: setup-base
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: 🛡️ Config Drift Detection (Audit Gate)
-        run: php artisan config:diff
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, bcmath, pdo, mysql, sqlite, pdo_sqlite
+          coverage: none
 
-      - name: 🗄️ Run Migrations (Memory DB)
+      - name: 📁 Prepare Directories
+        run: |
+          mkdir -p bootstrap/cache storage/framework/{cache,sessions,views} storage/logs storage/test-results
+          chmod -R 775 bootstrap/cache storage
+
+      - name: 🔐 Create Environment
+        run: |
+          cp .env.example .env || touch .env
+          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+          echo "APP_ENV=testing" >> .env
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=:memory:" >> .env
+          echo "CACHE_STORE=array" >> .env
+
+      - name: 📦 Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: 🗄️ Run Migrations
         run: php artisan migrate --force
 
-      - name: 🧪 PHPUnit Unit Tests
+      - name: 🧪 Run Unit Tests
         run: |
           set -o pipefail
           mkdir -p storage/test-results
@@ -116,7 +142,50 @@ jobs:
             --log-junit="storage/test-results/Unit.xml" \
             2>&1 | tee "storage/test-results/Unit.log"
 
-      - name: 🧪 PHPUnit Feature Tests
+      - name: 📦 Upload Unit Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-unit-results-${{ github.run_id }}
+          path: storage/test-results/
+          retention-days: 7
+
+  phpunit-feature:
+    name: 🧪 PHPUnit Feature Tests
+    runs-on: ubuntu-latest
+    needs: setup-base
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, bcmath, pdo, mysql, sqlite, pdo_sqlite
+          coverage: none
+
+      - name: 📁 Prepare Directories
+        run: |
+          mkdir -p bootstrap/cache storage/framework/{cache,sessions,views} storage/logs storage/test-results
+          chmod -R 775 bootstrap/cache storage
+
+      - name: 🔐 Create Environment
+        run: |
+          cp .env.example .env || touch .env
+          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+          echo "APP_ENV=testing" >> .env
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=:memory:" >> .env
+          echo "CACHE_STORE=array" >> .env
+
+      - name: 📦 Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: 🗄️ Run Migrations
+        run: php artisan migrate --force
+
+      - name: 🧪 Run Feature Tests
         run: |
           set -o pipefail
           mkdir -p storage/test-results
@@ -125,14 +194,62 @@ jobs:
             --log-junit="storage/test-results/Feature.xml" \
             2>&1 | tee "storage/test-results/Feature.log"
 
-      - name: 📦 Upload Test Artifacts
+      - name: 📦 Upload Feature Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: phpunit-results-${{ github.run_id }}
-          path: |
-            storage/test-results/
+          name: phpunit-feature-results-${{ github.run_id }}
+          path: storage/test-results/
           retention-days: 7
+
+  setup-and-verify:
+    name: 🛡️ Setup & Verify
+    runs-on: ubuntu-latest
+    needs: [setup-base, phpunit-unit, phpunit-feature]
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, bcmath, pdo, mysql, sqlite, pdo_sqlite
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📁 Prepare Laravel Runtime Directories
+        run: |
+          mkdir -p bootstrap/cache storage/framework/{cache,sessions,views} storage/logs
+          chmod -R 775 bootstrap/cache storage
+
+      - name: 🔐 Create Environment Contract
+        run: |
+          cp .env.example .env || touch .env
+          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+          echo "APP_ENV=testing" >> .env
+          echo "APP_DEBUG=true" >> .env
+          echo "CI=true" >> .env
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=:memory:" >> .env
+          echo "CACHE_STORE=array" >> .env
+
+      - name: 📦 Install Dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          npm ci
+
+      - name: 🛡️ Validate Config (SSOT Enforcement)
+        run: php artisan config:validate
+
+      - name: 🛡️ Config Drift Detection (Audit Gate)
+        run: php artisan config:diff
 
       - name: "🛡️ Phase 4B.3: Tenant Isolation Tests"
         run: |
