@@ -100,7 +100,9 @@ class KisiDomainIsolationTest extends TestCase
         $handler = new KisiProjectionHandler();
 
         // 1. Yazma tablosuna (source) kisi ekle
+        // 🛡️ Phase T5: Direct DB inserts must supply tenant_id explicitly
         $kisiId = DB::table('kisiler')->insertGetId([
+            'tenant_id' => $this->getDefaultTenantId(),
             'ad' => 'Ahmet',
             'soyad' => 'Yılmaz',
             'telefon' => '5559998877',

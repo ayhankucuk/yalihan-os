@@ -16,6 +16,7 @@ class KisiTest extends TestCase
     public function test_kisi_can_be_created(): void
     {
         $kisiId = DB::table('kisiler')->insertGetId([
+            'tenant_id' => $this->getDefaultTenantId(),
             'ad' => 'Test',
             'soyad' => 'Kisi',
             'eposta' => 'test@example.com',
@@ -46,6 +47,7 @@ class KisiTest extends TestCase
         ]);
 
         $kisiId = DB::table('kisiler')->insertGetId([
+            'tenant_id' => $this->getDefaultTenantId(),
             'ad' => 'Test',
             'soyad' => 'Kisi',
             'eposta' => 'test@example.com',
@@ -69,6 +71,7 @@ class KisiTest extends TestCase
     public function test_kisi_has_ilanlar(): void
     {
         $kisiId = DB::table('kisiler')->insertGetId([
+            'tenant_id' => $this->getDefaultTenantId(),
             'ad' => 'Test',
             'soyad' => 'Kisi',
             'eposta' => 'test@example.com',
@@ -100,6 +103,7 @@ class KisiTest extends TestCase
     public function test_kisi_has_talepler(): void
     {
         $kisiId = DB::table('kisiler')->insertGetId([
+            'tenant_id' => $this->getDefaultTenantId(),
             'ad' => 'Test',
             'soyad' => 'Kisi',
             'eposta' => 'test@example.com',
@@ -131,8 +135,10 @@ class KisiTest extends TestCase
      */
     public function test_kisi_scope_active(): void
     {
+        $tenantId = $this->getDefaultTenantId();
         DB::table('kisiler')->insert([
             [
+                'tenant_id' => $tenantId,
                 'ad' => 'Active Kisi',
                 'soyad' => 'Test',
                 'eposta' => 'active@example.com',
@@ -142,6 +148,7 @@ class KisiTest extends TestCase
                 'updated_at' => now(),
             ],
             [
+                'tenant_id' => $tenantId,
                 'ad' => 'Inactive Kisi',
                 'soyad' => 'Test',
                 'eposta' => 'inactive@example.com',
@@ -169,6 +176,7 @@ class KisiTest extends TestCase
     public function test_kisi_context7_compliance(): void
     {
         $kisiId = DB::table('kisiler')->insertGetId([
+            'tenant_id' => $this->getDefaultTenantId(),
             'ad' => 'Test',
             'soyad' => 'Kisi',
             'eposta' => 'test@example.com',

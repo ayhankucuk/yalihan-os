@@ -55,7 +55,9 @@ class IlanControllerAuthorizationTest extends TestCase
     private function makeIlan(User $owner): Ilan
     {
         // Satisfy required FK constraints
+        // 🛡️ Phase T5: Direct DB inserts must supply tenant_id explicitly
         $kisiId = DB::table('kisiler')->insertGetId([
+            'tenant_id'  => $this->getDefaultTenantId(),
             'ad'         => 'Test',
             'soyad'      => 'Kisi',
             'created_at' => now(),
