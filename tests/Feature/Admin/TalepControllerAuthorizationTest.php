@@ -67,9 +67,12 @@ class TalepControllerAuthorizationTest extends TestCase
         ]);
 
         // Create a minimal kisi record to satisfy NOT NULL constraint
+        // 🛡️ Phase T5: Direct DB inserts must supply tenant_id explicitly — Eloquent auto-sets
+        // via BelongsToTenant::creating(), but DB::table() bypasses that hook.
         $kisiId = \Illuminate\Support\Facades\DB::table('kisiler')->insertGetId([
             'ad'         => 'Test',
             'soyad'      => 'Kisi',
+            'tenant_id'  => $this->getDefaultTenantId(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
