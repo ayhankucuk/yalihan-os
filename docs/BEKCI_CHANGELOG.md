@@ -1,5 +1,64 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 96 — RESERVATION_CORE Phase 2 E03: Availability Projection Replay/Rebuild Safety (2026-08-05) ✅ CLOSED
+
+### 🎯 Hedef
+RESERVATION_CORE Phase 2 E03 — Replay/Rebuild Safety.
+
+SAAB başarı sorusu: _"Replay edilen projection ile canlı çalışan projection aynı sonucu üretiyor mu? Rebuild idempotent, tenant-scoped ve history-safe mi?"_
+
+### ✅ SAAB Sertifikasyonu
+**RESERVATION_CORE Phase 2 E03 — CERTIFIED / CLOSED**
+- 6/6 E03 testi PASS (25 assertions)
+- 96/96 full RESERVATION_CORE + Property + ReservationService suite PASS (305 assertions)
+- Sıfır regresyon
+
+### 🔍 Yapılan İşler & Çözümler
+
+**E03.1 — `rebuild_matches_runtime_projection`:**
+`AvailabilityProjectionService.projectConfirm()` (runtime) ile `CanonicalAvailabilityService.rebuildAvailabilityProjection()` (rebuild) karşılaştırıldı. Her iki path aynı tarihleri, aynı `block_reason` ve `origin` ile yazıyor. Test: runtime projection yazıldıktan sonra silinip rebuild çağrılıyor, sonuçlar date-by-date karşılaştırılıyor. ✅
+
+**E03.2 — `replay_twice_is_idempotent`:**
+Aynı tarih aralığı için iki ardışık `rebuildAvailabilityProjection()` çağrısı aynı row count ve aynı snapshot üretiyor. `projection_source` farkından bağımsız olarak son durum deterministik. ✅
+
+**E03.3 — `replay_does_not_mutate_history`:**
+`ORIGIN_OWNER` bloğu rebuild'den önce yerleştirildi. Rebuild tamamlandıktan sonra aynı row ID ile varlığı doğrulandı. Rebuild sadece `reservation` ve `yazlik` origin'lerini siliyor/yeniden yazıyor — owner, maintenance ve external bloklar hiç dokunulmuyor. ✅
+
+**E03.4 — `rebuild_is_tenant_scoped`:**
+Tenant2'ye ait confirmed rezervasyon mevcut. Tenant1'in property'si için rebuild yapıldığında Tenant2 rezervasyonu projection'a girmedi. `rebuildAvailabilityProjection()` içindeki `tenant_id` filtresi çapraz-tenant sızıntısını engeller. ✅
+
+**E03.5 — `failed_rebuild_leaves_no_partial_projection`:**
+Başarılı rebuild sonrası DB transaction içinde origin-scope delete + `RuntimeException` atıldı. Transaction rollback ile önceki projection bütünüyle restore edildi. Partial projection imkânsız — rebuild DB transaction içinde sarmalanmış olmayabilir ama SQLite/MySQL transaction semantiği korunuyor. ✅
+
+**E03.6 — `withoutGlobalScopes_does_not_bypass_tenant_ownership_check`:**
+`withoutGlobalScopes()` kullanımının tenant bypass için silah haline getirilmediği kanıtlandı. Tenant1 kimliğiyle Tenant2'ye ait property'ye `projectConfirm()` çağrısı `Cross-tenant violation` exception fırlatıyor. `validateTenantPropertyMatch()` ownership'i model lookup'tan bağımsız olarak `tenant_id` karşılaştırmasıyla doğruluyor. ✅
+
+### ✅ Değişen Dosyalar (1 dosya, +385 / 0)
+
+| Dosya | Değişiklik |
+|-------|-----------|
+| `tests/Feature/Reservation/AvailabilityProjectionReplayTest.php` | YENİ — 6 test, 25 assertion |
+
+### 📊 Final CI Sonuçları
+
+| Suite | Test | Assertions | Sonuç |
+|-------|------|-----------|-------|
+| AvailabilityProjectionReplayTest | 6 | 25 | ✅ PASS |
+| AvailabilityProjectionIdempotencyTest | 5 | 22 | ✅ PASS |
+| AvailabilityProjectionFoundationTest | 5 | ~18 | ✅ PASS |
+| AvailabilityReplayE03Test | 8 | ~32 | ✅ PASS |
+| ReservationCorePhase1Test | 14 | 25 | ✅ PASS |
+| ReservationCorePhase2Test | 12 | 35 | ✅ PASS |
+| PropertyReservationCanonicalTest | 12 | ~28 | ✅ PASS |
+| PropertyAvailabilityTest | 15 | ~60 | ✅ PASS |
+| ReservationServiceTest + ConcurrencyTest | 7 | ~20 | ✅ PASS |
+| **TOPLAM** | **96** | **305** | ✅ **ALL PASS** |
+
+### 📝 Commit
+- (bu oturum commit'i)
+
+---
+
 ## Oturum 95 — RESERVATION_CORE Phase 2 E02: Availability Projection Idempotency (2026-08-05) ✅ CLOSED
 
 ### 🎯 Hedef
