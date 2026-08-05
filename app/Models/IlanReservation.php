@@ -7,9 +7,18 @@ use App\Models\BaseModel;
 use App\Traits\HasCountryScope;
 
 /**
- * Ilan Reservation Model
+ * Ilan Reservation Model — DEPRECATED
+ *
+ * ⚠️ @deprecated 2026-08-05 — RESERVATION_CORE Phase 1
+ * Bu model rezerve edilmiştir. Tüm yeni işlemler için `PropertyReservation` kullanılmalıdır.
+ * Detaylar: docs/sprints/RESERVATION_CORE_CHARTER.md
  *
  * Context7 Compliance: Rezervasyon yönetimi
+ *
+ * Kullanım Durumu:
+ * - Read operations: PropertyReservation üzerinden yapılmalı
+ * - Write operations: ReservationService üzerinden yapılmalı
+ * - Migration: Phase 2'de tamamen kaldırılacak
  */
 class IlanReservation extends BaseModel
 {

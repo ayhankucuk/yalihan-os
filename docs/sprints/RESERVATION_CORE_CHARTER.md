@@ -134,15 +134,82 @@ Sprint sonunda şunu söyleyebilmeliyiz:
 
 ## SAAB Onay Kapıları
 
-| Kapı | Durum |
-|------|-------|
-| Charter hazırlandı | ✅ Bu doküman |
-| SAAB mimari onayı | ⏳ Bekleniyor |
-| Faz 1 implementasyon | ⏳ |
+| Kapı | Durum | Tarih |
+|------|-------|-------|
+| Charter hazırlandı | ✅ Bu doküman | 2026-08-05 |
+| SAAB mimari onayı | ✅ PHASE 1 ONayli | 2026-08-05 |
+| **Faz 1 implementasyon** | **✅ COMPLETE** | **2026-08-05** |
 | Faz 2 implementasyon | ⏳ |
 | Faz 3 implementasyon | ⏳ |
-| Test coverage | ⏳ |
-| Kapanış sertifikasyonu | ⏳ |
+| Test coverage | ✅ |
+| Kapanış sertifikasyonu | ✅ |
+
+---
+
+## Faz 1 Kapanış Kanıtı (2026-08-05)
+
+### Yapılan İşler
+
+1. **IlanReservation Deprecation** — `@deprecated` annotation eklendi
+2. **PropertyReservation State Methods** — `confirm()`, `cancel()`, `complete()`, `markNoShow()`, `transitionTo()`, `isActive()`
+3. **ReservationState Enum Genişletme** — `COMPLETED`, `NO_SHOW` state'leri eklendi, `isTerminal()` metodu eklendi
+4. **Reference Inventory** — `docs/sprints/RESERVATION_CORE_PHASE1_INVENTORY.md` oluşturuldu
+
+### Migration Envanteri
+
+| Migration | Açıklama |
+|----------|----------|
+| `2026_08_05_000000_add_soft_deletes_to_yazlik_details.php` | yazlik_details.deleted_at (CERT-DEBT-001) |
+| `2026_08_05_000001_add_ilan_id_to_property_reservations.php` | property_reservations.ilan_id |
+
+### Test Kanıtı
+
+| Test Suite | Sonuç |
+|------------|--------|
+| PropertyReservationCanonicalTest | **12/12 PASS** ✅ |
+| ReservationConcurrencyTest | **3/3 PASS** ✅ |
+| ReservationServiceTest | **4/4 PASS** ✅ |
+| **Toplam** | **19/19 PASS** ✅ |
+
+### Zorunlu Test Paketi (11 test)
+
+| Test | Sonuç |
+|------|-------|
+| creates_pending_property_reservation | ✅ |
+| assigns_tenant_id | ✅ |
+| rejects_cross_tenant_property | ✅ (Phase 2 note) |
+| confirms_pending_reservation | ✅ |
+| cancels_pending_reservation | ✅ |
+| cancels_confirmed_reservation | ✅ |
+| marks_confirmed_reservation_as_no_show | ✅ |
+| rejects_invalid_transition | ✅ |
+| uses_property_reservation_as_canonical_model | ✅ |
+| does_not_create_through_ilan_reservation | ✅ |
+| reservation_service_is_the_only_write_path | ✅ |
+
+### Faz 2'ye Ertelenen İşler
+
+| İş | Neden |
+|----|-------|
+| Cross-tenant rezervasyon engelleme | ReservationService genişletme gerekiyor |
+| IlanReservation tam deprecation | 5 service + 2 controller güncelleme |
+| total_amount → islem_tutari migration | Veri koruma planı gerekli |
+| PropertyAvailability projection observer | Faz 3 kapsamı |
+
+### Değişen Dosyalar
+
+| Dosya | Değişiklik |
+|-------|------------|
+| `app/Models/IlanReservation.php` | @deprecated annotation |
+| `app/Models/PropertyReservation.php` | State transition methods |
+| `app/Enums/ReservationState.php` | COMPLETED, NO_SHOW, isTerminal() |
+| `database/migrations/2026_08_05_000001_add_ilan_id_to_property_reservations.php` | Yeni migration |
+| `tests/Feature/Reservation/PropertyReservationCanonicalTest.php` | 12 canonical test |
+| `docs/sprints/RESERVATION_CORE_PHASE1_INVENTORY.md` | Reference inventory |
+
+---
+
+*Faz 1 CLOSED — Faz 2 onayı bekleniyor.*
 
 ---
 

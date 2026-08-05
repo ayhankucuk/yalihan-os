@@ -56,6 +56,34 @@ docs: close CERT-DEBT-001 owner ilan write correctness
 
 ---
 
+## Oturum 94 — RESERVATION_CORE Phase 1: Canonicalization (2026-08-05) ✅ CLOSED
+
+### 🎯 Hedef
+PropertyReservation canonical aggregate olarak tescil etmek, IlanReservation deprecation path başlatmak.
+
+### 🔍 Yapılan İşler
+1. **IlanReservation Deprecation** — `@deprecated` annotation eklendi
+2. **PropertyReservation State Methods** — `confirm()`, `cancel()`, `complete()`, `markNoShow()`, `transitionTo()`
+3. **ReservationState Enum** — `COMPLETED`, `NO_SHOW` state'leri eklendi
+4. **Reference Inventory** — `docs/sprints/RESERVATION_CORE_PHASE1_INVENTORY.md`
+
+### ✅ Test Sonuçları
+| Suite | Sonuç |
+|-------|-------|
+| PropertyReservationCanonicalTest | **12/12 PASS** ✅ |
+| ReservationConcurrencyTest | **3/3 PASS** ✅ |
+| ReservationServiceTest | **4/4 PASS** ✅ |
+| **Toplam** | **19/19 PASS** ✅ |
+
+### 📝 Değişen Dosyalar
+- `app/Models/PropertyReservation.php` — State transition methods
+- `app/Models/IlanReservation.php` — @deprecated annotation
+- `app/Enums/ReservationState.php` — COMPLETED, NO_SHOW, isTerminal()
+- `database/migrations/2026_08_05_000001_add_ilan_id_to_property_reservations.php`
+- `tests/Feature/Reservation/PropertyReservationCanonicalTest.php` — 12 canonical test
+
+---
+
 ## Oturum 93 — CERT-DEBT-001 Sprint: Owner Ilan Write Correctness (2026-08-05) ✅ CLOSED
 
 ### 🎯 Hedef
