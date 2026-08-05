@@ -101,6 +101,16 @@ State transition
 Availability side effect
 ```
 
+### 📝 Mimari Kural
+```
+Reservation → Event → Projection Service → PropertyAvailability
+ASLA: Reservation → PropertyAvailability::save()
+```
+
+### 📝 Phase 2 Başladı
+- Charter: `docs/sprints/RESERVATION_CORE_PHASE2_CHARTER.md`
+- Başarı sorusu: Idempotent, Replay-safe, Tenant-safe availability projection
+
 ### 📝 Değişen Dosyalar
 - `app/Models/PropertyReservation.php` — State transition methods
 - `app/Models/IlanReservation.php` — @deprecated annotation

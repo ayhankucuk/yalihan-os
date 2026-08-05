@@ -4,7 +4,25 @@
 **Hazırlayan:** WenOX
 **Faz:** 2 — Availability Projection Hardening
 **Önkoşul:** ✅ Phase 1 CLOSED (commit 0f3df35)
-**SAAB Onayı:** ⏳ Bekleniyor
+**SAAB Onayı:** ✅ APPROVED (2026-08-05)
+
+---
+
+## SAAB Resmi Kararı
+
+| Alan | Değer |
+|------|-------|
+| Status | **APPROVED** |
+| Mission | Availability Projection Hardening |
+| Primary Goal | Deterministic, Idempotent, Replay-safe, Tenant-safe, Observable |
+| Success Metric | Reservation lifecycle remains the single source of truth and every availability projection can be rebuilt without divergence. |
+
+**OUT OF SCOPE:**
+- Channel Manager
+- Telegram migration
+- Finance
+- Pricing
+- Conflict Engine UI
 
 ---
 
@@ -78,16 +96,26 @@ Tespit edilen bypass noktaları:
 
 ---
 
-## Phase 2 Dışında Kalan
+## Phase 2 Dışında Kalan (KESİNLİKLE YAPILMAZ)
 
-| Konu | Neden |
-|------|--------|
-| Telegram migration | Ayrı faz |
-| Channel Manager | Kanal katmanı |
-| Airbnb/Booking adapter | Dış sistem entegrasyonu |
-| Finance refactor | Finansal katman |
-| Money Value Object | Ayrı sprint |
-| Tam conflict engine | Conflict resolution Phase 3 |
+| Yasak | Neden |
+|-------|--------|
+| ❌ Telegram Migration | Ayrı faz |
+| ❌ Channel Manager | Kanal katmanı — Availability'e bağımlı |
+| ❌ Airbnb Adapter | Dış sistem entegrasyonu |
+| ❌ Booking Adapter | Dış sistem entegrasyonu |
+| ❌ Pricing Engine | Finansal katman |
+| ❌ Finance Refactor | Ayrı sprint |
+| ❌ Conflict Engine UI | Availability'e bağımlı |
+
+---
+
+## P1: Gelecek Sprintlerde
+
+| Konu | Not |
+|------|-----|
+| Projection Rebuild | Reservation History → Projection |
+| Drift Detection | Reservation ↔ Availability mismatch raporu |
 
 ---
 
@@ -97,11 +125,33 @@ Tespit edilen bypass noktaları:
 
 > Aynı reservation event'i yeniden işlendiğinde availability kayıtları çoğalmadan, iptal edildiğinde eksiksiz serbest bırakılarak ve tenant sınırları korunarak çalışıyor mu?
 
-## Başarı Kriteri
+## Resmi Başarı Kriteri
 
-Sprint sonunda şunu söyleyebilmeliyiz:
+Her reservation olayı (create, confirm, cancel, replay) PropertyAvailability üzerinde:
 
-> Her rezervasyon durum değişikliği PropertyAvailability projeksiyonuna doğru şekilde yansır; leak yok, duplicate yok, tenant izolasyonu korunur.
+| Özellik | Açıklama |
+|---------|----------|
+| ✅ Deterministic | Aynı input her zaman aynı output |
+| ✅ Idempotent | Aynı event 3 kere çalıştır → 1 kayıt |
+| ✅ Replay-safe | Replay sırasında duplicate oluşmaz |
+| ✅ Tenant-safe | Tenant A, Tenant B availability'sine dokunamaz |
+| ✅ Observable | Drift/mismatch raporlanabilir |
+
+---
+
+## Mimari Kural
+
+**Korunmalı:**
+```
+Reservation → Event → Projection Service → PropertyAvailability
+```
+
+**ASLA yapılmamalı:**
+```
+Reservation → PropertyAvailability::save()
+```
+
+Direct ORM write bypass kesinlikle yasak.
 
 ### Ölçülebilir Hedefler
 
@@ -119,15 +169,18 @@ Sprint sonunda şunu söyleyebilmeliyiz:
 
 | Test | Kapsanan |
 |------|----------|
-| `confirms_reservation_creates_availability_blocks` | T1, I1 |
-| `cancels_reservation_frees_availability_blocks` | Leak-1, Leak-2 |
-| `cancelling_already_cancelled_is_idempotent` | I2 |
-| `no_show_frees_availability_blocks` | State transition |
-| `replay_rebuilds_availability_from_reservations` | R1, R2, R3 |
-| `replay_preserves_external_source_blocks` | R2 |
-| `external_source_blocks_not_overwritten_by_cancel` | Leak-3 |
-| `reservation_tenant_matches_availability_tenant` | T1, T2 |
-| `cross_tenant_availability_access_blocked` | T2 |
+| `creates_availability_block_once` | Deterministic |
+| `confirm_twice_is_idempotent` | Idempotent |
+| `cancel_releases_block` | Availability Release |
+| `cancel_twice_is_safe` | Idempotent |
+| `replay_does_not_duplicate_projection` | Replay-safe |
+| `projection_rebuild_matches_runtime` | Deterministic |
+| `tenant_cannot_touch_other_projection` | Tenant-safe |
+| `availability_projection_matches_reservation` | Observable |
+| `reservation_delete_rebuilds_projection` | Observable |
+| `concurrent_confirm_produces_single_block` | Replay-safe |
+| `concurrent_cancel_safe` | Idempotent |
+| `drift_detector_detects_manual_changes` | Observable |
 
 ---
 
