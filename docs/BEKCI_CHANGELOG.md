@@ -194,6 +194,29 @@ ASLA: Reservation → PropertyAvailability::save()
 
 ---
 
+## Oturum 95b — RESERVATION_CORE Phase 2 E02: Idempotency (2026-08-05) ✅ CLOSED
+
+### 🎯 Hedef
+Idempotency invariant'ları doğrulamak.
+
+### ✅ Test Sonuçları
+| Suite | Sonuç |
+|-------|-------|
+| AvailabilityProjectionIdempotencyTest | **5/5 PASS** |
+| AvailabilityProjectionFoundationTest | **5/5 PASS** |
+| **Toplam** | **10/10 PASS** ✅ |
+
+### 🔍 Kapsanan İnvaryantlar
+| Invariant | Test |
+|-----------|------|
+| Aynı event 3 kere işlenirse tek kayıt | confirm_event_processed_three_times_creates_one_projection |
+| Cancel idempotent | cancel_event_processed_three_times_is_safe |
+| Queue retry güvenliği | listener_retry_does_not_duplicate_projection |
+| Identity deterministic | projection_identity_is_deterministic |
+| Concurrent confirm tek kayıt | concurrent_confirm_produces_single_projection |
+
+---
+
 ## Oturum 94 — RESERVATION_CORE Phase 1: Canonicalization (2026-08-05) ✅ CLOSED
 
 ### 🎯 Hedef
