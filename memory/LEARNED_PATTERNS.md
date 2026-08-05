@@ -92,6 +92,47 @@ resources/views/auth/ → @extends('layouts.guest')
 
 ---
 
+### LP-008: Test Contract Drift — Tablo Adı Uyuşmazlığı
+**Tarih:** 2026-08-05 (Oturum ~70)
+**Sorun:** Test assertion'ı `property_availability` (tekil) kullanıyordu, Model/Migration/Service `property_availabilities` (çoğul) kullanıyordu
+**Dosya:** `tests/Feature/ChannelManager/AvailabilitySynchronizationServiceTest.php:103`
+**İkincil Sorun:** Hardcoded tarihler dinamik Carbon-based setup'tan sapmıştı
+**Düzeltme:**
+- Tablo adı assertion'ı `property_availabilities` olarak düzeltildi
+- Tarih beklentileri `Carbon::now()->addDays(...)` ile dinamik hale getirildi
+**Doğrulama:** 9/9 PASS, 30 assertions, Commit: `52620f5`
+**Koruma:** Kod review (test, model ve migration birlikte doğrulanmalı)
+**Reddedilen Hipotezler:**
+- ❌ RefreshDatabase eksikliği
+- ❌ CI bootstrap migration problemi
+- ❌ property_availabilities migration eksikliği
+
+---
+
+## SAAB KURALI: Schema Uyuşmazlığı Doğrulama Zinciri
+
+**Prensip:** Schema uyuşmazlığı şüphesinde önce canonical contract doğrulanır; test altyapısı değiştirilmez.
+
+**Doğrulama sırası:**
+```
+Model ($table)
+    ↓
+Migration (Schema::create)
+    ↓
+Service (Eloquent sorguları)
+    ↓
+Test (assertion'lar)
+    ↓
+CI Bootstrap
+```
+
+**Bu yaklaşım sayesinde:**
+- Gereksiz RefreshDatabase eklemelerinden kaçınılır
+- CI workflow değişiklikleri önlenir
+- Migration eksikliği yanlış teşhis edilmez
+
+---
+
 ## CONTEXT7 NAMING VIOLATION KATEGORILERI
 
 ### Kategori 1: Domain Model ($fillable, DB kolonları)
