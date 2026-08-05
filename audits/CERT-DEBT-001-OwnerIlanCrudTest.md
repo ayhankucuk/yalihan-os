@@ -93,8 +93,9 @@ PASS  Tests\Feature\Owner\OwnerIlanCrudTest
 | `resources/views/owner/ilanlar/show.blade.php` | `yayin_durumu` label fix |
 | `tests/Feature/Owner/OwnerIlanValuationTest.php` | Test fixture düzeltmesi |
 | `tests/Feature/CQRS/SyncListingProjectionOwnershipTest.php` | Yeni ownership projection testi |
+| `database/migrations/2026_08_05_000000_add_soft_deletes_to_yazlik_details.php` | **CERT-DEBT-001 Fix:** `yazlik_details` tablosuna `deleted_at` sütunu eklendi |
 
-**Toplam:** 12 dosya değişti, +463 / -40
+**Toplam:** 13 dosya değişti, +463 / -40
 
 ---
 

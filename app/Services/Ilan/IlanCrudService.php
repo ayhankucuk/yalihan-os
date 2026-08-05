@@ -196,12 +196,18 @@ class IlanCrudService
     {
         $ilan->baslik = $data['baslik'];
         $ilan->aciklama = $data['aciklama'] ?? null;
+
+        // CERT-DEBT-001 Fix: user_id set et — Owner Portal'da controller auth()->id() ile set ediyor
+        // array_key_exists kullan: isset() null değerinde false döner, ama payload'da user_id varsa set edilmeli
+        if (array_key_exists('user_id', $data)) {
+            $ilan->user_id = $data['user_id'];
+        }
+
         // SAB §5: State Machine enforcement
         // İlan durumu doğrudan set edilmez, akışın sonunda YalihanLifecycle kullanılır.
         // Ham veri burada sadece yetki kontrolü veya başlangıç değeri için saklanabilir.
         $ilan->danisman_id = $data['danisman_id'] ?? Auth::id();
         $ilan->ilan_sahibi_id = $data['ilan_sahibi_id'] ?? null;
-        $ilan->danisman_id = $data['danisman_id'] ?? Auth::id();
         $ilan->crm_only = $data['crm_only'] ?? false;
 
         // ======================================================================
@@ -342,7 +348,19 @@ class IlanCrudService
         }
 
         if (empty($ilan->slug) || $ilan->isDirty('baslik')) {
-            $ilan->slug = Str::slug($ilan->baslik);
+            $baseSlug = Str::slug($ilan->baslik);
+            $slug = $baseSlug;
+            $counter = 1;
+            // Ensure uniqueness — append increment if slug is already taken by another record
+            while (
+                \App\Models\Ilan::withTrashed()
+                    ->where('slug', $slug)
+                    ->when($ilan->exists, fn($q) => $q->where('id', '!=', $ilan->id))
+                    ->exists()
+            ) {
+                $slug = $baseSlug . '-' . $counter++;
+            }
+            $ilan->slug = $slug;
         }
     }
 
