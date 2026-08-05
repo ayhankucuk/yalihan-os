@@ -61,26 +61,53 @@ docs: close CERT-DEBT-001 owner ilan write correctness
 ### 🎯 Hedef
 PropertyReservation canonical aggregate olarak tescil etmek, IlanReservation deprecation path başlatmak.
 
+### ✅ SAAB Sertifikasyonu
+| Kalite Kapısı | Sonuç |
+|--------------|--------|
+| Canonical model: PropertyReservation | ✅ PASS |
+| Başlangıç durumu: PENDING | ✅ PASS |
+| Kontrollü state transition | ✅ PASS |
+| Confirmation sırasında availability bloklama | ✅ PASS |
+| Cancellation sırasında availability serbest bırakma | ✅ PASS |
+| P0 availability leak | ✅ CLOSED |
+| UpdateReservationStateAction service delegasyonu | ✅ PASS |
+| COMPLETED ve NO_SHOW | ✅ PASS |
+| Terminal state semantiği | ✅ PASS |
+| IlanReservation deprecation | ✅ PASS |
+| **Toplam** | **✅ 21/21 PASS, 58 assertion** |
+
 ### 🔍 Yapılan İşler
 1. **IlanReservation Deprecation** — `@deprecated` annotation eklendi
 2. **PropertyReservation State Methods** — `confirm()`, `cancel()`, `complete()`, `markNoShow()`, `transitionTo()`
 3. **ReservationState Enum** — `COMPLETED`, `NO_SHOW` state'leri eklendi
 4. **Reference Inventory** — `docs/sprints/RESERVATION_CORE_PHASE1_INVENTORY.md`
 
-### ✅ Test Sonuçları
+### ✅ Test Kanıtı
 | Suite | Sonuç |
 |-------|-------|
-| PropertyReservationCanonicalTest | **12/12 PASS** ✅ |
-| ReservationConcurrencyTest | **3/3 PASS** ✅ |
+| ReservationCorePhase1Test | **14/14 PASS** ✅ |
 | ReservationServiceTest | **4/4 PASS** ✅ |
-| **Toplam** | **19/19 PASS** ✅ |
+| ReservationConcurrencyTest | **3/3 PASS** ✅ |
+| **Toplam** | **21/21 PASS, 58 assertion** ✅ |
+
+### 📝 Mimari Karar
+```
+UpdateReservationStateAction
+        ↓
+ReservationService
+        ↓
+State transition
+        ↓
+Availability side effect
+```
 
 ### 📝 Değişen Dosyalar
 - `app/Models/PropertyReservation.php` — State transition methods
 - `app/Models/IlanReservation.php` — @deprecated annotation
 - `app/Enums/ReservationState.php` — COMPLETED, NO_SHOW, isTerminal()
+- `app/Actions/Admin/Reservation/UpdateReservationStateAction.php` — Service delegasyonu
 - `database/migrations/2026_08_05_000001_add_ilan_id_to_property_reservations.php`
-- `tests/Feature/Reservation/PropertyReservationCanonicalTest.php` — 12 canonical test
+- `tests/Feature/Reservation/ReservationCorePhase1Test.php` — 14 canonical test
 
 ---
 
