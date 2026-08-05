@@ -89,71 +89,71 @@ class AvailabilityProjectionService implements AvailabilityProjectionContract
                 );
             }
 
-            // Idempotency: Check if already projected by this reservation
-            $existingBlocks = PropertyAvailability::where('property_id', $propertyId)
+            // E02 Idempotency: Load ALL existing rows for this date range — both already-blocked
+            // by this reservation (skip) and available rows (block). This prevents any partial
+            // projection scenario from causing duplicate writes on retry.
+            $existingRows = PropertyAvailability::where('property_id', $propertyId)
                 ->whereIn('date', $dates)
-                ->where('reservation_id', $reservationId)
                 ->where('source_system', 'internal')
-                ->count();
+                ->lockForUpdate()
+                ->get()
+                ->keyBy(fn($r) => Carbon::parse($r->date)->format('Y-m-d'));
 
-            if ($existingBlocks === count($dates)) {
-                // Already projected — idempotent return
+            // Dates already blocked by THIS reservation — skip them (idempotent).
+            $alreadyProjectedDates = $existingRows
+                ->filter(fn($r) => !$r->is_available && (int) $r->reservation_id === $reservationId)
+                ->keys()
+                ->all();
+
+            if (count($alreadyProjectedDates) === count($dates)) {
+                // Full projection already exists — idempotent return.
                 return [
                     'success' => true,
-                    'blocked_days' => $existingBlocks,
+                    'blocked_days' => count($dates),
                     'dates' => $dates,
                     'idempotent' => true,
                 ];
             }
 
-            // Upsert: Insert missing dates, update existing
-            $existing = PropertyAvailability::where('property_id', $propertyId)
-                ->whereIn('date', $dates)
-                ->where('is_available', true)
-                ->where('source_system', 'internal')
-                ->lockForUpdate()
-                ->get()
-                ->keyBy(fn($r) => $r->date);
-
             $blockedCount = 0;
             foreach ($dates as $dateStr) {
-                if (isset($existing[$dateStr])) {
-                    $existing[$dateStr]->update([
-                        'is_available' => false,
-                        'block_reason' => 'reservation',
-                        'priority_tier' => self::TIER_RESERVATION,
-                        'reservation_id' => $reservationId,
-                        'source_system' => 'internal',
-                        'origin' => 'reservation',
-                        'idempotency_key' => $this->getProjectionKey($reservationId, $dateStr),
-                        'projection_generated_at' => $now,
-                        'projection_source' => self::SOURCE,
-                    ]);
+                // Skip dates already projected by this reservation.
+                if (in_array($dateStr, $alreadyProjectedDates, true)) {
                     $blockedCount++;
-                } else {
-                    PropertyAvailability::create([
-                        'tenant_id' => $tenantId,
-                        'property_id' => $propertyId,
-                        'date' => $dateStr,
-                        'is_available' => false,
-                        'block_reason' => 'reservation',
-                        'priority_tier' => self::TIER_RESERVATION,
-                        'reservation_id' => $reservationId,
-                        'source_system' => 'internal',
-                        'origin' => 'reservation',
-                        'idempotency_key' => $this->getProjectionKey($reservationId, $dateStr),
-                        'projection_generated_at' => $now,
-                        'projection_source' => self::SOURCE,
-                    ]);
-                    $blockedCount++;
+                    continue;
                 }
+
+                $blockData = [
+                    'is_available'            => false,
+                    'block_reason'            => 'reservation',
+                    'priority_tier'           => self::TIER_RESERVATION,
+                    'reservation_id'          => $reservationId,
+                    'source_system'           => 'internal',
+                    'origin'                  => 'reservation',
+                    'idempotency_key'         => $this->getProjectionKey($reservationId, $dateStr),
+                    'projection_generated_at' => $now,
+                    'projection_source'       => self::SOURCE,
+                ];
+
+                if (isset($existingRows[$dateStr])) {
+                    // Row exists (available or blocked by something else) — update it.
+                    $existingRows[$dateStr]->update($blockData);
+                } else {
+                    // No row yet — insert.
+                    PropertyAvailability::create(array_merge($blockData, [
+                        'tenant_id'   => $tenantId,
+                        'property_id' => $propertyId,
+                        'date'        => $dateStr,
+                    ]));
+                }
+                $blockedCount++;
             }
 
             return [
-                'success' => true,
+                'success'      => true,
                 'blocked_days' => $blockedCount,
-                'dates' => $dates,
-                'idempotent' => $existingBlocks > 0,
+                'dates'        => $dates,
+                'idempotent'   => !empty($alreadyProjectedDates),
             ];
         });
     }
@@ -265,7 +265,9 @@ class AvailabilityProjectionService implements AvailabilityProjectionContract
      */
     public function validateTenantPropertyMatch(int $tenantId, int $propertyId): bool
     {
-        $ilan = Ilan::find($propertyId);
+        // withoutGlobalScopes bypasses TenantScope + SoftDeletes so the service
+        // can validate ownership regardless of the active tenant context.
+        $ilan = Ilan::withoutGlobalScopes()->find($propertyId);
 
         if (!$ilan) {
             throw new \Exception("Property {$propertyId} not found");
