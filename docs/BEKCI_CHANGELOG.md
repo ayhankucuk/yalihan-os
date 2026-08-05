@@ -1,5 +1,37 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 92 — LP-008 Kapanış: property_availabilities Tablo Adı Doğrulaması (2026-08-05) ✅ CLOSED
+
+### 🎯 Hedef
+SAAB Technical Decision: Model/Migration/Test tablo adı uyuşmazlığının kesin olarak kapatılması.
+
+### 🔍 SAAB Kararı
+| Kontrol | Sonuç |
+|---------|-------|
+| Model ↔ Migration tablo adı uyumu | ✅ PASS |
+| Test ↔ Tablo adı uyumu | ✅ PASS |
+| Canonical tablo adı | ✅ `property_availabilities` (çoğul) |
+| Tekil kalıntı | ✅ Yok |
+| Availability Testleri | ✅ 15/15 |
+| Ownership Testleri | ✅ 12/12 |
+| **Toplam** | **27 test / 85 assertion** |
+
+### 🔍 context window exceeds limit (2013) Sınıflandırması
+| Alan | Sonuç |
+|------|-------|
+| Kod hatası | ❌ Hayır |
+| Migration hatası | ❌ Hayır |
+| SQLite problemi | ❌ Hayır |
+| AI tooling/context budget | ✅ Evet |
+
+### 📝 Commit
+```
+commit 583a00a
+chore: LP-008 kapanış kaydı — property_availabilities tablo adı doğrulandı
+```
+
+---
+
 ## Oturum 91 — TS-01 F2 Waves 1B, 1C, 1D: Validation Harness, Lifecycle Fixtures & Unit Alignment (2026-08-02) ✅ CLOSED
 
 ### 🎯 Hedef
