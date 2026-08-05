@@ -180,6 +180,66 @@ php artisan sab:integrity-scan --dirty --guard=THIN_CONTROLLER_GUARD
 
 ---
 
+## Gate 8: Schema Contract Verification (SAAB-QG-009)
+
+> **Effective:** 2026-08-05
+> **Pattern ID:** LP-008
+
+### Rule
+On any "table/column not found" or "no such table" error, verify schema contract before making infrastructure changes.
+
+### Verification Order (Canonical Chain)
+```
+Model ($table)
+    ↓
+Migration (Schema::create)
+    ↓
+Service (Eloquent / Query)
+    ↓
+Test (Assertion / Fixture)
+    ↓
+CI Bootstrap
+```
+
+### Verification Commands
+```bash
+# 1. Check Model $table
+grep -n '$table' app/Models/PropertyAvailability.php
+
+# 2. Check Migration table name
+grep -n "Schema::create\|Schema::table" database/migrations/*availability*.php
+
+# 3. Check Service queries
+grep -n "PropertyAvailability::" app/Services/**/*.php
+
+# 4. Check Test assertions
+grep -n "property_availability" tests/**/*.php
+
+# 5. Check CI migration
+grep -n "migrate" .github/workflows/*.yml
+```
+
+### Expected
+- All layers use consistent table name
+- Test assertions match Model/Migration contract
+- No hardcoded table names in tests (use Model::getTable() instead)
+
+### Failure Action
+- Fix test assertions, NOT infrastructure
+- ❌ Do NOT add RefreshDatabase unless proven necessary
+- ❌ Do NOT modify CI bootstrap or workflow
+- ❌ Do NOT create new migrations for existing tables
+- ❌ Do NOT modify Models or Services if they are consistent
+
+### Rejected Hypotheses Pattern
+When diagnosing schema errors, explicitly document and reject:
+- ❌ RefreshDatabase missing
+- ❌ CI bootstrap migration problem
+- ❌ Migration file missing for existing table
+- ❌ Model table name mismatch
+
+---
+
 ## Automated Gate Execution
 
 Quality gates should be run automatically at sprint close:
