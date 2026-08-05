@@ -56,6 +56,38 @@ docs: close CERT-DEBT-001 owner ilan write correctness
 
 ---
 
+## Oturum 93 — CERT-DEBT-001 Sprint: Owner Ilan Write Correctness (2026-08-05) ✅ CLOSED
+
+### 🎯 Hedef
+OwnerIlanController store() ve update() akışlarındaki 500 hatalarını çözmek.
+
+### 🔍 Kök Nedenler & Çözümler
+
+| Problem | Kök Neden | Çözüm |
+|---------|------------|--------|
+| **CDT-001** (store 500) | `yazlik_details.deleted_at` sütunu yok | Migration eklendi |
+| **CDT-002** (user_id=null) | `mapCoreData()` user_id set etmiyordu | `array_key_exists('user_id', $data)` ile mapping eklendi |
+| **CDT-003** (update 500) | Yukarıdaki ile aynı kaynak | Aynı çözüm |
+
+### 📝 Değişen Dosyalar
+- `app/Services/Ilan/IlanCrudService.php` — `mapCoreData()` user_id fix
+- `database/migrations/2026_08_05_000000_add_soft_deletes_to_yazlik_details.php` — deleted_at migration
+
+### 📝 Commit
+```
+commit 80377f6
+fix: CERT-DEBT-001 — IlanCrudService user_id mapping düzeltmesi
+```
+
+### ✅ Test Sonuçları
+| Suite | Sonuç |
+|-------|-------|
+| OwnerIlanCrudTest | **15/15 PASS** ✅ |
+| OwnerIlanValuationTest | **11/11 PASS** ✅ |
+| Regresyon | **Yok** ✅ |
+
+---
+
 ## Oturum 92 — LP-008 Kapanış: property_availabilities Tablo Adı Doğrulaması (2026-08-05) ✅ CLOSED
 
 ### 🎯 Hedef
