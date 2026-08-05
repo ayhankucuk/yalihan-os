@@ -70,11 +70,16 @@ class ReservationConcurrencyTest extends TestCase
         $startDate = Carbon::now()->addDays(10)->format('Y-m-d');
         $endDate = Carbon::now()->addDays(12)->format('Y-m-d');
 
+        // Phase 1: create returns PENDING — no availability blocks yet
         $res = $this->service->createReservation($ilan->id, $startDate, $endDate, ['guest_name' => 'Canceller']);
 
-        // Assert dates are blocked
+        // Confirm to create availability blocks
+        $this->service->confirmReservation($res->id);
+
+        // Assert dates are blocked after confirm
         $this->assertEquals(0, PropertyAvailability::where('property_id', $ilan->id)
-            ->whereBetween('date', [$startDate, $endDate])
+            ->where('date', '>=', $startDate)
+            ->where('date', '<', $endDate)
             ->where('is_available', true)
             ->count());
 

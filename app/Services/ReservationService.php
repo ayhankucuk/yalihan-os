@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\Property\PropertyAvailabilityContract;
+use App\Enums\ReservationState;
 use App\Models\Ilan;
 use App\Models\PropertyAvailability;
 use App\Models\PropertyReservation;
@@ -14,17 +15,22 @@ use App\Traits\GuardsAgentWrites;
 /**
  * ReservationService — Internal reservation creation and cancellation.
  *
+ * RESERVATION_CORE Phase 1:
+ * - createReservation() now creates PENDING reservations (availability NOT blocked yet)
+ * - confirmReservation() transitions pending → confirmed and blocks availability
+ * - cancelReservation() releases availability blocks (P0 leak fix)
+ *
  * Sprint 22 E01: Added tenant_id scope to all queries (G1 fix).
- * Sprint 22 E01 TypeError fix: Moved tenantId to optional last parameter so all
- * pre-existing callers (propertyId, start, end, guestData, userId) continue to work.
- * tenantId is auto-resolved from Ilan.tenant_id when not explicitly provided.
  */
 class ReservationService
 {
     use GuardsAgentWrites;
 
     /**
-     * Create a new confirmed reservation for a property.
+     * Create a new PENDING reservation for a property.
+     *
+     * Phase 1 change: reservation starts as PENDING, availability is NOT blocked yet.
+     * Call confirmReservation() to confirm and block availability.
      *
      * @param int      $propertyId
      * @param string   $startDate
@@ -32,7 +38,6 @@ class ReservationService
      * @param array    $guestData
      * @param int|null $userId
      * @param int|null $tenantId   Optional — resolved from Ilan.tenant_id when omitted.
-     *                             Pre-existing callers that omit tenantId continue to work.
      * @return PropertyReservation
      * @throws Exception
      */
@@ -70,21 +75,74 @@ class ReservationService
 
         return DB::transaction(function () use ($tenantId, $propertyId, $start, $end, $nights, $guestData, $userId) {
 
-            // G1: Overlap check — scope to tenant_id when non-zero, always scope to property_id.
+            // Overlap check — confirmed/pending reservations block dates.
             $overlapQuery = PropertyReservation::where('property_id', $propertyId)
                 ->where('start_date', '<', $end->format('Y-m-d'))
                 ->where('end_date', '>', $start->format('Y-m-d'))
-                ->where('reservation_state', '!=', 'cancelled');
+                ->whereNotIn('reservation_state', [
+                    ReservationState::CANCELLED->value,
+                    ReservationState::COMPLETED->value,
+                    ReservationState::NO_SHOW->value,
+                ]);
 
             if ($tenantId > 0) {
                 $overlapQuery->where('tenant_id', $tenantId);
             }
 
-            $overlapCount = $overlapQuery->lockForUpdate()->count();
-
-            if ($overlapCount > 0) {
+            if ($overlapQuery->lockForUpdate()->count() > 0) {
                 throw new Exception("Conflict detected: The selected dates overlap with an existing reservation.");
             }
+
+            // Create PENDING reservation — availability NOT blocked yet.
+            // Call confirmReservation() to confirm and block availability.
+            return PropertyReservation::create([
+                'tenant_id'          => $tenantId ?: null,
+                'property_id'        => $propertyId,
+                'start_date'         => $start->format('Y-m-d'),
+                'end_date'           => $end->format('Y-m-d'),
+                'nights'             => $nights,
+                'guest_name'         => $guestData['guest_name'],
+                'guest_phone'        => $guestData['guest_phone'] ?? null,
+                'guest_email'        => $guestData['guest_email'] ?? null,
+                'guest_count'        => $guestData['guest_count'] ?? null,
+                'notes'              => $guestData['notes'] ?? null,
+                'reservation_state'  => ReservationState::PENDING->value,
+                'created_by_user_id' => $userId,
+            ]);
+        });
+    }
+
+    /**
+     * Confirm a pending reservation and block availability.
+     *
+     * RESERVATION_CORE Phase 1: explicit confirm step.
+     * Transitions PENDING → CONFIRMED and writes PropertyAvailability blocks.
+     *
+     * @param int      $reservationId
+     * @param int|null $tenantId
+     * @return PropertyReservation
+     * @throws Exception
+     */
+    public function confirmReservation(int $reservationId, ?int $tenantId = null): PropertyReservation
+    {
+        return DB::transaction(function () use ($reservationId, $tenantId) {
+            $reservation = PropertyReservation::lockForUpdate()->findOrFail($reservationId);
+
+            $tenantId = $tenantId ?? (int) $reservation->tenant_id;
+
+            if ($reservation->tenant_id && $reservation->tenant_id !== $tenantId) {
+                throw new Exception("Reservation does not belong to the given tenant.");
+            }
+
+            if (!$reservation->canTransitionTo(ReservationState::CONFIRMED)) {
+                throw new Exception(
+                    "Cannot confirm reservation in state '{$reservation->reservation_state->value}'."
+                );
+            }
+
+            $start = Carbon::parse($reservation->start_date)->startOfDay();
+            $end   = Carbon::parse($reservation->end_date)->startOfDay();
+            $propertyId = $reservation->property_id;
 
             $dates = [];
             $currentDate = $start->copy();
@@ -93,8 +151,7 @@ class ReservationService
                 $currentDate->addDay();
             }
 
-            // Check availability BEFORE inserting placeholder rows.
-            // Any existing row with is_available=false blocks the booking regardless of source or tenant.
+            // Check availability before blocking.
             $blockedCount = PropertyAvailability::where('property_id', $propertyId)
                 ->whereIn('date', $dates)
                 ->where('is_available', false)
@@ -110,8 +167,9 @@ class ReservationService
                 throw new Exception("Dates are not available. Conflict on {$firstBlocked}.");
             }
 
-            // Insert placeholder rows only for dates that don't already exist.
             $now = now();
+
+            // Insert placeholder availability rows for missing dates.
             $existingDates = PropertyAvailability::where('property_id', $propertyId)
                 ->whereIn('date', $dates)
                 ->pluck('date')
@@ -136,7 +194,7 @@ class ReservationService
                 PropertyAvailability::insert($insertData);
             }
 
-            // G1: Lock existing rows scoped to tenant_id AND property_id.
+            // Lock and retrieve existing availability rows.
             $availQuery = PropertyAvailability::where('property_id', $propertyId)
                 ->whereIn('date', $dates)
                 ->where('is_available', true);
@@ -150,48 +208,39 @@ class ReservationService
                 ->get()
                 ->keyBy(fn($item) => Carbon::parse($item->date)->format('Y-m-d'));
 
-            // Create reservation
-            $reservation = PropertyReservation::create([
-                'tenant_id'            => $tenantId ?: null,
-                'property_id'          => $propertyId,
-                'start_date'           => $start->format('Y-m-d'),
-                'end_date'             => $end->format('Y-m-d'),
-                'nights'               => $nights,
-                'guest_name'           => $guestData['guest_name'],
-                'guest_phone'          => $guestData['guest_phone'] ?? null,
-                'guest_email'          => $guestData['guest_email'] ?? null,
-                'guest_count'          => $guestData['guest_count'] ?? null,
-                'notes'                => $guestData['notes'] ?? null,
-                'reservation_state'    => 'confirmed',
-                'created_by_user_id'   => $userId,
-                'confirmed_at'         => now(),
-            ]);
+            // Transition reservation to CONFIRMED.
+            $reservation->reservation_state = ReservationState::CONFIRMED;
+            $reservation->confirmed_at = $now;
+            $reservation->save();
 
-            // Mark availability records as blocked
+            // Block availability for each date.
             foreach ($dates as $dateStr) {
-                $avail = $existingAvailabilities[$dateStr];
-                $avail->update([
-                    'is_available'            => false,
-                    'block_reason'            => 'reservation',
-                    'priority_tier'           => PropertyAvailabilityContract::TIER_RESERVATION,
-                    'source_system'           => 'internal',
-                    'origin'                  => PropertyAvailabilityContract::ORIGIN_RESERVATION,
-                    'reservation_id'          => $reservation->id,
-                    'projection_generated_at' => $now,
-                    'projection_source'       => PropertyAvailabilityContract::PROJECTION_SOURCE_RESERVATION,
-                ]);
+                if (isset($existingAvailabilities[$dateStr])) {
+                    $existingAvailabilities[$dateStr]->update([
+                        'is_available'            => false,
+                        'block_reason'            => 'reservation',
+                        'priority_tier'           => PropertyAvailabilityContract::TIER_RESERVATION,
+                        'source_system'           => 'internal',
+                        'origin'                  => PropertyAvailabilityContract::ORIGIN_RESERVATION,
+                        'reservation_id'          => $reservation->id,
+                        'projection_generated_at' => $now,
+                        'projection_source'       => PropertyAvailabilityContract::PROJECTION_SOURCE_RESERVATION,
+                    ]);
+                }
             }
 
-            return $reservation;
+            return $reservation->fresh();
         });
     }
 
     /**
      * Cancel an existing reservation and free its availability blocks.
      *
+     * P0 fix: This is the ONLY authoritative cancellation path.
+     * UpdateReservationStateAction must delegate here, not call ->update() directly.
+     *
      * @param int      $reservationId
      * @param int|null $tenantId  Optional — resolved from the reservation record when omitted.
-     *                            Pre-existing callers that pass only reservationId continue to work.
      * @return void
      * @throws Exception
      */
@@ -200,25 +249,28 @@ class ReservationService
         DB::transaction(function () use ($reservationId, $tenantId) {
             $reservation = PropertyReservation::lockForUpdate()->findOrFail($reservationId);
 
-            // Resolve tenantId from the reservation when not provided by the caller.
             $tenantId = $tenantId ?? (int) $reservation->tenant_id;
 
-            // Re-validate tenant ownership after resolution.
             if ($reservation->tenant_id && $reservation->tenant_id !== $tenantId) {
                 throw new Exception("Reservation does not belong to the given tenant.");
             }
 
-            if ($reservation->reservation_state === 'cancelled') {
-                return; // Idempotent behaviour
+            // Idempotent — already cancelled.
+            if ($reservation->reservation_state === ReservationState::CANCELLED) {
+                return;
             }
 
-            $reservation->update([
-                'reservation_state' => 'cancelled',
-                'cancelled_at'      => now(),
-            ]);
+            if (!$reservation->canTransitionTo(ReservationState::CANCELLED)) {
+                throw new Exception(
+                    "Cannot cancel reservation in state '{$reservation->reservation_state->value}'."
+                );
+            }
 
-            // G1: Availability cleanup scoped to tenant_id when present.
-            // priority_tier is NOT NULL — use TIER_HOLD_PENDING as the "free slot" sentinel.
+            $reservation->reservation_state = ReservationState::CANCELLED;
+            $reservation->cancelled_at = now();
+            $reservation->save();
+
+            // Release availability blocks (P0 fix — always runs on cancellation).
             $cleanupQuery = PropertyAvailability::where('reservation_id', $reservationId)
                 ->where('source_system', 'internal');
 
@@ -235,6 +287,78 @@ class ReservationService
                 'projection_generated_at' => now(),
                 'projection_source'       => PropertyAvailabilityContract::PROJECTION_SOURCE_RESERVATION,
             ]);
+        });
+    }
+
+    /**
+     * Complete a confirmed reservation (checkout).
+     *
+     * RESERVATION_CORE Phase 1: explicit completion.
+     * Transitions CONFIRMED → COMPLETED.
+     * Availability blocks remain (historical record).
+     *
+     * @param int      $reservationId
+     * @param int|null $tenantId
+     * @return PropertyReservation
+     * @throws Exception
+     */
+    public function completeReservation(int $reservationId, ?int $tenantId = null): PropertyReservation
+    {
+        return DB::transaction(function () use ($reservationId, $tenantId) {
+            $reservation = PropertyReservation::lockForUpdate()->findOrFail($reservationId);
+
+            $tenantId = $tenantId ?? (int) $reservation->tenant_id;
+
+            if ($reservation->tenant_id && $reservation->tenant_id !== $tenantId) {
+                throw new Exception("Reservation does not belong to the given tenant.");
+            }
+
+            if (!$reservation->canTransitionTo(ReservationState::COMPLETED)) {
+                throw new Exception(
+                    "Cannot complete reservation in state '{$reservation->reservation_state->value}'."
+                );
+            }
+
+            $reservation->reservation_state = ReservationState::COMPLETED;
+            $reservation->save();
+
+            return $reservation->fresh();
+        });
+    }
+
+    /**
+     * Mark a confirmed reservation as no-show.
+     *
+     * RESERVATION_CORE Phase 1.
+     * Transitions CONFIRMED → NO_SHOW.
+     * Availability blocks remain (historical record).
+     *
+     * @param int      $reservationId
+     * @param int|null $tenantId
+     * @return PropertyReservation
+     * @throws Exception
+     */
+    public function markNoShow(int $reservationId, ?int $tenantId = null): PropertyReservation
+    {
+        return DB::transaction(function () use ($reservationId, $tenantId) {
+            $reservation = PropertyReservation::lockForUpdate()->findOrFail($reservationId);
+
+            $tenantId = $tenantId ?? (int) $reservation->tenant_id;
+
+            if ($reservation->tenant_id && $reservation->tenant_id !== $tenantId) {
+                throw new Exception("Reservation does not belong to the given tenant.");
+            }
+
+            if (!$reservation->canTransitionTo(ReservationState::NO_SHOW)) {
+                throw new Exception(
+                    "Cannot mark no-show for reservation in state '{$reservation->reservation_state->value}'."
+                );
+            }
+
+            $reservation->reservation_state = ReservationState::NO_SHOW;
+            $reservation->save();
+
+            return $reservation->fresh();
         });
     }
 }
