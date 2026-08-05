@@ -128,10 +128,15 @@ class ReservationService
         return DB::transaction(function () use ($reservationId, $tenantId) {
             $reservation = PropertyReservation::lockForUpdate()->findOrFail($reservationId);
 
-            $tenantId = $tenantId ?? (int) $reservation->tenant_id;
+            $resolvedTenantId = $tenantId ?? (int) $reservation->tenant_id;
 
-            if ($reservation->tenant_id && $reservation->tenant_id !== $tenantId) {
+            if ($reservation->tenant_id && (int) $reservation->tenant_id !== $resolvedTenantId) {
                 throw new Exception("Reservation does not belong to the given tenant.");
+            }
+
+            // P2.2 Idempotency: already confirmed — return current state without side effects.
+            if ($reservation->reservation_state === ReservationState::CONFIRMED) {
+                return $reservation;
             }
 
             if (!$reservation->canTransitionTo(ReservationState::CONFIRMED)) {
@@ -139,6 +144,8 @@ class ReservationService
                     "Cannot confirm reservation in state '{$reservation->reservation_state->value}'."
                 );
             }
+
+            $tenantId = $resolvedTenantId;
 
             $start = Carbon::parse($reservation->start_date)->startOfDay();
             $end   = Carbon::parse($reservation->end_date)->startOfDay();

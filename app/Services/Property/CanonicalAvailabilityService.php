@@ -3,6 +3,7 @@
 namespace App\Services\Property;
 
 use App\Contracts\Property\PropertyAvailabilityContract;
+use App\Enums\ReservationState;
 use App\Events\Property\PropertyAvailabilityBlockedEvent;
 use App\Events\Property\PropertyAvailabilityConflictDetectedEvent;
 use App\Events\Property\PropertyAvailabilityUnblockedEvent;
@@ -68,11 +69,22 @@ class CanonicalAvailabilityService implements PropertyAvailabilityContract
             ->get()
             ->keyBy(fn($item) => Carbon::parse($item->date)->format('Y-m-d'));
 
+        // P2.4: tenant_id scope is mandatory — zero cross-tenant leakage.
+        // P2.3: Exclude ALL terminal states AND PENDING.
+        //       - Terminal states (CANCELLED, COMPLETED, NO_SHOW): dates are already
+        //         resolved — they must not appear as active conflicts.
+        //       - PENDING: not yet confirmed — does not hold availability.
+        //         Only CONFIRMED reservations constitute live conflicts.
+        $terminalValues = array_map(
+            fn(ReservationState $s) => $s->value,
+            array_filter(ReservationState::cases(), fn(ReservationState $s) => $s->isTerminal())
+        );
         $conflictingReservations = PropertyReservation::where('tenant_id', $tenantId)
             ->where('property_id', $propertyId)
             ->where('start_date', '<', $end->format('Y-m-d'))
             ->where('end_date', '>', $start->format('Y-m-d'))
-            ->where('reservation_state', '!=', 'cancelled')
+            ->whereNotIn('reservation_state', $terminalValues)
+            ->where('reservation_state', '!=', ReservationState::PENDING->value)
             ->whereNull('cancelled_at')
             ->get();
 
@@ -417,11 +429,20 @@ class CanonicalAvailabilityService implements PropertyAvailabilityContract
                 ->delete();
 
             // Source 1: property_reservations (canonical internal reservations)
+            // P2.3 Replay safety: include CONFIRMED reservations only — PENDING are not yet
+            // committed to availability, CANCELLED/COMPLETED/NO_SHOW are terminal and their
+            // availability rows are already correct (COMPLETED/NO_SHOW keep historic blocks,
+            // CANCELLED rows were released at cancellation time via cancelReservation()).
+            // Using whereNotIn on all terminal states keeps this in sync with Phase 1 enum.
             $activeReservations = PropertyReservation::where('tenant_id', $tenantId)
                 ->where('property_id', $propertyId)
                 ->where('start_date', '<', $end->format('Y-m-d'))
                 ->where('end_date', '>', $start->format('Y-m-d'))
-                ->where('reservation_state', '!=', 'cancelled')
+                ->whereNotIn('reservation_state', array_map(
+                    fn(ReservationState $s) => $s->value,
+                    array_filter(ReservationState::cases(), fn(ReservationState $s) => $s->isTerminal())
+                ))
+                ->whereNotIn('reservation_state', [ReservationState::PENDING->value])
                 ->whereNull('cancelled_at')
                 ->get();
 
