@@ -1,5 +1,61 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 93 — CERT-DEBT-001 Kapanış: OwnerIlanCrudTest Write Correctness (2026-08-05) ✅ CLOSED
+
+### 🎯 Hedef
+CERT-DEBT-001 kapsamındaki 3 teknik borç hatasının (CDT-001, CDT-002, CDT-003) giderilmesi ve `OwnerIlanCrudTest` suite'inin 15/15 PASS ile kapatılması.
+
+### 🔍 Kök Neden Analizi
+
+| Hata | Kök Neden | Çözüm |
+|------|-----------|-------|
+| CDT-001 — `store` 500 hatası | `OwnerIlanController::store()` `user_id`'yi set etmiyordu; `IlanCrudService::store()` `user_id` null ile çöküyordu | `IlanCrudService::mapCoreData()` içinde `user_id` → `auth()->id()` zorla atandı |
+| CDT-002 — `store` null user_id | Aynı kök neden — `user_id` form payload'ına bırakılmıştı, Owner Portal formunda alan yok | `mapCoreData()` `user_id` override mekanizması |
+| CDT-003 — `update` 500 hatası | `OwnerIlanController::update()` eksik implementasyon; `edit()`, `update()`, `destroy()`, `readiness()` metodları yoktu | Tüm eksik metodlar eklendi; `UpdateOwnerIlanRequest` yazıldı |
+
+### ✅ Değişen Dosyalar (12 dosya, +463 / -40)
+
+| Dosya | Değişiklik |
+|-------|------------|
+| `app/Http/Controllers/Owner/OwnerIlanController.php` | `edit()`, `update()`, `destroy()`, `readiness()` metodları eklendi |
+| `app/Http/Requests/Owner/UpdateOwnerIlanRequest.php` | `failedAuthorization()` override → 404 döndürür |
+| `app/Policies/IlanPolicy.php` | `update()` ownership: `danisman_id` → `user_id` |
+| `app/Services/Ilan/IlanCrudService.php` | `mapCoreData()` içinde `user_id` auth override eklendi |
+| `app/Models/Ilan.php` | İlişki ve cast düzeltmeleri |
+| `app/Services/CacheManager.php` | Cache key düzeltmesi |
+| `app/Jobs/SyncListingProjectionJob.php` | Projection job düzeltmesi |
+| `app/Console/Commands/RebuildCqrsProjections.php` | CQRS rebuild command düzeltmesi |
+| `resources/views/owner/ilanlar/show.blade.php` | `ucfirst($ilan->yayin_durumu)` → `->label()` fix |
+| `tests/Feature/Owner/OwnerIlanValuationTest.php` | Test fixture düzeltmesi |
+| `tests/Feature/CQRS/SyncListingProjectionOwnershipTest.php` | Yeni ownership projection testi |
+| `audits/CERT-DEBT-001-OwnerIlanCrudTest.md` | Audit kapanış kaydı |
+
+### 📊 Final CI Sonuçları
+
+| Metrik | Değer |
+|--------|-------|
+| OwnerIlanCrudTest | ✅ 15/15 PASS |
+| Toplam test | ✅ 44/44 PASS |
+| Toplam assertion | ✅ 144 |
+| CDT-001 | ✅ RESOLVED |
+| CDT-002 | ✅ RESOLVED |
+| CDT-003 | ✅ RESOLVED |
+
+### 🔗 İlgili Kayıtlar
+
+| Kayıt | Durum |
+|-------|-------|
+| ADR-001 | ✅ CLOSED (değişmedi) |
+| LP-008 | ✅ CLOSED (değişmedi) |
+| CERT-DEBT-001 | ✅ CLOSED (bu oturum) |
+
+### 📝 Commit
+```
+docs: close CERT-DEBT-001 owner ilan write correctness
+```
+
+---
+
 ## Oturum 92 — LP-008 Kapanış: property_availabilities Tablo Adı Doğrulaması (2026-08-05) ✅ CLOSED
 
 ### 🎯 Hedef
