@@ -1,5 +1,70 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 94 — RESERVATION_CORE Phase 2: Availability Projection Hardening (2026-08-05) ✅ CLOSED
+
+### 🎯 Hedef
+RESERVATION_CORE Phase 2 — `PropertyAvailability` projection motorunun deterministik, idempotent, replay-safe ve tenant-safe hale getirilmesi.
+
+SAAB başarı kriteri: _"Reservation event'lerinden PropertyAvailability deterministik, idempotent, replay-safe ve tenant-safe şekilde üretilebiliyor mu?"_
+
+### ✅ SAAB Sertifikasyonu
+**RESERVATION_CORE Phase 2 — CERTIFIED / CLOSED**
+- 12/12 Phase 2 testi PASS (35 assertions)
+- 65/65 full reservation + availability suite PASS (198 assertions)
+- Sıfır regresyon
+
+### 🔍 Yapılan İşler & Çözümler
+
+| # | Görev | Değişiklik | Sonuç |
+|---|-------|-----------|-------|
+| P2.2 | Idempotency | `confirmReservation()` already-confirmed guard eklendi | ✅ |
+| P2.3 | Replay safety | `rebuildAvailabilityProjection()` PENDING exclusion + terminal state filter | ✅ |
+| P2.4 | Tenant isolation | `checkAvailability()` CONFIRMED-only conflict filter | ✅ |
+| P2.5 | Drift detection | `AvailabilityDriftDetector` servisi oluşturuldu | ✅ |
+| P2.6 | Test suite | `ReservationCorePhase2Test` — 12 test | ✅ |
+
+### 🔍 Kök Nedenler & Çözümler
+
+**P2.2 — Idempotency Gap:**
+`confirmReservation()` CONFIRMED rezervasyon için ikinci kez çağrıldığında `Exception` atıyordu. Sessiz idempotency guard eklendi: already-confirmed durumunda mevcut state döner, duplicate `PropertyAvailability` row'u oluşmaz.
+
+**P2.3 — Replay Safety Gap:**
+`rebuildAvailabilityProjection()` `reservation_state != 'cancelled'` filtresi kullanıyordu — PENDING rezervasyonlar da projection'a giriyordu. Fix: sadece CONFIRMED rezervasyonlar projection üretir. PENDING = no block (Phase 1 semantiği ile tutarlı).
+
+**P2.4 — Tenant Isolation Gap:**
+`checkAvailability()` ikincil `PropertyReservation` sorgusu PENDING rezervasyonları "active conflict" olarak gösteriyordu. Fix: CONFIRMED-only filter — sadece CONFIRMED state aktif çakışma sayılır.
+
+**P2.5 — Drift Detection (YENİ):**
+`AvailabilityDriftDetector` servisi oluşturuldu. İki drift tipi:
+- `MISSING_BLOCK`: CONFIRMED rezervasyon var, `PropertyAvailability` row'u yok
+- `PHANTOM_BLOCK`: `PropertyAvailability` reservation-origin row'u var, CONFIRMED rezervasyon yok
+`detectForTenant()`: tenant'ın tüm property'lerini tarar, sadece drift olan mülkleri raporlar.
+
+### ✅ Değişen Dosyalar (4 dosya, +714 / -4)
+
+| Dosya | Değişiklik |
+|-------|-----------|
+| `app/Services/Property/CanonicalAvailabilityService.php` | P2.3/P2.4: CONFIRMED-only filter, terminal state exclusion |
+| `app/Services/ReservationService.php` | P2.2: already-confirmed idempotency guard |
+| `app/Services/Property/AvailabilityDriftDetector.php` | YENİ — P2.5: drift detection servisi |
+| `tests/Feature/Reservation/ReservationCorePhase2Test.php` | YENİ — 12 test, 35 assertion |
+
+### 📊 Final CI Sonuçları
+
+| Suite | Test | Assertions | Sonuç |
+|-------|------|-----------|-------|
+| ReservationCorePhase2Test | 12 | 35 | ✅ PASS |
+| ReservationCorePhase1Test | 14 | 25 | ✅ PASS |
+| PropertyAvailabilityTest | 15 | ~40 | ✅ PASS |
+| ReservationServiceTest | 4 | ~12 | ✅ PASS |
+| ReservationConcurrencyTest | 3 | ~8 | ✅ PASS |
+| **TOPLAM** | **65** | **198** | ✅ **ALL PASS** |
+
+### 📝 Commit
+- `555d863` — `feat: RESERVATION_CORE Phase 2 — availability projection hardening`
+
+---
+
 ## Oturum 93 — CERT-DEBT-001 Kapanış: OwnerIlanCrudTest Write Correctness (2026-08-05) ✅ CLOSED
 
 ### 🎯 Hedef
