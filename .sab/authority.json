@@ -1,5 +1,5 @@
 {
-  "version": "6.1.1",
+  "version": "6.2.0",
   "name": "Yalıhan Bekçi Context7 Authority",
   "description": "Centralized authority file for Context7 compliance and IDE integrations",
   "bootstrap_entrypoint": ".sab/ONBOARDING.md",
@@ -307,6 +307,36 @@
       "blocking": false,
       "note": "LP-014: 645 pre-existing controller violations — per-file threshold 99, non-blocking until debt resolved. LogService:: accepted as Log:: equivalent.",
       "estimated_blocking_date": "2026-12-01"
+    }
+  },
+  "forensics_standards": {
+    "SAAB-FS-001": {
+      "name": "Repository Root Cause Standard",
+      "effective_date": "2026-08-05",
+      "pattern_ref": "LP-008",
+      "quality_gate_ref": "SAAB-QG-009",
+      "rule": "Hiçbir root cause; migration, CI, framework, Laravel veya test olarak ilan edilemez.",
+      "prerequisites": [
+        "Önce kanıt zinciri tamamlanmalıdır",
+        "Her root cause en az bir reddedilmiş hipotez içermelidir"
+      ],
+      "verification_chain": [
+        "Model ($table)",
+        "Migration (Schema::create)",
+        "Service (Eloquent / Query)",
+        "Test (Assertion / Fixture)",
+        "CI Bootstrap"
+      ],
+      "rejected_hypotheses_pattern": [
+        "RefreshDatabase eksikliği",
+        "CI bootstrap migration problemi",
+        "Migration dosyası eksikliği",
+        "Model tablo adı uyuşmazlığı"
+      ],
+      "corrective_action": {
+        "schema_error": "Test assertion'ları düzelt, altyapıya dokunma",
+        "infrastructure_change": "Önce tüm katmanları doğrula, sonra değişiklik öner"
+      }
     }
   },
   "blocking_transition": {
