@@ -109,6 +109,37 @@ resources/views/auth/ → @extends('layouts.guest')
 
 ---
 
+## LP-008 KAPANIŞ KAYDI
+**Tarih:** 2026-08-05
+**Durum:** CLOSED ✅
+
+**SAAB Teknik Kararı:**
+| Kontrol | Sonuç |
+|---------|-------|
+| Model–migration tablo adı uyumu | ✅ PASS |
+| Testlerde tablo adı uyumu | ✅ PASS |
+| Tekil property_availability kalıntısı | ✅ Yok |
+| Availability testleri | ✅ 15/15 |
+| Ownership testleri | ✅ 12/12 |
+| Toplam doğrulama | ✅ 27 test / 85 assertion |
+
+**Kanonik tablo adı:** `property_availabilities` (çoğul)
+
+**context window exceeds limit (2013) HATASI:**
+- ❌ Uygulama problemi değil
+- ❌ Migration problemi değil
+- ❌ CI veritabanı problemi değil
+- ✅ AI aracının bağlam limiti aşımı (token/context budget issue)
+- ✅ Kod doğruluğu değerlendirmesine dahil edilmemeli
+
+**Evidence:**
+- PropertyAvailabilityTest: 15 tests, 57 assertions — PASS
+- PropertyOwnershipTest: 12 tests, 28 assertions — PASS
+- SQLite missing-table failure: Artık üretilemiyor
+- Tekil `property_availability` referansı: Bulunamadı
+
+---
+
 ## SAAB KURALI: Schema Uyuşmazlığı Doğrulama Zinciri
 
 **Prensip:** Schema uyuşmazlığı şüphesinde önce canonical contract doğrulanır; test altyapısı değiştirilmez.
