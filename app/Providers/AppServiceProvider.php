@@ -132,6 +132,12 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\Property\CanonicalAvailabilityService::class
         );
 
+        // RESERVATION_CORE Phase 2: Availability Projection Contract
+        $this->app->singleton(
+            \App\Contracts\Property\AvailabilityProjectionContract::class,
+            \App\Services\Property\AvailabilityProjectionService::class
+        );
+
         // ⚙️ Execution Runtime Repository Binding
         $this->app->bind(
             \App\Repositories\ExecutionRuntimeRepositoryInterface::class,
