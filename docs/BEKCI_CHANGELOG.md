@@ -1,5 +1,48 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 95 — RESERVATION_CORE Phase 2 E02: Availability Projection Idempotency (2026-08-05) ✅ CLOSED
+
+### 🎯 Hedef
+RESERVATION_CORE Phase 2 E02 — Idempotency.
+
+SAAB başarı sorusu: _"Aynı confirm veya cancel event'i birden fazla kez işlendiğinde sistem tek ve doğru availability sonucunu koruyor mu?"_
+
+### ✅ SAAB Sertifikasyonu
+**RESERVATION_CORE Phase 2 E02 — CERTIFIED / CLOSED**
+- 5/5 E02 testi PASS (22 assertions)
+- 70/70 full reservation + availability suite PASS (220 assertions)
+- Sıfır regresyon
+
+### 🔍 Yapılan İşler & Çözümler
+
+**Partial Idempotency Gap Fix — `projectConfirm()`:**
+Eski kod `existingBlocks === count(dates)` tam eşitlik kontrolü yapıyordu. Partial projection durumunda (bazı tarihler bloklu, bazıları değil) yeniden çağrı bazı tarihleri ikinci kez yazabiliyordu. Fix: tüm mevcut satırlar tek `lockForUpdate` sorgusuyla çekildi, `reservation_id` ile zaten bloklu tarihler skip ediliyor. Duplicate write artık imkânsız.
+
+**`validateTenantPropertyMatch()` TenantScope Fix:**
+`Ilan::find()` aktif `TenantScope` global scope ile kayıt bulamıyordu. Fix: `Ilan::withoutGlobalScopes()->find()` — tenant validation bağımsız context'te çalışır.
+
+### ✅ Değişen Dosyalar (2 dosya, +382 / -46)
+
+| Dosya | Değişiklik |
+|-------|-----------|
+| `app/Services/Property/AvailabilityProjectionService.php` | Partial idempotency gap fix + TenantScope bypass |
+| `tests/Feature/Reservation/AvailabilityProjectionIdempotencyTest.php` | YENİ — 5 test, 22 assertion |
+
+### 📊 Final CI Sonuçları
+
+| Suite | Test | Assertions | Sonuç |
+|-------|------|-----------|-------|
+| AvailabilityProjectionIdempotencyTest | 5 | 22 | ✅ PASS |
+| AvailabilityProjectionFoundationTest | 5 | ~18 | ✅ PASS |
+| ReservationCorePhase1Test | 14 | 25 | ✅ PASS |
+| ReservationCorePhase2Test | 12 | 35 | ✅ PASS |
+| **TOPLAM** | **70** | **220** | ✅ **ALL PASS** |
+
+### 📝 Commit
+- `2ef65cf` — `feat: RESERVATION_CORE Phase 2 E02 — availability projection idempotency`
+
+---
+
 ## Oturum 94 — RESERVATION_CORE Phase 2: Availability Projection Hardening (2026-08-05) ✅ CLOSED
 
 ### 🎯 Hedef
@@ -118,6 +161,36 @@ CERT-DEBT-001 kapsamındaki 3 teknik borç hatasının (CDT-001, CDT-002, CDT-00
 ```
 docs: close CERT-DEBT-001 owner ilan write correctness
 ```
+
+---
+
+## Oturum 95 — RESERVATION_CORE Phase 2 E01: Projection Foundation (2026-08-05) ✅ CLOSED
+
+### 🎯 Hedef
+Canonical projection write-path oluşturmak.
+
+### 🔍 Yapılan İşler
+1. **AvailabilityProjectionContract** — Interface tanımı
+2. **AvailabilityProjectionService** — Canonical write path implementasyonu
+3. **ReservationConfirmedEvent** — Domain event
+4. **ReservationCancelledEvent** — Domain event
+5. **Listeners** — ProjectConfirm + ReleaseCancelled
+
+### ✅ Mimari Kural Uygulaması
+```
+Reservation → Event → Listener → ProjectionService → PropertyAvailability
+ASLA: Reservation → PropertyAvailability::save()
+```
+
+### ✅ Test Sonuçları
+| Suite | Sonuç |
+|-------|-------|
+| AvailabilityProjectionFoundationTest | **5/5 PASS** |
+| PropertyReservationCanonicalTest | **12/12 PASS** |
+| ReservationCorePhase1Test | **14/14 PASS** |
+| ReservationServiceTest | **4/4 PASS** |
+| ReservationConcurrencyTest | **3/3 PASS** |
+| **Toplam** | **38/38 PASS** ✅ |
 
 ---
 
