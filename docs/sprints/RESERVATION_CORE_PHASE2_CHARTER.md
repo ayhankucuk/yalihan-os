@@ -2,8 +2,9 @@
 
 **Charter Tarihi:** 2026-08-05
 **Hazırlayan:** WenOX
-**Faz:** 2 — Availability Projection Correctness
+**Faz:** 2 — Availability Projection Hardening
 **Önkoşul:** ✅ Phase 1 CLOSED (commit 0f3df35)
+**SAAB Onayı:** ⏳ Bekleniyor
 
 ---
 
@@ -89,6 +90,12 @@ Tespit edilen bypass noktaları:
 | Tam conflict engine | Conflict resolution Phase 3 |
 
 ---
+
+## Başarı Sorusu
+
+**Phase 2 başarı sorusu:**
+
+> Aynı reservation event'i yeniden işlendiğinde availability kayıtları çoğalmadan, iptal edildiğinde eksiksiz serbest bırakılarak ve tenant sınırları korunarak çalışıyor mu?
 
 ## Başarı Kriteri
 
