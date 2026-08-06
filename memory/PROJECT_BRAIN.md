@@ -1,7 +1,7 @@
 # PROJECT BRAIN
 
 > Yalıhan Emlak AI OS — Merkezi Bilgi Kaynağı
-> Son güncelleme: 2026-06-25
+> Son güncelleme: 2026-08-06
 
 ---
 
@@ -37,9 +37,53 @@
 |-----------|-------|-----|
 | SAB v24.2 | ✅ ACTIVE | Production Seal |
 | Global Seal | ✅ SUCCESS | Phase 11 tamamlandı |
-| MCP Server | ✅ ÇALIŞIYOR | PID 9568, TypeScript Bridge |
+| MCP Server | ✅ ÇALIŞIYOR | TypeScript Bridge |
 | CI Pipeline | ✅ STABLE | Gold Line |
 | bekci:health | ✅ 91.85% | MCP 100%, KB 100%, PH 59.25% |
+
+---
+
+## Program Durumu (2026-08-06)
+
+### Reservation Platform — ✅ CLOSED
+
+| Capability | Status | Commit |
+|-----------|--------|--------|
+| Reservation Core | ✅ CLOSED | c55c927 |
+| Conflict Detection | ✅ CLOSED | 92edb8f9 |
+| Override Authorization | ✅ CLOSED | 49b5f65 |
+| Availability Projection | ✅ CLOSED | c55c927 |
+| Operational Calendar | ✅ CLOSED | 249f619 |
+
+### Channel Manager — 🔄 WAVE 1 CLOSED
+
+| Wave | Status | Tests |
+|------|--------|-------|
+| Wave 1 (Foundation) | ✅ CLOSED | 34/34 PASS |
+| Wave 2A (Pull + Drift) | ⏳ NEXT | — |
+| Wave 2B (Report + Recommend) | 📋 PLANNED | — |
+| Wave 3 (Booking + Airbnb) | 📋 PLANNED | — |
+
+### Mimari Katmanlar
+
+```
+Business Rules
+        │
+        ▼
+Reservation Core        ✅ CLOSED
+        │
+        ▼
+Canonical Availability  ✅ SSOT
+        │
+        ▼
+Operational Calendar   ✅ CLOSED
+        │
+        ▼
+Channel Manager       🔄 IN PROGRESS
+        │
+        ▼
+External Providers    📋 PLANNED
+```
 
 ---
 
