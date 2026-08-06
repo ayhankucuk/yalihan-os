@@ -8,6 +8,7 @@ use App\DTOs\Property\OverrideResult;
 use App\Events\Reservation\ConflictOverriddenEvent;
 use App\Exceptions\Reservation\OverrideNotAuthorizedException;
 use App\Exceptions\Reservation\OverrideReasonRequiredException;
+use App\Models\Ilan;
 use App\Models\User;
 
 /**
@@ -66,6 +67,7 @@ class ConflictOverrideService implements ConflictOverrideContract
      *
      * @throws OverrideNotAuthorizedException When actor not authorized
      * @throws OverrideReasonRequiredException When reason is empty
+     * @throws \Exception When property does not belong to the given tenant (cross-tenant violation)
      */
     public function override(
         int    $actorUserId,
@@ -84,6 +86,20 @@ class ConflictOverrideService implements ConflictOverrideContract
         // 2. Validate reason is non-empty
         if (empty(trim($reason))) {
             throw new OverrideReasonRequiredException();
+        }
+
+        // 3. Tenant isolation: verify property belongs to the given tenant.
+        // withoutGlobalScopes bypasses TenantScope so we can check ownership
+        // regardless of active tenant context (same pattern as AvailabilityProjectionService).
+        $ilan = Ilan::withoutGlobalScopes()->find($propertyId);
+        if (!$ilan) {
+            throw new \Exception("Override rejected: property {$propertyId} not found.");
+        }
+        if ($ilan->tenant_id !== null && (int) $ilan->tenant_id !== $tenantId) {
+            throw new \Exception(
+                "Override rejected: cross-tenant violation — " .
+                "property {$propertyId} belongs to tenant {$ilan->tenant_id}, not {$tenantId}."
+            );
         }
 
         // 3. Build audit record
