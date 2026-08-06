@@ -148,6 +148,22 @@ final readonly class ChannelSyncResponse
     }
 
     /**
+     * Check if this is a permanent failure (not retryable)
+     */
+    public function isPermanentFailure(): bool
+    {
+        return $this->isFailed() && !$this->retryable;
+    }
+
+    /**
+     * Check if this is a retryable failure
+     */
+    public function isRetryableFailure(): bool
+    {
+        return $this->isFailed() && $this->retryable;
+    }
+
+    /**
      * Convert to array for logging/serialization
      */
     public function toArray(): array
@@ -165,5 +181,28 @@ final readonly class ChannelSyncResponse
             'correlation_id' => $this->correlationId,
             'executed_at' => $this->executedAt->format(\DateTimeInterface::ATOM),
         ];
+    }
+
+    /**
+     * Return a new response with iCal content (for export operations)
+     *
+     * @param string $icalContent The generated iCal content
+     * @return self New instance with ical_content in metadata
+     */
+    public function withIcalContent(string $icalContent): self
+    {
+        return new self(
+            success: $this->success,
+            state: $this->state,
+            errorCode: $this->errorCode,
+            errorMessage: $this->errorMessage,
+            channelRef: $this->channelRef,
+            metadata: array_merge($this->metadata, ['ical_content' => $icalContent]),
+            retryable: $this->retryable,
+            channel: $this->channel,
+            direction: $this->direction,
+            correlationId: $this->correlationId,
+            executedAt: $this->executedAt,
+        );
     }
 }
