@@ -196,6 +196,34 @@ Mission EX-001, yalnızca bir agent geliştirme çalışması değil; Execution 
 
 ---
 
+## Operasyonel Kanıt Toplama
+
+| KPI | Ölçüm Kaynağı |
+|-----|----------------|
+| Ortalama ilk yanıt süresi | Mesaj zaman damgaları |
+| Otomatik cevap oranı | Agent logları |
+| İnsan eskalasyon oranı | Manuel müdahale kayıtları |
+| Mesaj teslim başarısı | Delivery logları |
+| Misafir memnuniyeti | Değerlendirmeler / geri bildirimler |
+| Manuel saat tasarrufu | Haftalık operasyon karşılaştırması |
+| BAI katkısı | Executive Report |
+
+---
+
+## Production Certified Eşiği
+
+EX-001 Production Certified için şu koşullar birlikte sağlanmalı:
+
+* Engineering kanıtı tamam
+* Business kanıtı tamam
+* AI kanıtı tamam
+* Customer kanıtı tamam
+* Executive Report tamam
+* CRS eşiği karşılandı
+* Gerçek operasyon verisiyle BAI etkisi doğrulandı
+
+---
+
 ## Referans
 
 * `docs/EXECUTION_ERA_STANDARD.md` — Çalışma standardı
