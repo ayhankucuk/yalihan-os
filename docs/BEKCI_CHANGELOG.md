@@ -16,6 +16,8 @@ SAAB başarı sorusu: _"YALIHAN, aynı property üzerinde oluşabilecek rezervas
 | E03 | ConflictDetectedEvent + ReservationRejectedForConflictEvent | ✅ PASS |
 | E04 | Mevcut ReservationService ile uyumluluk doğrulandı (no regression) | ✅ PASS |
 
+**Not:** Commit'te 8 dosya görünmektedir ancak `app/Providers/AppServiceProvider.php` modifikasyon (yeni satır ekleme), yeni dosya değil. Yeni oluşturulan dosya sayısı **7**'dir.
+
 ### 🔍 Mimari Karar (E04 bulgusu)
 
 Sistemde iki katmanlı çakışma koruması mevcut:
