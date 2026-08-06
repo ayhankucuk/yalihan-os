@@ -327,6 +327,55 @@ If conflict detection and drift detection disagree, drift detector reveals proje
 
 ## Findings (Repository Evidence)
 
+### Finding 0: PENDING Semantics — TWO-LAYER PROTECTION ✅ RESOLVED
+
+**SAAB Critical Question:** Does PENDING create a conflict?
+
+**Two-Layer Architecture (confirmed from codebase):**
+
+**Layer 1 — Reservation Creation Guard** (`ReservationService.createReservation()` line 78-86):
+```php
+// Overlap check — confirmed/pending reservations block dates.
+$overlapQuery = PropertyReservation::where('property_id', $propertyId)
+    ->whereNotIn('reservation_state', [
+        ReservationState::CANCELLED->value,
+        ReservationState::COMPLETED->value,
+        ReservationState::NO_SHOW->value,
+    ]);
+```
+**PENDING is included** — prevents a second reservation from being created on the same dates.
+
+**Layer 2 — Availability Projection** (`checkAvailability()`, `rebuildAvailabilityProjection()`):
+```php
+->whereNotIn('reservation_state', $terminalValues)
+->where('reservation_state', '!=', ReservationState::PENDING->value)
+```
+**PENDING is excluded** — does not appear as a blocked date in `PropertyAvailability` projection.
+
+**This is intentional two-layer protection, not a contradiction:**
+
+| Layer | PENDING | CONFIRMED | Rationale |
+|-------|---------|-----------|-----------|
+| createReservation guard | ❌ Blocks creation | ❌ Blocks creation | Prevents double-booking at write time |
+| PropertyAvailability projection | Not projected | ✅ Projected as blocked | Calendar shows only confirmed blocks |
+| Conflict detection (Phase 3A) | ❓ **DECISION** | ✅ Is a conflict | See decision below |
+
+**CANONICAL DECISION (Phase 3A):**
+
+`ConflictDetectionService.detect()` operates on `PropertyAvailability` projection (Layer 2).
+Therefore: **PENDING does NOT appear as a conflict in conflict detection.**
+
+The `createReservation()` guard (Layer 1) independently prevents double-booking at the DB level.
+
+These are complementary, not competing:
+- `createReservation()` → DB-level guard via `lockForUpdate()` — prevents duplicate PENDING
+- `ConflictDetectionService` → projection-based detection — reports confirmed blocks
+
+**Canonical Rule:**
+> PENDING reservation = created but not yet available-projected. Cannot be created if overlapping PENDING/CONFIRMED exists (Layer 1 guard). Does not appear as conflict in `ConflictDetectionService` (Layer 2, projection-only).
+
+---
+
 ### Finding 1: Date Overlap Rule — INCLUSIVE-EXCLUSIVE ✅ CONFIRMED
 
 **Evidence from `CanonicalAvailabilityService.checkAvailability()` line 61-64:**
