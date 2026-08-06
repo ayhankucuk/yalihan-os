@@ -45,8 +45,11 @@ class OwnerIlanValuationTest extends TestCase
         ]);
 
         // Basitleştirilmiş test ilanı (il/ilçe nullable)
+        // ADR-001 Phase 1A: user_id = Owner Portal erişim anahtarı (zorunlu)
+        // danisman_id = danışman operasyonel sahipliği (opsiyonel, aynı kişi olabilir)
         $this->ilan = Ilan::factory()->create([
-            'danisman_id' => $this->owner->id, // user_id yerine danisman_id kullan
+            'user_id'      => $this->owner->id, // ADR-001: Owner Portal ownership check
+            'danisman_id'  => $this->owner->id, // Danışman operasyonel sahipliği
             'ana_kategori_id' => $kategori->id,
             'il_id' => 1, // Dummy ID
             'ilce_id' => 1, // Dummy ID
@@ -107,7 +110,9 @@ class OwnerIlanValuationTest extends TestCase
     public function valuation_widget_is_not_shown_when_location_is_missing()
     {
         // İlan konum bilgisi olmadan
+        // ADR-001: user_id zorunlu — owner portal ownership check
         $ilanWithoutLocation = Ilan::factory()->create([
+            'user_id'     => $this->owner->id,
             'danisman_id' => $this->owner->id,
             'il_id' => null,
             'ilce_id' => null,
@@ -126,7 +131,9 @@ class OwnerIlanValuationTest extends TestCase
     public function valuation_widget_is_not_shown_when_m2_is_missing()
     {
         // İlan m² bilgisi olmadan
+        // ADR-001: user_id zorunlu — owner portal ownership check
         $ilanWithoutM2 = Ilan::factory()->create([
+            'user_id'     => $this->owner->id,
             'danisman_id' => $this->owner->id,
             'il_id' => $this->ilan->il_id,
             'ilce_id' => $this->ilan->ilce_id,
@@ -294,11 +301,9 @@ class OwnerIlanValuationTest extends TestCase
         $response = $this->actingAs($otherOwner)
             ->get(route('owner.ilanlar.show', $this->ilan->id));
 
-        // NOT: Mevcut mimaride owner ve danisman aynı danisman_id alanını kullanıyor
-        // Policy'nin isDanismanOfListing() metodu sadece ID eşleşmesi kontrolü yapıyor
-        // Bu yüzden başka owner'ın ilanını görebiliyor (200)
-        // TODO: Gelecekte owner'lar için ayrı bir owner_id alanı eklenebilir
-        $response->assertStatus(200);
+        // ADR-001 Phase 1A: user_id ownership check aktif.
+        // Başka owner'ın user_id'si bu ilanın user_id'si ile eşleşmez → 404 beklenir.
+        $response->assertStatus(404);
     }
 
     /** @test */

@@ -37,6 +37,11 @@ class IlanPolicy
 
     /**
      * Determine whether the user can update the ilan.
+     *
+     * ADR-001 Phase 1A: İki ayrı aktör tanımlanmıştır:
+     * - user_id    → Owner Portal erişim anahtarı (mülk sahibi self-service)
+     * - danisman_id → Danışman operasyonel sahipliği (admin panel, API)
+     * Her iki aktör de update yetkisine sahiptir.
      */
     public function update(User $user, Ilan $ilan): bool
     {
@@ -44,8 +49,13 @@ class IlanPolicy
             return true;
         }
 
-        // Owner: user_id üzerinden ownership kontrolü
-        return $user->id === $ilan->user_id;
+        // Owner Portal: user_id ownership check
+        if ($user->id === $ilan->user_id) {
+            return true;
+        }
+
+        // Danışman: danisman_id ownership check
+        return $user->id === ($ilan->danisman_id ?? 0);
     }
 
     /**

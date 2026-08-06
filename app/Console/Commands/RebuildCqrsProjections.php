@@ -50,7 +50,9 @@ class RebuildCqrsProjections extends Command
                         'yayin_durumu' => 1, // Defaulting to 1 for backfill
                         'fiyat' => $ilan->fiyat ?? 0,
                         'para_birimi' => $ilan->para_birimi_id,
-                        'danisman_id' => $ilan->danisman_id ?? $ilan->user_id,
+                        // ADR-001 Phase 1C: danisman_id = operasyonel danışman sahipliği.
+                        // Fallback kaldırıldı — user_id Owner Portal'a özgüdür.
+                        'danisman_id' => $ilan->danisman_id,
                         'kategori_id' => $ilan->kategori_id,
                         'il_id' => $ilan->il_id,
                         'created_at' => $ilan->created_at,

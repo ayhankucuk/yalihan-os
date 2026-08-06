@@ -14,6 +14,7 @@ use App\Http\Requests\Owner\UpdateOwnerIlanRequest;
 use App\Models\Ilan;
 use App\Models\IlanKategori;
 use App\Models\Il;
+use App\Services\AI\MarketValuationService;
 use App\Services\Ilan\IlanService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -62,7 +63,27 @@ class OwnerIlanController extends Controller
 
         $ilan->load(['il', 'ilce', 'mahalle', 'anaKategori', 'altKategori', 'fotograflar', 'danisman']);
 
-        return view('owner.ilanlar.show', compact('ilan'));
+        // ADR-001 Phase 1B: AI Market Valuation Widget
+        // il_id + m² varlığı yeterli koşul — relation null ise il_id fallback
+        $valuation = null;
+        $m2 = $ilan->brut_m2 ?? $ilan->net_m2 ?? $ilan->alan_m2 ?? null;
+        $ilAdi = $ilan->il?->il_adi ?? ($ilan->il_id ? (string) $ilan->il_id : null);
+
+        if ($ilAdi && $m2) {
+            try {
+                $valuation = app(MarketValuationService::class)->evaluateQuery([
+                    'il'         => $ilAdi,
+                    'ilce'       => $ilan->ilce?->ilce_adi ?? '',
+                    'mahalle'    => $ilan->mahalle?->mahalle_adi ?? '',
+                    'asset_type' => $ilan->anaKategori?->name ?? 'Konut',
+                    'm2'         => (float) $m2,
+                ]);
+            } catch (\Exception $e) {
+                $valuation = null;
+            }
+        }
+
+        return view('owner.ilanlar.show', compact('ilan', 'valuation'));
     }
 
     /**

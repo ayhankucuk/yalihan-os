@@ -97,6 +97,11 @@ class EventServiceProvider extends ServiceProvider
             \App\Listeners\UpdateLedgerBalanceProjection::class,
         ],
 
+        // [EX-001] Guest Communication WAVE 1: Welcome Message Flow
+        \App\Events\Reservation\ReservationConfirmedEvent::class => [
+            \App\Domains\GuestCommunication\Listeners\GuestWelcomeListener::class,
+        ],
+
         // [SAB]: CQRS Read Model Projections (Phase 16.1)
         \App\Events\ListingCreated::class => [
             \App\Listeners\ListingProjector::class . '@handleListingCreated',

@@ -47,8 +47,10 @@ class SyncListingProjectionJob implements ShouldQueue
                 'yayin_durumu' => $ilan->yayin_durumu ?? 'Taslak',
                 'aktiflik_durumu' => $ilan->aktiflik_durumu ?? 1,
                 'fiyat' => $ilan->fiyat ?? 0,
-                'para_birimi_id' => $ilan->para_birimi_id ?? $ilan->para_birimi, // Support both if needed, but para_birimi_id is preferred
-                'sahip_id' => $ilan->danisman_id ?? $ilan->user_id,
+                'para_birimi' => $ilan->para_birimi_id ?? $ilan->para_birimi,
+                // ADR-001 Phase 1C: danisman_id = operasyonel danışman sahipliği.
+                // Fallback yok — user_id Owner Portal'a özgüdür, proj_listings'e ait değildir.
+                'danisman_id' => $ilan->danisman_id,
                 'kategori_id' => $ilan->kategori_id,
                 'il_id' => $ilan->il_id,
                 'ilce_id' => $ilan->ilce_id,

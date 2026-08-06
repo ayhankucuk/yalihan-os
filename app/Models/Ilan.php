@@ -509,9 +509,12 @@ class Ilan extends BaseModel
         'updated_by',                // SAB Phase 17B: Minimum tracking
 
         // ======================================================================
-        // 🟡 LEGACY FIELDS REMOVED - 2026-01-03
+        // 🟡 FIELDS REMOVED FROM FILLABLE - 2026-01-03
         // ======================================================================
-        // 'user_id' → use 'danisman_id' instead
+        // 'user_id' → ADR-001: Owner Portal erişim anahtarı. Mass-assignment'tan
+        //             çıkarıldı (güvenlik), ancak LEGACY değildir. Owner Portal
+        //             controller'ları (OwnerIlanController vb.) bu alanı doğrudan
+        //             set eder: $data['user_id'] = auth()->id(). Kolonu silme.
         // 'dosya_adi' → use 'referans_no' instead
         // 'l-atitude', 'l-ongitude' → use 'lat', 'lng' instead (Context7 sealed)
         // Previously had 60+ deprecated fields hurting performance

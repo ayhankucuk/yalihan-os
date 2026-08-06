@@ -4,6 +4,7 @@
          bootstrap="vendor/autoload.php"
          colors="true"
 >
+    <!-- PRR-R002 fix: memory_limit raised to prevent OOM crash on full suite run -->
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
@@ -55,6 +56,8 @@
         </include>
     </source>
     <php>
+        <!-- PRR-R002 fix: full suite (Unit+Feature, 433 files, 1675 routes) requires >512M -->
+        <ini name="memory_limit" value="1G"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>

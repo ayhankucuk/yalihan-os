@@ -1,0 +1,7 @@
+{"timestamp":"2026-08-04T20:04:22.340Z","sessionId":"43f6172a9dbb","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-04T20:18:57.359Z","sessionId":"f2ef2e1bd88c","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-04T20:19:43.526Z","sessionId":"3c8428d95fca","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-04T20:44:32.556Z","sessionId":"aebccda4dd7c","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-04T20:54:59.861Z","sessionId":"964830f17a54","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-04T20:56:14.871Z","sessionId":"26f22f217472","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-06T11:51:23.563Z","sessionId":"e107eba29cfd","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}

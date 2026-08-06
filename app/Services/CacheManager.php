@@ -16,6 +16,20 @@ use Illuminate\Support\Facades\Log;
 class CacheManager
 {
     /**
+     * Returns true if the current cache driver supports tagging.
+     * array and file drivers do not support tags.
+     */
+    private function supportsTagging(): bool
+    {
+        try {
+            Cache::tags(['__probe__']);
+            return true;
+        } catch (\BadMethodCallException $e) {
+            return false;
+        }
+    }
+
+    /**
      * Remember data with automatic TTL from config
      */
     public function remember(string $key, string $tag, callable $callback, ?int $ttl = null): mixed
@@ -23,11 +37,22 @@ class CacheManager
         $ttl = $ttl ?? config("yalihan.cache.{$tag}_ttl", 3600);
         $cacheKey = $this->buildKey($tag, $key);
 
-        return Cache::tags([$tag])->remember(
+        if ($this->supportsTagging()) {
+            return Cache::tags([$tag])->remember(
+                $cacheKey,
+                $ttl,
+                function() use ($callback, $cacheKey) {
+                    Log::debug("Cache MISS: {$cacheKey}");
+                    return $callback();
+                }
+            );
+        }
+
+        return Cache::remember(
             $cacheKey,
             $ttl,
             function() use ($callback, $cacheKey) {
-                Log::debug("Cache MISS: {$cacheKey}");
+                Log::debug("Cache MISS (no-tag): {$cacheKey}");
                 return $callback();
             }
         );
@@ -39,7 +64,10 @@ class CacheManager
     public function get(string $key, string $tag): mixed
     {
         $cacheKey = $this->buildKey($tag, $key);
-        $value = Cache::tags([$tag])->get($cacheKey);
+
+        $value = $this->supportsTagging()
+            ? Cache::tags([$tag])->get($cacheKey)
+            : Cache::get($cacheKey);
 
         if ($value !== null) {
             Log::debug("Cache HIT: {$cacheKey}");
@@ -60,7 +88,9 @@ class CacheManager
 
         Log::debug("Cache PUT: {$cacheKey} (TTL: {$ttl}s)");
 
-        return Cache::tags([$tag])->put($cacheKey, $value, $ttl);
+        return $this->supportsTagging()
+            ? Cache::tags([$tag])->put($cacheKey, $value, $ttl)
+            : Cache::put($cacheKey, $value, $ttl);
     }
 
     /**
@@ -71,7 +101,9 @@ class CacheManager
         $cacheKey = $this->buildKey($tag, $key);
         Log::debug("Cache FORGET: {$cacheKey}");
 
-        return Cache::tags([$tag])->forget($cacheKey);
+        return $this->supportsTagging()
+            ? Cache::tags([$tag])->forget($cacheKey)
+            : Cache::forget($cacheKey);
     }
 
     /**
@@ -80,6 +112,12 @@ class CacheManager
     public function flushTag(string $tag): bool
     {
         Log::info("Cache FLUSH TAG: {$tag}");
+
+        if (!$this->supportsTagging()) {
+            Log::debug("Cache tagging not supported — skipping flushTag({$tag})");
+            return true;
+        }
+
         return Cache::tags([$tag])->flush();
     }
 
@@ -89,6 +127,12 @@ class CacheManager
     public function flushTags(array $tags): bool
     {
         Log::info("Cache FLUSH TAGS: " . implode(', ', $tags));
+
+        if (!$this->supportsTagging()) {
+            Log::debug("Cache tagging not supported — skipping flushTags");
+            return true;
+        }
+
         return Cache::tags($tags)->flush();
     }
 
