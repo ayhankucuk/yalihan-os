@@ -98,15 +98,112 @@ ReservationConfirmed
         │
         ▼
 GuestCommunicationAgent
-        ├── Welcome Message
-        ├── Check-in Instructions
-        ├── Local Guide Suggestions
-        ├── Mid-stay Follow-up
-        ├── Check-out Reminder
-        └── Review Request
+        ├── Welcome Message          ← WAVE 1
+        ├── Check-in Instructions    ← WAVE 2
+        ├── Local Guide Suggestions   ← WAVE 2
+        ├── Mid-stay Follow-up       ← WAVE 3
+        ├── Check-out Reminder       ← WAVE 4
+        └── Review Request           ← WAVE 4
 ```
 
-Bu yaklaşım, gelecekte WhatsApp, Airbnb, Booking.com, Telegram veya e-posta kanallarını aynı iş akışına bağlamayı kolaylaştırır.
+### WAVE 1 — Welcome Message Flow (İlk Teslimat)
+
+```
+Rezervasyon Onaylandı (ReservationConfirmed)
+        │
+        ▼
+1. Misafir dilini seç (Rezervasyon dilinden)
+        │
+        ▼
+2. Welcome message oluştur
+        │
+        ▼
+3. Platform'a göre kanal seç (Airbnb/Booking/Telegram)
+        │
+        ▼
+4. Mesajı gönder (queue ile)
+        │
+        ▼
+5. Delivery log kaydet
+        │
+        ▼
+6. Audit trail oluştur
+```
+
+**Wave 1 Teslimatları:**
+| # | Teslimat | Hedef |
+|---|---------|-------|
+| 1 | ReservationConfirmed event listener | Platform event'ini yakala |
+| 2 | GuestWelcomeNotification sınıfı | NotificationContract implement |
+| 3 | Guest welcome template (TR/EN/AR) | Çok dilli içerik |
+| 4 | Airbnb channel adapter | İlk kanal |
+| 5 | Queue + retry mechanism | Güvenilir teslimat |
+| 6 | Delivery audit log | İlk kanıt |
+| 7 | İlk gerçek misafir testi | Canlı doğrulama |
+
+**Wave 1 Sonunda:**
+> İlk misafir otomatik karşılandı.
+
+---
+
+### WAVE 2 — Arrival Flow
+
+```
+Check-in Günü Yaklaşıyor (D-1)
+        │
+        ▼
+1. Check-in talimatları
+2. Navigasyon / adres
+3. WiFi bilgileri
+4. Ev kuralları (house rules)
+5. Destek iletişimi
+```
+
+---
+
+### WAVE 3 — Stay Flow
+
+```
+Konaklama Ortası (Mid-stay)
+        │
+        ▼
+1. Sorun tespiti (opsiyonel)
+2. Memnuniyet kontrolü
+3. Gerekirse eskalasyon
+```
+
+---
+
+### WAVE 4 — Departure Flow
+
+```
+Check-out Günü (D)
+        │
+        ▼
+1. Check-out hatırlatması
+2. İnceleme isteği (review request)
+3. Teşekkür mesajı
+```
+
+---
+
+### WAVE 5 — Metrics & Certification
+
+```
+Delivery Audit
+        │
+        ▼
+Executive Report
+        │
+        ▼
+CRS Calculation
+        │
+        ▼
+BAI Validation
+        │
+        ▼
+Production Certified
+```
 
 ---
 
