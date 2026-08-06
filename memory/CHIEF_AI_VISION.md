@@ -2,6 +2,7 @@
 
 > **Tarih:** 2026-08-06
 > **Durum:** Platform Olgunluğu — Eşik Geçildi
+> **Commit:** f26fe157
 
 ---
 
@@ -180,6 +181,23 @@ Yeni metrik:
 > "Bu capability, bir emlak danışmanının hangi manuel işini tamamen otomatikleştiriyor?"
 
 Eğer cevap net değilse → capability muhtemelen doğru öncelikte değil.
+
+---
+
+---
+
+## Hermes Organizasyon Yapısı
+
+```
+Hermes (Genel Müdür)
+        │
+        ├── 📅 Reservation Agent      → Reservation Core
+        ├── 🌐 Distribution Agent    → Channel Manager
+        ├── 💰 Finance Agent        → Finance Platform
+        ├── 👥 CRM Agent           → CRM Automation
+        ├── 📈 Market Agent        → Market Intelligence
+        └── ⚖️ Legal Agent        → Compliance
+```
 
 ---
 
