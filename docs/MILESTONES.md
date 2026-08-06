@@ -169,6 +169,16 @@ Cevap evet ise → Governance v1.0 amacına ulaşmış demektir.
 
 ---
 
+## Mission Registry
+
+| Mission | Capability | Status | Charter |
+|---------|-----------|--------|---------|
+| EX-001 | Guest Communication Agent | 🟢 Implementation & Evidence | 43727d6 |
+| EX-002 | Finance Agent | ⏳ Pending | - |
+| EX-003 | Channel Manager Wave 2 | ⏳ Pending | - |
+
+---
+
 ## Temel Pusula
 
 > "Bu capability, YALIHAN'ın daha fazla emlak operasyonunu güvenli, ölçülebilir ve sürdürülebilir şekilde otomatik tamamlamasına ne kadar katkı sağlıyor?"
