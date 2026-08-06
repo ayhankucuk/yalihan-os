@@ -5,6 +5,14 @@
 
 ---
 
+## Resmi Misyon
+
+> "Her capability, bir emlak danışmanının tekrar eden bir işini devralan dijital bir çalışandır."
+
+Bu yazılım geliştirme ile iş hedefini doğrudan birbirine bağlar.
+
+---
+
 ## Platform Olgunluk Değerlendirmesi
 
 | Alan | Olgunluk | Not |
@@ -105,6 +113,31 @@ Machine-readable sistem durumu. Markdown yerine JSON okunur — çok daha hızl�
 
 ---
 
+## Roadmap Değişimi
+
+Eski:
+```
+Reservation → Calendar → Channel → Finance
+```
+
+Yeni:
+```
+Platform Foundation → Business Capability → AI Agent → Business Automation
+```
+
+Her teknik capability'nin sonunda bir agent doğar.
+
+| Teknik Capability | Oluşacak Agent |
+|-----------------|-----------------|
+| Reservation Core | 📅 Reservation Agent |
+| Channel Manager | 🌐 Distribution Agent |
+| Finance Core | 💰 Finance Agent |
+| CRM | 👥 CRM Agent |
+| Market Intelligence | 📈 Market Agent |
+| Legal | ⚖️ Legal Agent |
+
+---
+
 ## AI Workforce Vizyonu
 
 > "Agentlar bizim gerçek çalışanımız gibi çalışacak."
@@ -131,10 +164,22 @@ Eski metrik:
 Yeni metrik:
 > "Kaç saat manuel iş ortadan kalktı?"
 
+**Yeni KPI — Agent Otonomi Oranı:**
+
+| İş | Otonomi |
+|-----|---------|
+| Misafir mesajı | %100 |
+| Fiyat önerisi | %80 |
+| Rezervasyon kontrolü | %100 |
+| Finans raporu | %90 |
+| Hukuk analizi | %60 |
+
+> "Bir görevi insan müdahalesi olmadan tamamlayan agent yüzdesi."
+
 **Her capability için standart soru:**
 > "Bu capability, bir emlak danışmanının hangi manuel işini tamamen otomatikleştiriyor?"
 
-Eğer cevap net değilse → capability muhtemelen doğru öncelikte değildir.
+Eğer cevap net değilse → capability muhtemelen doğru öncelikte değil.
 
 ---
 
