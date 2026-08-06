@@ -147,15 +147,28 @@ Cevap evet ise → Governance v1.0 amacına ulaşmış demektir.
 
 ## Executive Dashboard
 
-| Metric | Status |
-|--------|--------|
+| Metric | Value |
+|--------|-------|
 | Era | ▶ Execution |
 | Governance | 🟢 Frozen v1.0 |
 | North Star | BAI |
+| BAI | %__ |
+| CRS READY | %__ |
+| PCCC | __ |
+| Active Missions | __ |
+| Automation Rate | %__ |
 | Current Priority | Guest Communication Agent |
 | Next | Finance Agent |
 | After | Channel Manager Wave 2 |
 | Baseline Commit | a7ae5e2 |
+
+### Metrik Tanımları
+
+| Metrik | Tanım |
+|--------|-------|
+| PCCC | Production Certified Capability Count — Certification durumundaki capability sayısı |
+| BAI | Business Automation Index — Tam otomatik operasyon / Toplam operasyon |
+| CRS READY | CRS ≥ 90 olan capability oranı |
 
 ---
 
