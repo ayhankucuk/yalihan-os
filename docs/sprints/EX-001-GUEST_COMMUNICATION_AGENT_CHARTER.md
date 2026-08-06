@@ -112,70 +112,64 @@ GuestCommunicationAgent
 Rezervasyon Onaylandı (ReservationConfirmed)
         │
         ▼
-1. Misafir dilini seç (Rezervasyon dilinden)
+1. Misafir dilini seç (5'li fallback)
         │
         ▼
 2. Welcome message oluştur
         │
         ▼
-3. Platform'a göre kanal seç (Airbnb/Booking/Telegram)
+3. Airbnb adapter mesajı kuyruğa al
         │
         ▼
-4. Mesajı gönder (queue ile)
+4. Queue + retry mekanizması
         │
         ▼
-5. Delivery log kaydet
-        │
-        ▼
-6. Audit trail oluştur
+5. Delivery audit log kaydet
 ```
 
 **WAVE 1 Başarı Tanımı:**
 
 > "İlk gerçek misafir, rezervasyon onayından sonraki ilk 60 saniye içinde, doğru dilde, insan müdahalesi olmadan karşılama mesajını aldı."
 
+**LanguageResolver Fallback Sırası:**
+
+| Öncelik | Kaynak | Durum |
+|----------|--------|--------|
+| 1 | guest_preferred_language | ✅ Mevcut |
+| 2 | booking_locale (tr-TR, en-US) | ✅ Mevcut |
+| 3 | booking_country_code | ✅ Mevcut |
+| 4 | listing_default_language | ✅ Mevcut |
+| 5 | English | ✅ Fallback |
+
 **WAVE 1 Exit Criteria:**
 
-| # | Kriter | Kanıt |
-|---|--------|-------|
-| ✅ 1 | ReservationConfirmed olayı oluştu | Event log |
-| ✅ 2 | Doğru dil seçildi (TR/EN/AR) | Language resolver |
-| ✅ 3 | Welcome mesajı üretildi | Template engine |
-| ✅ 4 | Airbnb adapter mesajı kuyruğa aldı | Queue log |
-| ✅ 5 | Retry politikası çalışıyor | Retry test |
-| ✅ 6 | Delivery audit oluştu | Audit kaydı |
-| ✅ 7 | İlk gerçek rezervasyonda başarıyla gönderildi | Production evidence |
-| ✅ 8 | İnsan müdahalesi gerekmedi | Executive evidence |
+| # | Kriter | Kanıt | Durum |
+|---|--------|--------|--------|
+| 1 | Event → Listener → Queue | Event log | ✅ |
+| 2 | Dil seçimi (TR/EN/AR) | Language resolver | ✅ |
+| 3 | Welcome mesajı üretimi | Template engine | ✅ |
+| 4 | Queue dispatch | Queue log | ✅ |
+| 5 | Retry politikası | Retry test | ✅ |
+| 6 | Delivery audit | Audit kaydı | ✅ |
+| 7 | Gerçek Airbnb teslimi | Airbnb API | ⏳ WAVE 2 |
+| 8 | Canlı doğrulama | Production evidence | ⏳ WAVE 2 |
 
-**WAVE 1 Kapsamı (Minimal):**
+**Wave 1 Durumu:**
 
-```
-ReservationConfirmed
-        ↓
-LanguageResolver
-        ↓
-WelcomeMessageBuilder
-        ↓
-AirbnbChannelAdapter
-        ↓
-Queue
-        ↓
-DeliveryAudit
-```
+| Bileşen | Durum | Commit |
+|---------|--------|--------|
+| LanguageResolver | ✅ Complete | 394aeb8 |
+| GuestWelcomeNotification | ✅ Complete | d98f322 |
+| GuestCommunicationService | ✅ Complete | d98f322 |
+| GuestWelcomeListener | ✅ Complete | d98f322 |
+| SendGuestWelcomeMessageJob | ✅ Complete | d98f322 |
+| GuestWelcomeTemplatesSeeder | ✅ Complete | d98f322 |
+| Tests (21/21) | ✅ PASS | 394aeb8 |
+| Airbnb API Entegrasyonu | ⏳ WAVE 2 | - |
+| Canlı Misafir Testi | ⏳ WAVE 2 | - |
 
-> WAVE 1 kapsamı dışındakiler (check-in, Wi-Fi, rehber vb.) WAVE 2+ içindir.
-
-**Wave 1 Teslimatları:**
-| # | Teslimat | Sorumlu | Hedef |
-|---|---------|---------|-------|
-| 1 | ReservationConfirmed event listener | - | Platform event'ini yakala |
-| 2 | LanguageResolver | - | TR/EN/AR dil seçimi |
-| 3 | GuestWelcomeNotification sınıfı | - | NotificationContract implement |
-| 4 | Guest welcome template (TR/EN/AR) | - | Çok dilli içerik |
-| 5 | Airbnb channel adapter | - | İlk kanal |
-| 6 | Queue + retry mechanism | - | Güvenilir teslimat |
-| 7 | Delivery audit log | - | İlk kanıt |
-| 8 | İlk gerçek misafir testi | - | Canlı doğrulama |
+> **WAVE 1 Status: ✅ CORE COMPLETE**
+> Airbnb gerçek teslim ve canlı doğrulama WAVE 2 kapsamındadır.
 
 **WAVE 1 İçin YAPILMAZ:**
 
@@ -185,10 +179,7 @@ DeliveryAudit
 - House rules (→ WAVE 2)
 - Mid-stay follow-up (→ WAVE 3)
 - Check-out reminder (→ WAVE 4)
-- Review request (→ WAVE 4)
-
-**Wave 1 Sonunda:**
-> İlk misafir otomatik karşılandı.
+- Review Request (→ WAVE 4)
 
 ---
 
