@@ -93,26 +93,98 @@ class LanguageResolver
 
     /**
      * Resolve language from reservation
+     *
+     * Fallback Order:
+     * 1. guest_preferred_language (explicit guest preference) — nullable
+     * 2. booking_locale (Airbnb/Booking locale) — nullable
+     * 3. booking_country_code (ISO country code) — nullable
+     * 4. listing_default_language (property default) — nullable
+     * 5. English (fallback)
+     *
+     * @throws \InvalidArgumentException if reservation is null
      */
-    public function resolveFromReservation(PropertyReservation $reservation): string
+    public function resolveFromReservation(?PropertyReservation $reservation): string
     {
-        // Priority 1: Check explicit language field (if exists)
-        if (!empty($reservation->preferred_language)) {
-            return $this->normalizeLanguage($reservation->preferred_language);
+        if (!$reservation) {
+            return 'en'; // Default fallback
         }
 
-        // Priority 2: Check booking country code
-        if (!empty($reservation->booking_country_code)) {
-            return $this->resolveFromCountryCode($reservation->booking_country_code);
+        // Priority 1: Check explicit guest preferred language (if column exists)
+        if ($this->hasProperty($reservation, 'preferred_language')) {
+            $lang = $this->safeGetProperty($reservation, 'preferred_language');
+            if ($lang && $this->isSupported($this->normalizeLanguage($lang))) {
+                return $this->normalizeLanguage($lang);
+            }
         }
 
-        // Priority 3: Check tenant/ilan default language
-        if ($reservation->ilan && !empty($reservation->ilan->default_language)) {
-            return $this->normalizeLanguage($reservation->ilan->default_language);
+        // Priority 2: Check booking locale (Airbnb/Booking locale like "tr-TR", "en-US")
+        if ($this->hasProperty($reservation, 'booking_locale')) {
+            $locale = $this->safeGetProperty($reservation, 'booking_locale');
+            if ($locale) {
+                $localeLang = $this->extractLanguageFromLocale($locale);
+                if ($localeLang) {
+                    return $localeLang;
+                }
+            }
         }
 
-        // Priority 4: Fallback to English
+        // Priority 3: Check booking country code (ISO alpha-2)
+        if ($this->hasProperty($reservation, 'booking_country_code')) {
+            $countryCode = $this->safeGetProperty($reservation, 'booking_country_code');
+            if ($countryCode) {
+                return $this->resolveFromCountryCode($countryCode);
+            }
+        }
+
+        // Priority 4: Check tenant/ilan default language
+        if ($reservation->ilan) {
+            $lang = $this->safeGetProperty($reservation->ilan, 'default_language');
+            if ($lang && $this->isSupported($this->normalizeLanguage($lang))) {
+                return $this->normalizeLanguage($lang);
+            }
+        }
+
+        // Priority 5: Fallback to English
         return 'en';
+    }
+
+    /**
+     * Check if model has a property (column)
+     */
+    private function hasProperty($model, string $property): bool
+    {
+        return property_exists($model, $property);
+    }
+
+    /**
+     * Safely get a property value
+     */
+    private function safeGetProperty($model, string $property): ?string
+    {
+        if (!property_exists($model, $property)) {
+            return null;
+        }
+
+        $value = $model->$property ?? null;
+        return is_string($value) && !empty(trim($value)) ? trim($value) : null;
+    }
+
+    /**
+     * Extract language code from locale string (e.g., "tr-TR" -> "tr", "en-US" -> "en")
+     */
+    private function extractLanguageFromLocale(string $locale): ?string
+    {
+        // Handle formats like "tr-TR", "en_US", "ar-SA"
+        $parts = preg_split('/[-_]/', $locale);
+
+        if (!empty($parts[0])) {
+            $lang = strtolower(trim($parts[0]));
+            if ($this->isSupported($lang)) {
+                return $lang;
+            }
+        }
+
+        return null;
     }
 
     /**

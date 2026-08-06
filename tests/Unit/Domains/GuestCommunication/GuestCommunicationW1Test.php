@@ -239,4 +239,61 @@ class GuestCommunicationW1Test extends TestCase
             $this->assertContains($lang, ['tr', 'en', 'ar']);
         }
     }
+
+    // ========================================================================
+    // Locale Extraction Tests
+    // ========================================================================
+
+    /** @test */
+    public function language_resolver_extracts_language_from_locale(): void
+    {
+        // Use reflection to test private method
+        $reflection = new \ReflectionClass($this->languageResolver);
+        $method = $reflection->getMethod('extractLanguageFromLocale');
+        $method->setAccessible(true);
+
+        // Test locale formats
+        $this->assertEquals('tr', $method->invoke($this->languageResolver, 'tr-TR'));
+        $this->assertEquals('tr', $method->invoke($this->languageResolver, 'tr_TR'));
+        $this->assertEquals('en', $method->invoke($this->languageResolver, 'en-US'));
+        $this->assertEquals('en', $method->invoke($this->languageResolver, 'en_GB'));
+        $this->assertEquals('ar', $method->invoke($this->languageResolver, 'ar-SA'));
+        $this->assertEquals('ar', $method->invoke($this->languageResolver, 'ar-AE'));
+    }
+
+    /** @test */
+    public function language_resolver_returns_null_for_unsupported_locale(): void
+    {
+        $reflection = new \ReflectionClass($this->languageResolver);
+        $method = $reflection->getMethod('extractLanguageFromLocale');
+        $method->setAccessible(true);
+
+        $this->assertNull($method->invoke($this->languageResolver, 'fr-FR'));
+        $this->assertNull($method->invoke($this->languageResolver, 'de-DE'));
+        $this->assertNull($method->invoke($this->languageResolver, 'ru-RU'));
+    }
+
+    /** @test */
+    public function language_resolver_handles_invalid_locale(): void
+    {
+        $reflection = new \ReflectionClass($this->languageResolver);
+        $method = $reflection->getMethod('extractLanguageFromLocale');
+        $method->setAccessible(true);
+
+        $this->assertNull($method->invoke($this->languageResolver, ''));
+        $this->assertNull($method->invoke($this->languageResolver, 'XX'));
+        $this->assertNull($method->invoke($this->languageResolver, 'invalid'));
+    }
+
+    // ========================================================================
+    // Null Reservation Fallback Tests
+    // ========================================================================
+
+    /** @test */
+    public function language_resolver_returns_en_for_null_reservation(): void
+    {
+        $result = $this->languageResolver->resolveFromReservation(null);
+
+        $this->assertEquals('en', $result);
+    }
 }
