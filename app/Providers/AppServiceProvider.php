@@ -156,6 +156,12 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\Property\OperationalCalendarService::class
         );
 
+        // CHANNEL_MANAGER Wave 1: ICalAdapter Contract binding
+        $this->app->bind(
+            \App\Contracts\ChannelManager\ChannelSyncContract::class,
+            \App\Infrastructure\ChannelManager\Adapters\ICalAdapter::class
+        );
+
         // ⚙️ Execution Runtime Repository Binding
         $this->app->bind(
             \App\Repositories\ExecutionRuntimeRepositoryInterface::class,
