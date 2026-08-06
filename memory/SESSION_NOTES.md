@@ -21,34 +21,53 @@
 | E05 Drift Detection | `a27767d` | 7/7 PASS |
 | **Toplam** | | **21/21 PASS** |
 
-### Yeni Capability'ler
+### Phase 3 Conflict Detection — IMPLEMENTED
 
-**E03 - AvailabilityReplayService**
-- `availability:rebuild` Artisan command
-- rebuild_execution_logs audit table
-- Idempotent, tenant-scoped, transaction-safe
+**Commit:** `92edb8f9`
 
-**E04 - TenantIsolationEnforcer**
-- cross_tenant_violation_audit table
-- reject + log + audit evidence pattern
+| Test | Sonuç |
+|------|--------|
+| rejects_overlapping_confirmed_reservation | ✅ |
+| allows_back_to_back_reservations | ✅ |
+| pending_reservation_blocks_overlap | ✅ |
+| cancelled_reservation_does_not_block | ✅ |
+| completed_reservation_does_not_block | ✅ |
+| maintenance_block_has_priority | ✅ |
+| owner_block_has_priority | ✅ |
+| concurrent_create_allows_only_one | ✅ |
+| cross_tenant_conflict_not_visible | ✅ |
+| conflict_detection_is_deterministic | ✅ |
+| conflict_event_dispatched | ✅ |
+| override_requires_authorization | ✅ |
+| **Toplam** | **12/12 PASS** |
 
-**E05 - ScanAvailabilityDrift**
-- `availability:drift-scan` Artisan command
-- Read-only drift detection
-- Rebuild suggestion support
+### Yeni Dosyalar (Phase 3)
+- `app/Contracts/Reservation/ConflictDetectionServiceContract.php`
+- `app/Services/Reservation/ConflictDetectionService.php`
+- `app/Events/Reservation/ReservationConflictDetectedEvent.php`
+- `tests/Feature/Reservation/ConflictDetectionServiceTest.php`
 
-### Mimari Zincir (Korunan)
+### SAAB Priority Matrix (v2)
+Priority | Source | Value | Overridable
+---------|--------|-------|------------
+1 | Maintenance | 1 | NO
+2 | Owner Block | 2 | admin/owner
+3 | Confirmed Reserve | 3 | admin
+4 | External Channel | 4 | admin/channel
+5 | Pending Hold | 5 | always
 
+### Program Durumu
 ```
-Reservation → Domain Event → Listener → AvailabilityProjectionService → PropertyAvailability
+ADR-001 ✅
+LP-008 ✅
+CERT-DEBT-001 ✅
+RESERVATION_CORE Phase 1 ✅
+RESERVATION_CORE Phase 2 ✅
+RESERVATION_CORE Phase 3 ✅ (Conflict Detection)
 ```
-
-### Kalan Riskler (Out of Scope)
-1. Pre-existing test failures (10) — Phase 2 bloke etmez
-2. Auto-remediation — Detect → Suggest → Repair sırası önerilir
 
 ### Sonraki Adımlar (SAAB Önerisi)
-1. Conflict Detection
+1. Conflict Detection ✅ COMPLETE
 2. Operational Calendar
 3. Channel Manager (Airbnb/Booking.com)
 
