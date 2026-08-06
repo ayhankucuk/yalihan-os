@@ -19,10 +19,81 @@ class NotificationDispatcher
     ) {}
 
     /**
+     * Pilot Safety Gate — kill switch + allowlist kontrolü.
+     * true = gönderim yapılabilir
+     * false = gönderim engellenir (audit kaydı açık kalır)
+     */
+    public function canDispatch(?int $tenantId = null, ?int $propertyId = null): bool
+    {
+        // 1. Kill Switch — acil durdurma
+        if (config('feature-flags.notification_kill_switch', false)) {
+            Log::channel('security')->warning('[NotificationDispatcher] Kill switch ACTIVE — dispatch blocked', [
+                'tenant_id' => $tenantId,
+                'property_id' => $propertyId,
+                'timestamp' => now()->toIso8601String(),
+            ]);
+            return false;
+        }
+
+        // 2. Global flag kapalıysa — pilot modda gönderim yok
+        if (!config('feature-flags.whatsapp_pilot_global', false)) {
+            return false;
+        }
+
+        // 3. Allowlist kontrolü — pilot tenant/property ikilisi mi?
+        $allowlist = config('feature-flags.pilot_notification_allowlist', [
+            'tenant_ids' => [],
+            'property_ids' => [],
+        ]);
+
+        $allowedTenants = $allowlist['tenant_ids'] ?? [];
+        $allowedProperties = $allowlist['property_ids'] ?? [];
+
+        // Boş allowlist = güvenlik kilidi (devrede hiçbir şey açık değil)
+        if (empty($allowedTenants) && empty($allowedProperties)) {
+            Log::channel('security')->info('[NotificationDispatcher] Allowlist empty — pilot not configured, blocking.');
+            return false;
+        }
+
+        // Tenant allowlist kontrolü
+        if (!empty($allowedTenants) && $tenantId !== null && !in_array($tenantId, $allowedTenants, true)) {
+            Log::channel('security')->info('[NotificationDispatcher] Tenant not in allowlist', [
+                'tenant_id' => $tenantId,
+                'allowed' => $allowedTenants,
+            ]);
+            return false;
+        }
+
+        // Property allowlist kontrolü
+        if (!empty($allowedProperties) && $propertyId !== null && !in_array($propertyId, $allowedProperties, true)) {
+            Log::channel('security')->info('[NotificationDispatcher] Property not in allowlist', [
+                'property_id' => $propertyId,
+                'allowed' => $allowedProperties,
+            ]);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Dispatch the notification through the normalized flow.
      */
-    public function dispatch(NotificationContract $notification): bool
+    public function dispatch(NotificationContract $notification, ?int $tenantId = null, ?int $propertyId = null): bool
     {
+        // Pilot safety gate
+        if (!$this->canDispatch($tenantId, $propertyId)) {
+            // Audit kaydı yine oluşsun — blocked state ile
+            $audit = $this->logOutbound($notification, OutboundNotification::STATE_CANCELLED);
+            Log::channel('security')->info('[NotificationDispatcher] Notification blocked by pilot gate', [
+                'audit_id' => $audit->id,
+                'channel' => $notification->getChannel(),
+                'tenant_id' => $tenantId,
+                'property_id' => $propertyId,
+            ]);
+            return false;
+        }
+
         try {
             // 1. Audit Log (Pre-send)
             $audit = $this->logOutbound($notification);
@@ -49,14 +120,14 @@ class NotificationDispatcher
     /**
      * Create an audit record for delivery traceability.
      */
-    protected function logOutbound(NotificationContract $notification): OutboundNotification
+    protected function logOutbound(NotificationContract $notification, string $state = OutboundNotification::STATE_PENDING): OutboundNotification
     {
         return OutboundNotification::create([
             'channel' => $notification->getChannel(),
             'recipient' => $notification->getRecipient(),
             'template_key' => $notification->getTemplateKey(),
             'payload_data' => $notification->getData(),
-            'gonderim_durumu' => OutboundNotification::STATE_PENDING,
+            'gonderim_durumu' => $state,
         ]);
     }
 

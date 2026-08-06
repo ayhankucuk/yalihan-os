@@ -660,6 +660,94 @@ Bkz: `docs/BEKCI_CHANGELOG.md` — Resmi agent oturum kaydı
 
 ---
 
+## OTURUM 115 | 2026-08-07 | N1-B Notification Pilot Altyapısı — PILOT READY
+
+**Agent:** Kilo (aiwebmodel/gpt-5.2-codex)
+**Konu:** N1-B Notification Pilot — 8 adımlı operasyonel protokol altyapısı
+
+### N1-B Notification Pilot — PILOT READY
+
+**SAAB Kararı:** PILOT READY / LIVE EVIDENCE PENDING
+
+#### Semantik Düzeltme (Bu Oturum)
+
+**Bulunan tutarsızlık:** `.env` display'da `notification_kill_switch=true` için "AÇIK" gösteriliyordu — ters.
+**Düzeltme:** `showStatus()` fonksiyonu yeniden yazıldı — semantik açıkça belgelendi.
+
+```
+notification_kill_switch: true = ENGELLE | false = İZİN VER
+whatsapp_pilot_global:   true = AÇIK  | false = KAPALI
+```
+
+#### canDispatch() Semantik Doğrulaması (5/5 PASS)
+
+```
+Test 1: kill=true, global=false → HAYIR ✅ (kill override)
+Test 2: kill=false, global=true, allowlist=boş → HAYIR ✅ (boş allowlist = güvenlik kilidi)
+Test 3: tenant=1 in allowlist → EVET ✅
+Test 4: tenant=2 not in allowlist → HAYIR ✅
+Test 5: kill=true (engelleme aktif) → HAYIR ✅
+```
+
+#### Teslimatlar
+
+| Parça | Dosya |
+|-------|-------|
+| Feature flags | `config/feature-flags.php` (whatsapp_pilot_global, pilot_notification_allowlist, notification_kill_switch) |
+| Allowlist gate | `app/Services/Notification/NotificationDispatcher.php` (`canDispatch()`) |
+| Pilot command | `app/Console/Commands/Bekci/NotificationPilotCommand.php` |
+| .env değişkenleri | `.env` (PILOT_NOTIFICATION_GLOBAL, PILOT_TENANT_IDS, PILOT_PROPERTY_IDS, NOTIFICATION_KILL_SWITCH) |
+
+#### Mevcut Güvenlik Durumu
+
+```
+notification_kill_switch = false (gönderim serbest)
+whatsapp_pilot_global    = false (pilot mod kapalı)
+allowlist tenants        = []    (güvenlik kilidi aktif)
+allowlist properties     = []    (tüm property'ler kapalı)
+Pilot gönderim MI?      = ❌ HAYIR (doğru)
+```
+
+#### Pilot Başarı Kriterleri (8 Kanıt)
+
+| # | Kriter | Kanıt | Şu An |
+|---|--------|-------|-------|
+| 1 | Tenant/property allowlist | Doğru eşleşme | ⏳ |
+| 2 | Gönderim süresi | ≤ 60 saniye | ⏳ |
+| 3 | External message ID | `provider_response->messages[0].id` | ⏳ |
+| 4 | OutboundNotification kaydı | ID oluştu | ⏳ |
+| 5 | Duplicate gönderim | 0 | ⏳ |
+| 6 | İnsan müdahalesi | 0 | ⏳ |
+| 7 | Kill switch sonrası yeni gönderim | 0 | ⏳ |
+| 8 | Yanlış tenant/property gönderimi | 0 | ⏳ |
+
+#### Resmî Sprint Durumu
+
+```
+EX-001 Core              ✅
+WAVE 2 Technical         ✅
+Pilot Safety             ✅
+Pilot Authorization      ✅
+Pilot Environment        ✅ READY
+Live Operational Evidence ⏳
+Production Certified     ❌
+```
+
+#### Certification Debt
+
+| Hata | Durum | Öncelik |
+|------|-------|---------|
+| `setEventDispatcher(null)` (3 dosya, 10 kullanım) | Açık — EX-001 sonrası | 🟡 |
+| PropertyWorkspace test hataları (2 test) | Mevcut — pilotu bloklamıyor | 🟡 |
+| `admin.ilanlarim.index` route eksik | Mevcut — render hatası | 🟡 |
+| 155 hata (eskiden) | Artık geçerli değil — güncel: 2 failed, 129 passed | ✅ |
+
+#### Sonraki Adım
+
+İlk pilot rezervasyon — tenant/property allowlist doldurulup `PILOT_NOTIFICATION_GLOBAL=true` yapılacak.
+
+---
+
 ## OTURUM 114 | 2026-07-17 | Sprint 12B — ✅ CERTIFIED
 
 **Agent:** Kilo (Claude Opus 4.8)

@@ -1,9 +1,9 @@
 # PROJECT_STATE.yaml — YALIHAN AI OS Engineering Truth
-# Updated: 2026-06-26T17:58:00+03:00
+# Updated: 2026-08-07T01:17:00+03:00
 
 bootstrap: false
 status: active
-last_updated: 2026-06-26T17:58:00+03:00
+last_updated: 2026-08-07T01:17:00+03:00
 
 repository:
   root: /Users/macbookpro/dev/yalihan2026
@@ -12,10 +12,11 @@ repository:
   owner: Yalihan AI OS
 
 git_status:
-  modified: 75+
-  deleted: 50+
-  untracked: 35+
+  modified: 4
+  deleted: 0
+  untracked: 0
   clean: false
+  note: "4 modified: feature-flags.php, NotificationDispatcher.php, NotificationPilotCommand.php, .env, SESSION_NOTES.md"
 
 health:
   bekci: 61.85%
@@ -31,36 +32,74 @@ integrity:
   status: baseline_accepted
 
 runtime:
-  status: MISSING
-  path: .ai/runtime/runtime.json
-  expected: SAB v5 compatible runtime
+  status: PILOT_READY
+  path: "app/Services/Notification/"
+  expected: N1-B Notification Pilot
+
+sprint:
+  current: EX-001 N1-B Notification Pilot
+  phase: LIVE_EVIDENCE_PENDING
+  note: "Pilot Safety ✅, Pilot Authorization ✅, Pilot Environment ✅ — Live Operational Evidence ⏳"
+
+risks:
+  verified:
+    - id: "setEventDispatcher-null"
+      description: "3 dosya, 10 kullanım — Airbnb test altyapısıyla ilişkili"
+      priority: low
+      after: "EX-001 sonrası temizlenecek"
+    - id: "PropertyWorkspace-tests"
+      description: "2 test hatası — pilotu bloklamıyor"
+      priority: low
+    - id: "admin-ilanlarim-index"
+      description: "Route eksik — sidebar render hatası"
+      priority: low
+  note: "Test suite güncel: 129 passed, 2 failed (155 hata eski state)"
 
 governance:
   version: "5.0"
   mode: engineering_governor
   sab_active: true
 
-sprint:
-  current: unknown
-  phase: unknown
-  note: Sprint/phase not verified. Requires chief-ai/sprint-backlog.md or explicit verification.
-
-risks:
-  verified: []
-  note: Full risk register requires chief-ai/risk-register.md
+sprint_n1b:
+  status: PILOT_READY
+  sub_status: LIVE_EVIDENCE_PENDING
+  can_dispatch: false
+  kill_switch: false
+  global_flag: false
+  allowlist_tenants: []
+  allowlist_properties: []
+  success_criteria:
+    - "Tenant/property allowlist eşleşmesi"
+    - "Gönderim süresi ≤ 60s"
+    - "External message ID oluştu"
+    - "OutboundNotification kaydı oluştu"
+    - "Duplicate gönderim = 0"
+    - "İnsan müdahalesi = 0"
+    - "Kill switch sonrası yeni gönderim = 0"
+    - "Yanlış tenant/property gönderimi = 0"
+  pilot_steps:
+    - "Tek tenant seç"
+    - "Tek property seç"
+    - "Tek kontrollü rezervasyon seç"
+    - "Allowlist'e yalnızca bunları ekle"
+    - "Global flag kapalıyken dry-run yap"
+    - "Queue worker + audit gözlemeyi hazırla"
+    - "Global flag'i aç"
+    - "Rezervasyon event'ini tetikle"
+    - "Kanıtları topla"
+    - "Hemen ardından kill switch'i doğrula"
 
 technical_debt:
-  verified: false
-  note: Assessment pending
+  verified: true
+  summary: "3 açık kalem — hiçbiri pilotu bloklamıyor"
 
 worktree:
   clean: false
-  action_required: Uncommitted changes exist
+  action_required: "4 uncommitted dosya — pilot rezervasyon sonrası commit"
 
 notes: >
-  Engineering state verified via SAB v5 Bootstrap.
-  Health: 61.85% (Project Health 59.25%)
-  Integrity: PASS (4626 baseline violations accepted)
-  Runtime: MISSING (.ai/runtime not found)
-  Sprint status: Unknown (requires explicit verification)
-  Git: Uncommitted changes present
+  N1-B Notification Pilot altyapısı tamamlandı.
+  Semantik tutarsızlık düzeltildi (kill switch display).
+  canDispatch() 5/5 test PASS.
+  Pilot Safety ✅, Pilot Authorization ✅, Pilot Environment ✅.
+  Sıradaki: İlk pilot rezervasyon — Live Operational Evidence ⏳.
