@@ -150,6 +150,12 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\Property\ConflictOverrideService::class
         );
 
+        // OPERATIONAL_CALENDAR: Read-only calendar aggregation Contract
+        $this->app->singleton(
+            \App\Contracts\Property\OperationalCalendarContract::class,
+            \App\Services\Property\OperationalCalendarService::class
+        );
+
         // ⚙️ Execution Runtime Repository Binding
         $this->app->bind(
             \App\Repositories\ExecutionRuntimeRepositoryInterface::class,
