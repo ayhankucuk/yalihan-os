@@ -98,6 +98,46 @@ Model önerisi:
 - Discovery: Claude Opus 4.8
 - Laravel impl: Claude Sonnet 4.6
 
+---
+
+## OTURUM 117 | 2026-08-06 | CHANNEL_MANAGER Discovery — 🟢 APPROVED
+
+**Commit:** `b6578d3`
+**Status:** 🟢 APPROVED FOR IMPLEMENTATION
+
+### Foundation Reuse (Sprint 13)
+
+| Bileşen | Durum |
+|---------|-------|
+| `ChannelManagerAggregate` | ✅ Var |
+| `ChannelManagerCapability` | ✅ Var |
+| `ChannelManagerEventVocabulary` | ✅ Var |
+| `AirbnbChannelAdapter` | ✅ Var |
+
+### Yeni Implementasyon Kapsamı
+
+| Bileşen | Durum |
+|---------|-------|
+| `ChannelSyncContract` | ⏳ Yapılacak |
+| Pull Availability | ⏳ Yapılacak |
+| Retry Policy | ⏳ Yapılacak |
+| Drift Detection | ⏳ Yapılacak |
+
+### Mimari Sınırlar (Freeze)
+
+**YAPAR:** Senkronizasyon, Retry, Drift Detection
+**YAPMAZ:** Conflict Detection, Priority Resolution, Override
+
+### Önerilen Implementasyon Sırası
+
+```
+Wave 1: ChannelSyncContract → ICalAdapter → Retry Engine
+Wave 2: Pull Availability → Drift Detection
+Wave 3: Booking Adapter → Airbnb Native
+```
+
+---
+
 ### Operational Calendar Certification
 
 | Metrik | Değer |
