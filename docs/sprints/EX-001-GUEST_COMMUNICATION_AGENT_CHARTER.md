@@ -89,6 +89,65 @@ Guest Communication Agent ancak aşağıdaki koşullar birlikte sağlanırsa REA
 
 ---
 
+## Mimari Yaklaşım — Event Tabanlı
+
+Guest Communication Agent olay (event) tabanlı capability olarak tasarlanır:
+
+```
+ReservationConfirmed
+        │
+        ▼
+GuestCommunicationAgent
+        ├── Welcome Message
+        ├── Check-in Instructions
+        ├── Local Guide Suggestions
+        ├── Mid-stay Follow-up
+        ├── Check-out Reminder
+        └── Review Request
+```
+
+Bu yaklaşım, gelecekte WhatsApp, Airbnb, Booking.com, Telegram veya e-posta kanallarını aynı iş akışına bağlamayı kolaylaştırır.
+
+---
+
+## Teslim Kriterleri
+
+### 1. Engineering
+* Testler PASS
+* Regresyon PASS
+* Tenant isolation doğrulandı
+* Replay-safe davranış doğrulandı
+
+### 2. Business
+* Beklenen BAI: +8%
+* Gerçekleşen BAI ölçüldü
+* Manuel saat kazanımı hesaplandı
+
+### 3. AI
+* Otomatik cevap oranı
+* İnsan eskalasyon oranı
+* Güvenli otonomi seviyesi
+
+### 4. Customer
+* Ortalama ilk yanıt süresi
+* Misafir memnuniyeti
+* Çok dilli iletişim başarısı
+
+### 5. Executive
+* CRS hesaplandı
+* Executive Report üretildi
+* READY / CONDITIONAL / NOT READY kararı
+
+---
+
+## SAAB Authorization
+
+**Status: 🟢 AUTHORIZED FOR IMPLEMENTATION**
+
+Mission EX-001, yalnızca bir agent geliştirme çalışması değil; Execution Era'nın ilk saha doğrulaması olacak.
+
+---
+
 ## Referans
 
 * `docs/EXECUTION_ERA_STANDARD.md` — Çalışma standardı
