@@ -125,10 +125,25 @@ Cevap evet ise → Governance v1.0 amacına ulaşmış demektir.
 
 ---
 
+## Executive Dashboard
+
+| Metric | Status |
+|--------|--------|
+| Era | ▶ Execution |
+| Governance | 🟢 Frozen v1.0 |
+| North Star | BAI |
+| Current Priority | Guest Communication Agent |
+| Next | Finance Agent |
+| After | Channel Manager Wave 2 |
+| Baseline Commit | a7ae5e2 |
+
+---
+
 ## SAAB Executive Closure
 
 **Status:** 🟢 BASELINE ESTABLISHED
 **Effective Date:** 2026-08-06 22:51
+**Baseline Commit:** a7ae5e2
 **Era:** Execution Era ▶ ACTIVE
 
 ### Program Durumu
@@ -152,11 +167,22 @@ Execution Era'da başarı şu dört eksenle değerlendirilir:
 | AI | Agent güvenli ve uygun düzeyde otonom mu? |
 | Customer | Kullanıcı deneyiminde somut fayda oluşturdu mu? |
 
-### İlk Doğrulama Döngüsü
+### İlk Doğrulama Döngüsü — Başarı Kriterleri
 
-1. 🥇 Guest Communication Agent (+8% BAI)
-2. 🥈 Finance Agent (+6% BAI)
-3. 🥉 Channel Manager Wave 2
+#### 🥇 Guest Communication Agent (+8% BAI)
+- Yanıt süresi azalıyor mu?
+- Manuel mesaj sayısı düşüyor mu?
+- BAI artıyor mu?
+
+#### 🥈 Finance Agent (+6% BAI)
+- Ödeme süreçleri hızlanıyor mu?
+- Hata oranı azalıyor mu?
+- Ev sahibi raporları otomatikleşiyor mu?
+
+#### 🥉 Channel Manager Wave 2
+- Drift Detection doğru çalışıyor mu?
+- Çakışma riski azalıyor mu?
+- Senkronizasyon güvenilirliği artıyor mu?
 
 ### Stratejik Karar
 
