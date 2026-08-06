@@ -1,5 +1,66 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 98 — RESERVATION_CORE Phase 2 E05: Drift Detection (2026-08-06) ✅ CLOSED
+
+### 🎯 Hedef
+RESERVATION_CORE Phase 2 E05 — Drift Detection.
+
+SAAB başarı sorusu: _"Sistemde oluşan projection drift'i tespit edebiliyor muyuz? Detector read-only mu ve tenant-scoped mu?"_
+
+### ✅ SAAB Sertifikasyonu
+**RESERVATION_CORE Phase 2 E05 — CERTIFIED / CLOSED**
+- 7/7 DriftDetectionE05Test PASS (27 assertions) — zaten mevcuttu
+- 4/4 AvailabilityDriftDetectorTenantTest PASS (15 assertions) — YENİ: detectForTenant() coverage
+- 120/120 full suite PASS (389 assertions)
+- Sıfır regresyon
+
+### 🔍 Yapılan İşler & Çözümler
+
+**E05 Gap Analizi:**
+`DriftDetectionE05Test` önceki oturumda oluşturulmuş ve 7/7 green durumunda. Eksik: `detectForTenant()` API hiç test edilmemiş. SAAB scope'unda `detect_for_tenant_aggregates_all_properties` açıkça belirtilmişti.
+
+**AvailabilityDriftDetectorTenantTest — YENİ (4 test, 15 assertion):**
+
+`detect_for_tenant_aggregates_all_properties` (E05.8):
+TenantA'nın 2 property'si var. PropertyA1 confirmed rezervasyon var ama projection yok → MISSING_BLOCK drift. PropertyA2 confirmed rezervasyon + doğru projection → clean. `detectForTenant(A)` → 2 properties_checked, 1 properties_with_drift. ✅
+
+`detect_for_tenant_does_not_cross_tenant_boundary` (E05.6 variant):
+TenantB'nin property'sinde drift var. TenantA için `detectForTenant()` çağrısı TenantB drift'ini görmüyor. TenantB için `detectForTenant()` kendi drift'ini görüyor. Cross-tenant sızıntı sıfır. ✅
+
+`tenant_with_no_drift_returns_clean_report`:
+Her iki property için doğru projection var. `detectForTenant()` → properties_with_drift = 0, drift_reports boş. ✅
+
+`detect_for_tenant_is_read_only`:
+Drift mevcut durumdayken `detectForTenant()` çağrısı — reservation ve availability count değişmiyor. Detector hiçbir şey yazmıyor. ✅
+
+**Mimari doğrulama:**
+`AvailabilityDriftDetector` tamamen read-only — `PropertyReservation` ve `PropertyAvailability` tabloları sadece `SELECT` ile sorgulanıyor. Repair için ayrı `rebuildAvailabilityProjection()` çağrısı gerekiyor.
+
+### ✅ Değişen Dosyalar (1 dosya, +195 / 0)
+
+| Dosya | Değişiklik |
+|-------|-----------|
+| `tests/Feature/Reservation/AvailabilityDriftDetectorTenantTest.php` | YENİ — 4 test, 15 assertion |
+
+### 📊 Final CI Sonuçları
+
+| Suite | Test | Assertions | Sonuç |
+|-------|------|-----------|-------|
+| AvailabilityDriftDetectorTenantTest | 4 | 15 | ✅ PASS |
+| DriftDetectionE05Test | 7 | 27 | ✅ PASS |
+| AvailabilityProjectionTenantIsolationTest | 7 | 22 | ✅ PASS |
+| AvailabilityProjectionReplayTest | 6 | 25 | ✅ PASS |
+| AvailabilityProjectionIdempotencyTest | 5 | 22 | ✅ PASS |
+| AvailabilityProjectionFoundationTest | 5 | ~18 | ✅ PASS |
+| Diğer Reservation suiteleri | 48 | ~180 | ✅ PASS |
+| Property + ReservationService + Concurrency | 34 | ~80 | ✅ PASS |
+| **TOPLAM** | **120** | **389** | ✅ **ALL PASS** |
+
+### 📝 Commit
+- (bu oturum commit'i)
+
+---
+
 ## Oturum 97 — RESERVATION_CORE Phase 2 E04: Tenant Isolation Hardening (2026-08-05) ✅ CLOSED
 
 ### 🎯 Hedef
