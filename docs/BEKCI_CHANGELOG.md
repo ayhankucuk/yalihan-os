@@ -1,5 +1,80 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 97 — RESERVATION_CORE Phase 2 E04: Tenant Isolation Hardening (2026-08-05) ✅ CLOSED
+
+### 🎯 Hedef
+RESERVATION_CORE Phase 2 E04 — Tenant Isolation Hardening.
+
+SAAB başarı sorusu: _"Her reservation, event, listener, rebuild ve release işlemi yalnızca kendi tenant'ının PropertyAvailability kayıtlarını etkiliyor mu?"_
+
+Zorunlu invariant: `reservation.tenant_id = property.tenant_id = availability.tenant_id`
+
+### ✅ SAAB Sertifikasyonu
+**RESERVATION_CORE Phase 2 E04 — CERTIFIED / CLOSED**
+- 7/7 E04 testi PASS (22 assertions)
+- 116/116 full RESERVATION_CORE + Property + ReservationService suite PASS (374 assertions)
+- Sıfır regresyon
+
+### 🔍 Gap Analizi
+
+| Mekanizma | Durum | Kanıt |
+|-----------|-------|-------|
+| `projectConfirm` — cross-tenant property erişimi | ✅ Engellenmiş | `validateTenantPropertyMatchOrFail()` → `Cross-tenant violation` exception |
+| `projectCancel` — cross-tenant release | ✅ İzole | `WHERE tenant_id = $tenantId` scope — başka tenant'ın rows'larına erişilemiyor |
+| Listener — tenant context aktarımı | ✅ Korunuyor | Event `tenantId` alanından gelen değer projection'a geçiyor |
+| `rebuildAvailabilityProjection` — tenant scope | ✅ İzole | Tüm sorgular `tenant_id` filtreli, yazlik JOIN ilanlar.tenant_id üzerinden |
+| `validateTenantPropertyMatch` | ✅ Doğru | `withoutGlobalScopes()` lookup → `tenant_id` karşılaştırması |
+| `isCrossTenantAccess` | ✅ Doğru | `requestingTenantId !== targetTenantId` boolean check |
+
+### 🔍 Yapılan İşler & Çözümler
+
+**E04.1 — `tenant_a_cannot_project_into_tenant_b_property`:**
+`projectConfirm(tenantId: A, propertyId: B.property)` çağrısı `Cross-tenant violation` exception fırlatıyor. Validation zinciri: `projectConfirm` → `validateTenantPropertyMatchOrFail` → `validateTenantPropertyMatch` → `Ilan::withoutGlobalScopes()->find()` → `tenant_id` check. ✅
+
+**E04.2 — `tenant_a_cancel_cannot_release_tenant_b_availability`:**
+`projectCancel(tenantId: A, reservationId: B.reservation)` çağrısı `WHERE tenant_id = A.id` scope ile hiçbir TenantB satırına dokunamıyor. `freed_days = 0` kanıtı. ✅
+
+**E04.3 — `listener_preserves_tenant_context`:**
+`ProjectConfirmedReservationListener::handle()` event'in `tenantId` alanını doğrudan projection'a aktarıyor. Her availability satırının `tenant_id` kolonu TenantA.id olarak doğrulandı. TenantB property'de sıfır satır. ✅
+
+**E04.4 — `rebuild_processes_only_requested_tenant`:**
+İki tenant aynı tarih aralığında confirmed rezervasyon sahibi. Yalnızca TenantA için rebuild çağrıldığında TenantB property'sinde sıfır satır oluştu. ✅
+
+**E04.5 — `reservation_property_tenant_mismatch_is_rejected`:**
+`projectConfirm(tenantId: A, propertyId: B.property)` → E04.1 ile aynı mekanizma, farklı açıdan kanıtlandı. ✅
+
+**E04.6 — `cross_tenant_projection_attempt_leaves_no_side_effect`:**
+Cross-tenant exception sonrası TenantB property'sindeki row count değişmedi. TenantA'nın TenantB property'sinde hiçbir satırı yok. Transaction rollback + erken exception birlikte çalışıyor. ✅
+
+**E04.7 — `cross_tenant_attempt_raises_detectable_signal`:**
+`projectConfirm` ve `validateTenantPropertyMatch` her ikisi de `Cross-tenant violation` içeren exception üretiyor. `isCrossTenantAccess(A, B) = true`, `isCrossTenantAccess(A, A) = false`. Observable signal monitoring/alerting için kullanılabilir. ✅
+
+### ✅ Değişen Dosyalar (1 dosya, +280 / 0)
+
+| Dosya | Değişiklik |
+|-------|-----------|
+| `tests/Feature/Reservation/AvailabilityProjectionTenantIsolationTest.php` | YENİ — 7 test, 22 assertion |
+
+### 📊 Final CI Sonuçları
+
+| Suite | Test | Assertions | Sonuç |
+|-------|------|-----------|-------|
+| AvailabilityProjectionTenantIsolationTest | 7 | 22 | ✅ PASS |
+| AvailabilityProjectionReplayTest | 6 | 25 | ✅ PASS |
+| AvailabilityProjectionIdempotencyTest | 5 | 22 | ✅ PASS |
+| AvailabilityProjectionFoundationTest | 5 | ~18 | ✅ PASS |
+| TenantIsolationE04Test + DriftDetectionE05Test + AvailabilityReplayE03Test | 21 | ~85 | ✅ PASS |
+| ReservationCorePhase1Test + Phase2Test | 26 | 60 | ✅ PASS |
+| PropertyReservationCanonicalTest | 12 | ~28 | ✅ PASS |
+| PropertyAvailabilityTest + S12D | 27 | ~87 | ✅ PASS |
+| ReservationServiceTest + ConcurrencyTest | 7 | ~20 | ✅ PASS |
+| **TOPLAM** | **116** | **374** | ✅ **ALL PASS** |
+
+### 📝 Commit
+- (bu oturum commit'i)
+
+---
+
 ## Oturum 96 — RESERVATION_CORE Phase 2 E03: Availability Projection Replay/Rebuild Safety (2026-08-05) ✅ CLOSED
 
 ### 🎯 Hedef
