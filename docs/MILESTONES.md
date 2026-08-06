@@ -171,11 +171,48 @@ Cevap evet ise → Governance v1.0 amacına ulaşmış demektir.
 
 ## Mission Registry
 
-| Mission | Capability | Status | Charter |
-|---------|-----------|--------|---------|
-| EX-001 | Guest Communication Agent | 🟢 Implementation & Evidence | 43727d6 |
-| EX-002 | Finance Agent | ⏳ Pending | - |
-| EX-003 | Channel Manager Wave 2 | ⏳ Pending | - |
+| Mission | Capability | Status | Charter | BAI Target | Production Gate |
+|---------|-----------|--------|---------|------------|-----------------|
+| EX-001 | Guest Communication Agent | 🟢 Implementation & Evidence | 43727d6 | +8% | 6 Kapı |
+| EX-002 | Finance Agent | ⏳ Pending | - | +6% | - |
+| EX-003 | Channel Manager Wave 2 | ⏳ Pending | - | Orta | - |
+
+---
+
+## Production Gate (EX-001)
+
+| Gate | Beklenen Çıktı |
+|------|----------------|
+| Business | Expected BAI ↔ Actual BAI |
+| Engineering | Test + Regression PASS |
+| AI | Automation Rate + Escalation Rate |
+| Customer | Response Time + Satisfaction |
+| Executive | CRS ≥ 90 + Executive Report |
+| Operational | Gerçek kullanım verisiyle doğrulama |
+
+---
+
+## Execution Era Döngüsü
+
+```
+EX-001 (Guest Communication Agent)
+        ↓
+Production Certification
+        ↓
+BAI Validation
+        ↓
+Lessons Learned
+        ↓
+EX-002 (Finance Agent)
+        ↓
+EX-003 (Channel Manager Wave 2)
+```
+
+---
+
+## Temel Yönetim İlkesi
+
+> YALIHAN'ın başarısı, geliştirdiği capability sayısıyla değil; Production Certified olan capability'lerin gerçek operasyonlarda oluşturduğu ölçülebilir BAI artışıyla değerlendirilecektir.
 
 ---
 
