@@ -4,9 +4,9 @@
 **Agent:** Kilo (AI Workspace Agent)
 **Project:** Yalıhan Emlak OS
 **Discovery Mode:** EX-002 Finance Agent — Airbnb Payout Reconciliation
-**Status:** ⛔ CONDITIONALLY APPROVED — 2 blocking decisions required before implementation
+**Status:** 🟢 AUTHORIZED — All blocking decisions resolved (v1.0)
 
-> **SAAB Review (2026-08-07):** Discovery güçlü. Ancak implementasyondan önce iki kritik finans kuralı kesinleştirilmeli. Aksi halde sistem matematiksel olarak tutarlı görünürken ev sahibine yanlış ödeme çıkabilir.
+> **SAAB Review (2026-08-07):** Discovery güçlü; 4 kritik karar ürün sahibi tarafından kesinleştirildi. Implementasyon yetkili.
 
 ---
 
@@ -656,7 +656,26 @@ Automate Airbnb payout reconciliation for Yalıhan Emlak:
 
 ---
 
-## 8.9 Out of Scope Decisions (Deferred)
+## 8.9 Pilot Mandatory Output Table
+
+**Scope:** Tek ev sahibi, Ağustos 2026, Airbnb only
+
+| Alan | Zorunlu | Açıklama |
+|------|---------|-----------|
+| Konaklama geliri | ✅ | `accommodation_revenue` |
+| Temizlik ücreti | ✅ | Airbnb payout'tan gelen gerçek değer |
+| Airbnb kesintileri | ✅ | `airbnb_host_service_fee`, `taxes_withheld`, `adjustments` |
+| Refund/Adjustment | ✅ | `refunds`, `owner_chargeable_adjustments` |
+| Komisyon tabanı | ✅ | `gross_booking_amount = accommodation + cleaning + other` |
+| Yalıhan komisyonu (%10) | ✅ | `gross_booking_amount × 10%` |
+| Ev sahibi neti | ✅ | Sistem sonucu manuel hesapla %100 eşleşmeli |
+| Airbnb payout ile mutabakat | ✅ | `actual_airbnb_payout` reconciliation |
+| İnsan onayı | ✅ | Tüm payout'lar ödeme öncesi onaylanmalı |
+| Audit trail | ✅ | AirbnbPayoutImport → OwnerPayout baştan sona izlenebilir |
+
+---
+
+## 8.10 Out of Scope Decisions (Deferred)
 
 1. **Automated bank transfer execution** — requires separate payment gateway sprint
 2. **Booking.com integration** — same pattern, separate channel adapter
@@ -669,99 +688,107 @@ Automate Airbnb payout reconciliation for Yalıhan Emlak:
 
 ---
 
-## 9. SAAB Blocking Decisions (Required Before Implementation)
+## 9. Final Business Rules (Product Owner — Resolved 2026-08-07)
 
-> **Status:** ⛔ 2 BLOCKING — Implementation not authorized until resolved
+> **Status:** ✅ ALL DECISIONS RESOLVED — Implementation authorized
 
-### Decision 1: Komisyon Tabanı ve Temizlik Ücreti Formülü
+### Rule 1: Komisyon Tabanı — APPROVED
 
-**Problem:** Discovery'de önerilen formül yanlış olabilir.
+**Decision:** Temizlik dahil toplam rezervasyon geliri üzerinden %10.
 
-**Önerilen (muhtemelen yanlış):**
 ```
-owner_net_payout = booking_total - yalihan_commission - cleaning_fee
-```
-Bu formül temizlik ücretini owner net'ten çıkarıyor — ama temizlik ücreti zaten Airbnb'den gelen toplamın içinde ve owner'a ait.
-
-**Blokaj:** İş kuralı henüz kesinleşmedi. Şu sorular cevaplanmalı:
-
-| Soru | Seçenek A | Seçenek B |
-|------|-----------|-----------|
-| Komisyon tabanı | `booking_total` (temizlik dahil) | `accommodation_revenue` (temizlik hariç) |
-| Temizlik ücreti | Airbnb'den gelen değer kullanılır | `Ilan.cleaning_fee` kullanılır |
-| Airbnb platform kesintisi | Yalıhan'a aittir | Owner'a aittir |
-| Refund/chargeback | Kimin hesabından düşülür | — |
-
-**Gerekli iş kuralı bileşenleri:**
-```
-accommodation_revenue    # konaklama bedeli (temizlik hariç)
-cleaning_fee            # temizlik ücreti (Airbnb'den veya Ilan'dan)
-platform_adjustments    # platform kesintileri
-platform_service_fee    # Airbnb hizmet bedeli
-taxes                   # vergiler
-gross_payout            # Airbnb'nin gönderdiği toplam
-commission_base         # komisyon hesaplama tabanı
-yalihan_commission      # Yalıhan'ın kesintisi
-owner_net_payout       # ev sahibine giden net tutar
+commission_base = accommodation_revenue + cleaning_fee + other_guest_charges
+yalihan_commission = commission_base × 10%
 ```
 
-**SAAB kararı bekleniyor:**
-1. Komisyon tabanı nedir?
-2. Temizlik ücreti nasıl işlenir?
-3. Airbnb kesintileri kime aittir?
+**İstisna:** İleride `CommissionPolicy` property/owner bazlı tanımlanabilir. İlk pilotta sabit %10 uygulanır.
 
 ---
 
-### Decision 2: FinansalIslem ve V1/V2 Write Path Ayrımı
+### Rule 2: Temizlik Ücreti — APPROVED
 
-**Problem:** `finansal_islemler` tablosunda `tenant_id` yok. Yeni `OwnerPayout` buna bağımlı olmamalı.
+**Decision:** Airbnb rezervasyon/payout kaydındaki gerçek temizlik ücreti esas alınır. `Ilan.cleaning_fee` sadece reconciliation fallback olarak kullanılır.
 
-**İki olasılık:**
+**Öncelik sırası:**
+```
+1. Airbnb payout/reservation cleaning_fee
+2. yoksa → Airbnb reservation breakdown
+3. yoksa → Ilan.cleaning_fee (FALLBACK ONLY)
+4. fallback kullanıldıysa → insan onayı zorunlu
+```
 
-**Senaryo A — `FinansalIslem` hâlâ aktif write path'te:**
-- Tenant remediation zorunlu: nullable migration → backfill → NOT NULL
-- Ayrı remediation sprint gerekir
-- EX-002 implementasyonu Bloke edilir
-
-**Senaryo B — `FinansalIslem` EX-002 write/read path'inde değil:**
-- Yeni `OwnerPayout` tamamen V2 — V1 tabloya bağımlı değil
-- `FinansalIslem` tenant_id ihlali certification debt olarak kaydedilir
-- EX-002 implementasyonu devam edebilir
-
-**SAAB kararı bekleniyor:**
-- `FinansalIslem` EX-002 write/read path'inde kullanılacak mı?
-- Evet → önce remediation, sonra EX-002
-- Hayır → OwnerPayout V2-only, FinansalIslem debt olarak kalır
+Temizlik ücreti ev sahibine aittir; ayrıca Yalıhan komisyon tabanına dahildir.
 
 ---
 
-### Decision 3: AirbnbPayoutImport → PayoutReconciliation → OwnerPayout Ayrımı
+### Rule 3: Airbnb Kesintileri — APPROVED
 
-**SAAB önerisi:** Tek model yerine üç katmanlı yapı.
+**Decision:** Airbnb host payout'tan düşürülen platform bedelleri ev sahibinin finansal sonucuna aittir.
 
-| Katman | Amaç | Değiştirilebilir mi? |
-|--------|-------|----------------------|
-| `AirbnbPayoutImport` | Airbnb'den gelen ham, immutable veri | Hayır |
-| `PayoutReconciliation` | Rezervasyon eşleştirme sonucu | Eşleştirme logic değişebilir |
-| `OwnerPayout` | Hesaplanan ödeme yükümlülüğü | Evet (onay sonrası) |
+**Muhasebe alanları:**
+```
+gross_booking_amount         # Airbnb'den alınan toplam
+airbnb_host_service_fee      # Airbnb platform kesintisi
+refunds                      # İadeler
+taxes_withheld               # Vergiler
+adjustments                  # Düzenlemeler
+actual_airbnb_payout         # Airbnb'nin gönderdiği net tutar
+```
 
-**Avantajı:** Audit trail sağlam, tekrar işleme mümkün, Airbnb verisi asla kaybolmaz.
+**Formül:**
+```
+gross_booking_amount
+- airbnb_host_service_fee
+- refunds
+- owner_chargeable_adjustments
+- yalihan_commission
+= owner_net_payout
+```
+
+**Kural:** Belirsiz adjustment varsa → reconciliation exception oluşturulur, otomatik karar VERİLMEZ. Yalıhan'ın kendi hatası/üstlendiği gider owner'a yansıtılmaz.
 
 ---
 
-### Karar Matrisi — Kim Ne Onaylar
+### Rule 4: FinansalIslem V1/V2 — APPROVED
 
-| Karar | Onaylayan |
-|-------|-----------|
-| Komisyon tabanı iş kuralı | Ürün Sahibi (Ayhan) |
-| Temizlik ücreti sahiplik kuralı | Ürün Sahibi (Ayhan) |
-| Airbnb kesinti dağılımı | Ürün Sahibi (Ayhan) |
-| FinansalIslem V1/V2 write path | SAAB + Ürün Sahibi |
-| Üç katmanlı model yapısı | SAAB |
+**Decision:** EX-002, `FinansalIslem` modelini read/write path'inde KULLANMAYACAK.
+
+**Sınıflandırma:**
+```
+FinansalIslem V1 Tenant Remediation
+Status: OPEN CERTIFICATION / ARCHITECTURE DEBT
+Scope: Separate remediation sprint
+EX-002 Dependency: NONE
+```
+
+Yeni Finance Agent tamamen V2-only zincir üzerine kurulur:
+```
+AirbnbPayoutImport → PayoutReconciliation → OwnerPayout
+```
 
 ---
 
-*Document Status: ⛔ CONDITIONALLY APPROVED — 2 blocking decisions required*
-*Blocking since: 2026-08-07*
-*Implementation authorized after: decisions 1-3 resolved in Charter v1.1*
+### Final Canonical Formulas
+
+**İlk pilot (Ağustos 2026):**
+```
+gross_booking_amount = accommodation_revenue + cleaning_fee + other_guest_charges
+yalihan_commission = gross_booking_amount × 10%
+owner_net_payout = gross_booking_amount
+                  - airbnb_host_service_fee
+                  - refunds
+                  - owner_chargeable_adjustments
+                  - yalihan_commission
+```
+
+**Kontrol eşitliği:**
+```
+actual_airbnb_payout - yalihan_commission - post_payout_owner_adjustments = payable_to_owner
+```
+
+---
+
+*Document Status: 🟢 AUTHORIZED — All decisions resolved (v1.0)*
+*Decisions resolved: 2026-08-07 by Product Owner*
+*Implementation: Authorized — Use Claude Sonnet 4.6 for Laravel implementation*
 *Next Step: Product Owner approves Charter → Sprint EX-002 begins*
