@@ -138,6 +138,12 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\Property\AvailabilityProjectionService::class
         );
 
+        // CONFLICT_DETECTION Phase 3A: Conflict Detection Contract
+        $this->app->singleton(
+            \App\Contracts\Property\ConflictDetectionContract::class,
+            \App\Services\Property\ConflictDetectionService::class
+        );
+
         // ⚙️ Execution Runtime Repository Binding
         $this->app->bind(
             \App\Repositories\ExecutionRuntimeRepositoryInterface::class,
