@@ -1,13 +1,33 @@
 # YALIHAN OS — Platform Milestones
 
 > Resmi SAAB kaydı.
-> Son güncelleme: 2026-08-06 22:51
+> Son güncelleme: 2026-08-06 23:00
 
 ---
 
 ## YALIHAN Company Operating System v1.0 — BASELINE ESTABLISHED 🟢
 
 **Effective Date:** 2026-08-06
+
+### Resmî Baseline Commit'leri
+
+| Commit | İçerik |
+|--------|---------|
+| `a7ae5e2` | Governance Baseline |
+| `a4a5c69` | Executive Dashboard |
+| `f408e0a` | Strategic OKRs |
+
+### YALIHAN'ın Kurumsal Mimarisi
+
+| Katman | Amaç | Başarı Ölçütü |
+|--------|------|----------------|
+| Engineering System | Güvenilir yazılım üretmek | SAAB, testler, sertifikasyon |
+| Operating System | İş capability'lerini agent'larla yürütmek | Capability yaşam döngüsü, Hermes |
+| Management System | İş değerini ölçmek ve yönlendirmek | BAI, CRS, Dashboard, Governance |
+
+### Temel Pusula
+
+> "Bu capability, YALIHAN'ın daha fazla emlak operasyonunu güvenli, ölçülebilir ve sürdürülebilir şekilde otomatik tamamlamasına ne kadar katkı sağlıyor?"
 
 ```
 Milestone:   YALIHAN Company Operating System v1.0
