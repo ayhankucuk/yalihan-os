@@ -1,5 +1,107 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+---
+
+## OPERATIONAL_CALENDAR — CERTIFIED ✅ (2026-08-06)
+
+**Commit:** `249f619`
+
+### SAAB Success Question
+
+> "Does YALIHAN produce a single, deterministic operational calendar timeline that correctly reflects reservations, owner blocks, maintenance, external channel blocks, and override decisions — all from the canonical availability projection?"
+
+**Cevap:** ✅ EVET
+
+### Deliverables
+
+| Dosya | Tip |
+|-------|-----|
+| `app/Contracts/Property/OperationalCalendarContract.php` | Interface |
+| `app/DTOs/Property/CalendarView.php` | DTO |
+| `app/DTOs/Property/CalendarEntry.php` | DTO |
+| `app/Services/Property/OperationalCalendarService.php` | Implementation |
+| `app/Providers/AppServiceProvider.php` | Container binding |
+| `tests/Feature/Property/OperationalCalendarTest.php` | Test suite (13 tests) |
+
+### Architecture Verification
+
+| Kural | Durum |
+|-------|-------|
+| READ-ONLY | ✅ No DB writes |
+| Consumes PropertyAvailability (SSOT) | ✅ |
+| No conflict detection | ✅ |
+| No priority resolution | ✅ |
+| No override authorization | ✅ |
+| No new table/column | ✅ |
+| Tenant-isolated | ✅ |
+| Deterministic | ✅ |
+
+### Test Results
+
+| Suite | Tests | Assertions |
+|-------|-------|------------|
+| OperationalCalendarTest | 13/13 PASS | 66 |
+| Regression (related) | 182/182 PASS | 628 |
+
+### Origin → Entry Type Mapping
+
+| Origin | Entry Type | Priority |
+|--------|------------|----------|
+| reservation | CONFIRMED_RESERVATION | 2 |
+| owner | OWNER_BLOCK | 3 |
+| maintenance | MAINTENANCE | 1 |
+| airbnb | AIRBNB_BLOCK | 4 |
+| booking | BOOKING_BLOCK | 4 |
+| ical | EXTERNAL_BLOCK | 4 |
+| manual | MANUAL_BLOCK | 3 |
+| system | SYSTEM_BLOCK | 3 |
+
+---
+
+## INCIDENT: AI_CONTEXT_LIMIT (2026-08-06) — 🔴 SESSION RESET
+
+| Alan | Değer |
+|------|-------|
+| Incident ID | INC-2026-0806-AICONTEXT |
+| Tip | AI_CONTEXT_LIMIT |
+| Application Impact | NONE |
+| Repository Fix Required | NO |
+| Session Reset Required | YES |
+| Knowledge Loss Risk | LOW — memory files updated |
+
+### Hata Mesajı
+
+```json
+{
+  "name": "UnknownError",
+  "data": {
+    "message": "\"400 invalid params, context window exceeds limit (2013)\""
+  }
+}
+```
+
+### Sınıflandırma
+
+| Kategori | Durum |
+|----------|-------|
+| Uygulama bug'ı | ❌ Hayır |
+| Migration/DB problemi | ❌ Hayır |
+| CI sorunu | ❌ Hayır |
+| AI Context Window aşımı | ✅ Evet |
+
+### Aksiyon
+
+1. Mevcut oturumu kapat
+2. Yeni oturum aç
+3. Yalnızca güncel program durumunu aktar (aşağıda)
+
+### Referans
+
+- `memory/LEARNED_PATTERNS.md:128-133`
+- `memory/SESSION_NOTES.md:OTURUM 115`
+
+---
+
 ## RESERVATION_CORE Phase 3 EXECUTIVE CERTIFICATION (2026-08-06) ✅ CLOSED
 
 ### SAAB Executive Review Kararı

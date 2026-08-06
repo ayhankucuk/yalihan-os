@@ -6,6 +6,108 @@
 
 ---
 
+---
+
+## OTURUM 115 | 2026-08-06 | AI CONTEXT LIMIT — 🔴 SESSION RESET
+
+**Konu:** Context window exceeds limit (2013)
+**Tip:** AI_CONTEXT_LIMIT
+**Application Impact:** NONE
+**Repository Fix Required:** NO
+**Session Reset Required:** YES
+**Knowledge Loss Risk:** LOW — memory files updated
+
+### Hata Detayı
+```
+"400 invalid params, context window exceeds limit (2013)"
+{
+  "name": "UnknownError",
+  "data": {
+    "message": "\"400 invalid params, context window exceeds limit (2013)\""
+  }
+}
+```
+
+### Sınıflandırma
+- ❌ Uygulama bug'ı değil
+- ❌ Migration/DB problemi değil
+- ❌ CI sorunu değil
+- ✅ AI aracının context window limit aşımı
+
+### Referans
+- `memory/LEARNED_PATTERNS.md:128-133`
+- `docs/BEKCI_CHANGELOG.md:897` (context window exceeds limit sınıflandırması)
+
+---
+
+## OTURUM 116 | 2026-08-06 | OPERATIONAL_CALENDAR — 🟢 CERTIFIED
+
+**Commit:** `249f619`
+
+### Operational Calendar Certification
+
+| Metrik | Değer |
+|--------|--------|
+| Tests | **13/13 PASS** |
+| Assertions | **66** |
+| Regression | **182/182 PASS** |
+| Write Path | **0** ✅ |
+
+### Deliverables
+
+| Dosya | Tip |
+|-------|-----|
+| `app/Contracts/Property/OperationalCalendarContract.php` | Interface |
+| `app/DTOs/Property/CalendarView.php` | DTO |
+| `app/DTOs/Property/CalendarEntry.php` | DTO |
+| `app/Services/Property/OperationalCalendarService.php` | Implementation |
+| `app/Providers/AppServiceProvider.php` | Container binding |
+| `tests/Feature/Property/OperationalCalendarTest.php` | Test suite |
+
+### Architecture Rules Verified
+
+| Kural | Durum |
+|-------|-------|
+| READ-ONLY | ✅ No write paths |
+| Consumes PropertyAvailability | ✅ |
+| No conflict detection | ✅ |
+| No priority resolution | ✅ |
+| No override authorization | ✅ |
+| No new table/column | ✅ |
+| Tenant-isolated | ✅ |
+| Deterministic | ✅ |
+
+### 12 Mandated Tests
+
+1. `calendar_returns_all_dates_in_range` ✅
+2. `confirmed_reservation_appears_as_blocked` ✅
+3. `owner_block_appears_in_calendar` ✅
+4. `maintenance_block_appears_in_calendar` ✅
+5. `external_block_appears_in_calendar` ✅
+6. `available_dates_are_correctly_reported` ✅
+7. `calendar_is_tenant_scoped` ✅
+8. `calendar_is_read_only` ✅
+9. `calendar_is_deterministic` ✅
+10. `summary_counts_are_accurate` ✅
+11. `priority_tier_is_correctly_mapped` ✅
+12. `calendar_service_is_bound_in_container` ✅
+
+### Contract Interface
+
+```php
+interface OperationalCalendarContract
+{
+    public function getCalendar(
+        int    $tenantId,
+        int    $propertyId,
+        string $startDate,  // inclusive
+        string $endDate     // exclusive
+    ): CalendarView;
+}
+```
+
+---
+
 ## OTURUM 114 | 2026-08-06 | RESERVATION_CORE Phase 4 — 🟢 IMPLEMENTED
 
 **Commit:** `c55c927`
