@@ -144,6 +144,12 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\Property\ConflictDetectionService::class
         );
 
+        // CONFLICT_DETECTION Phase 3C: Override Authorization Contract
+        $this->app->singleton(
+            \App\Contracts\Property\ConflictOverrideContract::class,
+            \App\Services\Property\ConflictOverrideService::class
+        );
+
         // ⚙️ Execution Runtime Repository Binding
         $this->app->bind(
             \App\Repositories\ExecutionRuntimeRepositoryInterface::class,
