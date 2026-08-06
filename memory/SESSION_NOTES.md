@@ -116,16 +116,32 @@ LP-008 ✅
 CERT-DEBT-001 ✅
 RESERVATION_CORE Phase 1 ✅
 RESERVATION_CORE Phase 2 ✅
-RESERVATION_CORE Phase 3 ✅
+RESERVATION_CORE Phase 3 ✅ (Conflict Detection)
   ├── Conflict Detection ✅
   └── Override Authorization ✅ (Phase 3C)
+```
+
+### Mimari Zincir (Tamamlanan)
+
+```
+Reservation Request
+        │
+Availability Check
+        │
+Conflict Detection
+        │
+Priority Resolution
+        │
+Authorized Override
+        │
+Reservation Decision
 ```
 
 ### Sonraki Adımlar (SAAB Önerisi)
 1. Conflict Detection ✅ COMPLETE
 2. Override Authorization ✅ COMPLETE (Phase 3C)
-3. Operational Calendar
-4. Channel Manager (Airbnb/Booking.com)
+3. **Availability Projection + Operational Calendar** ⏳
+4. Channel Manager ⏳
 
 ---
 
