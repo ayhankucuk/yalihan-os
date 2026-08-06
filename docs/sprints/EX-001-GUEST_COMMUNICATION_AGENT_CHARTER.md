@@ -130,6 +130,23 @@ Rezervasyon Onaylandı (ReservationConfirmed)
 6. Audit trail oluştur
 ```
 
+**WAVE 1 Başarı Tanımı:**
+
+> "İlk gerçek misafir, rezervasyon onayından sonraki ilk 60 saniye içinde, doğru dilde, insan müdahalesi olmadan karşılama mesajını aldı."
+
+**WAVE 1 Exit Criteria:**
+
+| # | Kriter | Kanıt |
+|---|--------|-------|
+| ✅ 1 | ReservationConfirmed olayı oluştu | Event log |
+| ✅ 2 | Doğru dil seçildi (TR/EN/AR) | Language resolver |
+| ✅ 3 | Welcome mesajı üretildi | Template engine |
+| ✅ 4 | Airbnb adapter mesajı kuyruğa aldı | Queue log |
+| ✅ 5 | Retry politikası çalışıyor | Retry test |
+| ✅ 6 | Delivery audit oluştu | Audit kaydı |
+| ✅ 7 | İlk gerçek rezervasyonda başarıyla gönderildi | Production evidence |
+| ✅ 8 | İnsan müdahalesi gerekmedi | Executive evidence |
+
 **Wave 1 Teslimatları:**
 | # | Teslimat | Hedef |
 |---|---------|-------|
