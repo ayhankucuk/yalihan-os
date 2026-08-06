@@ -3,7 +3,10 @@
 namespace App\Services;
 
 use App\Contracts\Property\PropertyAvailabilityContract;
+use App\Contracts\Reservation\ConflictDetectionServiceContract;
+use App\Contracts\Reservation\ReservationConflictException;
 use App\Enums\ReservationState;
+use App\Events\Reservation\ReservationConflictDetectedEvent;
 use App\Models\Ilan;
 use App\Models\PropertyAvailability;
 use App\Models\PropertyReservation;
@@ -20,17 +23,27 @@ use App\Traits\GuardsAgentWrites;
  * - confirmReservation() transitions pending → confirmed and blocks availability
  * - cancelReservation() releases availability blocks (P0 leak fix)
  *
+ * RESERVATION_CORE Phase 3:
+ * - Conflict detection via ConflictDetectionService
+ * - Dispatches ReservationConflictDetectedEvent on conflict
+ *
  * Sprint 22 E01: Added tenant_id scope to all queries (G1 fix).
  */
 class ReservationService
 {
     use GuardsAgentWrites;
 
+    public function __construct(
+        private ConflictDetectionServiceContract $conflictService
+    ) {}
+
     /**
      * Create a new PENDING reservation for a property.
      *
      * Phase 1 change: reservation starts as PENDING, availability is NOT blocked yet.
      * Call confirmReservation() to confirm and block availability.
+     *
+     * Phase 3: Uses ConflictDetectionService for unified conflict detection.
      *
      * @param int      $propertyId
      * @param string   $startDate
@@ -75,22 +88,32 @@ class ReservationService
 
         return DB::transaction(function () use ($tenantId, $propertyId, $start, $end, $nights, $guestData, $userId) {
 
-            // Overlap check — confirmed/pending reservations block dates.
-            $overlapQuery = PropertyReservation::where('property_id', $propertyId)
-                ->where('start_date', '<', $end->format('Y-m-d'))
-                ->where('end_date', '>', $start->format('Y-m-d'))
-                ->whereNotIn('reservation_state', [
-                    ReservationState::CANCELLED->value,
-                    ReservationState::COMPLETED->value,
-                    ReservationState::NO_SHOW->value,
-                ]);
+            // Phase 3: Use unified ConflictDetectionService
+            $report = $this->conflictService->detectConflicts(
+                $tenantId,
+                $propertyId,
+                $start->format('Y-m-d'),
+                $end->format('Y-m-d')
+            );
 
-            if ($tenantId > 0) {
-                $overlapQuery->where('tenant_id', $tenantId);
-            }
+            if ($report->hasConflict) {
+                // Dispatch event for observability
+                event(new ReservationConflictDetectedEvent(
+                    $tenantId,
+                    $propertyId,
+                    0, // New reservation not created yet
+                    $start->format('Y-m-d'),
+                    $end->format('Y-m-d'),
+                    $report->conflictType ?? 'RESERVATION_OVERLAP',
+                    array_map(fn($r) => $r->id, $report->conflictingReservations),
+                    $report->conflictDates,
+                    $report->highestPriority
+                ));
 
-            if ($overlapQuery->lockForUpdate()->count() > 0) {
-                throw new Exception("Conflict detected: The selected dates overlap with an existing reservation.");
+                throw new ReservationConflictException(
+                    "Conflict detected: The selected dates overlap with an existing reservation.",
+                    $report
+                );
             }
 
             // Create PENDING reservation — availability NOT blocked yet.

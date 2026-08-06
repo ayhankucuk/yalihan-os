@@ -143,6 +143,12 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\ExecutionRuntimeRepositoryInterface::class,
             \App\Repositories\EloquentExecutionRuntimeRepository::class
         );
+
+        // RESERVATION_CORE Phase 3: Conflict Detection Contract
+        $this->app->singleton(
+            \App\Contracts\Reservation\ConflictDetectionServiceContract::class,
+            \App\Services\Reservation\ConflictDetectionService::class
+        );
     }
 
     /**
