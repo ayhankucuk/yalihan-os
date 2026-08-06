@@ -147,16 +147,45 @@ Rezervasyon Onaylandı (ReservationConfirmed)
 | ✅ 7 | İlk gerçek rezervasyonda başarıyla gönderildi | Production evidence |
 | ✅ 8 | İnsan müdahalesi gerekmedi | Executive evidence |
 
+**WAVE 1 Kapsamı (Minimal):**
+
+```
+ReservationConfirmed
+        ↓
+LanguageResolver
+        ↓
+WelcomeMessageBuilder
+        ↓
+AirbnbChannelAdapter
+        ↓
+Queue
+        ↓
+DeliveryAudit
+```
+
+> WAVE 1 kapsamı dışındakiler (check-in, Wi-Fi, rehber vb.) WAVE 2+ içindir.
+
 **Wave 1 Teslimatları:**
-| # | Teslimat | Hedef |
-|---|---------|-------|
-| 1 | ReservationConfirmed event listener | Platform event'ini yakala |
-| 2 | GuestWelcomeNotification sınıfı | NotificationContract implement |
-| 3 | Guest welcome template (TR/EN/AR) | Çok dilli içerik |
-| 4 | Airbnb channel adapter | İlk kanal |
-| 5 | Queue + retry mechanism | Güvenilir teslimat |
-| 6 | Delivery audit log | İlk kanıt |
-| 7 | İlk gerçek misafir testi | Canlı doğrulama |
+| # | Teslimat | Sorumlu | Hedef |
+|---|---------|---------|-------|
+| 1 | ReservationConfirmed event listener | - | Platform event'ini yakala |
+| 2 | LanguageResolver | - | TR/EN/AR dil seçimi |
+| 3 | GuestWelcomeNotification sınıfı | - | NotificationContract implement |
+| 4 | Guest welcome template (TR/EN/AR) | - | Çok dilli içerik |
+| 5 | Airbnb channel adapter | - | İlk kanal |
+| 6 | Queue + retry mechanism | - | Güvenilir teslimat |
+| 7 | Delivery audit log | - | İlk kanıt |
+| 8 | İlk gerçek misafir testi | - | Canlı doğrulama |
+
+**WAVE 1 İçin YAPILMAZ:**
+
+- Check-in talimatları (→ WAVE 2)
+- WiFi bilgileri (→ WAVE 2)
+- Navigasyon (→ WAVE 2)
+- House rules (→ WAVE 2)
+- Mid-stay follow-up (→ WAVE 3)
+- Check-out reminder (→ WAVE 4)
+- Review request (→ WAVE 4)
 
 **Wave 1 Sonunda:**
 > İlk misafir otomatik karşılandı.
