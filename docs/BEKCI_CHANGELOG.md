@@ -70,6 +70,37 @@ Model önerisi:
 
 ---
 
+## CHANNEL_MANAGER Wave 1 — SAAB CERTIFIED ✅ (2026-08-06)
+
+**Commits:** `245bd966`, `48cd6a86`, `10599ca3`, `fcf15b99`
+**Status:** 🟢 CERTIFIED & CLOSED
+
+### Quality Gates
+
+| Gate | Result |
+|------|--------|
+| Provider-independent contract | ✅ |
+| iCal parsing | ✅ |
+| Retry policy | ✅ |
+| Execution record | ✅ |
+| Tenant isolation | ✅ |
+| Idempotency | ✅ |
+| Conflict logic duplication | ✅ None |
+| Direct availability write | ✅ None |
+| Tests | ✅ 34/34 |
+| Assertions | ✅ 91 |
+
+### Mimari Ayrım Korundu
+
+```
+Reservation Core        → karar verir
+Canonical Availability  → gerçekliği sahiplenir
+Operational Calendar   → görünüm üretir
+Channel Manager        → dış sistemlerle veri taşır ✅
+```
+
+---
+
 ## CHANNEL_MANAGER Discovery — SAAB APPROVED ✅ (2026-08-06)
 
 **Commit:** `b6578d3`
@@ -143,7 +174,8 @@ Wave 3: Booking Adapter → Airbnb Native Improvements
 | Override Authorization | ✅ CLOSED |
 | Availability Projection | ✅ CLOSED |
 | Operational Calendar | ✅ CLOSED |
-| Channel Manager | 🟢 IMPLEMENTATION AUTHORIZED |
+| Channel Manager Wave 1 | ✅ CLOSED |
+| Channel Manager Wave 2 | 🟢 IMPLEMENTATION AUTHORIZED |
 
 ---
 
