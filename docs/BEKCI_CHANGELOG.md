@@ -2,59 +2,71 @@
 
 ---
 
-## OPERATIONAL_CALENDAR — CERTIFIED ✅ (2026-08-06)
+## OPERATIONAL_CALENDAR — SAAB EXECUTIVE CERTIFICATION ✅ CLOSED (2026-08-06)
 
 **Commit:** `249f619`
+**Certification Records:** `b2d397e`
+
+### SAAB Executive Review Kararı
+
+| Alan | Sonuç |
+|------|-------|
+| Contract | ✅ |
+| DTO'lar | ✅ |
+| Read-only service | ✅ |
+| Container binding | ✅ |
+| 13/13 test | ✅ |
+| 66 assertion | ✅ |
+| 182/182 regresyon | ✅ |
+| Yeni write path | ✅ Yok |
+| SSOT korunumu | ✅ |
 
 ### SAAB Success Question
 
 > "Does YALIHAN produce a single, deterministic operational calendar timeline that correctly reflects reservations, owner blocks, maintenance, external channel blocks, and override decisions — all from the canonical availability projection?"
 
-**Cevap:** ✅ EVET
+**Cevap:** ✅ YES
 
-### Deliverables
+### Mimari Ayrım Korundu
 
-| Dosya | Tip |
-|-------|-----|
-| `app/Contracts/Property/OperationalCalendarContract.php` | Interface |
-| `app/DTOs/Property/CalendarView.php` | DTO |
-| `app/DTOs/Property/CalendarEntry.php` | DTO |
-| `app/Services/Property/OperationalCalendarService.php` | Implementation |
-| `app/Providers/AppServiceProvider.php` | Container binding |
-| `tests/Feature/Property/OperationalCalendarTest.php` | Test suite (13 tests) |
+```
+PropertyAvailability (SSOT)
+        ↓
+CanonicalAvailabilityService      → yazar
+AvailabilityProjectionService    → projection üretir
+ConflictDetectionService         → çakışmayı değerlendirir
+OperationalCalendarService       → yalnızca okur ve görünüm üretir ✅
+```
 
-### Architecture Verification
+### Program Durumu
 
-| Kural | Durum |
-|-------|-------|
-| READ-ONLY | ✅ No DB writes |
-| Consumes PropertyAvailability (SSOT) | ✅ |
-| No conflict detection | ✅ |
-| No priority resolution | ✅ |
-| No override authorization | ✅ |
-| No new table/column | ✅ |
-| Tenant-isolated | ✅ |
-| Deterministic | ✅ |
+| Capability | Durum |
+|------------|-------|
+| Reservation Core | ✅ CLOSED |
+| Conflict Detection | ✅ CLOSED |
+| Override Authorization | ✅ CLOSED |
+| Availability Projection | ✅ CLOSED |
+| Operational Calendar | ✅ CLOSED |
+| Channel Manager | ⏳ NEXT |
 
-### Test Results
+### Sonraki: Channel Manager Discovery
 
-| Suite | Tests | Assertions |
-|-------|-------|------------|
-| OperationalCalendarTest | 13/13 PASS | 66 |
-| Regression (related) | 182/182 PASS | 628 |
+Önerilen ilk sınır:
+```
+Operational Calendar
+        ↓
+Channel Sync Contract
+        ↓
+iCal Import / Export
+        ↓
+Airbnb Adapter
+        ↓
+Booking Adapter
+```
 
-### Origin → Entry Type Mapping
-
-| Origin | Entry Type | Priority |
-|--------|------------|----------|
-| reservation | CONFIRMED_RESERVATION | 2 |
-| owner | OWNER_BLOCK | 3 |
-| maintenance | MAINTENANCE | 1 |
-| airbnb | AIRBNB_BLOCK | 4 |
-| booking | BOOKING_BLOCK | 4 |
-| ical | EXTERNAL_BLOCK | 4 |
-| manual | MANUAL_BLOCK | 3 |
-| system | SYSTEM_BLOCK | 3 |
+Model önerisi:
+- Discovery: Claude Opus 4.8
+- Laravel impl: Claude Sonnet 4.6
 
 ---
 
