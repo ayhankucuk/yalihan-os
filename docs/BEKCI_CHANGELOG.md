@@ -56,8 +56,17 @@ ConflictResult.hasConflict?
 | Tüm Reservation + Property + ReservationService | 132 | 422 | ✅ PASS |
 | **TOPLAM** | **160** | **519** | ✅ **ALL PASS** |
 
-### 📝 Commit
-- (bu oturum commit'i)
+### 📝 Commit Zinciri
+
+| Commit | Tür | İçerik |
+|--------|-----|--------|
+| `f0f68ac` | Implementation | ConflictDetectionContract, ConflictDetectionService, DTOs, Events, Provider binding |
+| `012e9a5` | Certification Evidence | ReservationConflictEnforcementTest (Phase 3B test suite) |
+
+**SAAB Audit Notu:**
+> `f0f68ac` = implementation commit (yeni production code)
+> `012e9a5` = certification evidence commit (enforcement davranışını doğrulayan test suite)
+> Bu iki commit ayrı sorumluluklar taşır. Audit zincirinde implementation ≠ certification evidence.
 
 ---
 
