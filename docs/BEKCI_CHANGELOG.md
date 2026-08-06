@@ -1,5 +1,66 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 101 — CONFLICT_DETECTION Phase 3B: Reservation Conflict Enforcement (2026-08-06) ✅ CLOSED
+
+### 🎯 Hedef
+CONFLICT_DETECTION Phase 3B — Reservation Conflict Enforcement.
+
+SAAB başarı sorusu: _"YALIHAN, çakışan rezervasyon denemesini transaction-safe, tenant-safe, deterministik olarak tespit edip, reject edip, event üretiyor mu? Rejected attempt hiçbir yan etki bırakıyor mu?"_
+
+### ✅ Kanıtlanan İnvariantlar (10/10 PASS)
+
+| Test | Kanıt |
+|------|-------|
+| B01: conflict_prevents_reservation_creation | Bloklu tarihlerde rezervasyon oluşmuyor |
+| B02: no_conflict_allows_reservation_creation | Temiz tarihlerde rezervasyon oluşuyor |
+| B03: atomic_accept_reject_within_transaction | Transaction içinde detect → reject atomik |
+| B04: race_condition_only_one_reservation_created | İkinci attempt bloklu dönüyor |
+| B05: idempotent_conflict_check_same_result | 5 kez çağrı → aynı sonuç |
+| B06: conflict_detected_event_fired_on_rejection | ConflictDetectedEvent dispatch kanıtı |
+| B07: reservation_rejected_event_fired_on_rejection | ReservationRejectedForConflictEvent dispatch kanıtı |
+| B08: no_events_fired_when_no_conflict | Temiz durumda event yok |
+| B09: conflict_check_uses_canonical_service | Canonical ADR-003 service bağlı |
+| B10: rejected_reservation_leaves_no_side_effects | Availability + reservation count değişmedi |
+
+### 🏗️ Mimari Açıklama
+
+**Canonical Enforcement Pipeline:**
+```
+Reservation Request
+      ↓
+ConflictDetectionContract.detect()  [READ-ONLY]
+      ↓
+ConflictResult.hasConflict?
+      ├── false → Create Reservation
+      └── true  → Fire ConflictDetectedEvent
+                  Fire ReservationRejectedForConflictEvent
+                  Reject (no DB write)
+```
+
+**Event Separation (ADR-003):**
+- `ConflictDetectedEvent` — domain fact (detection layer)
+- `ReservationRejectedForConflictEvent` — app decision (rejection layer)
+
+### ✅ Değişen Dosyalar (1 dosya, +250 / 0)
+
+| Dosya | Değişiklik |
+|-------|-----------|
+| `tests/Feature/ConflictDetection/ReservationConflictEnforcementTest.php` | YENİ — 10 test, 37 assertion |
+
+### 📊 Final CI Sonuçları
+
+| Suite | Test | Assertions | Sonuç |
+|-------|------|-----------|-------|
+| ReservationConflictEnforcementTest | 10 | 37 | ✅ PASS |
+| ConflictDetectionServiceTest | 18 | 60 | ✅ PASS |
+| Tüm Reservation + Property + ReservationService | 132 | 422 | ✅ PASS |
+| **TOPLAM** | **160** | **519** | ✅ **ALL PASS** |
+
+### 📝 Commit
+- (bu oturum commit'i)
+
+---
+
 ## Oturum 100 — CONFLICT_DETECTION Phase 3A: ConflictDetectionService (2026-08-06) ✅ CLOSED
 
 ### 🎯 Hedef
