@@ -28,8 +28,14 @@ Evidence:
   ☐ Manual = System % match
 
 Result: PASS / FAIL
-SAAB Decision: [Commit hash of SAAB decision]
+BAI Impact:
+  Manual Time Saved:    [e.g. "12 min/booking"]
+  Automation Completed:  [e.g. "Welcome message, Reconciliation"]
+  BAI Delta:           [e.g. "+2.1%"]
+SAAB Decision: [commit hash of SAAB decision]
 ```
+
+**BAI Impact:** Ölçülebilir veri olduğunda doldurulur. Zorunlu değil. pilottamamlandıktan sonra bu alan teknik başarının ötesinde iş değerini de belgeler.
 
 ---
 
@@ -218,6 +224,10 @@ Evidence:
   ☐ Wrong tenant blocked correctly
 
 Result: [PENDING — fill after pilot]
+BAI Impact:
+  Manual Time Saved:    [e.g. "8 min/reservation"]
+  Automation Completed:  [e.g. "Welcome message + language detection"]
+  BAI Delta:           [e.g. "+3.2%"]
 SAAB Decision: [commit hash — fill after SAAB review]
 ```
 
@@ -245,6 +255,10 @@ Evidence:
   ☐ Owner payout prepared
 
 Result: [PENDING — fill after pilot]
+BAI Impact:
+  Manual Time Saved:    [e.g. "15 min/payout reconciliation"]
+  Automation Completed:  [e.g. "Payout import, Reconciliation, Owner payout"]
+  BAI Delta:           [e.g. "+6.0%"]
 SAAB Decision: [commit hash — fill after SAAB review]
 ```
 
