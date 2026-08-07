@@ -93,8 +93,12 @@ class OwnerPayout extends BaseModel
 
     public function reconciliations(): HasMany
     {
+        // BLOCKER FIX: ilan_id tek başına yeterli değil.
+        // Period + tenant bazında scoped sorgu OwnerPayoutPreparationService'te yapılıyor.
+        // Bu relation yalnızca tenant-scoped dönem filtresiyle kullanılmalıdır.
         return $this->hasMany(PayoutReconciliation::class, 'ilan_id', 'ilan_id')
-            ->where('tenant_id', $this->tenant_id);
+            ->where('tenant_id', $this->tenant_id)
+            ->where('reconciliation_status', PayoutReconciliation::STATUS_APPROVED);
     }
 
     // ─── Business Methods ────────────────────────────────────────────────────
@@ -121,33 +125,59 @@ class OwnerPayout extends BaseModel
 
     public function submitForApproval(int $preparedBy): void
     {
+        if (!$this->isDraft()) {
+            throw new \LogicException(
+                "Cannot submit payout #{$this->id} for approval: current status is '{$this->payout_status}', expected 'draft'."
+            );
+        }
+
         $this->payout_status = self::STATUS_PENDING_APPROVAL;
-        $this->prepared_by = $preparedBy;
-        $this->prepared_at = now();
+        $this->prepared_by   = $preparedBy;
+        $this->prepared_at   = now();
         $this->save();
     }
 
     public function approve(int $approvedBy): void
     {
+        // BLOCKER FIX: state transition bypass engeli
+        if (!$this->isPendingApproval() && !$this->isDraft()) {
+            throw new \LogicException(
+                "Cannot approve payout #{$this->id}: current status is '{$this->payout_status}', expected 'pending_approval' or 'draft'."
+            );
+        }
+
         $this->payout_status = self::STATUS_APPROVED;
-        $this->approved_by = $approvedBy;
-        $this->approved_at = now();
+        $this->approved_by   = $approvedBy;
+        $this->approved_at   = now();
         $this->save();
     }
 
     public function markAsPaid(int $paidBy, string $paymentReference): void
     {
-        $this->payout_status = self::STATUS_PAID;
-        $this->paid_by = $paidBy;
-        $this->paid_at = now();
-        $this->payment_reference = $paymentReference;
+        // BLOCKER FIX: sadece approved payout ödenebilir
+        if (!$this->isApproved()) {
+            throw new \LogicException(
+                "Cannot mark payout #{$this->id} as paid: current status is '{$this->payout_status}', expected 'approved'."
+            );
+        }
+
+        $this->payout_status      = self::STATUS_PAID;
+        $this->paid_by            = $paidBy;
+        $this->paid_at            = now();
+        $this->payment_reference  = $paymentReference;
         $this->save();
     }
 
     public function cancel(string $reason): void
     {
+        if ($this->isPaid()) {
+            throw new \LogicException(
+                "Cannot cancel payout #{$this->id}: already paid."
+            );
+        }
+
         $this->payout_status = self::STATUS_CANCELLED;
-        $this->notes = $reason;
+        $this->notes         = $reason;
         $this->save();
     }
 

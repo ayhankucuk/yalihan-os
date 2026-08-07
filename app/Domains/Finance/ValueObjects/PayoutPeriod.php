@@ -107,14 +107,28 @@ final class PayoutPeriod
 
     /**
      * Reconciliation idempotency key üretir.
+     *
+     * BLOCKER FIX: unmatched kayıtlar için import_id + period + tenant kombinasyonu benzersiz key üretir.
+     * reservationId null ise 'unmatched-{importId}' prefix'i eklenir — aynı import'tan birden fazla
+     * unmatched kayıt oluşması önlenir.
      */
     public function toReconciliationKey(int $tenantId, int $importId, ?int $reservationId): string
     {
+        if ($reservationId !== null) {
+            return sprintf(
+                'reconciliation-%d-%d-res%d-%s',
+                $tenantId,
+                $importId,
+                $reservationId,
+                $this->startDate->format('Ymd'),
+            );
+        }
+
+        // Unmatched: import başına tek bir unmatched kaydı garantilenir
         return sprintf(
-            'reconciliation-%d-%d-%s-%s',
+            'reconciliation-%d-%d-unmatched-%s',
             $tenantId,
             $importId,
-            $reservationId ?? 'unmatched',
             $this->startDate->format('Ymd'),
         );
     }

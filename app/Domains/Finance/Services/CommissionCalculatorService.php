@@ -44,17 +44,33 @@ class CommissionCalculatorService
     /**
      * Birden fazla rezervasyon için toplam hesaplama.
      *
+     * BLOCKER FIX: currency mismatch safety — tüm item'lar aynı currency'de olmalı.
+     * Farklı currency bulunursa InvalidArgumentException fırlatılır; sessiz toplama engellenir.
+     *
      * @param array<array{amount: float, currency: string, rate: float}> $items
      * @return array{total_gross: Money, total_commission: Money, total_owner_net: Money}
      */
     public function calculateBatch(array $items, string $currency = 'TRY'): array
     {
-        $totalGross      = Money::zero($currency);
-        $totalCommission = Money::zero($currency);
-        $totalOwnerNet   = Money::zero($currency);
+        $normalizedCurrency = strtoupper($currency);
 
-        foreach ($items as $item) {
-            $amount = Money::of((float) $item['amount'], $item['currency'] ?? $currency);
+        $totalGross      = Money::zero($normalizedCurrency);
+        $totalCommission = Money::zero($normalizedCurrency);
+        $totalOwnerNet   = Money::zero($normalizedCurrency);
+
+        foreach ($items as $index => $item) {
+            $itemCurrency = strtoupper($item['currency'] ?? $normalizedCurrency);
+
+            // BLOCKER FIX: currency mismatch — sessiz toplama yasak
+            if ($itemCurrency !== $normalizedCurrency) {
+                throw new \InvalidArgumentException(
+                    "Currency mismatch in batch calculation at index {$index}: "
+                    . "expected '{$normalizedCurrency}', got '{$itemCurrency}'. "
+                    . "Mixed-currency batch is not allowed."
+                );
+            }
+
+            $amount = Money::of((float) $item['amount'], $normalizedCurrency);
             $rate   = CommissionRate::of((float) $item['rate']);
 
             $result = $this->calculate($amount, $rate);

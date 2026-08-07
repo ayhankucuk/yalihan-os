@@ -96,12 +96,25 @@ class AirbnbPayoutImport extends BaseModel
 
     public function markAsProcessing(): void
     {
+        // BLOCKER FIX: state transition guard
+        if ($this->import_status === self::STATUS_RECONCILED) {
+            throw new \LogicException(
+                "Cannot mark import #{$this->id} as processing: already reconciled."
+            );
+        }
+
         $this->import_status = self::STATUS_PROCESSING;
         $this->save();
     }
 
     public function markAsReconciled(): void
     {
+        if ($this->import_status === self::STATUS_FAILED) {
+            throw new \LogicException(
+                "Cannot mark import #{$this->id} as reconciled: current status is 'failed'. Fix errors first."
+            );
+        }
+
         $this->import_status = self::STATUS_RECONCILED;
         $this->save();
     }
