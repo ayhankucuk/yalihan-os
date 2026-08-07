@@ -183,6 +183,24 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // [EX-001] Guest Communication Agent audit log kanalı
+        'guest_communication' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/guest_communication.log'),
+            'level' => 'info',
+            'days' => 90,
+            'replace_placeholders' => true,
+        ],
+
+        // [EX-002] Finance Agent audit log kanalı
+        'finance_agent' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/finance_agent.log'),
+            'level' => 'info',
+            'days' => 365, // Finans logları 1 yıl saklanır
+            'replace_placeholders' => true,
+        ],
+
     ],
 
 ];

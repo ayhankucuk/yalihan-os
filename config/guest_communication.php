@@ -22,8 +22,13 @@ return [
     ],
     'pilot' => [
         'strict_mode' => env('GUEST_PILOT_STRICT', true),
-        'tenants' => [],
-        'properties' => [],
+        // PILOT FIX: env'den CSV okuma — "1,2,3" → [1, 2, 3]
+        'tenants' => array_filter(
+            array_map('intval', explode(',', env('GUEST_PILOT_TENANTS', '')))
+        ),
+        'properties' => array_filter(
+            array_map('intval', explode(',', env('GUEST_PILOT_PROPERTIES', '')))
+        ),
     ],
     'retry' => [
         'enabled' => env('GUEST_RETRY_ENABLED', true),
