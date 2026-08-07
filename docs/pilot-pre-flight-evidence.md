@@ -7,6 +7,32 @@
 
 ---
 
+## Pilot Report Standard Format
+
+> Bu format EX-001, EX-002 ve sonraki tüm pilotlar için zorunludur.
+
+```
+Pilot ID:        EX-001 / EX-002 / EX-003
+Mission:          [Capability name]
+Based On Commit:  [git commit hash]
+Pilot Start:     [YYYY-MM-DD]
+Pilot End:       [YYYY-MM-DD]
+Status:          IN_PROGRESS / PASS / FAIL
+Confidence:       HIGH / MEDIUM / LOW
+
+Evidence:
+  ☐ Runtime Logs reviewed
+  ☐ Audit Records verified
+  ☐ Queue Metrics checked
+  ☐ Business Validation passed
+  ☐ Manual = System % match
+
+Result: PASS / FAIL
+SAAB Decision: [Commit hash of SAAB decision]
+```
+
+---
+
 ## Özet
 
 EX-001 (Guest Communication Agent) ve EX-002 (Finance Agent) pilota hazır hale getirildi. Bu belge, pilot aktivasyonu öncesi teknik doğrulama kanıtlarını içerir.
@@ -166,6 +192,61 @@ php artisan queue:work --once --verbose
 | Manuel hesap = sistem sonucu %100 | ✅ |
 | Owner payout oluşturuldu | ✅ |
 | Audit trail temiz | ✅ |
+
+---
+
+---
+
+## Pilot Report — EX-001
+
+```
+Pilot ID:        EX-001
+Mission:          Guest Communication Agent
+Based On Commit:  [pending]
+Pilot Start:      [pending]
+Pilot End:        [pending]
+Status:           IN_PROGRESS / PASS / FAIL
+Confidence:        HIGH / MEDIUM / LOW
+
+Evidence:
+  ☐ Runtime Logs reviewed
+  ☐ Audit Records verified
+  ☐ Queue Metrics checked
+  ☐ Business Validation passed
+  ☐ Welcome message sent to real guest
+  ☐ Airbnb adapter called
+  ☐ Wrong tenant blocked correctly
+
+Result: [PENDING — fill after pilot]
+SAAB Decision: [commit hash — fill after SAAB review]
+```
+
+---
+
+## Pilot Report — EX-002
+
+```
+Pilot ID:        EX-002
+Mission:          Finance Agent
+Based On Commit:  [pending]
+Pilot Start:      [pending]
+Pilot End:        [pending]
+Status:           IN_PROGRESS / PASS / FAIL
+Confidence:        HIGH / MEDIUM / LOW
+
+Evidence:
+  ☐ Runtime Logs reviewed
+  ☐ Audit Records verified
+  ☐ Queue Metrics checked
+  ☐ Business Validation passed
+  ☐ Airbnb payout imported
+  ☐ Reconciliation completed
+  ☐ Manual = System %100 match
+  ☐ Owner payout prepared
+
+Result: [PENDING — fill after pilot]
+SAAB Decision: [commit hash — fill after SAAB review]
+```
 
 ---
 
