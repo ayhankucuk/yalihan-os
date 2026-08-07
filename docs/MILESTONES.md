@@ -186,9 +186,12 @@ Cevap evet ise → Governance v1.0 amacına ulaşmış demektir.
 
 | Mission | Capability | Status | Charter | BAI Target | Production Gate |
 |---------|-----------|--------|---------|------------|-----------------|
-| EX-001 | Guest Communication Agent | 🟢 READY FOR PILOT | 43727d6 | +8% | Pre-Flight: f8db8ce |
-| EX-002 | Finance Agent | 🟢 READY FOR PILOT | cee5a95 | +6% | Pre-Flight: f8db8ce |
-| EX-003 | Channel Manager Wave 2 | ⏳ Scope Lock | - | Orta | BLOCKED by EX-001+EX-002 |
+| EX-001 | Guest Communication Agent | 🟢 Pilot Ready | 43727d6 | +8% | Pre-Flight: f8db8ce |
+| EX-002 | Finance Agent | 🟢 Pilot Ready | cee5a95 | +6% | Pre-Flight: f8db8ce |
+| INF-001 | Quality Automation Pipeline | 🟢 ACCEPTED | WenOX b1f2361 | Dolaylı | CI Gate |
+| KL-001 | Architecture Health Audit | ⏳ Backlog | - | Dolaylı | - |
+| KL-002 | Technical Debt Registry | ⏳ Backlog | - | Dolaylı | - |
+| EX-003 | Channel Manager Wave 2 | ⏸ Scope Lock | - | Orta | BLOCKED by EX-001+EX-002 |
 
 ---
 
