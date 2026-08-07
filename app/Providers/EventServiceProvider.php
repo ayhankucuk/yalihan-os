@@ -102,6 +102,17 @@ class EventServiceProvider extends ServiceProvider
             \App\Domains\GuestCommunication\Listeners\GuestWelcomeListener::class,
         ],
 
+        // [EX-002] Finance Agent — Audit Trail
+        \App\Domains\Finance\Events\AirbnbPayoutImported::class => [
+            [\App\Domains\Finance\Listeners\FinanceAuditListener::class, 'handlePayoutImported'],
+        ],
+        \App\Domains\Finance\Events\PayoutReconciled::class => [
+            [\App\Domains\Finance\Listeners\FinanceAuditListener::class, 'handlePayoutReconciled'],
+        ],
+        \App\Domains\Finance\Events\OwnerPayoutPrepared::class => [
+            [\App\Domains\Finance\Listeners\FinanceAuditListener::class, 'handleOwnerPayoutPrepared'],
+        ],
+
         // [SAB]: CQRS Read Model Projections (Phase 16.1)
         \App\Events\ListingCreated::class => [
             \App\Listeners\ListingProjector::class . '@handleListingCreated',

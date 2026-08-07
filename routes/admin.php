@@ -1697,6 +1697,20 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin/finance')->name('admin.
     Route::post('/simulate-bonus', [\App\Http\Controllers\Admin\FinanceController::class, 'simulateBonus'])->name('simulate.bonus');
 });
 
+// [EX-002] Finance Agent — Payout Import & Owner Payout
+Route::middleware(['auth', 'role:admin'])->prefix('admin/finance-agent')->name('admin.finance-agent.')->group(function () {
+    // Payout Imports
+    Route::get('/imports', [\App\Http\Controllers\Admin\FinanceAgentController::class, 'importsIndex'])->name('imports.index');
+    Route::post('/imports', [\App\Http\Controllers\Admin\FinanceAgentController::class, 'importStore'])->name('imports.store');
+    Route::get('/imports/{importId}', [\App\Http\Controllers\Admin\FinanceAgentController::class, 'importShow'])->name('imports.show');
+    Route::post('/imports/{importId}/reconcile', [\App\Http\Controllers\Admin\FinanceAgentController::class, 'importReconcile'])->name('imports.reconcile');
+
+    // Owner Payouts
+    Route::get('/payouts', [\App\Http\Controllers\Admin\FinanceAgentController::class, 'payoutsIndex'])->name('payouts.index');
+    Route::post('/payouts/{payoutId}/approve', [\App\Http\Controllers\Admin\FinanceAgentController::class, 'payoutApprove'])->name('payouts.approve');
+    Route::post('/payouts/{payoutId}/mark-paid', [\App\Http\Controllers\Admin\FinanceAgentController::class, 'payoutMarkPaid'])->name('payouts.mark-paid');
+});
+
 // Agent Wallet (Self-Service Finance)
 Route::middleware(['auth'])->prefix('admin/my-wallet')->name('admin.wallet.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\WalletController::class, 'index'])->name('index');
