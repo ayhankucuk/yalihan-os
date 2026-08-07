@@ -1,8 +1,8 @@
-# Agent Identity Protocol v1.0
+# Agent Identity Protocol v1.1
 
 **Effective Date:** 2026-08-07
-**Version:** 1.0
-**Status:** ACTIVE
+**Version:** 1.1 (frozen — Ayhan review)
+**Status:** ACTIVE — MINOR REVISION (v1.0 + Confidence + Evidence fields)
 
 ---
 
@@ -45,7 +45,28 @@ Based On:
   Type: [Commit | Working Tree | Review]
   Reference: [commit hash or "unstaged changes"]
 Timestamp: [YYYY-MM-DD HH:MM]
+Confidence: [HIGH | MEDIUM | LOW]
+Evidence: [Code Reviewed | Tests Executed | Pilot Evidence | Runtime Logs | Architecture Only | Commit Msg Only]
 ```
+
+### Confidence Levels
+
+| Level | Meaning | Requirement |
+|-------|---------|-------------|
+| **HIGH** | Code directly inspected, tests executed | Preferred for certification decisions |
+| **MEDIUM** | Partial review, some gaps | Acceptable for interim reviews |
+| **LOW** | No code seen, commit message only | Never sufficient for certification |
+
+### Evidence Types
+
+| Evidence | Description |
+|----------|-------------|
+| Code Reviewed | Source files read and analyzed |
+| Tests Executed | Test suite ran, results available |
+| Pilot Evidence | Live operational evidence collected |
+| Runtime Logs | System logs reviewed |
+| Architecture Only | Design/docs reviewed, no code |
+| Commit Msg Only | No inspection, message only |
 
 ---
 
@@ -74,6 +95,8 @@ Based On:
   Type: Commit
   Reference: a3f9c12
 Timestamp: 2026-08-07 14:45
+Confidence: HIGH
+Evidence: Code Reviewed, Tests Executed
 ```
 
 ### Klio — Architecture re-review
@@ -86,6 +109,8 @@ Based On:
   Type: Reviewed Commit
   Reference: a3f9c12 (WenOX remediation delivery)
 Timestamp: 2026-08-07 15:10
+Confidence: HIGH
+Evidence: Code Reviewed
 ```
 
 ### Kilo — SAAB decision
@@ -98,6 +123,8 @@ Based On:
   Type: Decision Basis
   Basis: Klio re-review a3f9c12 + WenOX commit a3f9c12
 Timestamp: 2026-08-07 16:00
+Confidence: HIGH
+Evidence: Code Reviewed, Tests Executed, Architecture Only
 ```
 
 ### Ayhan — Business review
@@ -109,8 +136,9 @@ Mission: EX-001
 Based On:
   Type: Evidence
   Reference: Pilot Run #1 — 2026-08-07
-  Operational Evidence: 8-point package received
 Timestamp: 2026-08-07 17:00
+Confidence: HIGH
+Evidence: Pilot Evidence, Runtime Logs
 ```
 
 ---
@@ -121,8 +149,18 @@ When Klio reviews WenOX:
 
 1. WenOX announces delivery with `Based On: Commit <hash>`
 2. Klio states: `Reviewed Commit: <hash>` in header
-3. SAAB Board compares: If `WenOX commit ≠ Klio Reviewed Commit` → rejection
-4. SAAB only decides when: WenOX delivery commit = Klio reviewed commit
+3. SAAB Board compares: If `WenOX commit ≠ Klio Reviewed Commit` → **DECISION BLOCKED — Review is stale**
+4. SAAB only decides when: WenOX delivery commit = Klio reviewed commit = Decision basis
+
+```
+WenOX commit ──→ Klio Reviewed Commit ──→ SAAB Decision Basis
+     ↓                    ↓                    ↓
+   a3f9c12           a3f9c12              a3f9c12
+     ↓                    ↓                    ↓
+     └────── COMMIT HASH MATCH? ─────────────┘
+                    YES → Decision allowed
+                    NO  → BLOCKED (stale review)
+```
 
 This prevents the fdc794f / b8d74a9 confusion from recurring.
 
@@ -140,13 +178,15 @@ This prevents the fdc794f / b8d74a9 confusion from recurring.
 
 ## Decision Authority Matrix
 
-| Decision Type | Authority | Requires |
-|---------------|----------|---------|
-| Implementation delivery | WenOX | Commit hash in header |
-| Architecture BLOCKER | Klio | Reviewed commit in header |
-| Certification gate | SAAB Board | Klio report + WenOX commit match |
-| Business outcome | Ayhan | Pilot evidence |
-| Priority ranking | SAAB Board | All reviews complete |
+| Decision Type | Authority | Requires | Min Confidence |
+|---------------|----------|---------|----------------|
+| Implementation delivery | WenOX | Commit hash in header | MEDIUM |
+| Architecture BLOCKER | Klio | Reviewed commit in header | HIGH |
+| Certification gate | SAAB Board | Klio report + WenOX commit match + Evidence | HIGH |
+| Business outcome | Ayhan | Pilot evidence | HIGH |
+| Priority ranking | SAAB Board | All reviews complete | MEDIUM |
+
+**Decision Blocked if:** Confidence = LOW OR Evidence = Commit Msg Only
 
 ---
 
