@@ -168,6 +168,18 @@ WenOX commit ──→ Klio Reviewed Commit ──→ SAAB Decision Basis
                     NO  → BLOCKED (stale review)
 ```
 
+For Production Certified decision, a 4th link is added:
+
+```
+WenOX commit ──→ Klio Reviewed ──→ SAAB Decision ──→ Pilot Artifact
+     a3f9c12           a3f9c12          a3f9c12       EX-001 v1.0
+                                                           ↓
+                                                  EX-002 v1.0 (future)
+```
+
+**Pilot Artifact =** Pilot run's operational evidence, referencing the same commit.
+Production Certified requires all 4 links to reference the same foundation.
+
 This prevents the fdc794f / b8d74a9 confusion from recurring.
 
 ---
@@ -184,15 +196,18 @@ This prevents the fdc794f / b8d74a9 confusion from recurring.
 
 ## Decision Authority Matrix
 
-| Decision Type | Authority | Requires | Min Confidence |
-|---------------|----------|---------|----------------|
-| Implementation delivery | WenOX | Commit hash in header | MEDIUM |
-| Architecture BLOCKER | Klio | Reviewed commit in header | HIGH |
-| Certification gate | SAAB Board | Klio report + WenOX commit match + Evidence | HIGH |
-| Business outcome | Ayhan | Pilot evidence | HIGH |
-| Priority ranking | SAAB Board | All reviews complete | MEDIUM |
+| Decision Type | Authority | Requires | Min Confidence | Min Evidence |
+|---------------|----------|---------|----------------|-------------|
+| Implementation delivery | WenOX | Commit hash in header | MEDIUM | Commit Only |
+| Architecture BLOCKER | Klio | Reviewed commit in header | HIGH | Code Reviewed |
+| Certification gate | SAAB Board | Klio report + WenOX commit + Pilot Evidence, all same commit | HIGH | Pilot Evidence |
+| Business outcome | Ayhan | Pilot evidence | HIGH | Pilot Evidence |
+| Priority ranking | SAAB Board | All reviews complete | MEDIUM | Architecture Only |
 
-**Decision Blocked if:** Confidence = LOW OR Evidence = Commit Msg Only
+**Decision Blocked if:**
+- Confidence = LOW
+- Evidence = Commit Only
+- Production Certified without Pilot Evidence
 
 ---
 
