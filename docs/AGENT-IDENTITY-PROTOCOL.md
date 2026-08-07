@@ -46,7 +46,7 @@ Based On:
   Reference: [commit hash or "unstaged changes"]
 Timestamp: [YYYY-MM-DD HH:MM]
 Confidence: [HIGH | MEDIUM | LOW]
-Evidence: [Code Reviewed | Tests Executed | Pilot Evidence | Runtime Logs | Architecture Only | Commit Msg Only]
+Evidence: [Code Reviewed | Unit Tests | Integration Tests | Runtime Logs | Pilot Evidence | Production Metrics | Architecture Only | Commit Only]
 ```
 
 ### Confidence Levels
@@ -57,16 +57,22 @@ Evidence: [Code Reviewed | Tests Executed | Pilot Evidence | Runtime Logs | Arch
 | **MEDIUM** | Partial review, some gaps | Acceptable for interim reviews |
 | **LOW** | No code seen, commit message only | Never sufficient for certification |
 
-### Evidence Types
+### Evidence Types (Standard Values — use only these exact values)
+
+Select ALL that apply. Format: `Evidence: Code Reviewed, Unit Tests, Runtime Logs`
 
 | Evidence | Description |
 |----------|-------------|
 | Code Reviewed | Source files read and analyzed |
-| Tests Executed | Test suite ran, results available |
+| Unit Tests | Unit test suite executed |
+| Integration Tests | Integration test suite executed |
+| Runtime Logs | System/runtime logs reviewed |
 | Pilot Evidence | Live operational evidence collected |
-| Runtime Logs | System logs reviewed |
+| Production Metrics | Production metrics reviewed |
 | Architecture Only | Design/docs reviewed, no code |
-| Commit Msg Only | No inspection, message only |
+| Commit Only | No code/evidence seen, commit message only |
+
+**Format:** List all that apply, comma-separated.
 
 ---
 
