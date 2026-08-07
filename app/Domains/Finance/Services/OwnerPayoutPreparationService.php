@@ -32,7 +32,8 @@ class OwnerPayoutPreparationService
         // Idempotency check
         $idempotencyKey = $period->toIdempotencyKey($tenantId, $ilanId);
 
-        $existing = OwnerPayout::where('idempotency_key', $idempotencyKey)
+        $existing = OwnerPayout::forTenant($tenantId)
+            ->where('idempotency_key', $idempotencyKey)
             ->orderBy('id')
             ->first();
 

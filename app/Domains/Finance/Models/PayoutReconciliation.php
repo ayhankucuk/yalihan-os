@@ -105,6 +105,12 @@ class PayoutReconciliation extends BaseModel
 
     public function approve(int $approvedBy): void
     {
+        if (!in_array($this->reconciliation_status, [self::STATUS_MATCHED, self::STATUS_PENDING], true)) {
+            throw new \LogicException(
+                "Cannot approve reconciliation #{$this->id}: status is '{$this->reconciliation_status}', expected 'matched' or 'pending'."
+            );
+        }
+
         $this->reconciliation_status = self::STATUS_APPROVED;
         $this->approved_by = $approvedBy;
         $this->approved_at = now();
@@ -113,12 +119,24 @@ class PayoutReconciliation extends BaseModel
 
     public function markAsMatched(): void
     {
+        if ($this->reconciliation_status === self::STATUS_APPROVED) {
+            throw new \LogicException(
+                "Cannot mark reconciliation #{$this->id} as matched: already approved."
+            );
+        }
+
         $this->reconciliation_status = self::STATUS_MATCHED;
         $this->save();
     }
 
     public function markAsUnmatched(string $reason): void
     {
+        if ($this->reconciliation_status === self::STATUS_APPROVED) {
+            throw new \LogicException(
+                "Cannot mark approved reconciliation #{$this->id} as unmatched."
+            );
+        }
+
         $this->reconciliation_status = self::STATUS_UNMATCHED;
         $this->notes = $reason;
         $this->save();
@@ -126,6 +144,12 @@ class PayoutReconciliation extends BaseModel
 
     public function markAsDisputed(string $reason): void
     {
+        if ($this->reconciliation_status === self::STATUS_APPROVED) {
+            throw new \LogicException(
+                "Cannot mark approved reconciliation #{$this->id} as disputed."
+            );
+        }
+
         $this->reconciliation_status = self::STATUS_DISPUTED;
         $this->notes = $reason;
         $this->save();
