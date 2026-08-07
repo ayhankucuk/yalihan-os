@@ -187,7 +187,7 @@ Cevap evet ise → Governance v1.0 amacına ulaşmış demektir.
 | Mission | Capability | Status | Charter | BAI Target | Production Gate |
 |---------|-----------|--------|---------|------------|-----------------|
 | EX-001 | Guest Communication Agent | 🟢 Implementation & Evidence | 43727d6 | +8% | 6 Kapı |
-| EX-002 | Finance Agent | 🔴 NOT READY — Remediation | b8d74a9 | +6% | 9 BLOCKER + 7 HIGH — b8d74a9 uygulanıyor |
+| EX-002 | Finance Agent | 🟢 READY FOR PILOT | cee5a95 | +6% | Remediation PASS — BLOCKER=0 HIGH=0 |
 | EX-003 | Channel Manager Wave 2 | ⏳ Scope Lock | - | Orta | BLOCKED by EX-002 |
 
 ---
