@@ -40,7 +40,7 @@ class ReservationService
 
         $nights = $start->diffInDays($end);
 
-        $ilan = Ilan::findOrFail($propertyId);
+        $ilan = Ilan::withoutGlobalScopes()->findOrFail($propertyId);
 
         if (!$ilan->rental_enabled) {
             throw new Exception("This property is not enabled for rental.");

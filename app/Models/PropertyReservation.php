@@ -15,6 +15,7 @@ class PropertyReservation extends BaseModel
 
     protected $fillable = [
         'tenant_id',
+        'property_id',
         'ilan_id',
         'start_date',
         'end_date',
@@ -39,6 +40,9 @@ class PropertyReservation extends BaseModel
         'booking_fx_rate',
         'booking_country_code',
         'ulke_id',
+        // ADR-007: Channel Manager Wave 2 — External reservation tracking
+        'external_reservation_id',
+        'external_channel',
     ];
 
     protected $casts = [

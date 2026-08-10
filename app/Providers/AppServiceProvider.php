@@ -185,13 +185,17 @@ class AppServiceProvider extends ServiceProvider
         );
 
         // CHANNEL_MANAGER_PROVIDER Wave 1 — ADR-006
-        // ChannelTransportContract → ChannexTransport (production)
-        // AirbnbChannelAdapter uses ChannelTransportContract (NOT concrete ChannexTransport)
-        // BookingChannelAdapter is intentionally NOT bound here (disabled stub — ADR-006 §3)
         $this->app->bind(
             \App\Contracts\ChannelManager\ChannelTransportContract::class,
             \App\Infrastructure\ChannelManager\Channex\ChannexTransport::class
         );
+
+        // CHANNEL_MANAGER_PROVIDER Wave 2 — ADR-007: ChannexSignatureVerifier needs webhook_secret
+        $this->app->bind(\App\Services\ChannelManager\ChannexSignatureVerifier::class, function ($app) {
+            return new \App\Services\ChannelManager\ChannexSignatureVerifier(
+                secret: config('services.channex.webhook_secret', ''),
+            );
+        });
 
         // ⚙️ Execution Runtime Repository Binding
         $this->app->bind(
