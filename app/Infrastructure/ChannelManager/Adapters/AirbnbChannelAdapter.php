@@ -2,313 +2,210 @@
 
 namespace App\Infrastructure\ChannelManager\Adapters;
 
-use App\Domain\ChannelManager\Contracts\ChannelAdapter;
-use App\Domain\ChannelManager\Models\ChannelApiResponse;
-use App\Infrastructure\ChannelManager\Airbnb\AirbnbAvailabilityMapper;
-use App\Infrastructure\ChannelManager\Airbnb\AirbnbClient;
-use App\Infrastructure\ChannelManager\Airbnb\DTOs\AirbnbAvailabilityRequest;
-use App\Infrastructure\ChannelManager\Airbnb\Exceptions\AirbnbAuthenticationException;
-use App\Infrastructure\ChannelManager\Airbnb\Exceptions\AirbnbRateLimitException;
-use App\Infrastructure\ChannelManager\Airbnb\Exceptions\AirbnbRejectedRequestException;
-use App\Infrastructure\ChannelManager\Airbnb\Exceptions\AirbnbTransportException;
-use App\Models\Ilan;
+use App\Contracts\ChannelManager\ChannelSyncContract;
+use App\Contracts\ChannelManager\ChannelTransportContract;
+use App\Domain\ChannelManager\DTOs\ChannelSyncResponse;
+use App\Domain\ChannelManager\Enums\Channel;
+use App\Domain\ChannelManager\Enums\SyncDirection;
 use App\Models\IlanTakvimSync;
 use Illuminate\Support\Facades\Log;
 
 /**
- * AirbnbChannelAdapter — Airbnb implementation of ChannelAdapter contract
+ * AirbnbChannelAdapter — ChannelSyncContract implementation for Airbnb via Channex transport.
  *
- * Sprint 13 E03: Airbnb Adapter
+ * CHANNEL_MANAGER_PROVIDER Wave 1 — ADR-006
  *
- * Production connectivity: BLOCKED (no real Airbnb API credentials)
- * Architecture status: CERTIFIED
+ * OTA identity: Airbnb (Channel::AIRBNB)
+ * Transport: ChannelTransportContract (currently ChannexTransport — replaceable)
  *
- * Responsibilities:
- * - Map canonical availability to Airbnb API payload
- * - Resolve credentials from tenant-scoped IlanTakvimSync record
- * - Enforce listing ownership: internal property_id → external listing mapping
- * - Handle failure taxonomy: auth, rate limit, rejection, transport
- * - Idempotent requests via idempotency key
- * - NEVER log credentials, tokens, or secrets
+ * ADR-006 invariants enforced here:
+ * - This adapter NEVER injects ChannexClient or ChannexTransport directly
+ * - Transport is injected via ChannelTransportContract
+ * - If Airbnb direct API becomes available, only transport changes — this class stays
+ * - NO PropertyAvailability writes
+ * - NO conflict or priority decisions
+ * - Credentials resolved via IlanTakvimSync (platform = 'airbnb')
  *
- * Does NOT:
- * - Make domain decisions
- * - Store secrets in logs/events
- * - Send internal property_id to Airbnb
+ * @see ADR-006
  */
-class AirbnbChannelAdapter implements ChannelAdapter
+class AirbnbChannelAdapter implements ChannelSyncContract
 {
-    private const CHANNEL_ID = 'airbnb';
-    private const CHANNEL_NAME = 'Airbnb';
-
     public function __construct(
-        private readonly AirbnbAvailabilityMapper $mapper,
-        private readonly ?AirbnbClient $client = null, // nullable for testing
+        private readonly ChannelTransportContract $transport,
     ) {}
 
-    /**
-     * Get channel identifier
-     */
-    public function getChannelId(): string
+    public function getChannel(): Channel
     {
-        return self::CHANNEL_ID;
+        return Channel::AIRBNB;
     }
 
-    /**
-     * Get channel display name
-     */
     public function getChannelName(): string
     {
-        return self::CHANNEL_NAME;
+        return Channel::AIRBNB->label();
+    }
+
+    public function supportsPush(): bool
+    {
+        return true;
+    }
+
+    public function supportsPull(): bool
+    {
+        return true;
     }
 
     /**
-     * Push availability to Airbnb
-     *
-     * @param array $availabilityData Array of ['date' => 'Y-m-d', 'available' => bool, 'property_id' => int]
-     * @return ChannelApiResponse
+     * Push availability FROM YALIHAN TO Airbnb (via transport).
      */
-    public function pushAvailability(array $availabilityData): ChannelApiResponse
+    public function pushAvailability(
+        int    $tenantId,
+        int    $propertyId,
+        string $correlationId,
+        array  $availabilityData,
+    ): ChannelSyncResponse {
+        // Resolve external listing ID
+        $externalListingId = $this->resolveExternalListingId($tenantId, $propertyId);
+        if ($externalListingId === null) {
+            return ChannelSyncResponse::failure(
+                channel: Channel::AIRBNB,
+                direction: SyncDirection::EXPORT,
+                correlationId: $correlationId,
+                errorCode: 'NO_LISTING_MAPPING',
+                errorMessage: "No active Airbnb listing mapping for property {$propertyId} / tenant {$tenantId}",
+                retryable: false,
+            );
+        }
+
+        $result = $this->transport->pushAvailability(
+            tenantId: $tenantId,
+            externalListingId: $externalListingId,
+            correlationId: $correlationId,
+            availabilityData: $availabilityData,
+        );
+
+        if ($result->success) {
+            return ChannelSyncResponse::success(
+                channel: Channel::AIRBNB,
+                direction: SyncDirection::EXPORT,
+                correlationId: $correlationId,
+                channelRef: $result->providerReference ?? $correlationId,
+                metadata: $result->metadata,
+            );
+        }
+
+        return ChannelSyncResponse::failure(
+            channel: Channel::AIRBNB,
+            direction: SyncDirection::EXPORT,
+            correlationId: $correlationId,
+            errorCode: $result->errorCode,
+            errorMessage: $result->errorMessage ?? 'Unknown transport error',
+            retryable: $result->retryable,
+        );
+    }
+
+    /**
+     * Pull availability FROM Airbnb TO YALIHAN (via transport).
+     *
+     * Returns raw events in metadata['events'].
+     * Caller is responsible for writing to PropertyAvailability
+     * via CanonicalAvailabilityService.
+     */
+    public function pullAvailability(
+        int    $tenantId,
+        int    $propertyId,
+        string $correlationId,
+        string $fromDate,
+        string $toDate,
+    ): ChannelSyncResponse {
+        $externalListingId = $this->resolveExternalListingId($tenantId, $propertyId);
+        if ($externalListingId === null) {
+            return ChannelSyncResponse::failure(
+                channel: Channel::AIRBNB,
+                direction: SyncDirection::IMPORT,
+                correlationId: $correlationId,
+                errorCode: 'NO_LISTING_MAPPING',
+                errorMessage: "No active Airbnb listing mapping for property {$propertyId} / tenant {$tenantId}",
+                retryable: false,
+            );
+        }
+
+        $result = $this->transport->pullAvailability(
+            tenantId: $tenantId,
+            externalListingId: $externalListingId,
+            correlationId: $correlationId,
+            fromDate: $fromDate,
+            toDate: $toDate,
+        );
+
+        if ($result->success) {
+            return ChannelSyncResponse::success(
+                channel: Channel::AIRBNB,
+                direction: SyncDirection::IMPORT,
+                correlationId: $correlationId,
+                channelRef: $result->providerReference ?? $correlationId,
+                metadata: $result->metadata,
+            );
+        }
+
+        return ChannelSyncResponse::failure(
+            channel: Channel::AIRBNB,
+            direction: SyncDirection::IMPORT,
+            correlationId: $correlationId,
+            errorCode: $result->errorCode,
+            errorMessage: $result->errorMessage ?? 'Unknown transport error',
+            retryable: $result->retryable,
+        );
+    }
+
+    /**
+     * Test connection to Airbnb via transport.
+     */
+    public function testConnection(int $tenantId): ChannelSyncResponse
     {
-        if (empty($availabilityData)) {
-            return ChannelApiResponse::success('no-op', ['processed' => 0]);
+        $result = $this->transport->testConnection($tenantId);
+
+        if ($result->success) {
+            return ChannelSyncResponse::success(
+                channel: Channel::AIRBNB,
+                direction: SyncDirection::EXPORT,
+                correlationId: 'connection-test',
+                channelRef: 'connected',
+                metadata: $result->metadata,
+            );
         }
 
-        // ─── Step 1: Resolve tenant + property + listing mapping ─────
-        $firstItem = $availabilityData[0];
-        $propertyId = $firstItem['property_id'] ?? null;
+        return ChannelSyncResponse::failure(
+            channel: Channel::AIRBNB,
+            direction: SyncDirection::EXPORT,
+            correlationId: 'connection-test',
+            errorCode: $result->errorCode,
+            errorMessage: $result->errorMessage ?? 'Connection failed',
+            retryable: false,
+        );
+    }
 
-        if ($propertyId === null) {
-            return ChannelApiResponse::failure('property_id is required', 'MISSING_PROPERTY');
-        }
+    // ─── Private ────────────────────────────────────────────────────
 
-        // Load IlanTakvimSync for the property
-        $channelSync = IlanTakvimSync::where('ilan_id', $propertyId)
-            ->where('platform', self::CHANNEL_ID)
+    /**
+     * Resolve Channex external listing ID from IlanTakvimSync.
+     * Returns null if no active configuration found.
+     */
+    private function resolveExternalListingId(int $tenantId, int $propertyId): ?string
+    {
+        $sync = IlanTakvimSync::where('ilan_id', $propertyId)
+            ->where('platform', 'airbnb')
             ->where('is_sync_active', true)
+            ->whereHas('ilan', fn ($q) => $q->withoutGlobalScopes()->where('tenant_id', $tenantId))
             ->first();
 
-        if ($channelSync === null) {
-            Log::warning('AirbnbChannelAdapter: No active sync config', [
+        if ($sync === null || empty($sync->external_listing_id)) {
+            Log::warning('AirbnbChannelAdapter: no active listing mapping', [
                 'property_id' => $propertyId,
-                'channel' => self::CHANNEL_ID,
+                'tenant_id'   => $tenantId,
             ]);
-            return ChannelApiResponse::failure(
-                "No active Airbnb sync configuration for property {$propertyId}",
-                'NO_SYNC_CONFIG'
-            );
+            return null;
         }
 
-        // ─── Tenant isolation: verify ownership ─────────────────────
-        // Query Ilan directly (not via relation) to avoid TenantScope dependency issues
-        $property = Ilan::withoutGlobalScopes()
-            ->where('id', $propertyId)
-            ->first(['id', 'tenant_id']);
-
-        if ($property === null) {
-            return ChannelApiResponse::failure('Property not found', 'PROPERTY_NOT_FOUND');
-        }
-
-        $tenantId = $property->tenant_id ?? null;
-        if ($tenantId === null) {
-            return ChannelApiResponse::failure('Tenant not found for property', 'TENANT_NOT_FOUND');
-        }
-
-        // ─── Step 2: Map canonical → Airbnb payload ────────────────
-        $airbnbListingId = $channelSync->external_listing_id;
-        if (empty($airbnbListingId)) {
-            return ChannelApiResponse::failure(
-                "Airbnb listing ID not configured for property {$propertyId}",
-                'MISSING_LISTING_ID'
-            );
-        }
-
-        // Group dates by availability state for range optimization
-        $dateAvailability = [];
-        foreach ($availabilityData as $item) {
-            $dateAvailability[$item['date']] = $item['available'];
-        }
-
-        $idempotencyKey = $this->buildIdempotencyKey($tenantId, $propertyId, $dateAvailability);
-
-        // ─── Step 3: Send to Airbnb ────────────────────────────────
-        if ($this->client === null) {
-            // No client configured — sandbox mode (testing only)
-            Log::info('AirbnbChannelAdapter: Sandbox mode, no client configured', [
-                'property_id' => $propertyId,
-                'tenant_id' => $tenantId,
-                'dates_count' => count($dateAvailability),
-            ]);
-            return ChannelApiResponse::success('sandbox:' . $idempotencyKey, [
-                'mode' => 'sandbox',
-                'processed' => count($dateAvailability),
-                'idempotency_key' => $idempotencyKey,
-            ]);
-        }
-
-        try {
-            // Build Airbnb request (range-optimized)
-            $requests = $this->mapper->mapBatch(
-                airbnbListingId: $airbnbListingId,
-                dateAvailabilities: $dateAvailability,
-                idempotencyKeyPrefix: $idempotencyKey,
-            );
-
-            $references = [];
-            foreach ($requests as $airbnbRequest) {
-                $response = $this->client->updateAvailability($airbnbRequest, $tenantId);
-                if (!$response->success) {
-                    return $this->mapAirbnbResponseToChannelResponse($response, $tenantId);
-                }
-                $references[] = $response->airbnbReference;
-            }
-
-            return ChannelApiResponse::success(
-                channelReference: implode(',', array_filter($references)),
-                metadata: [
-                    'processed' => count($availabilityData),
-                    'idempotency_key' => $idempotencyKey,
-                    'listing_id' => $airbnbListingId,
-                ]
-            );
-
-        } catch (AirbnbAuthenticationException $e) {
-            Log::error('AirbnbChannelAdapter: Auth failed', [
-                'tenant_id' => $tenantId,
-                'property_id' => $propertyId,
-                // NOTE: Never log credentials, tokens, or secrets
-            ]);
-            return ChannelApiResponse::failure(
-                $e->getMessage(),
-                'AUTH_FAILED'
-            );
-
-        } catch (AirbnbRateLimitException $e) {
-            Log::warning('AirbnbChannelAdapter: Rate limited', [
-                'tenant_id' => $tenantId,
-                'property_id' => $propertyId,
-                'retry_after' => $e->getRetryAfter(),
-            ]);
-            return ChannelApiResponse::failure(
-                'Rate limited: retry after ' . $e->getRetryAfter() . ' seconds',
-                'RATE_LIMIT'
-            );
-
-        } catch (AirbnbRejectedRequestException $e) {
-            Log::warning('AirbnbChannelAdapter: Request rejected', [
-                'tenant_id' => $tenantId,
-                'property_id' => $propertyId,
-                'rejection_code' => $e->rejectionCode,
-                'rejection_details' => $e->rejectionDetails,
-            ]);
-            return ChannelApiResponse::failure(
-                $e->getMessage(),
-                'REJECTED'
-            );
-
-        } catch (AirbnbTransportException $e) {
-            Log::error('AirbnbChannelAdapter: Transport error', [
-                'tenant_id' => $tenantId,
-                'property_id' => $propertyId,
-                'retryable' => $e->isRetryable(),
-            ]);
-            return ChannelApiResponse::failure(
-                $e->getMessage(),
-                'TRANSPORT_ERROR'
-            );
-
-        } catch (\Throwable $e) {
-            Log::error('AirbnbChannelAdapter: Unexpected error', [
-                'tenant_id' => $tenantId,
-                'property_id' => $propertyId,
-                'error' => $e->getMessage(),
-            ]);
-            return ChannelApiResponse::failure(
-                'Unexpected error: ' . $e->getMessage(),
-                'UNEXPECTED'
-            );
-        }
-    }
-
-    /**
-     * Pull availability from Airbnb (not implemented in E03)
-     *
-     * @throws \RuntimeException
-     */
-    public function pullAvailability(string $fromDate, string $toDate): ChannelApiResponse
-    {
-        return ChannelApiResponse::failure(
-            'Pull availability is not yet implemented (E03 scope: push-only)',
-            'NOT_IMPLEMENTED'
-        );
-    }
-
-    /**
-     * Push a reservation to Airbnb (not implemented in E03)
-     *
-     * @throws \RuntimeException
-     */
-    public function pushReservation(array $reservationData): ChannelApiResponse
-    {
-        return ChannelApiResponse::failure(
-            'Push reservation is not yet implemented (E03 scope: availability-only)',
-            'NOT_IMPLEMENTED'
-        );
-    }
-
-    /**
-     * Fetch channel connection status
-     */
-    public function fetchStatus(): ChannelApiResponse
-    {
-        if ($this->client === null) {
-            return ChannelApiResponse::success('sandbox', [
-                'mode' => 'sandbox',
-                'connected' => false,
-            ]);
-        }
-
-        try {
-            $connected = $this->client->testConnection();
-            return ChannelApiResponse::success('connected', [
-                'connected' => $connected,
-                'mode' => 'production',
-            ]);
-        } catch (\Throwable $e) {
-            return ChannelApiResponse::failure('Connection test failed: ' . $e->getMessage(), 'CONNECTION_FAILED');
-        }
-    }
-
-    // ─── Private helpers ────────────────────────────────────────────
-
-    /**
-     * Build idempotency key from operation parameters
-     *
-     * Format: airbnb:{tenant_id}:{property_id}:{dates_hash}
-     */
-    private function buildIdempotencyKey(int $tenantId, int $propertyId, array $dateAvailability): string
-    {
-        $datesHash = md5(json_encode($dateAvailability));
-        return sprintf('airbnb:%d:%d:%s', $tenantId, $propertyId, $datesHash);
-    }
-
-    /**
-     * Map Airbnb response to ChannelApiResponse
-     */
-    private function mapAirbnbResponseToChannelResponse(
-        \App\Infrastructure\ChannelManager\Airbnb\DTOs\AirbnbAvailabilityResponse $response,
-        int $tenantId,
-    ): ChannelApiResponse {
-        if ($response->isConflict()) {
-            return ChannelApiResponse::failure(
-                'Airbnb conflict: ' . ($response->errorMessage ?? 'conflict'),
-                'CONFLICT'
-            )->withMetadata(['conflict' => $response->metadata]);
-        }
-
-        return ChannelApiResponse::failure(
-            $response->errorMessage ?? 'Unknown Airbnb error',
-            $response->errorCode ?? 'AIRBNB_ERROR'
-        );
+        return (string) $sync->external_listing_id;
     }
 }

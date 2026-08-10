@@ -152,16 +152,29 @@ class AirbnbAdapterTest extends TestCase
             'is_sync_active' => true,
             'senkron_durumu' => 'active',
             'auto_sync' => true,
+            'api_key' => 'test-key',
         ]);
 
-        $adapter = new AirbnbChannelAdapter(
-            mapper: $this->mapper,
-            client: null, // sandbox mode
+        // Wave 1 Provider refactor: AirbnbChannelAdapter now uses ChannelTransportContract
+        $transport = new class implements \App\Contracts\ChannelManager\ChannelTransportContract {
+            public function pushAvailability(int $tenantId, string $externalListingId, string $correlationId, array $availabilityData): \App\DTOs\ChannelManager\ChannelTransportResult {
+                return \App\DTOs\ChannelManager\ChannelTransportResult::success('ref-' . $correlationId);
+            }
+            public function pullAvailability(int $tenantId, string $externalListingId, string $correlationId, string $fromDate, string $toDate): \App\DTOs\ChannelManager\ChannelTransportResult {
+                return \App\DTOs\ChannelManager\ChannelTransportResult::success('ref-pull');
+            }
+            public function testConnection(int $tenantId): \App\DTOs\ChannelManager\ChannelTransportResult {
+                return \App\DTOs\ChannelManager\ChannelTransportResult::success('connected');
+            }
+        };
+        $adapter = new AirbnbChannelAdapter(transport: $transport);
+
+        $response = $adapter->pushAvailability(
+            tenantId: $tenantId,
+            propertyId: $property->id,
+            correlationId: 'corr-listing-ref',
+            availabilityData: [['date' => '2026-08-01', 'available' => false]],
         );
-
-        $response = $adapter->pushAvailability([
-            ['date' => '2026-08-01', 'available' => false, 'property_id' => $property->id],
-        ]);
 
         $this->assertTrue($response->success);
     }
@@ -172,17 +185,31 @@ class AirbnbAdapterTest extends TestCase
         $tenantId = 1;
         $property = $this->createProperty($tenantId);
 
-        $adapter = new AirbnbChannelAdapter(
-            mapper: $this->mapper,
-            client: null,
+        // No IlanTakvimSync created — adapter returns NO_LISTING_MAPPING
+        // Wave 1 Provider: anonymous ChannelTransportContract (never reached since lookup fails)
+        $transport = new class implements \App\Contracts\ChannelManager\ChannelTransportContract {
+            public function pushAvailability(int $tenantId, string $externalListingId, string $correlationId, array $availabilityData): \App\DTOs\ChannelManager\ChannelTransportResult {
+                return \App\DTOs\ChannelManager\ChannelTransportResult::success('ref');
+            }
+            public function pullAvailability(int $tenantId, string $externalListingId, string $correlationId, string $fromDate, string $toDate): \App\DTOs\ChannelManager\ChannelTransportResult {
+                return \App\DTOs\ChannelManager\ChannelTransportResult::success('ref-pull');
+            }
+            public function testConnection(int $tenantId): \App\DTOs\ChannelManager\ChannelTransportResult {
+                return \App\DTOs\ChannelManager\ChannelTransportResult::success('connected');
+            }
+        };
+        $adapter = new AirbnbChannelAdapter(transport: $transport);
+
+        $response = $adapter->pushAvailability(
+            tenantId: $tenantId,
+            propertyId: $property->id,
+            correlationId: 'corr-no-config',
+            availabilityData: [['date' => '2026-08-01', 'available' => false]],
         );
 
-        $response = $adapter->pushAvailability([
-            ['date' => '2026-08-01', 'available' => false, 'property_id' => $property->id],
-        ]);
-
         $this->assertFalse($response->success);
-        $this->assertEquals('NO_SYNC_CONFIG', $response->errorCode);
+        // Wave 1 Provider: NO_LISTING_MAPPING replaces NO_SYNC_CONFIG (ADR-006)
+        $this->assertEquals('NO_LISTING_MAPPING', $response->errorCode);
     }
 
     /** @test */
@@ -200,17 +227,29 @@ class AirbnbAdapterTest extends TestCase
             'auto_sync' => true,
         ]);
 
-        $adapter = new AirbnbChannelAdapter(
-            mapper: $this->mapper,
-            client: null,
+        $transport = new class implements \App\Contracts\ChannelManager\ChannelTransportContract {
+            public function pushAvailability(int $tenantId, string $externalListingId, string $correlationId, array $availabilityData): \App\DTOs\ChannelManager\ChannelTransportResult {
+                return \App\DTOs\ChannelManager\ChannelTransportResult::success('ref');
+            }
+            public function pullAvailability(int $tenantId, string $externalListingId, string $correlationId, string $fromDate, string $toDate): \App\DTOs\ChannelManager\ChannelTransportResult {
+                return \App\DTOs\ChannelManager\ChannelTransportResult::success('ref-pull');
+            }
+            public function testConnection(int $tenantId): \App\DTOs\ChannelManager\ChannelTransportResult {
+                return \App\DTOs\ChannelManager\ChannelTransportResult::success('connected');
+            }
+        };
+        $adapter = new AirbnbChannelAdapter(transport: $transport);
+
+        $response = $adapter->pushAvailability(
+            tenantId: $tenantId,
+            propertyId: $property->id,
+            correlationId: 'corr-no-listing',
+            availabilityData: [['date' => '2026-08-01', 'available' => false]],
         );
 
-        $response = $adapter->pushAvailability([
-            ['date' => '2026-08-01', 'available' => false, 'property_id' => $property->id],
-        ]);
-
         $this->assertFalse($response->success);
-        $this->assertEquals('MISSING_LISTING_ID', $response->errorCode);
+        // Wave 1 Provider: NO_LISTING_MAPPING replaces MISSING_LISTING_ID (ADR-006)
+        $this->assertEquals('NO_LISTING_MAPPING', $response->errorCode);
     }
 
     // ─── Failure Taxonomy Tests ─────────────────────────────────────
@@ -308,19 +347,32 @@ class AirbnbAdapterTest extends TestCase
             'is_sync_active' => true,
             'senkron_durumu' => 'active',
             'auto_sync' => true,
+            'api_key' => 'test-key',
         ]);
 
-        $adapter = new AirbnbChannelAdapter(
-            mapper: $this->mapper,
-            client: null, // sandbox
+        // Wave 1 Provider refactor: use ChannelTransportContract mock
+        $transport = new class implements \App\Contracts\ChannelManager\ChannelTransportContract {
+            public function pushAvailability(int $tenantId, string $externalListingId, string $correlationId, array $availabilityData): \App\DTOs\ChannelManager\ChannelTransportResult {
+                return \App\DTOs\ChannelManager\ChannelTransportResult::success('sandbox:' . $correlationId, ['mode' => 'sandbox']);
+            }
+            public function pullAvailability(int $tenantId, string $externalListingId, string $correlationId, string $fromDate, string $toDate): \App\DTOs\ChannelManager\ChannelTransportResult {
+                return \App\DTOs\ChannelManager\ChannelTransportResult::success('sandbox:pull');
+            }
+            public function testConnection(int $tenantId): \App\DTOs\ChannelManager\ChannelTransportResult {
+                return \App\DTOs\ChannelManager\ChannelTransportResult::success('connected');
+            }
+        };
+        $adapter = new AirbnbChannelAdapter(transport: $transport);
+
+        $response = $adapter->pushAvailability(
+            tenantId: $tenantId,
+            propertyId: $property->id,
+            correlationId: 'sandbox-corr',
+            availabilityData: [['date' => '2026-08-01', 'available' => false]],
         );
 
-        $response = $adapter->pushAvailability([
-            ['date' => '2026-08-01', 'available' => false, 'property_id' => $property->id],
-        ]);
-
         $this->assertTrue($response->success, "Got: {$response->errorCode} — {$response->errorMessage}");
-        $this->assertStringStartsWith('sandbox:', $response->channelReference);
+        $this->assertStringStartsWith('sandbox:', $response->channelRef);
     }
 
     // ─── Response Parsing Tests ─────────────────────────────────────

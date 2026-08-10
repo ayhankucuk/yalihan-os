@@ -125,6 +125,85 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\PropertyConfigurationContract::class,
             \App\Services\Property\PropertyConfigurationQueryService::class
         );
+
+        // 🏡 Sprint 22 E01: Property Availability SSOT Engine
+        $this->app->singleton(
+            \App\Contracts\Property\PropertyAvailabilityContract::class,
+            \App\Services\Property\CanonicalAvailabilityService::class
+        );
+
+        // RESERVATION_CORE Phase 2: Availability Projection Contract
+        $this->app->singleton(
+            \App\Contracts\Property\AvailabilityProjectionContract::class,
+            \App\Services\Property\AvailabilityProjectionService::class
+        );
+
+        // CONFLICT_DETECTION Phase 3A: Conflict Detection Contract
+        $this->app->singleton(
+            \App\Contracts\Property\ConflictDetectionContract::class,
+            \App\Services\Property\ConflictDetectionService::class
+        );
+
+        // CONFLICT_DETECTION Phase 3C: Override Authorization Contract
+        $this->app->singleton(
+            \App\Contracts\Property\ConflictOverrideContract::class,
+            \App\Services\Property\ConflictOverrideService::class
+        );
+
+        // OPERATIONAL_CALENDAR: Read-only calendar aggregation Contract
+        $this->app->singleton(
+            \App\Contracts\Property\OperationalCalendarContract::class,
+            \App\Services\Property\OperationalCalendarService::class
+        );
+
+        // RESERVATION_LIFECYCLE Wave 2: Notification Dispatcher (null/log adapter by default)
+        $this->app->singleton(
+            \App\Contracts\Reservation\ReservationNotificationDispatcherContract::class,
+            \App\Services\Reservation\NullReservationNotificationDispatcher::class
+        );
+
+        // RESERVATION_LIFECYCLE Wave 3 — ADR-004
+        // Production: ReservationFinanceLedgerAdapter proxies to FinancialLedgerService
+        // Test: override with NullReservationFinanceLedger via $this->app->bind() in test setUp
+        $this->app->singleton(
+            \App\Contracts\Reservation\ReservationFinanceLedgerContract::class,
+            \App\Services\Reservation\ReservationFinanceLedgerAdapter::class
+        );
+
+        // RESERVATION_LIFECYCLE Wave 4 — ADR-005
+        // Production: ReservationCompletionLedgerService records 3 LedgerEntries on completion
+        // Test: override with NullReservationCompletionLedger via $this->app->bind() in test setUp
+        $this->app->singleton(
+            \App\Contracts\Finance\ReservationCompletionLedgerContract::class,
+            \App\Services\Finance\ReservationCompletionLedgerService::class
+        );
+
+        // CHANNEL_MANAGER Wave 1: ICalAdapter Contract binding (default)
+        $this->app->bind(
+            \App\Contracts\ChannelManager\ChannelSyncContract::class,
+            \App\Infrastructure\ChannelManager\Adapters\ICalAdapter::class
+        );
+
+        // CHANNEL_MANAGER_PROVIDER Wave 1 — ADR-006
+        // ChannelTransportContract → ChannexTransport (production)
+        // AirbnbChannelAdapter uses ChannelTransportContract (NOT concrete ChannexTransport)
+        // BookingChannelAdapter is intentionally NOT bound here (disabled stub — ADR-006 §3)
+        $this->app->bind(
+            \App\Contracts\ChannelManager\ChannelTransportContract::class,
+            \App\Infrastructure\ChannelManager\Channex\ChannexTransport::class
+        );
+
+        // ⚙️ Execution Runtime Repository Binding
+        $this->app->bind(
+            \App\Repositories\ExecutionRuntimeRepositoryInterface::class,
+            \App\Repositories\EloquentExecutionRuntimeRepository::class
+        );
+
+        // RESERVATION_CORE Phase 3: Conflict Detection Contract
+        $this->app->singleton(
+            \App\Contracts\Reservation\ConflictDetectionServiceContract::class,
+            \App\Services\Reservation\ConflictDetectionService::class
+        );
     }
 
     /**
