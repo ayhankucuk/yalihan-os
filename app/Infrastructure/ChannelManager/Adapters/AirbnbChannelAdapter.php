@@ -180,7 +180,7 @@ class AirbnbChannelAdapter implements ChannelSyncContract
             correlationId: 'connection-test',
             errorCode: $result->errorCode,
             errorMessage: $result->errorMessage ?? 'Connection failed',
-            retryable: false,
+            retryable: $result->retryable,
         );
     }
 
@@ -195,7 +195,6 @@ class AirbnbChannelAdapter implements ChannelSyncContract
         $sync = IlanTakvimSync::where('ilan_id', $propertyId)
             ->where('platform', 'airbnb')
             ->where('is_sync_active', true)
-            ->whereHas('ilan', fn ($q) => $q->withoutGlobalScopes()->where('tenant_id', $tenantId))
             ->first();
 
         if ($sync === null || empty($sync->external_listing_id)) {
