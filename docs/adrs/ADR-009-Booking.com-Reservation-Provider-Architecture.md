@@ -1,6 +1,6 @@
 # ADR-009: Booking.com Reservation Provider Architecture
 
-**Status:** DRAFT — SAAB REVIEW PENDING
+**Status:** ACCEPTED (SAAB 2026-08-11, Auth clarification incorporated)
 **Date:** 2026-08-11
 **Baseline:** 683931d
 **Deciders:** SAAB Board
@@ -196,7 +196,27 @@ IlanTakvimSync::$fillable[] = 'token_expires_at';
 'ilan_takvim_sync' => ['api_key', 'api_secret']
 ```
 
-**OAuth flow yönü:** Booking.com → Yalıhan'a JWT notification değil, Yalıhan → Booking.com'a token-based API erişimi. Spesifik OAuth2 flow (client credentials, refresh token, vs.) onboarding gereksinimleri doğrulandıktan sonra Wave 1 Charter'da kesinleştirilir.
+**OAuth flow yönü:** Yalıhan → Booking.com'a token-based API erişimi (two-legged machine account flow).
+
+**Auth tipi — CLOSED (SAAB 2026-08-11):**
+> Booking.com Connectivity API, **Machine Account** için **two-legged token-based authentication** kullanır:
+> - Authorization Code KULLANILMAZ (kullanıcı etkileşimi gerektirir)
+> - Client ID + Client Secret → Token Exchange → ~1 saatlik Access Token
+> - Token refresh: client credentials yeniden exchange
+>
+> ```
+> Booking.com Connectivity Auth — Machine Account
+> ─────────────────────────────────────────────────
+> Client ID + Client Secret          ← environment/hardcoded
+>        ↓
+> POST /oauth/tokens               ← token exchange
+>        ↓
+> Short-lived Access Token         ← ~1 hour expiry
+>        ↓
+> Connectivity API                ← reservation/availability calls
+> ```
+
+**Production-readiness checklist:** Recovery API (missed reservations) Booking.com tarafında varsayılan **kapalıdır** — Connectivity Support'un aktive etmesi gerekir.
 
 **Karar kodu:** `CHANNEL_MANAGER_BOOKING_DEBT-002`
 
@@ -277,9 +297,11 @@ Yalıhan Recovery:
 
 ---
 
-## Open Questions (Wave 1 Charter'da Kesinleştirilecek)
+## Open Questions
 
-1. OAuth2 flow tipi: client_credentials vs authorization_code?
-2. Token storage: encrypted field vs dedicated credential service?
-3. Retrieval batch size: max reservations per request?
-4. Acknowledgement timeout: retry window nedir?
+| # | Soru | Durum |
+|---|------|--------|
+| ~~1~~ | ~~OAuth2 flow tipi~~ | ✅ **CLOSED** — two-legged machine account, authorization_code DEĞİL |
+| 2 | Token storage: encrypted field vs dedicated credential service? | Wave 1/2 |
+| 3 | Retrieval batch size: max reservations per request? | Wave 1/2 (Booking.com 10–200 aralığını destekliyor) |
+| 4 | Acknowledgement timeout: retry window? | Wave 2 |
