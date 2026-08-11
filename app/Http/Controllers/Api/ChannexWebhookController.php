@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\DTOs\ChannelManager\ChannexReservationPayload;
 use App\Http\Controllers\Controller;
+use App\Jobs\ChannelManager\ChannexReservationCancelJob;
 use App\Jobs\ChannelManager\ChannexReservationIngestJob;
+use App\Jobs\ChannelManager\ChannexReservationModifyJob;
 use App\Models\PropertyReservation;
 use App\Services\ChannelManager\ChannexSignatureVerifier;
 use App\Services\ChannelManager\ChannexWebhookTenantResolver;
@@ -45,28 +47,52 @@ class ChannexWebhookController extends Controller
             return response()->json(['ok' => true, 'reason' => 'unknown_property'], 200);
         }
 
-        // 3. Idempotency check
-        $channel  = strtolower($payload['reservation']['channel_name'] ?? 'channex');
-        $existing = PropertyReservation::where('external_reservation_id', $externalReservationId)
-            ->where('external_channel', $channel)
-            ->where('tenant_id', $tenantId)
-            ->exists();
+        // 3. Action routing — ADR-008
+        // Idempotency check is ONLY for action='new' (Wave 2).
+        // Modification and cancellation can be re-processed on the same reservation.
+        $action  = $payload['action'] ?? 'new';
+        $channel = strtolower($payload['reservation']['channel_name'] ?? 'channex');
 
-        if ($existing) {
-            return response()->json(['ok' => true, 'reason' => 'already_processed'], 200);
+        if ($action === 'cancelled') {
+            ChannexReservationCancelJob::dispatch($externalReservationId, $channel, $tenantId);
+            Log::info('ChannexWebhookController: cancel job dispatched', [
+                'external_reservation_id' => $externalReservationId,
+                'tenant_id'               => $tenantId,
+            ]);
+            return response()->json(['ok' => true], 200);
         }
 
-        // 4. Parse payload
+        if ($action === 'modified') {
+            $res    = $payload['reservation'];
+            $guestData = [];
+            if (!empty($res['guest_name'])) $guestData['guest_name'] = $res['guest_name'];
+            if (!empty($res['adults_count'])) $guestData['guest_count'] = (int) $res['adults_count'];
+
+            ChannexReservationModifyJob::dispatch(
+                $externalReservationId,
+                $channel,
+                $tenantId,
+                $res['arrival_date'] ?? '',
+                $res['departure_date'] ?? '',
+                $guestData,
+            );
+            Log::info('ChannexWebhookController: modify job dispatched', [
+                'external_reservation_id' => $externalReservationId,
+                'tenant_id'               => $tenantId,
+            ]);
+            return response()->json(['ok' => true], 200);
+        }
+
+        // action='new' — Wave 2 path
         try {
             $dto = ChannexReservationPayload::fromChannexWebhook($payload);
         } catch (\InvalidArgumentException $e) {
             return response()->json(['ok' => true, 'reason' => 'parse_error'], 200);
         }
 
-        // 5. Dispatch async job
         ChannexReservationIngestJob::dispatch($dto, $tenantId);
 
-        Log::info('ChannexWebhookController: job dispatched', [
+        Log::info('ChannexWebhookController: ingest job dispatched', [
             'external_reservation_id' => $externalReservationId,
             'tenant_id'               => $tenantId,
         ]);

@@ -3,7 +3,9 @@
 namespace App\Services\ChannelManager;
 
 use App\DTOs\ChannelManager\ChannexReservationPayload;
+use App\Events\ChannelManager\ChannexReservationCancelledViaChanEvent;
 use App\Events\ChannelManager\ChannexReservationIngestedEvent;
+use App\Events\ChannelManager\ChannexReservationModifiedEvent;
 use App\Events\ChannelManager\ChannexReservationRejectedEvent;
 use App\Models\PropertyReservation;
 use App\Services\ReservationService;
@@ -94,6 +96,120 @@ class ChannexReservationIngestService
                 errorMessage:          $e->getMessage(),
                 retryable:             true,
             ));
+            throw $e;
+        }
+    }
+
+    /**
+     * Ingest a Channex reservation modification.
+     * ADR-008: delegate to ReservationService.modifyReservation() (canonical).
+     * Out-of-order: cancelled reservation → silently return existing.
+     */
+    public function ingestModification(
+        string $externalReservationId,
+        string $externalChannel,
+        int    $tenantId,
+        string $newStartDate,
+        string $newEndDate,
+        array  $guestData = [],
+    ): ?PropertyReservation {
+        $row = DB::table('property_reservations')
+            ->where('external_reservation_id', $externalReservationId)
+            ->where('external_channel', $externalChannel)
+            ->where('tenant_id', $tenantId)
+            ->first();
+
+        if ($row === null) {
+            Log::warning('ChannexReservationIngestService: ingestModification — unknown external_reservation_id', [
+                'external_reservation_id' => $externalReservationId,
+                'tenant_id'               => $tenantId,
+            ]);
+            return null; // ADR-008: unknown ID → 200 + log, no exception
+        }
+
+        try {
+            $reservation = $this->reservationService->modifyReservation(
+                $row->id,
+                $newStartDate,
+                $newEndDate,
+                $guestData,
+            );
+
+            // ADR-008: terminal state → modifyReservation returns existing without changing it
+            // Do NOT dispatch event for cancelled reservations (out-of-order ignored)
+            $stateValue = is_object($reservation->reservation_state)
+                ? $reservation->reservation_state->value
+                : $reservation->reservation_state;
+
+            if ($stateValue === 'cancelled') {
+                Log::info('ChannexReservationIngestService: ingestModification ignored — reservation is cancelled', [
+                    'external_reservation_id' => $externalReservationId,
+                ]);
+                return $reservation;
+            }
+
+            event(new ChannexReservationModifiedEvent(
+                reservationId:         $reservation->id,
+                tenantId:              $tenantId,
+                externalReservationId: $externalReservationId,
+                externalChannel:       $externalChannel,
+                newStartDate:          $newStartDate,
+                newEndDate:            $newEndDate,
+            ));
+
+            return $reservation;
+
+        } catch (\Exception $e) {
+            Log::error('ChannexReservationIngestService: ingestModification failed', [
+                'external_reservation_id' => $externalReservationId,
+                'error'                   => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Ingest a Channex reservation cancellation.
+     * ADR-008: delegate to ReservationService.cancelReservation() (canonical, idempotent).
+     */
+    public function ingestCancellation(
+        string $externalReservationId,
+        string $externalChannel,
+        int    $tenantId,
+    ): ?PropertyReservation {
+        $row = DB::table('property_reservations')
+            ->where('external_reservation_id', $externalReservationId)
+            ->where('external_channel', $externalChannel)
+            ->where('tenant_id', $tenantId)
+            ->first();
+
+        if ($row === null) {
+            Log::warning('ChannexReservationIngestService: ingestCancellation — unknown external_reservation_id', [
+                'external_reservation_id' => $externalReservationId,
+                'tenant_id'               => $tenantId,
+            ]);
+            return null;
+        }
+
+        try {
+            $this->reservationService->cancelReservation($row->id);
+
+            $reservation = PropertyReservation::withoutGlobalScopes()->findOrFail($row->id);
+
+            event(new ChannexReservationCancelledViaChanEvent(
+                reservationId:         $reservation->id,
+                tenantId:              $tenantId,
+                externalReservationId: $externalReservationId,
+                externalChannel:       $externalChannel,
+            ));
+
+            return $reservation;
+
+        } catch (\Exception $e) {
+            Log::error('ChannexReservationIngestService: ingestCancellation failed', [
+                'external_reservation_id' => $externalReservationId,
+                'error'                   => $e->getMessage(),
+            ]);
             throw $e;
         }
     }

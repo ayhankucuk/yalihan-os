@@ -165,4 +165,97 @@ class ReservationService
                 ]);
         });
     }
+
+    /**
+     * Modify a reservation's dates and/or guest data.
+     *
+     * CHANNEL_MANAGER_PROVIDER Wave 3 — ADR-008
+     * Canonical method — conflict detection runs inside.
+     * Out-of-order: terminal state reservation → silently ignored (returns existing).
+     *
+     * @throws Exception on conflict or invalid dates
+     */
+    public function modifyReservation(
+        int    $reservationId,
+        string $newStartDate,
+        string $newEndDate,
+        array  $guestData = [],
+    ): PropertyReservation {
+        return DB::transaction(function () use ($reservationId, $newStartDate, $newEndDate, $guestData) {
+            $reservation = PropertyReservation::withoutGlobalScopes()->lockForUpdate()->findOrFail($reservationId);
+
+            // ADR-008: terminal state → silently ignore modification
+            if ($reservation->reservation_state === 'cancelled') {
+                return $reservation;
+            }
+
+            $start = Carbon::parse($newStartDate)->startOfDay();
+            $end   = Carbon::parse($newEndDate)->startOfDay();
+
+            if ($start->gte($end)) {
+                throw new Exception("Start date must be before end date.");
+            }
+
+            $nights = $start->diffInDays($end);
+
+            // Conflict check (exclude self)
+            $overlapCount = PropertyReservation::where('property_id', $reservation->property_id)
+                ->where('id', '!=', $reservationId)
+                ->where('start_date', '<', $end->format('Y-m-d'))
+                ->where('end_date', '>', $start->format('Y-m-d'))
+                ->where('reservation_state', '!=', 'cancelled')
+                ->lockForUpdate()
+                ->count();
+
+            if ($overlapCount > 0) {
+                throw new Exception("Modification conflict: new dates overlap with an existing reservation.");
+            }
+
+            // Release old availability blocks
+            PropertyAvailability::where('reservation_id', $reservationId)
+                ->where('source_system', 'internal')
+                ->update([
+                    'is_available'   => true,
+                    'block_reason'   => null,
+                    'reservation_id' => null,
+                ]);
+
+            // Update reservation
+            $updateData = [
+                'start_date' => $start->format('Y-m-d'),
+                'end_date'   => $end->format('Y-m-d'),
+                'nights'     => $nights,
+            ];
+            if (!empty($guestData['guest_name'])) {
+                $updateData['guest_name'] = $guestData['guest_name'];
+            }
+            if (array_key_exists('guest_count', $guestData)) {
+                $updateData['guest_count'] = $guestData['guest_count'];
+            }
+
+            $reservation->update($updateData);
+
+            // Re-block new dates
+            $dates = [];
+            $current = $start->copy();
+            while ($current->lt($end)) {
+                $dates[] = $current->format('Y-m-d');
+                $current->addDay();
+            }
+
+            foreach ($dates as $dateStr) {
+                PropertyAvailability::updateOrCreate(
+                    ['property_id' => $reservation->property_id, 'date' => $dateStr],
+                    [
+                        'is_available'   => false,
+                        'block_reason'   => 'reservation',
+                        'source_system'  => 'internal',
+                        'reservation_id' => $reservationId,
+                    ]
+                );
+            }
+
+            return $reservation->fresh();
+        });
+    }
 }
