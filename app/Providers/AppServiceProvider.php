@@ -197,6 +197,45 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
+        // BOOKING_PROVIDER Wave 1 — ADR-009: Auth + Property Mapping
+        $this->app->bind(
+            \App\Contracts\ChannelManager\ChannelReservationContract::class,
+            \App\Infrastructure\ChannelManager\Booking\BookingConnectivityAdapter::class,
+        );
+
+        $this->app->bind(
+            \App\Infrastructure\ChannelManager\Booking\BookingAuthTransport::class,
+            function ($app) {
+                return new \App\Infrastructure\ChannelManager\Booking\BookingAuthTransport(
+                    baseUrl: config('services.booking.api_url'),
+                );
+            }
+        );
+
+        $this->app->bind(
+            \App\Infrastructure\ChannelManager\Booking\BookingCredentialManagerInterface::class,
+            \App\Infrastructure\ChannelManager\Booking\BookingCredentialManager::class,
+        );
+
+        $this->app->bind(
+            \App\Infrastructure\ChannelManager\Booking\BookingCredentialManager::class,
+            function ($app) {
+                return new \App\Infrastructure\ChannelManager\Booking\BookingCredentialManager(
+                    $app->make(\App\Infrastructure\ChannelManager\Booking\BookingAuthTransport::class),
+                );
+            }
+        );
+
+        $this->app->bind(
+            \App\Infrastructure\ChannelManager\Booking\BookingTransport::class,
+            function ($app) {
+                return new \App\Infrastructure\ChannelManager\Booking\BookingTransport(
+                    $app->make(\App\Infrastructure\ChannelManager\Booking\BookingCredentialManager::class),
+                    baseUrl: config('services.booking.api_url'),
+                );
+            }
+        );
+
         // ⚙️ Execution Runtime Repository Binding
         $this->app->bind(
             \App\Repositories\ExecutionRuntimeRepositoryInterface::class,

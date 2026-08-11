@@ -26,6 +26,11 @@ class IlanTakvimSync extends BaseModel
         'sync_settings',
         'api_key',
         'api_secret',
+        // Token-based auth fields (ADR-009 §4 — two-legged machine account)
+        'token_access',
+        'token_refresh',
+        'token_expires_at',
+        // ──────────────────────────────
         'senkron_durumu',
         'last_error',
         'last_error_at',
@@ -42,6 +47,7 @@ class IlanTakvimSync extends BaseModel
         'sync_interval_minutes' => 'integer',
         'sync_count' => 'integer',
         'error_count' => 'integer',
+        'token_expires_at' => 'datetime',
     ];
 
     public function ilan()
