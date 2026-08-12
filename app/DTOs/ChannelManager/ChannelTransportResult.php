@@ -13,7 +13,7 @@ namespace App\DTOs\ChannelManager;
  * The caller (adapter) is responsible for mapping this to a
  * domain-level ChannelSyncResponse.
  */
-final class ChannelTransportResult
+class ChannelTransportResult
 {
     private function __construct(
         public readonly bool    $success,
