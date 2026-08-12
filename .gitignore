@@ -80,6 +80,9 @@ screenshots-backup-*.tar.gz
 !tsconfig.json
 !.sab/*.json
 !tests/Fixtures/**/*.json
+# YDL v1 — manually maintained registry, must be tracked
+!memory/ydl/blockers.json
+!memory/ydl/ARCHITECTURE_CHARTER.md
 
 # Root artifact hygiene
 /$count,
@@ -180,3 +183,7 @@ bootstrap/cache/*.php
 /test_results*.log
 
 .kilo/worktrees/
+
+# YDL v1 Phase 1 — Runtime state (managed by YDL pipeline, not git)
+memory/ydl/state/
+memory/ydl/snapshots/

@@ -45,7 +45,11 @@ class YdlGitCollector
 
     private function getStatus(): string
     {
-        $output = trim((string) shell_exec("git -C {$this->basePath} status --porcelain 2>/dev/null") ?: '');
-        return $output === '' ? 'clean' : 'dirty';
+        // Only check tracked files for changes.
+        // Untracked files (e.g. runtime state like memory/ydl/state/current.json)
+        // are intentionally excluded — they are managed by the YDL pipeline, not git.
+        $output = trim((string) shell_exec("git -C {$this->basePath} diff --stat 2>/dev/null") ?: '');
+        $staged = trim((string) shell_exec("git -C {$this->basePath} diff --cached --stat 2>/dev/null") ?: '');
+        return ($output !== '' || $staged !== '') ? 'dirty' : 'clean';
     }
 }

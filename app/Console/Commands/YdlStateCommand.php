@@ -51,7 +51,7 @@ class YdlStateCommand extends Command
                 ['Sprint',        $state->sprint],
                 ['Branch',        $state->branch],
                 ['Commit',        $state->commit],
-                ['Git Status',    $state->branch !== 'unknown' ? 'clean' : 'N/A'],
+                ['Git Status',    $state->gitClean ? 'clean' : ($state->branch !== 'unknown' ? 'dirty' : 'N/A')],
             ]
         );
 
