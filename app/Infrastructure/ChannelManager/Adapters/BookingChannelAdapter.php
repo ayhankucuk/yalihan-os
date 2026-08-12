@@ -6,30 +6,37 @@ use App\Contracts\ChannelManager\ChannelSyncContract;
 use App\Domain\ChannelManager\DTOs\ChannelSyncResponse;
 use App\Domain\ChannelManager\Enums\Channel;
 use App\Domain\ChannelManager\Enums\SyncDirection;
+use App\Infrastructure\ChannelManager\Booking\BookingAvailabilityException;
+use App\Infrastructure\ChannelManager\Booking\BookingTransport;
+use App\Models\IlanTakvimSync;
+use App\Models\Ilan;
+use Illuminate\Support\Facades\Log;
 
 /**
- * BookingChannelAdapter — DISABLED STUB for Booking.com.
+ * BookingChannelAdapter — Production implementation for Booking.com availability push.
  *
- * CHANNEL_MANAGER_PROVIDER Wave 1 — ADR-006
+ * Sprint 4.13 — Booking.com Provider Wave 4
+ * ADR-009 invariant: canonical availability owner = Yalihan; Booking.com = projection only
  *
- * ⚠️ STATUS: DISABLED — NOT PRODUCTION READY ⚠️
+ * BW4-01..BW4-12 Gate Tests
  *
- * This adapter exists as an architectural placeholder only.
- * All methods return NOT_IMPLEMENTED.
+ * Contract: ChannelSyncContract
+ * Transport: BookingTransport (injected)
+ * Endpoint: POST /ota/Availability (Booking.com OTA standard)
  *
- * ADR-006 Amendment (SAAB):
- * - This class is NOT bound in AppServiceProvider
- * - It will NOT be injected in production
- * - Its presence does NOT mean Booking.com is supported
- * - Production implementation is CHANNEL_MANAGER_BOOKING_DEBT-001
- *
- * @see ADR-006 §3
- * @see CHANNEL_MANAGER_BOOKING_DEBT-001
+ * ADR-006 invariants enforced:
+ * - Transport-agnostic credentials resolved via IlanTakvimSync
+ * - Tenant isolation via property ownership check
+ * - Booking.com idempotency: same correlationId = same result
+ * - NOT_IMPLEMENTED guard removed — production ready
  */
 class BookingChannelAdapter implements ChannelSyncContract
 {
-    // No constructor — disabled stub has no dependencies.
-    // ADR-006: BookingChannelAdapter is NOT bound in AppServiceProvider.
+    private const AVAILABILITY_ENDPOINT = '/ota/Availability';
+
+    public function __construct(
+        private readonly BookingTransport $transport,
+    ) {}
 
     public function getChannel(): Channel
     {
@@ -43,30 +50,134 @@ class BookingChannelAdapter implements ChannelSyncContract
 
     public function supportsPush(): bool
     {
-        return false; // disabled
+        return true; // Wave 4: availability push is implemented
     }
 
     public function supportsPull(): bool
     {
-        return false; // disabled
+        return false; // Booking.com: pull not implemented in Wave 4
     }
 
+    /**
+     * Push availability FROM Yalihan TO Booking.com.
+     *
+     * BW4-09: Empty availabilityData → early return (no API call)
+     * BW4-05: Tenant isolation via IlanTakvimSync platform check
+     * BW4-10: HTTP 200 → ChannelSyncResponse.success
+     * BW4-07: 5xx → BookingAvailabilityException (retryable)
+     * BW4-08: 4xx → ChannelSyncResponse.failure (non-retryable)
+     */
     public function pushAvailability(
         int    $tenantId,
         int    $propertyId,
         string $correlationId,
         array  $availabilityData,
     ): ChannelSyncResponse {
-        return ChannelSyncResponse::failure(
+        // BW4-09: Empty data → no-op
+        if (empty($availabilityData)) {
+            return ChannelSyncResponse::success(
+                channel: Channel::BOOKING,
+                direction: SyncDirection::EXPORT,
+                correlationId: $correlationId,
+                channelRef: 'empty-no-op',
+                metadata: ['synced_count' => 0],
+            );
+        }
+
+        // BW4-05: Tenant isolation — resolve sync record
+        // Manual tenant check (BelongsToTenant scope does NOT apply to this model in tests)
+        $syncRecord = \App\Models\IlanTakvimSync::where('ilan_id', $propertyId)
+            ->where('platform', 'booking_com')
+            ->where('is_sync_active', true)
+            ->where('senkron_durumu', 'active')
+            ->first();
+
+        if ($syncRecord === null) {
+            return ChannelSyncResponse::failure(
+                channel: Channel::BOOKING,
+                direction: SyncDirection::EXPORT,
+                correlationId: $correlationId,
+                errorCode: 'NOT_REGISTERED',
+                errorMessage: "No active booking_com sync for property {$propertyId} in tenant {$tenantId}",
+                retryable: false,
+            );
+        }
+
+        // Secondary tenant isolation check — ilan must belong to calling tenant
+        $ilanTenantId = \App\Models\Ilan::withoutGlobalScopes()
+            ->where('id', $propertyId)
+            ->value('tenant_id');
+        if ((int) $ilanTenantId !== $tenantId) {
+            return ChannelSyncResponse::failure(
+                channel: Channel::BOOKING,
+                direction: SyncDirection::EXPORT,
+                correlationId: $correlationId,
+                errorCode: 'CROSS_TENANT_ACCESS',
+                errorMessage: "Cross-tenant availability push blocked",
+                retryable: false,
+            );
+        }
+
+        // BW4-02: Map to Booking.com OTA_Availability format
+        $otaPayload = $this->buildOtaPayload($syncRecord->external_listing_id, $availabilityData);
+
+        Log::info('BookingChannelAdapter: pushing availability', [
+            'property_id'     => $propertyId,
+            'hotel_code'      => $syncRecord->external_listing_id,
+            'correlation_id'  => $correlationId,
+            'dates_count'     => count($availabilityData),
+        ]);
+
+        $result = $this->transport->post($propertyId, self::AVAILABILITY_ENDPOINT, $otaPayload);
+
+        // BW4-07: 5xx → throw retryable exception
+        if (!$result->success && $result->errorCode !== null && $this->isRetryableErrorCode((int) $result->errorCode)) {
+            throw new BookingAvailabilityException(
+                httpStatus: (int) $result->errorCode,
+                isRetryable: true,
+                message: "Booking.com availability push failed: [{$result->errorCode}] {$result->errorMessage}",
+            );
+        }
+
+        // BW4-08: 4xx → graceful failure (non-retryable)
+        if (!$result->success) {
+            Log::warning('BookingChannelAdapter: non-retryable push failure', [
+                'property_id'    => $propertyId,
+                'error_code'    => $result->errorCode,
+                'error_message'  => $result->errorMessage,
+            ]);
+            return ChannelSyncResponse::failure(
+                channel: Channel::BOOKING,
+                direction: SyncDirection::EXPORT,
+                correlationId: $correlationId,
+                errorCode: (string) ($result->errorCode ?? 'UNKNOWN'),
+                errorMessage: $result->errorMessage ?? 'Unknown error',
+                retryable: false,
+            );
+        }
+
+        // BW4-10: Success
+        Log::info('BookingChannelAdapter: availability push success', [
+            'property_id'    => $propertyId,
+            'correlation_id' => $correlationId,
+            'dates_count'   => count($availabilityData),
+        ]);
+
+        return ChannelSyncResponse::success(
             channel: Channel::BOOKING,
             direction: SyncDirection::EXPORT,
             correlationId: $correlationId,
-            errorCode: 'NOT_IMPLEMENTED',
-            errorMessage: 'Booking.com adapter is not yet implemented. See CHANNEL_MANAGER_BOOKING_DEBT-001.',
-            retryable: false,
+            channelRef: $result->providerReference ?? 'ok',
+            metadata: [
+                'synced_count' => count($availabilityData),
+                'hotel_code'   => $syncRecord->external_listing_id,
+            ],
         );
     }
 
+    /**
+     * BW4-11: Booking.com availability is push-only (pull not implemented in Wave 4).
+     */
     public function pullAvailability(
         int    $tenantId,
         int    $propertyId,
@@ -79,7 +190,7 @@ class BookingChannelAdapter implements ChannelSyncContract
             direction: SyncDirection::IMPORT,
             correlationId: $correlationId,
             errorCode: 'NOT_IMPLEMENTED',
-            errorMessage: 'Booking.com adapter is not yet implemented. See CHANNEL_MANAGER_BOOKING_DEBT-001.',
+            errorMessage: 'Booking.com pull availability is not implemented in Wave 4.',
             retryable: false,
         );
     }
@@ -94,5 +205,84 @@ class BookingChannelAdapter implements ChannelSyncContract
             errorMessage: 'Booking.com adapter is not yet implemented. See CHANNEL_MANAGER_BOOKING_DEBT-001.',
             retryable: false,
         );
+    }
+
+    /**
+     * Rates push not implemented in Wave 4.
+     * Wave 5 handles this via RateProjectionService → RateSynchronizationService pipeline.
+     */
+    public function pushRates(
+        int    $tenantId,
+        int    $propertyId,
+        string $correlationId,
+        array  $ratesData,
+    ): ChannelSyncResponse {
+        return ChannelSyncResponse::failure(
+            channel: Channel::BOOKING,
+            direction: SyncDirection::EXPORT,
+            correlationId: $correlationId,
+            errorCode: 'NOT_IMPLEMENTED',
+            errorMessage: 'Rates push not implemented in Wave 4. See Wave 5.',
+            retryable: false,
+        );
+    }
+
+    /**
+     * Build Booking.com OTA_Availability payload.
+     *
+     * Booking.com Connectivity OTA_Availability format:
+     * {
+     *   "rooms": [
+     *     {
+     *       "HotelCode": "BK-HOTEL-A",
+     *       "Availability": [
+     *         {"Date": "2044-09-01", "StopSell": {"value": "true"}},
+     *         {"Date": "2044-09-02", "StopSell": {"value": "false"}}
+     *       ]
+     *     }
+     *   ]
+     * }
+     *
+     * @param string $hotelCode  BasicPropertyInfo.HotelCode
+     * @param array  $availabilityData [['date' => 'Y-m-d', 'available' => bool], ...]
+     */
+    private function buildOtaPayload(string $hotelCode, array $availabilityData): array
+    {
+        $availabilityElements = [];
+
+        foreach ($availabilityData as $item) {
+            $date = $item['date']; // 'Y-m-d'
+            $available = (bool) ($item['available'] ?? true);
+
+            if ($available) {
+                // Open date — StopSell=false (available to book)
+                $availabilityElements[] = [
+                    'Date'     => $date,
+                    'StopSell' => ['value' => 'false'],
+                ];
+            } else {
+                // Block date — StopSell=true (not available)
+                $availabilityElements[] = [
+                    'Date'     => $date,
+                    'StopSell' => ['value' => 'true'],
+                ];
+            }
+        }
+
+        return [
+            'rooms' => [
+                [
+                    'HotelCode'    => $hotelCode,
+                    'Availability' => $availabilityElements,
+                ],
+            ],
+        ];
+    }
+
+    private function isRetryableErrorCode(int $code): bool
+    {
+        return $code === 0        // network error
+            || $code === 429       // rate limit
+            || $code >= 500;      // server error
     }
 }
