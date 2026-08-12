@@ -184,6 +184,9 @@ bootstrap/cache/*.php
 
 .kilo/worktrees/
 
+# Agent/LSP audit logs
+.laravel-mcp-audit.jsonl
+
 # YDL v1 Phase 1 — Runtime state (managed by YDL pipeline, not git)
 memory/ydl/state/
 memory/ydl/snapshots/
