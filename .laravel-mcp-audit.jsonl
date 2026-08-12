@@ -7,3 +7,6 @@
 {"timestamp":"2026-08-06T11:51:23.563Z","sessionId":"e107eba29cfd","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
 {"timestamp":"2026-08-06T21:55:14.704Z","sessionId":"4a0b81dcd9c6","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
 {"timestamp":"2026-08-10T11:09:04.982Z","sessionId":"7c9cdab4c9d9","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-12T05:20:45.439Z","sessionId":"83c02a795be4","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-12T10:38:14.276Z","sessionId":"4613ef45d78d","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-12T15:08:26.436Z","sessionId":"bc91f4bdcd4a","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
