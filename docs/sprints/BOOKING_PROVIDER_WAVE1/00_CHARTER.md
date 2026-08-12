@@ -4,7 +4,7 @@
 
 **Sprint:** 4.10
 **Start:** 2026-08-11
-**Status:** ACTIVE
+**Status:** ✅ CERTIFIED (Sprint 4.14 — Oturum 111)
 **Owner:** WenOX / Kilo Agent
 **Branch:** `integration/era-v-phase2a-e01`
 **Baseline:** `8bfee67` (ADR-009 ACCEPTED)
