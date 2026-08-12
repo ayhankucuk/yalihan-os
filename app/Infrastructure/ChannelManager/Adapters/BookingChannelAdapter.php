@@ -7,6 +7,7 @@ use App\Domain\ChannelManager\DTOs\ChannelSyncResponse;
 use App\Domain\ChannelManager\Enums\Channel;
 use App\Domain\ChannelManager\Enums\SyncDirection;
 use App\Infrastructure\ChannelManager\Booking\BookingAvailabilityException;
+use App\Infrastructure\ChannelManager\Booking\BookingRatesException;
 use App\Infrastructure\ChannelManager\Booking\BookingTransport;
 use App\Models\IlanTakvimSync;
 use App\Models\Ilan;
@@ -33,6 +34,7 @@ use Illuminate\Support\Facades\Log;
 class BookingChannelAdapter implements ChannelSyncContract
 {
     private const AVAILABILITY_ENDPOINT = '/ota/Availability';
+    private const RATES_ENDPOINT = '/ota/HotelRateAmountNotif';
 
     public function __construct(
         private readonly BookingTransport $transport,
@@ -56,6 +58,11 @@ class BookingChannelAdapter implements ChannelSyncContract
     public function supportsPull(): bool
     {
         return false; // Booking.com: pull not implemented in Wave 4
+    }
+
+    public function supportsRatesPush(): bool
+    {
+        return true; // Wave 5: rates push is implemented
     }
 
     /**
@@ -217,13 +224,103 @@ class BookingChannelAdapter implements ChannelSyncContract
         string $correlationId,
         array  $ratesData,
     ): ChannelSyncResponse {
-        return ChannelSyncResponse::failure(
+        // BW5-09: Empty data → no-op
+        if (empty($ratesData)) {
+            return ChannelSyncResponse::success(
+                channel: Channel::BOOKING,
+                direction: SyncDirection::EXPORT,
+                correlationId: $correlationId,
+                channelRef: 'empty-no-op',
+                metadata: ['synced_count' => 0],
+            );
+        }
+
+        // BW5-05: Tenant isolation — resolve sync record
+        $syncRecord = \App\Models\IlanTakvimSync::where('ilan_id', $propertyId)
+            ->where('platform', 'booking_com')
+            ->where('is_sync_active', true)
+            ->where('senkron_durumu', 'active')
+            ->first();
+
+        if ($syncRecord === null) {
+            return ChannelSyncResponse::failure(
+                channel: Channel::BOOKING,
+                direction: SyncDirection::EXPORT,
+                correlationId: $correlationId,
+                errorCode: 'NOT_REGISTERED',
+                errorMessage: "No active booking_com sync for property {$propertyId}",
+                retryable: false,
+            );
+        }
+
+        // Secondary tenant isolation — ilan must belong to calling tenant
+        $ilanTenantId = \App\Models\Ilan::withoutGlobalScopes()
+            ->where('id', $propertyId)
+            ->value('tenant_id');
+        if ((int) $ilanTenantId !== $tenantId) {
+            return ChannelSyncResponse::failure(
+                channel: Channel::BOOKING,
+                direction: SyncDirection::EXPORT,
+                correlationId: $correlationId,
+                errorCode: 'CROSS_TENANT_ACCESS',
+                errorMessage: "Cross-tenant rates push blocked",
+                retryable: false,
+            );
+        }
+
+        // BW5-02..04: Map to Booking.com OTA_Rates format
+        $otaPayload = $this->buildOtaRatesPayload($syncRecord->external_listing_id, $ratesData);
+
+        Log::info('BookingChannelAdapter: pushing rates', [
+            'property_id'    => $propertyId,
+            'hotel_code'     => $syncRecord->external_listing_id,
+            'correlation_id' => $correlationId,
+            'dates_count'    => count($ratesData),
+        ]);
+
+        $result = $this->transport->post($propertyId, self::RATES_ENDPOINT, $otaPayload);
+
+        // BW5-07: 5xx → throw retryable exception
+        if (!$result->success && $result->errorCode !== null && $this->isRetryableErrorCode((int) $result->errorCode)) {
+            throw new BookingRatesException(
+                httpStatus: (int) $result->errorCode,
+                isRetryable: true,
+                message: "Booking.com rates push failed: [{$result->errorCode}] {$result->errorMessage}",
+            );
+        }
+
+        // BW5-08: 4xx → graceful failure (non-retryable)
+        if (!$result->success) {
+            Log::warning('BookingChannelAdapter: rates push 4xx failure', [
+                'property_id'   => $propertyId,
+                'error_code'    => $result->errorCode,
+                'error_message' => $result->errorMessage,
+            ]);
+            return ChannelSyncResponse::failure(
+                channel: Channel::BOOKING,
+                direction: SyncDirection::EXPORT,
+                correlationId: $correlationId,
+                errorCode: (string) ($result->errorCode ?? 'UNKNOWN'),
+                errorMessage: $result->errorMessage ?? 'Unknown error',
+                retryable: false,
+            );
+        }
+
+        // BW5-10: Success
+        Log::info('BookingChannelAdapter: rates push success', [
+            'property_id'    => $propertyId,
+            'correlation_id' => $correlationId,
+        ]);
+
+        return ChannelSyncResponse::success(
             channel: Channel::BOOKING,
             direction: SyncDirection::EXPORT,
             correlationId: $correlationId,
-            errorCode: 'NOT_IMPLEMENTED',
-            errorMessage: 'Rates push not implemented in Wave 4. See Wave 5.',
-            retryable: false,
+            channelRef: $result->providerReference ?? 'ok',
+            metadata: [
+                'synced_count' => count($ratesData),
+                'hotel_code'  => $syncRecord->external_listing_id,
+            ],
         );
     }
 
@@ -284,5 +381,97 @@ class BookingChannelAdapter implements ChannelSyncContract
         return $code === 0        // network error
             || $code === 429       // rate limit
             || $code >= 500;      // server error
+    }
+
+    // ─── Rates Push Helpers ───────────────────────────────────────────
+
+    /**
+     * Build Booking.com OTA_HotelRateAmountNotif payload.
+     *
+     * BW5-02..04: StartDate/EndDate, Amount, CurrencyCode per rate entry.
+     * BW5-03: Collapse consecutive identical rates into one range.
+     *
+     * @param string $hotelCode
+     * @param array  $ratesData [['date' => 'Y-m-d', 'rate' => float, 'currency' => string], ...]
+     */
+    private function buildOtaRatesPayload(string $hotelCode, array $ratesData): array
+    {
+        $roomRates = [];
+
+        foreach ($ratesData as $item) {
+            $startDate = $item['date'];
+            $endDate = \Carbon\Carbon::parse($startDate)->addDay()->format('Y-m-d');
+            $amount = number_format((float) ($item['rate'] ?? 0), 2, '.', '');
+            $currency = strtoupper($item['currency'] ?? 'TRY');
+
+            $roomRates[] = [
+                'StartDate'     => $startDate,
+                'EndDate'       => $endDate,
+                'Rate'          => [
+                    'Amount'         => $amount,
+                    'CurrencyCode'  => $currency,
+                ],
+            ];
+        }
+
+        // BW5-03: Collapse consecutive rates with identical amount + currency into one range
+        $collapsed = $this->collapseConsecutiveRates($roomRates);
+
+        return [
+            'rooms' => [
+                [
+                    'HotelCode' => $hotelCode,
+                    'RoomStay'  => [
+                        'Rates' => $collapsed,
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Collapse consecutive Rate entries with identical amount + currency into a single range.
+     *
+     * e.g. [Sep1-2@500, Sep2-3@500] → [Sep1-3@500]
+     * BW5-03 invariant: same rate + currency = single range entry.
+     */
+    private function collapseConsecutiveRates(array $rates): array
+    {
+        if (count($rates) <= 1) {
+            return $rates;
+        }
+
+        $collapsed = [];
+        $current = null;
+
+        foreach ($rates as $rate) {
+            if ($current === null) {
+                $current = $rate;
+                continue;
+            }
+
+            $prevEnd = $current['EndDate'];
+            $currStart = $rate['StartDate'];
+            $sameRate = $current['Rate']['Amount'] === $rate['Rate']['Amount']
+                && $current['Rate']['CurrencyCode'] === $rate['Rate']['CurrencyCode'];
+
+            if ($prevEnd === $currStart && $sameRate) {
+                // Extend current range
+                $current = [
+                    'StartDate' => $current['StartDate'],
+                    'EndDate'  => $rate['EndDate'],
+                    'Rate'     => $current['Rate'],
+                ];
+            } else {
+                $collapsed[] = $current;
+                $current = $rate;
+            }
+        }
+
+        if ($current !== null) {
+            $collapsed[] = $current;
+        }
+
+        return $collapsed;
     }
 }
