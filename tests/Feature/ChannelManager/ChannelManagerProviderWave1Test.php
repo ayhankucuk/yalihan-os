@@ -8,6 +8,7 @@ use App\DTOs\ChannelManager\ChannelTransportResult;
 use App\Domain\ChannelManager\Enums\Channel;
 use App\Infrastructure\ChannelManager\Adapters\AirbnbChannelAdapter;
 use App\Infrastructure\ChannelManager\Adapters\BookingChannelAdapter;
+use App\Infrastructure\ChannelManager\Booking\BookingTransport;
 use App\Infrastructure\ChannelManager\Channex\ChannexAvailabilityMapper;
 use App\Infrastructure\ChannelManager\Channex\ChannexTransport;
 use App\Models\Ilan;
@@ -306,13 +307,26 @@ class ChannelManagerProviderWave1Test extends TestCase
     }
 
     // =========================================================================
-    // T8: disabled BookingChannelAdapter makes no external calls
+    // T8: No active Booking sync = no external API call (NOT_REGISTERED guard)
+    //
+    // Sprint 4.14 context: BookingChannelAdapter IS NOW IMPLEMENTED (BW4).
+    // The original stub test expected NOT_IMPLEMENTED for both push and pull.
+    // BW4 semantics: no active sync record → NOT_REGISTERED (no external call).
+    //
+    // T8 invariant preserved: "disabled/unconfigured Booking adapter makes
+    // no external calls." Only the error code changed: NOT_IMPLEMENTED →
+    // NOT_REGISTERED. supportsPush() is now true (BW4 implemented it).
     // =========================================================================
 
     /** @test */
-    public function disabled_booking_adapter_makes_no_external_call(): void
+    public function no_active_sync_record_blocks_push_without_external_call(): void
     {
-        $adapter = new BookingChannelAdapter();
+        // $this->property has NO IlanTakvimSync record for booking_com
+        // BW4 adapter resolves sync record → null → NOT_REGISTERED (no transport call)
+        $transport = $this->createMock(BookingTransport::class);
+        $transport->expects($this->never())->method('post');
+
+        $adapter = new BookingChannelAdapter($transport);
 
         $push = $adapter->pushAvailability(
             tenantId: $this->tenant->id,
@@ -329,13 +343,19 @@ class ChannelManagerProviderWave1Test extends TestCase
             toDate: '2044-08-10',
         );
 
-        $this->assertFalse($push->success, 'T8: BookingChannelAdapter push must return NOT_IMPLEMENTED');
-        $this->assertFalse($pull->success, 'T8: BookingChannelAdapter pull must return NOT_IMPLEMENTED');
-        $this->assertEquals('NOT_IMPLEMENTED', $push->errorCode);
-        $this->assertEquals('NOT_IMPLEMENTED', $pull->errorCode);
-        $this->assertFalse($push->retryable, 'T8: NOT_IMPLEMENTED must not be retryable');
-        $this->assertFalse($adapter->supportsPush(), 'T8: BookingChannelAdapter supportsPush must return false');
-        $this->assertFalse($adapter->supportsPull(), 'T8: BookingChannelAdapter supportsPull must return false');
+        // T8 invariant: NOT_REGISTERED (not NOT_IMPLEMENTED) — no external call
+        $this->assertFalse($push->success, 'T8: push must fail when no active sync record');
+        $this->assertEquals('NOT_REGISTERED', $push->errorCode, 'T8: no active sync → NOT_REGISTERED');
+        $this->assertFalse($push->retryable, 'T8: NOT_REGISTERED must not be retryable');
+
+        // BW4: pullAvailability is NOT_IMPLEMENTED (Booking is push-only)
+        $this->assertFalse($pull->success, 'T8: Booking pull must return NOT_IMPLEMENTED');
+        $this->assertEquals('NOT_IMPLEMENTED', $pull->errorCode, 'T8: pull not implemented in Wave 4');
+        $this->assertFalse($pull->retryable, 'T8: NOT_IMPLEMENTED must not be retryable');
+
+        // BW4: supportsPush = true (implemented), supportsPull = false (not in Wave 4)
+        $this->assertTrue($adapter->supportsPush(), 'T8: Booking supportsPush = true (BW4 implemented)');
+        $this->assertFalse($adapter->supportsPull(), 'T8: Booking supportsPull = false (Wave 4 push-only)');
     }
 
     // =========================================================================

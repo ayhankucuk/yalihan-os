@@ -8,6 +8,7 @@ use App\Domain\ChannelManager\DTOs\ChannelSyncResponse;
 use App\Domain\ChannelManager\Enums\Channel;
 use App\Domain\ChannelManager\Enums\SyncDirection;
 use App\Models\IlanTakvimSync;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -184,20 +185,52 @@ class AirbnbChannelAdapter implements ChannelSyncContract
         );
     }
 
+    /**
+     * Rates push not implemented for Airbnb in Wave 5.
+     * ADR-W5-01: Rates push requires RateProjectionService + RateSynchronizationService
+     * to be built and wired before any channel adapter can receive rates.
+     */
+    public function pushRates(
+        int    $tenantId,
+        int    $propertyId,
+        string $correlationId,
+        array  $ratesData,
+    ): ChannelSyncResponse {
+        return ChannelSyncResponse::failure(
+            channel: Channel::AIRBNB,
+            direction: SyncDirection::EXPORT,
+            correlationId: $correlationId,
+            errorCode: 'NOT_IMPLEMENTED',
+            errorMessage: 'Airbnb rates push is not implemented in Wave 5.',
+            retryable: false,
+        );
+    }
+
     // ─── Private ────────────────────────────────────────────────────
 
     /**
      * Resolve Channex external listing ID from IlanTakvimSync.
-     * Returns null if no active configuration found.
+     * Returns null if no active configuration found OR if the listing
+     * does not belong to the calling tenant (tenant isolation).
+     *
+     * T1 invariant: cross-tenant listing access is blocked at adapter level.
      */
     private function resolveExternalListingId(int $tenantId, int $propertyId): ?string
     {
-        $sync = IlanTakvimSync::where('ilan_id', $propertyId)
-            ->where('platform', 'airbnb')
-            ->where('is_sync_active', true)
+        // Tenant isolation: join through ilanlar to verify ownership
+        // @sab-ignore-query
+        $sync = DB::table('ilan_takvim_sync')
+            ->join('ilanlar', 'ilan_takvim_sync.ilan_id', '=', 'ilanlar.id')
+            ->where('ilan_takvim_sync.ilan_id', $propertyId)
+            ->where('ilan_takvim_sync.platform', 'airbnb')
+            ->where('ilan_takvim_sync.is_sync_active', true)
+            ->where('ilanlar.tenant_id', $tenantId)
+            ->whereNotNull('ilan_takvim_sync.external_listing_id')
+            ->where('ilan_takvim_sync.external_listing_id', '!=', '')
+            ->select('ilan_takvim_sync.external_listing_id')
             ->first();
 
-        if ($sync === null || empty($sync->external_listing_id)) {
+        if ($sync === null) {
             Log::warning('AirbnbChannelAdapter: no active listing mapping', [
                 'property_id' => $propertyId,
                 'tenant_id'   => $tenantId,

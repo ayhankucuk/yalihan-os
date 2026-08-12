@@ -8,56 +8,104 @@ use App\Domain\ChannelManager\Enums\Channel;
 use App\Domain\ChannelManager\Enums\SyncDirection;
 
 /**
- * BookingConnectivityAdapter — NOT IMPLEMENTED stub.
+ * BookingConnectivityAdapter — Production-ready connectivity probe.
  *
- * Sprint 4.10 — Booking.com Provider Wave 1
+ * Sprint 4.15 — G34 Connectivity Probe
  *
- * ⚠️ STATUS: DISABLED — Wave 2 implementation pending
+ * Implements ChannelReservationContract.
+ * All retrieval methods remain NOT_IMPLEMENTED (Wave 2 scope).
+ * testConnection() IS NOW IMPLEMENTED — non-destructive connectivity probe.
  *
- * ChannelReservationContract stub. All methods throw NOT_IMPLEMENTED.
- *
- * Production implementation maps:
- * - retrieveNew       → GET /reservations (new)
- * - retrieveModified  → GET /reservations/changes
- * - retrieveCancelled → GET /reservations/cancelled
- * - acknowledge       → POST /reservations/{id}/ack
- *
- * This stub allows the contract container binding to resolve without
- * breaking the DI container. It is NOT production ready.
+ * CONNECTION TEST INVARIANTS (non-destructive):
+ * - Never POSTs / PUTs / PATCHes / DELETEs to Booking.com
+ * - Uses GET /reservations with narrow date window (read-only)
+ * - Never writes to YALIHAN database
+ * - Never logs credentials or tokens
  */
 class BookingConnectivityAdapter implements ChannelReservationContract
 {
+    public function __construct(
+        private readonly BookingConnectionProbeService $probeService,
+    ) {}
+
+    /**
+     * Retrieve new reservations.
+     *
+     * NOT IMPLEMENTED — Wave 2 scope.
+     */
     public function retrieveNew(int $tenantId, int $propertyId, string $from, string $to): array
     {
         return $this->notImplemented(__FUNCTION__);
     }
 
+    /**
+     * Retrieve modified reservations.
+     *
+     * NOT IMPLEMENTED — Wave 2 scope.
+     */
     public function retrieveModified(int $tenantId, int $propertyId, string $from, string $to): array
     {
         return $this->notImplemented(__FUNCTION__);
     }
 
+    /**
+     * Retrieve cancelled reservations.
+     *
+     * NOT IMPLEMENTED — Wave 2 scope.
+     */
     public function retrieveCancelled(int $tenantId, int $propertyId, string $from, string $to): array
     {
         return $this->notImplemented(__FUNCTION__);
     }
 
+    /**
+     * Acknowledge a reservation.
+     *
+     * NOT IMPLEMENTED — Wave 2 scope.
+     */
     public function acknowledge(int $tenantId, string $reservationId, string $status): array
     {
         return $this->notImplemented(__FUNCTION__);
     }
 
+    /**
+     * G34: Test Booking.com connectivity for a tenant.
+     *
+     * Non-destructive probe:
+     *   1. Find first active booking_com sync record for tenant
+     *   2. Attempt token exchange (validates credentials)
+     *   3. GET /reservations (today ± 1 day — read-only)
+     *   4. Classify → ChannelSyncResponse
+     *
+     * @param int $tenantId Tenant to probe
+     *
+     * @return ChannelSyncResponse
+     */
     public function testConnection(int $tenantId): ChannelSyncResponse
     {
+        $result = $this->probeService->probe($tenantId);
+
+        if ($result->connected) {
+            return ChannelSyncResponse::success(
+                channel:       Channel::BOOKING,
+                direction:     SyncDirection::EXPORT,
+                correlationId: $result->correlationId,
+                channelRef:    'connected',
+                metadata:      $result->metadata,
+            );
+        }
+
         return ChannelSyncResponse::failure(
-            channel: Channel::BOOKING,
-            direction: SyncDirection::EXPORT,
-            correlationId: 'booking-conn-test',
-            errorCode: 'NOT_IMPLEMENTED',
-            errorMessage: 'BookingConnectivityAdapter is not yet implemented. See Sprint 4.10 Wave 2.',
-            retryable: false,
+            channel:       Channel::BOOKING,
+            direction:     SyncDirection::EXPORT,
+            correlationId: $result->correlationId,
+            errorCode:    $result->errorCode ?? $result->probeDurumu,
+            errorMessage: $result->errorMessage ?? "Connection test failed: {$result->probeDurumu}",
+            retryable:    $result->retryable,
         );
     }
+
+    // ─── Private ─────────────────────────────────────────────────────
 
     private function notImplemented(string $method): array
     {
