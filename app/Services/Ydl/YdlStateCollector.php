@@ -3,6 +3,7 @@
 namespace App\Services\Ydl;
 
 use App\DTOs\Ydl\YdlStateDefinition;
+use App\Services\Ydl\Collectors\YdlGitCollector;
 use Illuminate\Support\Facades\File;
 
 /**
@@ -32,7 +33,8 @@ class YdlStateCollector
     /**
      * Collect current state from repository files.
      *
-     * Deterministic. No LLM inference. No shell commands.
+     * Deterministic. No LLM inference. No shell commands (except YdlGitCollector
+     * for live HEAD inspection — used only for CERTIFICATION_INTEGRITY check).
      */
     public function collect(): YdlStateDefinition
     {
@@ -50,9 +52,12 @@ class YdlStateCollector
         // Blocker count
         $activeBlockers = $this->activeBlockerCount($blockerPath);
 
-        // Git info from state (updated by previous runs)
-        $gitBranch = $stateData['git']['branch'] ?? 'integration/booking-production';
-        $gitCommit = $stateData['git']['commit'] ?? 'HEAD';
+        // Git info: live HEAD (for untracked-implementation detection) + state file fallback
+        $gitCollector = new YdlGitCollector($this->basePath);
+        $liveGit = $gitCollector->collect();
+        $gitBranch = $liveGit['branch'] !== 'unknown' ? $liveGit['branch'] : ($stateData['git']['branch'] ?? 'integration/booking-production');
+        $gitCommit = $liveGit['commit'] !== 'unknown' ? $liveGit['commit'] : ($stateData['git']['commit'] ?? 'HEAD');
+        $gitClean = $liveGit['clean'];
 
         // Certification gates
         $gatesTotal   = (int) ($activePrint['gates_total'] ?? 0);
@@ -90,6 +95,7 @@ class YdlStateCollector
             'sab_violations_blocking' => $sabBlocking,
             'branch'                => $gitBranch,
             'commit'                => $gitCommit,
+            'git_clean'             => $gitClean,
             'generated_at'           => now()->toIso8601String(),
         ]);
     }

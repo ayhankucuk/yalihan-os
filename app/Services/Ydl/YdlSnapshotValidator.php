@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\File;
  *   1. Active blockers in registry must appear in current snapshot
  *   2. Snapshot sprint must match blocker registry sprint
  *   3. Snapshot must have same blocker count as active blockers
+ *   4. CERTIFIED sprint + dirty git = CERTIFICATION_INTEGRITY_FAILURE
+ *      (implementation committed after certification without re-certification)
  *
  * If any rule is violated → STATE_DRIFT action emitted.
  * NO silent decision — drift is always surfaced.
@@ -56,6 +58,14 @@ class YdlSnapshotValidator
 
         // Rule 3: Blocked external count must match
         $drift = $this->checkBlockedCountConsistency($registry, $currentState);
+        if ($drift !== null) {
+            return $drift;
+        }
+
+        // Rule 4: CERTIFIED sprint + dirty git = CERTIFICATION_INTEGRITY_FAILURE
+        // If engineering is complete (all gates PASS), the snapshot was certified.
+        // Any untracked implementation after certification = integrity violation.
+        $drift = $this->checkCertificationIntegrity($currentState);
         if ($drift !== null) {
             return $drift;
         }
@@ -109,6 +119,33 @@ class YdlSnapshotValidator
 
         if ($activeCount > 0 && $state->gatesBlockedExternal === 0) {
             return "Registry has {$activeCount} active blockers but snapshot shows 0 external blocked gates";
+        }
+
+        return null;
+    }
+
+    /**
+     * Rule 4: CERTIFIED sprint + dirty git = CERTIFICATION_INTEGRITY_FAILURE.
+     *
+     * A sprint is "certified" when:
+     *   - All development gates are PASS (gatesFail = 0, gatesBlockedInternal = 0)
+     *   - No blocking SAB violations
+     *
+     * If git is dirty (untracked files or unstaged changes) after certification,
+     * it means code was written but not committed — violating the YDL mandate.
+     *
+     * Recovery: run `git add && git commit` to clear the drift.
+     */
+    private function checkCertificationIntegrity(YdlStateDefinition $state): ?string
+    {
+        $isCertified = $state->gatesFail === 0
+            && $state->gatesBlockedInternal === 0
+            && $state->sabViolationsBlocking === 0;
+
+        if ($isCertified && !$state->gitClean) {
+            return "CERTIFICATION_INTEGRITY_FAILURE: Sprint '{$state->sprint}' is certified "
+                . "(all development gates PASS) but git shows untracked or unstaged changes. "
+                . "Commit all changes before continuing. Run: git add . && git commit -m '...'";
         }
 
         return null;
