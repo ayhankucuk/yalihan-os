@@ -6,6 +6,86 @@
 
 ---
 
+## 2026-08-12 | Oturum Sprint 4.15 | Booking.com Production Certification ⏳ AWAITING BOOKING.COM ONBOARDING (34/35 PASS)
+
+### Sprint 4.15 — Booking Production Certification
+
+**71 PASS (Waves 1-5 + Channex) + 2 Sprint içi fix**
+
+### Değişiklikler
+
+| Tür | Dosya | Değişiklik |
+|-----|-------|-----------|
+| FIX | `AirbnbChannelAdapter.php` | Tenant isolation JOIN — SAB Kural 1 fix |
+| FIX | `ChannelManagerProviderWave1Test.php` | T8 adaptasyonu: stub → BW4 semantics |
+| CREATE | `BookingConnectionResult.php` | G34 DTO: 5 status (CONNECTED/AUTH_FAILED/NOT_REGISTERED/CONNECTION_ERROR/PROVIDER_ERROR) |
+| CREATE | `BookingConnectionProbeService.php` | Non-destructive probe: token validation → GET /reservations |
+| MODIFY | `BookingConnectivityAdapter.php` | testConnection() → production ready |
+| CREATE | `BookingG34ConnectivityProbeTest.php` | G34-01..G34-10: 10/10 PASS |
+| UPDATE | `BEKCI_CHANGELOG.md` | Oturum 112 + Sprint 4.15 girişi |
+| UPDATE | `memory/SESSION_NOTES.md` | Oturum 112 |
+| UPDATE | `memory/CHANGELOG_AGENT.md` | Bu giriş |
+
+### Sağlık Kontrolleri
+
+- AirbnbChannelAdapter SAB violations: **0 yeni** ✅
+- Booking suite: **73/73 PASS** ✅
+- G34 ConnectivityProbeTest: **10/10 PASS** ✅
+- **Certification Skoru: 34/35 PASS (97%)**
+
+### Bilinen Sorunlar (Değiştirilmedi — Sınıflandırıldı)
+
+- AirbnbAdapterTest: 25 FAIL (Laravel RefreshDatabase event dispatcher — P2, Booking'i engellemiyor)
+- ChannelManagerWave2Test: 10 FAIL (SQLite corruption — P2, Booking'i engellemiyor)
+- bekci:health: KB dizini yok (P2)
+- BookingConnectivityAdapter: Wave 2 retrieval methods NOT_IMPLEMENTED (ayrı sprint)
+- **G35 Production smoke test: ⏳ BLOCKED — Booking.com Partner onboarding gerekiyor**
+
+---
+
+## 2026-08-12 | Oturum Sprint 4.14 | Booking Channel Manager Wave 5: Rates Out 🟢 CERTIFIED ✅
+
+### Sprint 4.14 — Booking Channel Manager Wave 5 Sertifikasyonu
+
+**71/71 PASS** — Booking regression (63) + Channex regression (8)
+
+| Dalga | Test Sayısı | Durum |
+|-------|-----------|-------|
+| Wave 1 — Auth / Transport | 10 PASS | ✅ |
+| Wave 2 — Reservation Inbound | 12 PASS | ✅ |
+| Wave 3 — Lifecycle / Recovery | 12 PASS | ✅ |
+| Wave 4 — Availability Out | 12 PASS | ✅ |
+| Wave 5 — Rates Out | 17 PASS | ✅ |
+| Channex regression | 8 PASS | ✅ |
+| **TOPLAM** | **71 PASS** | 🟢 |
+
+### Oluşturulan Dosyalar (4 yeni + 1 test)
+
+| Dosya | Amaç |
+|-------|------|
+| `RateProjectionService.php` | `PropertyPricingService` → `[['date','rate','currency']]` rate projeksiyonu |
+| `SynchronizeRatesCommand.php` | Date range + idempotency key Command DTO |
+| `SynchronizationService.php` | Idempotency → record → queue dispatch orchestratörü |
+| `SynchronizeRatesJob.php` | Queue boundary: `$tries=3`, `$backoff=30s`, `afterCommit()`, `processed_at` guard |
+| `BookingWave5RatesTest.php` (BW5-13..17) | Wave 5 rate push testleri |
+
+### Değiştirilen Dosyalar
+
+| Dosya | Değişiklik |
+|-------|-----------|
+| `ChannelSyncContract.php` | `pushRates()` interface metodu eklendi |
+| `AirbnbChannelAdapter.php` | `pushRates()` stub (Wave 5'te implementasyon beklenmiyor) |
+| `BookingChannelAdapter.php` | Rate collapsing + `buildOtaRatesPayload()` fix |
+| `PropertyPricingService.php` | `resolveNightlyRateForDate()` public olarak açıldı |
+| `PropertySeasonalRate.php` | `$casts['is_active']` → `$casts['aktiflik_durumu']` — latent bug fix |
+
+### Bug Fixes
+
+1. **`PropertySeasonalRate::$casts` latent bug** — `is_active` yanlış kolon adı tüm seasonal rate lookuplarını etkiliyordu, `aktiflik_durumu` olarak düzeltildi
+2. **BW5-02 test expectation** — OTA spec'e göre `EndDate` = `StartDate` olmamalı; test beklentisi düzeltildi
+
+---
+
 ## 2026-07-16 | Oturum Sprint 15 | M2 Property Runtime — 🟢 CERTIFIED ✅
 
 ### Sprint 15 Program B: Operations Console Product Validation

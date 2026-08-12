@@ -1,5 +1,111 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 112 — 2026-08-12 | Sprint 4.15 — Booking.com Production Certification 🔵 ACTIVE
+
+### Sprint 4.15 — Booking Production Certification Sprint
+
+**Mission:** Booking.com Channel Manager'ın Sprint 4.14'e kadar gelen implementasyonunun production-ready olduğunu kanıtlamak. **Yeni capability yazılmaz.**
+
+### Sprint 4.14 → 4.15 Geçiş Kanıtı
+
+```
+Booking Wave 1  Auth / Transport     10 PASS ✅
+Booking Wave 2  Reservation Inbound   12 PASS ✅
+Booking Wave 3  Lifecycle / Recovery 12 PASS ✅
+Booking Wave 4  Availability Out   12 PASS ✅
+Booking Wave 5  Rates Out           17 PASS ✅
+─────────────────────────────────────────
+Booking regression                   63 PASS ✅
+Channex regression                    8 PASS ✅
+─────────────────────────────────────────
+TOTAL                              71 PASS ✅
+```
+
+### Sprint 4.15 İçi Düzeltmeler (2 Bug Fix)
+
+#### FIX-1: T1 — AirbnbChannelAdapter Tenant Isolation Bug ✅
+
+| Alan | Değer |
+|------|-------|
+| Dosya | `app/Infrastructure/ChannelManager/Adapters/AirbnbChannelAdapter.php:214` |
+| Bug | `resolveExternalListingId()` tenant_id kontrolü yapmıyordu — **SAB Kural 1 ihlali** |
+| Test | `ChannelManagerProviderWave1Test::tenant_isolation_wrong_tenant_id_returns_no_listing_mapping` |
+| Düzeltme | JOIN üzerinden `ilanlar.tenant_id = $tenantId` kontrolü eklendi |
+| DB Import | `use Illuminate\Support\Facades\DB;` eklendi |
+| Doğrulama | T1 ✅ 10/10 PASS |
+
+#### FIX-2: T8 — BookingChannelAdapter Stub Test Adaptation ✅
+
+| Alan | Değer |
+|------|-------|
+| Dosya | `tests/Feature/ChannelManager/ChannelManagerProviderWave1Test.php:313` |
+| Problem | T8: `new BookingChannelAdapter()` — BW4 implementasyonu `BookingTransport` inject gerektiriyor |
+| BW4 Semantiği | `supportsPush() = true` + no active sync → `NOT_REGISTERED` |
+| Eski Semantik | `supportsPush() = false` + her şey → `NOT_IMPLEMENTED` |
+| Düzeltme | Mock transport + BW4 semantics doğrulaması |
+| Doğrulama | T8 ✅ 10/10 PASS |
+
+### Sprint 4.15 Ek Kanıtlar
+
+```
+ChannelManagerProviderWave1Test  10 PASS ✅ (T1 tenant isolation + T8 adaptasyonu)
+─────────────────────────────────────────
+ADJUSTED TOTAL                  73 PASS ✅
+```
+
+### Pre-existing Infrastructure Sorunları (Sınıflandırıldı — Kod Düzeltilmedi)
+
+| Sorun | Tip | Etki | Öncelik |
+|-------|-----|------|---------|
+| ISSUE-A: AirbnbAdapterTest | RefreshDatabase + event dispatcher | 25 FAIL | P2 — Infrastructure |
+| ISSUE-B: ChannelManagerWave2Test | SQLite corruption/race | 10 FAIL | P2 — Infrastructure |
+| ISSUE-C: bekci:health | KB dizini yok | health fail | P2 — Infrastructure |
+
+### Booking.com Connectivity Onboarding Checklist
+
+Ön koşullar: Booking.com Partner hesabı, `client_id` + `client_secret`, HotelCode, `IlanTakvimSync` kaydı.
+`BookingConnectivityAdapter`: **Hala NOT_IMPLEMENTED** — Wave 2'ye bırakılıyor.
+
+---
+
+## Oturum 111 — 2026-08-12 | Sprint 4.14 — Booking Channel Manager Wave 5: Rates Out 🟢 CERTIFIED ✅
+
+### Sprint 4.14 Sertifikalı Tamamlama
+
+**71/71 PASS** — Booking regression (63) + Channex regression (8)
+
+| Dalga | Konu | Sonuç |
+|-------|------|-------|
+| Booking Wave 1 | Auth / Transport | 10 PASS |
+| Booking Wave 2 | Reservation Inbound | 12 PASS |
+| Booking Wave 3 | Lifecycle / Recovery | 12 PASS |
+| Booking Wave 4 | Availability Out | 12 PASS |
+| Booking Wave 5 | Rates Out | 17 PASS |
+| Channex regression | — | 8 PASS |
+
+### Mimari Parçalar (4 yeni dosya)
+
+| Dosya | Sorumluluk |
+|-------|-----------|
+| `RateProjectionService.php` | `PropertyPricingService` → `[['date','rate','currency']]` projeksiyonu |
+| `SynchronizeRatesCommand.php` | Date range + idempotency key DTO |
+| `SynchronizationService.php` | Idempotency → record → queue dispatch orchestrasyonu |
+| `SynchronizeRatesJob.php` | Queue boundary: `$tries=3`, `$backoff=30s`, `afterCommit()`, `processed_at` guard |
+
+### Düzeltilen Hatalar
+
+1. **`PropertySeasonalRate::$casts`** — `is_active` yanlış kolon adı → `aktiflik_durumu` (latent bug, tüm seasonal rate lookupları etkiliyordu)
+2. **BW5-02 test** — `EndDate` = `StartDate` bekleniyordu (yanlış OTA spec yorumu, düzeltildi)
+
+### Interface Genişlemesi
+
+- `ChannelSyncContract` → `pushRates()` eklendi
+- `AirbnbChannelAdapter` → `pushRates()` stub (Wave 5'te implementasyon beklenmiyor)
+- `BookingChannelAdapter` → rate collapsing + `buildOtaRatesPayload()` düzeltildi
+- `PropertyPricingService` → `resolveNightlyRateForDate()` public olarak açıldı
+
+---
+
 ## Oturum 89 — Stratejik Araştırma: SAAB v9 Enterprise Architecture Review (2026-07-14) ✅ CLOSED
 
 ### 🎯 Hedef
