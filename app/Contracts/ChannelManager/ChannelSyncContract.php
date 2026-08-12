@@ -102,4 +102,24 @@ interface ChannelSyncContract
      * @return ChannelSyncResponse
      */
     public function testConnection(int $tenantId): ChannelSyncResponse;
+
+    /**
+     * Push rates FROM Yalihan TO the external channel.
+     *
+     * ADR-W5-01: PropertyPricingService is the canonical rate source.
+     * ADR-W5-02: Currency is sourced from Ilan.para_birimi (native currency).
+     *
+     * @param int    $tenantId
+     * @param int    $propertyId
+     * @param string $correlationId
+     * @param array  $ratesData [['date' => 'Y-m-d', 'rate' => float, 'currency' => string], ...]
+     *
+     * @return ChannelSyncResponse
+     */
+    public function pushRates(
+        int    $tenantId,
+        int    $propertyId,
+        string $correlationId,
+        array  $ratesData,
+    ): ChannelSyncResponse;
 }
