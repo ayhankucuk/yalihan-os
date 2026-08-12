@@ -93,26 +93,37 @@ class YdlStateOrchestrator
             ? json_decode(File::get($this->statePath), true)
             : [];
 
-        $existing['active_sprint'] = [
-            'id'                   => $state->sprint,
-            'status'               => $state->sprintStatus,
-            'certification_score'   => $state->certificationScore(),
-             'tests'                => $state->testsPassed . '/' . ($state->testsPassed + $state->testsFailed) . ' PASS',
-             'sab'                 => $state->sabViolationsNew === 0 ? 'CLEAN' : $state->sabViolationsNew . ' violations',
-            'active_blockers'      => count(
-                array_filter(
-                    $existing['active_blockers'] ?? [],
-                    fn($b) => ($b['status'] ?? '') === 'ACTIVE'
-                )
-            ),
+        // Preserve existing active_sprint fields (may include gate data).
+        // Only update fields that change each run.
+        $existing['active_sprint'] = array_merge($existing['active_sprint'] ?? [], [
+            'id'                    => $state->sprint,
+            'status'                => $state->sprintStatus,
+            'gates_total'           => $state->gatesTotal,
+            'gates_pass'            => $state->gatesPass,
+            'gates_fail'            => $state->gatesFail,
+            'gates_blocked_external' => $state->gatesBlockedExternal,
+            'gates_blocked_internal' => $state->gatesBlockedInternal,
+            'gates_na'            => $state->gatesNa,
+        ]);
+
+        // SAB and git tracked separately
+        $existing['sab'] = [
+            'new_violations'       => $state->sabViolationsNew,
+            'blocking_violations'  => $state->sabViolationsBlocking,
+        ];
+        $existing['git'] = [
+            'branch' => $state->branch,
+            'commit' => $state->commit,
         ];
 
         $existing['recommendation'] = [
             'action'               => $recommendation->action,
+            'target'               => $recommendation->target,
             'rationale'            => $recommendation->rationale,
             'confidence'           => $recommendation->confidence,
             'updated'              => now()->toIso8601String(),
         ];
+        $existing['updated'] = now()->toIso8601String();
 
         File::put($this->statePath, json_encode($existing, JSON_PRETTY_PRINT));
     }
