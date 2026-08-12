@@ -64,7 +64,7 @@ class YdlNextBestActionEngine
     private function recommendFix(YdlStateDefinition $state, string $reason): YdlRecommendation
     {
         return YdlRecommendation::fromState(
-            state,
+            $state,
             YdlRecommendation::ACTION_FIX,
             $state->sprint,
             $reason,
@@ -76,7 +76,7 @@ class YdlNextBestActionEngine
     private function recommendStop(YdlStateDefinition $state, string $reason): YdlRecommendation
     {
         return YdlRecommendation::fromState(
-            state,
+            $state,
             YdlRecommendation::ACTION_STOP,
             $state->sprint,
             $reason,
@@ -88,7 +88,7 @@ class YdlNextBestActionEngine
     private function recommendStart(YdlStateDefinition $state, BlockerEvaluationResult $blockerResult): YdlRecommendation
     {
         return YdlRecommendation::fromState(
-            state,
+            $state,
             YdlRecommendation::ACTION_START,
             'YDL_V1',
             'All development gates PASS. External blockers only (' . $blockerResult->summary() . '). Independent work allowed.',

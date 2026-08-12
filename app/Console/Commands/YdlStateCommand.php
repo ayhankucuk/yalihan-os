@@ -21,9 +21,7 @@ use Illuminate\Console\Command;
  */
 class YdlStateCommand extends Command
 {
-    protected $signature = 'ydl:state
-        {--json : Output machine-readable JSON
-        --dry-run : Run without writing files}';
+    protected $signature = 'ydl:state {--json : Output machine-readable JSON} {--dry-run : Run without writing files}';
 
     protected $description = 'YDL v1: Collect state, validate, evaluate blockers, and recommend next action';
 
@@ -84,7 +82,7 @@ class YdlStateCommand extends Command
 
         $this->newLine();
         $this->line("  Rationale:");
-        foreach (wordwrap($rec->rationale, 60) as $line) {
+        foreach (explode("\n", wordwrap($rec->rationale, 60)) as $line) {
             $this->line("    {$line}");
         }
 
