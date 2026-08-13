@@ -1,5 +1,109 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 117 — 2026-08-13 | YDL Phase 3 ✅ + PILOT-001 PROPERTY_PUBLISH_SUPERVISED_AUTONOMY 🚀
+
+### YDL Phase 3 — Agent Context Integration ✅
+
+**Mission:** YDL state dosyalarını agent context'ine inject etmek ve session lifecycle'ını kapatmak.
+
+**Component 1 — YdlContextReader** (`app/Services/Ydl/YdlContextReader.php`):
+- `memory/ydl/state/current.json` + `blockers.json` okur
+- `authorityLevel`: FULL / LIMITED_BY_BLOCKER / STOP
+- `toMarkdown()`, `toJson()`, `toAuthoritySummary()` çıktı formatları
+- 3 çıktı formatı: markdown, JSON, authority summary
+
+**Component 2 — ydl:context CLI** (`app/Console/Commands/YdlContextCommand.php`):
+- `php artisan ydl:context` → markdown
+- `php artisan ydl:context --json` → JSON
+- `php artisan ydl:context --authority` → minimal authority summary
+- `php artisan ydl:context --inject-claude` → CLAUDE.md preamble (idempotent)
+
+**Component 3 — ydl:session-summary CLI** (`app/Console/Commands/YdlSessionSummaryCommand.php`):
+- Session sonu event üretir → `ydl:apply --dry-run` ile patch planı gösterir
+- `--action CONTINUE|FIX|START|CERTIFIED` + `--target` + `--commit`
+- `--resolve-blocker` + `--add-blocker` ile blocker yönetimi
+- Pipeline: `session-summary --dry-run` → git commit → `ydl:apply --confirm`
+
+**Component 4 — CLAUDE.md Injection:**
+- `ydl:context --inject-claude`: YDL state section'ını CLAUDE.md'ye inject eder
+- Idempotent: 2× run → 1 section (regex em-dash fix)
+
+**Test Suite — YdlPhase3ContextTest** (`tests/Feature/Ydl/YdlPhase3ContextTest.php`):
+- 8/8 PASS (33 assertions)
+- T1: context reader reads state correctly
+- T2: authority FULL (no blockers)
+- T3: authority LIMITED_BY_BLOCKER (DO_NOT_CONTINUE prefix match)
+- T4: authority STOP (SECURITY_ISSUE blocker)
+- T5: toMarkdown() valid output
+- T6: toAuthoritySummary() minimal output
+- T7: toJson() valid parseable JSON
+- T8: empty state → AUTHORITY_NO_SPRINT
+
+**Agent Session Lifecycle:**
+```
+Oturum başı: php artisan ydl:context
+Oturum içi: authority level'a göre karar verir (FULL/LIMITED/STOP)
+Oturum sonu: ydl:session-summary --dry-run → git commit → ydl:apply --confirm
+```
+
+### SAAB Program Review — Üçlü Metrics Çerçevesi
+
+**SAAB Kararı:** Tek genel yüzde yerine üç ayrı program-level gösterge:
+
+| Gösterge | Tahmin | Ne Anlatıyor |
+|----------|--------|--------------|
+| Capability Completion | ~72% | Planlanan sistemin ne kadarı inşa edildi |
+| Engineering Health | ~62% | Test/CI/MCP/KB güvenilirliği |
+| Automation Maturity | ~58% | Gerçek emlak işlerinin ne kadarı insan müdahalesi olmadan tamamlanıyor |
+
+**P0:** R002 — Test/CI Performance
+**Strategic Sequence:** R002 → M3 → M4
+**M4 Model:** Supervised Autonomy
+
+### PILOT-001 — Property Publish Supervised Autonomy 🚀
+
+**SAAB Kararı:** YDL Phase 3'ü gerçek bir emlak operasyonunda uçtan uca kullanan ilk pilot capability seçildi.
+
+**Neden Property Publish:**
+- En somut BAI kazanımı: villa yayına hazırlama süreci
+- Supervised autonomy ilk uygulaması: AI PREPARES → AI VALIDATES → HUMAN APPROVES → SYSTEM PUBLISHES
+- KPI: ≥80% manual time reduction (25 dk → ≤5 dk)
+
+**Pipeline:**
+```
+Workspace / Property
+        ↓
+YDL Context oku (authority: FULL/LIMITED/STOP)
+        ↓
+[authority = STOP?] → HALT
+[authority = LIMITED + blocker intersect?] → HALT
+        ↓
+Veri completeness → Fotoğraf → Fiyat → Yasal kontrol → Publish readiness
+        ↓
+HUMAN APPROVAL
+        ↓
+SYSTEM PUBLISHES
+        ↓
+Evidence → Test → Event → YDL session-summary → ydl:apply --confirm
+```
+
+**Authority Decision Logic:**
+```
+Görev: Property Publish
+BLK-001: DO_NOT_CONTINUE_BOOKING_CODE
+
+Intersection: NONE (Property Publish ≠ Booking.com)
+→ Decision: CONTINUE ✅
+
+Görev: Booking Production Smoke
+BLK-001 scope: Booking.com onboarding
+→ Decision: STOP ⛔
+```
+
+**Charter:** `docs/sprints/PILOT-001_PROPERTY_PUBLISH_SUPERVISED_AUTONOMY/00_CHARTER.md`
+
+---
+
 ## Oturum 113 — 2026-08-12 | C7 — Documentation Drift & Final Baseline Reconciliation ✅
 
 ### C7 — Documentation Drift & Final Baseline Reconciliation
