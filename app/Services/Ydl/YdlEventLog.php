@@ -128,7 +128,6 @@ class YdlEventLog
         // Sort ascending, then by eventId descending (tiebreaker — later eventId = later in append order)
         usort($events, fn(YdlEvent $a, YdlEvent $b) => ($a->occurredAt <=> $b->occurredAt) ?: ($b->eventId <=> $a->eventId));
         return $events[count($events) - 1];
-        return $events[0];
     }
 
     /**
