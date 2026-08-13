@@ -1,5 +1,57 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 119 — 2026-08-13 | PILOT-001 Wave 2 ✅ — Orchestrated Integration
+
+### Yapılan İş
+
+**PILOT-001 Wave 2 — Orchestrated Integration**
+
+Pipeline uçtan uca tamamlandı: `ydl:context → YdlPublishReadinessService → YdlPublishOrchestrator → Human Approval → executePublish → YdlEventLog → session-summary`.
+
+#### Yeni Dosya
+
+| Dosya | Açıklama |
+|-------|-----------|
+| `app/Services/Ydl/YdlPublishOrchestrator.php` | E2E orchestrator: evaluateReadiness + requestApproval + executePublish + buildCertifiedEvent |
+| `tests/Feature/Ydl/YdlPublishOrchestratorTest.php` | 12 test senaryosu — 59 assertion — **12/12 PASS** |
+
+#### Mimari Kararlar
+
+| Karar | Kanıt |
+|-------|--------|
+| STOP authority → BLOCKED_GATE | W2-T1 |
+| LIMITED authority → scope intersection check | W2-T2 (bloke), W2-T3 (izin) |
+| Human approval token = 24s TTL | W2-T5, T11 |
+| Idempotency: event_id çakışması → no-op | W2-T6 |
+| Governance guard bypass edilemez | W2-T7 |
+| Evidence → YdlEventLog::append | W2-T8 |
+| CERTIFIED event → session-summary | W2-T10 |
+
+#### Test Sonuçları — 12/12 PASS ✅
+
+| Test | Senaryo |
+|------|---------|
+| W2-T1 | STOP authority → BLOCKED_GATE |
+| W2-T2 | LIMITED + scope intersection → BLOCKED |
+| W2-T3 | LIMITED, scope=Ø → PUBLISH_READY |
+| W2-T4 | Full pipeline: readiness → evidence |
+| W2-T5 | Expired token → DomainException |
+| W2-T6 | Duplicate event_id → idempotent no-op |
+| W2-T7 | Governance DRAFT → BLOCKED |
+| W2-T8 | YdlEventLog evidence append |
+| W2-T9 | Already published → ALREADY_PUBLISHED |
+| W2-T10 | buildCertifiedEvent → YdlEvent CERTIFIED |
+| W2-T11 | Expired token → DomainException |
+| W2-T12 | Non-ready ilan → DomainException |
+
+**PILOT-001 Total: Wave 1 + Wave 2: 24 tests / 107 assertions / 24/24 PASS**
+
+#### Sonraki: SAAB Certification
+
+Pipeline: `ydl:context → ReadinessEvaluator → YdlPublishOrchestrator → Human Approval → executePublish → YdlEventLog → session-summary --action CERTIFIED`
+
+---
+
 ## Oturum 118 — 2026-08-13 | PILOT-001 Wave 1 ✅ — YDL Publish Readiness Pipeline
 
 ### Yapılan İş
