@@ -190,3 +190,4 @@ bootstrap/cache/*.php
 # YDL v1 Phase 1 — Runtime state (managed by YDL pipeline, not git)
 memory/ydl/state/
 memory/ydl/snapshots/
+/yalihanai_v2_production
