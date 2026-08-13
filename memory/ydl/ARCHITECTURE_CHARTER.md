@@ -269,26 +269,52 @@ RECOMMENDATION:
 
 ## YDL v1 Implementation Scope
 
-### Phase 1: Foundation (This Charter)
+### ✅ Phase 1: Foundation — COMPLETE
 
-- [ ] YDL data directory structure
-- [ ] BlockerRegistry schema + CRUD operations
-- [ ] `ydl:snapshot` Artisan command
-- [ ] Manual trigger for Phase 1
+- [x] YDL data directory structure (`memory/ydl/`)
+- [x] BlockerRegistry schema (`memory/ydl/blockers.json`) + CRUD
+- [x] `ydl:state` Artisan command
+- [x] Deterministic state collectors (Git, SAB, Test)
+- [x] Snapshot persistence (`memory/ydl/snapshots/{id}.json`)
+- [x] Drift detection via snapshot comparison
 
-### Phase 2: Memory Automation
+### ✅ Phase 2: Memory Automation — COMPLETE
 
-- [ ] 4-file memory update from snapshot evidence
-- [ ] Idempotent (re-run produces same result)
-- [ ] Diff preview before write
+- [x] `YdlStatePatcher`: generates patches for 6 institutional-memory targets
+- [x] `YdlControlledWriter`: applies patches after gate approval
+- [x] `YdlEventLog`: append-only JSONL event store (idempotent)
+- [x] `YdlWriteGuard`: 4-gate certification (G1 Idempotency / G2 Whitelist / G3 State Drift / G4 File Hash)
+- [x] `ydl:apply` command: dry-run (Phase 2A) + confirmed write (Phase 2B)
+- [x] `YdlPatchCommand` + `YdlPatch` DTO: structured patch representation
+- [x] `FileHashStore`: pre/post-write hash verification
+- [x] Idempotent: re-running same event produces no duplicate writes
+- [x] Rollback on failure: partial writes revert if any patch fails
 
-### Phase 3: NextBestAction Engine
+**Phase 2B Certified Gates:** 4/4 ✅ (G1, G2, G3, G4 — all implemented and tested)
 
-- [ ] Decision algorithm implementation
-- [ ] Recommendation output format
+### 🔲 Phase 3: Agent Context Integration — SPEC
+
+**Spec:** `memory/ydl/PHASE3_SPEC.md`
+
+**Goal:** YDL state becomes readable context for AI agents on session start.
+
+**Components (5):**
+- `YdlContextReader`: reads `state/current.json` + `blockers.json` → structured context
+- `ydl:context` CLI: `php artisan ydl:context [--json] [--authority]`
+- `ydl session-summary`: session-end event → `YdlEvent` → `ydl:apply --dry-run`
+- CLAUDE.md preamble: agent oturum başı `ydl:context` çağırır
+- `YdlPhase3ContextTest`: 8 test senaryosu
+
+**Definition of Done:** `memory/ydl/PHASE3_SPEC.md` § Phase 3 DoD
+
+### 🔲 Phase 4: NextBestAction Engine
+
+- [ ] `YdlNextBestActionEngine`: already implemented in `app/Services/Ydl/`
+- [ ] `ydl:next` command (wiring to CLI)
+- [ ] Recommendation output format standardization
 - [ ] `/review ydl` command for human approval
 
-### Phase 4: Closed-Loop Certification
+### 🔲 Phase 5: Closed-Loop Certification
 
 - [ ] Automatic trigger after `php artisan test`
 - [ ] Certificate event → snapshot → memory update → next action
