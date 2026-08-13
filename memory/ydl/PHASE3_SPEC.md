@@ -252,14 +252,20 @@ php artisan ydl:context
 
 | # | Kriter | Kanıt |
 |---|--------|-------|
-| 1 | `YdlContextReader` tüm state alanlarını okuyabiliyor | `YdlContextReaderTest` 5/5 PASS |
-| 2 | Authority level logic doğru | T2, T3, T4 PASS |
-| 3 | `ydl:context --json` valid | T5 PASS |
-| 4 | `ydl session-summary` YdlEvent üretiyor | T7, T8 PASS |
-| 5 | Phase 3 test suite: 8/8 PASS | `YdlPhase3ContextTest` |
-| 6 | Architecture Charter Phase 3 checkbox ✅ | `memory/ydl/ARCHITECTURE_CHARTER.md` |
-| 7 | CLI help metni doğru | `php artisan ydl:context --help` |
-| 8 | PHASE 3 CERTIFIED yazısı yok — Phase 3'e kadar bekler | Phase 3 test suite green |
+| 1 | `YdlContextReader` tüm state alanlarını okuyabiliyor | T1 PASS |
+| 2 | Authority level FULL logic | T2 PASS |
+| 3 | Authority level LIMITED logic (DO_NOT_CONTINUE prefix match) | T3 PASS |
+| 4 | Authority level STOP (SECURITY_ISSUE blocker) | T4 PASS |
+| 5 | `toMarkdown()` valid output | T5 PASS |
+| 6 | `toAuthoritySummary()` minimal output | T6 PASS |
+| 7 | `toJson()` valid parseable JSON | T7 PASS |
+| 8 | Empty state → AUTHORITY_NO_SPRINT | T8 PASS |
+| 9 | `ydl:context` CLI registered | 5 YDL commands in `php artisan list ydl` |
+| 10 | `ydl:session-summary` CLI registered + dry-run | Session-summary command confirmed working |
+| 11 | `--inject-claude` idempotent | Tested: 2× run → 1 section |
+| 12 | Phase 3 test suite: **8/8 PASS** | `YdlPhase3ContextTest` (33 assertions) |
+| 13 | Architecture Charter Phase 1-2 COMPLETE, Phase 3 SPEC linked | `memory/ydl/ARCHITECTURE_CHARTER.md` |
+| 14 | Phase 3 SPEC: full documentation | `memory/ydl/PHASE3_SPEC.md` |
 
 ---
 
