@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\ReservationState;
 use App\Models\Ilan;
 use App\Models\PropertyAvailability;
 use App\Models\PropertyReservation;
@@ -134,6 +135,243 @@ class ReservationService
 
             return $reservation;
         });
+    }
+
+    /**
+     * Override execution: atomically cancel conflicting reservation and create new one.
+     *
+     * PILOT-002 Wave 3 — Canonical override execution path.
+     *
+     * This method is the SOLE canonical execution path for overrides.
+     * Orchestrator authorizes; this service executes — never bypassed.
+     *
+     * @param int $propertyId
+     * @param string $startDate
+     * @param string $endDate
+     * @param array $guestData
+     * @param int|null $userId
+     * @param int $conflictReservationId Conflicting reservation to atomically cancel
+     * @param int $overrideAuthorizedBy User ID who authorized the override (for audit)
+     * @return PropertyReservation
+     * @throws Exception
+     */
+    public function createReservationWithOverride(
+        int    $propertyId,
+        string $startDate,
+        string $endDate,
+        array  $guestData,
+        ?int   $userId,
+        int    $conflictReservationId,
+        int    $overrideAuthorizedBy,
+    ): PropertyReservation {
+        $this->blockAgentWrite(__FUNCTION__);
+
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end   = Carbon::parse($endDate)->startOfDay();
+
+        if ($start->gte($end)) {
+            throw new Exception("Start date must be before end date.");
+        }
+
+        $nights = $start->diffInDays($end);
+
+        $ilan = Ilan::withoutGlobalScopes()->findOrFail($propertyId);
+
+        if (!$ilan->rental_enabled) {
+            throw new Exception("This property is not enabled for rental.");
+        }
+
+        if ($nights < $ilan->min_stay_nights) {
+            throw new Exception("Minimum stay is {$ilan->min_stay_nights} nights.");
+        }
+
+        return DB::transaction(function () use (
+            $propertyId, $start, $end, $nights, $guestData, $userId,
+            $conflictReservationId, $overrideAuthorizedBy,
+        ) {
+            // ── 1. Lock the conflicting reservation ──────────────────────────────
+            $conflict = PropertyReservation::lockForUpdate()->find($conflictReservationId);
+
+            if ($conflict === null) {
+                throw new Exception("Conflict reservation #{$conflictReservationId} not found.");
+            }
+
+            if ($conflict->property_id !== $propertyId) {
+                throw new Exception("Conflict reservation #{$conflictReservationId} does not belong to property #{$propertyId}.");
+            }
+
+            // Refetch current state under lock — if already cancelled, no override needed
+            $conflict->refresh();
+            $conflictState = $conflict->reservation_state instanceof ReservationState
+                ? $conflict->reservation_state->value
+                : (string) $conflict->reservation_state;
+
+            if ($conflictState === ReservationState::CANCELLED->value) {
+                // Conflict resolved itself — proceed as normal create (no override needed)
+                return $this->createReservationInternal(
+                    $propertyId, $start, $end, $nights, $guestData, $userId
+                );
+            }
+
+            // ── 2. Cancel the conflicting reservation ───────────────────────────
+            $conflict->update([
+                'reservation_state' => ReservationState::CANCELLED->value,
+                'cancelled_at'     => now(),
+            ]);
+
+            PropertyAvailability::where('reservation_id', $conflictReservationId)
+                ->where('source_system', 'internal')
+                ->update([
+                    'is_available'   => true,
+                    'block_reason'   => null,
+                    'reservation_id' => null,
+                ]);
+
+            // ── 3. Create new reservation (same logic as createReservation) ─────
+            $dates = [];
+            $current = $start->copy();
+            while ($current->lt($end)) {
+                $dates[] = $current->format('Y-m-d');
+                $current->addDay();
+            }
+
+            $now = now();
+            $insertData = [];
+            foreach ($dates as $dateStr) {
+                $insertData[] = [
+                    'property_id'  => $propertyId,
+                    'date'        => $dateStr,
+                    'is_available' => true,
+                    'source_system' => 'internal',
+                    'created_at'  => $now,
+                    'updated_at'  => $now,
+                ];
+            }
+            PropertyAvailability::insertOrIgnore($insertData);
+
+            $existingAvailabilities = PropertyAvailability::where('property_id', $propertyId)
+                ->whereIn('date', $dates)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy(fn($item) => Carbon::parse($item->date)->format('Y-m-d'));
+
+            foreach ($dates as $dateStr) {
+                if (isset($existingAvailabilities[$dateStr])) {
+                    $avail = $existingAvailabilities[$dateStr];
+                    if (!$avail->is_available) {
+                        throw new Exception("Dates are not available after override. Conflict on {$dateStr}.");
+                    }
+                }
+            }
+
+            $reservation = PropertyReservation::create([
+                'property_id'         => $propertyId,
+                'start_date'          => $start->format('Y-m-d'),
+                'end_date'            => $end->format('Y-m-d'),
+                'nights'              => $nights,
+                'guest_name'          => $guestData['guest_name'],
+                'guest_phone'         => $guestData['guest_phone'] ?? null,
+                'guest_email'         => $guestData['guest_email'] ?? null,
+                'guest_count'         => $guestData['guest_count'] ?? null,
+                'notes'               => $guestData['notes'] ?? null,
+                'reservation_state'   => ReservationState::CONFIRMED->value,
+                'created_by_user_id'  => $userId,
+                'confirmed_at'        => now(),
+                // Wave 3 override audit fields
+                'override_of_id'             => $conflictReservationId,
+                'override_authorized_by'     => $overrideAuthorizedBy,
+                'override_occurred_at'       => now(),
+            ]);
+
+            foreach ($dates as $dateStr) {
+                $avail = $existingAvailabilities[$dateStr];
+                $avail->update([
+                    'is_available'   => false,
+                    'block_reason'   => 'reservation',
+                    'source_system'  => 'internal',
+                    'reservation_id' => $reservation->id,
+                ]);
+            }
+
+            return $reservation;
+        });
+    }
+
+    /**
+     * Internal shared create logic (used by both createReservation and createReservationWithOverride).
+     *
+     * @throws Exception
+     */
+    private function createReservationInternal(
+        int    $propertyId,
+        Carbon $start,
+        Carbon $end,
+        int    $nights,
+        array  $guestData,
+        ?int   $userId,
+    ): PropertyReservation {
+        $dates = [];
+        $current = $start->copy();
+        while ($current->lt($end)) {
+            $dates[] = $current->format('Y-m-d');
+            $current->addDay();
+        }
+
+        $now = now();
+        $insertData = [];
+        foreach ($dates as $dateStr) {
+            $insertData[] = [
+                'property_id'  => $propertyId,
+                'date'        => $dateStr,
+                'is_available' => true,
+                'source_system' => 'internal',
+                'created_at'  => $now,
+                'updated_at'  => $now,
+            ];
+        }
+        PropertyAvailability::insertOrIgnore($insertData);
+
+        $existingAvailabilities = PropertyAvailability::where('property_id', $propertyId)
+            ->whereIn('date', $dates)
+            ->lockForUpdate()
+            ->get()
+            ->keyBy(fn($item) => Carbon::parse($item->date)->format('Y-m-d'));
+
+        foreach ($dates as $dateStr) {
+            if (isset($existingAvailabilities[$dateStr])) {
+                $avail = $existingAvailabilities[$dateStr];
+                if (!$avail->is_available) {
+                    throw new Exception("Dates are not available. Conflict on {$dateStr}.");
+                }
+            }
+        }
+
+        $reservation = PropertyReservation::create([
+            'property_id'         => $propertyId,
+            'start_date'          => $start->format('Y-m-d'),
+            'end_date'            => $end->format('Y-m-d'),
+            'nights'              => $nights,
+            'guest_name'          => $guestData['guest_name'],
+            'guest_phone'         => $guestData['guest_phone'] ?? null,
+            'guest_email'         => $guestData['guest_email'] ?? null,
+            'guest_count'         => $guestData['guest_count'] ?? null,
+            'notes'               => $guestData['notes'] ?? null,
+            'reservation_state'   => ReservationState::CONFIRMED->value,
+            'created_by_user_id'  => $userId,
+            'confirmed_at'        => now(),
+        ]);
+
+        foreach ($dates as $dateStr) {
+            $avail = $existingAvailabilities[$dateStr];
+            $avail->update([
+                'is_available'   => false,
+                'block_reason'   => 'reservation',
+                'source_system'  => 'internal',
+                'reservation_id' => $reservation->id,
+            ]);
+        }
+
+        return $reservation;
     }
 
     /**

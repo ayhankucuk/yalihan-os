@@ -43,6 +43,10 @@ class PropertyReservation extends BaseModel
         // ADR-007: Channel Manager Wave 2 — External reservation tracking
         'external_reservation_id',
         'external_channel',
+        // PILOT-002 Wave 3 — Override audit trail
+        'override_of_id',
+        'override_authorized_by',
+        'override_occurred_at',
     ];
 
     protected $casts = [
@@ -55,6 +59,9 @@ class PropertyReservation extends BaseModel
         'booking_fx_rate'  => 'float',
         'ulke_id'          => 'integer',
         'reservation_state' => ReservationState::class,
+        'override_of_id'         => 'integer',
+        'override_authorized_by'  => 'integer',
+        'override_occurred_at'    => 'datetime',
     ];
 
     public function ilan(): BelongsTo

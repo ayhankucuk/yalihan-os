@@ -400,7 +400,7 @@ class ReservationReadinessService
         return $context->authorityLevel;
     }
 
-    private function readContext(int $tenantId): YdlReservationContextOutput
+    public function readContext(int $tenantId): YdlReservationContextOutput
     {
         $output = $this->contextReader->read();
 
@@ -465,7 +465,7 @@ class ReservationReadinessService
         );
     }
 
-    private function currentSnapshotId(): string
+    public function currentSnapshotId(): string
     {
         try {
             $output = $this->contextReader->read();

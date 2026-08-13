@@ -6,6 +6,9 @@ use App\DTOs\Ydl\Reservation\Events\ReservationEvent;
 use App\DTOs\Ydl\Reservation\YdlCancellationApprovalToken;
 use App\DTOs\Ydl\Reservation\YdlCancellationEvidence;
 use App\DTOs\Ydl\Reservation\YdlCancellationRecommendation;
+use App\DTOs\Ydl\Reservation\YdlOverrideApprovalToken;
+use App\DTOs\Ydl\Reservation\YdlOverrideEvidence;
+use App\DTOs\Ydl\Reservation\YdlOverrideRecommendation;
 use App\DTOs\Ydl\Reservation\YdlReservationApprovalToken;
 use App\DTOs\Ydl\Reservation\YdlReservationContextOutput;
 use App\DTOs\Ydl\Reservation\YdlReservationEvidence;
@@ -50,13 +53,21 @@ class YdlReservationOrchestrator
 
     private ReservationReadinessService $readinessService;
     private ReservationEventLog $eventLog;
+    private ?ConflictOverrideService $conflictOverrideService;
 
     public function __construct(
         ?ReservationReadinessService $readinessService = null,
         ?ReservationEventLog $eventLog = null,
+        ?ConflictOverrideService $conflictOverrideService = null,
     ) {
         $this->readinessService = $readinessService ?? new ReservationReadinessService();
         $this->eventLog = $eventLog ?? new ReservationEventLog();
+        $this->conflictOverrideService = $conflictOverrideService;
+    }
+
+    private function getConflictOverrideService(): ConflictOverrideService
+    {
+        return $this->conflictOverrideService ?? new ConflictOverrideService();
     }
 
     // ─── Step 1: Evaluate Readiness ───────────────────────────────────────────
@@ -536,6 +547,340 @@ class YdlReservationOrchestrator
         }
     }
 
+    // ─── OVERRIDE ─────────────────────────────────────────────────────
+
+    /**
+     * Step 1 (Wave 3): Evaluate override readiness.
+     *
+     * Override = proceed with reservation despite conflict. Requires explicit authorization.
+     *
+     * Checks: STOP authority blocked, conflict exists, user authorized.
+     */
+    public function evaluateOverrideReadiness(
+        int $ilanId,
+        int $tenantId,
+        string $startDate,
+        string $endDate,
+        int $userId,
+        ?string $ydlAuthorityOverride = null,
+    ): YdlOverrideRecommendation {
+        $context = $this->readinessService->readContext($tenantId);
+        $ydlAuthority = $ydlAuthorityOverride ?? $context->authorityLevel;
+
+        // STOP authority: no override possible
+        if ($ydlAuthority === YdlReservationContextOutput::AUTHORITY_STOP) {
+            return $this->overrideBlocked(
+                ilanId:        $ilanId,
+                tenantId:      $tenantId,
+                ydlAuthority: $ydlAuthority,
+                reason:      'STOP authority — override not permitted',
+            );
+        }
+
+        // Check for conflicting reservation
+        $conflict = PropertyReservation::withoutGlobalScopes()
+            ->where('property_id', $ilanId)
+            ->where('tenant_id', $tenantId)
+            ->where('start_date', '<', $endDate)
+            ->where('end_date', '>', $startDate)
+            ->where('reservation_state', '!=', ReservationState::CANCELLED->value)
+            ->first();
+
+        if ($conflict === null) {
+            return new YdlOverrideRecommendation(
+                conflictReservationId:      0,
+                ilanId:                  $ilanId,
+                tenantId:                $tenantId,
+                ydlAuthority:           $ydlAuthority,
+                decision:                YdlOverrideRecommendation::DECISION_OVERRIDE_BLOCKED,
+                decisionLabel:            'Çakışma Yok',
+                rationale:               'No conflicting reservation found — standard create available',
+                confidence:             'HIGH',
+                humanApprovalRequired:   false,
+                canOverride:           false,
+                authorizedUserId:       null,
+                overrideReasons:         [],
+                startDate:            $startDate,
+                endDate:              $endDate,
+                evaluatedAt:           now()->toIso8601String(),
+                snapshotId:            $this->readinessService->currentSnapshotId(),
+            );
+        }
+
+        // User authorization check
+        $overrideService = $this->getConflictOverrideService();
+        $canOverride = $overrideService->canOverride(
+            userId:       $userId,
+            propertyId:    $ilanId,
+            ydlAuthority: $ydlAuthority,
+            conflictReservationId: $conflict->id,
+        );
+
+        if (! $canOverride) {
+            return new YdlOverrideRecommendation(
+                conflictReservationId:     $conflict->id,
+                ilanId:                 $ilanId,
+                tenantId:               $tenantId,
+                ydlAuthority:          $ydlAuthority,
+                decision:               YdlOverrideRecommendation::DECISION_OVERRIDE_UNAUTHORIZED,
+                decisionLabel:           'Yetkisiz',
+                rationale:              "User #{$userId} not authorized for override on property #{$ilanId}",
+                confidence:             'HIGH',
+                humanApprovalRequired: false,
+                canOverride:            false,
+                authorizedUserId:        null,
+                overrideReasons:          ['Unauthorized for override'],
+                startDate:             $startDate,
+                endDate:               $endDate,
+                evaluatedAt:            now()->toIso8601String(),
+                snapshotId:             $this->readinessService->currentSnapshotId(),
+            );
+        }
+
+        // Ready to override
+        return new YdlOverrideRecommendation(
+            conflictReservationId:     $conflict->id,
+            ilanId:                 $ilanId,
+            tenantId:               $tenantId,
+            ydlAuthority:          $ydlAuthority,
+            decision:               YdlOverrideRecommendation::DECISION_OVERRIDE_READY,
+            decisionLabel:           'Override Hazır',
+            rationale:              "Conflict #{$conflict->id} confirmed. Override authorized for user #{$userId}.",
+            confidence:             'HIGH',
+            humanApprovalRequired: true, // Explicit human decision always
+            canOverride:           true,
+            authorizedUserId:        $userId,
+            overrideReasons:         [],
+            startDate:             $startDate,
+            endDate:               $endDate,
+            evaluatedAt:            now()->toIso8601String(),
+            snapshotId:             $this->readinessService->currentSnapshotId(),
+        );
+    }
+
+    /**
+     * Step 2 (Wave 3): Request human approval for override.
+     */
+    public function requestOverrideApproval(
+        YdlOverrideRecommendation $readiness,
+        ?int $requestedBy = null,
+    ): YdlOverrideApprovalToken {
+        if (! $readiness->isReady()) {
+            throw new \DomainException(
+                "Cannot request override: reason: {$readiness->decisionLabel}. {$readiness->rationale}"
+            );
+        }
+
+        $eventId = ReservationEvent::generateEventId(
+            $readiness->ilanId,
+            'OVERRIDE_' . $readiness->conflictReservationId,
+            'OVERRIDE',
+            'OVERRIDE',
+        );
+
+        if ($this->eventLog->eventExists($eventId)) {
+            throw new \DomainException("Override event {$eventId} already processed.");
+        }
+
+        $now = now()->toIso8601String();
+        $expiresAt = now()->addSeconds(YdlReservationOrchestrator::APPROVAL_TOKEN_TTL_SECONDS)->toIso8601String();
+
+        return YdlOverrideApprovalToken::create(
+            conflictReservationId:  $readiness->conflictReservationId,
+            ilanId:              $readiness->ilanId,
+            tenantId:            $readiness->tenantId,
+            eventId:           $eventId,
+            ydlAuthority:       $readiness->ydlAuthority,
+            authorityContext:    $readiness->decisionLabel,
+            startDate:         $readiness->startDate,
+            endDate:           $readiness->endDate,
+            recommendation:     $readiness->toArray(),
+            requestedAt:        $now,
+            expiresAt:          $expiresAt,
+            requestedBy:        $requestedBy,
+        );
+    }
+
+    /**
+     * Step 3 (Wave 3): Execute override.
+     *
+     * PILOT-002 Authority Design — Canonical execution path:
+     *
+     *   1. Token validation
+     *   2. STOP authority → BLOCKED (cannot override STOP ever)
+     *   3. Idempotency check
+     *   4. ConflictOverrideService::canOverride() — re-validation at execution time
+     *      (readiness may be stale; execution-time check is the authoritative gate)
+     *   5. Tenant isolation
+     *   6. ReservationService::createReservationWithOverride() — atomic cancel + create
+     *   7. Evidence → ReservationEventLog
+     *
+     * Red Line: Orchestrator NEVER calls createReservation() directly for override.
+     * Red Line: canOverride() is called at execution time, not only at readiness.
+     *
+     * @throws \DomainException if token invalid/expired
+     * @throws \Exception if canonical execution fails
+     */
+    public function executeOverride(
+        YdlOverrideApprovalToken $token,
+        int $approvedBy,
+        array $guestData,
+        ?int $userId = null,
+        ?ReservationService $reservationService = null,
+    ): YdlOverrideEvidence {
+        // ── 1. Token validation ───────────────────────────────────────────
+        $token->validateOrFail();
+
+        // ── 2. STOP authority: final gate ────────────────────────────────
+        if ($token->ydlAuthority === YdlReservationContextOutput::AUTHORITY_STOP) {
+            $evidence = YdlOverrideEvidence::blocked(
+                conflictReservationId: $token->conflictReservationId,
+                ilanId:            $token->ilanId,
+                tenantId:          $token->tenantId,
+                eventId:           $token->eventId,
+                ydlAuthority:     $token->ydlAuthority,
+                authorityContext:  'STOP authority',
+                reason:           'STOP authority — override not permitted',
+            );
+            $this->eventLog->append($evidence->toReservationEvent());
+            return $evidence;
+        }
+
+        // ── 3. Idempotency check ────────────────────────────────────────
+        if ($this->eventLog->eventExists($token->eventId)) {
+            return YdlOverrideEvidence::unauthorized(
+                conflictReservationId: $token->conflictReservationId,
+                ilanId:            $token->ilanId,
+                tenantId:          $token->tenantId,
+                eventId:           $token->eventId,
+                ydlAuthority:     $token->ydlAuthority,
+                authorityContext:  'Idempotent',
+                reason:           "Event {$token->eventId} already in log",
+            );
+        }
+
+        // ── 4. ConflictOverrideService: re-validate authorization at execution time
+        // Readiness may be stale (e.g., user permissions revoked after approval).
+        // Execution-time check is the authoritative gate per PILOT-002 invariant.
+        // User who was authorized for override is stored in recommendation['authorizedUserId'].
+        $authUserId = $token->recommendation['authorizedUserId'] ?? $token->requestedBy ?? $approvedBy;
+        $overrideService = $this->getConflictOverrideService();
+        $canOverride = $overrideService->canOverride(
+            userId:               $authUserId,
+            propertyId:            $token->ilanId,
+            ydlAuthority:         $token->ydlAuthority,
+            conflictReservationId: $token->conflictReservationId,
+        );
+
+        if (! $canOverride) {
+            $evidence = YdlOverrideEvidence::blocked(
+                conflictReservationId: $token->conflictReservationId,
+                ilanId:            $token->ilanId,
+                tenantId:          $token->tenantId,
+                eventId:           $token->eventId,
+                ydlAuthority:     $token->ydlAuthority,
+                authorityContext:  'ConflictOverrideService::canOverride() failed at execution',
+                reason:           'User not authorized for override at execution time',
+            );
+            $this->eventLog->append($evidence->toReservationEvent());
+            return $evidence;
+        }
+
+        // ── 5. Tenant isolation ─────────────────────────────────────────
+        // Check: conflict reservation's tenant must match token's tenant.
+        // If the conflicting reservation belongs to a different tenant,
+        // the override authorization cannot be granted by this tenant.
+        $conflictReservation = PropertyReservation::withoutGlobalScopes()
+            ->find($token->conflictReservationId);
+
+        if ($conflictReservation === null) {
+            $evidence = YdlOverrideEvidence::blocked(
+                conflictReservationId: $token->conflictReservationId,
+                ilanId:            $token->ilanId,
+                tenantId:          $token->tenantId,
+                eventId:           $token->eventId,
+                ydlAuthority:     $token->ydlAuthority,
+                authorityContext:  'Tenant isolation',
+                reason:           'Conflict reservation not found',
+            );
+            $this->eventLog->append($evidence->toReservationEvent());
+            return $evidence;
+        }
+
+        if ($conflictReservation->tenant_id !== $token->tenantId) {
+            $evidence = YdlOverrideEvidence::blocked(
+                conflictReservationId: $token->conflictReservationId,
+                ilanId:            $token->ilanId,
+                tenantId:          $token->tenantId,
+                eventId:           $token->eventId,
+                ydlAuthority:     $token->ydlAuthority,
+                authorityContext:  'Tenant isolation',
+                reason:           'Cross-tenant override rejected: conflict belongs to different tenant',
+            );
+            $this->eventLog->append($evidence->toReservationEvent());
+            return $evidence;
+        }
+
+        $ilan = Ilan::withoutGlobalScopes()->find($token->ilanId);
+        if ($ilan === null || $ilan->tenant_id !== $token->tenantId) {
+            $evidence = YdlOverrideEvidence::blocked(
+                conflictReservationId: $token->conflictReservationId,
+                ilanId:            $token->ilanId,
+                tenantId:          $token->tenantId,
+                eventId:           $token->eventId,
+                ydlAuthority:     $token->ydlAuthority,
+                authorityContext:  'Tenant isolation',
+                reason:           'Cross-tenant override rejected: ilan belongs to different tenant',
+            );
+            $this->eventLog->append($evidence->toReservationEvent());
+            return $evidence;
+        }
+
+        // ── 6. Canonical override execution via ReservationService ─────────
+        $service = $reservationService ?? new ReservationService();
+
+        try {
+            $reservation = $service->createReservationWithOverride(
+                propertyId:             $token->ilanId,
+                startDate:              $token->startDate,
+                endDate:                $token->endDate,
+                guestData:              $guestData,
+                userId:                 $userId,
+                conflictReservationId:  $token->conflictReservationId,
+                overrideAuthorizedBy:   $approvedBy,
+            );
+
+            // ── 7. Evidence ──────────────────────────────────────────────
+            $evidence = YdlOverrideEvidence::success(
+                conflictReservationId: $token->conflictReservationId,
+                ilanId:            $token->ilanId,
+                tenantId:          $token->tenantId,
+                eventId:           $token->eventId,
+                ydlAuthority:     $token->ydlAuthority,
+                authorityContext:  $token->authorityContext,
+                approvedBy:        $approvedBy,
+                overrideReason:   'Override authorized by ConflictOverrideService::canOverride() at execution',
+                reservationId:    $reservation->id,
+            );
+
+            $this->eventLog->append($evidence->toReservationEvent());
+            return $evidence;
+
+        } catch (\Exception $e) {
+            $evidence = YdlOverrideEvidence::blocked(
+                conflictReservationId: $token->conflictReservationId,
+                ilanId:            $token->ilanId,
+                tenantId:          $token->tenantId,
+                eventId:           $token->eventId,
+                ydlAuthority:     $token->ydlAuthority,
+                authorityContext:  $token->authorityContext,
+                reason:           $e->getMessage(),
+            );
+            $this->eventLog->append($evidence->toReservationEvent());
+            throw $e;
+        }
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private function cancellationBlocked(
@@ -562,6 +907,32 @@ class YdlReservationOrchestrator
             existingReservationId:  null,
             evaluatedAt:         now()->toIso8601String(),
             snapshotId:          now()->format('Ymd'),
+        );
+    }
+
+    private function overrideBlocked(
+        int    $ilanId,
+        int    $tenantId,
+        string $ydlAuthority,
+        string $reason,
+    ): YdlOverrideRecommendation {
+        return new YdlOverrideRecommendation(
+            conflictReservationId:     0,
+            ilanId:                 $ilanId,
+            tenantId:               $tenantId,
+            ydlAuthority:          $ydlAuthority,
+            decision:               YdlOverrideRecommendation::DECISION_OVERRIDE_BLOCKED,
+            decisionLabel:           'Override Bloke Edildi',
+            rationale:              $reason,
+            confidence:             'HIGH',
+            humanApprovalRequired:   false,
+            canOverride:           false,
+            authorizedUserId:        null,
+            overrideReasons:         [],
+            startDate:            '',
+            endDate:              '',
+            evaluatedAt:           now()->toIso8601String(),
+            snapshotId:            $this->readinessService->currentSnapshotId(),
         );
     }
 
