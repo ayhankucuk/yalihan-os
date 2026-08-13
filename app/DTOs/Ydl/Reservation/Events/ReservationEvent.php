@@ -18,6 +18,7 @@ use DateTimeImmutable;
 final class ReservationEvent
 {
     public const TYPE_CREATED     = 'RESERVATION_CREATED';
+    public const TYPE_CANCELLED   = 'RESERVATION_CANCELLED';
     public const TYPE_BLOCKED     = 'RESERVATION_BLOCKED';
     public const TYPE_CONFLICT    = 'RESERVATION_CONFLICT';
     public const TYPE_OVERRIDE    = 'RESERVATION_OVERRIDE';
@@ -51,14 +52,17 @@ final class ReservationEvent
      * Generate a deterministic event ID from reservation details.
      *
      * Same inputs → same event_id → idempotent.
+     *
+     * For cancellation, use reservationId as the identifier instead of dates.
      */
     public static function generateEventId(
         int    $ilanId,
-        string $startDate,
-        string $endDate,
-        string $action,
+        string $startDateOrReservationId,
+        string $endDateOrAction,
+        string $action = '',
     ): string {
-        $payload = "PILOT-002|{$ilanId}|{$startDate}|{$endDate}|{$action}";
+        // Cancellation overload: reservationId replaces startDate, action replaces endDate
+        $payload = "PILOT-002|{$ilanId}|{$startDateOrReservationId}|{$endDateOrAction}|{$action}";
         return substr(hash('sha256', $payload), 0, 16);
     }
 
