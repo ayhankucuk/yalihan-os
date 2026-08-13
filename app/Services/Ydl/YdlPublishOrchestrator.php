@@ -8,6 +8,8 @@ use App\DTOs\Ydl\YdlPublishRecommendation;
 use App\Enums\Governance\GovernanceState;
 use App\Enums\IlanDurumu;
 use App\Models\Ilan;
+use App\Services\Ydl\Platform\AuthorityEvaluator;
+use App\Services\Ydl\Platform\AuthorityEvaluatorInterface;
 
 /**
  * YdlPublishOrchestrator — E2E Property Publish Pipeline for YDL Phase 3.
@@ -39,6 +41,7 @@ class YdlPublishOrchestrator
     private ?YdlContextReader $contextReader;
     private ?YdlStateOrchestrator $orchestrator;
     private ?string $basePath;
+    private AuthorityEvaluatorInterface $authorityEvaluator;
 
     public function __construct(
         ?YdlPublishReadinessService $readinessService = null,
@@ -46,6 +49,7 @@ class YdlPublishOrchestrator
         ?YdlContextReader $contextReader = null,
         ?YdlStateOrchestrator $orchestrator = null,
         ?string $basePath = null,
+        ?AuthorityEvaluatorInterface $authorityEvaluator = null,
     ) {
         $this->readinessService = $readinessService ?? new YdlPublishReadinessService(
             new \App\Services\Listing\ListingScoreService(),
@@ -55,10 +59,10 @@ class YdlPublishOrchestrator
         $this->contextReader = $contextReader ?? new YdlContextReader();
         $this->orchestrator = $orchestrator;
         $this->basePath = $basePath;
+        $this->authorityEvaluator = $authorityEvaluator ?? new AuthorityEvaluator($this->contextReader, $basePath);
     }
 
     // ─── Primary API ─────────────────────────────────────────────────────────
-
     /**
      * Step 1: Evaluate publish readiness for an Ilan given YDL authority context.
      *
@@ -70,38 +74,32 @@ class YdlPublishOrchestrator
      *   LIMITED      → scope intersection check: if blocked scope intersects → BLOCKED_GATE
      *   FULL/LIMITED → readiness evaluation via YdlPublishReadinessService
      *
+     * Authority evaluation delegated to AuthorityEvaluator (platform-level).
+     *
      * @param Ilan $ilan
      * @param string|null $ydlAuthorityOverride Pass this in tests to override authority
      */
     public function evaluateReadiness(
         Ilan $ilan,
         ?string $ydlAuthorityOverride = null,
-    ): YdlPublishReadinessOutput {
+    ): YdlPublishReadinessOutput
+    {
         // Authority from caller override (tests) or from disk (production)
         $authority = $ydlAuthorityOverride ?? $this->readYdlAuthority();
 
-        // Authority STOP: always blocked
-        if ($authority === YdlContextOutput::AUTHORITY_STOP) {
+        // Authority evaluation via platform AuthorityEvaluator
+        $decision = $this->authorityEvaluator->evaluate($authority, 'property_publish');
+
+        // If blocked by authority, return blocked readiness output
+        if ($decision->isBlocked()) {
             return $this->blockedReadinessOutput(
                 $ilan,
                 $authority,
-                'YDL authority: STOP — sistem durduruldu'
+                $decision->reason
             );
         }
 
-        // Authority LIMITED: scope intersection check
-        // If a blocker scope intersects with Property Publish → blocked
-        if ($authority === YdlContextOutput::AUTHORITY_LIMITED_BY_BLOCKER) {
-            if ($this->hasBlockingIntersection('property_publish')) {
-                return $this->blockedReadinessOutput(
-                    $ilan,
-                    $authority,
-                    'Active blocker scope intersects with Property Publish workflow'
-                );
-            }
-        }
-
-        // Run deterministic readiness evaluation
+        // Run deterministic readiness evaluation (domain business logic)
         $recommendation = $this->readinessService->evaluate($ilan, $authority);
 
         return new YdlPublishReadinessOutput(
@@ -214,8 +212,8 @@ class YdlPublishOrchestrator
         // ── 1. Token validation ────────────────────────────────────
         $token->validateOrFail();
 
-        // ── 2. STOP authority: final gate ──────────────────────────
-        if ($token->ydlAuthority === YdlContextOutput::AUTHORITY_STOP) {
+        // ── 2. STOP authority: final gate (via AuthorityEvaluator) ──
+        if ($this->authorityEvaluator->isStopAuthority($token->ydlAuthority)) {
             throw new \DomainException(
                 "PUBLISH BLOCKED: YDL authority is STOP. Event: {$token->eventId}"
             );
@@ -338,6 +336,8 @@ class YdlPublishOrchestrator
     /**
      * Scope intersection check for LIMITED authority.
      *
+     * Delegates to AuthorityEvaluator (platform-level).
+     *
      * Returns true if the task scope intersects with any active blocker scope.
      *
      * PILOT-001 scope: Property Publish
@@ -349,58 +349,89 @@ class YdlPublishOrchestrator
      */
     public function hasBlockingIntersection(string $taskScope = 'property_publish'): bool
     {
-        $ctx = $this->contextReader->read();
-
-        if ($ctx->authorityLevel !== YdlContextOutput::AUTHORITY_LIMITED_BY_BLOCKER) {
-            return false;
-        }
-
-        // Scopes that block property_publish
-        // BLK-001 (Booking.com) does NOT intersect with property_publish
-        $blockedScopes = match ($taskScope) {
-            'property_publish' => ['publish_infra', 'listing_db', 'lifecycle_transition'],
-            'booking_com' => ['booking_com'],
-            'airbnb' => ['airbnb'],
-            default => [$taskScope],
-        };
-
-        foreach ($ctx->activeBlockers as $blocker) {
-            $blockerScope = $this->blockerScopeFromEntry($blocker);
-            if (in_array($blockerScope, $blockedScopes, true)) {
-                return true; // Intersection found → blocked
-            }
-        }
-
-        return false;
+        // Domain: resolve blocked scopes from context
+        $blockedScopes = $this->resolveBlockedScopes($taskScope);
+        // Delegate to AuthorityEvaluator
+        return $this->authorityEvaluator->hasBlockingIntersection($taskScope, $blockedScopes);
     }
 
     // ─── Private ───────────────────────────────────────────────────────────────
 
     private function buildEventId(int $ilanId): string
     {
-        // event_id = PILOT-001|ilanId|timestamp(minute-precision)
         $minuteTs = (string) (int) (time() / 60);
         $payload = self::PILOT . "|{$ilanId}|{$minuteTs}";
         return substr(hash('sha256', $payload), 0, 16);
     }
 
+    /**
+     * Resolve blocked scopes from context for a given task scope.
+     *
+     * Domain knowledge: which context blocker entries map to a task scope.
+     * Platform AuthorityEvaluator only receives the final blocked scope list.
+     *
+     * @param string $taskScope
+     * @return array<string>
+     */
+    private function resolveBlockedScopes(string $taskScope): array
+    {
+        $ctx = $this->contextReader->read();
+
+        if ($ctx === null) {
+            return [];
+        }
+
+        $blockedScopes = [];
+
+        foreach ($ctx->activeBlockers as $blocker) {
+            $blockerScope = $this->blockerScopeFromEntry($blocker);
+            if ($blockerScope !== '') {
+                $blockedScopes[] = $blockerScope;
+            }
+        }
+
+        return $blockedScopes;
+    }
+
+    /**
+     * Map a blocker entry to its blocking scope.
+     *
+     * Domain knowledge: which blocker affects which task scope.
+     * This stays in the domain orchestrator, NOT in the platform AuthorityEvaluator.
+     *
+     * @param array $blocker
+     * @return string
+     */
     private function blockerScopeFromEntry(array $blocker): string
     {
         $id = $blocker['id'] ?? '';
         $gate = $blocker['gate'] ?? '';
         $action = $blocker['development_action'] ?? '';
 
-        // BLK-001 → Booking.com
+        // BLK-001 → Booking.com — does NOT intersect with property_publish
         if ($id === 'BLK-001' || str_contains($action, 'BOOKING')) {
             return 'booking_com';
         }
 
-        // G35 → external
+        // G35 → external channel
         if ($gate === 'G35') {
             return 'booking_com';
         }
 
-        return 'unknown';
+        // Infrastructure blockers block property_publish
+        if ($id === 'BLK-PUBLISH-INFRA' || str_contains($id, 'publish_infra')) {
+            return 'publish_infra';
+        }
+
+        if ($id === 'BLK-LISTING-DB' || str_contains($id, 'listing_db')) {
+            return 'listing_db';
+        }
+
+        if ($id === 'BLK-LIFECYCLE' || str_contains($id, 'lifecycle_transition')) {
+            return 'lifecycle_transition';
+        }
+
+        return '';
     }
 }
 

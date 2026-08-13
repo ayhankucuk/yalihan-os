@@ -18,6 +18,8 @@ use App\Enums\ReservationState;
 use App\Models\Ilan;
 use App\Models\PropertyReservation;
 use App\Services\ReservationService;
+use App\Services\Ydl\Platform\AuthorityEvaluator;
+use App\Services\Ydl\Platform\AuthorityEvaluatorInterface;
 
 /**
  * YdlReservationOrchestrator — E2E Reservation Pipeline for PILOT-002 Wave 1.
@@ -54,15 +56,18 @@ class YdlReservationOrchestrator
     private ReservationReadinessService $readinessService;
     private ReservationEventLog $eventLog;
     private ?ConflictOverrideService $conflictOverrideService;
+    private AuthorityEvaluatorInterface $authorityEvaluator;
 
     public function __construct(
         ?ReservationReadinessService $readinessService = null,
         ?ReservationEventLog $eventLog = null,
         ?ConflictOverrideService $conflictOverrideService = null,
+        ?AuthorityEvaluatorInterface $authorityEvaluator = null,
     ) {
         $this->readinessService = $readinessService ?? new ReservationReadinessService();
         $this->eventLog = $eventLog ?? new ReservationEventLog();
         $this->conflictOverrideService = $conflictOverrideService;
+        $this->authorityEvaluator = $authorityEvaluator ?? new AuthorityEvaluator();
     }
 
     private function getConflictOverrideService(): ConflictOverrideService
@@ -199,8 +204,8 @@ class YdlReservationOrchestrator
             );
         }
 
-        // ── 2. STOP authority: final gate ────────────────────────
-        if ($token->ydlAuthority === YdlReservationContextOutput::AUTHORITY_STOP) {
+        // ── 2. STOP authority: final gate (via AuthorityEvaluator) ──
+        if ($this->authorityEvaluator->isStopAuthority($token->ydlAuthority)) {
             $evidence = YdlReservationEvidence::blocked(
                 ilanId:            $token->ilanId,
                 tenantId:          $token->tenantId,
@@ -326,21 +331,19 @@ class YdlReservationOrchestrator
         $ydlAuthority = $ydlAuthorityOverride ?? $context->authorityLevel;
         $blockedScopes = $blockedScopesOverride ?? $context->blockedScopes;
 
-        // ── Authority gate ────────────────────────────────────────────
-        if ($ydlAuthority === YdlReservationContextOutput::AUTHORITY_STOP) {
+        // ── Authority gate (via AuthorityEvaluator) ───────────────────
+        if ($this->authorityEvaluator->isStopAuthority($ydlAuthority)) {
             return $this->cancellationBlocked(
                 $reservationId, 0, $tenantId, $ydlAuthority,
                 'YDL authority: STOP — cancellation pipeline durduruldu'
             );
         }
 
-        if ($ydlAuthority === YdlReservationContextOutput::AUTHORITY_LIMITED) {
-            if (in_array('reservation_cancel', $blockedScopes, true)) {
-                return $this->cancellationBlocked(
-                    $reservationId, 0, $tenantId, $ydlAuthority,
-                    'Active blocker scope intersects with reservation_cancel workflow'
-                );
-            }
+        if ($this->authorityEvaluator->hasBlockingIntersection('reservation_cancel', $blockedScopes)) {
+            return $this->cancellationBlocked(
+                $reservationId, 0, $tenantId, $ydlAuthority,
+                'Active blocker scope intersects with reservation_cancel workflow'
+            );
         }
 
         // ── Reservation lookup ─────────────────────────────────────────
@@ -484,8 +487,8 @@ class YdlReservationOrchestrator
         // ── 1. Token validation ────────────────────────────────────
         $token->validateOrFail();
 
-        // ── 2. STOP authority: final gate ────────────────────────
-        if ($token->ydlAuthority === YdlReservationContextOutput::AUTHORITY_STOP) {
+        // ── 2. STOP authority: final gate (via AuthorityEvaluator) ──
+        if ($this->authorityEvaluator->isStopAuthority($token->ydlAuthority)) {
             $evidence = YdlCancellationEvidence::blocked(
                 reservationId:  $token->reservationId,
                 ilanId:        $token->ilanId,
@@ -567,8 +570,8 @@ class YdlReservationOrchestrator
         $context = $this->readinessService->readContext($tenantId);
         $ydlAuthority = $ydlAuthorityOverride ?? $context->authorityLevel;
 
-        // STOP authority: no override possible
-        if ($ydlAuthority === YdlReservationContextOutput::AUTHORITY_STOP) {
+        // STOP authority: no override possible (via AuthorityEvaluator)
+        if ($this->authorityEvaluator->isStopAuthority($ydlAuthority)) {
             return $this->overrideBlocked(
                 ilanId:        $ilanId,
                 tenantId:      $tenantId,
@@ -731,8 +734,8 @@ class YdlReservationOrchestrator
         // ── 1. Token validation ───────────────────────────────────────────
         $token->validateOrFail();
 
-        // ── 2. STOP authority: final gate ────────────────────────────────
-        if ($token->ydlAuthority === YdlReservationContextOutput::AUTHORITY_STOP) {
+        // ── 2. STOP authority: final gate (via AuthorityEvaluator) ──────
+        if ($this->authorityEvaluator->isStopAuthority($token->ydlAuthority)) {
             $evidence = YdlOverrideEvidence::blocked(
                 conflictReservationId: $token->conflictReservationId,
                 ilanId:            $token->ilanId,
