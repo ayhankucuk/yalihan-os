@@ -6,6 +6,46 @@
 
 ---
 
+## OTURUM 116 | 2026-08-13 | SAAB Program-Level Metrics Framework ✅ ADOPTED
+
+### Üçlü Sağlık Çerçevesi — Canonical Reporting Model
+
+> ⚠️ **Program-Level Estimate** — Kesin KPI değil, yönetimsel tahmin.
+
+| Gösterge | Tahmin | Ne Anlatıyor |
+|----------|--------|--------------|
+| **Capability Completion** | **~72%** | Planlanan sistemin ne kadarı inşa edildi |
+| **Engineering Health** | **~62%** | Test/CI/MCP/KB güvenilirliği |
+| **Automation Maturity** | **~58%** | Gerçek emlak işlerinin ne kadarı insan müdahalesi olmadan tamamlanıyor |
+
+### Current P0
+
+| Priority | Item | Reason |
+|----------|------|--------|
+| **P0** | **R002 — Test/CI Performance** | Zinciri tüm hızlandırma girişimlerini bloke ediyor |
+
+### Strategic Sequence
+
+```
+R002 → M3/YDL Phase 2C → P1 borçları → M4
+```
+
+### M4 Operating Model: Supervised Autonomy
+
+| Risk Sınıfı | Örnek | Davranış |
+|-------------|-------|----------|
+| LOW (otomatik) | Check-in hatırlatması, eksik fotoğraf tespiti, görev açma, kanal sync retry | AI karar verir → yapar |
+| MEDIUM (insan onayı) | Fiyatı %15 değiştirme, rezervasyon iptal | AI önerir → insan onaylar |
+| HIGH (SAAB/yetkili) | Para transferi, destructive migration, tenant güvenliği | AI algılar → SAAB karar verir |
+
+### Kayıt
+
+- `docs/PROGRESS-TRACKER.md` → SAAB Program Metrics Framework section eklendi
+- `memory/DECISIONS.md` → Oturum 116 kararı eklendi
+- `memory/SESSION_NOTES.md` → Bu oturum kaydı eklendi
+
+---
+
 ## OTURUM 112 | 2026-08-12 | Sprint 4.15 — Booking Production Certification ⏳ AWAITING BOOKING.COM ONBOARDING
 
 ### Sprint 4.15 — Production Certification Sprint

@@ -6,6 +6,58 @@
 
 ---
 
+## 2026-08-13 | Oturum 116 | SAAB Program-Level Metrics Framework
+
+### Karar: Üçlü Sağlık Çerçevesi — Canonical Reporting Model
+
+**Karar:** Tek genel yüzde yerine üç ayrı program-level gösterge kullanılır.
+
+**Gerekçe:** Tek genel yüzde farklı boyutları maskeliyor. Örneğin Booking.com kodu ~%100 tamam ama G35 onboarding bekliyor — capability completion yüksek, automation maturity daha düşük. Üçlü çerçeve bu ayrımı görünür kılıyor.
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  YALIHAN PROGRAM-LEVEL METRICS — CANONICAL FRAMEWORK        │
+├──────────────────────────────────────────────────────────────┤
+│  Capability Completion:  ~72%                                │
+│  Engineering Health:      ~62%                                │
+│  Automation Maturity:     ~58%                                │
+│  Current P0:              R002 — Test/CI Performance        │
+│  Strategic Sequence:      R002 → M3 → M4                     │
+│  M4 Operating Model:      Supervised Autonomy                 │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Üç Gösterge:**
+
+| Gösterge | Tahmin | Ne Anlatıyor |
+|----------|--------|--------------|
+| Capability Completion | ~72% | Planlanan sistemin ne kadarı inşa edildi |
+| Engineering Health | ~62% | Test/CI/MCP/KB güvenilirliği |
+| Automation Maturity | ~58% | Gerçek emlak işlerinin ne kadarı insan müdahalesi olmadan tamamlanıyor |
+
+**P0 Zinciri:**
+```
+R002 (Test/CI Performance)
+        ↓
+Hızlı ve güvenilir certification altyapısı
+        ↓
+M3 — Enterprise Knowledge Runtime
+        ↓
+M4 — Autonomous Runtime
+```
+
+**M4 Supervised Autonomy Modeli:**
+
+| Risk Sınıfı | Örnek | Davranış |
+|-------------|-------|----------|
+| LOW (otomatik) | Check-in hatırlatması, eksik fotoğraf tespiti, görev açma, kanal sync retry | AI karar verir → yapar |
+| MEDIUM (insan onayı) | Fiyatı %15 değiştirme, rezervasyon iptal | AI önerir → insan onaylar |
+| HIGH (SAAB/yetkili) | Para transferi, destructive migration, tenant güvenliği | AI algılar → SAAB karar verir |
+
+**Sonuç:** Bu çerçeve resmen PROGRESS-TRACKER.md ve tüm agent memory dosyalarına canonical reporting modeli olarak kaydedildi.
+
+---
+
 ## 2026-07-07 | AI GOVERNANCE v1.0 — Chief Engineer Direktifi
 
 ### Karar: Üç Ofis Yapısı — AI Governance v1.0

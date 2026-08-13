@@ -1,8 +1,8 @@
 # Governance Progress Tracker
-**Son Güncelleme:** 2026-08-12 (Oturum 113 — C7 ✅ Documentation Drift Reconciliation + YDL Phase 1 CERTIFIED)
-**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + ✅ **SPRINT 6.7 CLOSED** + ✅ **SPRINT 6.8 CLOSED** + ✅ **SPRINT 6.9 CLOSED** + ✅ **SPRINT 7.0 CLOSED** + ✅ **SPRINT 7.1 CLOSED** + ✅ **SPRINT 7.2 CLOSED** + 🔍 **WIZARD BLOCKERS MAPPED** + 🛡️ **RELEASE GATE V9 APPROVED** + 📋 **SPRINT 10 CERTIFIED** + 🏠 **SPRINT 11 CERTIFIED** + 🏛️ **SAAB v11.1 GOVERNANCE FROZEN** + 🚀 **SPRINT 12 ✅ COMPLETE** + 🧪 **TENANT ISOLATION TESTS ✅ ALL GREEN** + 🧪 **LIFECYCLE TESTS 7/7 ✅** + 🏗️ **EXECUTION RUNTIME FOUNDATION ✅** + 🧪 **EXECUTION TESTS 12/12 ✅** + 📊 **EXECUTION METRICS FOUNDATION ✅** + 🧪 **METRICS TESTS 11/11 ✅** + 🏗️ **EXECUTION RUNTIME OPERATIONS CONSOLE ✅** + 🧪 **PRODUCT VALIDATION 9/9 ✅** + 🏆 **M2 PROPERTY RUNTIME ✅ CERTIFIED** + 📡 **SPRINT 4.14 ✅ BOOKING CHANNEL MANAGER RATES OUT (71/71 PASS)** + 🔵 **SPRINT 4.15 ✅ BOOKING PRODUCTION CERTIFICATION (73/73 PASS + 2 SAB FIX)** + 🛡️ **YDL v1 Phase 1 ✅ CERTIFIED (53 tests)** + 🧹 **C7 ✅ DOCUMENTATION DRIFT RECONCILED**
+**Son Güncelleme:** 2026-08-13 (Oturum 116 — SAAB Program-Level Metrics Framework ✅)
+**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + ✅ **SPRINT 6.7 CLOSED** + ✅ **SPRINT 6.8 CLOSED** + ✅ **SPRINT 6.9 CLOSED** + ✅ **SPRINT 7.0 CLOSED** + ✅ **SPRINT 7.1 CLOSED** + ✅ **SPRINT 7.2 CLOSED** + 🔍 **WIZARD BLOCKERS MAPPED** + 🛡️ **RELEASE GATE V9 APPROVED** + 📋 **SPRINT 10 CERTIFIED** + 🏠 **SPRINT 11 CERTIFIED** + 🏛️ **SAAB v11.1 GOVERNANCE FROZEN** + 🚀 **SPRINT 12 ✅ COMPLETE** + 🧪 **TENANT ISOLATION TESTS ✅ ALL GREEN** + 🧪 **LIFECYCLE TESTS 7/7 ✅** + 🏗️ **EXECUTION RUNTIME FOUNDATION ✅** + 🧪 **EXECUTION TESTS 12/12 ✅** + 📊 **EXECUTION METRICS FOUNDATION ✅** + 🧪 **METRICS TESTS 11/11 ✅** + 🏗️ **EXECUTION RUNTIME OPERATIONS CONSOLE ✅** + 🧪 **PRODUCT VALIDATION 9/9 ✅** + 🏆 **M2 PROPERTY RUNTIME ✅ CERTIFIED** + 📡 **SPRINT 4.14 ✅ BOOKING CHANNEL MANAGER RATES OUT (71/71 PASS)** + 🔵 **SPRINT 4.15 ✅ BOOKING PRODUCTION CERTIFICATION (73/73 PASS + 2 SAB FIX)** + 🛡️ **YDL v1 Phase 1 ✅ CERTIFIED (53 tests)** + 🧹 **C7 ✅ DOCUMENTATION DRIFT RECONCILED** + 📊 **SAAB PROGRAM METRICS FRAMEWORK ✅ ADOPTED**
 | ERA III/IV | Katman | Sprint | Status |
-|---------|--------|--------|---------|
+|---------|--------|--------|--------|
 | Observation | Cockpit | 4.6 | ✅ Certified |
 | Execution | Queue/Replay | 4.7 | ✅ Certified |
 | Integration | Drive Webhook | 4.8 | ✅ Certified |
@@ -14,6 +14,87 @@
 | **Channel Manager** | **Booking Production Certification** | **4.15** | **✅ CERTIFIED — AWAITING BOOKING.COM ONBOARDING (34/35 PASS)** |
 
 **ERA IV:** 🚀 ACTIVE — First Advisor Pilot | Sprint 5.0
+
+---
+
+## 📊 SAAB Program-Level Metrics Framework (Oturum 116 — 2026-08-13)
+
+> **Governance Decision:** Tek genel yüzde yerine üç ayrı program-level gösterge kullanılır.
+> Bu çerçeve SAAB tarafından resmi reporting standardı olarak benimsenmiştir.
+
+### Üçlü Sağlık Çerçevesi — Canonical Reporting Model
+
+> ⚠️ **Program-Level Estimate** — Kesin KPI değil, yönetimsel tahmin. Doğrulama: her sprint sonu güncellenir.
+
+| Gösterge | Tahmin | Ne Anlatıyor |
+|----------|--------|--------------|
+| **Capability Completion** | **~72%** | Planlanan sistemin ne kadarı inşa edildi |
+| **Engineering Health** | **~62%** | Test/CI/MCP/KB güvenilirliği |
+| **Automation Maturity** | **~58%** | Gerçek emlak işlerinin ne kadarı insan müdahalesi olmadan tamamlanıyor |
+
+### Metrics Ayrım Detayı
+
+```
+Capability Completion (~72%)
+  = Mimari + Property + Reservation + Channel Manager + Runtime + YDL
+  = Yol haritası tamamlanma oranı
+  = "Ne inşa ettik?"
+
+Engineering Health (~62%)
+  = php artisan test timeout (>120s)
+  + MCP offline
+  + Knowledge Base dizini eksik
+  + bekci:health hata veriyor
+  = "Sistem çalışıyor mu, geliştirme yapılabilir mi?"
+
+Automation Maturity (~58%)
+  = Gerçek emlak operasyonlarının otomasyon yüzdesi
+  = Booking.com kodu neredeyse tamam
+  + G35 onboarding bekliyor
+  = "Sistem tek başına ne yapabiliyor?"
+```
+
+### Current P0
+
+| Priority | Item | Reason |
+|----------|------|--------|
+| **P0** | **R002 — Test/CI Performance** | Zinciri tüm hızlandırma girişimlerini bloke ediyor |
+
+### Strategic Sequence
+
+```
+R002 (Test/CI Performance)
+        ↓
+Hızlı ve güvenilir certification altyapısı
+        ↓
+M3 — Enterprise Knowledge Runtime
+        ↓
+Kurumsal hafıza + doğru context
+        ↓
+M4 — Autonomous Runtime
+```
+
+### M4 Operating Model: Supervised Autonomy
+
+> AI otonom karar verir ama risk sınıfına göre farklı davranır.
+
+| Risk Sınıfı | Örnek | Davranış |
+|-------------|-------|----------|
+| **LOW** (otomatik) | Standart check-in hatırlatması, eksik fotoğraf tespiti, görev açma, dış kanal sync retry | AI karar verir → yapar |
+| **MEDIUM** (insan onayı) | Fiyatı %15 değiştirme, rezervasyon iptal etme, malik adına finansal karar | AI önerir → insan onaylar |
+| **HIGH** (SAAB/yetkili) | Para transferi, destructive migration, authorization değişikliği, tenant güvenliği, hukuki karar | AI algılar → SAAB karar verir |
+
+### Önceki Tek Yüzde Karşılaştırması
+
+| Eski | Yeni (Üçlü Çerçeve) |
+|------|----------------------|
+| "YALIHAN ~65%" | Capability Completion: ~72% |
+| — | Engineering Health: ~62% |
+| — | Automation Maturity: ~58% |
+
+> **Gerekçe:** Tek genel yüzde, farklı boyutları maskeliyordu. Örneğin Booking.com kodu ~%100 tamam ama G35 onboarding bekliyor — capability completion yüksek, automation maturity daha düşük. Üçlü çerçeve bu ayrımı görünür kılıyor.
+
+---
 
 ---
 
