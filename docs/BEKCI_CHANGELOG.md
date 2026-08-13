@@ -1,5 +1,72 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 120 — 2026-08-13 | PILOT-001 CLOSED ✅ — BUSINESS AUTOMATION CERTIFIED
+
+### PILOT-001 — Property Publish Supervised Autonomy — CLOSED
+
+| Alan | Değer |
+|------|-------|
+| Status | **BUSINESS AUTOMATION CERTIFIED** |
+| Certification Commit | `5ef0f21` |
+| Implementation Commits | `f2c496d` → `d9cd606` → `e9348d1` → `5ef0f21` |
+| Evidence | 24/24 PASS · 107 assertions |
+| Business KPI | Manual publish: **25 dk → ≤5 dk** · ≥80% time reduction |
+
+#### Mimari Kanıt Zinciri
+
+```
+ydl:context
+  └─ authority: STOP / LIMITED / FULL
+       ↓
+YdlPublishReadinessService
+  ├─ completion ≥ 100?
+  ├─ quality ≥ 40?
+  ├─ yayin_tipi_id?
+  └─ governance.canPublish?
+       ↓
+YdlPublishRecommendation → agent'e missing fields bildirir
+       ↓
+Human Approval Token (24s TTL)
+       ↓
+YdlPublishOrchestrator::executePublish()
+  ├─ Token validation
+  ├─ STOP authority → DomainException
+  ├─ Idempotency guard
+  └─ Governance guard
+       ↓
+IlanCrudService tek yazı yolu
+       ↓
+YdlEventLog → evidence
+       ↓
+ydl:session-summary CERTIFIED
+```
+
+#### İki Sertifikasyon Seviyesi
+
+| Seviye | Anlamı |
+|--------|--------|
+| **Engineering Certified** | Test geçti, mimari doğru |
+| **Business Automation Certified** | Test geçti **+** gerçek iş süresi ölçüldü ve azaltıldı |
+
+PILOT-001 **Business Automation Certified**'dır: engineering kanıtı (24/24 PASS, 107 assertions) + business KPI (25 dk → ≤5 dk, ≥80% manuel süre azaltıldı).
+
+#### Otorite Modeli
+
+| Seviye | Kural |
+|--------|-------|
+| `STOP` | Hiçbir koşulda publish yok — DomainException |
+| `LIMITED` | Yayın tipi scope intersection zorunlu |
+| `FULL` | readiness + governance yeterli |
+
+**Human control:** Publish sadece `approval token + governance` üzerinden mümkün. doGetApprovalToken pipeline dışı bypass edilemez.
+
+#### Kapanış
+
+- PILOT-001: **CLOSED**
+- PILOT-002: **Reservation Operations** — double-booking prevention, cancellation workflow, guest communication
+
+---
+
 ## Oturum 119 — 2026-08-13 | PILOT-001 Wave 2 ✅ — Orchestrated Integration
 
 ### Yapılan İş
