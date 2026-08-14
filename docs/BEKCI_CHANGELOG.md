@@ -1,5 +1,78 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 121+122 — 2026-08-14 | RESERVATION-GUEST-COMM-WAVE-1 ✅ CERTIFIED
+
+### RESERVATION-GUEST-COMM-WAVE-1 — Guest Confirmation Notification Pipeline
+
+**Commit:** `e681d3b`
+**Baseline:** `31e8065` (Reservation Event Backbone)
+**SAAB Authorization:** Oturum 121 — EXECUTION AUTHORIZED
+
+#### Canonical Pipeline
+
+```
+ReservationCreatedEvent
+  → ProcessReservationCreated::handle()
+    → SendGuestConfirmationJob ($tries=3, backoff=[30,60,120])
+      → GuestCommunicationPolicy (consent + contact + idempotency)
+        → GuestConfirmationNotification DTO
+          → NotificationDispatcher::dispatch()
+            → OutboundNotification (evidence: SENT/FAILED/CANCELLED)
+```
+
+#### New Files (6)
+
+| File | Purpose |
+|------|---------|
+| `app/Jobs/Reservation/SendGuestConfirmationJob.php` | Idempotent, tenant-scoped queued job |
+| `app/Services/Notification/GuestCommunicationPolicy.php` | Phone normalization + consent + idempotency |
+| `app/DTOs/Notification/GuestConfirmationNotification.php` | NotificationContract impl for `reservation_confirmation` |
+| `app/Contracts/Reservation/ReservationNotificationDispatcherContract.php` | Contract for null/production dispatcher |
+| `app/Services/Reservation/NullReservationNotificationDispatcher.php` | Null object (test double) |
+| `tests/Feature/Reservation/GuestCommunicationWave1Test.php` | 12 tests / 29 assertions |
+
+#### Modified Files
+
+| File | Change |
+|------|--------|
+| `app/Jobs/Reservation/ProcessReservationCreated.php` | Wire Wave 1: `SendGuestConfirmationJob::dispatch()` |
+
+#### Test Results
+
+```
+GuestCommunicationWave1Test:   12/12 PASS ✅
+ReservationEventBackboneTest:   7/7 PASS ✅
+─────────────────────────────────────────────
+TOTAL:                        19/19 PASS ✅
+SAB integrity: 0 new violations (70 pre-existing)
+```
+
+#### Feature Flag Compliance
+
+| Scenario | Expected | Result |
+|----------|----------|--------|
+| `whatsapp_pilot_global=false` | `STATE_CANCELLED` evidence | ✅ |
+| Tenant not in allowlist | `STATE_CANCELLED` evidence | ✅ |
+| Valid phone + flag on + in allowlist | Dispatched | ✅ |
+| No phone or email | Skip silently | ✅ |
+| Idempotency | Single notification per channel | ✅ |
+| Email channel | `STATE_CANCELLED` via EmailAdapter | ✅ |
+| Tenant isolation | `tenantId` in event envelope | ✅ |
+
+#### Wave 1 Scope (Locked)
+
+**Included:** ReservationCreatedEvent → confirmation notification
+**Excluded:** Cancellation, modification, check-in/out, availability sync, financial recording
+
+#### Debt Status
+
+| Debt | Status | Note |
+|------|--------|------|
+| LIFECYCLE-DEBT | 🟡 OPEN | Override path → `ReservationCancelledEvent` missing. Cancellation wave öncesi SAAB kararı. |
+| REGRESSION-DEBT G34 | 🟡 TRACKED | Pre-existing Booking test fail. |
+
+---
+
 ## Oturum 121 — 2026-08-14 | RESERVATION EVENT BACKBONE ✅ CERTIFIED — SAAB ACCEPTED
 
 ### SAAB Kararı — Oturum 121
