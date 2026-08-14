@@ -8,6 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Jobs\Reservation\SendGuestConfirmationJob;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -45,11 +46,11 @@ class ProcessReservationCreated implements ShouldQueue
             'external_channel'=> $this->event->externalChannel,
         ]);
 
+        // ── Wave 1: Guest Communication ──────────────────────────────────────
+        // RESERVATION-GUEST-COMM-WAVE-1
+        SendGuestConfirmationJob::dispatch($this->event);
+
         // ── Downstream systems to be wired here in subsequent sprints ──
-        //
-        // 1. Guest Communication
-        //    → dispatch to NotificationDispatcher with confirmation template
-        //    Ticket: Guest Communication Wave
         //
         // 2. Availability Outbound Sync
         //    → AvailabilitySynchronizationService.synchronize()

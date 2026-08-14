@@ -1,5 +1,48 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 121 — 2026-08-14 | RESERVATION EVENT BACKBONE ✅ CERTIFIED — SAAB ACCEPTED
+
+### SAAB Kararı — Oturum 121
+
+| Karar | Durum |
+|-------|-------|
+| Oturum 121 kayıt güncellemesi | ✅ ACCEPTED |
+| Event Backbone baseline | ✅ CERTIFIED |
+| Guest Communication Wave 1 | 🟢 EXECUTION READY |
+| LIFECYCLE-DEBT | 🟡 OPEN / cancellation wave öncesi zorunlu karar |
+| REGRESSION-DEBT G34 | 🟡 TRACKED |
+
+### Event Backbone — Mimari Kazanım
+
+```
+ÖNCE:  Rezervasyon → DB → availability → ACK → DUR
+ŞİMDİ: Rezervasyon → canonical event → Listener → Job → downstream capabilities
+```
+
+### Program Sequence
+
+```
+Reservation Core ✅ → Event Backbone ✅ → Guest Communication ▶ NEXT
+```
+
+### Debt Register
+
+| Tip | Açıklama | Öncelik | Zaman |
+|-----|---------|---------|-------|
+| LIFECYCLE-DEBT | Override cancellation → DB UPDATE → `ReservationCancelledEvent` üretilmiyor. Documented behavior. Cancellation wave öncesi SAAB kararı şart. | Medium | Cancellation wave |
+| REGRESSION-DEBT G34 | Full regression 1 pre-existing fail (Booking Production Certification G34). EB certification'ı bozmadı. | Low | Ongoing |
+
+### Guest Communication Wave 1 — Scope
+
+> Yalnızca rezervasyon oluşturuldu bildirimi. Feature flag, tenant isolation, queue/retry, idempotency ve evidence üretimi korunmalı.
+
+```
+ReservationCreatedEvent → queued listener/job → Guest Communication Policy
+→ confirmation template → NotificationDispatcher → SUPERVISED/SEND-SAFE → delivery evidence
+```
+
+---
+
 ## Oturum 120 — 2026-08-13 | PILOT-001 CLOSED ✅ — BUSINESS AUTOMATION CERTIFIED
 
 ### PILOT-001 — Property Publish Supervised Autonomy — CLOSED
@@ -3263,3 +3306,91 @@ Tüm 8 adet feature/AI test hatası en dar kapsamlı değişikliklerle çözülm
 ### 🛡️ SAB Uyumu
 - Model yazma otoritesi korundu.
 - Tenant Isolation güvence altına alındı.
+
+---
+
+## Oturum 121 — 2026-08-14 | RESERVATION-LIFECYCLE-DISCOVERY + Sprint 4-WAVE-EB CLOSED
+
+### RESERVATION-LIFECYCLE-DISCOVERY — Discovery Only (No Implementation)
+
+**Amaç:** YALIHAN OS rezervasyon yaşam döngüsünün mevcut repository durumunu uçtan uca keşfetmek. Yeni capability veya abstraction tasarlamak DEĞİL.
+
+#### Discovery Findings
+
+| Alan | Durum | Kanıt |
+|------|--------|--------|
+| CREATE (ingest) | **PRODUCTION** | ChannexWebhookController + BookingReservationPollJob |
+| Conflict detection | **PRODUCTION** | ReservationService.lockForUpdate overlap check |
+| MODIFY (channel → DB) | **PRODUCTION** | ChannexReservationIngestService.ingestModification |
+| CANCEL (channel → DB) | **PRODUCTION** | ChannexReservationIngestService.ingestCancellation |
+| Override authorization | **FOUNDATION** | ConflictOverrideContract (PILOT-002 W3) |
+| Override execution | **PRODUCTION** | ReservationService.createReservationWithOverride |
+| **Event Backbone** | **MISSING** | Provider events var, 0 listener |
+| Availability outbound | **FOUNDATION** | AvailabilitySynchronizationService var, tetikleyici yok |
+| Guest notification | **MISSING** | NotificationDispatcher var, 0 reservation listener |
+| Airbnb inbound | **MISSING** | iCal → PropertyAvailability sadece, reservation yok |
+| Financial closure | **MISSING** | 0 automation |
+| Stay operations | **MISSING** | 0 automation |
+
+**Discovery Rapor:** `audits/reservation-lifecycle-discovery-2026-08-14.md`
+
+---
+
+### Sprint 4-WAVE-EB — Canonical Event Backbone
+
+| Alan | Değer |
+|------|-------|
+| Status | **CLOSED ✅** |
+| Certification Commit | `31e8065` |
+| Events | 4 canonical (Created, Modified, Cancelled, Completed) |
+| Listeners | 3 queue-safe (Create, Modify, Cancel) |
+| Jobs | 3 boundary (ProcessCreate, ProcessModify, ProcessCancel) |
+| Test Coverage | 7/7 PASS (G1-G7) |
+| Regression | 3/4 ReservationServiceTest (1 pre-existing fail) |
+
+#### Mimari Kanıt Zinciri
+
+```
+Rezervasyon oluşturulur / güncellenir / iptal edilir
+     ↓
+ReservationService (tek yazı otoritesi)
+     ↓
+DB::transaction → commit
+     ↓
+event() → ReservationCreatedEvent / Modified / Cancelled
+     ↓
+EventServiceProvider → listener boundary
+     ↓
+ProcessReservation*Job (queue-safe, 3 retries)
+     ↓
+DOWNSTREAM SLOT (sonraki sprintlerde bağlanacak):
+  - Guest Communication (confirmation, pre-arrival, check-in/out)
+  - Availability Outbound Sync (AvailabilitySynchronizationService)
+  - Financial Recording (Transaction creation)
+  - Stay Operations (check-in task, cleaning, etc.)
+```
+
+#### Certification Gates
+
+| Gate | Açıklama | Durum |
+|------|-----------|--------|
+| G1 | CREATE → canonical event fires once | ✅ |
+| G2 | CANCEL → canonical event fires once (non-idempotent) | ✅ |
+| G3 | CANCEL idempotent → no second event | ✅ |
+| G4 | MODIFY → event with previous/new dates | ✅ |
+| G5 | Override → conflict cancelled in DB | ✅ |
+| G6 | Events contain all downstream fields | ✅ |
+| G7 | Modify cancelled → no event (ADR-008) | ✅ |
+
+#### Bilinen Davranış (Dokümante)
+
+- Override path: çakışan rezervasyonu `cancelReservation()` üzerinden iptal ETMEZ — aynı transaction içinde doğrudan update yapar. Bu yüzden `ReservationCancelledEvent` çakışma iptalinde FİRE ETMEZ.
+- `ReservationCompletedEvent`: stub olarak durur. `ReservationCompletionJob` sonraki sprintte eklenecek.
+- Test altyapısı: `Queue::fake()` TestCase'te aktif. Listener'lar setUp'ta synchronous closure olarak yeniden bağlanır.
+
+### Önerilen Sprint Sırası
+
+1. **Guest Communication Wave**: ReservationCreatedEvent → NotificationDispatcher → confirmation template
+2. **Availability Sync Wave**: ReservationCreatedEvent → AvailabilitySynchronizationService.synchronize()
+3. **Airbnb Inbound Wave**: SyncPropertyCalendarFeedJob → PropertyReservation INSERT
+4. **Financial Closure Wave**: Checkout → FinancialTransaction + owner payout

@@ -6,6 +6,68 @@
 
 ---
 
+## 2026-08-14 | Oturum 121 | RESERVATION EVENT BACKBONE ✅ CERTIFIED
+
+### EB Certification — Canonical Event-Driven Automation Foundation
+
+**Commit:** `31e8065`
+
+**Mimari Kazanım:**
+
+```
+ÖNCE:  Rezervasyon → DB → availability → ACK → DUR
+ŞİMDİ: Rezervasyon → canonical event → Listener → Job → downstream capabilities
+```
+
+### Guest Communication Wave — RESERVATION-GUEST-COMM-WAVE-1 (NEXT)
+
+**Scope (Wave 1):** Sadece rezervasyon oluşturuldu bildirimi.
+
+```
+ReservationCreatedEvent
+        ↓
+queued listener/job
+        ↓
+Guest Communication Policy
+        ↓
+confirmation template
+        ↓
+NotificationDispatcher
+        ↓
+SUPERVISED / SEND-SAFE
+        ↓
+delivery evidence
+```
+
+**Güvenlik Kuralı:** `whatsapp_pilot_global=false` feature flag mevcut. İlk implementasyon feature flag/consent/recipient kurallarına uymalı; gerçek gönderim uygun değilse `prepared/pending` evidence.
+
+### Kayıt Edilen Debt
+
+| Tip | Açıklama | Öncelik |
+|-----|---------|---------|
+| LIFECYCLE-DEBT | Override cancellation → DB UPDATE → `ReservationCancelledEvent` üretilmiyor. İleride downstream listener'lar bağlandığında iki farklı lifecycle davranışı riski. Guest Communication cancellation wave'inden önce SAAB'a sunulacak. | Medium |
+| REGRESSION-DEBT | Full regression 1 pre-existing fail (Booking G34). EB certification'ı bozmadığı için geri alınmadı. | Low |
+
+### Program Sequence
+
+```
+Reservation Core ✅
+    ↓
+Canonical Event Backbone ✅ (this session)
+    ↓
+Guest Communication Wave 1 ▶ NEXT
+    ↓
+Availability Sync
+    ↓
+Airbnb Inbound
+    ↓
+Check-in/out
+    ↓
+Financial Closure
+```
+
+---
+
 ## 2026-08-12 | Oturum Sprint 4.15 | Booking.com Production Certification ⏳ AWAITING BOOKING.COM ONBOARDING (34/35 PASS)
 
 ### Sprint 4.15 — Booking Production Certification

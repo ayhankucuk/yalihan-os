@@ -6,6 +6,35 @@
 
 ---
 
+## 2026-08-14 | Oturum 121 | LIFECYCLE-DEBT — Override Cancellation Event Gap
+
+### Karar: Override Path'inde ReservationCancelledEvent Üretilmiyor — Documented Debt
+
+**Durum:** Şimdilik kabul edilmiş davranış (accepted risk). İleride değiştirilecek.
+
+**KöK:** Override cancellation, conflict rezervasyonu doğrudan DB UPDATE ediyor ve `ReservationCancelledEvent` tetiklemiyor.
+
+```
+Normal Cancellation
+→ ReservationCancelledEvent
+→ downstream automation
+
+Override Cancellation
+→ DB UPDATE
+→ event YOK
+```
+
+**Risk:** İleride finance, notification ve availability listener'ları bu event'lere bağlandığında iki farklı lifecycle davranışı oluşur.
+
+**Zaman:** Guest Communication cancellation wave'inden önce tekrar değerlendirilecek.
+
+**Karar Zinciri:**
+1. Şimdi değiştirme — PILOT-002 kapsamı dışında
+2. Debt olarak izle — bu dosyada
+3. Cancellation wave başladığında SAAB'a sun — ReservationCancelledEvent override path'e eklenmeli mi?
+
+---
+
 ## 2026-08-13 | Oturum 116 | SAAB Program-Level Metrics Framework
 
 ### Karar: Üçlü Sağlık Çerçevesi — Canonical Reporting Model

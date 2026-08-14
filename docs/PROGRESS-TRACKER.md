@@ -1,5 +1,5 @@
 # Governance Progress Tracker
-**Son Güncelleme:** 2026-08-14 (PILOT-002 WAVE 3 COMMITTED + SAAB Charter v1.0 APPROVED ✅)
+**Son Güncelleme:** 2026-08-14 (PILOT-002 WAVE 3 COMMITTED + SAAB Charter v1.0 APPROVED ✅ + RESERVATION EVENT BACKBONE ✅ CERTIFIED)
 **Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + ✅ **SPRINT 6.7 CLOSED** + ✅ **SPRINT 6.8 CLOSED** + ✅ **SPRINT 6.9 CLOSED** + ✅ **SPRINT 7.0 CLOSED** + ✅ **SPRINT 7.1 CLOSED** + ✅ **SPRINT 7.2 CLOSED** + 🔍 **WIZARD BLOCKERS MAPPED** + 🛡️ **RELEASE GATE V9 APPROVED** + 📋 **SPRINT 10 CERTIFIED** + 🏠 **SPRINT 11 CERTIFIED** + 🏛️ **SAAB v11.1 GOVERNANCE FROZEN** + 🚀 **SPRINT 12 ✅ COMPLETE** + 🧪 **TENANT ISOLATION TESTS ✅ ALL GREEN** + 🧪 **LIFECYCLE TESTS 7/7 ✅** + 🏗️ **EXECUTION RUNTIME FOUNDATION ✅** + 🧪 **EXECUTION TESTS 12/12 ✅** + 📊 **EXECUTION METRICS FOUNDATION ✅** + 🧪 **METRICS TESTS 11/11 ✅** + 🏗️ **EXECUTION RUNTIME OPERATIONS CONSOLE ✅** + 🧪 **PRODUCT VALIDATION 9/9 ✅** + 🏆 **M2 PROPERTY RUNTIME ✅ CERTIFIED** + 📡 **SPRINT 4.14 ✅ BOOKING CHANNEL MANAGER RATES OUT (71/71 PASS)** + 🔵 **SPRINT 4.15 ✅ BOOKING PRODUCTION CERTIFICATION (73/73 PASS + 2 SAB FIX)** + 🛡️ **YDL v1 Phase 1 ✅ CERTIFIED (53 tests)** + 🧹 **C7 ✅ DOCUMENTATION DRIFT RECONCILED** + 📊 **SAAB PROGRAM METRICS FRAMEWORK ✅ ADOPTED** + 🧠 **YDL v1 Phase 3 ✅ AGENT CONTEXT INTEGRATION (8 tests PASS)** + 🎯 **PILOT-001 ✅ PROPERTY_PUBLISH_SUPERVISED_AUTONOMY ACTIVE**
 | ERA III/IV | Katman | Sprint | Status |
 |---------|--------|--------|--------|
@@ -18,6 +18,7 @@
 | **🚀 PILOT-001** | **Property Publish Supervised Autonomy** | **PILOT-001** | **✅ CLOSED — BUSINESS AUTOMATION CERTIFIED (Oturum 120)** |
 | **🚀 PILOT-002** | **Reservation Operations — Double-Booking Prevention** | **PILOT-002 WAVE 1+2+3** | **✅ CLOSED — BUSINESS AUTOMATION CERTIFIED — 36/36 PASS, 168 assertions, tek audit chain (Oturum 120)** |
 | **🔍 PLATFORM** | **Supervised Autonomy Pattern — 2 Operasyon Kanıtı** | **PILOT-001+002** | **✅ APPROVED — SAAB Charter v1.0 (66c0c675)** |
+| **🔗 RESERVATION-EB** | **Canonical Event Backbone — Event-Driven Automation Foundation** | **RESERVATION-EB** | **✅ CERTIFIED (Oturum 121 — 2026-08-14)** |
 
 **ERA IV:** 🚀 ACTIVE — First Advisor Pilot | Sprint 5.0
 
@@ -51,6 +52,95 @@
 | Automated Decision Support | ✅ 3/3 | CREATE + CANCEL + OVERRIDE |
 | Manual Time Reduction | ⏳ **Ölçülmedi** | Baseline/after dakika bazlı ölçüm bekliyor |
 | Token Geçerlilik Süresi | 24 saat | Token TTL — işlem süresi değil |
+
+---
+
+## 🔗 RESERVATION EVENT BACKBONE — EB Certification (Oturum 121)
+
+**Status:** ✅ CERTIFIED (2026-08-14)
+**Commit:** `31e8065`
+
+### Mimari Kazanım
+
+**ÖNCE (monolitik, coupled):**
+```
+Rezervasyon → DB → availability → ACK → DUR
+```
+
+**ŞİMDİ (event-driven, extensible):**
+```
+Rezervasyon → canonical event
+                    ↓
+               Listener
+                    ↓
+                  Job
+                    ↓
+        sonraki operasyon capability'leri
+```
+
+### EB Pipeline Garantileri
+
+| Özellik | Değer |
+|---------|-------|
+| eventId idempotency | ✅ Tüm path'lerde |
+| Tenant isolation | ✅ `tenantId` event envelope'da |
+| Listener → Job dispatch | ✅ Queue ile decoupled |
+| DOWNSTREAM AUTOMATION | ✅ Artık mümkün |
+
+### Guest Communication Wave — RESERVATION-GUEST-COMM-WAVE-1 (PLANNING)
+
+**Next:** Rezervasyon oluşturuldu bildirimi (confirmation template)
+
+```
+ReservationCreatedEvent
+        ↓
+queued listener/job
+        ↓
+Guest Communication Policy
+        ↓
+confirmation template
+        ↓
+NotificationDispatcher
+        ↓
+SUPERVISED / SEND-SAFE
+        ↓
+delivery evidence
+```
+
+**Scope (Wave 1):** Sadece rezervasyon oluşturuldu bildirimi. Check-in reminder, checkout, modification/cancellation mesajları sonraki wave'lere.
+
+**Güvenlik Kuralı:** `whatsapp_pilot_global=false` feature flag discovery'de tespit edilmiş. İlk implementasyon mevcut feature flag/consent/recipient kurallarına uymalı; gerçek gönderim uygun değilse `prepared/pending` evidence üretebilmeli.
+
+### Certification Debt
+
+| Tip | Açıklama | Öncelik |
+|-----|---------|---------|
+| **LIFECYCLE-DEBT** | Override sırasında conflict rezervasyonun doğrudan DB UPDATE edilmesi → `ReservationCancelledEvent` üretilmiyor. İleride finance, notification, availability listener'ları bağlandığında iki farklı lifecycle davranışı yaratabilir. Şimdilik documented behavior; Guest Communication cancellation wave'inden önce tekrar değerlendirilecek. | Medium |
+| **REGRESSION-DEBT** | Booking Production Certification G34 — pre-existing fail. EB (`31e8065`) tarafından oluşturulmadığı kanıtlandı. Certification'ı bozmadı. İzleniyor. | Low |
+
+### Mimari Önemi
+
+> Artık sonraki işler birbirinden bağımsız entegrasyonlar değil — aynı **canonical reservation lifecycle'ın tüketicileri**. Bu, gerçek uçtan uca rezervasyon otomasyonuna doğru mimari geçiş.
+
+### Program Sequence
+
+```
+Reservation Core ✅
+    ↓
+Canonical Event Backbone ✅
+    ↓
+Guest Communication Wave 1 ▶ NEXT
+    ↓
+Availability Sync
+    ↓
+Airbnb Inbound
+    ↓
+Check-in/out
+    ↓
+Financial Closure
+```
+
+---
 
 ### Platform Pattern Kanıtı
 
