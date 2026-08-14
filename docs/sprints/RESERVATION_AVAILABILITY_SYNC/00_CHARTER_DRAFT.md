@@ -1,6 +1,6 @@
 # RESERVATION-AVAILABILITY-SYNC — Sprint Charter (DRAFT)
 
-> **Status:** 🔲 CHARTER DRAFT — 4.1+4.2+4.3 APPROVED, 4.4+ OPEN
+> **Status:** 🔲 CHARTER DRAFT — 4.1+4.2+4.3+4.4+4.5 APPROVED, 4.6 OPEN
 > **Baseline:** `865d3b4` — Guest Communication Wave 1 + Oturum 121 closed
 > **SAAB Direction:** Oturum 121 — Availability Sync Charter hazırlanabilir
 > **Model:** Claude Sonnet 4.6 (escalation → Claude Opus 4.8 / SAAB)
@@ -175,25 +175,41 @@ Ama `AvailabilitySynchronizationService::syncToChannel()` → `ChannelAdapter` i
 - `ChannelSyncResponse` — structured success/failure
 - Her iki adapter da implemente ediyor
 
-### 4.4 Idempotency & Replay
+### 4.4 Idempotency — APPROVED
 
-**Decision:** OPEN — depends on 4.3.
+**Decision:** İki seviyeli idempotency — mevcut `AvailabilitySynchronizationService` pattern'i kullanılır.
 
-- Her sync job: `eventId` bazlı deduplication
-- Replay: yeni event üretir, eski event değişmez
-- Channel adapter: `property_id + date` bazlı idempotency kontrolü ayrıca değerlendirilir
+**Kanıt — kod analizi:**
 
-**Beklenen:** `eventId` → idempotency key olarak kullanılır.
+```
+Level A — Internal (Yalıhan):
+  idempotency_key = {tenantId}:{propertyId}:{reservationId}:{operation}:{startDate}:{endDate}
+  Tablo: channel_sync_executions.idempotency_key
+  Kontrol: findExistingSync() — aynı key varsa mevcut sonuç döner
 
-### 4.5 Tenant Isolation
+Level B — External (OTA API):
+  correlationId = sync-{Ymd}-{random12}
+  Tablo: channel_sync_executions.correlation_id
+  Kullanım: Booking.com API idempotency key olarak
+```
 
-**Decision:** OPEN — depends on 4.3.
+**No eventId:** `ReservationCreatedEvent` ve `ReservationCancelledEvent`'te `eventId` alanı yok. `reservationId` kullanılır — bu zaten `idempotency_key`'in bir parçası.
 
-- Event envelope `tenantId` → dispatcher'a geçer
-- Her channel adapter: tenant-scoped listing mapping kullanır
-- `property_availability`: `BelongsToTenant` global scope
+**Replay:** ExecutionRuntime semantics korunur — yeni event yeni execution üretir, eski değişmez. `ChannelSyncExecution` immutable'dır.
 
-**Beklenen:** Mevcut `BelongsToTenant` scope + event `tenantId` kombinasyonu.
+### 4.5 Tenant Isolation — APPROVED
+
+**Decision:** Mevcut `BelongsToTenant` scope + event `tenantId` kombinasyonu.
+
+**Kanıt:**
+
+| Katman | Mechanizma |
+|--------|-----------|
+| `property_availabilities` | `BelongsToTenant` global scope — tüm query'lere otomatik `tenant_id` filtresi |
+| `ChannelSyncExecution` | `tenantId` açık parametre olarak geçer |
+| `IlanTakvimSync` | `platform = 'booking_com'` + `is_sync_active = true` JOIN ile tenant izolasyonu |
+| Event envelope | `tenantId` — `ReservationCreatedEvent`'te mevcut, dispatcher'a geçer |
+| `ChannelSyncContract::pushAvailability()` | `$tenantId` açık parametre — adapter seviyesinde koruma |
 
 ### 4.6 Failure / Retry Behavior
 
@@ -265,6 +281,8 @@ ReservationCancelledEvent
 - [x] SAAB canonical availability source (4.1) kararı donduruldu ✅
 - [x] SAAB triggering events (4.2) kararı donduruldu ✅
 - [x] SAAB channel sync boundary (4.3) kararı donduruldu ✅
+- [x] SAAB idempotency (4.4) kararı donduruldu ✅
+- [x] SAAB tenant isolation (4.5) kararı donduruldu ✅
 - [x] LIFECYCLE-DEBT Option A: Override → `ReservationCancelledEvent` çözüldü ✅
 - [ ] SyncAvailabilityJob idempotent (eventId deduplication)
 - [ ] Tenant isolation: event tenantId → channel adapter
