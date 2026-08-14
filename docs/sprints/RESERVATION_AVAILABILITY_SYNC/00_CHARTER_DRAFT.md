@@ -1,6 +1,6 @@
 # RESERVATION-AVAILABILITY-SYNC — Sprint Charter (DRAFT)
 
-> **Status:** 🔲 CHARTER DRAFT — SAAB approval required before implementation
+> **Status:** 🔲 CHARTER DRAFT — 4.1 APPROVED, 4.2+ OPEN
 > **Baseline:** `865d3b4` — Guest Communication Wave 1 + Oturum 121 closed
 > **SAAB Direction:** Oturum 121 — Availability Sync Charter hazırlanabilir
 > **Model:** Claude Sonnet 4.6 (escalation → Claude Opus 4.8 / SAAB)
@@ -85,15 +85,40 @@ Retry / Evidence (4.6)
 
 ### 4.1 Canonical Availability Source
 
-**Decision:** OPEN — SAAB decision pending.
+**Decision:** ✅ `property_availabilities` tablosu — KESİNLEŞTİ.
 
-| Seçenek | Avantaj | Risk |
-|---------|---------|------|
-| `property_availability` tablosu | Domain model, ayrı tablo | Sync lag |
-| `property_reservations` (runtime) | Fresh, no lag | Consistency boundary |
-| Derived from reservation events | Event-driven consistency | Complexity |
+**Kanıt — kod analizi (5e0cc07 baseline):**
 
-**SAAB Kararı Bekleniyor.**
+| Tablo | Rol | Canonical mı? |
+|--------|-----|----------------|
+| `property_availabilities` | Domain availability state — `ReservationService::createReservation()` yazar | ✅ TEK KAYNAK |
+| `property_reservations` | Booking record — overlap check + canonical write trigger | ✅ YAZAR |
+| `IlanTakvimSync` | Platform credential/config — sadece `external_listing_id` sağlar | ❌ KANAL CONFIG |
+| `AvailabilitySynchronizationService` | `property_availabilities` okur → channel adapter'lara push | ✅ OKUR |
+| `BookingChannelAdapter::pushAvailability()` | Pre-built data alır — doğrudan tablo OKUMAZ | ✅ ALICI |
+
+**Write path:**
+```
+property_reservations (confirmed)
+  → ReservationService::createReservation()
+    ├── lockForUpdate() overlap check
+    ├── insertOrIgnore() → property_availabilities (ensure rows)
+    ├── lockForUpdate() on property_availabilities
+    ├── PropertyReservation::create()
+    └── Update: is_available=false, reservation_id=$id
+        ↓
+    ReservationCreatedEvent dispatched
+        ↓
+    AvailabilitySynchronizationService::syncToChannel()
+        ↓
+    SynchronizeAvailabilityJob
+        ↓
+    BookingChannelAdapter::pushAvailability(pre-built data)
+```
+
+**`IlanTakvimSync` yanlış anlaşılma riski:** Bu tablo sadece `external_listing_id` (HotelCode) ve credential sağlar. Availability **verisi değil**. Channel adapter'lar `property_availabilities`'ı doğrudan OKUMAZ — `AvailabilitySynchronizationService` pre-built data ile çağırır.
+
+**Sonuç:** `property_availabilities` = tek doğruluk kaynağı. `ReservationService` = tek yazı otoritesi. Channel adapter'lar sadece okur.
 
 ### 4.2 Reservation/Block Source
 
@@ -206,10 +231,10 @@ ReservationCancelledEvent
 
 ## 8. DoD Checklist
 
-- [ ] SAAB canonical availability source (4.1) kararı donduruldu
+- [x] SAAB canonical availability source (4.1) kararı donduruldu ✅
 - [ ] SAAB triggering events (4.2) kararı donduruldu
 - [ ] SAAB channel sync boundary (4.3) kararı donduruldu
-- [ ] LIFECYCLE-DEBT Option A: Override → `ReservationCancelledEvent` çözüldü ✅
+- [x] LIFECYCLE-DEBT Option A: Override → `ReservationCancelledEvent` çözüldü ✅
 - [ ] SyncAvailabilityJob idempotent (eventId deduplication)
 - [ ] Tenant isolation: event tenantId → channel adapter
 - [ ] Retry: $tries=3, backoff [30, 60, 120], afterCommit=true
