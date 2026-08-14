@@ -2,16 +2,23 @@
 
 namespace App\DTOs\Ydl\Reservation;
 
+use App\Services\Ydl\Platform\ApprovalToken;
+use App\Services\Ydl\Platform\ApprovalTokenPolicy;
+use App\Services\Ydl\Platform\ApprovalTokenPolicyInterface;
+
 /**
  * YdlOverrideApprovalToken — Human approval token for conflict override.
  *
  * PILOT-002 Wave 3
  *
+ * Token lifecycle delegated to ApprovalTokenPolicy (platform-level).
+ * Domain-specific fields (conflictReservationId, startDate, endDate) stay here.
+ *
  * @readonly
  */
 final class YdlOverrideApprovalToken
 {
-    public const DEFAULT_TTL_SECONDS = 86400;
+    private static ?ApprovalTokenPolicyInterface $tokenPolicy = null;
 
     public function __construct(
         public readonly string $tokenId,
@@ -29,6 +36,21 @@ final class YdlOverrideApprovalToken
         public readonly ?int  $requestedBy,
     ) {}
 
+    public static function setTokenPolicy(ApprovalTokenPolicyInterface $policy): void
+    {
+        self::$tokenPolicy = $policy;
+    }
+
+    public static function resetTokenPolicy(): void
+    {
+        self::$tokenPolicy = null;
+    }
+
+    private static function policy(): ApprovalTokenPolicyInterface
+    {
+        return self::$tokenPolicy ?? new ApprovalTokenPolicy();
+    }
+
     public static function create(
         int    $conflictReservationId,
         int    $ilanId,
@@ -43,33 +65,59 @@ final class YdlOverrideApprovalToken
         string $expiresAt,
         ?int   $requestedBy = null,
     ): self {
+        $tokenId = self::policy()->generateTokenId($eventId, $requestedAt);
+
         return new self(
-            tokenId:           substr(hash('sha256', "override|{$eventId}|{$requestedAt}"), 0, 24),
+            tokenId:               $tokenId,
             conflictReservationId: $conflictReservationId,
-            ilanId:              $ilanId,
-            tenantId:            $tenantId,
-            eventId:           $eventId,
-            ydlAuthority:      $ydlAuthority,
-            authorityContext:    $authorityContext,
-            startDate:         $startDate,
-            endDate:           $endDate,
-            recommendation:    $recommendation,
-            requestedAt:       $requestedAt,
-            expiresAt:         $expiresAt,
-            requestedBy:       $requestedBy,
+            ilanId:                $ilanId,
+            tenantId:              $tenantId,
+            eventId:               $eventId,
+            ydlAuthority:          $ydlAuthority,
+            authorityContext:      $authorityContext,
+            startDate:             $startDate,
+            endDate:               $endDate,
+            recommendation:        $recommendation,
+            requestedAt:           $requestedAt,
+            expiresAt:             $expiresAt,
+            requestedBy:           $requestedBy,
         );
     }
 
     public function isExpired(): bool
     {
-        return now()->parse($this->expiresAt)->isPast();
+        return self::policy()->isExpired($this->toPlatformToken());
     }
 
     public function validateOrFail(): void
     {
-        if ($this->isExpired()) {
-            throw new \DomainException('Override approval token expired.');
-        }
+        self::policy()->validateOrFail($this->toPlatformToken());
+    }
+
+    /**
+     * Convert to platform-level ApprovalToken for lifecycle operations.
+     */
+    public function toPlatformToken(): ApprovalToken
+    {
+        return new ApprovalToken(
+            tokenId:           $this->tokenId,
+            eventId:           $this->eventId,
+            subjectId:         $this->conflictReservationId,
+            tenantId:          $this->tenantId,
+            authority:         $this->ydlAuthority,
+            authorityContext:   $this->authorityContext,
+            expiresAt:         $this->expiresAt,
+            requestedAt:       $this->requestedAt,
+            recommendation:    $this->recommendation,
+            subjectType:       'override',
+            requestedBy:       $this->requestedBy,
+            extra: [
+                'ilanId'               => $this->ilanId,
+                'conflictReservationId' => $this->conflictReservationId,
+                'startDate'            => $this->startDate,
+                'endDate'              => $this->endDate,
+            ],
+        );
     }
 
     public function toArray(): array

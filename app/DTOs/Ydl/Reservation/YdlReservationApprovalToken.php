@@ -2,34 +2,58 @@
 
 namespace App\DTOs\Ydl\Reservation;
 
+use App\Services\Ydl\Platform\ApprovalToken;
+use App\Services\Ydl\Platform\ApprovalTokenPolicy;
+use App\Services\Ydl\Platform\ApprovalTokenPolicyInterface;
+
 /**
  * YdlReservationApprovalToken — Human approval token for reservation operations.
  *
  * PILOT-002 Wave 1
  *
  * TTL-based token. Must be presented during executeReservation().
- * Expires after APPROVAL_TOKEN_TTL_SECONDS.
+ * Expires after ApprovalTokenPolicy::DEFAULT_TTL_SECONDS.
+ *
+ * Token lifecycle delegated to ApprovalTokenPolicy (platform-level).
+ * Domain-specific fields (ilanId, startDate, endDate) stay here.
  *
  * @readonly
  */
 final class YdlReservationApprovalToken
 {
-    public const DEFAULT_TTL_SECONDS = 86400; // 24 hours — matches PILOT-001
+    public const DEFAULT_TTL_SECONDS = 86400; // kept for BW compat
+
+    private static ?ApprovalTokenPolicyInterface $tokenPolicy = null;
 
     public function __construct(
-        public readonly string                $tokenId,
-        public readonly int                   $ilanId,
-        public readonly int                   $tenantId,
-        public readonly string               $eventId,
-        public readonly string               $ydlAuthority,
-        public readonly string               $authorityContext,
-        public readonly string               $startDate,
-        public readonly string               $endDate,
-        public readonly array                $recommendation,
-        public readonly string               $requestedAt,
-        public readonly string               $expiresAt,
-        public readonly ?int                $requestedBy,
+        public readonly string $tokenId,
+        public readonly int    $ilanId,
+        public readonly int    $tenantId,
+        public readonly string $eventId,
+        public readonly string $ydlAuthority,
+        public readonly string $authorityContext,
+        public readonly string $startDate,
+        public readonly string $endDate,
+        public readonly array  $recommendation,
+        public readonly string $requestedAt,
+        public readonly string $expiresAt,
+        public readonly ?int  $requestedBy,
     ) {}
+
+    public static function setTokenPolicy(ApprovalTokenPolicyInterface $policy): void
+    {
+        self::$tokenPolicy = $policy;
+    }
+
+    public static function resetTokenPolicy(): void
+    {
+        self::$tokenPolicy = null;
+    }
+
+    private static function policy(): ApprovalTokenPolicyInterface
+    {
+        return self::$tokenPolicy ?? new ApprovalTokenPolicy();
+    }
 
     public static function create(
         int    $ilanId,
@@ -44,8 +68,10 @@ final class YdlReservationApprovalToken
         string $expiresAt,
         ?int   $requestedBy = null,
     ): self {
+        $tokenId = self::policy()->generateTokenId($eventId, $requestedAt);
+
         return new self(
-            tokenId:            substr(hash('sha256', "{$eventId}|{$requestedAt}"), 0, 24),
+            tokenId:            $tokenId,
             ilanId:            $ilanId,
             tenantId:          $tenantId,
             eventId:           $eventId,
@@ -62,22 +88,41 @@ final class YdlReservationApprovalToken
 
     public function isExpired(): bool
     {
-        return now()->parse($this->expiresAt)->isPast();
+        return self::policy()->isExpired($this->toPlatformToken());
     }
 
     public function remainingSeconds(): int
     {
-        $remaining = now()->parse($this->expiresAt)->diffInSeconds(now(), false);
-        return max(0, -$remaining);
+        return self::policy()->remainingSeconds($this->toPlatformToken());
     }
 
     public function validateOrFail(): void
     {
-        if ($this->isExpired()) {
-            throw new \DomainException(
-                "Approval token expired. Expired at: {$this->expiresAt}"
-            );
-        }
+        self::policy()->validateOrFail($this->toPlatformToken());
+    }
+
+    /**
+     * Convert to platform-level ApprovalToken for lifecycle operations.
+     */
+    public function toPlatformToken(): ApprovalToken
+    {
+        return new ApprovalToken(
+            tokenId:           $this->tokenId,
+            eventId:           $this->eventId,
+            subjectId:         $this->ilanId,
+            tenantId:          $this->tenantId,
+            authority:         $this->ydlAuthority,
+            authorityContext:   $this->authorityContext,
+            expiresAt:         $this->expiresAt,
+            requestedAt:       $this->requestedAt,
+            recommendation:    $this->recommendation,
+            subjectType:       'reservation',
+            requestedBy:       $this->requestedBy,
+            extra: [
+                'startDate' => $this->startDate,
+                'endDate'   => $this->endDate,
+            ],
+        );
     }
 
     public function toArray(): array
@@ -92,7 +137,7 @@ final class YdlReservationApprovalToken
             'start_date'       => $this->startDate,
             'end_date'         => $this->endDate,
             'recommendation'   => $this->recommendation,
-            'requested_at'     => $this->requestedAt,
+            'requested_at'    => $this->requestedAt,
             'expires_at'       => $this->expiresAt,
             'requested_by'     => $this->requestedBy,
         ];

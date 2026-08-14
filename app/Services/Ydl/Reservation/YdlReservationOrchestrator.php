@@ -18,6 +18,8 @@ use App\Enums\ReservationState;
 use App\Models\Ilan;
 use App\Models\PropertyReservation;
 use App\Services\ReservationService;
+use App\Services\Ydl\Platform\ApprovalTokenPolicy;
+use App\Services\Ydl\Platform\ApprovalTokenPolicyInterface;
 use App\Services\Ydl\Platform\AuthorityEvaluator;
 use App\Services\Ydl\Platform\AuthorityEvaluatorInterface;
 
@@ -50,24 +52,29 @@ class YdlReservationOrchestrator
 {
     public const PILOT = 'PILOT-002';
 
-    /** Human approval token TTL: 24 hours (matches PILOT-001). */
-    private const APPROVAL_TOKEN_TTL_SECONDS = 86400;
-
     private ReservationReadinessService $readinessService;
     private ReservationEventLog $eventLog;
     private ?ConflictOverrideService $conflictOverrideService;
     private AuthorityEvaluatorInterface $authorityEvaluator;
+    private ApprovalTokenPolicyInterface $approvalTokenPolicy;
 
     public function __construct(
         ?ReservationReadinessService $readinessService = null,
         ?ReservationEventLog $eventLog = null,
         ?ConflictOverrideService $conflictOverrideService = null,
         ?AuthorityEvaluatorInterface $authorityEvaluator = null,
+        ?ApprovalTokenPolicyInterface $approvalTokenPolicy = null,
     ) {
         $this->readinessService = $readinessService ?? new ReservationReadinessService();
         $this->eventLog = $eventLog ?? new ReservationEventLog();
         $this->conflictOverrideService = $conflictOverrideService;
         $this->authorityEvaluator = $authorityEvaluator ?? new AuthorityEvaluator();
+        $this->approvalTokenPolicy = $approvalTokenPolicy ?? new ApprovalTokenPolicy();
+
+        // Wire token policy into domain token DTOs (static DI pattern)
+        YdlReservationApprovalToken::setTokenPolicy($this->approvalTokenPolicy);
+        YdlCancellationApprovalToken::setTokenPolicy($this->approvalTokenPolicy);
+        YdlOverrideApprovalToken::setTokenPolicy($this->approvalTokenPolicy);
     }
 
     private function getConflictOverrideService(): ConflictOverrideService
@@ -149,7 +156,7 @@ class YdlReservationOrchestrator
         }
 
         $now = now()->toIso8601String();
-        $expiresAt = now()->addSeconds(self::APPROVAL_TOKEN_TTL_SECONDS)->toIso8601String();
+        $expiresAt = $this->approvalTokenPolicy->computeExpiresAt($now);
 
         return YdlReservationApprovalToken::create(
             ilanId:            $readiness->ilanId,
@@ -454,7 +461,7 @@ class YdlReservationOrchestrator
         }
 
         $now = now()->toIso8601String();
-        $expiresAt = now()->addSeconds(self::APPROVAL_TOKEN_TTL_SECONDS)->toIso8601String();
+        $expiresAt = $this->approvalTokenPolicy->computeExpiresAt($now);
 
         return YdlCancellationApprovalToken::create(
             reservationId:  $readiness->reservationId,
@@ -686,7 +693,7 @@ class YdlReservationOrchestrator
         }
 
         $now = now()->toIso8601String();
-        $expiresAt = now()->addSeconds(YdlReservationOrchestrator::APPROVAL_TOKEN_TTL_SECONDS)->toIso8601String();
+        $expiresAt = $this->approvalTokenPolicy->computeExpiresAt($now);
 
         return YdlOverrideApprovalToken::create(
             conflictReservationId:  $readiness->conflictReservationId,

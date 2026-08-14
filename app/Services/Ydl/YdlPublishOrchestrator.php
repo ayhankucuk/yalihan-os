@@ -8,6 +8,9 @@ use App\DTOs\Ydl\YdlPublishRecommendation;
 use App\Enums\Governance\GovernanceState;
 use App\Enums\IlanDurumu;
 use App\Models\Ilan;
+use App\Services\Ydl\Platform\ApprovalToken;
+use App\Services\Ydl\Platform\ApprovalTokenPolicy;
+use App\Services\Ydl\Platform\ApprovalTokenPolicyInterface;
 use App\Services\Ydl\Platform\AuthorityEvaluator;
 use App\Services\Ydl\Platform\AuthorityEvaluatorInterface;
 
@@ -33,15 +36,13 @@ class YdlPublishOrchestrator
 {
     public const PILOT = 'PILOT-001';
 
-    /** Human approval token TTL in seconds (24 hours). */
-    private const APPROVAL_TOKEN_TTL_SECONDS = 86400;
-
     private YdlPublishReadinessService $readinessService;
     private YdlEventLog $eventLog;
     private ?YdlContextReader $contextReader;
     private ?YdlStateOrchestrator $orchestrator;
     private ?string $basePath;
     private AuthorityEvaluatorInterface $authorityEvaluator;
+    private ApprovalTokenPolicyInterface $approvalTokenPolicy;
 
     public function __construct(
         ?YdlPublishReadinessService $readinessService = null,
@@ -50,6 +51,7 @@ class YdlPublishOrchestrator
         ?YdlStateOrchestrator $orchestrator = null,
         ?string $basePath = null,
         ?AuthorityEvaluatorInterface $authorityEvaluator = null,
+        ?ApprovalTokenPolicyInterface $approvalTokenPolicy = null,
     ) {
         $this->readinessService = $readinessService ?? new YdlPublishReadinessService(
             new \App\Services\Listing\ListingScoreService(),
@@ -60,6 +62,10 @@ class YdlPublishOrchestrator
         $this->orchestrator = $orchestrator;
         $this->basePath = $basePath;
         $this->authorityEvaluator = $authorityEvaluator ?? new AuthorityEvaluator($this->contextReader, $basePath);
+        $this->approvalTokenPolicy = $approvalTokenPolicy ?? new ApprovalTokenPolicy();
+
+        // Wire token policy into inner token class (static DI pattern)
+        YdlPublishApprovalToken::setTokenPolicy($this->approvalTokenPolicy);
     }
 
     // ─── Primary API ─────────────────────────────────────────────────────────
@@ -150,7 +156,7 @@ class YdlPublishOrchestrator
      * Step 2: Request human approval for publishing.
      *
      * Returns an approval token that must be presented when executing publish.
-     * Token expires after APPROVAL_TOKEN_TTL_SECONDS.
+     * Token expires after ApprovalTokenPolicy::DEFAULT_TTL_SECONDS.
      *
      * Throws DomainException if publish is not ready.
      */
@@ -175,13 +181,16 @@ class YdlPublishOrchestrator
             );
         }
 
+        $requestedAt = now()->toIso8601String();
+        $expiresAt = $this->approvalTokenPolicy->computeExpiresAt($requestedAt);
+
         $token = YdlPublishApprovalToken::create(
             ilanId: $ilanId,
             eventId: $eventId,
             recommendation: $readiness->recommendation,
             ydlAuthority: $readiness->ydlAuthority,
-            requestedAt: now()->toIso8601String(),
-            expiresAt: now()->addSeconds(self::APPROVAL_TOKEN_TTL_SECONDS)->toIso8601String(),
+            requestedAt: $requestedAt,
+            expiresAt: $expiresAt,
         );
 
         return $token;
@@ -457,10 +466,13 @@ final class YdlPublishReadinessOutput
  * Contains everything needed to execute publish after approval.
  * Token is validated at execute-time to prevent race conditions.
  *
+ * Token lifecycle delegated to ApprovalTokenPolicy (platform-level).
+ *
  * @readonly
  */
 final class YdlPublishApprovalToken
 {
+    private static ?ApprovalTokenPolicyInterface $tokenPolicy = null;
     private ?\DateTimeImmutable $validatedAt = null;
 
     public function __construct(
@@ -471,6 +483,24 @@ final class YdlPublishApprovalToken
         public readonly string $requestedAt,
         public readonly string $expiresAt,
     ) {}
+
+    /**
+     * Inject the platform token policy (called by YdlPublishOrchestrator after construction).
+     */
+    public static function setTokenPolicy(ApprovalTokenPolicyInterface $policy): void
+    {
+        self::$tokenPolicy = $policy;
+    }
+
+    public static function resetTokenPolicy(): void
+    {
+        self::$tokenPolicy = null;
+    }
+
+    private static function policy(): ApprovalTokenPolicyInterface
+    {
+        return self::$tokenPolicy ?? new ApprovalTokenPolicy();
+    }
 
     public static function create(
         int $ilanId,
@@ -497,25 +527,39 @@ final class YdlPublishApprovalToken
      */
     public function validateOrFail(): void
     {
-        $expires = new \DateTimeImmutable($this->expiresAt);
-        if ($expires < new \DateTimeImmutable()) {
-            throw new \DomainException(
-                "Approval token expired at {$this->expiresAt}. " .
-                "Request a new approval token."
-            );
-        }
-
+        self::policy()->validateOrFail($this->toPlatformToken());
         $this->validatedAt = new \DateTimeImmutable();
     }
 
     public function isExpired(): bool
     {
-        return (new \DateTimeImmutable($this->expiresAt)) < new \DateTimeImmutable();
+        return self::policy()->isExpired($this->toPlatformToken());
     }
 
     public function isValidated(): bool
     {
         return $this->validatedAt !== null;
+    }
+
+    /**
+     * Convert to platform-level ApprovalToken for lifecycle operations.
+     */
+    public function toPlatformToken(): ApprovalToken
+    {
+        return new ApprovalToken(
+            tokenId:           substr(hash('sha256', "{$this->eventId}|{$this->requestedAt}"), 0, 24),
+            eventId:           $this->eventId,
+            subjectId:         $this->ilanId,
+            tenantId:          0,
+            authority:         $this->ydlAuthority,
+            authorityContext:   $this->recommendation->decisionLabel ?? '',
+            expiresAt:         $this->expiresAt,
+            requestedAt:       $this->requestedAt,
+            recommendation:    $this->recommendation->toArray(),
+            subjectType:       'publish',
+            requestedBy:       null,
+            extra:             [],
+        );
     }
 }
 
