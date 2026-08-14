@@ -1,6 +1,6 @@
 # RESERVATION-AVAILABILITY-SYNC — Sprint Charter (DRAFT)
 
-> **Status:** 🔲 CHARTER DRAFT — 4.1+4.2 APPROVED, 4.3+ OPEN
+> **Status:** 🔲 CHARTER DRAFT — 4.1+4.2+4.3 APPROVED, 4.4+ OPEN
 > **Baseline:** `865d3b4` — Guest Communication Wave 1 + Oturum 121 closed
 > **SAAB Direction:** Oturum 121 — Availability Sync Charter hazırlanabilir
 > **Model:** Claude Sonnet 4.6 (escalation → Claude Opus 4.8 / SAAB)
@@ -139,18 +139,41 @@ property_reservations (confirmed)
 
 **ProcessReservationCreated/Modified/Cancelled:** Event lifecycle'ın mevcut job'ları — bunlardan `SyncAvailabilityJob` zincirlenecek.
 
-### 4.3 Channel Sync Boundary
+### 4.3 Channel Sync Boundary — APPROVED
 
-**Decision:** OPEN — depends on 4.2.
+**Decision:** `ChannelSyncContract::pushAvailability()` — mevcut üretim adapter'ları bu kontratı implemente ediyor.
 
-| Kanal | Mevcut Altyapı | Scope |
-|-------|--------------|-------|
-| Booking.com | `BookingChannelAdapter::pushAvailability()` | ✅ Wave 1 |
-| Airbnb | `AirbnbChannelAdapter::pushAvailability()` | Stub — Wave 1 dışı |
-| Sahibinden | — | ❌ Wave 1 dışı |
-| Yalıhan.com | — | ❌ Wave 1 dışı |
+**Kritik bulgu — mevcut kodda tip uyumsuzluğu:**
 
-**Beklenen:** Booking.com öncelikli — mevcut `pushAvailability()` kullanılır.
+```
+AvailabilitySynchronizationService::syncToChannel()
+  ├─ Çağırıyor: $adapter->pushAvailability($dates)
+  └─ Beklenen: ChannelSyncContract::pushAvailability(int $tenantId, int $propertyId,
+                                                             string $correlationId, array $availabilityData)
+```
+
+`BookingChannelAdapter` ve `AirbnbChannelAdapter` → `ChannelSyncContract` implemente eder.
+Ama `AvailabilitySynchronizationService::syncToChannel()` → `ChannelAdapter` interface kullanır (E01 artifact, hiçbir adapter tarafından implemente edilmiyor).
+
+**Düzeltme (Wave 1 implementasyonu):**
+1. `syncToChannel()` imzası → `(int $tenantId, int $propertyId, string $correlationId, array $dates)`
+2. `AvailabilitySynchronizer` binding → `ChannelSyncContract`'e çözümlenir
+3. `ChannelAdapter` interface (E01 artifact) → deprecated veya `ChannelSyncContract` ile uyumlu hale getirilir
+
+**Channel Scope:**
+
+| Kanal | Kontrat | Status | Scope |
+|-------|---------|--------|-------|
+| Booking.com | `ChannelSyncContract::pushAvailability()` | ✅ Production | ✅ Wave 1 |
+| Airbnb | `ChannelSyncContract::pushAvailability()` | ✅ Production | ❌ Wave 1 dışı |
+| Sahibinden | — | — | ❌ Wave 1 dışı |
+| Yalıhan.com | — | — | ❌ Wave 1 dışı |
+
+**ChannelSyncContract avantajları:**
+- Tenant-aware: `$tenantId` açık parametre
+- Idempotent: `$correlationId` deduplication
+- `ChannelSyncResponse` — structured success/failure
+- Her iki adapter da implemente ediyor
 
 ### 4.4 Idempotency & Replay
 
@@ -241,7 +264,7 @@ ReservationCancelledEvent
 
 - [x] SAAB canonical availability source (4.1) kararı donduruldu ✅
 - [x] SAAB triggering events (4.2) kararı donduruldu ✅
-- [ ] SAAB channel sync boundary (4.3) kararı donduruldu
+- [x] SAAB channel sync boundary (4.3) kararı donduruldu ✅
 - [x] LIFECYCLE-DEBT Option A: Override → `ReservationCancelledEvent` çözüldü ✅
 - [ ] SyncAvailabilityJob idempotent (eventId deduplication)
 - [ ] Tenant isolation: event tenantId → channel adapter
