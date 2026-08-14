@@ -6,6 +6,70 @@
 
 ---
 
+## 2026-08-14 | Oturum 122 | RESERVATION-GUEST-COMM-WAVE-1 ✅ CERTIFIED (19/19 PASS)
+
+### RESERVATION-GUEST-COMM-WAVE-1 — Guest Confirmation Notification Pipeline
+
+**Commit:** `e681d3b` + `4da2e37` + `9719ac2`
+**Baseline:** `31e8065` (Reservation Event Backbone)
+
+#### Canonical Pipeline
+
+```
+ReservationCreatedEvent
+  → ProcessReservationCreated::handle()
+    → SendGuestConfirmationJob ($tries=3, backoff=[30,60,120])
+      → GuestCommunicationPolicy (consent + contact + idempotency)
+        → GuestConfirmationNotification DTO
+          → NotificationDispatcher::dispatch()
+            → OutboundNotification (evidence: SENT/FAILED/CANCELLED)
+```
+
+#### New Files (6)
+
+| File | Purpose |
+|------|---------|
+| `app/Jobs/Reservation/SendGuestConfirmationJob.php` | Idempotent, tenant-scoped queued job |
+| `app/Services/Notification/GuestCommunicationPolicy.php` | Phone normalization + consent + idempotency |
+| `app/DTOs/Notification/GuestConfirmationNotification.php` | NotificationContract impl |
+| `app/Contracts/Reservation/ReservationNotificationDispatcherContract.php` | Contract |
+| `app/Services/Reservation/NullReservationNotificationDispatcher.php` | Null object |
+| `tests/Feature/Reservation/GuestCommunicationWave1Test.php` | 12 tests |
+
+#### Test Results
+
+```
+GuestCommunicationWave1Test:   12/12 PASS
+ReservationEventBackboneTest:   7/7 PASS
+TOTAL:                      19/19 PASS
+SAB integrity: 0 new violations (70 pre-existing)
+```
+
+#### Feature Flag Compliance
+
+| Scenario | Expected | Result |
+|----------|----------|--------|
+| `whatsapp_pilot_global=false` | STATE_CANCELLED | ✅ |
+| Tenant not in allowlist | STATE_CANCELLED | ✅ |
+| Valid phone + flag on | Dispatched | ✅ |
+| No phone or email | Skip silently | ✅ |
+| Idempotency | Single per channel | ✅ |
+| Tenant isolation | tenantId in envelope | ✅ |
+
+#### SAAB Kararı (Oturum 121)
+
+| Alan | Durum |
+|------|-------|
+| Event Backbone | ✅ CERTIFIED |
+| Guest Communication W1 | ✅ CERTIFIED |
+| EB Regression | ✅ 7/7 |
+| Yeni SAB ihlali | ✅ 0 |
+| LIFECYCLE-DEBT | 🟡 OPEN (cancellation wave öncesi SAAB kararı şart) |
+| G34 REGRESSION-DEBT | 🟡 TRACKED |
+| Sonraki capability | ▶ Availability Sync (Charter → SAAB approval) |
+
+---
+
 ## 2026-08-14 | Oturum 121 | RESERVATION EVENT BACKBONE ✅ CERTIFIED
 
 ### EB Certification — Canonical Event-Driven Automation Foundation
