@@ -20,7 +20,7 @@
 | **🔍 PLATFORM** | **Supervised Autonomy Pattern — 2 Operasyon Kanıtı** | **PILOT-001+002** | **✅ APPROVED — SAAB Charter v1.0 (66c0c675)** |
 | **🔗 RESERVATION-EB** | **Canonical Event Backbone — Event-Driven Automation Foundation** | **RESERVATION-EB** | **✅ CERTIFIED (Oturum 121 — 2026-08-14)** |
 | **🚀 RESERVATION-GUEST-COMM-WAVE-1** | **Guest Confirmation Notification Pipeline** | **GUEST-COMM-WAVE-1** | **✅ CERTIFIED (Oturum 122 — 19/19 PASS, commit e681d3b)** |
-| **📡 AVAILABILITY SYNC** | **Availability Outbound Sync — ProcessReservationCreated → sync pipeline** | **AVAILABILITY SYNC** | **🔲 PLANNING — Charter approval pending** |
+| **📡 AVAILABILITY SYNC** | **Availability Outbound Sync — 6 decisions OPEN, Option A selected, dependency order defined** | **AVAIL_SYNC** | **🔲 CHARTER DRAFT v3 — SAAB 6 decisions pending** |
 
 **ERA IV:** 🚀 ACTIVE — First Advisor Pilot | Sprint 5.0
 
