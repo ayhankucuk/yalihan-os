@@ -13,7 +13,23 @@ Reservation Core ✅ → Event Backbone ✅ → Guest Communication W1 ✅
 → Financial Closure
 ```
 
-**Sonraki adım:** Availability Sync için Charter → SAAB Approval → Implementation → Evidence → Testing → Certification → Handoff döngüsü. Model: Claude Sonnet 4.6. Escalation: Claude Opus 4.8 / SAAB — yalnızca yeni mimari karar gerektiğinde.
+**Program:** 🟢 ON TRACK
+**Architecture Direction:** 🟢 STABLE
+
+### Availability Sync — Karar Durumu
+
+| Karar | Durum | Bağımlılık |
+|-------|-------|-------------|
+| LIFECYCLE-DEBT | ✅ Option A selected | — |
+| 4.1 Canonical Source | 🔲 OPEN | İlk çözülecek |
+| 4.2 Triggering Events | 🔲 OPEN | 4.1'e bağlı |
+| 4.3 Channel Boundary | 🔲 OPEN | 4.2'ye bağlı |
+| 4.4+4.5 Idempotency + Tenant | 🔲 OPEN | 4.3'e bağlı |
+| 4.6 Retry / Evidence | 🔲 OPEN | 4.4+4.5'e bağlı |
+| → APPROVED → Implementation | 🔲 Bekleniyor | 4.6'ya bağlı |
+
+**Sonraki governance gate:** Availability Sync — Decision 4.1: Canonical Source
+**Model:** Claude Sonnet 4.6 | **Escalation:** Claude Opus 4.8 / SAAB
 
 ---
 
