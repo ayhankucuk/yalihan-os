@@ -12,7 +12,7 @@ namespace App\Services\Ydl\Platform;
  *   - YdlReservationOrchestrator (PILOT-002)
  *
  * Responsibilities:
- *   - TTL management (default: 24 hours)
+ *   - TTL management (value provided by domain — platform owns the mechanism)
  *   - Token ID generation (deterministic, replay-resistant)
  *   - Expiry validation
  *   - Token struct factory
@@ -20,6 +20,10 @@ namespace App\Services\Ydl\Platform;
  * This class does NOT contain business logic.
  * Business logic (what the token means, what operation it authorizes)
  * stays in domain orchestrators and domain token DTOs.
+ *
+ * TTL ownership:
+ *   - Platform: mechanism (calculation, validation)
+ *   - Domain: TTL value — passed at construction or per-call
  *
  * Domain-agnostic: no imports from App\Models\... or App\Services\...
  * except ApprovalToken / ApprovalTokenPolicyInterface themselves.
@@ -31,11 +35,16 @@ namespace App\Services\Ydl\Platform;
  */
 class ApprovalTokenPolicy implements ApprovalTokenPolicyInterface
 {
-    /** 24-hour TTL shared across all pilots. */
+    /** Technical default TTL — domain should provide its own value. */
     public const DEFAULT_TTL_SECONDS = 86400;
 
-    public function __construct()
-    {
+    /**
+     * @param int $ttlSeconds  Domain-defined TTL in seconds.
+     *                          Use DEFAULT_TTL_SECONDS as fallback only.
+     */
+    public function __construct(
+        private readonly int $ttlSeconds = self::DEFAULT_TTL_SECONDS,
+    ) {
     }
 
     /**
@@ -43,7 +52,7 @@ class ApprovalTokenPolicy implements ApprovalTokenPolicyInterface
      */
     public function defaultTtlSeconds(): int
     {
-        return self::DEFAULT_TTL_SECONDS;
+        return $this->ttlSeconds;
     }
 
     /**
@@ -51,7 +60,7 @@ class ApprovalTokenPolicy implements ApprovalTokenPolicyInterface
      */
     public function computeExpiresAt(string $requestedAt, ?int $ttlSeconds = null): string
     {
-        $ttl = $ttlSeconds ?? self::DEFAULT_TTL_SECONDS;
+        $ttl = $ttlSeconds ?? $this->ttlSeconds;
         return (new \DateTimeImmutable($requestedAt))
             ->modify("+{$ttl} seconds")
             ->format(\DateTimeInterface::ATOM);
@@ -71,7 +80,7 @@ class ApprovalTokenPolicy implements ApprovalTokenPolicyInterface
     public function buildToken(array $params): ApprovalToken
     {
         $requestedAt = $params['requestedAt'] ?? now()->toIso8601String();
-        $ttl = $params['ttlSeconds'] ?? self::DEFAULT_TTL_SECONDS;
+        $ttl = $params['ttlSeconds'] ?? $this->ttlSeconds;
         $eventId = $params['eventId'] ?? '';
         $tokenId = $this->generateTokenId($eventId, $requestedAt);
         $expiresAt = $this->computeExpiresAt($requestedAt, $ttl);
