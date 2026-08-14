@@ -129,6 +129,20 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\Governance\RollbackExecuted::class => [],
         \App\Events\Governance\FindingSuppressed::class => [],
         \App\Events\Governance\OverrideApplied::class => [],
+
+        // ── Sprint 4-WAVE-EB: Canonical Reservation Lifecycle Events ──────
+        // Provider events (Booking, Channex) are DOWNSTREAM of these events.
+        // All downstream systems (Guest Communication, Availability Sync,
+        // Finance, Stay Operations) subscribe to these canonical events only.
+        \App\Events\Reservation\ReservationCreatedEvent::class => [
+            \App\Listeners\Reservation\ListenReservationCreated::class,
+        ],
+        \App\Events\Reservation\ReservationModifiedEvent::class => [
+            \App\Listeners\Reservation\ListenReservationModified::class,
+        ],
+        \App\Events\Reservation\ReservationCancelledEvent::class => [
+            \App\Listeners\Reservation\ListenReservationCancelled::class,
+        ],
     ];
 
     /**
