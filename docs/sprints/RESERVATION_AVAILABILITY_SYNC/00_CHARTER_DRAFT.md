@@ -177,25 +177,111 @@ Ama `AvailabilitySynchronizationService::syncToChannel()` → `ChannelAdapter` i
 
 ### 4.4 Idempotency — APPROVED
 
-**Decision:** İki seviyeli idempotency — mevcut `AvailabilitySynchronizationService` pattern'i kullanılır.
+**Decision:** Üç katmanlı idempotency modeli — mevcut pipeline mimarisi üzerine inşa edilir.
 
-**Kanıt — kod analizi:**
+---
 
+#### Üç Katman Modeli
+
+**Katman 1 — Event Consumption Idempotency**
+
+Event tekrarlarına karşı koruma: Aynı `ReservationCreatedEvent` veya `ReservationCancelledEvent` iki kez teslim edilirse sistem aynı sonucu üretir.
+
+Birim: `ChannelSyncExecution.idempotency_key`
 ```
-Level A — Internal (Yalıhan):
-  idempotency_key = {tenantId}:{propertyId}:{reservationId}:{operation}:{startDate}:{endDate}
-  Tablo: channel_sync_executions.idempotency_key
-  Kontrol: findExistingSync() — aynı key varsa mevcut sonuç döner
-
-Level B — External (OTA API):
-  correlationId = sync-{Ymd}-{random12}
-  Tablo: channel_sync_executions.correlation_id
-  Kullanım: Booking.com API idempotency key olarak
+Tüm katmanlarda tek idempotency_key:
+  {tenantId}:{propertyId}:{reservationId}:{eventType}:{startDate}:{endDate}
 ```
+Değer: `eventType` = `block` veya `release`
+Yazılış: `AvailabilitySynchronizationService::synchronize()` — mevcut `getIdempotencyKey()` genişletilir.
 
-**No eventId:** `ReservationCreatedEvent` ve `ReservationCancelledEvent`'te `eventId` alanı yok. `reservationId` kullanılır — bu zaten `idempotency_key`'in bir parçası.
+DB guard: `ChannelSyncExecution.idempotency_key` UNIQUE constraint (mevcut, migration `2026_07_29`)
+Kontrol: `findExistingSync()` — SELECT-then-act, race condition riski kabul edilir.
+Kontrol zamanı: Transaction öncesi — mevcut kod korunur.
 
-**Replay:** ExecutionRuntime semantics korunur — yeni event yeni execution üretir, eski değişmez. `ChannelSyncExecution` immutable'dır.
+Event yok: `ReservationCreatedEvent`'te `eventId` alanı yok. Tek kimlik `reservationId`. Event tekrarları katman 1'den önce `ProcessReservationCreated`'de engellenmez — katman 1 idempotency check'a güvenilir.
+
+**Katman 2 — Availability Projection Idempotency**
+
+`property_availabilities` tablosunda aynı `property_id + date` için tekrarlanan yazma işlemleri idempotent olmalıdır.
+
+Mevcut mekanizma:
+- `ReservationService::createReservation()`: `insertOrIgnore()` + `lockForUpdate()` + conflict check
+- `AvailabilitySynchronizationService::synchronize()`: `lockForUpdate()` + `is_available` kontrolü
+- Aynı `reservationId + date` tekrar yazıldığında değerler değişmez — idempotent overwrite
+
+DB uniqueness: `property_availabilities` tablosunda `(property_id, date)` unique constraint YOK. Uygulama seviyesinde lock + conflict check ile korunur. Bu kısıtlama mevcut kodda bilinen bir gap olarak kabul edilir; bu Wave'de değiştirilmez.
+
+**Katman 3 — Channel Dispatch Idempotency**
+
+Kanal API çağrıları için: Aynı payload tekrar gönderildiğinde sistem doğru davranır.
+
+Birim: `ChannelSyncContract::pushAvailability($tenantId, $propertyId, $correlationId, $availabilityData)`
+Kayıt: `ChannelSyncExecution.correlation_id` — her dispatch için benzersiz, storedempotent API idempotency key olarak kaydedilir.
+Kullanım: Log ve izleme — OTA API'ya header olarak gönderilmez (mevcut implementasyon).
+
+Queue deduplication: `SynchronizeAvailabilityJob::uniqueId()` — `'availability_sync_' . $syncRecordId`. Mevcut kod korunur.
+
+Replay koruması: `ChannelSyncExecution.processed_at !== null` guard mevcut — aynı kayıt tekrar çalıştırılmaz.
+
+---
+
+#### Critical Findings — Implementation öncesi bilinmeli
+
+| Bulgu | Durum | Aksiyon |
+|-------|-------|---------|
+| `correlationId` OTA API'ya header olarak gönderilmiyor | Biliniyor | Belgelendi |
+| `ChannelSyncExecution` race condition (SELECT-INSERT) | Biliniyor | Belgelendi |
+| `property_availabilities` unique constraint yok | Biliniyor | Belgelendi |
+| `ReservationEvent`'te `eventId` yok | Biliniyor | Katman 1 ile telafi |
+
+---
+
+#### Guarantee Seviyesi
+
+Sistem **at-least-once** garanti verir:
+
+- Aynı event birden fazla tetiklenirse, idempotency_key tekrarları engeller
+- Aynı channel dispatch idempotency_key ile kaydedilir, tekrarlar `findExistingSync` tarafından yakalanır
+- OTA API idempotency: uygulama seviyesinde `correlationId` loglanır; OTA'nın kendi retry mekanizmasına güvenilir
+- Exactly-once garantisi yoktur; Outbox pattern bu Wave'de uygulanmaz
+
+**Kabul edilen residual risk:** OTA timeout + yerel kayıt tutarsızlığı — `processed_at` guard retry'i bloke eder; reconciliation worker ayrı Wave'e bırakılır.
+
+---
+
+#### 4.4 Nihai İnvaryantlar
+
+| İnvaryant | Açıklama |
+|-----------|----------|
+| Aynı event iki kez tetiklenmez | Katman 1 idempotency_key |
+| Aynı date/property tekrar yazılmaz | Katman 2 lockForUpdate |
+| Kanal idempotency_key benzersiz | Katman 3 unique constraint |
+| Replay aynı sonucu üretir | processed_at guard |
+| Queue job tekrarlanmaz | uniqueId() + afterCommit |
+
+---
+
+#### 4.4 Test Sözleşmesi
+
+| ID | Senaryo | Given | When | Then |
+|----|---------|-------|-------|------|
+| I4-T1 | Duplicate Created event | Aynı ReservationCreatedEvent iki kez tetiklenir | SyncAvailabilityJob iki kez çalışır | Sadece bir ChannelSyncExecution kaydı, tek API çağrısı |
+| I4-T2 | Duplicate Cancelled event | Aynı ReservationCancelledEvent iki kez | Aynı channel sync tetiklenir | Tek kayıt, tek API çağrısı |
+| I4-T3 | Eşzamanlı worker | İki worker aynı idempotency_key ile çağrı yapar | Her iki worker çalışır | Unique constraint biri kaydeder, diğeri unique violation alır |
+| I4-T4 | Stale job after canonical release | Gecikmiş Created job çalışır ama tarih release edilmiş | processed_at guard tetiklenir | No-op, hata yok |
+| I4-T5 | Channel timeout | OTA timeout döner, kayıt yapılmaz | Retry başlar | Attempt 2'de aynı idempotency_key kullanılır |
+| I4-T6 | Tenant izolasyonu | Tenant A ve B aynı property_id + date yazar | Her biri ayrı tenant context ile çalışır | Tenant B'nin kaydı Tenant A'ninkini ezmez |
+
+---
+
+#### 4.5'e Bağımlılık
+
+Tenant isolation kararı (4.5) katman 1'in tenant sınırını netleştirir. Katman 1 zaten tenant koruması içerir; 4.5 bu korumayı onaylar.
+
+#### 4.6'ya Bağımlılık
+
+Retry kararı (4.6) katman 3'ün retry davranışını netleştirir. `tries=3`, `backoff` ve `processed_at` guard zaten mevcut. 4.6 bu pattern'i onaylar ve gerekirse genişletir.
 
 ### 4.5 Tenant Isolation — APPROVED
 
