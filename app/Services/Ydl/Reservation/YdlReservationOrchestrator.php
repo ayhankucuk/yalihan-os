@@ -22,6 +22,8 @@ use App\Services\Ydl\Platform\ApprovalTokenPolicy;
 use App\Services\Ydl\Platform\ApprovalTokenPolicyInterface;
 use App\Services\Ydl\Platform\AuthorityEvaluator;
 use App\Services\Ydl\Platform\AuthorityEvaluatorInterface;
+use App\Services\Ydl\Platform\IdempotencyGuard;
+use App\Services\Ydl\Platform\IdempotencyGuardInterface;
 
 /**
  * YdlReservationOrchestrator — E2E Reservation Pipeline for PILOT-002 Wave 1.
@@ -57,6 +59,7 @@ class YdlReservationOrchestrator
     private ?ConflictOverrideService $conflictOverrideService;
     private AuthorityEvaluatorInterface $authorityEvaluator;
     private ApprovalTokenPolicyInterface $approvalTokenPolicy;
+    private IdempotencyGuardInterface $idempotencyGuard;
 
     public function __construct(
         ?ReservationReadinessService $readinessService = null,
@@ -64,12 +67,17 @@ class YdlReservationOrchestrator
         ?ConflictOverrideService $conflictOverrideService = null,
         ?AuthorityEvaluatorInterface $authorityEvaluator = null,
         ?ApprovalTokenPolicyInterface $approvalTokenPolicy = null,
+        ?IdempotencyGuardInterface $idempotencyGuard = null,
     ) {
         $this->readinessService = $readinessService ?? new ReservationReadinessService();
         $this->eventLog = $eventLog ?? new ReservationEventLog();
         $this->conflictOverrideService = $conflictOverrideService;
         $this->authorityEvaluator = $authorityEvaluator ?? new AuthorityEvaluator();
         $this->approvalTokenPolicy = $approvalTokenPolicy ?? new ApprovalTokenPolicy();
+        $this->idempotencyGuard = $idempotencyGuard ?? new IdempotencyGuard(
+            $this->eventLog->getLogPath(),
+            $this->eventLog->getBasePath()
+        );
 
         // Wire token policy into domain token DTOs (static DI pattern)
         YdlReservationApprovalToken::setTokenPolicy($this->approvalTokenPolicy);
@@ -147,8 +155,8 @@ class YdlReservationOrchestrator
             'CREATE',
         );
 
-        // Idempotency check BEFORE creating token
-        if ($this->eventLog->eventExists($eventId)) {
+        // Idempotency check BEFORE creating token (via IdempotencyGuard)
+        if ($this->idempotencyGuard->check($eventId)->isDuplicate()) {
             throw new \DomainException(
                 "Duplicate reservation attempt: event {$eventId} already processed. " .
                 "This reservation was already created or the approval token has been used."
@@ -227,8 +235,8 @@ class YdlReservationOrchestrator
             return $evidence;
         }
 
-        // ── 3. Idempotency check ─────────────────────────────────
-        if ($this->eventLog->eventExists($token->eventId)) {
+        // ── 3. Idempotency check (via IdempotencyGuard) ─────────────
+        if ($this->idempotencyGuard->check($token->eventId)->isDuplicate()) {
             // Already processed — return idempotent evidence (no exception, no re-execution)
             return YdlReservationEvidence::idempotentNoOp(
                 ilanId:            $token->ilanId,
@@ -453,8 +461,8 @@ class YdlReservationOrchestrator
             'CANCEL',
         );
 
-        // Idempotency check
-        if ($this->eventLog->eventExists($eventId)) {
+        // Idempotency check (via IdempotencyGuard)
+        if ($this->idempotencyGuard->check($eventId)->isDuplicate()) {
             throw new \DomainException(
                 "Duplicate cancellation: event {$eventId} already processed."
             );
@@ -509,8 +517,8 @@ class YdlReservationOrchestrator
             return $evidence;
         }
 
-        // ── 3. Idempotency check ─────────────────────────────────
-        if ($this->eventLog->eventExists($token->eventId)) {
+        // ── 3. Idempotency check (via IdempotencyGuard) ─────────────
+        if ($this->idempotencyGuard->check($token->eventId)->isDuplicate()) {
             return YdlCancellationEvidence::idempotentNoOp(
                 reservationId:  $token->reservationId,
                 ilanId:        $token->ilanId,

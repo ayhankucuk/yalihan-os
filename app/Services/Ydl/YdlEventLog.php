@@ -33,6 +33,16 @@ class YdlEventLog
         $this->logPath = $this->basePath . '/memory/ydl/event-log.jsonl';
     }
 
+    public function getBasePath(): string
+    {
+        return $this->basePath;
+    }
+
+    public function getLogPath(): string
+    {
+        return $this->logPath;
+    }
+
     /**
      * Append a new event to the log.
      *

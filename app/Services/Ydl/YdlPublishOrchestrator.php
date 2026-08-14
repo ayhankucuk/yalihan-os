@@ -13,6 +13,8 @@ use App\Services\Ydl\Platform\ApprovalTokenPolicy;
 use App\Services\Ydl\Platform\ApprovalTokenPolicyInterface;
 use App\Services\Ydl\Platform\AuthorityEvaluator;
 use App\Services\Ydl\Platform\AuthorityEvaluatorInterface;
+use App\Services\Ydl\Platform\IdempotencyGuard;
+use App\Services\Ydl\Platform\IdempotencyGuardInterface;
 
 /**
  * YdlPublishOrchestrator — E2E Property Publish Pipeline for YDL Phase 3.
@@ -43,6 +45,7 @@ class YdlPublishOrchestrator
     private ?string $basePath;
     private AuthorityEvaluatorInterface $authorityEvaluator;
     private ApprovalTokenPolicyInterface $approvalTokenPolicy;
+    private IdempotencyGuardInterface $idempotencyGuard;
 
     public function __construct(
         ?YdlPublishReadinessService $readinessService = null,
@@ -52,6 +55,7 @@ class YdlPublishOrchestrator
         ?string $basePath = null,
         ?AuthorityEvaluatorInterface $authorityEvaluator = null,
         ?ApprovalTokenPolicyInterface $approvalTokenPolicy = null,
+        ?IdempotencyGuardInterface $idempotencyGuard = null,
     ) {
         $this->readinessService = $readinessService ?? new YdlPublishReadinessService(
             new \App\Services\Listing\ListingScoreService(),
@@ -63,6 +67,10 @@ class YdlPublishOrchestrator
         $this->basePath = $basePath;
         $this->authorityEvaluator = $authorityEvaluator ?? new AuthorityEvaluator($this->contextReader, $basePath);
         $this->approvalTokenPolicy = $approvalTokenPolicy ?? new ApprovalTokenPolicy();
+        $this->idempotencyGuard = $idempotencyGuard ?? new IdempotencyGuard(
+            $this->eventLog->getLogPath(),
+            $this->eventLog->getBasePath()
+        );
 
         // Wire token policy into inner token class (static DI pattern)
         YdlPublishApprovalToken::setTokenPolicy($this->approvalTokenPolicy);
@@ -173,8 +181,9 @@ class YdlPublishOrchestrator
         $ilanId = $readiness->recommendation->ilanId;
         $eventId = $this->buildEventId($ilanId);
 
-        // Check idempotency BEFORE creating token
-        if ($this->eventLog->eventExists($eventId)) {
+        // Check idempotency BEFORE creating token (via IdempotencyGuard)
+        $result = $this->idempotencyGuard->check($eventId);
+        if ($result->isDuplicate()) {
             throw new \DomainException(
                 "Duplicate publish attempt: event {$eventId} already processed. " .
                 "This ilan was already published or the approval token has been used."
@@ -228,8 +237,9 @@ class YdlPublishOrchestrator
             );
         }
 
-        // ── 3. Idempotency check ───────────────────────────────────
-        if ($this->eventLog->eventExists($token->eventId)) {
+        // ── 3. Idempotency check (via IdempotencyGuard) ─────────────
+        $dupCheck = $this->idempotencyGuard->check($token->eventId);
+        if ($dupCheck->isDuplicate()) {
             throw new \DomainException(
                 "Duplicate event {$token->eventId} already in log. Idempotent no-op."
             );

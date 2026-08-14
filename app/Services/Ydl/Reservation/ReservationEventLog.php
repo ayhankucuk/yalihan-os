@@ -27,6 +27,16 @@ class ReservationEventLog
         $this->logPath = $this->basePath . '/memory/ydl/reservation-event-log.jsonl';
     }
 
+    public function getBasePath(): string
+    {
+        return $this->basePath;
+    }
+
+    public function getLogPath(): string
+    {
+        return $this->logPath;
+    }
+
     /**
      * Append a new event to the log.
      *
