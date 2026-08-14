@@ -15,6 +15,9 @@ use App\Services\Ydl\Platform\AuthorityEvaluator;
 use App\Services\Ydl\Platform\AuthorityEvaluatorInterface;
 use App\Services\Ydl\Platform\IdempotencyGuard;
 use App\Services\Ydl\Platform\IdempotencyGuardInterface;
+use App\Services\Ydl\Platform\TenantBoundaryGuard;
+use App\Services\Ydl\Platform\TenantBoundaryGuardInterface;
+use App\Services\Ydl\Platform\TenantResolver;
 
 /**
  * YdlPublishOrchestrator — E2E Property Publish Pipeline for YDL Phase 3.
@@ -46,6 +49,7 @@ class YdlPublishOrchestrator
     private AuthorityEvaluatorInterface $authorityEvaluator;
     private ApprovalTokenPolicyInterface $approvalTokenPolicy;
     private IdempotencyGuardInterface $idempotencyGuard;
+    private TenantBoundaryGuardInterface $tenantBoundaryGuard;
 
     public function __construct(
         ?YdlPublishReadinessService $readinessService = null,
@@ -56,6 +60,7 @@ class YdlPublishOrchestrator
         ?AuthorityEvaluatorInterface $authorityEvaluator = null,
         ?ApprovalTokenPolicyInterface $approvalTokenPolicy = null,
         ?IdempotencyGuardInterface $idempotencyGuard = null,
+        ?TenantBoundaryGuardInterface $tenantBoundaryGuard = null,
     ) {
         $this->readinessService = $readinessService ?? new YdlPublishReadinessService(
             new \App\Services\Listing\ListingScoreService(),
@@ -70,6 +75,9 @@ class YdlPublishOrchestrator
         $this->idempotencyGuard = $idempotencyGuard ?? new IdempotencyGuard(
             $this->eventLog->getLogPath(),
             $this->eventLog->getBasePath()
+        );
+        $this->tenantBoundaryGuard = $tenantBoundaryGuard ?? new TenantBoundaryGuard(
+            new TenantResolver()
         );
 
         // Wire token policy into inner token class (static DI pattern)
@@ -255,6 +263,12 @@ class YdlPublishOrchestrator
 
         // ── 5. Load Ilan and verify state ─────────────────────────
         $ilan = Ilan::findOrFail($token->ilanId);
+
+        // ── 5b. Tenant isolation (via TenantBoundaryGuard) ───────────
+        // Forward-compatibility: token carries no tenantId in PILOT-001,
+        // so we use the ilan's own tenant_id as expected.
+        // Guard verifies it matches (no-op for same-tenant, throws on cross-tenant).
+        $this->tenantBoundaryGuard->verifyIlan($ilan->id, $ilan->tenant_id);
 
         $mevcutRaw = $ilan->getRawOriginal('yayin_durumu') ?? $ilan->yayin_durumu;
         $mevcutStr = $mevcutRaw instanceof IlanDurumu ? $mevcutRaw->value : (string) $mevcutRaw;

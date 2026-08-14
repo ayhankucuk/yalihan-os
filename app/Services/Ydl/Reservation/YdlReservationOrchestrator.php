@@ -24,6 +24,9 @@ use App\Services\Ydl\Platform\AuthorityEvaluator;
 use App\Services\Ydl\Platform\AuthorityEvaluatorInterface;
 use App\Services\Ydl\Platform\IdempotencyGuard;
 use App\Services\Ydl\Platform\IdempotencyGuardInterface;
+use App\Services\Ydl\Platform\TenantBoundaryGuard;
+use App\Services\Ydl\Platform\TenantBoundaryGuardInterface;
+use App\Services\Ydl\Platform\TenantResolver;
 
 /**
  * YdlReservationOrchestrator — E2E Reservation Pipeline for PILOT-002 Wave 1.
@@ -60,6 +63,7 @@ class YdlReservationOrchestrator
     private AuthorityEvaluatorInterface $authorityEvaluator;
     private ApprovalTokenPolicyInterface $approvalTokenPolicy;
     private IdempotencyGuardInterface $idempotencyGuard;
+    private TenantBoundaryGuardInterface $tenantBoundaryGuard;
 
     public function __construct(
         ?ReservationReadinessService $readinessService = null,
@@ -68,6 +72,7 @@ class YdlReservationOrchestrator
         ?AuthorityEvaluatorInterface $authorityEvaluator = null,
         ?ApprovalTokenPolicyInterface $approvalTokenPolicy = null,
         ?IdempotencyGuardInterface $idempotencyGuard = null,
+        ?TenantBoundaryGuardInterface $tenantBoundaryGuard = null,
     ) {
         $this->readinessService = $readinessService ?? new ReservationReadinessService();
         $this->eventLog = $eventLog ?? new ReservationEventLog();
@@ -77,6 +82,9 @@ class YdlReservationOrchestrator
         $this->idempotencyGuard = $idempotencyGuard ?? new IdempotencyGuard(
             $this->eventLog->getLogPath(),
             $this->eventLog->getBasePath()
+        );
+        $this->tenantBoundaryGuard = $tenantBoundaryGuard ?? new TenantBoundaryGuard(
+            new TenantResolver()
         );
 
         // Wire token policy into domain token DTOs (static DI pattern)
@@ -211,13 +219,8 @@ class YdlReservationOrchestrator
         // ── 1. Token validation ────────────────────────────────────
         $token->validateOrFail();
 
-        // ── 1b. Tenant isolation: verify token tenant matches ilan tenant ──
-        $ilan = Ilan::withoutGlobalScopes()->findOrFail($token->ilanId);
-        if ($ilan->tenant_id !== $token->tenantId) {
-            throw new \DomainException(
-                "Cross-tenant reservation attempt: token tenant={$token->tenantId}, ilan tenant={$ilan->tenant_id}"
-            );
-        }
+        // ── 1b. Tenant isolation (via TenantBoundaryGuard) ──
+        $this->tenantBoundaryGuard->verifyIlan($token->ilanId, $token->tenantId);
 
         // ── 2. STOP authority: final gate (via AuthorityEvaluator) ──
         if ($this->authorityEvaluator->isStopAuthority($token->ydlAuthority)) {
@@ -804,14 +807,10 @@ class YdlReservationOrchestrator
             return $evidence;
         }
 
-        // ── 5. Tenant isolation ─────────────────────────────────────────
-        // Check: conflict reservation's tenant must match token's tenant.
-        // If the conflicting reservation belongs to a different tenant,
-        // the override authorization cannot be granted by this tenant.
-        $conflictReservation = PropertyReservation::withoutGlobalScopes()
-            ->find($token->conflictReservationId);
-
-        if ($conflictReservation === null) {
+        // ── 5. Tenant isolation (via TenantBoundaryGuard) ──────────────
+        try {
+            $this->tenantBoundaryGuard->verifyReservation($token->conflictReservationId, $token->tenantId);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
             $evidence = YdlOverrideEvidence::blocked(
                 conflictReservationId: $token->conflictReservationId,
                 ilanId:            $token->ilanId,
@@ -823,9 +822,7 @@ class YdlReservationOrchestrator
             );
             $this->eventLog->append($evidence->toReservationEvent());
             return $evidence;
-        }
-
-        if ($conflictReservation->tenant_id !== $token->tenantId) {
+        } catch (\DomainException $e) {
             $evidence = YdlOverrideEvidence::blocked(
                 conflictReservationId: $token->conflictReservationId,
                 ilanId:            $token->ilanId,
@@ -833,14 +830,15 @@ class YdlReservationOrchestrator
                 eventId:           $token->eventId,
                 ydlAuthority:     $token->ydlAuthority,
                 authorityContext:  'Tenant isolation',
-                reason:           'Cross-tenant override rejected: conflict belongs to different tenant',
+                reason:           $e->getMessage(),
             );
             $this->eventLog->append($evidence->toReservationEvent());
             return $evidence;
         }
 
-        $ilan = Ilan::withoutGlobalScopes()->find($token->ilanId);
-        if ($ilan === null || $ilan->tenant_id !== $token->tenantId) {
+        try {
+            $this->tenantBoundaryGuard->verifyIlan($token->ilanId, $token->tenantId);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
             $evidence = YdlOverrideEvidence::blocked(
                 conflictReservationId: $token->conflictReservationId,
                 ilanId:            $token->ilanId,
@@ -848,7 +846,19 @@ class YdlReservationOrchestrator
                 eventId:           $token->eventId,
                 ydlAuthority:     $token->ydlAuthority,
                 authorityContext:  'Tenant isolation',
-                reason:           'Cross-tenant override rejected: ilan belongs to different tenant',
+                reason:           'Ilan not found',
+            );
+            $this->eventLog->append($evidence->toReservationEvent());
+            return $evidence;
+        } catch (\DomainException $e) {
+            $evidence = YdlOverrideEvidence::blocked(
+                conflictReservationId: $token->conflictReservationId,
+                ilanId:            $token->ilanId,
+                tenantId:          $token->tenantId,
+                eventId:           $token->eventId,
+                ydlAuthority:     $token->ydlAuthority,
+                authorityContext:  'Tenant isolation',
+                reason:           $e->getMessage(),
             );
             $this->eventLog->append($evidence->toReservationEvent());
             return $evidence;
