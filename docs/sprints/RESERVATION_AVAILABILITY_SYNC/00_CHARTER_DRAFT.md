@@ -32,6 +32,8 @@ Bu ilke şunları ifade eder:
 
 **Bu ilke, Sprint 12B Property Runtime ve Event Backbone yaklaşımıyla uyumludur.**
 
+> **SAAB Kararı:** Seçenek A — Override path, canonical `ReservationCancelledEvent` üretmelidir. Seçenek B (sync'in doğrudan DB okuması) reddedildi — Event Backbone bypass yaratır.
+
 ---
 
 ## 3. LIFECYCLE-DEBT Etkisi — Override Path Availability
@@ -51,24 +53,39 @@ Bu ilke şunları ifade eder:
 
 **Risk:** Override sonrası Booking.com ve Airbnb'de aynı tarihler hâlâ "blocked" görünür.
 
-**Karar gerektiren soru:** Availability Sync, LIFECYCLE-DEBT çözülmeden **onaylanmamalıdır**. İki seçenek:
+**Karar:** **Seçenek A** — Override path, canonical `ReservationCancelledEvent` üretmelidir.
 
-| Seçenek | Açıklama | Avantaj | Risk |
-|---------|---------|---------|------|
-| **A — Override'a Event ekle** | `ReservationCancelledEvent` override path'e eklenir | En temiz, tek event modeli | LIFECYCLE-DEBT değişikliği gerektirir |
-| **B — Sync direkt DB okur** | `SyncAvailabilityJob` sadece canonical tabloyu okur, event'e bağlı değildir | LIFECYCLE-DEBT'ten bağımsız | Canonical tablo doğruluğu kritik |
+**Gerekçe:** Seçenek B, Event Backbone'u bypass ederek Availability Sync'i ikinci bir state-detection mekanizmasına dönüştürür. Bu, replay, audit ve ileride başka channel adapter'lar açısından iki ayrı gerçeklik yaratır. Canonical reservation → availability → channel projection yönü korunmalıdır.
 
-**SAAB'a sunulacak karar:** Seçenek A mı B mi?
+**DoD etkisi:** LIFECYCLE-DEBT çözümü (Option A) onaylandıktan sonra SyncAvailabilityJob implementasyonu başlayabilir.
 
 ---
 
-## 4. Critical Architecture Decisions to Freeze
+## 4. Critical Architecture Decisions — Dependency Order
 
-> ⚠️ Aşağıdaki kararlar Charter approval'dan ÖNCE SAAB tarafından dondurulmalıdır.
+> ⚠️ Kararlar aşağıdaki sırayla çözülmelidir. Her karar sonrakinin的前提ıdır.
+
+```
+Canonical source (4.1)
+    ↓
+Lifecycle/Override semantics (Seçenek A onaylandı)
+    ↓
+Triggering events (4.2)
+    ↓
+Projection boundary (4.3)
+    ↓
+Idempotency / Tenant (4.4–4.5)
+    ↓
+Retry / Evidence (4.6)
+    ↓
+→ APPROVED → Implementation
+```
+
+### 4.1 Decision: Canonical Availability Source — APPROVED
 
 ### 4.1 Canonical Availability Source
 
-**Question:** Canonical availability hangi tablodan okunur?
+**Decision:** OPEN — SAAB decision pending.
 
 | Seçenek | Avantaj | Risk |
 |---------|---------|------|
@@ -80,18 +97,18 @@ Bu ilke şunları ifade eder:
 
 ### 4.2 Reservation/Block Source
 
-**Question:** Blocking dates hangi event'lerden türetilir?
+**Decision:** OPEN — depends on 4.1.
 
 - `ReservationCreatedEvent` → block dates
 - `ReservationCancelledEvent` → release dates
 - `ReservationModifiedEvent` → release old + block new
-- Override → (LIFECYCLE-DEBT kararına bağlı)
+- Override → Option A: `ReservationCancelledEvent` üretilir (LIFECYCLE-DEBT çözüldü)
 
 **Beklenen:** Tüm reservation lifecycle event'leri — ProcessReservationCreated/Modified/Cancelled job'larından zincirlenen yeni job'lar.
 
 ### 4.3 Channel Sync Boundary
 
-**Question:** Sync hangi kanalları kapsar?
+**Decision:** OPEN — depends on 4.2.
 
 | Kanal | Mevcut Altyapı | Scope |
 |-------|--------------|-------|
@@ -104,7 +121,7 @@ Bu ilke şunları ifade eder:
 
 ### 4.4 Idempotency & Replay
 
-**Question:** Sync nasıl idempotent olur?
+**Decision:** OPEN — depends on 4.3.
 
 - Her sync job: `eventId` bazlı deduplication
 - Replay: yeni event üretir, eski event değişmez
@@ -114,7 +131,7 @@ Bu ilke şunları ifade eder:
 
 ### 4.5 Tenant Isolation
 
-**Question:** Sync hangi tenant context'inde çalışır?
+**Decision:** OPEN — depends on 4.3.
 
 - Event envelope `tenantId` → dispatcher'a geçer
 - Her channel adapter: tenant-scoped listing mapping kullanır
@@ -124,7 +141,7 @@ Bu ilke şunları ifade eder:
 
 ### 4.6 Failure / Retry Behavior
 
-**Question:** Channel sync başarısız olursa ne olur?
+**Decision:** OPEN — depends on 4.5.
 
 | Senaryo | Davranış |
 |---------|---------|
@@ -189,9 +206,10 @@ ReservationCancelledEvent
 
 ## 8. DoD Checklist
 
-- [ ] SAAB canonical availability source kararı donduruldu
-- [ ] SAAB LIFECYCLE-DEBT override seçeneği (A veya B) kararı donduruldu
-- [ ] SAAB channel sync boundary kararı donduruldu
+- [ ] SAAB canonical availability source (4.1) kararı donduruldu
+- [ ] SAAB triggering events (4.2) kararı donduruldu
+- [ ] SAAB channel sync boundary (4.3) kararı donduruldu
+- [ ] LIFECYCLE-DEBT Option A: Override → `ReservationCancelledEvent` çözüldü ✅
 - [ ] SyncAvailabilityJob idempotent (eventId deduplication)
 - [ ] Tenant isolation: event tenantId → channel adapter
 - [ ] Retry: $tries=3, backoff [30, 60, 120], afterCommit=true
@@ -207,7 +225,7 @@ ReservationCancelledEvent
 
 | Debt | Durum | Not |
 |------|-------|-----|
-| LIFECYCLE-DEBT | 🟡 OPEN | Override → `ReservationCancelledEvent` eksik. Availability Sync + cancellation wave öncesi çözülecek. |
+| LIFECYCLE-DEBT | 🟡 OPEN → OPTION A SELECTED | Seçenek A: Override → `ReservationCancelledEvent` üretmeli. SAAB review'da çözülecek. |
 | G34 REGRESSION-DEBT | 🟡 TRACKED | Pre-existing. |
 
 ---
