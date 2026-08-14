@@ -2,7 +2,6 @@
 
 namespace App\Services\Ydl\Reservation;
 
-use App\DTOs\Ydl\Reservation\Events\ReservationEvent;
 use App\DTOs\Ydl\Reservation\YdlCancellationApprovalToken;
 use App\DTOs\Ydl\Reservation\YdlCancellationEvidence;
 use App\DTOs\Ydl\Reservation\YdlCancellationRecommendation;
@@ -22,6 +21,8 @@ use App\Services\Ydl\Platform\ApprovalTokenPolicy;
 use App\Services\Ydl\Platform\ApprovalTokenPolicyInterface;
 use App\Services\Ydl\Platform\AuthorityEvaluator;
 use App\Services\Ydl\Platform\AuthorityEvaluatorInterface;
+use App\Services\Ydl\Platform\EventIdentityPolicy;
+use App\Services\Ydl\Platform\EventIdentityPolicyInterface;
 use App\Services\Ydl\Platform\IdempotencyGuard;
 use App\Services\Ydl\Platform\IdempotencyGuardInterface;
 use App\Services\Ydl\Platform\TenantBoundaryGuard;
@@ -64,6 +65,7 @@ class YdlReservationOrchestrator
     private ApprovalTokenPolicyInterface $approvalTokenPolicy;
     private IdempotencyGuardInterface $idempotencyGuard;
     private TenantBoundaryGuardInterface $tenantBoundaryGuard;
+    private EventIdentityPolicyInterface $eventIdentityPolicy;
 
     public function __construct(
         ?ReservationReadinessService $readinessService = null,
@@ -73,6 +75,7 @@ class YdlReservationOrchestrator
         ?ApprovalTokenPolicyInterface $approvalTokenPolicy = null,
         ?IdempotencyGuardInterface $idempotencyGuard = null,
         ?TenantBoundaryGuardInterface $tenantBoundaryGuard = null,
+        ?EventIdentityPolicyInterface $eventIdentityPolicy = null,
     ) {
         $this->readinessService = $readinessService ?? new ReservationReadinessService();
         $this->eventLog = $eventLog ?? new ReservationEventLog();
@@ -86,6 +89,7 @@ class YdlReservationOrchestrator
         $this->tenantBoundaryGuard = $tenantBoundaryGuard ?? new TenantBoundaryGuard(
             new TenantResolver()
         );
+        $this->eventIdentityPolicy = $eventIdentityPolicy ?? new EventIdentityPolicy();
 
         // Wire token policy into domain token DTOs (static DI pattern)
         YdlReservationApprovalToken::setTokenPolicy($this->approvalTokenPolicy);
@@ -156,8 +160,9 @@ class YdlReservationOrchestrator
             );
         }
 
-        $eventId = ReservationEvent::generateEventId(
-            $readiness->ilanId,
+        $eventId = $this->eventIdentityPolicy->generate(
+            self::PILOT,
+            (string) $readiness->ilanId,
             $readiness->startDate,
             $readiness->endDate,
             'CREATE',
@@ -457,8 +462,9 @@ class YdlReservationOrchestrator
             );
         }
 
-        $eventId = ReservationEvent::generateEventId(
-            $readiness->ilanId,
+        $eventId = $this->eventIdentityPolicy->generate(
+            self::PILOT,
+            (string) $readiness->ilanId,
             'CANCEL_' . $readiness->reservationId,
             'CANCEL',
             'CANCEL',
@@ -692,8 +698,9 @@ class YdlReservationOrchestrator
             );
         }
 
-        $eventId = ReservationEvent::generateEventId(
-            $readiness->ilanId,
+        $eventId = $this->eventIdentityPolicy->generate(
+            self::PILOT,
+            (string) $readiness->ilanId,
             'OVERRIDE_' . $readiness->conflictReservationId,
             'OVERRIDE',
             'OVERRIDE',

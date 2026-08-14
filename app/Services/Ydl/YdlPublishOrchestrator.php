@@ -13,6 +13,8 @@ use App\Services\Ydl\Platform\ApprovalTokenPolicy;
 use App\Services\Ydl\Platform\ApprovalTokenPolicyInterface;
 use App\Services\Ydl\Platform\AuthorityEvaluator;
 use App\Services\Ydl\Platform\AuthorityEvaluatorInterface;
+use App\Services\Ydl\Platform\EventIdentityPolicy;
+use App\Services\Ydl\Platform\EventIdentityPolicyInterface;
 use App\Services\Ydl\Platform\IdempotencyGuard;
 use App\Services\Ydl\Platform\IdempotencyGuardInterface;
 use App\Services\Ydl\Platform\TenantBoundaryGuard;
@@ -50,6 +52,7 @@ class YdlPublishOrchestrator
     private ApprovalTokenPolicyInterface $approvalTokenPolicy;
     private IdempotencyGuardInterface $idempotencyGuard;
     private TenantBoundaryGuardInterface $tenantBoundaryGuard;
+    private EventIdentityPolicyInterface $eventIdentityPolicy;
 
     public function __construct(
         ?YdlPublishReadinessService $readinessService = null,
@@ -61,6 +64,7 @@ class YdlPublishOrchestrator
         ?ApprovalTokenPolicyInterface $approvalTokenPolicy = null,
         ?IdempotencyGuardInterface $idempotencyGuard = null,
         ?TenantBoundaryGuardInterface $tenantBoundaryGuard = null,
+        ?EventIdentityPolicyInterface $eventIdentityPolicy = null,
     ) {
         $this->readinessService = $readinessService ?? new YdlPublishReadinessService(
             new \App\Services\Listing\ListingScoreService(),
@@ -79,6 +83,7 @@ class YdlPublishOrchestrator
         $this->tenantBoundaryGuard = $tenantBoundaryGuard ?? new TenantBoundaryGuard(
             new TenantResolver()
         );
+        $this->eventIdentityPolicy = $eventIdentityPolicy ?? new EventIdentityPolicy();
 
         // Wire token policy into inner token class (static DI pattern)
         YdlPublishApprovalToken::setTokenPolicy($this->approvalTokenPolicy);
@@ -392,9 +397,7 @@ class YdlPublishOrchestrator
 
     private function buildEventId(int $ilanId): string
     {
-        $minuteTs = (string) (int) (time() / 60);
-        $payload = self::PILOT . "|{$ilanId}|{$minuteTs}";
-        return substr(hash('sha256', $payload), 0, 16);
+        return $this->eventIdentityPolicy->generate(self::PILOT, (string) $ilanId);
     }
 
     /**
