@@ -20,6 +20,7 @@
 | **🔍 PLATFORM** | **Supervised Autonomy Pattern — 2 Operasyon Kanıtı** | **PILOT-001+002** | **✅ APPROVED — SAAB Charter v1.0 (66c0c675)** |
 | **🔗 RESERVATION-EB** | **Canonical Event Backbone — Event-Driven Automation Foundation** | **RESERVATION-EB** | **✅ CERTIFIED (Oturum 121 — 2026-08-14)** |
 | **🚀 RESERVATION-GUEST-COMM-WAVE-1** | **Guest Confirmation Notification Pipeline** | **GUEST-COMM-WAVE-1** | **✅ CERTIFIED (Oturum 122 — 19/19 PASS, commit e681d3b)** |
+| **📡 AVAILABILITY SYNC** | **Availability Outbound Sync — ProcessReservationCreated → sync pipeline** | **AVAILABILITY SYNC** | **🔲 PLANNING — Charter approval pending** |
 
 **ERA IV:** 🚀 ACTIVE — First Advisor Pilot | Sprint 5.0
 
@@ -130,9 +131,9 @@ Reservation Core ✅
     ↓
 Canonical Event Backbone ✅
     ↓
-Guest Communication Wave 1 ✅ (this session)
+Guest Communication Wave 1 ✅
     ↓
-Availability Sync
+Availability Sync ▶ NEXT (Charter approval pending)
     ↓
 Airbnb Inbound
     ↓
@@ -140,6 +141,19 @@ Check-in/out
     ↓
 Financial Closure
 ```
+
+### SAAB Oturum 121 Final Kararı
+
+| Alan | Durum |
+|------|-------|
+| Event Backbone | ✅ CERTIFIED |
+| Guest Communication W1 | ✅ CERTIFIED |
+| EB Regression | ✅ 7/7 |
+| Guest Comm Tests | ✅ 12/12 |
+| Yeni SAB ihlali | ✅ 0 |
+| LIFECYCLE-DEBT | 🟡 OPEN (cancellation wave öncesi SAAB kararı şart) |
+| G34 REGRESSION-DEBT | 🟡 TRACKED |
+| Sonraki capability | ▶ Availability Sync (Charter → SAAB approval) |
 
 ---
 
