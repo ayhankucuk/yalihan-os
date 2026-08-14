@@ -1,6 +1,6 @@
 # RESERVATION-AVAILABILITY-SYNC — Sprint Charter (DRAFT)
 
-> **Status:** 🔲 CHARTER DRAFT — 4.1 APPROVED, 4.2+ OPEN
+> **Status:** 🔲 CHARTER DRAFT — 4.1+4.2 APPROVED, 4.3+ OPEN
 > **Baseline:** `865d3b4` — Guest Communication Wave 1 + Oturum 121 closed
 > **SAAB Direction:** Oturum 121 — Availability Sync Charter hazırlanabilir
 > **Model:** Claude Sonnet 4.6 (escalation → Claude Opus 4.8 / SAAB)
@@ -120,16 +120,24 @@ property_reservations (confirmed)
 
 **Sonuç:** `property_availabilities` = tek doğruluk kaynağı. `ReservationService` = tek yazı otoritesi. Channel adapter'lar sadece okur.
 
-### 4.2 Reservation/Block Source
+### 4.2 Triggering Events — APPROVED
 
-**Decision:** OPEN — depends on 4.1.
+**Decision:** Wave 1 — `ReservationCreatedEvent` + `ReservationCancelledEvent` only.
 
-- `ReservationCreatedEvent` → block dates
-- `ReservationCancelledEvent` → release dates
-- `ReservationModifiedEvent` → release old + block new
-- Override → Option A: `ReservationCancelledEvent` üretilir (LIFECYCLE-DEBT çözüldü)
+**Kanıt — kod analizi (3ff5dc7 baseline):**
 
-**Beklenen:** Tüm reservation lifecycle event'leri — ProcessReservationCreated/Modified/Cancelled job'larından zincirlenen yeni job'lar.
+| Event | Availability Etkisi | property_availabilities | Kullanılabilir mi? |
+|-------|------------------|----------------------|----------------|
+| `ReservationCreatedEvent` | BLOCK dates | `is_available=false` | ✅ Wave 1 dahil |
+| `ReservationCancelledEvent` | RELEASE dates | `is_available=true` | ✅ Wave 1 dahil |
+| `ReservationModifiedEvent` | RELEASE old + BLOCK new | her ikisi de | ❌ Wave N |
+| `ReservationCompletedEvent` | yok | — | ❌ İgnore |
+
+**Override (Option A):** `ReservationCancelledEvent` → override sonrası conflict rezervasyon içinkullanılır — Availability release tetikler. `ReservationService` override path'ine eklenecek.
+
+**Dış kanal etkisi:** Tüm event'ler `ilanId` + `tenantId` taşır — `AvailabilitySynchronizationService` bu ID'leri kullanarak `property_availabilities`'ı okur ve channel adapter'lara push eder.
+
+**ProcessReservationCreated/Modified/Cancelled:** Event lifecycle'ın mevcut job'ları — bunlardan `SyncAvailabilityJob` zincirlenecek.
 
 ### 4.3 Channel Sync Boundary
 
@@ -232,7 +240,7 @@ ReservationCancelledEvent
 ## 8. DoD Checklist
 
 - [x] SAAB canonical availability source (4.1) kararı donduruldu ✅
-- [ ] SAAB triggering events (4.2) kararı donduruldu
+- [x] SAAB triggering events (4.2) kararı donduruldu ✅
 - [ ] SAAB channel sync boundary (4.3) kararı donduruldu
 - [x] LIFECYCLE-DEBT Option A: Override → `ReservationCancelledEvent` çözüldü ✅
 - [ ] SyncAvailabilityJob idempotent (eventId deduplication)
