@@ -21,7 +21,7 @@
 | **🔗 RESERVATION-EB** | **Canonical Event Backbone — Event-Driven Automation Foundation** | **RESERVATION-EB** | **✅ CERTIFIED (Oturum 121 — 2026-08-14)** |
 | **🚀 RESERVATION-GUEST-COMM-WAVE-1** | **Guest Confirmation Notification Pipeline** | **GUEST-COMM-WAVE-1** | **✅ CERTIFIED (Oturum 122 — 19/19 PASS, commit e681d3b)** |
 | **🛡️ SAAB 4.5** | **Tenant Isolation Certification** | **SAAB 4.5** | **✅ CERTIFIED — 3 MUST in SAAB_4.5_IMPL_PREREQ_CHARTER** |
-| **📡 AVAILABILITY SYNC — E03** | **Per-Channel Execution Isolation — channel discriminator + independent jobs + channel-aware idempotency** | **SPRINT 13 E03** | **✅ IMPLEMENTED (`d310a84`) — 0 new regressions** |
+| **📡 AVAILABILITY SYNC — E03** | **Per-Channel Execution Isolation — channel discriminator + independent jobs + channel-aware idempotency + E3.1 evidence tests** | **SPRINT 13 E03** | **✅ IMPLEMENTED (`d310a84`) — E3.1 evidence tests ✅ (`fefffc5`) — 0 regressions** |
 | **📡 AVAILABILITY SYNC — GAP-03** | **Retry Boundary Fix — BookingAvailabilityException propagation to Laravel queue — 7/7 PASS, dual-inspector audit PASS, 0 regressions** | **GAP-03** | **✅ CERTIFICATION RESTORED (`471dff1`) — Antigravity + Gemini 3.7 Flash PASS** |
 | **📡 AVAILABILITY SYNC — E02** | **Availability Synchronization — Queue-first + Retry/Evidence + Canonical Mutation Invariant** | **SPRINT 13 E02** | **✅ CERTIFIED** |
 
