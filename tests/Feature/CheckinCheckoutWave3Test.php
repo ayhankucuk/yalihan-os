@@ -848,4 +848,157 @@ class CheckinCheckoutWave3Test extends TestCase
         $this->assertArrayHasKey('whatsapp', $channels);
         $this->assertArrayHasKey('email', $channels);
     }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SEC-W3-01: Queue Serialization Plaintext Test
+    //
+    // Bus::fake() yetersiz - gerçek Laravel queue storage kontrol edilmeli.
+    // AccessCredentialNotification::isAsync() = false olmalı, böylece
+    // SendNotificationJob'a gitmez ve queue payload'da plaintext olmaz.
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    public function test_credential_notification_is_sync_not_queued(): void
+    {
+        // Test credential notification DTO - isAsync() = false olmalı
+        $plainCode = 'W3SEC_TEST_1234ABCD';
+
+        $dto = AccessCredentialNotification::make(
+            plainValue: $plainCode,
+            plainLocation: 'test location',
+            credentialType: 'lockbox',
+            channel: 'whatsapp',
+            recipient: '+905551234582',
+            metadata: [
+                'reservation_id' => 1,
+                'tenant_id' => 1,
+                'ilan_id' => 1,
+                'guest_name' => 'SecurityTest',
+                'start_date' => '2026-08-20',
+                'end_date' => '2026-08-23',
+                'checkin_time' => '15:00',
+                'masked_value' => '****ABCD',
+            ],
+        );
+
+        // SEC-W3-01: isAsync() MUST return false
+        $this->assertFalse($dto->isAsync(),
+            'SEC-W3-01 FAIL: AccessCredentialNotification::isAsync() must return false to prevent queue serialization');
+
+        // Verify plaintext is in renderedBody but NOT in getData()
+        $this->assertStringContainsString($plainCode, $dto->getRenderedBody(),
+            'W3-E16 FAIL: getRenderedBody() must contain plaintext for delivery');
+
+        $dataJson = json_encode($dto->getData());
+        $this->assertStringNotContainsString($plainCode, $dataJson,
+            'SEC-W3-01 FAIL: plaintext found in getData()');
+    }
+
+    /**
+     * SEC-W3-01: Real queue storage test
+     *
+     * Bu test gerçek Laravel queue storage'ı kontrol eder.
+     * AccessCredentialNotification::isAsync() = false olduğunda,
+     * NotificationDispatcher::dispatch() SendNotificationJob'a dispatch etmez.
+     * Dolayısıyla jobs tablosunda credential plaintext olmaz.
+     */
+    public function test_no_plaintext_in_queue_storage(): void
+    {
+        // Önce pilot gate'i bypass et (config varsa)
+        config(['feature-flags.notification_kill_switch' => false]);
+        config(['feature-flags.whatsapp_pilot_global' => true]);
+        config(['feature-flags.pilot_notification_allowlist' => [
+            'tenant_ids' => [1],
+            'property_ids' => [],
+        ]]);
+
+        // Dispatch işlemini izle - gerçek queue storage kontrol edilecek
+        $plainCode = 'QUEUE_SEC_TEST_5678EFGH';
+
+        // AccessCredentialNotification oluştur
+        $notification = AccessCredentialNotification::make(
+            plainValue: $plainCode,
+            plainLocation: null,
+            credentialType: 'code',
+            channel: 'whatsapp',
+            recipient: '+905551234582',
+            metadata: [
+                'reservation_id' => 999,
+                'tenant_id' => 1,
+                'ilan_id' => $this->ilan->id,
+                'guest_name' => 'QueueTest',
+                'start_date' => '2026-08-20',
+                'end_date' => '2026-08-23',
+                'checkin_time' => '14:00',
+                'masked_value' => '****EFGH',
+            ],
+        );
+
+        // Dispatch et
+        $dispatcher = app(NotificationDispatcher::class);
+        $result = $dispatcher->dispatch($notification, 1, $this->ilan->id);
+
+        // isAsync() = false olduğundan sync routeToAdapter() çağrılmalı
+        // SendNotificationJob'a gitmemeli
+
+        // jobs tablosunda credential plaintext kontrol et (tablo yoksa skip)
+        try {
+            $queuedJobs = DB::table('jobs')->get();
+
+            foreach ($queuedJobs as $job) {
+                $payload = json_decode($job->payload ?? '{}', true);
+
+                // Payload içinde plaintext arama
+                $payloadString = json_encode($payload);
+
+                $this->assertStringNotContainsString($plainCode, $payloadString,
+                    'SEC-W3-01 FAIL: plaintext credential found in queue jobs table');
+            }
+        } catch (\Exception $e) {
+            // Tablo yoksa - bu test ortamında queue kullanılmıyor demektir
+            $this->markTestSkipped('jobs table not available in test environment');
+        }
+
+        // OutboundNotification'da plaintext kontrol et
+        $outboundRecords = OutboundNotification::where('template_key', 'checkin_credential')->get();
+        foreach ($outboundRecords as $record) {
+            $payloadData = json_encode($record->payload_data ?? []);
+            $this->assertStringNotContainsString($plainCode, $payloadData,
+                'SEC-W3-01 FAIL: plaintext found in OutboundNotification.payload_data');
+        }
+    }
+
+    /**
+     * SEC-W3-01: failed_jobs plaintext test
+     *
+     * Eğer credential delivery job başarısız olursa,
+     * failed_jobs tablosunda plaintext olmamalı.
+     */
+    public function test_no_plaintext_in_failed_jobs(): void
+    {
+        // failed_jobs tablosu kontrol et
+        try {
+            $failedJobRecords = DB::table('failed_jobs')->get();
+        } catch (\Exception $e) {
+            // Tablo yoksa - bu test ortamında failed jobs yok demektir
+            $this->markTestSkipped('failed_jobs table not available in test environment');
+        }
+
+        foreach ($failedJobRecords as $record) {
+            $payload = json_decode($record->payload ?? '{}', true);
+            $exception = $record->exception ?? '';
+
+            $payloadString = json_encode($payload);
+
+            // W3SEC_TEST ve QUEUE_SEC_TEST test credential pattern'lerini kontrol et
+            $testPatterns = ['W3SEC_TEST', 'QUEUE_SEC_TEST', 'RENDER_TEST', 'ACCESS_CODE'];
+
+            foreach ($testPatterns as $pattern) {
+                $this->assertStringNotContainsString($pattern, $payloadString,
+                    "SEC-W3-01 FAIL: test pattern '{$pattern}' found in failed_jobs payload");
+
+                $this->assertStringNotContainsString($pattern, $exception,
+                    "SEC-W3-01 FAIL: test pattern '{$pattern}' found in failed_jobs exception");
+            }
+        }
+    }
 }

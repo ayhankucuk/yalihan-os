@@ -68,9 +68,21 @@ class AccessCredentialNotification implements NotificationContract
         return $this->priority;
     }
 
+    /**
+     * Credential notifications are synchronous only.
+     *
+     * SEC-W3-01 RECOVERY: Plaintext credential must NEVER cross queue boundary.
+     * By returning false, NotificationDispatcher::dispatch() will call routeToAdapter()
+     * directly (sync) instead of dispatching SendNotificationJob (async).
+     *
+     * This ensures the plaintext exists only in SendAccessCredentialJob worker memory.
+     *
+     * @see SendAccessCredentialJob::handle()
+     * @see NotificationDispatcher::dispatch()
+     */
     public function isAsync(): bool
     {
-        return true;
+        return false;
     }
 
     /**
