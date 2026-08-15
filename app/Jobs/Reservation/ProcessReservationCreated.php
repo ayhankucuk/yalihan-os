@@ -5,6 +5,7 @@ namespace App\Jobs\Reservation;
 use App\Application\ChannelManager\DTOs\SynchronizeAvailabilityCommand;
 use App\Application\ChannelManager\Services\AvailabilitySynchronizationService;
 use App\Events\Reservation\ReservationCreatedEvent;
+use App\Jobs\Reservation\CreateOperationalTasksJob;
 use App\Jobs\Reservation\SendGuestConfirmationJob;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -58,9 +59,13 @@ class ProcessReservationCreated implements ShouldQueue
         // ── Wave 1: Guest Communication ──────────────────────────────────────
         SendGuestConfirmationJob::dispatch($this->event);
 
+        // ── Wave 1: Operational Task Creation ────────────────────────────────
+        // CHECKOUT-D2: Creates hazirlik Gorev → GorevCreated → n8n → Telegram/WhatsApp
+        CreateOperationalTasksJob::dispatch($this->event);
+
         // ── Future waves ─────────────────────────────────────────────────────
+        // Stay Operation: pool check, garden service
         // Financial Recording → FinancialTransaction record
-        // Stay Operation Task Generation → cleaning, pool check, etc.
     }
 
     /**

@@ -212,6 +212,14 @@ class Kernel extends ConsoleKernel
             ->dailyAt('04:00')
             ->appendOutputTo(storage_path('logs/ai-deal-predictor.log'));
 
+        // CHECKOUT-D1/Q4: Reservation completion — runs daily at 01:00
+        // Marks reservations as completed where end_date <= today
+        // Dispatches ReservationCompletedEvent → turnover Gorev creation
+        $schedule->command('reservation:complete')
+            ->dailyAt('01:00')
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/reservation-complete.log'));
+
         $schedule->call(function () {
             foreach (\App\Models\SaaS\Tenant::where('aktiflik_durumu', 1)->get() as $tenant) {
                 dispatch(new \App\Jobs\AI\DailySnapshotsJob($tenant->id));

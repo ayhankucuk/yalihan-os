@@ -36,7 +36,7 @@ class ReservationCompletedEvent
         public readonly string     $guestName,
         public readonly ?string    $guestEmail,
         public readonly ?string    $guestPhone,
-        public readonly int        $guestCount,
+        public readonly ?int       $guestCount,
         // Financial summary at completion
         public readonly ?float     $totalAmount,
         public readonly ?string    $currency,
@@ -64,7 +64,7 @@ class ReservationCompletedEvent
             guestName:              $reservation->guest_name,
             guestEmail:              $reservation->guest_email,
             guestPhone:              $reservation->guest_phone,
-            guestCount:             $reservation->guest_count,
+            guestCount:             $reservation->guest_count ?? 0,
             totalAmount:             $reservation->total_amount ?? $reservation->islem_tutari,
             currency:               $reservation->currency,
             lockedNightlyRate:      $reservation->locked_nightly_rate,

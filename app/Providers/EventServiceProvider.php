@@ -143,6 +143,10 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\Reservation\ReservationCancelledEvent::class => [
             \App\Listeners\Reservation\ListenReservationCancelled::class,
         ],
+        // CHECKOUT-D1: ReservationCompletedEvent — now wired
+        \App\Events\Reservation\ReservationCompletedEvent::class => [
+            \App\Listeners\Reservation\ListenReservationCompleted::class,
+        ],
     ];
 
     /**

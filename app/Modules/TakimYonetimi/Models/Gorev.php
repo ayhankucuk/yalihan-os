@@ -30,12 +30,17 @@ class Gorev extends Model
         'notlar',
         'gorev_durumu',
         'gorev_tipi',
+        // CHECKOUT-D2: Operational task linkage
+        'ilan_id',
+        'reservation_id',
     ];
 
     protected $casts = [
         'baslangic_tarihi' => 'datetime',
         'bitis_tarihi' => 'datetime',
         'tamamlanma_yuzdesi' => 'integer',
+        'ilan_id' => 'integer',
+        'reservation_id' => 'integer',
     ];
 
     /**
@@ -64,7 +69,20 @@ class Gorev extends Model
 
     public static function getTipler(): array
     {
-        return ['musteri_takibi', 'ilan_hazirlama', 'musteri_ziyareti', 'dokuman_hazirlama', 'diger'];
+        return [
+            // CRM task types
+            'musteri_takibi',
+            'ilan_hazirlama',
+            'musteri_ziyareti',
+            'dokuman_hazirlama',
+            'diger',
+            // CHECKOUT-D2: Operational task types (Wave 1)
+            'hazirlik',   // pre-arrival property readiness (check-in preparation)
+            'temizlik',   // post-checkout turnover cleaning
+            'kontrol',    // post-checkout inspection
+            'havuz',      // pool/garden service
+            'bahce',      // garden maintenance
+        ];
     }
 
     // Relationships
@@ -91,6 +109,17 @@ class Gorev extends Model
     public function proje(): BelongsTo
     {
         return $this->belongsTo(Proje::class, 'proje_id');
+    }
+
+    // CHECKOUT-D2: Operational linkages
+    public function ilan(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Ilan::class, 'ilan_id');
+    }
+
+    public function reservation(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\PropertyReservation::class, 'reservation_id');
     }
 
     public function gorevTakip(): HasMany
@@ -151,6 +180,27 @@ class Gorev extends Model
     public function scopeByDurum($query, $durum)
     {
         return $query->where('gorev_durumu', $durum);
+    }
+
+    // CHECKOUT-D2: Operational scopes
+    public function scopeForReservation($query, int $reservationId)
+    {
+        return $query->where('reservation_id', $reservationId);
+    }
+
+    public function scopeForIlan($query, int $ilanId)
+    {
+        return $query->where('ilan_id', $ilanId);
+    }
+
+    public function scopeOperational($query)
+    {
+        return $query->whereNotNull('reservation_id');
+    }
+
+    public function scopeByType($query, string $type)
+    {
+        return $query->where('gorev_tipi', $type);
     }
 
     // Accessors

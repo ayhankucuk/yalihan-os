@@ -54,7 +54,7 @@ class ReservationService
             throw new Exception("Minimum stay is {$ilan->min_stay_nights} nights.");
         }
 
-        $reservation = DB::transaction(function () use ($propertyId, $start, $end, $nights, $guestData, $userId) {
+        $reservation = DB::transaction(function () use ($ilan, $propertyId, $start, $end, $nights, $guestData, $userId) {
 
             // Overlap Constraint (Strict User Requirement)
             $overlapCount = PropertyReservation::where('property_id', $propertyId)
@@ -111,6 +111,7 @@ class ReservationService
 
             // 2. Create reservation
             $reservation = PropertyReservation::create([
+                'tenant_id' => $ilan->tenant_id,
                 'property_id' => $propertyId,
                 'start_date' => $start->format('Y-m-d'),
                 'end_date' => $end->format('Y-m-d'),
@@ -440,20 +441,25 @@ class ReservationService
             }
         }
 
-        $reservation = PropertyReservation::create([
-            'property_id'         => $propertyId,
-            'start_date'          => $start->format('Y-m-d'),
-            'end_date'            => $end->format('Y-m-d'),
-            'nights'              => $nights,
-            'guest_name'          => $guestData['guest_name'],
-            'guest_phone'         => $guestData['guest_phone'] ?? null,
-            'guest_email'         => $guestData['guest_email'] ?? null,
-            'guest_count'         => $guestData['guest_count'] ?? null,
-            'notes'               => $guestData['notes'] ?? null,
-            'reservation_state'   => ReservationState::CONFIRMED->value,
-            'created_by_user_id'  => $userId,
-            'confirmed_at'        => now(),
-        ]);
+            $reservation = PropertyReservation::create([
+                'tenant_id'           => $ilan->tenant_id,
+                'property_id'         => $propertyId,
+                'start_date'          => $start->format('Y-m-d'),
+                'end_date'            => $end->format('Y-m-d'),
+                'nights'              => $nights,
+                'guest_name'          => $guestData['guest_name'],
+                'guest_phone'         => $guestData['guest_phone'] ?? null,
+                'guest_email'         => $guestData['guest_email'] ?? null,
+                'guest_count'         => $guestData['guest_count'] ?? null,
+                'notes'               => $guestData['notes'] ?? null,
+                'reservation_state'   => ReservationState::CONFIRMED->value,
+                'created_by_user_id'  => $userId,
+                'confirmed_at'        => now(),
+                // Wave 3 override audit fields
+                'override_of_id'             => $conflictReservationId,
+                'override_authorized_by'     => $overrideAuthorizedBy,
+                'override_occurred_at'       => now()->toDateString(),
+            ]);
 
         foreach ($dates as $dateStr) {
             $avail = $existingAvailabilities[$dateStr];

@@ -62,6 +62,10 @@ class PropertyReservation extends BaseModel
         'override_of_id'         => 'integer',
         'override_authorized_by'  => 'integer',
         'override_occurred_at'    => 'datetime',
+        // CHECKOUT-D1: Operational lifecycle timestamps
+        'checked_in_at'    => 'datetime',
+        'checked_out_at'   => 'datetime',
+        'completed_at'     => 'datetime',
     ];
 
     public function ilan(): BelongsTo
