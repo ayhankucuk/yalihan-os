@@ -113,11 +113,40 @@ Sprint closes when:
 
 ## 5. Dependencies
 
-| Dependency | Type | Blocker |
-|------------|------|---------|
-| SAAB 4.5 Certification | Parent Decision | ❌ None — parallel work |
-| Availability Sync Sprint | Consumer | ⏳ Benefits from MUST 1+2 |
-| PILOT-002 | Reference | ✅ Already handles tenant_id explicitly |
+| Dependency | Type | Blocker | Notes |
+|------------|------|---------|-------|
+| SAAB 4.5 Certification | Parent Decision | ✅ None — parallel work | Normative ✅ |
+| Availability Sync Sprint | Consumer | ⏳ MUST 1 prerequisite | MUST 1 → Canonical Source invariant |
+| PILOT-002 | Reference | ✅ None | Already handles tenant_id explicitly |
+| SAAB 4.5 | Normative Decision | ✅ ACCEPTED | eccc37b |
+
+### MUST 1 — Availability Sync 4.1 Canonical Source İlişkisi
+
+> **SAAB Note:** MUST 1 (`property_availabilities` unique constraint) Availability Sync Decision 4.1'in correctness invariant'larından biri olacak.
+
+Canonical availability'nin `property_availabilities` tablosu üzerinde kurulacağı kararı verildiğinde:
+- `UNIQUE(property_id, date, tenant_id)` constraint → canonical uniqueness guarantee
+- MUST 1 tamamlanması → Availability Sync correctness foundation
+
+```
+Availability Sync 4.1: Canonical Source
+    ↓
+MUST 1: unique constraint → canonical uniqueness invariant
+MUST 2: race condition fix → concurrent write safety
+MUST 3: idempotency docs → replay semantics contract
+```
+
+### Governance Pipeline
+
+```
+Normative karar: ✅ SAAB 4.5 (eccc37b)
+    ↓
+Implementation prerequisites: 🟡 3 MUST items pending
+    ↓
+Evidence/Test: ⏳ Pending
+    ↓
+Certification: ⏳ Pending
+```
 
 ---
 

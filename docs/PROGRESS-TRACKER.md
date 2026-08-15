@@ -62,11 +62,22 @@ PropertyReservation::withoutGlobalScopes()->find($id);
 
 **Charter:** `.sab/decisions/SAAB_4.5_IMPL_PREREQ_CHARTER.md`
 
-| MUST | Konu | Status |
-|------|------|--------|
-| MUST 1 | `property_availabilities` tenant-scoped unique constraint | 🔲 OPEN |
-| MUST 2 | `findExistingSync()` race condition (lockForUpdate) | 🔲 OPEN |
-| MUST 3 | correlationId idempotency semantics dokümantasyonu | 🔲 OPEN |
+**Governance Pipeline:**
+```
+Normative karar: ✅ SAAB 4.5 (eccc37b)
+    ↓
+Implementation prerequisites: 🟡 3 MUST items pending
+    ↓
+Evidence/Test: ⏳ Pending
+    ↓
+Certification: ⏳ Pending
+```
+
+| MUST | Konu | Status | Availability Sync 4.1 İlişkisi |
+|------|------|--------|-------------------------------|
+| MUST 1 | `property_availabilities` tenant-scoped unique constraint | 🟡 PENDING | Canonical uniqueness invariant |
+| MUST 2 | `findExistingSync()` race condition (lockForUpdate) | 🟡 PENDING | Concurrent write safety |
+| MUST 3 | correlationId idempotency semantics dokümantasyonu | 🟡 PENDING | Replay semantics contract |
 
 ### Quality Gates
 
