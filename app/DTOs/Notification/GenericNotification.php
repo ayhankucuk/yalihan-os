@@ -49,6 +49,11 @@ class GenericNotification implements NotificationContract
         return $this->async;
     }
 
+    public function getRenderedBody(): string
+    {
+        return '';
+    }
+
     /**
      * Static helper for fluent creation.
      */

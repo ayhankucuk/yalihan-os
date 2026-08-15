@@ -52,6 +52,11 @@ class GuestConfirmationNotification implements NotificationContract
         return true;
     }
 
+    public function getRenderedBody(): string
+    {
+        return '';
+    }
+
     /**
      * Build from ReservationCreatedEvent flat data.
      * @sab-ignore Context7 — event data keys match ReservationCreatedEvent readonly properties

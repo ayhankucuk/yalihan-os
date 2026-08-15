@@ -139,10 +139,14 @@ class EventServiceProvider extends ServiceProvider
             \App\Listeners\Reservation\ListenReservationCreatedReadiness::class, // Wave 2
         ],
         \App\Events\Reservation\ReservationModifiedEvent::class => [
-            \App\Listeners\Reservation\ListenReservationModified::class,
+            \App\Listeners\Reservation\ListenReservationModified::class,          // Wave 1
+            \App\Listeners\Reservation\ListenReadinessOnDateChange::class,     // Wave 2
+            \App\Listeners\Reservation\CancelPendingCredentialNotifications::class . '@handleModification', // Wave 3
         ],
         \App\Events\Reservation\ReservationCancelledEvent::class => [
-            \App\Listeners\Reservation\ListenReservationCancelled::class,
+            \App\Listeners\Reservation\ListenReservationCancelled::class,               // Wave 1
+            \App\Listeners\Reservation\ListenReadinessOnCancellation::class,         // Wave 2
+            \App\Listeners\Reservation\CancelPendingCredentialNotifications::class . '@handleCancellation', // Wave 3
         ],
         // CHECKOUT-D1: ReservationCompletedEvent — now wired
         \App\Events\Reservation\ReservationCompletedEvent::class => [
@@ -152,18 +156,14 @@ class EventServiceProvider extends ServiceProvider
         // CHECKIN_CHECKOUT Wave 2: Guest Arrival Readiness
         // GorevDurumChanged → readiness update (hazirlik task completion)
         \App\Events\GorevDurumChanged::class => [
-            \App\Listeners\NotifyN8nOnGorevDurumChanged::class,           // Wave 1: n8n notification
-            \App\Listeners\Reservation\ListenGorevReadinessUpdate::class,  // Wave 2: readiness update
+            \App\Listeners\NotifyN8nOnGorevDurumChanged::class,              // Wave 1: n8n notification
+            \App\Listeners\Reservation\ListenGorevReadinessUpdate::class,   // Wave 2: readiness update
         ],
-        // ReservationCancelledEvent → readiness invalidation
-        \App\Events\Reservation\ReservationCancelledEvent::class => [
-            \App\Listeners\Reservation\ListenReservationCancelled::class,  // Wave 1
-            \App\Listeners\Reservation\ListenReadinessOnCancellation::class, // Wave 2
-        ],
-        // ReservationModifiedEvent → readiness invalidation (date change)
-        \App\Events\Reservation\ReservationModifiedEvent::class => [
-            \App\Listeners\Reservation\ListenReservationModified::class,    // Wave 1
-            \App\Listeners\Reservation\ListenReadinessOnDateChange::class, // Wave 2
+
+        // CHECKIN_CHECKOUT Wave 3: Credential delivery orchestration
+        // Triggered when check-in window opens → orchestrate credential notification delivery
+        \App\Events\Reservation\CheckinWindowOpenedEvent::class => [
+            \App\Listeners\Reservation\ListenCheckinWindowOpened::class,
         ],
     ];
 

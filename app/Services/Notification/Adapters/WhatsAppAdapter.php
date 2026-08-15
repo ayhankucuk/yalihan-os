@@ -55,6 +55,11 @@ class WhatsAppAdapter
                 // Note: Complex variable mapping for Meta templates (components) 
                 // is reserved for a future iteration if needed.
             } else {
+                // W3-INV-1: Use getRenderedBody() for credential notifications.
+                // The rendered body contains the plaintext credential but is NEVER stored
+                // in OutboundNotification.payload_data. It is used only at send time.
+                $messageBody = $notification->getRenderedBody() ?: ($data['body'] ?? $data['message'] ?? '');
+
                 $payload = [
                     'messaging_product' => 'whatsapp',
                     'recipient_type' => 'individual',
@@ -62,7 +67,7 @@ class WhatsAppAdapter
                     'type' => 'text', // context7-ignore: Meta API payload field
                     'text' => [
                         'preview_url' => false,
-                        'body' => $data['body'] ?? $data['message'] ?? '',
+                        'body' => $messageBody,
                     ],
                 ];
             }

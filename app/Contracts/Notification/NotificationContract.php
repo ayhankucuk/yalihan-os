@@ -37,4 +37,19 @@ interface NotificationContract
      * Should this notification be sent asynchronously?
      */
     public function isAsync(): bool;
+
+    /**
+     * Get the pre-rendered message body for this notification.
+     *
+     * For credential notifications (AccessCredentialNotification), this returns the
+     * full message body including the plaintext credential.
+     *
+     * The rendered body is NEVER stored in OutboundNotification.payload_data.
+     * It is used ONLY at API-send time by the channel adapter.
+     *
+     * Non-credential notifications should return empty string.
+     *
+     * @return string  The rendered message body, or empty string if not applicable
+     */
+    public function getRenderedBody(): string;
 }

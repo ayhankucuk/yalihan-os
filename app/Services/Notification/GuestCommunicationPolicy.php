@@ -63,7 +63,7 @@ class GuestCommunicationPolicy
     /**
      * Normalize phone number to E.164 format starting with +90.
      */
-    protected function normalizePhone(?string $phone): ?string
+    public function normalizePhone(?string $phone): ?string
     {
         if ($phone === null || trim($phone) === '') {
             return null;
@@ -121,7 +121,7 @@ class GuestCommunicationPolicy
      * Check if guest has given consent for a specific channel.
      * Returns true if no consent model exists (fail-open for availability).
      */
-    protected function channelConsentIsAllowed(int $tenantId, string $channel, string $recipient): bool
+    public function channelConsentIsAllowed(int $tenantId, string $channel, string $recipient): bool
     {
         // Find guest Kisi by phone or email
         $normalizedPhone = $this->normalizePhone($recipient);
@@ -160,7 +160,7 @@ class GuestCommunicationPolicy
         return true;
     }
 
-    protected function isValidEmail(?string $email): bool
+    public function isValidEmail(?string $email): bool
     {
         if ($email === null || trim($email) === '') {
             return false;
