@@ -136,6 +136,7 @@ class EventServiceProvider extends ServiceProvider
         // Finance, Stay Operations) subscribe to these canonical events only.
         \App\Events\Reservation\ReservationCreatedEvent::class => [
             \App\Listeners\Reservation\ListenReservationCreated::class,
+            \App\Listeners\Reservation\ListenReservationCreatedReadiness::class, // Wave 2
         ],
         \App\Events\Reservation\ReservationModifiedEvent::class => [
             \App\Listeners\Reservation\ListenReservationModified::class,
@@ -146,6 +147,23 @@ class EventServiceProvider extends ServiceProvider
         // CHECKOUT-D1: ReservationCompletedEvent — now wired
         \App\Events\Reservation\ReservationCompletedEvent::class => [
             \App\Listeners\Reservation\ListenReservationCompleted::class,
+        ],
+
+        // CHECKIN_CHECKOUT Wave 2: Guest Arrival Readiness
+        // GorevDurumChanged → readiness update (hazirlik task completion)
+        \App\Events\GorevDurumChanged::class => [
+            \App\Listeners\NotifyN8nOnGorevDurumChanged::class,           // Wave 1: n8n notification
+            \App\Listeners\Reservation\ListenGorevReadinessUpdate::class,  // Wave 2: readiness update
+        ],
+        // ReservationCancelledEvent → readiness invalidation
+        \App\Events\Reservation\ReservationCancelledEvent::class => [
+            \App\Listeners\Reservation\ListenReservationCancelled::class,  // Wave 1
+            \App\Listeners\Reservation\ListenReadinessOnCancellation::class, // Wave 2
+        ],
+        // ReservationModifiedEvent → readiness invalidation (date change)
+        \App\Events\Reservation\ReservationModifiedEvent::class => [
+            \App\Listeners\Reservation\ListenReservationModified::class,    // Wave 1
+            \App\Listeners\Reservation\ListenReadinessOnDateChange::class, // Wave 2
         ],
     ];
 

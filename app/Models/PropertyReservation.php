@@ -16,7 +16,6 @@ class PropertyReservation extends BaseModel
     protected $fillable = [
         'tenant_id',
         'property_id',
-        'ilan_id',
         'start_date',
         'end_date',
         'nights',
@@ -33,8 +32,8 @@ class PropertyReservation extends BaseModel
         'confirmed_at',
         // Financial State fields (Money Core Sprint)
         'finansal_durum',
-        'depozito_tutari',
-        'depozito_durumu',
+        'depozita_tutari',
+        'depozita_durumu',
         'locked_nightly_rate',
         'booking_currency',
         'booking_fx_rate',
@@ -47,6 +46,14 @@ class PropertyReservation extends BaseModel
         'override_of_id',
         'override_authorized_by',
         'override_occurred_at',
+        // CHECKOUT-D1: Operational lifecycle timestamps
+        'checked_in_at',
+        'checked_out_at',
+        'completed_at',
+        // CHECKIN_CHECKOUT Wave 2: Guest Arrival Readiness
+        'checkin_window_opened_at',
+        'arrival_time_estimated',
+        'arrival_notes',
     ];
 
     protected $casts = [
@@ -66,11 +73,13 @@ class PropertyReservation extends BaseModel
         'checked_in_at'    => 'datetime',
         'checked_out_at'   => 'datetime',
         'completed_at'     => 'datetime',
+        // CHECKIN_CHECKOUT Wave 2
+        'checkin_window_opened_at' => 'datetime',
     ];
 
     public function ilan(): BelongsTo
     {
-        return $this->belongsTo(Ilan::class, 'ilan_id');
+        return $this->belongsTo(Ilan::class, 'property_id');
     }
 
     public function creator(): BelongsTo
