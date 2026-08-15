@@ -372,6 +372,70 @@ class AvailabilitySynchronizationService
         };
     }
 
+    /**
+     * Release (unblock) availability for a reservation.
+     *
+     * Called by ProcessReservationCancelled and ProcessReservationModified
+     * to trigger channel sync after internal availability is released.
+     *
+     * Only releases 'internal' source blocks — external channel blocks
+     * (airbnb_ical, booking etc.) are preserved per Decision 4.3.
+     *
+     * @param int $tenantId
+     * @param int $propertyId
+     * @param int $reservationId
+     * @param string $startDate Inclusive start date Y-m-d
+     * @param string $endDate   Inclusive end date Y-m-d
+     * @param int $userId
+     * @return SyncResult
+     */
+    public function release(
+        int $tenantId,
+        int $propertyId,
+        int $reservationId,
+        string $startDate,
+        string $endDate,
+        int $userId,
+    ): SyncResult {
+        $this->enforceTenantIsolation($tenantId, $propertyId);
+
+        $idempotencyKey = "{$tenantId}:{$propertyId}:{$reservationId}:release:{$startDate}:{$endDate}";
+        $correlationId = sprintf('release-%s-%s', now()->format('Ymd'), \Illuminate\Support\Str::random(12));
+
+        // Check idempotency
+        $existing = $this->findExistingSync($idempotencyKey, $tenantId);
+        if ($existing !== null) {
+            return $this->buildResultFromExistingSync($existing);
+        }
+
+        // Record execution and dispatch sync job
+        $syncRecord = ChannelSyncExecution::create([
+            'tenant_id' => $tenantId,
+            'property_id' => $propertyId,
+            'reservation_id' => $reservationId,
+            'operation' => 'release',
+            'block_reason' => null,
+            'date_range_start' => $startDate,
+            'date_range_end' => $endDate,
+            'target_availability' => true,
+            'synced_dates' => [],
+            'conflicts' => [],
+            'idempotency_key' => $idempotencyKey,
+            'correlation_id' => $correlationId,
+            'status' => 'dispatched',
+        ]);
+
+        SynchronizeAvailabilityJob::dispatch($syncRecord->id)
+            ->afterCommit();
+
+        return SyncResult::success(0, [], [
+            'sync_record_id' => $syncRecord->id,
+            'correlation_id' => $correlationId,
+            'idempotency_key' => $idempotencyKey,
+            'operation' => 'release',
+        ]);
+    }
+
     private function syncToChannel(ChannelAdapter $adapter, SynchronizeAvailabilityCommand $command): SyncResult
     {
         try {

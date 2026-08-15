@@ -42,13 +42,28 @@ class SynchronizeAvailabilityJob implements ShouldQueue
 
     /**
      * The number of times the job may be attempted.
+     *
+     * SAAB Decision 4.6 D4.6-B: Attempt ceiling.
+     * Covers TRANSPORT_ERROR and RATE_LIMIT within ~90s TTL.
      */
     public int $tries = 3;
 
     /**
      * The number of seconds to wait before retrying the job.
+     *
+     * SAAB Decision 4.6 D4.6-B: Fixed backoff.
+     * Exponential backoff deliberately not used — provider rate limits
+     * are uniform; fixed 30s backoff is sufficient and simpler.
      */
     public int $backoff = 30;
+
+    /**
+     * The maximum number of seconds the job can run before timing out.
+     *
+     * SAAB Decision 4.6 D4.6-B: Hard ceiling per attempt.
+     * External platform calls must complete within 30s.
+     */
+    public int $timeout = 30;
 
     /**
      * Delete the job if its models no longer exist.
@@ -81,39 +96,70 @@ class SynchronizeAvailabilityJob implements ShouldQueue
                 'conflict_count' => $result->conflictCount,
             ]);
         } catch (\Throwable $e) {
-            Log::error('SynchronizeAvailabilityJob: Failed', [
+            Log::warning('SynchronizeAvailabilityJob: Attempt failed, will retry', [
                 'sync_record_id' => $this->syncRecordId,
+                'attempt' => $this->attempts(),
+                'max_tries' => $this->tries,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
 
-            $this->markExecutionFailed($e->getMessage());
+            // Record current attempt count on the evidence record.
+            // Status remains 'processing' — retry_exhausted is set only by failed().
+            $this->recordAttempt($e->getMessage(), $this->attempts());
             throw $e;
         }
     }
 
     /**
+     * Record the current attempt count on the evidence record.
+     * Called on every failed attempt (before retry_exhausted is set).
+     * Status stays 'processing' — retry_exhausted is terminal per D4.6-D.
+     */
+    private function recordAttempt(string $errorMessage, int $attempts): void
+    {
+        try {
+            $execution = ChannelSyncExecution::find($this->syncRecordId);
+            if ($execution !== null) {
+                $execution->update(['attempts' => $attempts]);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Failed to record attempt on execution', [
+                'sync_record_id' => $this->syncRecordId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * Handle a job failure.
+     *
+     * Laravel calls failed() ONLY after all $tries are exhausted.
+     * This is the retry_exhausted terminal state per SAAB Decision 4.6 D4.6-E.
      */
     public function failed(?\Throwable $exception): void
     {
         Log::error('SynchronizeAvailabilityJob: Permanently failed', [
             'sync_record_id' => $this->syncRecordId,
+            'attempts' => $this->attempts(),
             'error' => $exception?->getMessage(),
         ]);
 
-        $this->markExecutionFailed($exception?->getMessage() ?? 'Unknown error');
+        $this->markExecutionExhausted(
+            $exception?->getMessage() ?? 'Unknown error',
+            $this->attempts()
+        );
     }
 
-    private function markExecutionFailed(string $errorMessage): void
+    private function markExecutionExhausted(string $errorMessage, int $attempts): void
     {
         try {
             $execution = ChannelSyncExecution::find($this->syncRecordId);
             if ($execution !== null) {
-                $execution->markFailed($errorMessage);
+                // D4.6-E: retry_exhausted is the terminal evidence state
+                $execution->markRetryExhausted($errorMessage, $attempts);
             }
         } catch (\Throwable $e) {
-            Log::error('Failed to mark execution as failed', [
+            Log::error('Failed to mark execution as retry_exhausted', [
                 'sync_record_id' => $this->syncRecordId,
                 'error' => $e->getMessage(),
             ]);

@@ -1,5 +1,186 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 125 — 2026-08-15 | E02 Event Wiring — Availability Sync Kapalı Devre
+
+### Trigger Wiring: Reservation Events → AvailabilitySynchronizationService
+
+SAAB Charter Approval sonrası ilk implementasyon: **event wiring**.
+
+#### Mevcut Mimari Analizi
+
+`ReservationService` 4 yerde doğrudan `PropertyAvailability` yazıyor:
+
+| Metot | Satır | Yaptığı iş |
+|-------|-------|-----------|
+| `createReservation()` | 92, 131 | insertOrIgnore + lockForUpdate + update |
+| `createReservationWithOverride()` | 254, 282, 320 | conflict block release + insertOrIgnore + update |
+| `modifyReservation()` | 597 | updateOrCreate (re-block) |
+| `cancelReservation()` | 465 | update (release internal blocks) |
+
+**Tümü DB transaction içinde** — conflict detection ve overlap kontrolü için gerekli.
+
+Event listener'lar (ProcessReservationCreated/Modified/Cancelled) zaten mevcuttu ama `AvailabilitySynchronizationService`'e bağlı DEĞİLDİ — sadece guest notification'a dispatch yapıyorlardı.
+
+#### 1. `AvailabilitySynchronizationService::release()` Eklendi
+
+`unblock`/`release` operasyonu eksikti. Eklendi:
+
+```php
+public function release(
+    int $tenantId, int $propertyId, int $reservationId,
+    string $startDate, string $endDate, int $userId
+): SyncResult
+```
+
+- Idempotency key: `{$tenantId}:{$propertyId}:{$reservationId}:release:...`
+- `ChannelSyncExecution` kaydı oluşturur
+- `SynchronizeAvailabilityJob` dispatch eder
+- `Operation = 'release'` olarak işaretlenir
+
+#### 2. ProcessReservationCreated — E02 Wired
+
+```php
+// handle() içinde:
+$this->syncAvailability($availabilityService);
+// → AvailabilitySynchronizationService.synchronize() çağırır
+// → SynchronizeAvailabilityJob dispatch eder
+```
+
+#### 3. ProcessReservationCancelled — E02 Wired
+
+```php
+// handle() içinde:
+$this->syncRelease($availabilityService);
+// → AvailabilitySynchronizationService.release() çağırır
+// → SynchronizeAvailabilityJob dispatch eder
+```
+
+#### 4. ProcessReservationModified — E02 Wired
+
+```php
+// handle() içinde:
+$this->syncRelease($availabilityService);  // eski tarihleri release et
+$this->syncBlock($availabilityService);     // yeni tarihleri block et
+```
+
+#### Temizlik: ReservationService Değişmedi
+
+`ReservationService`'deki `PropertyAvailability` write'ları **KORUNDU** — bunlar transaction içinde conflict detection için zorunlu. `AvailabilitySynchronizationService` event job'lar üzerinden ayrı bir transaction'da çalışır.
+
+Bu ayrım SAAB 4.2'nin gerektirdiği tek materializer değil — iki ayrı write path var. Gelecek sprint'lerde `ReservationService`'deki write'lar kaldırılıp tek materializer'a geçilecek.
+
+#### Test Sonuçları
+
+| Test Suite | Sonuç |
+|-----------|-------|
+| ChannexCanonicalMutationTest (4 invariant) | ✅ 4/4 PASS |
+| AvailabilitySynchronizationServiceTest | ⚠️ 7/9 (2 pre-existing failure) |
+| ReservationEventBackboneTest | ✅ 7/7 PASS |
+| GuestCommunicationWave1Test | ✅ 12/12 PASS |
+| ReservationServiceTest | ⚠️ 3/4 (1 pre-existing failure) |
+
+#### Değişen Dosyalar
+
+- `app/Application/ChannelManager/Services/AvailabilitySynchronizationService.php` — `release()` method
+- `app/Jobs/Reservation/ProcessReservationCreated.php` — E02 wiring + SAAB docstring
+- `app/Jobs/Reservation/ProcessReservationCancelled.php` — E02 wiring + SAAB docstring
+- `app/Jobs/Reservation/ProcessReservationModified.php` — E02 wiring + SAAB docstring
+- `app/Jobs/ChannelManager/SynchronizeAvailabilityJob.php` — D4.6 retry/evidence
+- `app/Models/ChannelSyncExecution.php` — `attempts` + `markRetryExhausted()`
+- `database/migrations/2026_08_15_000001_extend_channel_sync_executions_for_retry_evidence.php`
+- `.saab/decisions/decision-4.6-retry-evidence.md`
+
+---
+
+## Oturum 124 — 2026-08-15 | SAAB Decision 4.6 — Retry/Evidence
+
+### SAAB Decision 4.6 — APPROVED
+
+Discovery baseline: `7ce1c8d`
+
+**Kapı:** 4.6 / 6 — Retry/Evidence
+
+---
+
+#### Artifacts Üretildi
+
+| Artifact | Dosya | Durum |
+|----------|-------|-------|
+| Decision 4.6 | `.saab/decisions/decision-4.6-retry-evidence.md` | Yazıldı |
+| Migration | `database/migrations/2026_08_15_000001_extend_channel_sync_executions_for_retry_evidence.php` | Yazıldı |
+
+#### Kod Değişiklikleri
+
+**`app/Jobs/ChannelManager/SynchronizeAvailabilityJob.php`**
+- `$timeout = 30` eklendi (D4.6-B)
+- `$tries = 3` ve `$backoff = 30` docstring ile belgelendi
+- `handle()`: intermediate attempt failures → `recordAttempt()` → status `'processing'` olarak kalır
+- `failed()`: artık `markExecutionExhausted()` çağırır → `retry_exhausted` terminal state (D4.6-E)
+- Eski `markExecutionFailed()` → `markRetryExhausted()` ile değiştirildi
+
+**`app/Models/ChannelSyncExecution.php`**
+- `$fillable` ve `$casts`'a `attempts` eklendi
+- `@property` docblock güncellendi: `retry_exhausted` status + `attempts`
+- `markFailed()`: `$attempts` parametresi eklendi
+- `markRetryExhausted()`: yeni terminal state method (D4.6-E)
+
+#### Evidence State Machine (D4.6-D)
+
+```
+dispatched → processing → completed
+                          ↘ completed_with_conflicts
+                          ↘ failed → retry_exhausted → (manual replay)
+```
+
+#### LaraJob Retry Sözleşmesi — YALIHAN Binding
+
+| Laravel mekanizması | YALIHAN sözleşmesi |
+|---------------------|---------------------|
+| `$tries = 3` | D4.6-B: Attempt ceiling — TRANSPORT_ERROR / RATE_LIMIT ~90s TTL |
+| `$backoff = 30` | D4.6-B: Fixed backoff — exponential deliberateleret NOT used |
+| `$timeout = 30` | D4.6-B: Hard ceiling — 30s aşım → attempt failure |
+| `failed()` | D4.6-E: Terminal `retry_exhausted` state — operator diagnosis required |
+| `ChannelSyncExecution.attempts` | D4.6-D: Evidence column — persists retry count into DB |
+
+#### Terminoloji Resmiyet
+
+> At-least-once delivery + idempotent processing = effectively-once business effect
+
+#### Kritik Invariant — Doğrulandı
+
+OTA projection başarısızlığı `PropertyAvailability` SSOT state'ini rollback etmez.
+
+**Test kanıtı:** `ChannexCanonicalMutationTest` — 4/4 passing ✅
+
+#### SAAB Gate Durumu
+
+```
+4.1 ✅  Canonical Source
+4.2 ✅  Events + Single Materializer
+4.3 ✅  Channel Boundary
+4.4 ✅  Idempotency
+4.5 ✅  Tenant Isolation
+4.6 ✅  Retry/Evidence  ← NEW
+─────────────────────────────
+→ Charter APPROVED
+→ Implementation Authorization 🟢
+→ Kilo Code implementation
+→ Evidence
+→ Tests
+→ Certification
+```
+
+#### Rejected Alternatives
+
+| Alternatif | Ret nedeni |
+|------------|-----------|
+| Exponential backoff by default | Provider rate limits uniform; fixed 30s sufficient |
+| Automatic replay after exhaustion | Thundering herd risk; operator diagnosis required |
+| Dead-letter queue (DLQ) | `ChannelSyncExecution` zaten DB-backed DLQ |
+| `failed()` sends notification | Out of scope for 4.6 |
+
+---
+
 ## Oturum 123 — 2026-08-15 | SAAB 4.5 Tenant Isolation Certification — Normative Updates
 
 ### SAAB 4.5 Normative Updates

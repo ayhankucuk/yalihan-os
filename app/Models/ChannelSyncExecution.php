@@ -27,7 +27,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property array $conflicts
  * @property string $idempotency_key
  * @property string $correlation_id
- * @property string $status (dispatched|processing|completed|failed)
+ * @property string $status (dispatched|processing|completed|completed_with_conflicts|failed|retry_exhausted)
+ * @property int $attempts
  * @property int|null $synced_count
  * @property string|null $error_message
  * @property \Carbon\Carbon|null $processed_at
@@ -55,6 +56,7 @@ class ChannelSyncExecution extends BaseModel
         'idempotency_key',
         'correlation_id',
         'status',
+        'attempts',
         'synced_count',
         'error_message',
         'processed_at',
@@ -66,6 +68,7 @@ class ChannelSyncExecution extends BaseModel
         'conflicts' => 'array',
         'processed_at' => 'datetime',
         'synced_count' => 'integer',
+        'attempts' => 'integer',
     ];
 
     /**
@@ -82,13 +85,30 @@ class ChannelSyncExecution extends BaseModel
     }
 
     /**
-     * Mark execution as failed
+     * Mark execution as failed (single attempt threw an exception)
      */
-    public function markFailed(string $errorMessage): void
+    public function markFailed(string $errorMessage, int $attempts = 1): void
     {
         $this->update([
             'status' => 'failed',
             'error_message' => $errorMessage,
+            'attempts' => $attempts,
+            'processed_at' => now(),
+        ]);
+    }
+
+    /**
+     * Mark execution as retry_exhausted — all job attempts exhausted.
+     *
+     * SAAB Decision 4.6 — D4.6-E: Retry Exhaustion Protocol.
+     * Called by SynchronizeAvailabilityJob::failed() after $tries is exhausted.
+     */
+    public function markRetryExhausted(string $errorMessage, int $attempts): void
+    {
+        $this->update([
+            'status' => 'retry_exhausted',
+            'error_message' => $errorMessage,
+            'attempts' => $attempts,
             'processed_at' => now(),
         ]);
     }

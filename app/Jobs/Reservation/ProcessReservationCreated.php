@@ -2,13 +2,15 @@
 
 namespace App\Jobs\Reservation;
 
+use App\Application\ChannelManager\DTOs\SynchronizeAvailabilityCommand;
+use App\Application\ChannelManager\Services\AvailabilitySynchronizationService;
 use App\Events\Reservation\ReservationCreatedEvent;
+use App\Jobs\Reservation\SendGuestConfirmationJob;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Jobs\Reservation\SendGuestConfirmationJob;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -25,6 +27,7 @@ use Illuminate\Support\Facades\Log;
  * Retries are handled at the queue level (Tries = 3, backoff = 60s).
  *
  * Sprint 4-WAVE-EB — Canonical Event Backbone
+ * SAAB Decision 4.1–4.6 — E02: Availability Sync wired here
  */
 class ProcessReservationCreated implements ShouldQueue
 {
@@ -37,35 +40,62 @@ class ProcessReservationCreated implements ShouldQueue
         public readonly ReservationCreatedEvent $event,
     ) {}
 
-    public function handle(): void
+    public function handle(AvailabilitySynchronizationService $availabilityService): void
     {
-        Log::info('ProcessReservationCreated: dispatched', [
-            'reservation_id'  => $this->event->reservationId,
-            'tenant_id'       => $this->event->tenantId,
-            'ilan_id'         => $this->event->ilanId,
-            'external_channel'=> $this->event->externalChannel,
+        Log::info('ProcessReservationCreated: handling', [
+            'reservation_id'   => $this->event->reservationId,
+            'tenant_id'        => $this->event->tenantId,
+            'ilan_id'          => $this->event->ilanId,
+            'external_channel' => $this->event->externalChannel,
         ]);
 
+        // ── E02: Availability Outbound Sync ──────────────────────────────────
+        // SAAB Decision 4.1–4.6: Canonical availability already written by
+        // ReservationService within the same transaction. This job triggers
+        // channel push via the single materializer.
+        $this->syncAvailability($availabilityService);
+
         // ── Wave 1: Guest Communication ──────────────────────────────────────
-        // RESERVATION-GUEST-COMM-WAVE-1
         SendGuestConfirmationJob::dispatch($this->event);
 
-        // ── Downstream systems to be wired here in subsequent sprints ──
-        //
-        // 2. Availability Outbound Sync
-        //    → AvailabilitySynchronizationService.synchronize()
-        //    Ticket: Availability Sync Wave
-        //
-        // 3. Financial Recording
-        //    → Create pending FinancialTransaction record
-        //    Ticket: Financial Automation Wave
-        //
-        // 4. Stay Operation Task Generation
-        //    → Schedule cleaning, pool check, etc.
-        //    Ticket: Stay Operations Wave
-        //
-        // ⚠️  DO NOT add implementation here — add in subsequent waves.
-        // ⚠️  Each downstream system = one dedicated job class.
+        // ── Future waves ─────────────────────────────────────────────────────
+        // Financial Recording → FinancialTransaction record
+        // Stay Operation Task Generation → cleaning, pool check, etc.
+    }
+
+    /**
+     * Trigger channel sync for the new reservation's blocked dates.
+     */
+    private function syncAvailability(AvailabilitySynchronizationService $service): void
+    {
+        try {
+            $command = new SynchronizeAvailabilityCommand(
+                tenantId: $this->event->tenantId,
+                propertyId: $this->event->ilanId,
+                reservationId: $this->event->reservationId,
+                operation: 'block',
+                dateRange: [
+                    'start' => $this->event->startDate,
+                    'end'   => $this->event->endDate,
+                ],
+                available: false,
+                blockReason: 'reservation',
+            );
+
+            $result = $service->synchronize($command, userId: $this->event->createdByUserId ?? 0);
+
+            Log::info('ProcessReservationCreated: availability sync dispatched', [
+                'reservation_id' => $this->event->reservationId,
+                'success'       => $result->success,
+                'synced_count'  => $result->syncedCount,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('ProcessReservationCreated: availability sync failed', [
+                'reservation_id' => $this->event->reservationId,
+                'error'         => $e->getMessage(),
+            ]);
+            throw $e;
+        }
     }
 
     public function failed(\Throwable $exception): void
