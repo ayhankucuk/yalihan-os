@@ -67,7 +67,6 @@ class ProcessReservationModified implements ShouldQueue
                 reservationId: $this->event->reservationId,
                 startDate: $this->event->previousStartDate,
                 endDate: $this->event->previousEndDate,
-                userId: 0,
             );
 
             Log::info('ProcessReservationModified: availability release dispatched', [

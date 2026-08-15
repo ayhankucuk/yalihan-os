@@ -18,6 +18,7 @@ use App\Models\PropertyAvailability;
 use App\Traits\BelongsToTenant;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -105,20 +106,49 @@ class AvailabilitySynchronizationService
                     }
                 }
 
-                // Update or create availability record
-                PropertyAvailability::updateOrCreate(
-                    [
-                        'property_id' => $command->propertyId,
-                        'date' => $date,
-                        'tenant_id' => $command->tenantId,
-                    ],
-                    [
+                // Use explicit update/create to avoid updateOrCreate race with unique constraint.
+                // Additionally wrap create in try/catch: another concurrent transaction may have
+                // inserted the row between our lockForUpdate() SELECT and the create().
+                // UniqueConstraintViolationException = treat as conflict (date already blocked).
+                if ($existing !== null) {
+                    $existing->update([
                         'is_available' => $command->available,
                         'block_reason' => $command->isBlocking() ? $command->blockReason : null,
                         'source_system' => 'canonical',
                         'reservation_id' => $command->isBlocking() ? $command->reservationId : null,
-                    ]
-                );
+                    ]);
+                } else {
+                    try {
+                        PropertyAvailability::create([
+                            'property_id' => $command->propertyId,
+                            'date' => $date,
+                            'tenant_id' => $command->tenantId,
+                            'is_available' => $command->available,
+                            'block_reason' => $command->isBlocking() ? $command->blockReason : null,
+                            'source_system' => 'canonical',
+                            'reservation_id' => $command->isBlocking() ? $command->reservationId : null,
+                        ]);
+                    } catch (QueryException $e) {
+                        // SQLite: UNIQUE constraint failed; MySQL: integrity constraint violation
+                        if ($e->errorInfo[1] === 19 || $e->errorInfo[1] === 1062) {
+                            $conflictDates[$date] = [
+                                'existing_block' => [
+                                    'source' => 'concurrent_transaction',
+                                ],
+                            ];
+                            continue;
+                        }
+                        throw $e;
+                        // Concurrent insert — another transaction created this row.
+                        // Treat as conflict rather than propagating.
+                        $conflictDates[$date] = [
+                            'existing_block' => [
+                                'source' => 'concurrent_transaction',
+                            ],
+                        ];
+                        continue;
+                    }
+                }
 
                 $blockedDates[] = $date;
             }
@@ -284,10 +314,21 @@ class AvailabilitySynchronizationService
         }
     }
 
+    /**
+     * MUST 2: Find existing sync with pessimistic lock to prevent race conditions.
+     *
+     * Without lockForUpdate(), two concurrent requests with the same idempotency key
+     * could both pass the check, both insert/update, and create duplicate executions.
+     * The unique constraint on idempotency_key catches this at DB level, but the lock
+     * prevents the unnecessary contention and exception.
+     *
+     * @return ChannelSyncExecution|null
+     */
     private function findExistingSync(string $idempotencyKey, int $tenantId): ?ChannelSyncExecution
     {
         return ChannelSyncExecution::where('idempotency_key', $idempotencyKey)
             ->where('tenant_id', $tenantId)
+            ->lockForUpdate()
             ->orderBy('id')
             ->first();
     }
@@ -373,20 +414,22 @@ class AvailabilitySynchronizationService
     }
 
     /**
-     * Release (unblock) availability for a reservation.
+     * Release availability blocks and propagate to external channels.
      *
-     * Called by ProcessReservationCancelled and ProcessReservationModified
-     * to trigger channel sync after internal availability is released.
+     * Called by ProcessReservationCancelled and ProcessReservationModified listeners
+     * to release internal blocks (source_system = 'internal') after a cancellation
+     * or date change.
      *
-     * Only releases 'internal' source blocks — external channel blocks
-     * (airbnb_ical, booking etc.) are preserved per Decision 4.3.
+     * This method:
+     *   1. Releases internal blocks in the local DB (within a transaction)
+     *   2. Records a ChannelSyncExecution for external channel propagation
+     *   3. Dispatches the sync job
      *
      * @param int $tenantId
      * @param int $propertyId
      * @param int $reservationId
      * @param string $startDate Inclusive start date Y-m-d
      * @param string $endDate   Inclusive end date Y-m-d
-     * @param int $userId
      * @return SyncResult
      */
     public function release(
@@ -395,20 +438,32 @@ class AvailabilitySynchronizationService
         int $reservationId,
         string $startDate,
         string $endDate,
-        int $userId,
     ): SyncResult {
         $this->enforceTenantIsolation($tenantId, $propertyId);
 
         $idempotencyKey = "{$tenantId}:{$propertyId}:{$reservationId}:release:{$startDate}:{$endDate}";
         $correlationId = sprintf('release-%s-%s', now()->format('Ymd'), \Illuminate\Support\Str::random(12));
 
-        // Check idempotency
+        // Check idempotency (with lock to prevent race on concurrent dispatches)
         $existing = $this->findExistingSync($idempotencyKey, $tenantId);
         if ($existing !== null) {
             return $this->buildResultFromExistingSync($existing);
         }
 
-        // Record execution and dispatch sync job
+        $releasedCount = 0;
+        DB::transaction(function () use ($propertyId, $reservationId, $tenantId, &$releasedCount) {
+            $releasedCount = PropertyAvailability::where('property_id', $propertyId)
+                ->where('reservation_id', $reservationId)
+                ->where('source_system', 'internal')
+                ->where('is_available', false)  // Only release rows that are actually blocked by this reservation
+                ->update([
+                    'is_available' => true,
+                    'block_reason' => null,
+                    'reservation_id' => null,
+                ]);
+        });
+
+        // Record execution for external channel sync
         $syncRecord = ChannelSyncExecution::create([
             'tenant_id' => $tenantId,
             'property_id' => $propertyId,
@@ -428,12 +483,88 @@ class AvailabilitySynchronizationService
         SynchronizeAvailabilityJob::dispatch($syncRecord->id)
             ->afterCommit();
 
-        return SyncResult::success(0, [], [
+        return SyncResult::success($releasedCount, [], [
             'sync_record_id' => $syncRecord->id,
             'correlation_id' => $correlationId,
             'idempotency_key' => $idempotencyKey,
             'operation' => 'release',
         ]);
+    }
+
+    /**
+     * Replay a failed or exhausted sync execution.
+     *
+     * MUST 3: Creates a NEW execution record — never mutates the original.
+     * This preserves full audit lineage and prevents replay storms.
+     *
+     * @param int $executionId The failed execution to replay
+     * @return array{success: bool, new_execution_id: int|null, correlation_id: string|null, error: string|null}
+     */
+    public function replay(int $executionId): array
+    {
+        $original = ChannelSyncExecution::find($executionId);
+
+        if ($original === null) {
+            return [
+                'success' => false,
+                'new_execution_id' => null,
+                'correlation_id' => null,
+                'error' => "Execution #{$executionId} not found",
+            ];
+        }
+
+        // Only allow replay from terminal states
+        $replayableStates = ['failed', 'retry_exhausted', 'completed_with_conflicts'];
+        if (!in_array($original->status, $replayableStates, true)) {
+            return [
+                'success' => false,
+                'new_execution_id' => null,
+                'correlation_id' => null,
+                'error' => "Execution #{$executionId} has status '{$original->status}' — only [" . implode(', ', $replayableStates) . "] are replayable",
+            ];
+        }
+
+        // Generate new idempotency key with replay suffix
+        $newIdempotencyKey = $original->idempotency_key
+            . ':replay:'
+            . now()->timestamp;
+
+        $newCorrelationId = 'replay:' . ($original->correlation_id ?? '') . ':' . now()->timestamp;
+
+        try {
+            $newExecution = ChannelSyncExecution::create([
+                'tenant_id' => $original->tenant_id,
+                'property_id' => $original->property_id,
+                'reservation_id' => $original->reservation_id,
+                'operation' => $original->operation,
+                'block_reason' => $original->block_reason,
+                'date_range_start' => $original->date_range_start,
+                'date_range_end' => $original->date_range_end,
+                'target_availability' => $original->target_availability,
+                'synced_dates' => [],
+                'conflicts' => [],
+                'idempotency_key' => $newIdempotencyKey,
+                'correlation_id' => $newCorrelationId,
+                'status' => 'dispatched',
+            ]);
+
+            SynchronizeAvailabilityJob::dispatch($newExecution->id)
+                ->afterCommit();
+
+            return [
+                'success' => true,
+                'new_execution_id' => $newExecution->id,
+                'correlation_id' => $newCorrelationId,
+                'error' => null,
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'success' => false,
+                'new_execution_id' => null,
+                'correlation_id' => null,
+                'error' => $e->getMessage(),
+            ];
+        }
     }
 
     private function syncToChannel(ChannelAdapter $adapter, SynchronizeAvailabilityCommand $command): SyncResult

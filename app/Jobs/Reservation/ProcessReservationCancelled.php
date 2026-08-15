@@ -58,13 +58,13 @@ class ProcessReservationCancelled implements ShouldQueue
     private function syncRelease(AvailabilitySynchronizationService $service): void
     {
         try {
+            // Unified release(): releases internal blocks + dispatches channel sync job
             $result = $service->release(
                 tenantId: $this->event->tenantId,
                 propertyId: $this->event->ilanId,
                 reservationId: $this->event->reservationId,
                 startDate: $this->event->startDate,
                 endDate: $this->event->endDate,
-                userId: 0,
             );
 
             Log::info('ProcessReservationCancelled: availability release dispatched', [

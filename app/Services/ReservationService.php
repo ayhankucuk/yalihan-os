@@ -245,19 +245,14 @@ class ReservationService
                 );
             }
 
-            // ── 2. Cancel the conflicting reservation ───────────────────────────
+            // ── 2. Cancel the conflicting reservation (availability release via event) ──
+            // Directly cancel to stay within the same transaction.
+            // Event dispatch is deferred until after this transaction commits (see below).
             $conflict->update([
                 'reservation_state' => ReservationState::CANCELLED->value,
                 'cancelled_at'     => now(),
             ]);
-
-            PropertyAvailability::where('reservation_id', $conflictReservationId)
-                ->where('source_system', 'internal')
-                ->update([
-                    'is_available'   => true,
-                    'block_reason'   => null,
-                    'reservation_id' => null,
-                ]);
+            // Availability release will be handled by the override event dispatch below.
 
             // ── 3. Create new reservation (same logic as createReservation) ─────
             $dates = [];
@@ -328,7 +323,8 @@ class ReservationService
             return $reservation;
         });
 
-        // ── Dispatch canonical lifecycle event ──────────────────────────
+        // ── Dispatch canonical lifecycle events (after commit) ───────────
+        // 1. New reservation created
         event(new ReservationCreatedEvent(
             reservationId:         $reservation->id,
             tenantId:              $reservation->tenant_id ?? 0,
@@ -353,6 +349,31 @@ class ReservationService
             overrideAuthorizedBy:  $reservation->override_authorized_by,
             overrideOccurredAt:    $reservation->override_occurred_at?->toIso8601String(),
         ));
+
+        // 2. Conflicting reservation cancelled — triggers ProcessReservationCancelled →
+        //    AvailabilitySynchronizationService.release() for external channel sync
+        $cancelledConflict = PropertyReservation::find($conflictReservationId);
+        if ($cancelledConflict !== null) {
+            $cancelledAt = $cancelledConflict->cancelled_at;
+            event(new ReservationCancelledEvent(
+                reservationId:         $cancelledConflict->id,
+                tenantId:              $cancelledConflict->tenant_id ?? 0,
+                ilanId:                $cancelledConflict->ilan_id ?? $cancelledConflict->property_id,
+                startDate:             $this->formatDate($cancelledConflict->start_date),
+                endDate:               $this->formatDate($cancelledConflict->end_date),
+                nights:                $cancelledConflict->nights,
+                guestName:             $cancelledConflict->guest_name,
+                guestEmail:            $cancelledConflict->guest_email,
+                guestPhone:            $cancelledConflict->guest_phone,
+                cancelledAt:           $cancelledAt instanceof \Carbon\Carbon
+                    ? $cancelledAt->toIso8601String()
+                    : (string) $cancelledAt,
+                cancelledBy:           'override',
+                externalReservationId: $cancelledConflict->external_reservation_id,
+                externalChannel:       $cancelledConflict->external_channel,
+                reason:                "Override by user #{$overrideAuthorizedBy} → new reservation #{$reservation->id}",
+            ));
+        }
 
         return $reservation;
     }
@@ -435,16 +456,63 @@ class ReservationService
     }
 
     /**
-     * @param int $reservationId
-     * @return void
+     * Cancel a reservation — public entry point.
+     *
+     * Dispatches ReservationCancelledEvent after the transaction commits.
+     * The event triggers ProcessReservationCancelled → AvailabilitySynchronizationService.release()
+     * to propagate the availability release to external channels.
+     *
      * @throws Exception
      */
     public function cancelReservation(int $reservationId): void
     {
-        // Capture data for event (outside closure so event fires after commit)
-        $eventData = null;
+        $result = $this->cancelReservationInternal($reservationId);
 
-        DB::transaction(function () use ($reservationId, &$eventData) {
+        if ($result === null) {
+            return; // Idempotent — was already cancelled
+        }
+
+        // Dispatch event AFTER transaction commits
+        $reservation = $result;
+        $cancelledAt = $reservation->cancelled_at;
+        event(new ReservationCancelledEvent(
+            reservationId:         $reservation->id,
+            tenantId:              $reservation->tenant_id ?? 0,
+            ilanId:                $reservation->ilan_id ?? $reservation->property_id,
+            startDate:             $this->formatDate($reservation->start_date),
+            endDate:               $this->formatDate($reservation->end_date),
+            nights:                $reservation->nights,
+            guestName:             $reservation->guest_name,
+            guestEmail:            $reservation->guest_email,
+            guestPhone:            $reservation->guest_phone,
+            cancelledAt:           $cancelledAt instanceof \Carbon\Carbon
+                ? $cancelledAt->toIso8601String()
+                : (string) $cancelledAt,
+            cancelledBy:           'system',
+            externalReservationId: $reservation->external_reservation_id,
+            externalChannel:       $reservation->external_channel,
+            reason:                null,
+        ));
+    }
+
+    /**
+     * Internal cancellation — DB transaction only, no event dispatch.
+     *
+     * Returns null if idempotent (already cancelled).
+     * Returns the cancelled PropertyReservation if this was a real cancellation.
+     *
+     * Releases internal availability blocks within the same transaction to ensure
+     * synchronous availability state for callers that cannot use the event chain
+     * (e.g., tests with Queue::fake()). The event dispatched by cancelReservation()
+     * triggers channel sync via ProcessReservationCancelled.
+     *
+     * @throws Exception
+     */
+    private function cancelReservationInternal(int $reservationId): ?PropertyReservation
+    {
+        $result = null;
+
+        DB::transaction(function () use ($reservationId, &$result) {
             $reservation = PropertyReservation::lockForUpdate()->findOrFail($reservationId);
 
             $state = $reservation->reservation_state instanceof ReservationState
@@ -452,8 +520,8 @@ class ReservationService
                 : (string) $reservation->reservation_state;
 
             if ($state === 'cancelled') {
-                $eventData = ['idempotent' => true, 'reservation' => $reservation];
-                return; // Idempotent behaviour
+                $result = null; // Idempotent
+                return;
             }
 
             $reservation->update([
@@ -461,43 +529,22 @@ class ReservationService
                 'cancelled_at' => now(),
             ]);
 
-            // Sadece Internal blockları (reservation bazlı) kaldır
+            // Release internal availability blocks within the same transaction.
+            // External channel blocks (source_system = 'airbnb_ical', etc.) are preserved.
+            // Only rows with is_available = false are updated (already-blocked rows are skipped).
             PropertyAvailability::where('reservation_id', $reservationId)
                 ->where('source_system', 'internal')
+                ->where('is_available', false)
                 ->update([
                     'is_available' => true,
                     'block_reason' => null,
                     'reservation_id' => null,
                 ]);
 
-            // Capture fresh model for event
-            $eventData = ['idempotent' => false, 'reservation' => $reservation->fresh()];
+            $result = $reservation->fresh();
         });
 
-        // ── Dispatch canonical lifecycle event (after commit) ───────────
-        // Only dispatch for non-idempotent cancellations
-        if ($eventData && ($eventData['idempotent'] ?? false) === false) {
-            $reservation = $eventData['reservation'];
-            $cancelledAt = $reservation->cancelled_at;
-            event(new ReservationCancelledEvent(
-                reservationId:         $reservation->id,
-                tenantId:              $reservation->tenant_id ?? 0,
-                ilanId:                $reservation->ilan_id ?? $reservation->property_id,
-                startDate:             $this->formatDate($reservation->start_date),
-                endDate:               $this->formatDate($reservation->end_date),
-                nights:                $reservation->nights,
-                guestName:             $reservation->guest_name,
-                guestEmail:             $reservation->guest_email,
-                guestPhone:             $reservation->guest_phone,
-                cancelledAt:            $cancelledAt instanceof \Carbon\Carbon
-                    ? $cancelledAt->toIso8601String()
-                    : (string) $cancelledAt,
-                cancelledBy:           'system', // Override/direct cancel — to be enhanced
-                externalReservationId: $reservation->external_reservation_id,
-                externalChannel:       $reservation->external_channel,
-                reason:                null,
-            ));
-        }
+        return $result;
     }
 
     /**
@@ -506,6 +553,11 @@ class ReservationService
      * CHANNEL_MANAGER_PROVIDER Wave 3 — ADR-008
      * Canonical method — conflict detection runs inside.
      * Out-of-order: terminal state reservation → silently ignored (returns existing).
+     *
+     * Availability mutation is handled by the event chain:
+     *   modifyReservation → ReservationModifiedEvent
+     *     → ProcessReservationModified
+     *       → AvailabilitySynchronizationService (release old + block new)
      *
      * @throws Exception on conflict or invalid dates
      */
@@ -548,7 +600,9 @@ class ReservationService
 
             $nights = $start->diffInDays($end);
 
-            // Conflict check (exclude self)
+            // Conflict check (exclude self) — OVERLAP constraint from business requirement.
+            // Availability conflict detection is handled by the event chain via
+            // AvailabilitySynchronizationService.synchronize().
             $overlapCount = PropertyReservation::where('property_id', $reservation->property_id)
                 ->where('id', '!=', $reservationId)
                 ->where('start_date', '<', $end->format('Y-m-d'))
@@ -561,16 +615,7 @@ class ReservationService
                 throw new Exception("Modification conflict: new dates overlap with an existing reservation.");
             }
 
-            // Release old availability blocks
-            PropertyAvailability::where('reservation_id', $reservationId)
-                ->where('source_system', 'internal')
-                ->update([
-                    'is_available'   => true,
-                    'block_reason'   => null,
-                    'reservation_id' => null,
-                ]);
-
-            // Update reservation
+            // Update reservation dates — availability mutation via event chain
             $updateData = [
                 'start_date' => $start->format('Y-m-d'),
                 'end_date'   => $end->format('Y-m-d'),
@@ -584,26 +629,6 @@ class ReservationService
             }
 
             $reservation->update($updateData);
-
-            // Re-block new dates
-            $dates = [];
-            $current = $start->copy();
-            while ($current->lt($end)) {
-                $dates[] = $current->format('Y-m-d');
-                $current->addDay();
-            }
-
-            foreach ($dates as $dateStr) {
-                PropertyAvailability::updateOrCreate(
-                    ['property_id' => $reservation->property_id, 'date' => $dateStr],
-                    [
-                        'is_available'   => false,
-                        'block_reason'   => 'reservation',
-                        'source_system'  => 'internal',
-                        'reservation_id' => $reservationId,
-                    ]
-                );
-            }
 
             $resultData = [
                 'cancelled'          => false,
