@@ -1,5 +1,51 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 123 — 2026-08-15 | SAAB 4.5 Tenant Isolation Certification — Normative Updates
+
+### SAAB 4.5 Normative Updates
+
+**SAAB 4.5 Tenant Isolation Certification** commit öncesi iki eksik giderildi:
+
+#### 1. PropertyReservation Exception — MUST Clause Normatif Belgeleme
+
+> **MUST:** `PropertyReservation` write path'lerinde explicit `tenant_id` doğrulaması ZORUNLUDUR.
+
+**Rationale:** Channel Manager webhook'ları (Booking, Airbnb, Channex) tenant_id'yi payload'dan alır. Global scope kullanılmaz — explicit doğrulama şart.
+
+**Kalıp:**
+```php
+// ✅ ZORUNLU
+PropertyReservation::withoutGlobalScopes()
+    ->where('tenant_id', $tenantId)
+    ->find($id);
+
+// ❌ YASAK
+PropertyReservation::withoutGlobalScopes()->find($id);
+```
+
+#### 2. Üç MUST Konusu — Charter Bağlantısı
+
+| MUST | Konu | Charter |
+|------|------|---------|
+| MUST 1 | `property_availabilities` unique constraint | `SAAB_4.5_IMPL_PREREQ_CHARTER.md` |
+| MUST 2 | `findExistingSync()` race condition | `SAAB_4.5_IMPL_PREREQ_CHARTER.md` |
+| MUST 3 | correlationId idempotency docs | `SAAB_4.5_IMPL_PREREQ_CHARTER.md` |
+
+**Charter:** `.sab/decisions/SAAB_4.5_IMPL_PREREQ_CHARTER.md`
+
+---
+
+### Değişiklik Özeti
+
+| Dosya | Değişiklik |
+|-------|------------|
+| `.sab/decisions/SAAB_4.5_TENANT_ISOLATION.md` | PropertyReservation MUST clause + Charter linkage |
+| `.sab/decisions/SAAB_4.5_IMPL_PREREQ_CHARTER.md` | YENİ — 3 MUST konusu Charter'ı |
+| `docs/PROGRESS-TRACKER.md` | SAAB 4.5 detay bölümü + header güncelleme |
+| `docs/BEKCI_CHANGELOG.md` | Bu oturum kaydı |
+
+---
+
 ## Oturum 121 — 2026-08-14 | SAAB CLOSED ✅
 
 **SAAB Oturum 121** RESERVATION-GUEST-COMM-WAVE-1'i kapatmıştır.

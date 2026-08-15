@@ -1,6 +1,6 @@
 # Governance Progress Tracker
-**Son Güncelleme:** 2026-08-14 (PILOT-002 WAVE 3 COMMITTED + SAAB Charter v1.0 APPROVED ✅ + RESERVATION EVENT BACKBONE ✅ CERTIFIED + RESERVATION-GUEST-COMM-WAVE-1 ✅ CERTIFIED (19/19 PASS))
-**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + ✅ **SPRINT 6.7 CLOSED** + ✅ **SPRINT 6.8 CLOSED** + ✅ **SPRINT 6.9 CLOSED** + ✅ **SPRINT 7.0 CLOSED** + ✅ **SPRINT 7.1 CLOSED** + ✅ **SPRINT 7.2 CLOSED** + 🔍 **WIZARD BLOCKERS MAPPED** + 🛡️ **RELEASE GATE V9 APPROVED** + 📋 **SPRINT 10 CERTIFIED** + 🏠 **SPRINT 11 CERTIFIED** + 🏛️ **SAAB v11.1 GOVERNANCE FROZEN** + 🚀 **SPRINT 12 ✅ COMPLETE** + 🧪 **TENANT ISOLATION TESTS ✅ ALL GREEN** + 🧪 **LIFECYCLE TESTS 7/7 ✅** + 🏗️ **EXECUTION RUNTIME FOUNDATION ✅** + 🧪 **EXECUTION TESTS 12/12 ✅** + 📊 **EXECUTION METRICS FOUNDATION ✅** + 🧪 **METRICS TESTS 11/11 ✅** + 🏗️ **EXECUTION RUNTIME OPERATIONS CONSOLE ✅** + 🧪 **PRODUCT VALIDATION 9/9 ✅** + 🏆 **M2 PROPERTY RUNTIME ✅ CERTIFIED** + 📡 **SPRINT 4.14 ✅ BOOKING CHANNEL MANAGER RATES OUT (71/71 PASS)** + 🔵 **SPRINT 4.15 ✅ BOOKING PRODUCTION CERTIFICATION (73/73 PASS + 2 SAB FIX)** + 🛡️ **YDL v1 Phase 1 ✅ CERTIFIED (53 tests)** + 🧹 **C7 ✅ DOCUMENTATION DRIFT RECONCILED** + 📊 **SAAB PROGRAM METRICS FRAMEWORK ✅ ADOPTED** + 🧠 **YDL v1 Phase 3 ✅ AGENT CONTEXT INTEGRATION (8 tests PASS)** + 🎯 **PILOT-001 ✅ PROPERTY_PUBLISH_SUPERVISED_AUTONOMY ACTIVE**
+**Son Güncelleme:** 2026-08-15 (SAAB 4.5 ✅ CERTIFIED + PropertyReservation MUST clause + 3 MUST Charter created)
+**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + ✅ **SPRINT 6.7 CLOSED** + ✅ **SPRINT 6.8 CLOSED** + ✅ **SPRINT 6.9 CLOSED** + ✅ **SPRINT 7.0 CLOSED** + ✅ **SPRINT 7.1 CLOSED** + ✅ **SPRINT 7.2 CLOSED** + 🔍 **WIZARD BLOCKERS MAPPED** + 🛡️ **RELEASE GATE V9 APPROVED** + 📋 **SPRINT 10 CERTIFIED** + 🏠 **SPRINT 11 CERTIFIED** + 🏛️ **SAAB v11.1 GOVERNANCE FROZEN** + 🚀 **SPRINT 12 ✅ COMPLETE** + 🧪 **TENANT ISOLATION TESTS ✅ ALL GREEN** + 🧪 **LIFECYCLE TESTS 7/7 ✅** + 🏗️ **EXECUTION RUNTIME FOUNDATION ✅** + 🧪 **EXECUTION TESTS 12/12 ✅** + 📊 **EXECUTION METRICS FOUNDATION ✅** + 🧪 **METRICS TESTS 11/11 ✅** + 🏗️ **EXECUTION RUNTIME OPERATIONS CONSOLE ✅** + 🧪 **PRODUCT VALIDATION 9/9 ✅** + 🏆 **M2 PROPERTY RUNTIME ✅ CERTIFIED** + 📡 **SPRINT 4.14 ✅ BOOKING CHANNEL MANAGER RATES OUT (71/71 PASS)** + 🔵 **SPRINT 4.15 ✅ BOOKING PRODUCTION CERTIFICATION (73/73 PASS + 2 SAB FIX)** + 🛡️ **YDL v1 Phase 1 ✅ CERTIFIED (53 tests)** + 🧹 **C7 ✅ DOCUMENTATION DRIFT RECONCILED** + 📊 **SAAB PROGRAM METRICS FRAMEWORK ✅ ADOPTED** + 🧠 **YDL v1 Phase 3 ✅ AGENT CONTEXT INTEGRATION (8 tests PASS)** + 🎯 **PILOT-001 ✅ PROPERTY_PUBLISH_SUPERVISED_AUTONOMY ACTIVE** + 🛡️ **SAAB 4.5 ✅ TENANT ISOLATION CERTIFIED (3 MUST tracked)**
 | ERA III/IV | Katman | Sprint | Status |
 |---------|--------|--------|--------|
 | Observation | Cockpit | 4.6 | ✅ Certified |
@@ -20,9 +20,66 @@
 | **🔍 PLATFORM** | **Supervised Autonomy Pattern — 2 Operasyon Kanıtı** | **PILOT-001+002** | **✅ APPROVED — SAAB Charter v1.0 (66c0c675)** |
 | **🔗 RESERVATION-EB** | **Canonical Event Backbone — Event-Driven Automation Foundation** | **RESERVATION-EB** | **✅ CERTIFIED (Oturum 121 — 2026-08-14)** |
 | **🚀 RESERVATION-GUEST-COMM-WAVE-1** | **Guest Confirmation Notification Pipeline** | **GUEST-COMM-WAVE-1** | **✅ CERTIFIED (Oturum 122 — 19/19 PASS, commit e681d3b)** |
+| **🛡️ SAAB 4.5** | **Tenant Isolation Certification** | **SAAB 4.5** | **✅ CERTIFIED — 3 MUST in SAAB_4.5_IMPL_PREREQ_CHARTER** |
 | **📡 AVAILABILITY SYNC** | **Availability Outbound Sync — 6 decisions OPEN, Option A selected, dependency order defined** | **AVAIL_SYNC** | **🔲 CHARTER DRAFT v3 — SAAB 6 decisions pending** |
 
 **ERA IV:** 🚀 ACTIVE — First Advisor Pilot | Sprint 5.0
+
+---
+
+## 🛡️ SAAB 4.5 — Tenant Isolation Certification (2026-08-14/15)
+
+**Status:** ✅ CERTIFIED
+**Parent Decision:** SAAB 4.4 — Sync Engine Baseline
+**Baseline:** `1c19f47`
+
+### Normative Updates (2026-08-15)
+
+| Update | Durum |
+|--------|-------|
+| PropertyReservation explicit tenant_id validation MUST clause | ✅ Dokümante edildi |
+| 3 MUST konusu ayrı Charter'a bağlandı | ✅ `SAAB_4.5_IMPL_PREREQ_CHARTER.md` |
+| Quality Gates PropertyReservation PASS | ✅ |
+
+### PropertyReservation Tenant Isolation — MUST Clause
+
+> **MUST:** `PropertyReservation` write path'lerinde explicit `tenant_id` doğrulaması ZORUNLUDUR.
+
+**Exception Rationale:** Channel Manager webhook'ları (Booking, Airbnb, Channex) tenant_id'yi payload'dan alır — global scope kullanılmaz.
+
+**MUST Clause Pattern:**
+```php
+// ✅ ZORUNLU
+PropertyReservation::withoutGlobalScopes()
+    ->where('tenant_id', $tenantId)  // MUST
+    ->find($id);
+
+// ❌ YASAK
+PropertyReservation::withoutGlobalScopes()->find($id);
+```
+
+### Implementation Prerequisites Charter
+
+**Charter:** `.sab/decisions/SAAB_4.5_IMPL_PREREQ_CHARTER.md`
+
+| MUST | Konu | Status |
+|------|------|--------|
+| MUST 1 | `property_availabilities` tenant-scoped unique constraint | 🔲 OPEN |
+| MUST 2 | `findExistingSync()` race condition (lockForUpdate) | 🔲 OPEN |
+| MUST 3 | correlationId idempotency semantics dokümantasyonu | 🔲 OPEN |
+
+### Quality Gates
+
+| Gate | Durum |
+|------|-------|
+| SetTenantContext middleware | ✅ PASS |
+| RestoreTenantContext queue middleware | ✅ PASS |
+| TenantAwareJobInterface (14/14) | ✅ PASS |
+| Webhook tenant verification | ✅ PASS |
+| PropertyReservation explicit tenant_id | ✅ PASS (MUST clause) |
+| property_availabilities unique constraint | ❌ MUST 1 |
+| findExistingSync() atomik işlem | ❌ MUST 2 |
+| correlationId semantics | ❌ MUST 3 |
 
 ---
 
