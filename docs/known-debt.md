@@ -239,3 +239,21 @@
 - **Çözüm:** `resources/views/admin/finans/komisyonlar/index.blade.php` Alpine.js fetch mimarisi + istatistikler, filtreler, pagination, approve/pay aksiyonları. Ek olarak: create, show, edit view'ları + `/api/admin/komisyonlar` API routes.
 - **Risk:** 🟢 LOW — Admin UI tamamlandı
 - **Durum:** ✅ KAPALI (Sprint 4.1 — 2026-07-03)
+
+### 37. Availability Sync — SQLite Test Schema Gap (CERT-DEBT) ⏳ AÇIK
+- **Kaynak:** `b98bb10` — Single Materializer Cutover certification run
+- **Etkilenen testler:**
+  - `AvailabilitySynchronizationServiceTest::test_it_blocks_availability_for_confirmed_reservation`
+  - `AvailabilitySynchronizationServiceTest::test_it_detects_conflict_when_same_date_blocked_by_different_reservation`
+  - `ReservationServiceTest::test_fails_if_dates_overlap_with_airbnb`
+- **Sorun:** `SQLSTATE[HY000]: General error: 1 no such table: property_availability` — `phpunit.xml` SQLite kullanıyor (`DB_CONNECTION=sqlite`) ama `php artisan migrate` SQLite'e `property_availability` tablosunu oluşturmuyor. `migrate` yerine MySQL schema dump kullanılıyor; SQLite migration path'ı çalışmıyor.
+- **Risk:** 🟡 MEDIUM — Test suite'enviro test hatası; production runtime etkilenmiyor
+- **Durum:** ⏳ AÇIK — Test altyapısı düzeltmesi gerekiyor (Availability Sync mimarisinden bağımsız)
+- **Çözüm:** Ya `phpunit.xml`'i MySQL'e yönlendir ya da SQLite migration path'ını `property_availability` create statement ile tamamla
+- **Not:** Certification için bu 3 test atlanabilir; asıl doğrulama `ChannexCanonicalMutationTest` (4/4 PASS) ve `ReservationEventBackboneTest` (7/7 PASS) üzerinden yapıldı.
+- **Kaynak:** Local smoke test 2026-06-24
+- **Sorun:** [`KomisyonController::index()`](app/Modules/Finans/Controllers/KomisyonController.php:35) sadece `JsonResponse` döndürüyor; Blade view yok
+- **URL:** `GET /admin/finans/komisyonlar` → ham JSON yanıt
+- **Çözüm:** `resources/views/admin/finans/komisyonlar/index.blade.php` Alpine.js fetch mimarisi + istatistikler, filtreler, pagination, approve/pay aksiyonları. Ek olarak: create, show, edit view'ları + `/api/admin/komisyonlar` API routes.
+- **Risk:** 🟢 LOW — Admin UI tamamlandı
+- **Durum:** ✅ KAPALI (Sprint 4.1 — 2026-07-03)
