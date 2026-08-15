@@ -44,6 +44,23 @@ PropertyReservation::withoutGlobalScopes()->find($id);
 | `docs/PROGRESS-TRACKER.md` | SAAB 4.5 detay bölümü + header güncelleme |
 | `docs/BEKCI_CHANGELOG.md` | Bu oturum kaydı |
 
+### Mimari Yön (SAAB — Decision 4.1 İçin)
+
+| Katman | Rol |
+|--------|-----|
+| Reservation/block/lifecycle events | Business facts |
+| property_availabilities | Deterministik türetilen materialized canonical state |
+| Booking/Airbnb availability | Dış kanal projection'ları |
+
+### Durum
+
+| Alan | Değer |
+|------|-------|
+| SAAB 4.5 | ✅ CLOSED |
+| Architecture | 🟢 Stable |
+| Implementation authorization | ⛔ Henüz yok |
+| Next gate | ▶ Availability Sync 4.1 |
+
 ---
 
 ## Oturum 121 — 2026-08-14 | SAAB CLOSED ✅
