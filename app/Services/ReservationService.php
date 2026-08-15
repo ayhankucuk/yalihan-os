@@ -245,14 +245,27 @@ class ReservationService
                 );
             }
 
-            // ── 2. Cancel the conflicting reservation (availability release via event) ──
-            // Directly cancel to stay within the same transaction.
-            // Event dispatch is deferred until after this transaction commits (see below).
+            // ── 2. Cancel the conflicting reservation ─────────────────────────
+            // Release its availability blocks synchronously within this transaction.
+            // The event dispatched after commit (see below) triggers channel sync only —
+            // it does NOT re-release the blocks (idempotency key prevents double-release).
             $conflict->update([
                 'reservation_state' => ReservationState::CANCELLED->value,
                 'cancelled_at'     => now(),
             ]);
-            // Availability release will be handled by the override event dispatch below.
+
+            // Release conflicting reservation's internal availability blocks synchronously.
+            // This is REQUIRED because the cancellation event's listener would release them
+            // asynchronously (via queue), but the new reservation needs them available NOW
+            // within the same transaction.
+            PropertyAvailability::where('reservation_id', $conflictReservationId)
+                ->where('source_system', 'internal')
+                ->where('is_available', false)
+                ->update([
+                    'is_available'   => true,
+                    'block_reason'   => null,
+                    'reservation_id' => null,
+                ]);
 
             // ── 3. Create new reservation (same logic as createReservation) ─────
             $dates = [];
