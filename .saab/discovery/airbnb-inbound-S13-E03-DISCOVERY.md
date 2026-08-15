@@ -217,19 +217,105 @@ Unknown property → HTTP 200 (idempotent acknowledgment to Channex/Airbnb).
 
 ---
 
-## E03 SAAB Decision Gates (Proposed)
+## E3.1 — Per-Channel Execution Record
 
-| Gate | Topic | Decision Needed |
-|------|--------|----------------|
-| E3.1 | Per-channel execution record | YES — `ChannelSyncExecution` per channel or aggregated? |
-| E3.2 | Cross-channel partial failure | YES — compensate or accept? |
-| E3.3 | Inbound tenant isolation | ✅ Already confirmed |
-| E3.4 | Idempotency (inbound replay) | ✅ Already confirmed |
-| E3.5 | Channel boundary (inbound doesn't write PropertyAvailability) | ✅ Already confirmed |
-| E3.6 | Retry/Evidence (inbound webhook job) | ✅ Inherits E02 evidence layer |
+**Status:** `APPROVED`
+
+Every channel projection gets its own `ChannelSyncExecution` record. The aggregated single-record model is insufficient.
+
+### Decision
+
+```
+ChannelSyncExecution
+    └── per channel (one record per channel, one per sync operation)
+```
+
+### Rationale
+
+The aggregated model hides per-channel failures. If Airbnb succeeds and Booking fails, the aggregate shows `completed` — losing the Booking failure signal. Per-channel records surface each channel's outcome independently.
+
+### Schema implication
+
+One `ChannelSyncExecution` per channel per operation:
+
+```
+AvailabilitySynchronizationService.synchronize()
+    ↓
+    ├─ Booking adapter  → ChannelSyncExecution (channel=booking, status=completed)
+    ├─ Airbnb adapter  → ChannelSyncExecution (channel=airbnb, status=failed)
+    └─ Vrbo adapter   → ChannelSyncExecution (channel=vrbo, status=completed)
+```
+
+### Implementation consequence
+
+`processQueuedSync()` changes from aggregated loop → per-channel dispatch: one job per channel (or one record per channel per job). The Laravel job `$tries`/`$backoff` per job maps to per-channel retry — exactly what Laravel provides.
+
+---
+
+## E3.2 — Partial Failure / Targeted Convergence
+
+**Status:** `APPROVED`
+
+### Decision
+
+```
+Booking  ✅ completed
+Airbnb   ❌ failed  → retry
+Channex  ✅ completed
+```
+
+No rollback of:
+- Canonical `PropertyReservation` ❌
+- Canonical `property_availabilities` ❌
+- Completed channel projections ❌
+
+Correct model: failed channel retries independently. Laravel `failed()` per job. Replay is channel-specific.
+
+### Rationale
+
+External channel failure never mutates business truth. Canonical availability stays correct. Retry is targeted. This preserves the SAAB Decision 4.1 invariant: **channel failure cannot corrupt canonical state**.
+
+---
+
+## E3 SAAB Decision Gates — Final
+
+| Gate | Topic | Status |
+|------|--------|--------|
+| E3.1 Per-channel execution record | `ChannelSyncExecution` per channel | ✅ APPROVED |
+| E3.2 Targeted convergence / no rollback | Retry per channel | ✅ APPROVED |
+| E3.3 Tenant isolation | `ilan_takvim_sync` join | ✅ CONFIRMED |
+| E3.4 Inbound idempotency | `external_reservation_id` + ChannelSyncExecution | ✅ CONFIRMED |
+| E3.5 Channel boundary | Adapter writes no PropertyAvailability | ✅ CONFIRMED |
+| E3.6 Retry/Evidence | Job layer from E02 | ✅ INHERITED |
+
+**All gates CLOSED.** Implementation Authorization: 🟢 GRANTED.
+
+---
+
+## Implementation Scope (E03)
+
+### Out of scope (E02 certified, E03 inherits)
+- `PropertyAvailability` mutation logic
+- `AvailabilitySynchronizationService.synchronize()` DB writes
+- `SynchronizeAvailabilityJob` base job class
+- Event backbone (Created/Modified/Cancelled)
+
+### In scope for E03
+1. **Per-channel `ChannelSyncExecution` records** — split aggregated record into per-channel records
+2. **Per-channel job dispatch** — one job per channel, not one job per all-channels
+3. **Channel adapter DI update** — `getRegisteredChannels()` returns adapters with `channel` metadata
+4. **Per-channel retry/exhaustion** — each channel job retries independently
+5. **Evidence scope update** — `ChannelSyncExecution.channel` field
+
+### Key file changes
+- `AvailabilitySynchronizationService::processQueuedSync()`
+- `SynchronizeAvailabilityJob` (minor — routing via channel field)
+- `ChannelSyncExecution` model + migration (add `channel` column)
+- `ChannelSyncContract` (no changes — just per-channel instantiation)
 
 ---
 
 **Author:** Kilo Code (Agentic)
-**Discovery:** COMPLETE
-**Next:** SAAB Decision E3.1–E3.6 → Implementation Authorization
+**Discovery:** CLOSED
+**Implementation Authorization:** 🟢 GRANTED
+**Next:** Kilo Code → E03 Implementation → Evidence → Certification
