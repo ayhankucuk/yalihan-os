@@ -413,6 +413,135 @@ class AvailabilitySynchronizationServiceTest extends TestCase
         $this->assertEquals('dispatched', $syncRecord->status);
     }
 
+    /**
+     * E03 E3.1 Evidence: Per-channel execution records
+     *
+     * SAAB Decision E3.1: "Every channel projection gets its own ChannelSyncExecution record."
+     *
+     * Verifies: N registered channels → N execution records, each with distinct channel discriminator.
+     */
+    /** @test */
+    public function e03_it_creates_per_channel_execution_records_for_multiple_channels(): void
+    {
+        Queue::fake();
+
+        $tenantId = 1;
+        $property = $this->createProperty($tenantId);
+        $startDate = Carbon::now()->addDays(5)->format('Y-m-d');
+        $endDate = Carbon::now()->addDays(7)->format('Y-m-d');
+
+        // Register TWO channels: Airbnb AND Booking
+        IlanTakvimSync::create([
+            'ilan_id' => $property->id,
+            'platform' => 'airbnb',
+            'is_sync_active' => true,
+            'senkron_durumu' => 'active',
+            'auto_sync' => true,
+        ]);
+        IlanTakvimSync::create([
+            'ilan_id' => $property->id,
+            'platform' => 'booking',
+            'is_sync_active' => true,
+            'senkron_durumu' => 'active',
+            'auto_sync' => true,
+        ]);
+
+        $command = new SynchronizeAvailabilityCommand(
+            tenantId: $tenantId,
+            propertyId: $property->id,
+            reservationId: 999,
+            operation: 'block',
+            dateRange: ['start' => $startDate, 'end' => $endDate],
+            available: false,
+            blockReason: 'reservation',
+        );
+
+        // Act
+        $result = $this->service->synchronize($command, userId: 1);
+
+        // Assert — E3.1: N channels → N execution records
+        $executionIds = $result->metadata['execution_ids'] ?? [];
+        $channels = $result->metadata['channels'] ?? [];
+
+        $this->assertCount(2, $executionIds, 'Two channels registered → two execution records expected');
+        $this->assertCount(2, $channels, 'Two channels expected in metadata');
+
+        // Each execution record has a distinct channel discriminator
+        $executions = ChannelSyncExecution::whereIn('id', array_values($executionIds))->get();
+        $this->assertCount(2, $executions);
+
+        $channelDiscriminators = $executions->pluck('channel')->sort()->values()->toArray();
+        $this->assertEquals(['airbnb', 'booking'], $channelDiscriminators, 'Channel discriminators must be distinct: airbnb + booking');
+
+        // Each record is in dispatched state
+        foreach ($executions as $exec) {
+            $this->assertEquals('dispatched', $exec->status);
+            $this->assertEquals($command->tenantId, $exec->tenant_id);
+            $this->assertEquals($property->id, $exec->property_id);
+        }
+    }
+
+    /**
+     * E03 E3.1 Evidence: Channel-aware idempotency keys are distinct
+     *
+     * Verifies: same business operation → distinct idempotency keys per channel.
+     * Prevents cross-channel duplicate detection (Booking execution ≠ Airbnb execution).
+     */
+    /** @test */
+    public function e03_it_channel_idempotency_keys_are_distinct_per_channel(): void
+    {
+        Queue::fake();
+
+        $tenantId = 1;
+        $property = $this->createProperty($tenantId);
+        $startDate = Carbon::now()->addDays(5)->format('Y-m-d');
+        $endDate = Carbon::now()->addDays(7)->format('Y-m-d');
+
+        IlanTakvimSync::create([
+            'ilan_id' => $property->id,
+            'platform' => 'airbnb',
+            'is_sync_active' => true,
+            'senkron_durumu' => 'active',
+            'auto_sync' => true,
+        ]);
+        IlanTakvimSync::create([
+            'ilan_id' => $property->id,
+            'platform' => 'booking',
+            'is_sync_active' => true,
+            'senkron_durumu' => 'active',
+            'auto_sync' => true,
+        ]);
+
+        $command = new SynchronizeAvailabilityCommand(
+            tenantId: $tenantId,
+            propertyId: $property->id,
+            reservationId: 999,
+            operation: 'block',
+            dateRange: ['start' => $startDate, 'end' => $endDate],
+            available: false,
+            blockReason: 'reservation',
+        );
+
+        $result = $this->service->synchronize($command, userId: 1);
+
+        $executionIds = $result->metadata['execution_ids'] ?? [];
+        $executions = ChannelSyncExecution::whereIn('id', array_values($executionIds))->get();
+
+        // Idempotency keys must be distinct per channel
+        $idempotencyKeys = $executions->pluck('idempotency_key')->toArray();
+        $this->assertCount(2, array_unique($idempotencyKeys), 'Each channel must have a distinct idempotency key');
+
+        // Airbnb key must contain :airbnb suffix
+        $airbnbExec = $executions->firstWhere('channel', 'airbnb');
+        $this->assertNotNull($airbnbExec);
+        $this->assertStringContainsString(':airbnb', $airbnbExec->idempotency_key, 'Airbnb idempotency key must include :airbnb suffix');
+
+        // Booking key must contain :booking suffix
+        $bookingExec = $executions->firstWhere('channel', 'booking');
+        $this->assertNotNull($bookingExec);
+        $this->assertStringContainsString(':booking', $bookingExec->idempotency_key, 'Booking idempotency key must include :booking suffix');
+    }
+
     // ─── Helper methods ────────────────────────────────────────────────
 
     private function createProperty(int $tenantId): Ilan
