@@ -2,9 +2,10 @@
 ## Architecture Charter
 
 > **Baseline:** `e66b58d` (CHECKOUT_WAVE1 — Operational task automation)
-> **SAAB Review:** Required before implementation
 > **Builder:** Claude Sonnet 4.6
-> **Status:** Frozen — Implementation Scope
+> **Status:** ✅ **CERTIFIED** (Oturum 129 — 2026-08-16)
+> **Commit:** `8782a4fa`
+> **Inspector:** Antigravity + Gemini 3.7 Flash → **PASS — CERTIFIABLE**
 
 ---
 
@@ -534,17 +535,68 @@ app/Services/ReservationService.php          ← Wave 1 baseline, genişletme i�
 
 ---
 
-## 12. Open Questions (Resolve Before Implementation)
+## 12. Open Questions — Wave 2 Implementation Resolutions
 
-- [ ] **Q1:** Access credential için lockbox kodu mı, smart lock API mi? (Smart lock provider'a bağlı)
-- [ ] **Q2:** Check-in window açıldığında Telegram bildirimi Wave 2'de mi yoksa Wave 3'te mi?
-- [ ] **Q3:** property_readiness tablosunda is_ready aggregate'i store mı edilmeli yoksa her zaman compute mu edilmeli?
-- [ ] **Q4:** Date change invalidation için eski readiness snapshot'ı history tablosuna mı taşınmalı?
-- [ ] **Q5:** Access credential reset job cron schedule: her gün mü, her saat mi?
+| Q | Question | Resolution | Status |
+|---|----------|------------|--------|
+| Q1 | Lockbox kodu mı, smart lock API mi? | Lockbox + code credential tipi Wave 2'de desteklendi. Smart lock API: provider abstraction hazır, concrete implementasyon Wave 3 sonrası. | ✅ Resolved |
+| Q2 | Telegram bildirimi Wave 2'de mi Wave 3'te mi? | Wave 2: CheckinWindowOpenedEvent hazır. Bildirim: Wave 3 (Guest Communication) kapsamında. | ✅ Resolved |
+| Q3 | is_ready store mı compute mu? | Store ediliyor + `save()` override'ı her zaman recompute ediyor. `syncIsReady()` helper method korundu. | ✅ Resolved |
+| Q4 | Date change snapshot history tablosu? | Şimdilik sadece log. History tablo: W2-B1 open debt. | ⚠️ Partially resolved |
+| Q5 | Credential reset job schedule? | Her gün 02:00'de çalışır (`ResetAccessCredentialJob`, daily 02:00). | ✅ Resolved |
 
 ---
 
-**Charter Status:** READY FOR SAAB REVIEW
+## 13. Certification Record
+
+**Status:** ✅ CERTIFIED
+**Commit:** `8782a4fa`
+**Inspector:** Antigravity + Gemini 3.7 Flash → PASS — CERTIFIABLE
+**Date:** 2026-08-16
+**Agent:** Kilo Code (Claude Sonnet 4.6)
+
+### Evidence Matrix
+
+| ID | Capability | Tests | Result |
+|----|-----------|--------|--------|
+| W2-01 | Reservation Validity Gate | E4, E11, E12 | ✅ PASS |
+| W2-02 | Property Readiness Tracker | E1, E2 | ✅ PASS |
+| W2-03 | Preparation Task Completion | E6 | ✅ PASS |
+| W2-04 | Guest Contact Readiness | E17 | ✅ PASS |
+| W2-05 | Access Credential Safety | E9, E20 | ✅ PASS |
+| W2-06 | Cancellation/Date-Change Invalidation | E5, E8 | ✅ PASS |
+| W2-07 | Check-in Window Management | E11, E12, E16 | ✅ PASS |
+| W2-08 | Idempotency + Tenant Isolation | E2, E3, E14 | ✅ PASS |
+
+### Open Debt (Non-Blocking)
+
+| ID | Debt | Priority | Blocker |
+|----|------|----------|---------|
+| W2-B1 | EventServiceProvider: GorevDurumChanged iki listener'a map'li (NotifyN8n + ReadabilityUpdate). Key drift riski. | LOW | ❌ No |
+| W2-B2 | AccessCredential: `getMaskedValue()` çalışıyor ama `$hidden` model array'de tanımlı değil. Defense-in-depth için eklenebilir. | LOW | ❌ No |
+
+### Test Results
+
+| Suite | Result |
+|-------|--------|
+| Wave 2 Evidence Tests | ✅ 20/20 PASS |
+| Wave 1 Regression | ✅ 9/9 PASS |
+| Reservation Backbone Regression | ✅ 7/7 PASS |
+| **Total** | **36/36 PASS** |
+
+### Next: Wave 3 Guest Communication Architecture
+
+Wave 3 için Opus 4.8 SAAB Architecture Board kararı bekleniyor:
+- Kanal: WhatsApp / Telegram / SMS?
+- Idempotency key: reservation_id + credential_type?
+- İptal halinde credential geri alma?
+- Readiness şartları: is_ready=true gerekiyor mu?
+
+---
+
+**Charter Status:** ✅ CERTIFIED
 **Prepared by:** Kilo Agent (Claude Opus 4.8)
+**Implemented by:** Kilo Code (Claude Sonnet 4.6)
+**Certification Date:** 2026-08-16
 **Baseline:** e66b58d
 **Date:** 2026-08-16

@@ -1,5 +1,53 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 129 — 2026-08-16 | CHECKOUT WAVE 2 ✅ CERTIFIED
+
+### CHECKIN_CHECKOUT Wave 2 — Guest Arrival Readiness Certification
+
+**Commit:** `8782a4fa`
+**Baseline:** `e66b58d` (Wave 1 — Operational task automation)
+**Inspector:** Antigravity + Gemini 3.7 Flash → **PASS — CERTIFIABLE**
+**Certification Status:** ✅ CERTIFIED
+**Certification Agent:** Kilo Code (Claude Sonnet 4.6)
+
+#### W2-01 → W2-08 Evidence Matrix
+
+| ID | Capability | Evidence Tests | Result |
+|----|-----------|---------------|--------|
+| W2-01 | Reservation Validity Gate | E4, E11, E12 | ✅ PASS |
+| W2-02 | Property Readiness Tracker | E1, E2 | ✅ PASS |
+| W2-03 | Preparation Task Completion | E6 | ✅ PASS |
+| W2-04 | Guest Contact Readiness | E17 | ✅ PASS |
+| W2-05 | Access Credential Safety | E9, E20 | ✅ PASS |
+| W2-06 | Cancellation/Date-Change Invalidation | E5, E8 | ✅ PASS |
+| W2-07 | Check-in Window Management | E11, E12, E16 | ✅ PASS |
+| W2-08 | Idempotency + Tenant Isolation | E2, E3, E14 | ✅ PASS |
+
+#### Test Sonuçları
+
+| Suite | Result | Details |
+|-------|--------|---------|
+| Wave 2 Evidence Tests | ✅ 20/20 PASS | commit `8782a4fa` |
+| Wave 1 Regression | ✅ 9/9 PASS | 0 new failures |
+| Reservation Backbone Regression | ✅ 7/7 PASS | 0 new failures |
+
+#### Open Debt (Non-Blocking)
+
+| ID | Debt | Priority | Blocker |
+|----|------|----------|---------|
+| W2-B1 | EventServiceProvider: GorevDurumChanged iki listener'a map'li (NotifyN8n + ReadabilityUpdate). Key drift riski. | LOW | ❌ No |
+| W2-B2 | AccessCredential: `getMaskedValue()` çalışıyor ama `$hidden` model array'de tanımlı değil. Defense-in-depth için eklenebilir. | LOW | ❌ No |
+
+#### Wave 3 Pre-condition
+
+Wave 3 (Guest Communication — credential delivery) için Opus 4.8 mimari kararı bekleniyor:
+- Kanal: WhatsApp / Telegram / SMS?
+- Idempotency key: reservation_id + credential_type?
+- İptal halinde credential geri alma?
+- Readiness şartları: is_ready=true gerekiyor mu?
+
+---
+
 ## Oturum 128 — 2026-08-15 | E03 CERTIFIED WITH DEBT (Oturum Kapanışı)
 
 ### Airbnb Inbound E03 — Certification Closure
