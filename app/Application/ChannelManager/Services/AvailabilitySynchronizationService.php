@@ -3,11 +3,8 @@
 namespace App\Application\ChannelManager\Services;
 
 use App\Application\ChannelManager\DTOs\SynchronizeAvailabilityCommand;
-use App\Application\ChannelManager\Exceptions\AvailabilityConflictException;
-use App\Application\ChannelManager\Exceptions\ChannelSynchronizationException;
 use App\Domain\ChannelManager\Contracts\AvailabilitySynchronizer;
 use App\Domain\ChannelManager\Contracts\ChannelAdapter;
-use App\Domain\ChannelManager\Enums\ChannelManagerEventVocabulary;
 use App\Domain\ChannelManager\Models\ChannelApiResponse;
 use App\Domain\ChannelManager\Models\SyncResult;
 use App\Jobs\ChannelManager\SynchronizeAvailabilityJob;
@@ -259,7 +256,7 @@ class AvailabilitySynchronizationService
      */
     public function processQueuedSync(int $syncRecordId): SyncResult
     {
-        $syncRecord = ChannelSyncExecution::with('ilan')->findOrFail($syncRecordId);
+        $syncRecord = ChannelSyncExecution::findOrFail($syncRecordId);
 
         // Replay safety: check if already processed
         if ($syncRecord->processed_at !== null) {
@@ -683,8 +680,45 @@ class AvailabilitySynchronizationService
 
             return SyncResult::success(count($dates));
         } catch (\Throwable $e) {
+            // E03 GAP-03: Retryable exceptions must propagate to Laravel's queue
+            // so that $tries/$backoff/failed() lifecycle is triggered.
+            //
+            // BookingAvailabilityException and BookingRatesException carry isRetryable flag.
+            // Re-throw if retryable so Laravel retries the job.
+            // Non-retryable exceptions (e.g., 4xx client errors) return failure.
+            if ($this->isRetryableException($e)) {
+                throw $e;
+            }
             return SyncResult::failure($e->getMessage());
         }
+    }
+
+    /**
+     * Detect if a thrown exception is retryable.
+     *
+     * E03 GAP-03 fix: Only re-throw exceptions that represent transient failures
+     * (5xx server errors, network timeouts, rate limits). Client errors (4xx)
+     * and domain exceptions are non-retryable and return gracefully.
+     */
+    private function isRetryableException(\Throwable $e): bool
+    {
+        // BookingAvailabilityException and BookingRatesException carry explicit isRetryable flag
+        if ($e instanceof \App\Infrastructure\ChannelManager\Booking\BookingAvailabilityException) {
+            return $e->isRetryable();
+        }
+        if ($e instanceof \App\Infrastructure\ChannelManager\Booking\BookingRatesException) {
+            return $e->isRetryable();
+        }
+
+        // Network/transport errors without explicit retryable flag: retry
+        if ($e instanceof \Illuminate\Http\Client\ConnectionException) {
+            return true;
+        }
+        if ($e instanceof \GuzzleHttp\Exception\ConnectException) {
+            return true;
+        }
+
+        return false;
     }
 
     private function buildCommandFromSyncRecord(ChannelSyncExecution $record): SynchronizeAvailabilityCommand
