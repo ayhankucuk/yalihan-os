@@ -1,5 +1,67 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 127 — 2026-08-15 | GAP-03 Certification Recovery + E03 Implementation
+
+### GAP-03: Retry Boundary Bug — Certification Recovery
+
+**Commit:** `471dff1`
+**Baseline:** `d310a84` (E03 per-channel implementation)
+**Inspector:** Antigravity + Gemini 3.7 Flash (independent audit) → PASS
+
+#### Root Cause — CONFIRMED
+
+```
+Booking 5xx → BookingAvailabilityException(isRetryable=true)
+    → syncToChannel(): catch (\Throwable) → return SyncResult::failure()
+    → processQueuedSync(): markProcessed() called BEFORE job exits
+    → status=completed — WRONG for retryable failures
+    → job exits normally
+    → Laravel: job succeeded → NO retry, NO failed(), NO retry_exhausted
+```
+
+The generic `\Throwable` catch swallowed ALL exceptions including retryable ones,
+preventing Laravel's queue from ever triggering `$tries`/`$backoff`/`failed()`.
+
+#### Fix — `471dff1`
+
+- `AvailabilitySynchronizationService::syncToChannel()`: re-throw retryable exceptions
+- `isRetryableException()`: BookingAvailabilityException, BookingRatesException,
+  ConnectionException, Guzzle ConnectException → propagate to Laravel
+- Non-retryable (4xx): returns failure → markProcessed(completed_with_conflicts) → correct, no retry
+
+#### GAP-03 Certification Test Results — 7/7 PASS ✅
+
+| # | Test | Result |
+|---|------|--------|
+| 1 | `retryable_5xx_exception_reaches_job_boundary` | ✅ PASS |
+| 2 | `retryable_failure_does_not_mark_execution_completed` | ✅ PASS |
+| 3 | `retry_exhaustion_marks_execution_retry_exhausted` | ✅ PASS |
+| 4 | `non_retryable_failure_completes_without_retry` | ✅ PASS |
+| 5 | `canonical_property_availability_unchanged_after_channel_failure` | ✅ PASS |
+| 6 | `successful_channel_not_affected_by_failed_channel` | ✅ PASS |
+| 7 | `replay_creates_new_execution_does_not_mutate_original` | ✅ PASS |
+
+#### Regression — Quality Gate: 0 New Failures ✅
+
+| Suite | Baseline | After GAP-03 |
+|-------|----------|---------------|
+| ChannelManager | 36 failed / 120 passed | 36 failed / **127 passed** (+7 new PASS) |
+| Availability E02 | 1 fail / 8 pass | 1 fail / 8 pass (unchanged) |
+
+#### Inspector Verdict
+
+- **Antigravity:** GAP-03 CLOSED ✅
+- **Gemini 3.7 Flash:** PASS — GAP-03 CLOSED ✅
+- **Opus 4.8:** Not required — dual-inspector consensus sufficient
+
+#### New Debt Recorded
+
+| ID | Debt | Rationale |
+|----|------|------------|
+| `CERT-DEBT-GAP03-01` | DTO-based retryable channel failures (Airbnb/Channex) may not converge on exception-based retry boundary | `ChannelSyncResponse.retryable=true` path does not throw exception — same retry lifecycle not guaranteed for non-Booking channels |
+
+---
+
 ## Oturum 126 — 2026-08-15 | Availability Sync Certification Run
 
 ### Certification Sonuçları

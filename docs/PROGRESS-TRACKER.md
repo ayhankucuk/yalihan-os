@@ -1,5 +1,5 @@
 # Governance Progress Tracker
-**Son Güncelleme:** 2026-08-15 (SAAB 4.5 ✅ CERTIFIED + PropertyReservation MUST clause + 3 MUST Charter created)
+**Son Güncelleme:** 2026-08-15 (GAP-03 ✅ CERTIFICATION RESTORED + E03 ✅ IMPLEMENTED + 0 regressions)
 **Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + ✅ **SPRINT 6.7 CLOSED** + ✅ **SPRINT 6.8 CLOSED** + ✅ **SPRINT 6.9 CLOSED** + ✅ **SPRINT 7.0 CLOSED** + ✅ **SPRINT 7.1 CLOSED** + ✅ **SPRINT 7.2 CLOSED** + 🔍 **WIZARD BLOCKERS MAPPED** + 🛡️ **RELEASE GATE V9 APPROVED** + 📋 **SPRINT 10 CERTIFIED** + 🏠 **SPRINT 11 CERTIFIED** + 🏛️ **SAAB v11.1 GOVERNANCE FROZEN** + 🚀 **SPRINT 12 ✅ COMPLETE** + 🧪 **TENANT ISOLATION TESTS ✅ ALL GREEN** + 🧪 **LIFECYCLE TESTS 7/7 ✅** + 🏗️ **EXECUTION RUNTIME FOUNDATION ✅** + 🧪 **EXECUTION TESTS 12/12 ✅** + 📊 **EXECUTION METRICS FOUNDATION ✅** + 🧪 **METRICS TESTS 11/11 ✅** + 🏗️ **EXECUTION RUNTIME OPERATIONS CONSOLE ✅** + 🧪 **PRODUCT VALIDATION 9/9 ✅** + 🏆 **M2 PROPERTY RUNTIME ✅ CERTIFIED** + 📡 **SPRINT 4.14 ✅ BOOKING CHANNEL MANAGER RATES OUT (71/71 PASS)** + 🔵 **SPRINT 4.15 ✅ BOOKING PRODUCTION CERTIFICATION (73/73 PASS + 2 SAB FIX)** + 🛡️ **YDL v1 Phase 1 ✅ CERTIFIED (53 tests)** + 🧹 **C7 ✅ DOCUMENTATION DRIFT RECONCILED** + 📊 **SAAB PROGRAM METRICS FRAMEWORK ✅ ADOPTED** + 🧠 **YDL v1 Phase 3 ✅ AGENT CONTEXT INTEGRATION (8 tests PASS)** + 🎯 **PILOT-001 ✅ PROPERTY_PUBLISH_SUPERVISED_AUTONOMY ACTIVE** + 🛡️ **SAAB 4.5 ✅ TENANT ISOLATION CERTIFIED (3 MUST tracked)**
 | ERA III/IV | Katman | Sprint | Status |
 |---------|--------|--------|--------|
@@ -21,7 +21,9 @@
 | **🔗 RESERVATION-EB** | **Canonical Event Backbone — Event-Driven Automation Foundation** | **RESERVATION-EB** | **✅ CERTIFIED (Oturum 121 — 2026-08-14)** |
 | **🚀 RESERVATION-GUEST-COMM-WAVE-1** | **Guest Confirmation Notification Pipeline** | **GUEST-COMM-WAVE-1** | **✅ CERTIFIED (Oturum 122 — 19/19 PASS, commit e681d3b)** |
 | **🛡️ SAAB 4.5** | **Tenant Isolation Certification** | **SAAB 4.5** | **✅ CERTIFIED — 3 MUST in SAAB_4.5_IMPL_PREREQ_CHARTER** |
-| **📡 AVAILABILITY SYNC** | **Availability Outbound Sync — 6 decisions OPEN, Option A selected, dependency order defined** | **AVAIL_SYNC** | **🔲 CHARTER DRAFT v3 — SAAB 6 decisions pending** |
+| **📡 AVAILABILITY SYNC — E03** | **Per-Channel Execution Isolation — channel discriminator + independent jobs + channel-aware idempotency** | **SPRINT 13 E03** | **✅ IMPLEMENTED (`d310a84`) — 0 new regressions** |
+| **📡 AVAILABILITY SYNC — GAP-03** | **Retry Boundary Fix — BookingAvailabilityException propagation to Laravel queue — 7/7 PASS, dual-inspector audit PASS, 0 regressions** | **GAP-03** | **✅ CERTIFICATION RESTORED (`471dff1`) — Antigravity + Gemini 3.7 Flash PASS** |
+| **📡 AVAILABILITY SYNC — E02** | **Availability Synchronization — Queue-first + Retry/Evidence + Canonical Mutation Invariant** | **SPRINT 13 E02** | **✅ CERTIFIED** |
 
 **ERA IV:** 🚀 ACTIVE — First Advisor Pilot | Sprint 5.0
 
