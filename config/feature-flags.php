@@ -90,4 +90,43 @@ return [
     */
     'notification_kill_switch' => (bool) env('NOTIFICATION_KILL_SWITCH', false),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Guest Concierge — AI Guest Communication (GUEST_CONCIERGE Phase 1)
+    |--------------------------------------------------------------------------
+    | GUEST_CONCIERGE Phase 1 — SAAB Session 134
+    |
+    | guest_concierge_enabled:
+    |   Default: false (karantina — SAB Rule 6)
+    |   Açmak için: GUEST_CONCIERGE_ENABLED=true + pilot_allowlist dolu olmalı
+    |
+    | guest_concierge_kill_switch:
+    |   true = tüm concierge mesajları durdurulur (acil durdurma)
+    |   false = normal akış
+    |
+    | guest_concierge_pilot_allowlist:
+    |   tenant_ids boş = hiçbir tenant concierge'e dahil değil
+    |   tenant_ids = [1] = sadece tenant 1 concierge kullanır
+    |   Pilot: 1 tenant, 1 reservation ile başla
+    |
+    | Phase 1 Kapsam (7 intent):
+    |   AUTO_ANSWER: WIFI_INFO, CHECK_IN_TIME, CHECK_OUT_TIME, PARKING_INFO, HOUSE_RULES
+    |   AUTO_ACTION: TECHNICAL_ISSUE → Gorev, CLEANING_REQUEST → Gorev
+    |   ESCALATE: Tüm diğer intentler
+    |
+    | Güvenlik Garantileri (SAAB GC-D1...GC-D12):
+    |   - AI hiçbir zaman doğrudan aksiyon yetkisi almaz
+    |   - Kapı/anahtar kodları Concierge context'ine HİÇBİR ZAMAN girmez
+    |   - Tüm tenant-aware işlemler tenant context ile korunur
+    |   - Düşük güven = fail-closed = escalation
+    */
+    'guest_concierge_enabled' => (bool) env('GUEST_CONCIERGE_ENABLED', false),
+
+    'guest_concierge_kill_switch' => (bool) env('GUEST_CONCIERGE_KILL_SWITCH', false),
+
+    'guest_concierge_pilot_allowlist' => [
+        'tenant_ids' => [],      // Pilot tenant ID'ler
+        'reservation_ids' => [],  // Pilot rezervasyon ID'ler (opsiyonel)
+    ],
+
 ];

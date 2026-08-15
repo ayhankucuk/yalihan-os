@@ -286,4 +286,22 @@ class OperationalGorevService
 
         return $description;
     }
+
+    /**
+     * Build a confirmation message for a created Gorev (used by Guest Concierge).
+     */
+    public function createTaskConfirmation(\App\Modules\TakimYonetimi\Models\Gorev $gorev, string $guestName = 'Misafir'): string
+    {
+        $gorevTipi = match ($gorev->gorev_tipi) {
+            'teknik_destek' => 'Teknik Destek',
+            'temizlik' => 'Temizlik',
+            'kontrol' => 'Kontrol',
+            'hazirlik' => 'Hazırlık',
+            default => 'Talep',
+        };
+
+        $ilanAdi = $gorev->ilan?->baslik ?? $gorev->ilan?->title ?? 'Mülk';
+
+        return "Talebiniz alındı. '{$gorevTipi}' görevi oluşturuldu ve ekibimize iletildi. {$ilanAdi} için en kısa sürede işlem yapılacaktır. Size ayrıca bilgi vereceğiz.";
+    }
 }

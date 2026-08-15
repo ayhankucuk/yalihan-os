@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api;
  */
 
 use App\Http\Controllers\Controller;
+use App\Jobs\Concierge\ResolveWhatsAppInboundJob;
 use App\Services\AI\NLPProcessor;
 use App\Services\LeadService;
 use Illuminate\Http\Request;
@@ -17,12 +18,16 @@ use Illuminate\Support\Facades\Http;
 /**
  * WhatsApp Business API Webhook Controller
  *
- * Handles incoming messages from WhatsApp Business Platform
+ * GUEST_CONCIERGE Phase 1 — SAAB Session 134
+ *
+ * Handles incoming messages from WhatsApp Business Platform.
+ *
+ * Pipeline:
+ *   WhatsApp Webhook → Signature Validation → Message Extraction
+ *     → Guest Concierge Flow (if feature enabled)
+ *     → Lead Creation Flow (existing, for non-guests)
  *
  * Webhook URL: POST /api/v1/webhook/whatsapp
- *
- * Integration Flow:
- * WhatsApp Business API → Webhook → NLPProcessor → Response
  *
  * Setup:
  * 1. Create WhatsApp Business Account at https://www.whatsapp.com/business/
@@ -43,27 +48,9 @@ class WhatsAppWebhookController extends Controller
     /**
      * Handle WhatsApp webhook POST (incoming messages)
      *
-     * WhatsApp sends webhook data in this format:
-     * {
-     *   "object": "whatsapp_business_account",
-     *   "entry": [{
-     *     "id": "...",
-     *     "changes": [{
-     *       "value": {
-     *         "messages": [{
-     *           "from": "+905552342000",
-     *           "id": "wamid.xxx",
-     *           "type": "text", // context7-ignore
-     *           "text": { "body": "Bodrum'da 3+1 daire arıyorum" }
-     *         }],
-     *         "contacts": [{
-     *           "profile": { "name": "Ahmet Yılmaz" },
-     *           "wa_id": "905552342000"
-     *         }]
-     *       }
-     *     }]
-     *   }]
-     * }
+     * GUEST_CONCIERGE Phase 1 — Two flow routing:
+     * 1. If guest_concierge_enabled=true → dispatch ResolveWhatsAppInboundJob
+     * 2. Otherwise → existing lead creation flow
      *
      * @param Request $request
      * @return JsonResponse
@@ -94,7 +81,23 @@ class WhatsAppWebhookController extends Controller
                 return response()->json(['success' => true], 200);
             }
 
-            // Process message with NLP
+            // ── GUEST_CONCIERGE Phase 1 ───────────────────────────────────
+            // Route to ResolveWhatsAppInboundJob (tenant-agnostic)
+            // This job will resolve guest/lead context and dispatch the appropriate job
+            if ($this->isGuestConciergeEnabled()) {
+                ResolveWhatsAppInboundJob::dispatch(
+                    senderPhone: $message['from'],
+                    senderName: $message['name'] ?? null,
+                    messageText: $message['text'],
+                    messageId: $message['message_id'],
+                    messageType: $message['type'] ?? 'text',
+                );
+
+                // Always return 200 OK to WhatsApp immediately
+                return response()->json(['success' => true], 200);
+            }
+
+            // ── LEGACY FLOW: Lead creation for non-guests ──────────────────
             $this->processMessage($message);
 
             // Always return 200 OK to WhatsApp (async processing)
@@ -107,6 +110,24 @@ class WhatsAppWebhookController extends Controller
             ]);
             return response()->json(['error' => 'Processing error'], 500);
         }
+    }
+
+    /**
+     * Check if Guest Concierge feature is enabled.
+     * GC-D12: Kill switch + allowlist + feature flag
+     */
+    protected function isGuestConciergeEnabled(): bool
+    {
+        if (!config('feature-flags.guest_concierge_enabled', false)) {
+            return false;
+        }
+
+        if (config('feature-flags.guest_concierge_kill_switch', false)) {
+            Log::channel('security')->info('[WhatsAppWebhook] Guest Concierge kill switch ACTIVE');
+            return false;
+        }
+
+        return true;
     }
 
     /**
