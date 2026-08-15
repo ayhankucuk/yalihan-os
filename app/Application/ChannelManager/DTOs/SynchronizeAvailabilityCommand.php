@@ -7,12 +7,13 @@ use Carbon\Carbon;
 /**
  * SynchronizeAvailabilityCommand — Command DTO for availability sync
  *
- * Sprint 13 E02: Availability Synchronization
+ * Sprint 13 E03: Per-Channel Execution Isolation
  *
  * Represents an intent to synchronize availability for a property
  * across registered channels.
  *
- * Idempotency key = tenant_id + property_id + reservation_id + date_range + operation
+ * Idempotency key = tenant_id + property_id + reservation_id + date_range + operation [+ channel]
+ * Channel-aware idempotency: same business op produces independent executions per channel.
  */
 readonly class SynchronizeAvailabilityCommand
 {
@@ -26,6 +27,7 @@ readonly class SynchronizeAvailabilityCommand
      * @param string|null $blockReason 'reservation' | 'maintenance' | 'manual'
      * @param string|null $idempotencyKey Override auto-generated idempotency key
      * @param string|null $correlationId Links this sync to a parent execution
+     * @param string|null $channel E03: Per-channel execution discriminator (airbnb|booking|...)
      */
     public function __construct(
         public int $tenantId,
@@ -37,10 +39,16 @@ readonly class SynchronizeAvailabilityCommand
         public ?string $blockReason = 'reservation',
         public ?string $idempotencyKey = null,
         public ?string $correlationId = null,
+        public ?string $channel = null,
     ) {}
 
     /**
      * Generate idempotency key from command properties
+     *
+     * E03: Channel-aware idempotency.
+     * When $channel is set, it is included in the key so that the same business
+     * operation produces distinct execution records per channel.
+     * E.g., Booking and Airbnb executions for the same reservation are NOT duplicates.
      */
     public function getIdempotencyKey(): string
     {
@@ -50,8 +58,9 @@ readonly class SynchronizeAvailabilityCommand
 
         $start = $this->dateRange['start'] ?? '';
         $end = $this->dateRange['end'] ?? '';
+        $channel = $this->channel ?? '';
 
-        return "{$this->tenantId}:{$this->propertyId}:{$this->reservationId}:{$this->operation}:{$start}:{$end}";
+        return "{$this->tenantId}:{$this->propertyId}:{$this->reservationId}:{$this->operation}:{$start}:{$end}" . ($channel ? ":{$channel}" : '');
     }
 
     /**

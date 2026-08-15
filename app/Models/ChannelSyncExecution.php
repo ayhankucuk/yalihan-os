@@ -8,16 +8,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 /**
  * ChannelSyncExecution — Immutable sync execution record
  *
- * Sprint 13 E02: Availability Synchronization
+ * Sprint 13 E03: Per-Channel Execution Isolation
  *
  * Represents a single availability synchronization execution.
  * This is an immutable record — never update after creation.
  * Replay creates a NEW execution with a new idempotency key.
  *
+ * E03 Change: The `channel` field enables per-channel execution isolation.
+ * A single business operation (e.g., reservation block) produces one
+ * execution record per registered channel. Each channel's execution is
+ * independent — one channel's failure does NOT affect another.
+ *
  * @property int $id
  * @property int $tenant_id
  * @property int $property_id
  * @property int|null $reservation_id
+ * @property string|null $channel (airbnb|booking|...) — NULL = aggregated legacy
  * @property string $operation
  * @property string|null $block_reason
  * @property string $date_range_start
@@ -46,6 +52,7 @@ class ChannelSyncExecution extends BaseModel
         'tenant_id',
         'property_id',
         'reservation_id',
+        'channel',
         'operation',
         'block_reason',
         'date_range_start',
@@ -135,5 +142,13 @@ class ChannelSyncExecution extends BaseModel
     public function scopeByKey($query, string $key)
     {
         return $query->where('idempotency_key', $key);
+    }
+
+    /**
+     * Scope: by channel
+     */
+    public function scopeByChannel($query, string $channel)
+    {
+        return $query->where('channel', $channel);
     }
 }

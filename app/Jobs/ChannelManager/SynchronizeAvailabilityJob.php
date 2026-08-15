@@ -15,26 +15,33 @@ use Illuminate\Support\Facades\Log;
 /**
  * SynchronizeAvailabilityJob — Queue job for async availability sync
  *
- * Sprint 13 E02: Availability Synchronization
+ * Sprint 13 E03: Per-Channel Execution Isolation
  *
  * Design principles:
  * - Queue-first: DB transaction does NOT call external APIs
  * - Idempotent: same job = same result (via idempotency key)
  * - Replay-safe: replay creates new execution, doesn't mutate original
  * - Tenant-isolated: all operations scoped to tenant
+ * - E03: Each job handles exactly ONE channel execution — full isolation
  *
- * Execution flow:
+ * Execution flow (E03):
  *   DB transaction committed
  *       ↓
- *   afterCommit → dispatch
+ *   Per-channel ChannelSyncExecution records created
  *       ↓
- *   SynchronizeAvailabilityJob
+ *   afterCommit → dispatch per-channel jobs
+ *       ↓
+ *   SynchronizeAvailabilityJob (one per channel)
  *       ↓
  *   Canonical availability already updated
  *       ↓
- *   Push to registered channels
+ *   Push to ONE channel (from execution.channel field)
  *       ↓
- *   Record result
+ *   Record result in that execution's record
+ *
+ * E03 Isolation Guarantee:
+ *   Booking failure → Airbnb job is NOT affected (different syncRecordId)
+ *   Each job's failure lifecycle is completely independent.
  */
 class SynchronizeAvailabilityJob implements ShouldQueue
 {
@@ -52,8 +59,6 @@ class SynchronizeAvailabilityJob implements ShouldQueue
      * The number of seconds to wait before retrying the job.
      *
      * SAAB Decision 4.6 D4.6-B: Fixed backoff.
-     * Exponential backoff deliberately not used — provider rate limits
-     * are uniform; fixed 30s backoff is sufficient and simpler.
      */
     public int $backoff = 30;
 
@@ -61,7 +66,6 @@ class SynchronizeAvailabilityJob implements ShouldQueue
      * The maximum number of seconds the job can run before timing out.
      *
      * SAAB Decision 4.6 D4.6-B: Hard ceiling per attempt.
-     * External platform calls must complete within 30s.
      */
     public int $timeout = 30;
 
@@ -82,8 +86,12 @@ class SynchronizeAvailabilityJob implements ShouldQueue
      */
     public function handle(AvailabilitySynchronizationService $service): void
     {
+        $execution = ChannelSyncExecution::find($this->syncRecordId);
+        $channel = $execution?->channel ?? 'unknown';
+
         Log::info('SynchronizeAvailabilityJob: Starting', [
             'sync_record_id' => $this->syncRecordId,
+            'channel' => $channel,
         ]);
 
         try {
@@ -91,6 +99,7 @@ class SynchronizeAvailabilityJob implements ShouldQueue
 
             Log::info('SynchronizeAvailabilityJob: Completed', [
                 'sync_record_id' => $this->syncRecordId,
+                'channel' => $channel,
                 'success' => $result->success,
                 'synced_count' => $result->syncedCount,
                 'conflict_count' => $result->conflictCount,
@@ -98,13 +107,12 @@ class SynchronizeAvailabilityJob implements ShouldQueue
         } catch (\Throwable $e) {
             Log::warning('SynchronizeAvailabilityJob: Attempt failed, will retry', [
                 'sync_record_id' => $this->syncRecordId,
+                'channel' => $channel,
                 'attempt' => $this->attempts(),
                 'max_tries' => $this->tries,
                 'error' => $e->getMessage(),
             ]);
 
-            // Record current attempt count on the evidence record.
-            // Status remains 'processing' — retry_exhausted is set only by failed().
             $this->recordAttempt($e->getMessage(), $this->attempts());
             throw $e;
         }
@@ -112,8 +120,6 @@ class SynchronizeAvailabilityJob implements ShouldQueue
 
     /**
      * Record the current attempt count on the evidence record.
-     * Called on every failed attempt (before retry_exhausted is set).
-     * Status stays 'processing' — retry_exhausted is terminal per D4.6-D.
      */
     private function recordAttempt(string $errorMessage, int $attempts): void
     {
@@ -135,11 +141,16 @@ class SynchronizeAvailabilityJob implements ShouldQueue
      *
      * Laravel calls failed() ONLY after all $tries are exhausted.
      * This is the retry_exhausted terminal state per SAAB Decision 4.6 D4.6-E.
+     * E03: Only this execution's record is marked — no cross-channel effect.
      */
     public function failed(?\Throwable $exception): void
     {
+        $execution = ChannelSyncExecution::find($this->syncRecordId);
+        $channel = $execution?->channel ?? 'unknown';
+
         Log::error('SynchronizeAvailabilityJob: Permanently failed', [
             'sync_record_id' => $this->syncRecordId,
+            'channel' => $channel,
             'attempts' => $this->attempts(),
             'error' => $exception?->getMessage(),
         ]);
@@ -167,7 +178,10 @@ class SynchronizeAvailabilityJob implements ShouldQueue
     }
 
     /**
-     * Get unique job ID (for idempotency)
+     * Get unique job ID (for idempotency).
+     *
+     * E03: syncRecordId is already channel-specific — each channel gets its own
+     * execution record with a unique ID, so this is implicitly channel-aware.
      */
     public function uniqueId(): string
     {
@@ -176,13 +190,24 @@ class SynchronizeAvailabilityJob implements ShouldQueue
 
     /**
      * Get the tags that should be assigned to the job.
+     *
+     * E03: Channel tag added for observability.
      */
     public function tags(): array
     {
-        return [
+        $execution = ChannelSyncExecution::find($this->syncRecordId);
+        $channel = $execution?->channel;
+
+        $tags = [
             'channel-manager',
             'availability-sync',
             'sync_record:' . $this->syncRecordId,
         ];
+
+        if ($channel !== null) {
+            $tags[] = 'channel:' . $channel;
+        }
+
+        return $tags;
     }
 }

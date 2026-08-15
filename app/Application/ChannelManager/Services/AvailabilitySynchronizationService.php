@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Log;
 /**
  * AvailabilitySynchronizationService — Canonical availability sync engine
  *
- * Sprint 13 E02: Availability Synchronization
+ * Sprint 13 E03: Per-Channel Execution Isolation
  *
  * Responsibilities:
  * 1. Canonical availability FIRST — update local state before external sync
@@ -33,19 +33,24 @@ use Illuminate\Support\Facades\Log;
  * 4. Conflict detection — detect and surface conflicts without silent overwrite
  * 5. Replay safety — replay creates new execution, doesn't mutate original
  * 6. Tenant isolation — all operations are tenant-scoped
+ * 7. E03: Per-channel execution isolation — one channel's failure does NOT affect another
  *
- * Operation flow:
+ * E03 Operation flow:
  *   Canonical Reservation confirmed
  *       ↓
  *   Canonical Availability updated (in DB)
  *       ↓
- *   Synchronization execution created (immutable event)
+ *   For EACH active channel:
+ *       ├── Independent ChannelSyncExecution created (immutable event)
+ *       └── afterCommit → SynchronizeAvailabilityJob(channel) dispatched
  *       ↓
- *   afterCommit → SynchronizeAvailabilityJob dispatched
+ *   Registered channels updated independently
  *       ↓
- *   Registered channels updated
- *       ↓
- *   Result recorded in aggregate
+ *   Each channel result recorded in its own execution record
+ *
+ * E03 Critical Invariant:
+ *   Booking failure → Airbnb success (no rollback, no cross-channel effect)
+ *   Each channel execution is fully independent in retry/evidence lifecycle.
  */
 class AvailabilitySynchronizationService
 {
@@ -56,32 +61,22 @@ class AvailabilitySynchronizationService
     /**
      * Synchronize availability for a reservation event
      *
-     * This is the canonical entry point for availability sync.
-     * Called AFTER the DB transaction commits (e.g., from a ReservationService).
+     * E03: Creates one ChannelSyncExecution per registered channel, each with
+     * its own channel-specific idempotency key and job. Canonical availability
+     * is updated once; external channel propagation is fully per-channel.
      *
      * @param SynchronizeAvailabilityCommand $command
      * @param int $userId Who triggered this sync (for audit)
-     * @return SyncResult
+     * @return SyncResult Aggregated result across all channels
      */
     public function synchronize(SynchronizeAvailabilityCommand $command, int $userId): SyncResult
     {
         $command->validate();
         $this->enforceTenantIsolation($command->tenantId, $command->propertyId);
 
-        $idempotencyKey = $command->getIdempotencyKey();
         $correlationId = $command->correlationId ?? $this->generateCorrelationId();
 
-        // ─── Step 1: Check idempotency ───────────────────────────────
-        $existingSync = $this->findExistingSync($idempotencyKey, $command->tenantId);
-        if ($existingSync !== null) {
-            Log::info('AvailabilitySync: Idempotent hit', [
-                'idempotency_key' => $idempotencyKey,
-                'existing_sync_id' => $existingSync->id,
-            ]);
-            return $this->buildResultFromExistingSync($existingSync);
-        }
-
-        // ─── Step 2: Update canonical availability (local DB first) ────
+        // ─── Step 1: Update canonical availability (local DB first) ────
         $conflictDates = [];
         $blockedDates = [];
 
@@ -106,10 +101,6 @@ class AvailabilitySynchronizationService
                     }
                 }
 
-                // Use explicit update/create to avoid updateOrCreate race with unique constraint.
-                // Additionally wrap create in try/catch: another concurrent transaction may have
-                // inserted the row between our lockForUpdate() SELECT and the create().
-                // UniqueConstraintViolationException = treat as conflict (date already blocked).
                 if ($existing !== null) {
                     $existing->update([
                         'is_available' => $command->available,
@@ -129,7 +120,6 @@ class AvailabilitySynchronizationService
                             'reservation_id' => $command->isBlocking() ? $command->reservationId : null,
                         ]);
                     } catch (QueryException $e) {
-                        // SQLite: UNIQUE constraint failed; MySQL: integrity constraint violation
                         if ($e->errorInfo[1] === 19 || $e->errorInfo[1] === 1062) {
                             $conflictDates[$date] = [
                                 'existing_block' => [
@@ -139,14 +129,6 @@ class AvailabilitySynchronizationService
                             continue;
                         }
                         throw $e;
-                        // Concurrent insert — another transaction created this row.
-                        // Treat as conflict rather than propagating.
-                        $conflictDates[$date] = [
-                            'existing_block' => [
-                                'source' => 'concurrent_transaction',
-                            ],
-                        ];
-                        continue;
                     }
                 }
 
@@ -154,26 +136,113 @@ class AvailabilitySynchronizationService
             }
         });
 
-        // ─── Step 3: Record sync execution (immutable event) ──────────
-        $syncRecord = $this->recordSyncExecution(
-            $command,
-            $idempotencyKey,
-            $correlationId,
-            $blockedDates,
-            $conflictDates
-        );
+        // ─── Step 2: E03 — Per-channel execution dispatch ─────────────
+        // For each registered channel, create an independent execution record
+        // and dispatch its own job. Each execution is isolated.
+        //
+        // E03: When no channels are registered (property not connected to any OTA),
+        // fall back to a single channel-agnostic execution for backward compatibility.
+        $registeredChannels = $this->getRegisteredChannels($command->propertyId, $command->tenantId);
 
-        // ─── Step 4: Dispatch queue job (afterCommit) ─────────────────
-        SynchronizeAvailabilityJob::dispatch($syncRecord->id)
-            ->afterCommit();
+        $executionIds = [];
+
+        if (empty($registeredChannels)) {
+            // Fallback: no registered channels — create a single aggregated execution.
+            // This preserves backward compatibility with tests that don't set up
+            // IlanTakvimSync records. channel=NULL means "aggregated across all channels".
+            $idempotencyKey = $command->getIdempotencyKey(); // No channel suffix
+            $existingSync = $this->findExistingSync($idempotencyKey, $command->tenantId, null);
+            if ($existingSync !== null) {
+                Log::info('AvailabilitySync: Idempotent hit (no channels)', [
+                    'idempotency_key' => $idempotencyKey,
+                    'existing_sync_id' => $existingSync->id,
+                ]);
+                $executionIds['__none__'] = $existingSync->id;
+            } else {
+                $syncRecord = ChannelSyncExecution::create([
+                    'tenant_id' => $command->tenantId,
+                    'property_id' => $command->propertyId,
+                    'reservation_id' => $command->reservationId,
+                    'channel' => null, // aggregated / no channels
+                    'operation' => $command->operation,
+                    'block_reason' => $command->blockReason,
+                    'date_range_start' => $command->dateRange['start'],
+                    'date_range_end' => $command->dateRange['end'],
+                    'target_availability' => $command->available,
+                    'synced_dates' => $blockedDates,
+                    'conflicts' => $conflictDates,
+                    'idempotency_key' => $idempotencyKey,
+                    'correlation_id' => $correlationId,
+                    'status' => 'dispatched',
+                ]);
+                $executionIds['__none__'] = $syncRecord->id;
+                SynchronizeAvailabilityJob::dispatch($syncRecord->id)->afterCommit();
+            }
+        } else {
+            foreach ($registeredChannels as $channelAdapter) {
+                $channelId = $this->getChannelIdFromAdapter($channelAdapter);
+
+                // E03: Build channel-aware command
+                $channelCommand = new SynchronizeAvailabilityCommand(
+                    tenantId: $command->tenantId,
+                    propertyId: $command->propertyId,
+                    reservationId: $command->reservationId,
+                    operation: $command->operation,
+                    dateRange: $command->dateRange,
+                    available: $command->available,
+                    blockReason: $command->blockReason,
+                    idempotencyKey: null, // Let DTO generate channel-aware key
+                    correlationId: $correlationId,
+                    channel: $channelId,
+                );
+
+                $idempotencyKey = $channelCommand->getIdempotencyKey();
+
+                // E03: Channel-aware idempotency check
+                $existingSync = $this->findExistingSync($idempotencyKey, $command->tenantId, $channelId);
+                if ($existingSync !== null) {
+                    Log::info('AvailabilitySync: Channel idempotent hit', [
+                        'idempotency_key' => $idempotencyKey,
+                        'channel' => $channelId,
+                        'existing_sync_id' => $existingSync->id,
+                    ]);
+                    $executionIds[$channelId] = $existingSync->id;
+                    continue;
+                }
+
+                // Record per-channel execution (immutable event)
+                $syncRecord = ChannelSyncExecution::create([
+                    'tenant_id' => $command->tenantId,
+                    'property_id' => $command->propertyId,
+                    'reservation_id' => $command->reservationId,
+                    'channel' => $channelId,
+                    'operation' => $command->operation,
+                    'block_reason' => $command->blockReason,
+                    'date_range_start' => $command->dateRange['start'],
+                    'date_range_end' => $command->dateRange['end'],
+                    'target_availability' => $command->available,
+                    'synced_dates' => $blockedDates,
+                    'conflicts' => $conflictDates,
+                    'idempotency_key' => $idempotencyKey,
+                    'correlation_id' => $correlationId,
+                    'status' => 'dispatched',
+                ]);
+
+                $executionIds[$channelId] = $syncRecord->id;
+
+                // E03: Dispatch per-channel job — independent, isolated retry lifecycle
+                SynchronizeAvailabilityJob::dispatch($syncRecord->id)
+                    ->afterCommit();
+            }
+        }
 
         return SyncResult::success(
             syncedCount: count($blockedDates),
             conflicts: $conflictDates,
             metadata: [
-                'sync_record_id' => $syncRecord->id,
                 'correlation_id' => $correlationId,
-                'idempotency_key' => $idempotencyKey,
+                'channels' => array_keys($executionIds),
+                'execution_ids' => $executionIds,
             ]
         );
     }
@@ -181,12 +250,16 @@ class AvailabilitySynchronizationService
     /**
      * Process a queued sync execution (called by SynchronizeAvailabilityJob)
      *
+     * E03: Each job handles exactly ONE channel execution.
+     * The job was dispatched per-channel, so this processes only the
+     * channel stored in the execution record.
+     *
      * @param int $syncRecordId
      * @return SyncResult
      */
     public function processQueuedSync(int $syncRecordId): SyncResult
     {
-        $syncRecord = ChannelSyncExecution::findOrFail($syncRecordId);
+        $syncRecord = ChannelSyncExecution::with('ilan')->findOrFail($syncRecordId);
 
         // Replay safety: check if already processed
         if ($syncRecord->processed_at !== null) {
@@ -194,32 +267,29 @@ class AvailabilitySynchronizationService
         }
 
         $command = $this->buildCommandFromSyncRecord($syncRecord);
-        $registeredChannels = $this->getRegisteredChannels($command->propertyId, $command->tenantId);
 
-        $totalSynced = 0;
-        $allConflicts = [];
+        // E03: Resolve the single channel for this execution
+        $channelAdapter = $this->resolveChannelAdapter($syncRecord->channel);
 
-        foreach ($registeredChannels as $channelAdapter) {
-            $result = $this->syncToChannel($channelAdapter, $command);
-
-            if ($result->hasConflicts()) {
-                $allConflicts = array_merge($allConflicts, $result->conflicts);
-            }
-
-            $totalSynced += $result->syncedCount;
+        if ($channelAdapter === null) {
+            Log::warning('AvailabilitySync: Unknown channel, skipping', [
+                'sync_record_id' => $syncRecordId,
+                'channel' => $syncRecord->channel,
+            ]);
+            $syncRecord->markProcessed(0, ['channel_not_registered' => $syncRecord->channel]);
+            return SyncResult::success(0, ['channel_not_registered' => $syncRecord->channel]);
         }
 
-        // Record completion
-        $syncRecord->markProcessed($totalSynced, $allConflicts);
+        // E03: Single channel sync — no iteration
+        $result = $this->syncToChannel($channelAdapter, $command);
 
-        return SyncResult::success(
-            syncedCount: $totalSynced,
-            conflicts: $allConflicts,
-            metadata: [
-                'sync_record_id' => $syncRecord->id,
-                'channels_count' => count($registeredChannels),
-            ]
-        );
+        if ($result->hasConflicts()) {
+            $syncRecord->markProcessed($result->syncedCount, $result->conflicts);
+        } else {
+            $syncRecord->markProcessed($result->syncedCount, []);
+        }
+
+        return $result;
     }
 
     /**
@@ -247,9 +317,6 @@ class AvailabilitySynchronizationService
         while ($current->lte($end)) {
             $date = $current->format('Y-m-d');
             $local = $localAvailability->get($date);
-
-            // For now, return empty conflicts (pull logic implemented in E03)
-            // E02 only handles push-based sync
             $current->addDay();
         }
 
@@ -280,7 +347,7 @@ class AvailabilitySynchronizationService
         $resolvedState = match ($resolution) {
             'local_wins' => $localRecord->is_available,
             'remote_wins' => !$localRecord->is_available,
-            'manual' => $localRecord->is_available, // Keep local, require manual intervention
+            'manual' => $localRecord->is_available,
         };
 
         DB::transaction(function () use ($tenantId, $propertyId, $date, $resolvedState, $localRecord) {
@@ -315,20 +382,26 @@ class AvailabilitySynchronizationService
     }
 
     /**
-     * MUST 2: Find existing sync with pessimistic lock to prevent race conditions.
+     * E03: Find existing sync with channel-aware idempotency check.
      *
-     * Without lockForUpdate(), two concurrent requests with the same idempotency key
-     * could both pass the check, both insert/update, and create duplicate executions.
-     * The unique constraint on idempotency_key catches this at DB level, but the lock
-     * prevents the unnecessary contention and exception.
+     * The unique constraint is now (tenant_id, idempotency_key, channel).
+     * This allows the same business idempotency key root to produce independent
+     * execution records per channel without cross-channel duplicate detection.
      *
      * @return ChannelSyncExecution|null
      */
-    private function findExistingSync(string $idempotencyKey, int $tenantId): ?ChannelSyncExecution
+    private function findExistingSync(string $idempotencyKey, int $tenantId, ?string $channel = null): ?ChannelSyncExecution
     {
-        return ChannelSyncExecution::where('idempotency_key', $idempotencyKey)
-            ->where('tenant_id', $tenantId)
-            ->lockForUpdate()
+        $query = ChannelSyncExecution::where('idempotency_key', $idempotencyKey)
+            ->where('tenant_id', $tenantId);
+
+        if ($channel !== null) {
+            $query->where('channel', $channel);
+        } else {
+            $query->whereNull('channel');
+        }
+
+        return $query->lockForUpdate()
             ->orderBy('id')
             ->first();
     }
@@ -341,47 +414,18 @@ class AvailabilitySynchronizationService
             conflicts: is_array($conflicts) ? $conflicts : [],
             metadata: [
                 'sync_record_id' => $sync->id,
+                'channel' => $sync->channel,
                 'idempotent' => true,
                 'original_created_at' => $sync->created_at->toIso8601String(),
             ]
         );
     }
 
-    private function recordSyncExecution(
-        SynchronizeAvailabilityCommand $command,
-        string $idempotencyKey,
-        string $correlationId,
-        array $blockedDates,
-        array $conflictDates
-    ): ChannelSyncExecution {
-        return ChannelSyncExecution::create([
-            'tenant_id' => $command->tenantId,
-            'property_id' => $command->propertyId,
-            'reservation_id' => $command->reservationId,
-            'operation' => $command->operation,
-            'block_reason' => $command->blockReason,
-            'date_range_start' => $command->dateRange['start'],
-            'date_range_end' => $command->dateRange['end'],
-            'target_availability' => $command->available,
-            'synced_dates' => $blockedDates,
-            'conflicts' => $conflictDates,
-            'idempotency_key' => $idempotencyKey,
-            'correlation_id' => $correlationId,
-            'status' => 'dispatched',
-        ]);
-    }
-
-    private function generateCorrelationId(): string
-    {
-        return sprintf(
-            'sync-%s-%s',
-            now()->format('Ymd'),
-            \Illuminate\Support\Str::random(12)
-        );
-    }
-
     /**
-     * @return array<ChannelAdapter>
+     * E03: Returns channel adapters for all active channels registered to the property.
+     * Used during synchronize() to determine which channels to dispatch per-channel jobs for.
+     *
+     * @return array<\App\Contracts\ChannelManager\ChannelSyncContract>
      */
     private function getRegisteredChannels(int $propertyId, int $tenantId): array
     {
@@ -391,8 +435,6 @@ class AvailabilitySynchronizationService
             ->whereHas('ilan', fn($q) => $q->where('tenant_id', $tenantId))
             ->get();
 
-        // In E02, we return the InMemory adapter for testing
-        // Real adapters are registered in E03
         $adapters = [];
         foreach ($channelSyncs as $sync) {
             $adapter = $this->resolveChannelAdapter($sync->platform);
@@ -404,7 +446,31 @@ class AvailabilitySynchronizationService
         return $adapters;
     }
 
-    private function resolveChannelAdapter(string $platform): ?ChannelAdapter
+    /**
+     * E03: Extract channel identifier from a ChannelAdapter instance.
+     * Used to correlate adapter instances with the `channel` discriminator.
+     *
+     * Supports both ChannelAdapter (testing: InMemoryChannelAdapter) and
+     * ChannelSyncContract (production: AirbnbChannelAdapter, BookingChannelAdapter).
+     */
+    private function getChannelIdFromAdapter(ChannelAdapter|\App\Contracts\ChannelManager\ChannelSyncContract $adapter): string
+    {
+        // ChannelSyncContract: use getChannel() which returns a Channel enum
+        if ($adapter instanceof \App\Contracts\ChannelManager\ChannelSyncContract) {
+            return $adapter->getChannel()->value;
+        }
+
+        // ChannelAdapter interface: use getChannelId() method
+        if (method_exists($adapter, 'getChannelId')) {
+            return $adapter->getChannelId();
+        }
+
+        // Fallback: derive from class name (AirbnbChannelAdapter → airbnb)
+        $class = class_basename($adapter);
+        return strtolower(preg_replace('/ChannelAdapter$/', '', $class));
+    }
+
+    private function resolveChannelAdapter(string $platform): ?\App\Contracts\ChannelManager\ChannelSyncContract
     {
         return match ($platform) {
             'airbnb' => app(\App\Infrastructure\ChannelManager\Adapters\AirbnbChannelAdapter::class),
@@ -414,16 +480,10 @@ class AvailabilitySynchronizationService
     }
 
     /**
-     * Release availability blocks and propagate to external channels.
+     * E03: Release availability blocks per channel.
      *
-     * Called by ProcessReservationCancelled and ProcessReservationModified listeners
-     * to release internal blocks (source_system = 'internal') after a cancellation
-     * or date change.
-     *
-     * This method:
-     *   1. Releases internal blocks in the local DB (within a transaction)
-     *   2. Records a ChannelSyncExecution for external channel propagation
-     *   3. Dispatches the sync job
+     * Creates one ChannelSyncExecution per registered channel, each with its
+     * own channel-specific idempotency key, and dispatches an independent job.
      *
      * @param int $tenantId
      * @param int $propertyId
@@ -441,21 +501,14 @@ class AvailabilitySynchronizationService
     ): SyncResult {
         $this->enforceTenantIsolation($tenantId, $propertyId);
 
-        $idempotencyKey = "{$tenantId}:{$propertyId}:{$reservationId}:release:{$startDate}:{$endDate}";
         $correlationId = sprintf('release-%s-%s', now()->format('Ymd'), \Illuminate\Support\Str::random(12));
-
-        // Check idempotency (with lock to prevent race on concurrent dispatches)
-        $existing = $this->findExistingSync($idempotencyKey, $tenantId);
-        if ($existing !== null) {
-            return $this->buildResultFromExistingSync($existing);
-        }
 
         $releasedCount = 0;
         DB::transaction(function () use ($propertyId, $reservationId, $tenantId, &$releasedCount) {
             $releasedCount = PropertyAvailability::where('property_id', $propertyId)
                 ->where('reservation_id', $reservationId)
                 ->where('source_system', 'internal')
-                ->where('is_available', false)  // Only release rows that are actually blocked by this reservation
+                ->where('is_available', false)
                 ->update([
                     'is_available' => true,
                     'block_reason' => null,
@@ -463,39 +516,59 @@ class AvailabilitySynchronizationService
                 ]);
         });
 
-        // Record execution for external channel sync
-        $syncRecord = ChannelSyncExecution::create([
-            'tenant_id' => $tenantId,
-            'property_id' => $propertyId,
-            'reservation_id' => $reservationId,
-            'operation' => 'release',
-            'block_reason' => null,
-            'date_range_start' => $startDate,
-            'date_range_end' => $endDate,
-            'target_availability' => true,
-            'synced_dates' => [],
-            'conflicts' => [],
-            'idempotency_key' => $idempotencyKey,
-            'correlation_id' => $correlationId,
-            'status' => 'dispatched',
-        ]);
+        // E03: Per-channel execution dispatch
+        $registeredChannels = $this->getRegisteredChannels($propertyId, $tenantId);
+        $executionIds = [];
 
-        SynchronizeAvailabilityJob::dispatch($syncRecord->id)
-            ->afterCommit();
+        foreach ($registeredChannels as $channelAdapter) {
+            $channelId = $this->getChannelIdFromAdapter($channelAdapter);
+
+            // E03: Channel-aware idempotency key for release
+            $idempotencyKey = "{$tenantId}:{$propertyId}:{$reservationId}:release:{$startDate}:{$endDate}:{$channelId}";
+
+            $existing = $this->findExistingSync($idempotencyKey, $tenantId, $channelId);
+            if ($existing !== null) {
+                $executionIds[$channelId] = $existing->id;
+                continue;
+            }
+
+            $syncRecord = ChannelSyncExecution::create([
+                'tenant_id' => $tenantId,
+                'property_id' => $propertyId,
+                'reservation_id' => $reservationId,
+                'channel' => $channelId,
+                'operation' => 'release',
+                'block_reason' => null,
+                'date_range_start' => $startDate,
+                'date_range_end' => $endDate,
+                'target_availability' => true,
+                'synced_dates' => [],
+                'conflicts' => [],
+                'idempotency_key' => $idempotencyKey,
+                'correlation_id' => $correlationId,
+                'status' => 'dispatched',
+            ]);
+
+            $executionIds[$channelId] = $syncRecord->id;
+
+            SynchronizeAvailabilityJob::dispatch($syncRecord->id)
+                ->afterCommit();
+        }
 
         return SyncResult::success($releasedCount, [], [
-            'sync_record_id' => $syncRecord->id,
             'correlation_id' => $correlationId,
-            'idempotency_key' => $idempotencyKey,
+            'channels' => array_keys($executionIds),
+            'execution_ids' => $executionIds,
             'operation' => 'release',
         ]);
     }
 
     /**
-     * Replay a failed or exhausted sync execution.
+     * E03: Replay a failed or exhausted sync execution.
      *
      * MUST 3: Creates a NEW execution record — never mutates the original.
-     * This preserves full audit lineage and prevents replay storms.
+     * E03: Channel is preserved from the original execution; the replay job
+     * will sync only to that channel.
      *
      * @param int $executionId The failed execution to replay
      * @return array{success: bool, new_execution_id: int|null, correlation_id: string|null, error: string|null}
@@ -513,7 +586,6 @@ class AvailabilitySynchronizationService
             ];
         }
 
-        // Only allow replay from terminal states
         $replayableStates = ['failed', 'retry_exhausted', 'completed_with_conflicts'];
         if (!in_array($original->status, $replayableStates, true)) {
             return [
@@ -524,7 +596,7 @@ class AvailabilitySynchronizationService
             ];
         }
 
-        // Generate new idempotency key with replay suffix
+        // E03: Channel-aware idempotency key for replay
         $newIdempotencyKey = $original->idempotency_key
             . ':replay:'
             . now()->timestamp;
@@ -536,6 +608,7 @@ class AvailabilitySynchronizationService
                 'tenant_id' => $original->tenant_id,
                 'property_id' => $original->property_id,
                 'reservation_id' => $original->reservation_id,
+                'channel' => $original->channel, // E03: preserve channel from original
                 'operation' => $original->operation,
                 'block_reason' => $original->block_reason,
                 'date_range_start' => $original->date_range_start,
@@ -567,7 +640,7 @@ class AvailabilitySynchronizationService
         }
     }
 
-    private function syncToChannel(ChannelAdapter $adapter, SynchronizeAvailabilityCommand $command): SyncResult
+    private function syncToChannel(ChannelAdapter|\App\Contracts\ChannelManager\ChannelSyncContract $adapter, SynchronizeAvailabilityCommand $command): SyncResult
     {
         try {
             $dates = [];
@@ -579,6 +652,24 @@ class AvailabilitySynchronizationService
                 ];
             }
 
+            // E03: ChannelSyncContract has a different pushAvailability signature
+            // than ChannelAdapter. Detect which interface is implemented.
+            if ($adapter instanceof \App\Contracts\ChannelManager\ChannelSyncContract) {
+                $response = $adapter->pushAvailability(
+                    $command->tenantId,
+                    $command->propertyId,
+                    $command->correlationId ?? '',
+                    $dates
+                );
+
+                if (!$response->success) {
+                    return SyncResult::failure($response->errorMessage ?? 'Unknown error');
+                }
+
+                return SyncResult::success(count($dates));
+            }
+
+            // ChannelAdapter interface (InMemoryChannelAdapter for testing)
             $response = $adapter->pushAvailability($dates);
 
             if (!$response->success) {
@@ -611,6 +702,16 @@ class AvailabilitySynchronizationService
             blockReason: $record->block_reason,
             idempotencyKey: $record->idempotency_key,
             correlationId: $record->correlation_id,
+            channel: $record->channel,
+        );
+    }
+
+    private function generateCorrelationId(): string
+    {
+        return sprintf(
+            'sync-%s-%s',
+            now()->format('Ymd'),
+            \Illuminate\Support\Str::random(12)
         );
     }
 }

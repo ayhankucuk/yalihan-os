@@ -402,11 +402,15 @@ class AvailabilitySynchronizationServiceTest extends TestCase
         );
 
         // Act
-        $this->service->synchronize($command, userId: 1);
+        $result = $this->service->synchronize($command, userId: 1);
 
-        // Assert - Sync record should be created
-        $syncRecord = ChannelSyncExecution::where('idempotency_key', $command->getIdempotencyKey())->first();
+        // Assert - Sync record should be created (E03: keyed by execution_ids metadata)
+        $executionIds = $result->metadata['execution_ids'] ?? [];
+        $this->assertNotEmpty($executionIds, 'Expected at least one channel execution');
+        $executionId = array_values($executionIds)[0];
+        $syncRecord = ChannelSyncExecution::find($executionId);
         $this->assertNotNull($syncRecord);
+        $this->assertEquals('dispatched', $syncRecord->status);
     }
 
     // ─── Helper methods ────────────────────────────────────────────────
