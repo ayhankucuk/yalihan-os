@@ -299,16 +299,125 @@ Retry kararı (4.6) katman 3'ün retry davranışını netleştirir. `tries=3`, 
 
 ### 4.6 Failure / Retry Behavior
 
-**Decision:** OPEN — depends on 4.5.
+**SAAB Decision:** APPROVED — Oturum 135
+**Baseline:** 865d3b4 · Date: 2026-08-16
 
-| Senaryo | Davranış |
-|---------|---------|
-| HTTP 5xx from Booking | Retry: exponential backoff, max 3 |
-| HTTP 4xx (validation error) | Fatal — no retry, log + alert |
-| Channel offline | Retry: 5xx backoff |
-| Tenant not configured | Skip silently |
+Availability synchronization **at-least-once** çalışabilir; fakat **replay-safe** ve **idempotent** olmak zorundadır.
 
-**Beklenen:** `SynchronizeRatesJob` retry pattern referansı: `$tries=3`, `$backoff=[30,60,120]`, `afterCommit=true`.
+---
+
+#### 4.6.1 Retry Trigger
+
+SyncAvailabilityJob **queue-first** çalışır.
+
+Retry yalnızca **transient/retryable** failure için yapılır:
+
+| Retryable | Non-Retryable |
+|-----------|---------------|
+| timeout | invalid credentials/config |
+| connection/network failure | invalid property mapping |
+| HTTP 429 (rate limit) | validation/schema failure |
+| provider 5xx | unsupported operation |
+| adapter tarafından `retryable=true` sınıflandırılan hata | provider 4xx (429 hariç), aksini açıkça belirtmedikçe |
+
+**Kural:** Job, provider-specific karar vermemelidir. `SyncAvailabilityJob` "Booking 500 ise..." gibi kurallar taşımamalıdır. Adapter/transport sonucu `retryable` semantics ile dönmeli; job sadece ortak retry politikasını uygular.
+
+---
+
+#### 4.6.2 Retry Semantics
+
+1. **Retry yeni business operation değildir.** Aynı synchronization execution'ın yeniden denenmesidir.
+2. **Replay-safe:** Aynı availability state tekrar gönderildiğinde duplicate business side-effect yaratmamalıdır.
+3. **DB transaction içinde external API çağrısı yapılmaz.** Queue-first garantisi.
+4. **Retry sırasında canonical availability state yeniden okunur.** Eski serialized availability snapshot körlemesine gönderilmez.
+5. **Tenant context her retry'da yeniden doğrulanır.** `BelongsToTenant` scope korunur.
+
+---
+
+#### 4.6.3 Observable Attempt Contract
+
+Her attempt observable olmalıdır:
+
+```
+execution_id      → ChannelSyncExecution UUID
+tenant_id         → Tenant context
+property_id       → Property reference
+provider/channel   → Booking.com / Airbnb
+attempt           → 1, 2, 3, ...
+result            → SUCCESS / FAILURE
+retryable         → true / false
+error             → exception message / code
+timestamps        → created_at + processed_at
+```
+
+---
+
+#### 4.6.4 Exhaustion Policy
+
+**Retry exhaustion → silent failure YOK.**
+
+```
+Retry max → FAILED/EXHAUSTED evidence üretir
+          → Human intervention queue'a düşer
+          → Alert / notification tetiklenir
+```
+
+---
+
+#### 4.6.5 Retry Configuration
+
+| Parametre | Değer | Not |
+|-----------|-------|-----|
+| `$tries` | 3 (configurable) | Domain invariant değil; operational default |
+| `$backoff` | [30, 120, 300] | Exponential — 30s → 120s → 300s |
+| `afterCommit` | true | Queue-first garantisi |
+| `Retry-After` header | adapter override | Provider daha güçlü bilgi verirse tercih edilir |
+
+**Provider adapter daha güçlü rate-limit bilgisi/Retry-After veriyorsa onu tercih eder.**
+
+---
+
+#### 4.6.6 Technical Invariants
+
+| İnvaryant | Açıklama |
+|-----------|-----------|
+| No external call in DB transaction | Queue-first korunur |
+| Fresh canonical read on retry | `property_availabilities` her attempt'ta okunur |
+| Tenant context re-validated | Her attempt'ta `tenantId` kontrolü |
+| Observable | Her attempt `ChannelSyncExecution` kaydı |
+| No silent failure | Exhaustion → evidence + human intervention |
+| Adapter returns retryable semantics | Job provider-specific mantık TAŞIMAZ |
+
+---
+
+#### 4.6.7 Retry Classification Contract (Adapter Interface)
+
+```php
+interface ChannelSyncContract {
+    // ...
+    public function classifyFailure(\Throwable $e): FailureClassification;
+}
+
+enum FailureClassification {
+    case TRANSIENT;   // Retryable — timeout, network, 429, 5xx
+    case PERMANENT;   // Non-retryable — auth, validation, schema, unsupported
+    case UNKNOWN;     // Retry — linear backoff
+}
+```
+
+Job, adapter'dan `FailureClassification` alır. `PERMANENT` → retry yapmaz, `TRANSIENT`/`UNKNOWN` → retry policy uygular.
+
+---
+
+#### 4.6.8 DoD Checklist (4.6)
+
+- [x] SAAB 4.6 Retry Policy kararı donduruldu ✅ (Oturum 135)
+- [x] Queue-first garantisi korunur ✅
+- [x] Transient/permanent failure ayrımı dokümante edildi ✅
+- [x] Retry job provider-specific mantık TAŞIMAZ ✅
+- [x] Exhaustion → evidence + intervention dokümante edildi ✅
+- [x] Observable attempt contract tanımlandı ✅
+- [x] Configurable retry params (domain invariant değil) ✅
 
 ---
 
@@ -369,11 +478,14 @@ ReservationCancelledEvent
 - [x] SAAB channel sync boundary (4.3) kararı donduruldu ✅
 - [x] SAAB idempotency (4.4) kararı donduruldu ✅
 - [x] SAAB tenant isolation (4.5) kararı donduruldu ✅
+- [x] SAAB retry policy (4.6) kararı donduruldu ✅
 - [x] LIFECYCLE-DEBT Option A: Override → `ReservationCancelledEvent` çözüldü ✅
 - [ ] SyncAvailabilityJob idempotent (eventId deduplication)
 - [ ] Tenant isolation: event tenantId → channel adapter
-- [ ] Retry: $tries=3, backoff [30, 60, 120], afterCommit=true
+- [ ] Retry: $tries=3, backoff [30, 120, 300], afterCommit=true
 - [ ] Booking.com pushAvailability() çağrısı
+- [ ] FailureClassification enum (TRANSIENT/PERMANENT/UNKNOWN)
+- [ ] Exhaustion → FAILED/EXHAUSTED evidence + human intervention
 - [ ] AvailabilitySyncWave1Test: TBD
 - [ ] SAB integrity scan: 0 new violations
 - [ ] EB regression: 7/7 PASS
