@@ -1,5 +1,56 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 134 — 2026-08-16 | GUEST_CONCIERGE Phase 1 ✅ DEBT-GC-01 CLOSED
+
+### GUEST_CONCIERGE Phase 1 — DEBT-GC-01 Recovery
+
+**Commit:** `3e2ec00`
+**Baseline:** `dc29bd6` (Phase 1 certification)
+**Recovery Authority:** Claude Sonnet 4.6 (DEBT-GC-01 — P2→P1 elevation)
+**Inspector:** Kilo (Claude Sonnet 4.6)
+**Certification Status:** ✅ DEBT-GC-01 CLOSED
+
+#### Root Cause
+
+CountryScope bypass doğruydu (`withoutGlobalScopes`) ama Kisi lookup sırası yanlıştı:
+`findActiveReservation()` → rezervasyon bulunur → sonra `findKisi()` → CountryScope
+yüzünden `null` döner → `RoutingDecision::unknown()` döner → gereksiz eskalasyon.
+
+**Architectural Fix:**
+Rezervasyon bulunduğunda Kisi/Land lookup tamamen atlanır — CountryScope'tan
+bağımsız guest kararı döner. Kisi/Land sadece rezervasyon BULUNAMADIĞINDA
+(`unknown` path) çağrılır.
+
+#### DEBT-GC-01 Recovery
+
+**GuestConciergeRouter:**
+- Rezervasyon path'leri (active/future/past) CountryScope'tan TAMAMEN BAĞIMSIZ
+- `withoutGlobalScopes()` — reservation sorguları için
+- Kisi/Land lookup sadece `no-reservation` path'inde
+
+**ProcessGuestMessageJob (TenantScope Fix):**
+- `loadReservation()` / `loadIlan()`: `withoutGlobalScopes()` eklendi
+- TenantScope (BelongsToTenant) bypass — tenantId RoutingDecision payload'dan gelir
+- Test isolation hatası: TenantContext olmayınca TenantScope `tenant_id=null` yapıyordu
+
+**API Fix:**
+- `OperationalGorevService::createOperationalTask`: `protected` → `public`
+  (ProcessGuestMessageJob doğrudan çağırabilir)
+
+#### Test Evidence
+
+| Suite | Result | Notes |
+|-------|--------|-------|
+| GuestConcierge Phase 1 | ✅ 38/38 PASS | önceki 37 + 1 pre-existing FAIL düzeltildi |
+| Regression | ✅ 0 new failures | — |
+
+#### Pre-existing Test Fix
+
+- `test_process_job_creates_audit_record`: Mock Hermes'e `draftAnswer()` eklendi
+- Test isolation: RefreshDatabase state contamination önüne geçildi (kendi tenant/ilan oluşturuldu)
+
+---
+
 ## Oturum 133 — 2026-08-16 | CHECKOUT WAVE 3 ✅ SEC-W3-01 CLOSED
 
 ### CHECKIN_CHECKOUT Wave 3 — Credential Delivery Certification
