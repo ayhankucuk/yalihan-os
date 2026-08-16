@@ -9,6 +9,7 @@
  *
  * @see docs/adr/2026-02-22-legacy-generator-quarantine.md
  */
+
 return [
 
     /*
@@ -124,9 +125,11 @@ return [
 
     'guest_concierge_kill_switch' => (bool) env('GUEST_CONCIERGE_KILL_SWITCH', false),
 
+    // PILOT-GATE-01: Allowlist loaded from config/concierge.php
+    // This key is kept for backward compat; actual values come from concierge.php
     'guest_concierge_pilot_allowlist' => [
-        'tenant_ids' => [],      // Pilot tenant ID'ler
-        'reservation_ids' => [],  // Pilot rezervasyon ID'ler (opsiyonel)
+        'tenant_ids' => [],
+        'reservation_ids' => [],
     ],
 
 ];

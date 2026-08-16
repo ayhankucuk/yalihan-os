@@ -39,6 +39,20 @@ class GuestConciergeHermes
     {
         $prompt = $this->buildClassificationPrompt($message, $facts);
         $response = $this->callLlm($prompt);
+
+        // P07/P08: LLM unavailable → escalate (UNKNOWN intent)
+        if ($response === null) {
+            \Illuminate\Support\Facades\Log::warning('[GuestConciergeHermes] LLM unavailable — escalating', [
+                'message' => substr($message, 0, 50),
+            ]);
+            return IntentClassification::classify(
+                intent: 'UNKNOWN',
+                confidence: 0.0,
+                requiredFactKeys: [],
+                reasoning: 'LLM unavailable',
+            );
+        }
+
         return $this->parseClassificationResponse($response);
     }
 
@@ -59,7 +73,15 @@ class GuestConciergeHermes
         IntentClassification $classification,
     ): string {
         $prompt = $this->buildAnswerPrompt($message, $facts, $classification);
-        return $this->callLlm($prompt);
+        $response = $this->callLlm($prompt);
+
+        // P07/P08: LLM unavailable → escalate via fallback
+        if ($response === null) {
+            \Illuminate\Support\Facades\Log::warning('[GuestConciergeHermes] draftAnswer LLM unavailable');
+            return 'Mesajınız alındı. Şu anda teknik bir sorun yaşıyoruz, danışmanınız en kısa sürede sizinle iletişime geçecektir.';
+        }
+
+        return $response;
     }
 
     /**
@@ -151,51 +173,154 @@ PROMPT;
 
     // ── LLM Integration ────────────────────────────────────────────
 
-    protected function callLlm(string $prompt): string
+    /**
+     * Call the LLM provider.
+     *
+     * PILOT-GATE-02: Uses config('concierge.llm') provider settings.
+     *
+     * P07: If provider is not configured → returns null → Hermes escalates.
+     * P08: On timeout → returns null → Hermes escalates.
+     *
+     * @param string $prompt
+     * @return string|null null = LLM unavailable (escalation trigger)
+     */
+    protected function callLlm(string $prompt): ?string
     {
+        $provider = config('concierge.llm.provider', 'ollama');
+        $timeout = (int) config('concierge.llm.' . $provider . '.timeout', 30);
+
         try {
-            $model = config('services.llm.concierge_model', 'deepseek-chat');
-            $apiKey = config('services.llm.api_key');
-            $baseUrl = config('services.llm.base_url', 'http://localhost:11434');
-
-            // Ollama local model
-            if (str_contains($baseUrl, 'localhost:11434') || str_contains($baseUrl, 'ollama')) {
-                $response = \Illuminate\Support\Facades\Http::timeout(30)
-                    ->post("{$baseUrl}/api/generate", [
-                        'model' => $model,
-                        'prompt' => $prompt,
-                        'stream' => false,
-                    ]);
-
-                if ($response->successful()) {
-                    return $response->json('response', '');
-                }
-            }
-
-            // OpenAI-compatible
-            $response = \Illuminate\Support\Facades\Http::timeout(30)
-                ->withToken($apiKey)
-                ->post("{$baseUrl}/v1/chat/completions", [
-                    'model' => $model,
-                    'messages' => [
-                        ['role' => 'user', 'content' => $prompt],
-                    ],
-                    'temperature' => 0.3,
-                    'max_tokens' => 500,
-                ]);
-
-            if ($response->successful()) {
-                return $response->json('choices.0.message.content', '');
-            }
-
-            return '';
-
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('[GuestConciergeHermes] LLM call failed', [
+            return match ($provider) {
+                'ollama' => $this->callOllama($prompt, $timeout),
+                'deepseek' => $this->callDeepSeek($prompt, $timeout),
+                'openai' => $this->callOpenAi($prompt, $timeout),
+                default => null,  // Unknown provider → P07: escalate
+            };
+        } catch (\Illuminate\Http\Client\ConnectException $e) {
+            // P08: Connection refused / timeout
+            \Illuminate\Support\Facades\Log::warning('[GuestConciergeHermes] LLM connection failed (P08)', [
+                'provider' => $provider,
                 'error' => $e->getMessage(),
             ]);
-            return '';
+            return null;  // Escalation trigger
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('[GuestConciergeHermes] LLM call failed', [
+                'provider' => $provider,
+                'error' => $e->getMessage(),
+            ]);
+            return null;  // Escalation trigger
         }
+    }
+
+    /**
+     * Ollama / local model.
+     *
+     * @return string|null
+     */
+    protected function callOllama(string $prompt, int $timeout): ?string
+    {
+        $cfg = config('concierge.llm.ollama', []);
+        $baseUrl = $cfg['base_url'] ?? 'http://localhost:11434';
+        $model = $cfg['model'] ?? 'llama3.2';
+
+        // P07: Missing configuration
+        if (empty($baseUrl)) {
+            \Illuminate\Support\Facades\Log::warning('[GuestConciergeHermes] Ollama not configured (P07)');
+            return null;
+        }
+
+        $response = \Illuminate\Support\Facades\Http::timeout($timeout)
+            ->post("{$baseUrl}/api/generate", [
+                'model' => $model,
+                'prompt' => $prompt,
+                'stream' => false,
+            ]);
+
+        if (!$response->successful()) {
+            \Illuminate\Support\Facades\Log::warning('[GuestConciergeHermes] Ollama call failed', [
+                'status' => $response->status(),
+            ]);
+            return null;
+        }
+
+        $text = $response->json('response', '');
+        return $text !== '' ? $text : null;
+    }
+
+    /**
+     * DeepSeek API.
+     *
+     * @return string|null
+     */
+    protected function callDeepSeek(string $prompt, int $timeout): ?string
+    {
+        $cfg = config('concierge.llm.deepseek', []);
+        $baseUrl = $cfg['base_url'] ?? 'https://api.deepseek.com';
+        $model = $cfg['model'] ?? 'deepseek-chat';
+        $apiKey = $cfg['api_key'] ?? '';
+
+        // P07: Missing API key
+        if (empty($apiKey)) {
+            \Illuminate\Support\Facades\Log::warning('[GuestConciergeHermes] DeepSeek API key not configured (P07)');
+            return null;
+        }
+
+        $response = \Illuminate\Support\Facades\Http::timeout($timeout)
+            ->withToken($apiKey)
+            ->post("{$baseUrl}/v1/chat/completions", [
+                'model' => $model,
+                'messages' => [['role' => 'user', 'content' => $prompt]],
+                'temperature' => 0.3,
+                'max_tokens' => 500,
+            ]);
+
+        if (!$response->successful()) {
+            \Illuminate\Support\Facades\Log::warning('[GuestConciergeHermes] DeepSeek call failed', [
+                'status' => $response->status(),
+            ]);
+            return null;
+        }
+
+        $text = $response->json('choices.0.message.content', '');
+        return $text !== '' ? $text : null;
+    }
+
+    /**
+     * OpenAI-compatible API.
+     *
+     * @return string|null
+     */
+    protected function callOpenAi(string $prompt, int $timeout): ?string
+    {
+        $cfg = config('concierge.llm.openai', []);
+        $baseUrl = $cfg['base_url'] ?? 'https://api.openai.com/v1';
+        $model = $cfg['model'] ?? 'gpt-4o-mini';
+        $apiKey = $cfg['api_key'] ?? '';
+
+        // P07: Missing API key
+        if (empty($apiKey)) {
+            \Illuminate\Support\Facades\Log::warning('[GuestConciergeHermes] OpenAI API key not configured (P07)');
+            return null;
+        }
+
+        $response = \Illuminate\Support\Facades\Http::timeout($timeout)
+            ->withToken($apiKey)
+            ->post("{$baseUrl}/chat/completions", [
+                'model' => $model,
+                'messages' => [['role' => 'user', 'content' => $prompt]],
+                'temperature' => 0.3,
+                'max_tokens' => 500,
+            ]);
+
+        if (!$response->successful()) {
+            \Illuminate\Support\Facades\Log::warning('[GuestConciergeHermes] OpenAI call failed', [
+                'status' => $response->status(),
+            ]);
+            return null;
+        }
+
+        $text = $response->json('choices.0.message.content', '');
+        return $text !== '' ? $text : null;
     }
 
     // ── Response Parsing ──────────────────────────────────────────
