@@ -51,6 +51,84 @@ bağımsız guest kararı döner. Kisi/Land sadece rezervasyon BULUNAMADIĞINDA
 
 ---
 
+## MICRO PILOT READINESS SPRINT — 2026-08-16 | PILOT-GATE-01/02/03 ✅
+
+### SAAB Orchestrator Decision: c7bb116
+
+**Commit:** `ae4c6fc`
+**Baseline:** `3e2ec00` (DEBT-GC-01 recovery)
+**Authority:** Claude Sonnet 4.6 / Kilo Code
+**Certification Status:** ✅ GATES PASSED — AWAITING ANTIGRAVITY VERIFICATION
+
+#### PILOT-GATE-01: Runtime Allowlist Enforcement
+
+**GuestConciergePilotGate:**
+- Deterministic PHP gate service (never LLM)
+- Reservation-level allowlist (priority override)
+- Tenant-level allowlist (fallback)
+- **PILOT-GATE-01 INVARIANT:** empty allowlist = fail-closed
+- Only GUEST_ACTIVE/FUTURE/PAST enter Concierge pipeline
+- LEAD/UNKNOWN always blocked
+- `ResolveWhatsAppInboundJob`: gate check before dispatch
+
+**config/concierge.php:**
+```
+GUEST_CONCIERGE_PILOT_TENANT_IDS=1,3
+GUEST_CONCIERGE_PILOT_RESERVATION_IDS=1001,1002
+```
+
+#### PILOT-GATE-02: LLM Provider Config
+
+**Hermes abstraction:**
+- Provider: `ollama` / `deepseek` / `openai`
+- Each provider: model, base_url, api_key, timeout
+- Configured via env vars (CONCIERGE_LLM_*)
+- Hermes architectural role unchanged — provider = implementation detail
+
+**P07/P08 — LLM Fail-Closed:**
+- Missing config → `null` → UNKNOWN intent (confidence=0.0) → escalates
+- Timeout / connection refused → `null` → escalates
+- OWASP-aligned: LLM unavailable = fail-closed
+
+#### PILOT-GATE-03: Queue Worker
+
+- ResolveWhatsAppInboundJob: `concierge` queue
+- ProcessGuestMessageJob: `concierge` queue
+- Queue worker must be running in production
+
+#### Test Evidence
+
+| Test | Result |
+|------|--------|
+| P01 enabled=false → BLOCKED | ✅ |
+| P02 kill_switch=true → BLOCKED | ✅ |
+| P03 empty allowlist → fail-closed | ✅ |
+| P04 tenant not allowlisted → BLOCKED | ✅ |
+| P05 reservation not allowlisted → BLOCKED | ✅ |
+| P06 allowed tenant/reservation → PASSES | ✅ |
+| P07 LLM config missing → escalates | ✅ |
+| P08 provider timeout → escalates | ✅ |
+| P09 38 existing Concierge tests | ✅ 38/38 PASS |
+| P10 W1/W2/W3 regression | ✅ 0 new failures |
+
+**Total: 54 PASS (38 Phase 1 + 16 pilot readiness)**
+
+#### Pilot Mode Invariant
+
+```
+enabled=true + allowlist=[] = FULL ROLLOUT DEĞIL, TAM BLOKAJ
+```
+
+Pilot açılışı için minimum:
+```
+GUEST_CONCIERGE_ENABLED=true
+GUEST_CONCIERGE_PILOT_TENANT_IDS=1
+GUEST_CONCIERGE_PILOT_RESERVATION_IDS=1001
+CONCIERGE_LLM_PROVIDER=ollama  # veya deepseek/openai
+```
+
+---
+
 ## Oturum 133 — 2026-08-16 | CHECKOUT WAVE 3 ✅ SEC-W3-01 CLOSED
 
 ### CHECKIN_CHECKOUT Wave 3 — Credential Delivery Certification
