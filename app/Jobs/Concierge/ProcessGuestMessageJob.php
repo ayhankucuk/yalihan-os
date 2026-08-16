@@ -132,7 +132,6 @@ class ProcessGuestMessageJob implements ShouldQueue, TenantAwareJobInterface
             $canActionResult = $policy->canCreateGorev($classification);
 
             if ($canActionResult->isAllowed()) {
-                // AuthorityPolicy already confirmed Gorev is allowed
                 $this->handleAction($classification, $outboundService, $gorevService);
                 return;
             }
@@ -191,6 +190,7 @@ class ProcessGuestMessageJob implements ShouldQueue, TenantAwareJobInterface
             Log::warning('[ProcessGuestMessageJob] Cannot create Gorev — missing context', [
                 'reservation_id' => $this->routingDecision->reservationId,
                 'ilan_id' => $this->routingDecision->ilanId,
+                'tenant_id' => $this->tenantId,
             ]);
             $this->escalate($classification, new GuestConciergeAuthorityPolicy(), $outboundService, PropertyFactSheet::empty());
             return;
@@ -227,6 +227,47 @@ class ProcessGuestMessageJob implements ShouldQueue, TenantAwareJobInterface
 
         // Send confirmation
         $outboundService->send(to: $this->senderPhone, message: $confirmation);
+
+        // Return so main handler doesn't escalate
+        return;
+    }
+
+    /**
+     * Handle ACTION failure: convert existing ACTION record to ESCALATE.
+     *
+     * When handleAction() creates an ACTION record but Gorev creation fails,
+     * we convert that record to ESCALATE and send the escalation message.
+     * This prevents duplicate audit records (the bug this fixes).
+     *
+     * @param GuestMessage $existingMessage The ACTION record to convert
+     */
+    protected function convertActionToEscalate(
+        GuestMessage $existingMessage,
+        IntentClassification $classification,
+        GuestConciergeAuthorityPolicy $policy,
+        WhatsAppOutboundService $outboundService,
+        PropertyFactSheet $factSheet,
+    ): void {
+        $escalationMessage = $policy->getEscalationMessage(
+            $classification->intent,
+            $policy->getEscalationReason($classification, $factSheet)
+        );
+
+        // Convert existing ACTION record to ESCALATE (no duplicate record)
+        $existingMessage->update([
+            'response_mode' => 'ESCALATE',
+            'response_text' => $escalationMessage,
+            'escalated' => true,
+            'escalation_reason' => $policy->getEscalationReason($classification, $factSheet),
+            'gorev_id' => null,  // Gorev wasn't created
+        ]);
+
+        $outboundService->send(to: $this->senderPhone, message: $escalationMessage);
+
+        Log::warning('[ProcessGuestMessageJob] Action record converted to escalation', [
+            'guest_message_id' => $existingMessage->id,
+            'original_response_mode' => 'ACTION',
+        ]);
     }
 
     /**
@@ -301,7 +342,11 @@ class ProcessGuestMessageJob implements ShouldQueue, TenantAwareJobInterface
             return null;
         }
 
+        // CountryScope is bypassed by GuestConciergeRouter (withoutGlobalScopes).
+        // BelongsToTenant TenantScope: bypass — tenantId comes from RoutingDecision
+        // payload (not from TenantContextService), so we use explicit WHERE.
         return PropertyReservation::query()
+            ->withoutGlobalScopes()
             ->where('id', $this->routingDecision->reservationId)
             ->when($this->tenantId, fn($q) => $q->where('tenant_id', $this->tenantId))
             ->first();
@@ -313,7 +358,10 @@ class ProcessGuestMessageJob implements ShouldQueue, TenantAwareJobInterface
             return null;
         }
 
+        // BelongsToTenant TenantScope bypassed — tenantId comes from RoutingDecision
+        // payload (not from TenantContextService auth context).
         return Ilan::query()
+            ->withoutGlobalScopes()
             ->where('id', $this->routingDecision->ilanId)
             ->when($this->tenantId, fn($q) => $q->where('tenant_id', $this->tenantId))
             ->first();

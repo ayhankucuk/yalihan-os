@@ -125,9 +125,17 @@ class OperationalGorevService
     /**
      * Core task creation logic with idempotency check.
      *
+     * Called by:
+     * - createPreArrivalTask() for hazirlik tasks (CHECKOUT-D2)
+     * - createTurnoverTask() for temizlik tasks (CHECKOUT-D2)
+     * - ProcessGuestMessageJob for teknik_destek/diger tasks (GUEST_CONCIERGE Phase 1)
+     *
+     * Idempotency: caller is responsible for checking taskExists() before calling.
+     * Tenant isolation: verified via reservation->ilan->tenant_id chain.
+     *
      * @throws \RuntimeException if tenant mismatch detected
      */
-    protected function createOperationalTask(
+    public function createOperationalTask(
         PropertyReservation $reservation,
         Ilan $ilan,
         string $taskType,

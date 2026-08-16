@@ -41,6 +41,13 @@ class GuestConciergeRouter
      * This is tenant-agnostic — it resolves who the sender is and
      * returns context for the tenant-aware job to process.
      *
+     * DEBT-GC-01 Recovery:
+     *   Rezervasyon bulunduğunda hemen guest kararı döner — CountryScope'tan
+     *   bağımsız. CountryScope sadece rezervasyon BAŞARISIZ olduğunda devreye girer.
+     *   Kisi/Land lookup sadece rezervasyon OLMADIĞINDA yapılır.
+     *   CountryScope Kisi/Land için çalışsa bile artık rezervasyon path'ini
+     *   etkilemez.
+     *
      * @return RoutingDecision
      */
     public function resolve(string $phone, ?string $name = null): RoutingDecision
@@ -53,6 +60,8 @@ class GuestConciergeRouter
         }
 
         // 2. Try to find ACTIVE reservation (current date range)
+        //    DEBT-GC-01: withoutGlobalScopes — CountryScope bypassed intentionally.
+        //    Rezervasyon bulunursa CountryScope ne olursa olsun guest context döner.
         $reservation = $this->findActiveReservation($normalizedPhone);
         if ($reservation !== null) {
             Log::info('[GuestConciergeRouter] Guest with active reservation', [
@@ -105,10 +114,7 @@ class GuestConciergeRouter
             );
         }
 
-        // 5. Try to find Kisi by phone (for consent lookup)
-        $kisi = $this->findKisi($normalizedPhone);
-
-        // 6. Try to find Lead by phone
+        // 5. No reservation found — try Lead (CountryScope applies here, acceptable)
         $lead = $this->findLead($normalizedPhone);
         if ($lead !== null) {
             Log::info('[GuestConciergeRouter] Lead identified', [
@@ -123,7 +129,10 @@ class GuestConciergeRouter
             );
         }
 
-        // 7. If we found Kisi but no reservation/lead — escalate to human
+        // 6. No reservation, no lead — try Kisi as last resort before escalation
+        //    CountryScope burada çalışabilir. Kisi bulunursa tenant context ile
+        //    eskalasyon yapılır (Ayhan'a bildirim P2'de).
+        $kisi = $this->findKisi($normalizedPhone);
         if ($kisi !== null) {
             Log::info('[GuestConciergeRouter] Kisi found but no reservation/lead — escalating', [
                 'phone' => $normalizedPhone,
@@ -138,7 +147,7 @@ class GuestConciergeRouter
             );
         }
 
-        // 8. Completely unknown — escalate
+        // 7. Completely unknown — escalate
         Log::warning('[GuestConciergeRouter] Unknown sender — escalating', [
             'phone' => $normalizedPhone,
         ]);
@@ -150,33 +159,38 @@ class GuestConciergeRouter
 
     /**
      * Find active reservation (check-in date <= today <= check-out date).
+     *
+     * DEBT-GC-01: CountryScope BYPASSED intentionally.
+     * withoutGlobalScopes rezervasyon bulmayı garanti altına alır.
+     * GuestConcierge'in rezervasyon bulma sorumluluğu tenant-agnostik'tir —
+     * ülke kodu ile sınırlandırılamaz.
      */
     protected function findActiveReservation(string $phone): ?PropertyReservation
     {
         $today = Carbon::today()->toDateString();
 
-        return PropertyReservation::query()
+        return PropertyReservation::withoutGlobalScopes()
             ->where('guest_phone', $phone)
             ->where('start_date', '<=', $today)
             ->where('end_date', '>=', $today)
             ->whereIn('reservation_state', ['confirmed', 'CHECKED_IN'])
-            ->whereNull('deleted_at')
             ->orderBy('id', 'desc')
             ->first();
     }
 
     /**
      * Find next upcoming reservation.
+     *
+     * DEBT-GC-01: CountryScope bypassed — same guarantee as active reservation.
      */
     protected function findFutureReservation(string $phone): ?PropertyReservation
     {
         $today = Carbon::today()->toDateString();
 
-        return PropertyReservation::query()
+        return PropertyReservation::withoutGlobalScopes()
             ->where('guest_phone', $phone)
             ->where('start_date', '>', $today)
             ->whereIn('reservation_state', ['confirmed'])
-            ->whereNull('deleted_at')
             ->orderBy('start_date', 'asc')
             ->orderBy('id', 'asc')
             ->first();
@@ -184,23 +198,28 @@ class GuestConciergeRouter
 
     /**
      * Find most recent past reservation.
+     *
+     * DEBT-GC-01: CountryScope bypassed — same guarantee as active reservation.
      */
     protected function findPastReservation(string $phone): ?PropertyReservation
     {
         $today = Carbon::today()->toDateString();
 
-        return PropertyReservation::query()
+        return PropertyReservation::withoutGlobalScopes()
             ->where('guest_phone', $phone)
             ->where('end_date', '<', $today)
             ->whereIn('reservation_state', ['confirmed', 'COMPLETED', 'CHECKED_IN', 'CHECKED_OUT'])
-            ->whereNull('deleted_at')
             ->orderBy('end_date', 'desc')
             ->orderBy('id', 'desc')
             ->first();
     }
 
     /**
-     * Find Kisi by phone (for tenant identification).
+     * Find Kisi by phone (last resort — only called when no reservation found).
+     *
+     * CountryScope burada aktif olabilir; kabul edilebilir çünkü bu method
+     * sadece rezervasyon BULUNAMADIĞINDA çağrılır. Rezervasyon path'i
+     * CountryScope'tan tamamen bağımsızdır.
      */
     protected function findKisi(string $phone): ?Kisi
     {
@@ -214,7 +233,10 @@ class GuestConciergeRouter
     }
 
     /**
-     * Find Lead by phone.
+     * Find Lead by phone (called after no reservation found).
+     *
+     * CountryScope burada aktif olabilir; kabul edilebilir çünkü Lead lookup
+     * sadece rezervasyon OLMADIĞINDA yapılır.
      */
     protected function findLead(string $phone): ?Lead
     {

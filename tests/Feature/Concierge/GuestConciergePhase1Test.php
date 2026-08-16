@@ -637,25 +637,64 @@ class GuestConciergePhase1Test extends TestCase
     {
         $msgId = 'wamid.audit123';
 
-        // TECHNICAL_ISSUE doesn't require ilan facts — safe for test without full context
+        // DEBT-GC-01 recovery: Use dedicated tenant+ilan for this test to avoid
+        // SQLite RefreshDatabase state contamination (auto-increment counters persist
+        // after DELETE). Previous tests in the suite may create tenants that leak IDs.
+        $ownTenant = Tenant::create([
+            'name' => 'GC Audit Test Tenant',
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+        $ownIlan = Ilan::factory()->create([
+            'tenant_id' => $ownTenant->id,
+            'check_in_time' => '15:00',
+            'check_out_time' => '11:00',
+        ]);
+        $ownReservation = PropertyReservation::create([
+            'tenant_id' => $ownTenant->id,
+            'ilan_id' => $ownIlan->id,
+            'property_id' => $ownIlan->id,
+            'guest_name' => 'Audit Test Guest',
+            'guest_phone' => '+905559998877',
+            'start_date' => now()->addDays(1)->toDateString(),
+            'end_date' => now()->addDays(4)->toDateString(),
+            'reservation_state' => 'confirmed',
+        ]);
+
         $job = new ProcessGuestMessageJob(
-            senderPhone: '+905551234567',
-            senderName: 'Test Guest',
+            senderPhone: '+905559998877',
+            senderName: 'Audit Test Guest',
             messageText: 'Klima çalışmıyor!',
             messageId: $msgId,
             messageType: 'text',
             routingDecision: RoutingDecision::guestActive(
-                phone: '+905551234567',
-                tenantId: $this->tenant->id,
-                reservationId: $this->reservation->id,
-                ilanId: $this->ilan->id,
+                phone: '+905559998877',
+                tenantId: $ownTenant->id,
+                reservationId: $ownReservation->id,
+                ilanId: $ownIlan->id,
             ),
         );
 
+        // DEBUG: Verify entities exist in DB
+        $this->assertDatabaseHas('tenants', ['id' => $ownTenant->id]);
+        $this->assertDatabaseHas('ilanlar', ['id' => $ownIlan->id, 'tenant_id' => $ownTenant->id]);
+        $this->assertDatabaseHas('property_reservations', ['id' => $ownReservation->id, 'tenant_id' => $ownTenant->id]);
+
+        // Without global scopes (matches what loadIlan() does)
+        $loadedIlan = Ilan::withoutGlobalScopes()
+            ->where('id', $ownIlan->id)
+            ->when($ownTenant->id, fn($q) => $q->where('tenant_id', $ownTenant->id))
+            ->first();
+        $this->assertNotNull($loadedIlan, "Ilan should be loadable with tenant_id filter");
+
         $hermes = new class extends GuestConciergeHermes {
-            public function classifyIntent(string $message, \App\Services\Concierge\PropertyFactSheet $facts): IntentClassification
+            public function classifyIntent(string $message, \App\Services\Concierge\PropertyFactSheet $facts): \App\Services\Concierge\IntentClassification
             {
-                return IntentClassification::classify('TECHNICAL_ISSUE', 0.90, []);
+                return \App\Services\Concierge\IntentClassification::classify('TECHNICAL_ISSUE', 0.90, []);
+            }
+            public function draftAnswer(string $message, \App\Services\Concierge\PropertyFactSheet $facts, \App\Services\Concierge\IntentClassification $classification): string
+            {
+                return 'Klima servisi bildirildi.';
             }
         };
 
@@ -672,6 +711,7 @@ class GuestConciergePhase1Test extends TestCase
         $this->assertEquals('TECHNICAL_ISSUE', $record->intent);
         $this->assertEquals(0.90, $record->confidence);
         $this->assertEquals('ACTION', $record->response_mode);
+        $this->assertEquals($ownTenant->id, $record->tenant_id);
     }
 
     public function test_process_job_escalates_unknown_intent(): void
