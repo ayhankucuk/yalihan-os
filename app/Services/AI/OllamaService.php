@@ -59,7 +59,7 @@ class OllamaService
     /**
      * Ollama URL'ini settings'ten veya config'ten al
      */
-    protected function getOllamaUrl(): string
+    protected function getOllamaUrl(): ?string
     {
         // SSOT: config/ai.php is the authority. Settings registry can override at runtime.
         try {
