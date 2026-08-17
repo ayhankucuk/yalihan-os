@@ -1,18 +1,14 @@
 #!/bin/sh
-# Production entrypoint — runs Nginx + PHP-FPM via runit
-# Hetzner Security Rule: No secrets in image, no CMD override
+# Production entrypoint — PHP-FPM container
+# Responsibilities:
+#   - Clear opcache on boot (production safety)
+#   - exec into the passed CMD (php-fpm)
+# DO NOT: touch nginx paths (/var/log/nginx), this is a PHP-FPM container only
 
 set -e
 
-# Ensure log directories exist
-mkdir -p /var/log/php /var/log/nginx
+# Clear opcache on boot
+php -r "opcache_get_status();" 2>/dev/null || true
 
-# Clear opcache on boot (production safety)
-php_clear_opcache() {
-    echo "Clearing OPcache..."
-    php -r "opcache_get_status();" 2>/dev/null || true
-}
-php_clear_opcache
-
-# Run the main process (php-fpm or custom CMD)
+# Run the main process (php-fpm)
 exec "$@"
