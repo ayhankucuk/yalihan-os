@@ -28,6 +28,8 @@ class ConfigGuard
 
     /**
      * Enforce security rules for Ollama API.
+     * Ollama is optional — validation only runs when OLLAMA_API_URL is explicitly configured.
+     * If the variable is absent from the environment, Ollama is not in use → skip.
      * 
      * @throws RuntimeException
      */
@@ -36,12 +38,17 @@ class ConfigGuard
         $url = config('ai.ollama.url');
         $enforceTls = config('ai.ollama.enforce_tls');
 
+        // Skip if URL is null — OLLAMA_API_URL is not set in this environment.
+        // This means Ollama is not the active provider → no validation needed.
+        if ($url === null) {
+            return;
+        }
+
         if (!$url) {
-            throw new RuntimeException('GOVERNANCE_VIOLATION: OLLAMA_API_URL is not defined in config/ai.php');
+            throw new RuntimeException('GOVERNANCE_VIOLATION: OLLAMA_API_URL is set but resolves to empty');
         }
 
         // Rule: If TLS enforcement is enabled, URL must be HTTPS.
-        // In CI (testing), we control this via OLLAMA_ENFORCE_TLS=false in .env
         if ($enforceTls && !str_starts_with($url, 'https://')) {
             throw new RuntimeException(
                 'SECURITY_VIOLATION: Ollama API must use HTTPS when TLS enforcement is enabled. ' .
