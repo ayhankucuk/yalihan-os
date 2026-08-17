@@ -16,8 +16,10 @@ namespace App\Services\Concierge;
  *   RoutingDecision.isGuest() = false → BLOCKED
  *       ↓ (true)
  *   Reservation allowlist not empty?
- *       ├─ YES → reservation_id allowlisted? → YES=ALLOWED, NO=BLOCKED
- *       └─ NO  → tenant_id allowlisted? → YES=ALLOWED, NO=BLOCKED
+ *     ├─ YES → reservation_id allowlisted? → YES=ALLOWED, NO=BLOCKED
+ *     └─ NO  → tenant_id allowlisted?
+ *                → YES=ALLOWED
+ *                → NO (tenant allowlist empty OR id not in list) = BLOCKED (FAIL-CLOSED)
  *
  * All checks are deterministic PHP — never LLM.
  */
@@ -47,6 +49,7 @@ class GuestConciergePilotGate
      * FAIL-CLOSED INVARIANT:
      *   - Empty tenant allowlist → BLOCKED
      *   - Empty reservation allowlist → falls back to tenant check
+     *   - Empty tenant allowlist → FAIL-CLOSED (no one passes)
      *   - Only GUEST_ACTIVE/FUTURE/PAST can pass
      *   - LEAD and UNKNOWN are always BLOCKED
      *
