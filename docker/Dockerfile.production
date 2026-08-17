@@ -61,9 +61,8 @@ EXPOSE 9000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
     CMD php-fpm-healthcheck
 
-# Entrypoint
-COPY docker/production/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Entrypoint — --chmod=755 while still root (USER appuser is at line 59)
+COPY --chmod=755 docker/production/entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["php-fpm"]
 
