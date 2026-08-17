@@ -6,19 +6,19 @@ version: '3.8'
 #   yalihanai-nginx (:8010) → yalihanai-app (:9000 FPM)
 #   Legacy yalihanai-app (:8002 artisan serve) — untouched
 #
-# Requirements:
-#   - Host MySQL  : 127.0.0.1:3306
-#   - Host Redis  : 127.0.0.1:6379
-#   - Host storage: /opt/yalihan-os-production/storage
+# Host Gateway (set in .env.production):
+#   DB_HOST       — Host gateway IP (e.g. 172.19.0.1 or host IP)
+#   REDIS_HOST    — Same as DB_HOST (co-located)
+#   Host storage: /opt/yalihan-os-production/storage
 #
 # Rules:
 #   - No secrets in image
 #   - .env NOT baked into image
 #   - APP_KEY injected at container start
-#   - healthcheck: GET http://localhost/health
+#   - DB_HOST and REDIS_HOST must be explicitly defined in .env
 #
 # Start:
-#   docker compose -f docker-compose.production.yml up -d --build
+#   docker compose --env-file .env.production -f docker-compose.production.yml up -d --build
 #
 # Health:
 #   curl http://127.0.0.1:8010/api/v1/health
@@ -77,18 +77,18 @@ services:
             APP_URL: "https://api.yalihanemlak.com.tr"
             APP_LOCALE: "tr"
 
-            # Database (host Docker network bridge)
+            # Database (host gateway — set via DB_HOST in .env)
             DB_CONNECTION: "mysql"
-            DB_HOST: "host.docker.internal"
-            DB_PORT: "3306"
-            DB_DATABASE: "yalihanai_v2_production"
+            DB_HOST: "${DB_HOST:?DB_HOST is required — set to host gateway IP in .env}"
+            DB_PORT: "${DB_PORT:-3306}"
+            DB_DATABASE: "${DB_DATABASE:?DB_DATABASE required}"
             DB_USERNAME: "${DB_USERNAME:?DB_USERNAME required}"
             DB_PASSWORD: "${DB_PASSWORD:-}"
 
-            # Redis
+            # Redis (host gateway — set via REDIS_HOST in .env)
             REDIS_CLIENT: "phpredis"
-            REDIS_HOST: "host.docker.internal"
-            REDIS_PORT: "6379"
+            REDIS_HOST: "${REDIS_HOST:?REDIS_HOST is required — set to host gateway IP in .env}"
+            REDIS_PORT: "${REDIS_PORT:-6379}"
             REDIS_PASSWORD: "${REDIS_PASSWORD:-}"
 
             # Cache & Queue
@@ -107,15 +107,9 @@ services:
             # Persistent storage — survive container restart
             - yalihan-storage:/app/storage
             - yalihan-cache:/app/bootstrap/cache
-            # PHP-FPM health ping
-            - /dev/null:/var/run/php-fpm.sock
-
-        # Required for host.docker.internal
-        extra_hosts:
-            - "host.docker.internal:host-gateway"
 
         healthcheck:
-            test: ["CMD-SHELL", "php-fpm-healthcheck || curl -f http://localhost:9000/fpm-ping"]
+            test: ["CMD-SHELL", "php-fpm-healthcheck"]
             interval: 30s
             timeout: 5s
             retries: 3
