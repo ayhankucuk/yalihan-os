@@ -100,6 +100,9 @@ services:
             LOG_CHANNEL: "daily"
             LOG_LEVEL: "warning"
 
+            # WhatsApp / Meta (optional — set WHATSAPP_WEBHOOK_VERIFY_TOKEN in .env)
+            WHATSAPP_WEBHOOK_VERIFY_TOKEN: "${WHATSAPP_WEBHOOK_VERIFY_TOKEN:-}"
+
             # TZ
             TZ: "Europe/Istanbul"
 
