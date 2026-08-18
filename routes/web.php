@@ -104,6 +104,15 @@ Route::prefix('legal')->name('legal.')->group(function () {
         ->name('data-deletion');
 });
 
+// 🏠 Apex Landing Page — yalihanemlak.com.tr cutover placeholder
+// Sadece DNS Hetzner'e pointing yaptığında /legal/* ile birlikte aktif olur.
+// api.yalihanemlak.com.tr normal API davranışını korur (ayrı nginx vHost).
+// Domain-based routing: sadece apex domain'de aktif.
+Route::domain('yalihanemlak.com.tr')->group(function () {
+    Route::get('/', [App\Http\Controllers\Public\ApexLandingController::class, 'index'])
+        ->name('apex.landing');
+});
+
 // Context7 demo route removed - use admin.dashboard
 
 // Yalihan Design System - Component Version (Kaldırıldı)
