@@ -1,0 +1,43 @@
+{
+    "template_listesi": [
+        {
+            "id": 1,
+            "isim": "Konut Satilik Test",
+            "kombinasyon": {
+                "kategori": "Konut",
+                "yayin_tipi": "Satilik",
+                "alt_tur": "Daire"
+            },
+            "alan_tip": "m2",
+            "fiyat_birimi": "TL",
+            "varsayilan_ozellikler": [],
+            "zorunlu_alanlar": []
+        },
+        {
+            "id": 2,
+            "isim": "Villa Gunluk Kiralama Test",
+            "kombinasyon": {
+                "kategori": "Villa",
+                "yayin_tipi": "Gunluk Kiralama",
+                "alt_tur": "Villa"
+            },
+            "alan_tip": "m2",
+            "fiyat_birimi": "TL",
+            "varsayilan_ozellikler": [],
+            "zorunlu_alanlar": []
+        },
+        {
+            "id": 3,
+            "isim": "Arsa Satilik Test",
+            "kombinasyon": {
+                "kategori": "Arsa & Arazi",
+                "yayin_tipi": "Satilik",
+                "alt_tur": "Tarla"
+            },
+            "alan_tip": "m2",
+            "fiyat_birimi": "TL",
+            "varsayilan_ozellikler": [],
+            "zorunlu_alanlar": []
+        }
+    ]
+}
