@@ -24,7 +24,7 @@ package-lock.json
 
 # Composer
 vendor
-composer.lock
+# composer.lock — INCLUDED in build for deterministic production installs
 composer.json.backup
 
 # Laravel

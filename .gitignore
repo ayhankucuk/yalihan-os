@@ -80,6 +80,11 @@ screenshots-backup-*.tar.gz
 !tsconfig.json
 !.sab/*.json
 !tests/Fixtures/**/*.json
+# YDL v1 — manually maintained registry, must be tracked
+!memory/ydl/blockers.json
+# UPS template config — required at runtime, must be tracked
+!config/ups_templates.json
+!memory/ydl/ARCHITECTURE_CHARTER.md
 
 # Root artifact hygiene
 /$count,
@@ -180,3 +185,11 @@ bootstrap/cache/*.php
 /test_results*.log
 
 .kilo/worktrees/
+
+# Agent/LSP audit logs
+.laravel-mcp-audit.jsonl
+
+# YDL v1 Phase 1 — Runtime state (managed by YDL pipeline, not git)
+memory/ydl/state/
+memory/ydl/snapshots/
+/yalihanai_v2_production

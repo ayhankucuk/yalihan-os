@@ -18,7 +18,9 @@ class TalepTest extends TestCase
      */
     public function test_talep_can_be_created(): void
     {
+        $tenantId = $this->getDefaultTenantId();
         $kisiId = DB::table('kisiler')->insertGetId([
+            'tenant_id' => $tenantId,
             'ad' => 'Test',
             'soyad' => 'Kisi',
             'eposta' => 'test@example.com',
@@ -48,7 +50,9 @@ class TalepTest extends TestCase
      */
     public function test_talep_belongs_to_kisi(): void
     {
+        $tenantId = $this->getDefaultTenantId();
         $kisiId = DB::table('kisiler')->insertGetId([
+            'tenant_id' => $tenantId,
             'ad' => 'Test',
             'soyad' => 'Kisi',
             'eposta' => 'test@example.com',
@@ -58,6 +62,7 @@ class TalepTest extends TestCase
         ]);
 
         $talepId = DB::table('talepler')->insertGetId([
+            'tenant_id' => $tenantId,
             'talep_tipi' => 'Konut',
             'kisi_id' => $kisiId,
             'talep_durumu' => 'yayinda',
@@ -77,7 +82,9 @@ class TalepTest extends TestCase
      */
     public function test_talep_belongs_to_danisman(): void
     {
+        $tenantId = $this->getDefaultTenantId();
         $kisiId = DB::table('kisiler')->insertGetId([
+            'tenant_id' => $tenantId,
             'ad' => 'Test',
             'soyad' => 'Kisi',
             'eposta' => 'test@example.com',
@@ -87,6 +94,7 @@ class TalepTest extends TestCase
         ]);
 
         $danismanId = DB::table('users')->insertGetId([
+            'tenant_id' => $tenantId,
             'name' => 'Test Danışman',
             'email' => 'danisman@example.com',
             'password' => Hash::make('password'),
@@ -95,6 +103,7 @@ class TalepTest extends TestCase
         ]);
 
         $talepId = DB::table('talepler')->insertGetId([
+            'tenant_id' => $tenantId,
             'talep_tipi' => 'Konut',
             'kisi_id' => $kisiId,
             'danisman_id' => $danismanId,
@@ -117,7 +126,9 @@ class TalepTest extends TestCase
      */
     public function test_talep_has_ilanlar(): void
     {
+        $tenantId = $this->getDefaultTenantId();
         $kisiId = DB::table('kisiler')->insertGetId([
+            'tenant_id' => $tenantId,
             'ad' => 'Test',
             'soyad' => 'Kisi',
             'eposta' => 'test@example.com',
@@ -127,6 +138,7 @@ class TalepTest extends TestCase
         ]);
 
         $talepId = DB::table('talepler')->insertGetId([
+            'tenant_id' => $tenantId,
             'talep_tipi' => 'Konut',
             'kisi_id' => $kisiId,
             'talep_durumu' => 'yayinda',
@@ -136,8 +148,9 @@ class TalepTest extends TestCase
         ]);
 
         $ilanId = DB::table('ilanlar')->insertGetId([
+            'tenant_id' => $tenantId,
             'baslik' => 'Test İlan',
-            'slug' => 'talep-test-ilan',
+            'slug' => 'talep-test-ilan-' . uniqid(),
             'para_birimi' => 'TRY',
             'yayin_durumu' => 'yayinda',
             'created_at' => now(),
@@ -167,7 +180,9 @@ class TalepTest extends TestCase
      */
     public function test_talep_scope_active(): void
     {
+        $tenantId = $this->getDefaultTenantId();
         $kisiId = DB::table('kisiler')->insertGetId([
+            'tenant_id' => $tenantId,
             'ad' => 'Test',
             'soyad' => 'Kisi',
             'eposta' => 'test@example.com',
@@ -178,15 +193,17 @@ class TalepTest extends TestCase
 
         DB::table('talepler')->insert([
             [
+                'tenant_id' => $tenantId,
                 'talep_tipi' => 'Active Talep',
                 'notlar' => 'Test açıklama',
-                'talep_durumu' => 'yayinda', // TalepDurumu::AKTIF backing value
+                'talep_durumu' => 'yayinda',
                 'emlak_tipi' => 'Daire',
                 'kisi_id' => $kisiId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
+                'tenant_id' => $tenantId,
                 'talep_tipi' => 'Inactive Talep',
                 'notlar' => 'Test açıklama',
                 'talep_durumu' => 'Taslak',
@@ -197,8 +214,6 @@ class TalepTest extends TestCase
             ],
         ]);
 
-        // talepler tablosunda yayin_durumu/aktiflik_durumu yok,
-        // HasActiveScope bu tabloyu filtreleyemez — skipped.
         $this->markTestSkipped('talepler tablosunda HasActiveScope uyumlu alan yok (talep_durumu ayrı bir domain alanı)');
     }
 
@@ -207,7 +222,9 @@ class TalepTest extends TestCase
      */
     public function test_talep_durumu_field(): void
     {
+        $tenantId = $this->getDefaultTenantId();
         $kisiId = DB::table('kisiler')->insertGetId([
+            'tenant_id' => $tenantId,
             'ad' => 'Test',
             'soyad' => 'Kisi',
             'eposta' => 'test@example.com',
@@ -217,9 +234,10 @@ class TalepTest extends TestCase
         ]);
 
         $talepId = DB::table('talepler')->insertGetId([
+            'tenant_id' => $tenantId,
             'talep_tipi' => 'Konut',
             'notlar' => 'Test açıklama',
-            'talep_durumu' => 'yayinda', // TalepDurumu::AKTIF backing value
+            'talep_durumu' => 'yayinda',
             'emlak_tipi' => 'Daire',
             'kisi_id' => $kisiId,
             'created_at' => now(),

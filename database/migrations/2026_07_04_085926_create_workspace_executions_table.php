@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreignId('workspace_id')
                 ->constrained('portfolio_drive_workspaces')
                 ->cascadeOnDelete();
-            $table->foreignId('ilan_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('ilan_id')->nullable()->constrained('ilanlar')->nullOnDelete();
             $table->foreignId('tenant_id')->nullable()->index();
 
             // ── Execution Identity ──────────────────────────────────────────
@@ -73,7 +73,8 @@ return new class extends Migration
 
             // ── Indexes ────────────────────────────────────────────────────
             $table->index(['workspace_id', 'state']);
-            $table->index(['workspace_id', 'execution_type', 'created_at']);
+            // Explicit short name: max 64 chars; default 'workspace_executions_workspace_id_execution_type_created_at_index' = 65 chars
+            $table->index(['workspace_id', 'execution_type', 'created_at'], 'ws_exec_wsid_type_created_at_idx');
             $table->index(['state', 'created_at']); // For worker queries
             $table->index(['chain_id', 'created_at']);
             $table->index(['ilan_id', 'created_at']);

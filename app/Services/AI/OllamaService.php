@@ -23,14 +23,14 @@ use Illuminate\Http\Client\RequestException;
 class OllamaService
 {
     /**
-     * Ollama API URL
+     * Ollama API URL — null when OLLAMA_API_URL is not configured (Ollama not in use)
      */
-    protected string $apiUrl;
+    protected ?string $apiUrl = null;
 
     /**
      * Ollama Model
      */
-    protected string $model;
+    protected string $model = 'gemma2:2b';
 
     /**
      * Cache süresi (saniye)
@@ -47,15 +47,19 @@ class OllamaService
         $this->telemetryService = $telemetryService;
         $this->registry = $registry;
 
-        $this->apiUrl = $this->getOllamaUrl();
-        $this->model = $this->getOllamaModel();
-        // Security checks are now handled globally by ConfigGuard during bootstrap.
+        $url = $this->getOllamaUrl();
+        if ($url !== null) {
+            $this->apiUrl = $url;
+            $this->model = $this->getOllamaModel();
+        }
+        // If apiUrl is null, Ollama is not configured — service is safely non-functional.
+        // Any actual AI call will fail explicitly via sendRequest().
     }
 
     /**
      * Ollama URL'ini settings'ten veya config'ten al
      */
-    protected function getOllamaUrl(): string
+    protected function getOllamaUrl(): ?string
     {
         // SSOT: config/ai.php is the authority. Settings registry can override at runtime.
         try {
@@ -227,6 +231,10 @@ class OllamaService
      */
     protected function sendRequest(string $prompt, int $maxTokens = 500, string $endpoint = 'general'): array
     {
+        if ($this->apiUrl === null) {
+            throw new \RuntimeException('Ollama is not configured. Set OLLAMA_API_URL to enable AI generation.');
+        }
+
         $startTime = microtime(true);
 
         try {
@@ -728,6 +736,10 @@ Analiz:";
      */
     public function isHealthy(): bool
     {
+        if ($this->apiUrl === null) {
+            return false;
+        }
+
         try {
             $response = Http::timeout(5)->get($this->apiUrl);
 

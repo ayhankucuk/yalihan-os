@@ -23,5 +23,6 @@ class VerifyCsrfToken extends Middleware
         'test-tkgm-ai-plan',  // TKGM AI plan notları endpoint
         'api/admin/market-intelligence/sync',  // n8n bot sync endpoint (n8n.secret middleware ile korumalı)
         'admin/ilan-kategorileri/api/*',  // Property Type Manager API endpoints
+        'api/v1/webhook/channex',  // Channex webhook (HMAC-SHA256 ile güvende — ADR-007)
     ];
 }

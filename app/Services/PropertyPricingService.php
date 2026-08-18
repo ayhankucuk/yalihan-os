@@ -148,6 +148,43 @@ class PropertyPricingService
     }
 
     /**
+     * Resolve nightly rate for a specific date.
+     *
+     * ADR-W5-01: This is the canonical rate resolver.
+     * PropertySeasonalRate takes precedence over Ilan.fiyat.
+     *
+     * @param int    $propertyId
+     * @param string $date  Y-m-d
+     * @return array{0: int, 1: string|null, 2: int} [nightlyRateTRY, seasonLabel|null, minStay]
+     */
+    public function resolveNightlyRateForDate(int $propertyId, string $date): array
+    {
+        $ilan = Ilan::withoutGlobalScopes()->findOrFail($propertyId);
+        $parsed = Carbon::parse($date)->startOfDay();
+
+        $season = PropertySeasonalRate::where('property_id', $propertyId)
+            ->where('aktiflik_durumu', true)
+            ->where('start_date', '<=', $parsed->format('Y-m-d'))
+            ->where('end_date', '>=', $parsed->format('Y-m-d'))
+            ->orderByDesc('start_date') // context7-ignore
+            ->first();
+
+        if ($season) {
+            return [
+                (int) $season->nightly_rate,
+                $season->season_label,
+                $season->min_stay_override ?? (int) ($ilan->min_stay_nights ?? 1),
+            ];
+        }
+
+        return [
+            (int) $ilan->fiyat,
+            null,
+            (int) ($ilan->min_stay_nights ?? 1),
+        ];
+    }
+
+    /**
      * Get effective min_stay for a date range (seasonal override or property default).
      */
     public function getEffectiveMinStay(int $propertyId, string $checkIn): int

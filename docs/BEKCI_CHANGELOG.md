@@ -1,5 +1,1269 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 134 — 2026-08-16 | GUEST_CONCIERGE Phase 1 ✅ DEBT-GC-01 CLOSED
+
+### GUEST_CONCIERGE Phase 1 — DEBT-GC-01 Recovery
+
+**Commit:** `3e2ec00`
+**Baseline:** `dc29bd6` (Phase 1 certification)
+**Recovery Authority:** Claude Sonnet 4.6 (DEBT-GC-01 — P2→P1 elevation)
+**Inspector:** Kilo (Claude Sonnet 4.6)
+**Certification Status:** ✅ DEBT-GC-01 CLOSED
+
+#### Root Cause
+
+CountryScope bypass doğruydu (`withoutGlobalScopes`) ama Kisi lookup sırası yanlıştı:
+`findActiveReservation()` → rezervasyon bulunur → sonra `findKisi()` → CountryScope
+yüzünden `null` döner → `RoutingDecision::unknown()` döner → gereksiz eskalasyon.
+
+**Architectural Fix:**
+Rezervasyon bulunduğunda Kisi/Land lookup tamamen atlanır — CountryScope'tan
+bağımsız guest kararı döner. Kisi/Land sadece rezervasyon BULUNAMADIĞINDA
+(`unknown` path) çağrılır.
+
+#### DEBT-GC-01 Recovery
+
+**GuestConciergeRouter:**
+- Rezervasyon path'leri (active/future/past) CountryScope'tan TAMAMEN BAĞIMSIZ
+- `withoutGlobalScopes()` — reservation sorguları için
+- Kisi/Land lookup sadece `no-reservation` path'inde
+
+**ProcessGuestMessageJob (TenantScope Fix):**
+- `loadReservation()` / `loadIlan()`: `withoutGlobalScopes()` eklendi
+- TenantScope (BelongsToTenant) bypass — tenantId RoutingDecision payload'dan gelir
+- Test isolation hatası: TenantContext olmayınca TenantScope `tenant_id=null` yapıyordu
+
+**API Fix:**
+- `OperationalGorevService::createOperationalTask`: `protected` → `public`
+  (ProcessGuestMessageJob doğrudan çağırabilir)
+
+#### Test Evidence
+
+| Suite | Result | Notes |
+|-------|--------|-------|
+| GuestConcierge Phase 1 | ✅ 38/38 PASS | önceki 37 + 1 pre-existing FAIL düzeltildi |
+| Regression | ✅ 0 new failures | — |
+
+#### Pre-existing Test Fix
+
+- `test_process_job_creates_audit_record`: Mock Hermes'e `draftAnswer()` eklendi
+- Test isolation: RefreshDatabase state contamination önüne geçildi (kendi tenant/ilan oluşturuldu)
+
+---
+
+## MICRO PILOT READINESS SPRINT — 2026-08-16 | PILOT-GATE-01/02/03 ✅
+
+### SAAB Orchestrator Decision: c7bb116
+
+**Commit:** `ae4c6fc`
+**Baseline:** `3e2ec00` (DEBT-GC-01 recovery)
+**Authority:** Claude Sonnet 4.6 / Kilo Code
+**Certification Status:** ✅ GATES PASSED — AWAITING ANTIGRAVITY VERIFICATION
+
+#### PILOT-GATE-01: Runtime Allowlist Enforcement
+
+**GuestConciergePilotGate:**
+- Deterministic PHP gate service (never LLM)
+- Reservation-level allowlist (priority override)
+- Tenant-level allowlist (fallback)
+- **PILOT-GATE-01 INVARIANT:** empty allowlist = fail-closed
+- Only GUEST_ACTIVE/FUTURE/PAST enter Concierge pipeline
+- LEAD/UNKNOWN always blocked
+- `ResolveWhatsAppInboundJob`: gate check before dispatch
+
+**config/concierge.php:**
+```
+GUEST_CONCIERGE_PILOT_TENANT_IDS=1,3
+GUEST_CONCIERGE_PILOT_RESERVATION_IDS=1001,1002
+```
+
+#### PILOT-GATE-02: LLM Provider Config
+
+**Hermes abstraction:**
+- Provider: `ollama` / `deepseek` / `openai`
+- Each provider: model, base_url, api_key, timeout
+- Configured via env vars (CONCIERGE_LLM_*)
+- Hermes architectural role unchanged — provider = implementation detail
+
+**P07/P08 — LLM Fail-Closed:**
+- Missing config → `null` → UNKNOWN intent (confidence=0.0) → escalates
+- Timeout / connection refused → `null` → escalates
+- OWASP-aligned: LLM unavailable = fail-closed
+
+#### PILOT-GATE-03: Queue Worker
+
+- ResolveWhatsAppInboundJob: `concierge` queue
+- ProcessGuestMessageJob: `concierge` queue
+- Queue worker must be running in production
+
+#### Test Evidence
+
+| Test | Result |
+|------|--------|
+| P01 enabled=false → BLOCKED | ✅ |
+| P02 kill_switch=true → BLOCKED | ✅ |
+| P03 empty allowlist → fail-closed | ✅ |
+| P04 tenant not allowlisted → BLOCKED | ✅ |
+| P05 reservation not allowlisted → BLOCKED | ✅ |
+| P06 allowed tenant/reservation → PASSES | ✅ |
+| P07 LLM config missing → escalates | ✅ |
+| P08 provider timeout → escalates | ✅ |
+| P09 38 existing Concierge tests | ✅ 38/38 PASS |
+| P10 W1/W2/W3 regression | ✅ 0 new failures |
+
+**Total: 54 PASS (38 Phase 1 + 16 pilot readiness)**
+
+#### Pilot Mode Invariant
+
+```
+enabled=true + allowlist=[] = FULL ROLLOUT DEĞIL, TAM BLOKAJ
+```
+
+Pilot açılışı için minimum:
+```
+GUEST_CONCIERGE_ENABLED=true
+GUEST_CONCIERGE_PILOT_TENANT_IDS=1
+GUEST_CONCIERGE_PILOT_RESERVATION_IDS=1001
+CONCIERGE_LLM_PROVIDER=ollama  # veya deepseek/openai
+```
+
+---
+
+## Oturum 133 — 2026-08-16 | CHECKOUT WAVE 3 ✅ SEC-W3-01 CLOSED
+
+### CHECKIN_CHECKOUT Wave 3 — Credential Delivery Certification
+
+**Commit:** `9e8f6f81`
+**Baseline:** `d827722` (original implementation)
+**Finding:** SEC-W3-01 HIGH — credential plaintext in queue payload
+**Recovery Authority:** Claude Opus 4.8 (SAAB Architecture Board)
+**Decision:** OPTION A — Single Queue Boundary
+**Inspector:** Antigravity + Gemini adversarial re-audit → **PASS — SEC-W3-01 CLOSED**
+**Certification Status:** ✅ CERTIFIED
+
+#### SEC-W3-01 Recovery
+
+**Root Cause:** `AccessCredentialNotification::$renderedBody` plaintext credential was serialized into `SendNotificationJob` queue payload via `NotificationDispatcher::dispatch()`.
+
+**Fix:** `AccessCredentialNotification::isAsync()` → `return false`
+
+**Result:** Credential notification routes synchronously via `routeToAdapter()` — plaintext stays only in `SendAccessCredentialJob` worker memory.
+
+#### Normative W3-INV-1 Enforcement
+
+| Rule | Status |
+|------|--------|
+| Plaintext credential only in worker memory | ✅ |
+| No queue serialization of credential | ✅ |
+| No failed_jobs payload containing credential | ✅ |
+| No OutboundNotification.payload_data containing credential | ✅ |
+| Retry authority = SendAccessCredentialJob | ✅ |
+
+#### Test Evidence
+
+| Suite | Result | Notes |
+|-------|--------|-------|
+| Wave 3 Tests | ✅ 19/19 PASS | commit `9e8f6f81` |
+| Wave 1 Regression | ✅ 12/12 PASS | 0 new failures |
+| Queue Tenant Isolation | ✅ 4/4 PASS | 0 new failures |
+
+#### New Security Tests Added
+
+- `test_credential_notification_is_sync_not_queued()` — verifies isAsync() = false
+- `test_no_plaintext_in_queue_storage()` — real queue storage check (SKIPPED in SQLite env)
+- `test_no_plaintext_in_failed_jobs()` — failed_jobs check (SKIPPED in SQLite env)
+
+#### Open Debt (Non-Blocking)
+
+| ID | Debt | Priority | Blocker |
+|----|------|---------|---------|
+| SEC-W3-02 | Concurrent worker / DB-level notification uniqueness | MEDIUM | ❌ No |
+| SEC-W3-03 | AccessCredential::$hidden defense-in-depth | LOW | ❌ No |
+| TEST-ENV-GAP | queue/failed_jobs tables absent in SQLite test env | LOW | ❌ No |
+
+> **TEST-ENV-GAP:** 2 tests skipped in test environment (no jobs/failed_jobs tables in SQLite). Code flow proves W3-INV-1 compliance. Production uses Redis/database queue drivers.
+
+#### Files Changed
+
+| File | Change |
+|------|--------|
+| `app/DTOs/Notification/AccessCredentialNotification.php` | `isAsync()` → `false` |
+| `tests/Feature/CheckinCheckoutWave3Test.php` | 3 new security tests |
+
+---
+
+## Oturum 129 — 2026-08-16 | CHECKOUT WAVE 2 ✅ CERTIFIED
+
+### CHECKIN_CHECKOUT Wave 2 — Guest Arrival Readiness Certification
+
+**Commit:** `8782a4fa`
+**Baseline:** `e66b58d` (Wave 1 — Operational task automation)
+**Inspector:** Antigravity + Gemini 3.7 Flash → **PASS — CERTIFIABLE**
+**Certification Status:** ✅ CERTIFIED
+**Certification Agent:** Kilo Code (Claude Sonnet 4.6)
+
+#### W2-01 → W2-08 Evidence Matrix
+
+| ID | Capability | Evidence Tests | Result |
+|----|-----------|---------------|--------|
+| W2-01 | Reservation Validity Gate | E4, E11, E12 | ✅ PASS |
+| W2-02 | Property Readiness Tracker | E1, E2 | ✅ PASS |
+| W2-03 | Preparation Task Completion | E6 | ✅ PASS |
+| W2-04 | Guest Contact Readiness | E17 | ✅ PASS |
+| W2-05 | Access Credential Safety | E9, E20 | ✅ PASS |
+| W2-06 | Cancellation/Date-Change Invalidation | E5, E8 | ✅ PASS |
+| W2-07 | Check-in Window Management | E11, E12, E16 | ✅ PASS |
+| W2-08 | Idempotency + Tenant Isolation | E2, E3, E14 | ✅ PASS |
+
+#### Test Sonuçları
+
+| Suite | Result | Details |
+|-------|--------|---------|
+| Wave 2 Evidence Tests | ✅ 20/20 PASS | commit `8782a4fa` |
+| Wave 1 Regression | ✅ 9/9 PASS | 0 new failures |
+| Reservation Backbone Regression | ✅ 7/7 PASS | 0 new failures |
+
+#### Open Debt (Non-Blocking)
+
+| ID | Debt | Priority | Blocker |
+|----|------|----------|---------|
+| W2-B1 | EventServiceProvider: GorevDurumChanged iki listener'a map'li (NotifyN8n + ReadabilityUpdate). Key drift riski. | LOW | ❌ No |
+| W2-B2 | AccessCredential: `getMaskedValue()` çalışıyor ama `$hidden` model array'de tanımlı değil. Defense-in-depth için eklenebilir. (→ SEC-W3-03) | LOW | ❌ No |
+
+#### Wave 3 Pre-condition
+
+Wave 3 (Guest Communication — credential delivery) için Opus 4.8 mimari kararı bekleniyor:
+- Kanal: WhatsApp / Telegram / SMS?
+- Idempotency key: reservation_id + credential_type?
+- İptal halinde credential geri alma?
+- Readiness şartları: is_ready=true gerekiyor mu?
+
+---
+
+## Oturum 128 — 2026-08-15 | E03 CERTIFIED WITH DEBT (Oturum Kapanışı)
+
+### Airbnb Inbound E03 — Certification Closure
+
+**Commit:** `955e857` (baseline) → `d310a84` (implementation) → `fefffc5` (evidence) → `471dff1` (GAP-03 fix) → **THIS COMMIT** (certification artifacts)
+**Baseline:** `955e857`
+**Certification Status:** ✅ CERTIFIED WITH DEBT
+**Certification Agent:** Kilo Code (Claude Sonnet 4.6)
+
+#### SAAB Verdict
+
+| Gate | Verdict |
+|------|---------|
+| E3.1–E3.6 evidence tests | ✅ PASS |
+| Antigravity / Gemini 3.7 Flash | ✅ CONDITIONAL PASS — CERTIFIABLE WITH DEBT |
+| GAP-03 7/7 + dual-inspector | ✅ PASS |
+| SAAB Final | ✅ CERTIFIED WITH DEBT |
+| Opus 4.8 escalation | ❌ Not required — dual-inspector consensus |
+
+#### GAP-03 Status Update
+
+| Item | Status |
+|------|--------|
+| GAP-03 | ✅ CLOSED |
+| CERT-DEBT-GAP03-01 | 🔵 OPEN — NON-BLOCKING |
+
+**CERT-DEBT-GAP03-01:** DTO-based retryable path (Airbnb/Channex) not converged to exception-based retry boundary. Same retry lifecycle not guaranteed for non-Booking channels. Resolution: TBD.
+
+#### Certification Artifacts Updated
+
+| File | Action |
+|------|--------|
+| `.saab/certifications/airbnb-inbound-E03-CERT.md` | ✅ CREATED |
+| `docs/PROGRESS-TRACKER.md` | ✅ UPDATED — E03 row |
+| `docs/BEKCI_CHANGELOG.md` | ✅ UPDATED — This record |
+
+#### Zero Production Code Change
+
+No production code was modified. This commit contains only certification documentation artifacts.
+
+---
+
+## Oturum 127 — 2026-08-15 | GAP-03 Certification Recovery + E03 Implementation
+
+### GAP-03: Retry Boundary Bug — Certification Recovery
+
+**Commit:** `471dff1`
+**Baseline:** `d310a84` (E03 per-channel implementation)
+**Inspector:** Antigravity + Gemini 3.7 Flash (independent audit) → PASS
+
+#### Root Cause — CONFIRMED
+
+```
+Booking 5xx → BookingAvailabilityException(isRetryable=true)
+    → syncToChannel(): catch (\Throwable) → return SyncResult::failure()
+    → processQueuedSync(): markProcessed() called BEFORE job exits
+    → status=completed — WRONG for retryable failures
+    → job exits normally
+    → Laravel: job succeeded → NO retry, NO failed(), NO retry_exhausted
+```
+
+The generic `\Throwable` catch swallowed ALL exceptions including retryable ones,
+preventing Laravel's queue from ever triggering `$tries`/`$backoff`/`failed()`.
+
+#### Fix — `471dff1`
+
+- `AvailabilitySynchronizationService::syncToChannel()`: re-throw retryable exceptions
+- `isRetryableException()`: BookingAvailabilityException, BookingRatesException,
+  ConnectionException, Guzzle ConnectException → propagate to Laravel
+- Non-retryable (4xx): returns failure → markProcessed(completed_with_conflicts) → correct, no retry
+
+#### GAP-03 Certification Test Results — 7/7 PASS ✅
+
+| # | Test | Result |
+|---|------|--------|
+| 1 | `retryable_5xx_exception_reaches_job_boundary` | ✅ PASS |
+| 2 | `retryable_failure_does_not_mark_execution_completed` | ✅ PASS |
+| 3 | `retry_exhaustion_marks_execution_retry_exhausted` | ✅ PASS |
+| 4 | `non_retryable_failure_completes_without_retry` | ✅ PASS |
+| 5 | `canonical_property_availability_unchanged_after_channel_failure` | ✅ PASS |
+| 6 | `successful_channel_not_affected_by_failed_channel` | ✅ PASS |
+| 7 | `replay_creates_new_execution_does_not_mutate_original` | ✅ PASS |
+
+#### Regression — Quality Gate: 0 New Failures ✅
+
+| Suite | Baseline | After GAP-03 |
+|-------|----------|---------------|
+| ChannelManager | 36 failed / 120 passed | 36 failed / **127 passed** (+7 new PASS) |
+| Availability E02 | 1 fail / 8 pass | 1 fail / 8 pass (unchanged) |
+
+#### Inspector Verdict
+
+- **Antigravity:** GAP-03 CLOSED ✅
+- **Gemini 3.7 Flash:** PASS — GAP-03 CLOSED ✅
+- **Opus 4.8:** Not required — dual-inspector consensus sufficient
+
+#### New Debt Recorded
+
+| ID | Debt | Rationale |
+|----|------|------------|
+| `CERT-DEBT-GAP03-01` | DTO-based retryable channel failures (Airbnb/Channex) may not converge on exception-based retry boundary | `ChannelSyncResponse.retryable=true` path does not throw exception — same retry lifecycle not guaranteed for non-Booking channels |
+
+---
+
+## Oturum 126 — 2026-08-15 | Availability Sync Certification Run
+
+### Certification Sonuçları
+
+**Commit:** `b98bb10` + `4211255`
+**Baseline:** `b98bb10` (Single Materializer Cutover)
+
+#### Test Summary
+
+| Test Suite | Baseline | After Cutover | Δ |
+|-----------|----------|-------------|---|
+| `ChannexCanonicalMutationTest` | 4/4 PASS | 4/4 PASS | 0 |
+| `AvailabilitySynchronizationServiceTest` | 8/9 | 8/9 | 0 |
+| `ReservationEventBackboneTest` | 6/7 | 7/7 PASS ✅ | **+1** |
+| `ReservationServiceTest` | 3/4 | 3/4 | 0 |
+| `GuestCommunicationWave1Test` | 12/12 PASS | 12/12 PASS | 0 |
+| **TOTAL** | **33/37** | **34/38** | **+1** |
+
+#### Failure Classification
+
+| Test | Sınıf | Açıklama |
+|------|--------|-----------|
+| `test_it_blocks_availability_for_confirmed_reservation` | **PRE-EXISTING CERT-DEBT** | `no such table: property_availability` — SQLite test DB bootstrap sorunu, mimari ile ilgisi yok |
+| `test_it_detects_conflict_when_same_date_blocked_by_different_reservation` | **PRE-EXISTING CERT-DEBT** | Aynı env issue |
+| `test_fails_if_dates_overlap_with_airbnb` | **PRE-EXISTING CERT-DEBT** | Aynı env issue |
+| `test_override_cancels_conflict_and_dispatches_both_jobs` | ~~PRE-EXISTING~~ → **NEW REGRESSION** (fixed) | Queue::fake() nedeniyle event listener çalışmıyordu → availability release yok → conflict. Fix: override transaction içinde conflicting block'ı同步 olarak release et |
+
+#### New Regression — Root Cause & Fix
+
+**Root cause:** `createReservationWithOverride()` transaction'ında conflicting reservation'ın availability block'ı release edilmiyordu. Test'te `Queue::fake()` aktif olduğundan `ReservationCancelledEvent` listener'ı async olarak çalışıyor (dispatch edilmiyor). Yeni reservation aynı tarihleri block etmeye çalışıyor → conflict exception.
+
+**Fix** (`4211255`):
+```php
+// createReservationWithOverride() transaction içinde:
+// Conflicting reservation'ın block'ını synchronous olarak release et
+PropertyAvailability::where('reservation_id', $conflictReservationId)
+    ->where('source_system', 'internal')
+    ->where('is_available', false)
+    ->update([
+        'is_available' => true,
+        'block_reason' => null,
+        'reservation_id' => null,
+    ]);
+```
+Cancellation event'i commit sonrası dispatch ediliyor → channel sync sadece idempotency key ile korunuyor.
+
+#### ChannelManager Wave Test Durumu
+
+`tests/Feature/ChannelManager/` — **36 failed / 120 passed** (baseline ile AYNI)
+Tüm başarısızlıklar DI binding eksikliğinden — önceden var olan tech debt.
+
+### SAAB Certification Durumu
+
+| Gate | Durum |
+|------|--------|
+| 4.1 Canonical Source | ✅ APPROVED |
+| 4.2 Events + Single Materializer | ✅ APPROVED |
+| 4.3 Channel Boundary | ✅ APPROVED |
+| 4.4 Idempotency | ✅ APPROVED |
+| 4.5 Tenant Isolation | ✅ APPROVED |
+| 4.6 Retry/Evidence | ✅ APPROVED |
+| Implementation | ✅ PASS |
+| **Certification** | **✅ PASS** |
+
+**Yeni regression: 0** ✅
+
+---
+
+## Oturum 125 — 2026-08-15 | E02 Event Wiring — Availability Sync Kapalı Devre
+
+### Trigger Wiring: Reservation Events → AvailabilitySynchronizationService
+
+SAAB Charter Approval sonrası ilk implementasyon: **event wiring**.
+
+#### Mevcut Mimari Analizi
+
+`ReservationService` 4 yerde doğrudan `PropertyAvailability` yazıyor:
+
+| Metot | Satır | Yaptığı iş |
+|-------|-------|-----------|
+| `createReservation()` | 92, 131 | insertOrIgnore + lockForUpdate + update |
+| `createReservationWithOverride()` | 254, 282, 320 | conflict block release + insertOrIgnore + update |
+| `modifyReservation()` | 597 | updateOrCreate (re-block) |
+| `cancelReservation()` | 465 | update (release internal blocks) |
+
+**Tümü DB transaction içinde** — conflict detection ve overlap kontrolü için gerekli.
+
+Event listener'lar (ProcessReservationCreated/Modified/Cancelled) zaten mevcuttu ama `AvailabilitySynchronizationService`'e bağlı DEĞİLDİ — sadece guest notification'a dispatch yapıyorlardı.
+
+#### 1. `AvailabilitySynchronizationService::release()` Eklendi
+
+`unblock`/`release` operasyonu eksikti. Eklendi:
+
+```php
+public function release(
+    int $tenantId, int $propertyId, int $reservationId,
+    string $startDate, string $endDate, int $userId
+): SyncResult
+```
+
+- Idempotency key: `{$tenantId}:{$propertyId}:{$reservationId}:release:...`
+- `ChannelSyncExecution` kaydı oluşturur
+- `SynchronizeAvailabilityJob` dispatch eder
+- `Operation = 'release'` olarak işaretlenir
+
+#### 2. ProcessReservationCreated — E02 Wired
+
+```php
+// handle() içinde:
+$this->syncAvailability($availabilityService);
+// → AvailabilitySynchronizationService.synchronize() çağırır
+// → SynchronizeAvailabilityJob dispatch eder
+```
+
+#### 3. ProcessReservationCancelled — E02 Wired
+
+```php
+// handle() içinde:
+$this->syncRelease($availabilityService);
+// → AvailabilitySynchronizationService.release() çağırır
+// → SynchronizeAvailabilityJob dispatch eder
+```
+
+#### 4. ProcessReservationModified — E02 Wired
+
+```php
+// handle() içinde:
+$this->syncRelease($availabilityService);  // eski tarihleri release et
+$this->syncBlock($availabilityService);     // yeni tarihleri block et
+```
+
+#### Temizlik: ReservationService Değişmedi
+
+`ReservationService`'deki `PropertyAvailability` write'ları **KORUNDU** — bunlar transaction içinde conflict detection için zorunlu. `AvailabilitySynchronizationService` event job'lar üzerinden ayrı bir transaction'da çalışır.
+
+Bu ayrım SAAB 4.2'nin gerektirdiği tek materializer değil — iki ayrı write path var. Gelecek sprint'lerde `ReservationService`'deki write'lar kaldırılıp tek materializer'a geçilecek.
+
+#### Test Sonuçları
+
+| Test Suite | Sonuç |
+|-----------|-------|
+| ChannexCanonicalMutationTest (4 invariant) | ✅ 4/4 PASS |
+| AvailabilitySynchronizationServiceTest | ⚠️ 7/9 (2 pre-existing failure) |
+| ReservationEventBackboneTest | ✅ 7/7 PASS |
+| GuestCommunicationWave1Test | ✅ 12/12 PASS |
+| ReservationServiceTest | ⚠️ 3/4 (1 pre-existing failure) |
+
+#### Değişen Dosyalar
+
+- `app/Application/ChannelManager/Services/AvailabilitySynchronizationService.php` — `release()` method
+- `app/Jobs/Reservation/ProcessReservationCreated.php` — E02 wiring + SAAB docstring
+- `app/Jobs/Reservation/ProcessReservationCancelled.php` — E02 wiring + SAAB docstring
+- `app/Jobs/Reservation/ProcessReservationModified.php` — E02 wiring + SAAB docstring
+- `app/Jobs/ChannelManager/SynchronizeAvailabilityJob.php` — D4.6 retry/evidence
+- `app/Models/ChannelSyncExecution.php` — `attempts` + `markRetryExhausted()`
+- `database/migrations/2026_08_15_000001_extend_channel_sync_executions_for_retry_evidence.php`
+- `.saab/decisions/decision-4.6-retry-evidence.md`
+
+---
+
+## Oturum 124 — 2026-08-15 | SAAB Decision 4.6 — Retry/Evidence
+
+### SAAB Decision 4.6 — APPROVED
+
+Discovery baseline: `7ce1c8d`
+
+**Kapı:** 4.6 / 6 — Retry/Evidence
+
+---
+
+#### Artifacts Üretildi
+
+| Artifact | Dosya | Durum |
+|----------|-------|-------|
+| Decision 4.6 | `.saab/decisions/decision-4.6-retry-evidence.md` | Yazıldı |
+| Migration | `database/migrations/2026_08_15_000001_extend_channel_sync_executions_for_retry_evidence.php` | Yazıldı |
+
+#### Kod Değişiklikleri
+
+**`app/Jobs/ChannelManager/SynchronizeAvailabilityJob.php`**
+- `$timeout = 30` eklendi (D4.6-B)
+- `$tries = 3` ve `$backoff = 30` docstring ile belgelendi
+- `handle()`: intermediate attempt failures → `recordAttempt()` → status `'processing'` olarak kalır
+- `failed()`: artık `markExecutionExhausted()` çağırır → `retry_exhausted` terminal state (D4.6-E)
+- Eski `markExecutionFailed()` → `markRetryExhausted()` ile değiştirildi
+
+**`app/Models/ChannelSyncExecution.php`**
+- `$fillable` ve `$casts`'a `attempts` eklendi
+- `@property` docblock güncellendi: `retry_exhausted` status + `attempts`
+- `markFailed()`: `$attempts` parametresi eklendi
+- `markRetryExhausted()`: yeni terminal state method (D4.6-E)
+
+#### Evidence State Machine (D4.6-D)
+
+```
+dispatched → processing → completed
+                          ↘ completed_with_conflicts
+                          ↘ failed → retry_exhausted → (manual replay)
+```
+
+#### LaraJob Retry Sözleşmesi — YALIHAN Binding
+
+| Laravel mekanizması | YALIHAN sözleşmesi |
+|---------------------|---------------------|
+| `$tries = 3` | D4.6-B: Attempt ceiling — TRANSPORT_ERROR / RATE_LIMIT ~90s TTL |
+| `$backoff = 30` | D4.6-B: Fixed backoff — exponential deliberateleret NOT used |
+| `$timeout = 30` | D4.6-B: Hard ceiling — 30s aşım → attempt failure |
+| `failed()` | D4.6-E: Terminal `retry_exhausted` state — operator diagnosis required |
+| `ChannelSyncExecution.attempts` | D4.6-D: Evidence column — persists retry count into DB |
+
+#### Terminoloji Resmiyet
+
+> At-least-once delivery + idempotent processing = effectively-once business effect
+
+#### Kritik Invariant — Doğrulandı
+
+OTA projection başarısızlığı `PropertyAvailability` SSOT state'ini rollback etmez.
+
+**Test kanıtı:** `ChannexCanonicalMutationTest` — 4/4 passing ✅
+
+#### SAAB Gate Durumu
+
+```
+4.1 ✅  Canonical Source
+4.2 ✅  Events + Single Materializer
+4.3 ✅  Channel Boundary
+4.4 ✅  Idempotency
+4.5 ✅  Tenant Isolation
+4.6 ✅  Retry/Evidence  ← NEW
+─────────────────────────────
+→ Charter APPROVED
+→ Implementation Authorization 🟢
+→ Kilo Code implementation
+→ Evidence
+→ Tests
+→ Certification
+```
+
+#### Rejected Alternatives
+
+| Alternatif | Ret nedeni |
+|------------|-----------|
+| Exponential backoff by default | Provider rate limits uniform; fixed 30s sufficient |
+| Automatic replay after exhaustion | Thundering herd risk; operator diagnosis required |
+| Dead-letter queue (DLQ) | `ChannelSyncExecution` zaten DB-backed DLQ |
+| `failed()` sends notification | Out of scope for 4.6 |
+
+---
+
+## Oturum 123 — 2026-08-15 | SAAB 4.5 Tenant Isolation Certification — Normative Updates
+
+### SAAB 4.5 Normative Updates
+
+**SAAB 4.5 Tenant Isolation Certification** commit öncesi iki eksik giderildi:
+
+#### 1. PropertyReservation Exception — MUST Clause Normatif Belgeleme
+
+> **MUST:** `PropertyReservation` write path'lerinde explicit `tenant_id` doğrulaması ZORUNLUDUR.
+
+**Rationale:** Channel Manager webhook'ları (Booking, Airbnb, Channex) tenant_id'yi payload'dan alır. Global scope kullanılmaz — explicit doğrulama şart.
+
+**Kalıp:**
+```php
+// ✅ ZORUNLU
+PropertyReservation::withoutGlobalScopes()
+    ->where('tenant_id', $tenantId)
+    ->find($id);
+
+// ❌ YASAK
+PropertyReservation::withoutGlobalScopes()->find($id);
+```
+
+#### 2. Üç MUST Konusu — Charter Bağlantısı
+
+| MUST | Konu | Charter |
+|------|------|---------|
+| MUST 1 | `property_availabilities` unique constraint | `SAAB_4.5_IMPL_PREREQ_CHARTER.md` |
+| MUST 2 | `findExistingSync()` race condition | `SAAB_4.5_IMPL_PREREQ_CHARTER.md` |
+| MUST 3 | correlationId idempotency docs | `SAAB_4.5_IMPL_PREREQ_CHARTER.md` |
+
+**Charter:** `.sab/decisions/SAAB_4.5_IMPL_PREREQ_CHARTER.md`
+
+---
+
+### Değişiklik Özeti
+
+| Dosya | Değişiklik |
+|-------|------------|
+| `.sab/decisions/SAAB_4.5_TENANT_ISOLATION.md` | PropertyReservation MUST clause + Charter linkage |
+| `.sab/decisions/SAAB_4.5_IMPL_PREREQ_CHARTER.md` | YENİ — 3 MUST konusu Charter'ı |
+| `docs/PROGRESS-TRACKER.md` | SAAB 4.5 detay bölümü + header güncelleme |
+| `docs/BEKCI_CHANGELOG.md` | Bu oturum kaydı |
+
+### Mimari Yön (SAAB — Decision 4.1 İçin)
+
+| Katman | Rol |
+|--------|-----|
+| Reservation/block/lifecycle events | Business facts |
+| property_availabilities | Deterministik türetilen materialized canonical state |
+| Booking/Airbnb availability | Dış kanal projection'ları |
+
+### Durum
+
+| Alan | Değer |
+|------|-------|
+| SAAB 4.5 | ✅ CLOSED |
+| Architecture | 🟢 Stable |
+| Implementation authorization | ⛔ Henüz yok |
+| Next gate | ▶ Availability Sync 4.1 |
+
+---
+
+## Oturum 121 — 2026-08-14 | SAAB CLOSED ✅
+
+**SAAB Oturum 121** RESERVATION-GUEST-COMM-WAVE-1'i kapatmıştır.
+
+**Program Baseline (kilitli):**
+```
+Reservation Core ✅ → Event Backbone ✅ → Guest Communication W1 ✅
+→ Availability Sync ▶ NEXT
+→ Airbnb Inbound
+→ Check-in/out
+→ Financial Closure
+```
+
+**Program:** 🟢 ON TRACK
+**Architecture Direction:** 🟢 STABLE
+
+### Availability Sync — Karar Durumu
+
+| Karar | Durum | Bağımlılık |
+|-------|-------|-------------|
+| LIFECYCLE-DEBT | ✅ Option A selected | — |
+| 4.1 Canonical Source | 🔲 OPEN | İlk çözülecek |
+| 4.2 Triggering Events | 🔲 OPEN | 4.1'e bağlı |
+| 4.3 Channel Boundary | 🔲 OPEN | 4.2'ye bağlı |
+| 4.4+4.5 Idempotency + Tenant | 🔲 OPEN | 4.3'e bağlı |
+| 4.6 Retry / Evidence | 🔲 OPEN | 4.4+4.5'e bağlı |
+| → APPROVED → Implementation | 🔲 Bekleniyor | 4.6'ya bağlı |
+
+**Sonraki governance gate:** Availability Sync — Decision 4.1: Canonical Source
+**Model:** Claude Sonnet 4.6 | **Escalation:** Claude Opus 4.8 / SAAB
+
+---
+
+## Oturum 121+122 — 2026-08-14 | RESERVATION-GUEST-COMM-WAVE-1 ✅ CERTIFIED
+
+### RESERVATION-GUEST-COMM-WAVE-1 — Guest Confirmation Notification Pipeline
+
+**Commit:** `e681d3b`
+**Baseline:** `31e8065` (Reservation Event Backbone)
+**SAAB Authorization:** Oturum 121 — EXECUTION AUTHORIZED
+
+#### Canonical Pipeline
+
+```
+ReservationCreatedEvent
+  → ProcessReservationCreated::handle()
+    → SendGuestConfirmationJob ($tries=3, backoff=[30,60,120])
+      → GuestCommunicationPolicy (consent + contact + idempotency)
+        → GuestConfirmationNotification DTO
+          → NotificationDispatcher::dispatch()
+            → OutboundNotification (evidence: SENT/FAILED/CANCELLED)
+```
+
+#### New Files (6)
+
+| File | Purpose |
+|------|---------|
+| `app/Jobs/Reservation/SendGuestConfirmationJob.php` | Idempotent, tenant-scoped queued job |
+| `app/Services/Notification/GuestCommunicationPolicy.php` | Phone normalization + consent + idempotency |
+| `app/DTOs/Notification/GuestConfirmationNotification.php` | NotificationContract impl for `reservation_confirmation` |
+| `app/Contracts/Reservation/ReservationNotificationDispatcherContract.php` | Contract for null/production dispatcher |
+| `app/Services/Reservation/NullReservationNotificationDispatcher.php` | Null object (test double) |
+| `tests/Feature/Reservation/GuestCommunicationWave1Test.php` | 12 tests / 29 assertions |
+
+#### Modified Files
+
+| File | Change |
+|------|--------|
+| `app/Jobs/Reservation/ProcessReservationCreated.php` | Wire Wave 1: `SendGuestConfirmationJob::dispatch()` |
+
+#### Test Results
+
+```
+GuestCommunicationWave1Test:   12/12 PASS ✅
+ReservationEventBackboneTest:   7/7 PASS ✅
+─────────────────────────────────────────────
+TOTAL:                        19/19 PASS ✅
+SAB integrity: 0 new violations (70 pre-existing)
+```
+
+#### Feature Flag Compliance
+
+| Scenario | Expected | Result |
+|----------|----------|--------|
+| `whatsapp_pilot_global=false` | `STATE_CANCELLED` evidence | ✅ |
+| Tenant not in allowlist | `STATE_CANCELLED` evidence | ✅ |
+| Valid phone + flag on + in allowlist | Dispatched | ✅ |
+| No phone or email | Skip silently | ✅ |
+| Idempotency | Single notification per channel | ✅ |
+| Email channel | `STATE_CANCELLED` via EmailAdapter | ✅ |
+| Tenant isolation | `tenantId` in event envelope | ✅ |
+
+#### Wave 1 Scope (Locked)
+
+**Included:** ReservationCreatedEvent → confirmation notification
+**Excluded:** Cancellation, modification, check-in/out, availability sync, financial recording
+
+#### Debt Status
+
+| Debt | Status | Note |
+|------|--------|------|
+| LIFECYCLE-DEBT | 🟡 OPEN | Override path → `ReservationCancelledEvent` missing. Cancellation wave öncesi SAAB kararı. |
+| REGRESSION-DEBT G34 | 🟡 TRACKED | Pre-existing Booking test fail. |
+
+---
+
+## Oturum 121 — 2026-08-14 | RESERVATION EVENT BACKBONE ✅ CERTIFIED — SAAB ACCEPTED
+
+### SAAB Kararı — Oturum 121
+
+| Karar | Durum |
+|-------|-------|
+| Oturum 121 kayıt güncellemesi | ✅ ACCEPTED |
+| Event Backbone baseline | ✅ CERTIFIED |
+| Guest Communication Wave 1 | 🟢 EXECUTION READY |
+| LIFECYCLE-DEBT | 🟡 OPEN / cancellation wave öncesi zorunlu karar |
+| REGRESSION-DEBT G34 | 🟡 TRACKED |
+
+### Event Backbone — Mimari Kazanım
+
+```
+ÖNCE:  Rezervasyon → DB → availability → ACK → DUR
+ŞİMDİ: Rezervasyon → canonical event → Listener → Job → downstream capabilities
+```
+
+### Program Sequence
+
+```
+Reservation Core ✅ → Event Backbone ✅ → Guest Communication ▶ NEXT
+```
+
+### Debt Register
+
+| Tip | Açıklama | Öncelik | Zaman |
+|-----|---------|---------|-------|
+| LIFECYCLE-DEBT | Override cancellation → DB UPDATE → `ReservationCancelledEvent` üretilmiyor. Documented behavior. Cancellation wave öncesi SAAB kararı şart. | Medium | Cancellation wave |
+| REGRESSION-DEBT G34 | Full regression 1 pre-existing fail (Booking Production Certification G34). EB certification'ı bozmadı. | Low | Ongoing |
+
+### Guest Communication Wave 1 — Scope
+
+> Yalnızca rezervasyon oluşturuldu bildirimi. Feature flag, tenant isolation, queue/retry, idempotency ve evidence üretimi korunmalı.
+
+```
+ReservationCreatedEvent → queued listener/job → Guest Communication Policy
+→ confirmation template → NotificationDispatcher → SUPERVISED/SEND-SAFE → delivery evidence
+```
+
+---
+
+## Oturum 120 — 2026-08-13 | PILOT-001 CLOSED ✅ — BUSINESS AUTOMATION CERTIFIED
+
+### PILOT-001 — Property Publish Supervised Autonomy — CLOSED
+
+| Alan | Değer |
+|------|-------|
+| Status | **BUSINESS AUTOMATION CERTIFIED** |
+| Certification Commit | `5ef0f21` |
+| Implementation Commits | `f2c496d` → `d9cd606` → `e9348d1` → `5ef0f21` |
+| Evidence | 24/24 PASS · 107 assertions |
+| Business KPI | Manual publish: **25 dk → ≤5 dk** · ≥80% time reduction |
+
+#### Mimari Kanıt Zinciri
+
+```
+ydl:context
+  └─ authority: STOP / LIMITED / FULL
+       ↓
+YdlPublishReadinessService
+  ├─ completion ≥ 100?
+  ├─ quality ≥ 40?
+  ├─ yayin_tipi_id?
+  └─ governance.canPublish?
+       ↓
+YdlPublishRecommendation → agent'e missing fields bildirir
+       ↓
+Human Approval Token (24s TTL)
+       ↓
+YdlPublishOrchestrator::executePublish()
+  ├─ Token validation
+  ├─ STOP authority → DomainException
+  ├─ Idempotency guard
+  └─ Governance guard
+       ↓
+IlanCrudService tek yazı yolu
+       ↓
+YdlEventLog → evidence
+       ↓
+ydl:session-summary CERTIFIED
+```
+
+#### İki Sertifikasyon Seviyesi
+
+| Seviye | Anlamı |
+|--------|--------|
+| **Engineering Certified** | Test geçti, mimari doğru |
+| **Business Automation Certified** | Test geçti **+** gerçek iş süresi ölçüldü ve azaltıldı |
+
+PILOT-001 **Business Automation Certified**'dır: engineering kanıtı (24/24 PASS, 107 assertions) + business KPI (25 dk → ≤5 dk, ≥80% manuel süre azaltıldı).
+
+#### Otorite Modeli
+
+| Seviye | Kural |
+|--------|-------|
+| `STOP` | Hiçbir koşulda publish yok — DomainException |
+| `LIMITED` | Yayın tipi scope intersection zorunlu |
+| `FULL` | readiness + governance yeterli |
+
+**Human control:** Publish sadece `approval token + governance` üzerinden mümkün. doGetApprovalToken pipeline dışı bypass edilemez.
+
+#### Kapanış
+
+- PILOT-001: **CLOSED**
+- PILOT-002: **Reservation Operations** — double-booking prevention, cancellation workflow, guest communication
+
+---
+
+## Oturum 119 — 2026-08-13 | PILOT-001 Wave 2 ✅ — Orchestrated Integration
+
+### Yapılan İş
+
+**PILOT-001 Wave 2 — Orchestrated Integration**
+
+Pipeline uçtan uca tamamlandı: `ydl:context → YdlPublishReadinessService → YdlPublishOrchestrator → Human Approval → executePublish → YdlEventLog → session-summary`.
+
+#### Yeni Dosya
+
+| Dosya | Açıklama |
+|-------|-----------|
+| `app/Services/Ydl/YdlPublishOrchestrator.php` | E2E orchestrator: evaluateReadiness + requestApproval + executePublish + buildCertifiedEvent |
+| `tests/Feature/Ydl/YdlPublishOrchestratorTest.php` | 12 test senaryosu — 59 assertion — **12/12 PASS** |
+
+#### Mimari Kararlar
+
+| Karar | Kanıt |
+|-------|--------|
+| STOP authority → BLOCKED_GATE | W2-T1 |
+| LIMITED authority → scope intersection check | W2-T2 (bloke), W2-T3 (izin) |
+| Human approval token = 24s TTL | W2-T5, T11 |
+| Idempotency: event_id çakışması → no-op | W2-T6 |
+| Governance guard bypass edilemez | W2-T7 |
+| Evidence → YdlEventLog::append | W2-T8 |
+| CERTIFIED event → session-summary | W2-T10 |
+
+#### Test Sonuçları — 12/12 PASS ✅
+
+| Test | Senaryo |
+|------|---------|
+| W2-T1 | STOP authority → BLOCKED_GATE |
+| W2-T2 | LIMITED + scope intersection → BLOCKED |
+| W2-T3 | LIMITED, scope=Ø → PUBLISH_READY |
+| W2-T4 | Full pipeline: readiness → evidence |
+| W2-T5 | Expired token → DomainException |
+| W2-T6 | Duplicate event_id → idempotent no-op |
+| W2-T7 | Governance DRAFT → BLOCKED |
+| W2-T8 | YdlEventLog evidence append |
+| W2-T9 | Already published → ALREADY_PUBLISHED |
+| W2-T10 | buildCertifiedEvent → YdlEvent CERTIFIED |
+| W2-T11 | Expired token → DomainException |
+| W2-T12 | Non-ready ilan → DomainException |
+
+**PILOT-001 Total: Wave 1 + Wave 2: 24 tests / 107 assertions / 24/24 PASS**
+
+#### Sonraki: SAAB Certification
+
+Pipeline: `ydl:context → ReadinessEvaluator → YdlPublishOrchestrator → Human Approval → executePublish → YdlEventLog → session-summary --action CERTIFIED`
+
+---
+
+## Oturum 118 — 2026-08-13 | PILOT-001 Wave 1 ✅ — YDL Publish Readiness Pipeline
+
+### Yapılan İş
+
+**PILOT-001 Wave 1 — YDL Context Integration**
+
+YDL Phase 3'ün property publish sürecine ilk entegrasyonu tamamlandı.
+
+#### Yeni Dosyalar
+
+| Dosya | Açıklama |
+|-------|-----------|
+| `app/DTOs/Ydl/YdlPublishRecommendation.php` | Immutable DTO: decision, canPublish, missingFields, suggestedActions, toMarkdown() |
+| `app/Services/Ydl/YdlPublishReadinessService.php` | Deterministic publish readiness evaluator — no LLM inference |
+| `tests/Feature/Ydl/YdlPublishReadinessServiceTest.php` | 12 test senaryosu — 48 assertion — **12/12 PASS** |
+| `docs/sprints/PILOT-001_PROPERTY_PUBLISH_SUPERVISED_AUTONOMY/05_TEST_REPORT.md` | Wave 1 evidence + KPI raporu |
+
+#### Karar Mimarisi
+
+```
+YdlContextReader (authority: FULL/LIMITED/STOP)
+    ↓
+YdlPublishReadinessService::evaluate()
+    ├─ completion_score ≥ 100?
+    ├─ quality_score ≥ 40?
+    ├─ yayin_tipi_id mevcut?
+    ├─ governance canPublish?
+    └─ authority ≠ STOP?
+    ↓
+YdlPublishRecommendation (PUBLISH_READY | MISSING_FIELDS | BLOCKED_GATE)
+    ↓
+Human Approval Gate (Korunur)
+    ↓
+IlanCrudService::update([yayin_durumu => YAYINDA])
+```
+
+#### Test Sonuçları — 12/12 PASS ✅
+
+| Test | Senaryo |
+|------|---------|
+| W1-T1 | Tüm kapılar geçti → PUBLISH_READY |
+| W1-T2 | completion<100 → MISSING_FIELDS |
+| W1-T3 | quality<40 → MISSING_FIELDS |
+| W1-T4 | yayin_tipi_id eksik → MISSING_FIELDS |
+| W1-T5 | authority=STOP → BLOCKED_GATE |
+| W1-T6 | YAYINDA → ALREADY_PUBLISHED |
+| W1-T7 | ARSIV → NOT_TASLAK |
+| W1-T8 | canProceed() → boolean |
+| W1-T9 | DTO isReady() + toMarkdown() |
+| W1-T10 | MISSING_FIELDS → agent önerileri |
+| W1-T11 | authority=LIMITED ≠ blok (sadece STOP) |
+| W1-T12 | governance=DRAFT → BLOCKED_GATE |
+
+#### KPI — ≥80% Manual Time Reduction
+
+| Adım | Manuel (öncesi) | Wave 1 |
+|------|----------------|--------|
+| Eksik veri tespiti | 10 dk | 0 dk ✅ |
+| Fotoğraf kontrolü | 5 dk | 0 dk ✅ |
+| Fiyat kontrolü | 5 dk | 0 dk ✅ |
+| Yayın onayı | 5 dk | 5 dk (korunur) |
+| **Toplam** | **25 dk** | **≤5 dk** |
+
+---
+
+## Oturum 117 — 2026-08-13 | YDL Phase 3 ✅ + PILOT-001 PROPERTY_PUBLISH_SUPERVISED_AUTONOMY 🚀
+
+### YDL Phase 3 — Agent Context Integration ✅
+
+**Mission:** YDL state dosyalarını agent context'ine inject etmek ve session lifecycle'ını kapatmak.
+
+**Component 1 — YdlContextReader** (`app/Services/Ydl/YdlContextReader.php`):
+- `memory/ydl/state/current.json` + `blockers.json` okur
+- `authorityLevel`: FULL / LIMITED_BY_BLOCKER / STOP
+- `toMarkdown()`, `toJson()`, `toAuthoritySummary()` çıktı formatları
+- 3 çıktı formatı: markdown, JSON, authority summary
+
+**Component 2 — ydl:context CLI** (`app/Console/Commands/YdlContextCommand.php`):
+- `php artisan ydl:context` → markdown
+- `php artisan ydl:context --json` → JSON
+- `php artisan ydl:context --authority` → minimal authority summary
+- `php artisan ydl:context --inject-claude` → CLAUDE.md preamble (idempotent)
+
+**Component 3 — ydl:session-summary CLI** (`app/Console/Commands/YdlSessionSummaryCommand.php`):
+- Session sonu event üretir → `ydl:apply --dry-run` ile patch planı gösterir
+- `--action CONTINUE|FIX|START|CERTIFIED` + `--target` + `--commit`
+- `--resolve-blocker` + `--add-blocker` ile blocker yönetimi
+- Pipeline: `session-summary --dry-run` → git commit → `ydl:apply --confirm`
+
+**Component 4 — CLAUDE.md Injection:**
+- `ydl:context --inject-claude`: YDL state section'ını CLAUDE.md'ye inject eder
+- Idempotent: 2× run → 1 section (regex em-dash fix)
+
+**Test Suite — YdlPhase3ContextTest** (`tests/Feature/Ydl/YdlPhase3ContextTest.php`):
+- 8/8 PASS (33 assertions)
+- T1: context reader reads state correctly
+- T2: authority FULL (no blockers)
+- T3: authority LIMITED_BY_BLOCKER (DO_NOT_CONTINUE prefix match)
+- T4: authority STOP (SECURITY_ISSUE blocker)
+- T5: toMarkdown() valid output
+- T6: toAuthoritySummary() minimal output
+- T7: toJson() valid parseable JSON
+- T8: empty state → AUTHORITY_NO_SPRINT
+
+**Agent Session Lifecycle:**
+```
+Oturum başı: php artisan ydl:context
+Oturum içi: authority level'a göre karar verir (FULL/LIMITED/STOP)
+Oturum sonu: ydl:session-summary --dry-run → git commit → ydl:apply --confirm
+```
+
+### SAAB Program Review — Üçlü Metrics Çerçevesi
+
+**SAAB Kararı:** Tek genel yüzde yerine üç ayrı program-level gösterge:
+
+| Gösterge | Tahmin | Ne Anlatıyor |
+|----------|--------|--------------|
+| Capability Completion | ~72% | Planlanan sistemin ne kadarı inşa edildi |
+| Engineering Health | ~62% | Test/CI/MCP/KB güvenilirliği |
+| Automation Maturity | ~58% | Gerçek emlak işlerinin ne kadarı insan müdahalesi olmadan tamamlanıyor |
+
+**P0:** R002 — Test/CI Performance
+**Strategic Sequence:** R002 → M3 → M4
+**M4 Model:** Supervised Autonomy
+
+### PILOT-001 — Property Publish Supervised Autonomy 🚀
+
+**SAAB Kararı:** YDL Phase 3'ü gerçek bir emlak operasyonunda uçtan uca kullanan ilk pilot capability seçildi.
+
+**Neden Property Publish:**
+- En somut BAI kazanımı: villa yayına hazırlama süreci
+- Supervised autonomy ilk uygulaması: AI PREPARES → AI VALIDATES → HUMAN APPROVES → SYSTEM PUBLISHES
+- KPI: ≥80% manual time reduction (25 dk → ≤5 dk)
+
+**Pipeline:**
+```
+Workspace / Property
+        ↓
+YDL Context oku (authority: FULL/LIMITED/STOP)
+        ↓
+[authority = STOP?] → HALT
+[authority = LIMITED + blocker intersect?] → HALT
+        ↓
+Veri completeness → Fotoğraf → Fiyat → Yasal kontrol → Publish readiness
+        ↓
+HUMAN APPROVAL
+        ↓
+SYSTEM PUBLISHES
+        ↓
+Evidence → Test → Event → YDL session-summary → ydl:apply --confirm
+```
+
+**Authority Decision Logic:**
+```
+Görev: Property Publish
+BLK-001: DO_NOT_CONTINUE_BOOKING_CODE
+
+Intersection: NONE (Property Publish ≠ Booking.com)
+→ Decision: CONTINUE ✅
+
+Görev: Booking Production Smoke
+BLK-001 scope: Booking.com onboarding
+→ Decision: STOP ⛔
+```
+
+**Charter:** `docs/sprints/PILOT-001_PROPERTY_PUBLISH_SUPERVISED_AUTONOMY/00_CHARTER.md`
+
+---
+
+## Oturum 113 — 2026-08-12 | C7 — Documentation Drift & Final Baseline Reconciliation ✅
+
+### C7 — Documentation Drift & Final Baseline Reconciliation
+
+**Mission:** Eski ACTIVE charter başlıkları, false-positive marker'lar, Session/Progress kayıtları ve gerçek debt register'i eşleştirmek. Yeni feature YOK.
+
+### Charter Cleanup
+
+| Charter | Eski Durum | Yeni Durum |
+|---------|------------|-------------|
+| Sprint 4.2 Real CRUD | ACTIVE | ✅ CLOSED (Oturum 67) |
+| Sprint 4.6 Property Digital Twin | ACTIVE | ✅ CLOSED (Oturum 69) |
+| Booking Wave 1 (Sprint 4.10) | ACTIVE | ✅ CERTIFIED (Sprint 4.14) |
+| Booking Wave 2 (Sprint 4.11) | ACTIVE | ✅ CERTIFIED (Sprint 4.14) |
+
+### YDL v1 Phase 1 — Recovery
+
+**YDL Phase 1 CERTIFIED** (Oturum 112 — 53 tests / 104 assertions):
+
+| Düzeltme | Dosya | Açıklama |
+|-----------|-------|----------|
+| bareword `state` → `$state` | YdlNextBestActionEngine.php:67,79,91 | PHP constant hatası |
+| `wordwrap()` foreach iteration | YdlStateCommand.php:87 | `explode("\n", wordwrap())` |
+| multiline Artisan signature | YdlStateCommand.php:24 | Single-line format |
+
+### YDL v1 Phase 1 — New Capabilities
+
+| Yetenek | Dosya | Açıklama |
+|---------|-------|----------|
+| Git live HEAD inspection | YdlGitCollector.php | `git -C basePath diff --stat` |
+| `gitClean` field | YdlStateDefinition.php | Canlı git durumu |
+| Rule 4: CERTIFIED sprint + dirty | YdlSnapshotValidator.php | CERTIFICATION_INTEGRITY_FAILURE |
+
+### Baseline Reconciliation Commits
+
+| Commit | Açıklama |
+|--------|-----------|
+| `9b1d003` | YDL correctness fix (state → $state, wordwrap, signature) |
+| `0ef7d83` | YDL Phase 1 certification (53 tests, Rule 4) |
+| `aa51364` | YDL gitignore + display fix |
+| `30b821d` | ChannelManager pre-existing unstaged changes |
+| `7bd4c71` | memory/ydl/blockers.json tracked in git |
+| `ac0ec16` | .laravel-mcp-audit.jsonl gitignore entry |
+| `7d9aff0` | MCP audit log baseline güncelleme |
+
+### Recovery Zinciri Durumu
+
+```
+C1 Wave 2 ✅ → C2 Wave 3 ✅ → C3-R Wave 4 ✅ → C4-R Wave 5 ✅
+→ C5 Sprint 4.15 ✅ → C6 YDL Phase 1 ✅ → C7 Documentation Drift ✅
+```
+
+### Sprint 4.15 — Güncel Durum
+
+| Metrik | Değer |
+|--------|-------|
+| Certification | 34/35 PASS (97%) |
+| Git Status | clean |
+| G35 Blocker | EXTERNAL_BLOCKED (Booking.com onboarding) |
+| SAB | 0 new, 0 blocking |
+| Parallel work | ALLOWED |
+| Next action | YDL_V1 |
+
+---
+
+## Oturum 112 — 2026-08-12 | Sprint 4.15 — Booking.com Production Certification 🔵 ACTIVE
+
+### Sprint 4.15 — Booking Production Certification Sprint
+
+**Mission:** Booking.com Channel Manager'ın Sprint 4.14'e kadar gelen implementasyonunun production-ready olduğunu kanıtlamak. **Yeni capability yazılmaz.**
+
+### Sprint 4.14 → 4.15 Geçiş Kanıtı
+
+```
+Booking Wave 1  Auth / Transport     10 PASS ✅
+Booking Wave 2  Reservation Inbound   12 PASS ✅
+Booking Wave 3  Lifecycle / Recovery 12 PASS ✅
+Booking Wave 4  Availability Out   12 PASS ✅
+Booking Wave 5  Rates Out           17 PASS ✅
+─────────────────────────────────────────
+Booking regression                   63 PASS ✅
+Channex regression                    8 PASS ✅
+─────────────────────────────────────────
+TOTAL                              71 PASS ✅
+```
+
+### Sprint 4.15 İçi Düzeltmeler (2 Bug Fix)
+
+#### FIX-1: T1 — AirbnbChannelAdapter Tenant Isolation Bug ✅
+
+| Alan | Değer |
+|------|-------|
+| Dosya | `app/Infrastructure/ChannelManager/Adapters/AirbnbChannelAdapter.php:214` |
+| Bug | `resolveExternalListingId()` tenant_id kontrolü yapmıyordu — **SAB Kural 1 ihlali** |
+| Test | `ChannelManagerProviderWave1Test::tenant_isolation_wrong_tenant_id_returns_no_listing_mapping` |
+| Düzeltme | JOIN üzerinden `ilanlar.tenant_id = $tenantId` kontrolü eklendi |
+| DB Import | `use Illuminate\Support\Facades\DB;` eklendi |
+| Doğrulama | T1 ✅ 10/10 PASS |
+
+#### FIX-2: T8 — BookingChannelAdapter Stub Test Adaptation ✅
+
+| Alan | Değer |
+|------|-------|
+| Dosya | `tests/Feature/ChannelManager/ChannelManagerProviderWave1Test.php:313` |
+| Problem | T8: `new BookingChannelAdapter()` — BW4 implementasyonu `BookingTransport` inject gerektiriyor |
+| BW4 Semantiği | `supportsPush() = true` + no active sync → `NOT_REGISTERED` |
+| Eski Semantik | `supportsPush() = false` + her şey → `NOT_IMPLEMENTED` |
+| Düzeltme | Mock transport + BW4 semantics doğrulaması |
+| Doğrulama | T8 ✅ 10/10 PASS |
+
+### Sprint 4.15 Ek Kanıtlar
+
+```
+ChannelManagerProviderWave1Test  10 PASS ✅ (T1 tenant isolation + T8 adaptasyonu)
+─────────────────────────────────────────
+ADJUSTED TOTAL                  73 PASS ✅
+```
+
+### Pre-existing Infrastructure Sorunları (Sınıflandırıldı — Kod Düzeltilmedi)
+
+| Sorun | Tip | Etki | Öncelik |
+|-------|-----|------|---------|
+| ISSUE-A: AirbnbAdapterTest | RefreshDatabase + event dispatcher | 25 FAIL | P2 — Infrastructure |
+| ISSUE-B: ChannelManagerWave2Test | SQLite corruption/race | 10 FAIL | P2 — Infrastructure |
+| ISSUE-C: bekci:health | KB dizini yok | health fail | P2 — Infrastructure |
+
+### Booking.com Connectivity Onboarding Checklist
+
+Ön koşullar: Booking.com Partner hesabı, `client_id` + `client_secret`, HotelCode, `IlanTakvimSync` kaydı.
+`BookingConnectivityAdapter`: **Hala NOT_IMPLEMENTED** — Wave 2'ye bırakılıyor.
+
+---
+
+## Oturum 111 — 2026-08-12 | Sprint 4.14 — Booking Channel Manager Wave 5: Rates Out 🟢 CERTIFIED ✅
+
+### Sprint 4.14 Sertifikalı Tamamlama
+
+**71/71 PASS** — Booking regression (63) + Channex regression (8)
+
+| Dalga | Konu | Sonuç |
+|-------|------|-------|
+| Booking Wave 1 | Auth / Transport | 10 PASS |
+| Booking Wave 2 | Reservation Inbound | 12 PASS |
+| Booking Wave 3 | Lifecycle / Recovery | 12 PASS |
+| Booking Wave 4 | Availability Out | 12 PASS |
+| Booking Wave 5 | Rates Out | 17 PASS |
+| Channex regression | — | 8 PASS |
+
+### Mimari Parçalar (4 yeni dosya)
+
+| Dosya | Sorumluluk |
+|-------|-----------|
+| `RateProjectionService.php` | `PropertyPricingService` → `[['date','rate','currency']]` projeksiyonu |
+| `SynchronizeRatesCommand.php` | Date range + idempotency key DTO |
+| `SynchronizationService.php` | Idempotency → record → queue dispatch orchestrasyonu |
+| `SynchronizeRatesJob.php` | Queue boundary: `$tries=3`, `$backoff=30s`, `afterCommit()`, `processed_at` guard |
+
+### Düzeltilen Hatalar
+
+1. **`PropertySeasonalRate::$casts`** — `is_active` yanlış kolon adı → `aktiflik_durumu` (latent bug, tüm seasonal rate lookupları etkiliyordu)
+2. **BW5-02 test** — `EndDate` = `StartDate` bekleniyordu (yanlış OTA spec yorumu, düzeltildi)
+
+### Interface Genişlemesi
+
+- `ChannelSyncContract` → `pushRates()` eklendi
+- `AirbnbChannelAdapter` → `pushRates()` stub (Wave 5'te implementasyon beklenmiyor)
+- `BookingChannelAdapter` → rate collapsing + `buildOtaRatesPayload()` düzeltildi
+- `PropertyPricingService` → `resolveNightlyRateForDate()` public olarak açıldı
+
+---
+
 ## Oturum 89 — Stratejik Araştırma: SAAB v9 Enterprise Architecture Review (2026-07-14) ✅ CLOSED
 
 ### 🎯 Hedef
@@ -2804,3 +4068,91 @@ Tüm 8 adet feature/AI test hatası en dar kapsamlı değişikliklerle çözülm
 ### 🛡️ SAB Uyumu
 - Model yazma otoritesi korundu.
 - Tenant Isolation güvence altına alındı.
+
+---
+
+## Oturum 121 — 2026-08-14 | RESERVATION-LIFECYCLE-DISCOVERY + Sprint 4-WAVE-EB CLOSED
+
+### RESERVATION-LIFECYCLE-DISCOVERY — Discovery Only (No Implementation)
+
+**Amaç:** YALIHAN OS rezervasyon yaşam döngüsünün mevcut repository durumunu uçtan uca keşfetmek. Yeni capability veya abstraction tasarlamak DEĞİL.
+
+#### Discovery Findings
+
+| Alan | Durum | Kanıt |
+|------|--------|--------|
+| CREATE (ingest) | **PRODUCTION** | ChannexWebhookController + BookingReservationPollJob |
+| Conflict detection | **PRODUCTION** | ReservationService.lockForUpdate overlap check |
+| MODIFY (channel → DB) | **PRODUCTION** | ChannexReservationIngestService.ingestModification |
+| CANCEL (channel → DB) | **PRODUCTION** | ChannexReservationIngestService.ingestCancellation |
+| Override authorization | **FOUNDATION** | ConflictOverrideContract (PILOT-002 W3) |
+| Override execution | **PRODUCTION** | ReservationService.createReservationWithOverride |
+| **Event Backbone** | **MISSING** | Provider events var, 0 listener |
+| Availability outbound | **FOUNDATION** | AvailabilitySynchronizationService var, tetikleyici yok |
+| Guest notification | **MISSING** | NotificationDispatcher var, 0 reservation listener |
+| Airbnb inbound | **MISSING** | iCal → PropertyAvailability sadece, reservation yok |
+| Financial closure | **MISSING** | 0 automation |
+| Stay operations | **MISSING** | 0 automation |
+
+**Discovery Rapor:** `audits/reservation-lifecycle-discovery-2026-08-14.md`
+
+---
+
+### Sprint 4-WAVE-EB — Canonical Event Backbone
+
+| Alan | Değer |
+|------|-------|
+| Status | **CLOSED ✅** |
+| Certification Commit | `31e8065` |
+| Events | 4 canonical (Created, Modified, Cancelled, Completed) |
+| Listeners | 3 queue-safe (Create, Modify, Cancel) |
+| Jobs | 3 boundary (ProcessCreate, ProcessModify, ProcessCancel) |
+| Test Coverage | 7/7 PASS (G1-G7) |
+| Regression | 3/4 ReservationServiceTest (1 pre-existing fail) |
+
+#### Mimari Kanıt Zinciri
+
+```
+Rezervasyon oluşturulur / güncellenir / iptal edilir
+     ↓
+ReservationService (tek yazı otoritesi)
+     ↓
+DB::transaction → commit
+     ↓
+event() → ReservationCreatedEvent / Modified / Cancelled
+     ↓
+EventServiceProvider → listener boundary
+     ↓
+ProcessReservation*Job (queue-safe, 3 retries)
+     ↓
+DOWNSTREAM SLOT (sonraki sprintlerde bağlanacak):
+  - Guest Communication (confirmation, pre-arrival, check-in/out)
+  - Availability Outbound Sync (AvailabilitySynchronizationService)
+  - Financial Recording (Transaction creation)
+  - Stay Operations (check-in task, cleaning, etc.)
+```
+
+#### Certification Gates
+
+| Gate | Açıklama | Durum |
+|------|-----------|--------|
+| G1 | CREATE → canonical event fires once | ✅ |
+| G2 | CANCEL → canonical event fires once (non-idempotent) | ✅ |
+| G3 | CANCEL idempotent → no second event | ✅ |
+| G4 | MODIFY → event with previous/new dates | ✅ |
+| G5 | Override → conflict cancelled in DB | ✅ |
+| G6 | Events contain all downstream fields | ✅ |
+| G7 | Modify cancelled → no event (ADR-008) | ✅ |
+
+#### Bilinen Davranış (Dokümante)
+
+- Override path: çakışan rezervasyonu `cancelReservation()` üzerinden iptal ETMEZ — aynı transaction içinde doğrudan update yapar. Bu yüzden `ReservationCancelledEvent` çakışma iptalinde FİRE ETMEZ.
+- `ReservationCompletedEvent`: stub olarak durur. `ReservationCompletionJob` sonraki sprintte eklenecek.
+- Test altyapısı: `Queue::fake()` TestCase'te aktif. Listener'lar setUp'ta synchronous closure olarak yeniden bağlanır.
+
+### Önerilen Sprint Sırası
+
+1. **Guest Communication Wave**: ReservationCreatedEvent → NotificationDispatcher → confirmation template
+2. **Availability Sync Wave**: ReservationCreatedEvent → AvailabilitySynchronizationService.synchronize()
+3. **Airbnb Inbound Wave**: SyncPropertyCalendarFeedJob → PropertyReservation INSERT
+4. **Financial Closure Wave**: Checkout → FinancialTransaction + owner payout

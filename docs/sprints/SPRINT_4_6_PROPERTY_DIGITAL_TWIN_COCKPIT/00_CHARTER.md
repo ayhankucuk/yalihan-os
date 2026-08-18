@@ -5,7 +5,7 @@
 **Sprint:** 4.6
 **Title:** Property Digital Twin Cockpit
 **Start:** 2026-07-04
-**Status:** ACTIVE
+**Status:** ✅ CLOSED (Oturum 69)
 **SAAB Status:** APPROVED (SAAB Board Resolution)
 **Branch:** main
 

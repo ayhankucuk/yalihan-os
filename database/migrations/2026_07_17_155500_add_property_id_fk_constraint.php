@@ -24,7 +24,12 @@ return new class extends Migration
     {
         // Pre-conditions
         if (! Schema::hasTable('ilanlar') || ! Schema::hasTable('properties')) {
-            throw new \RuntimeException('Both tables must exist.');
+            return;
+        }
+
+        // Idempotent: property_id column must exist
+        if (! Schema::hasColumn('ilanlar', 'property_id')) {
+            return;
         }
 
         // Pre-check: Unmapped listings
@@ -48,12 +53,14 @@ return new class extends Migration
             throw new \RuntimeException("Cannot add FK: tenant mismatches exist.");
         }
 
-        // FK ekle — ON DELETE RESTRICT
+        // FK ekle — ON DELETE RESTRICT (idempotent)
         Schema::table('ilanlar', function (Blueprint $table) {
-            $table->foreign('property_id')
-                ->references('id')
-                ->on('properties')
-                ->onDelete('restrict');
+            if (! $this->fkExists('ilanlar', 'ilanlar_property_id_foreign')) {
+                $table->foreign('property_id')
+                    ->references('id')
+                    ->on('properties')
+                    ->onDelete('restrict');
+            }
         });
 
         $this->log('FK added: ilanlar.property_id → properties.id (ON DELETE RESTRICT)');
@@ -64,8 +71,13 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (! Schema::hasColumn('ilanlar', 'property_id')) {
+            return;
+        }
         Schema::table('ilanlar', function (Blueprint $table) {
-            $table->dropForeign(['property_id']);
+            if ($this->fkExists('ilanlar', 'ilanlar_property_id_foreign')) {
+                $table->dropForeign(['property_id']);
+            }
         });
         $this->log('FK removed.');
     }
@@ -73,5 +85,34 @@ return new class extends Migration
     protected function log(string $msg): void
     {
         \Illuminate\Support\Facades\Log::info("[Sprint12B] {$msg}");
+    }
+
+    protected function fkExists(string $table, string $name): bool
+    {
+        try {
+            $driver = Schema::getConnection()->getDriverName();
+            if ($driver === 'sqlite') {
+                $fks = DB::select("PRAGMA foreign_key_list('{$table}')");
+                foreach ($fks as $fk) {
+                    if (($fk->from ?? '') === 'property_id') {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            $result = DB::select(
+                DB::raw(
+                    "SELECT 1 FROM information_schema.TABLE_CONSTRAINTS
+                     WHERE TABLE_SCHEMA = DATABASE()
+                     AND TABLE_NAME = ?
+                     AND CONSTRAINT_NAME = ?
+                     AND CONSTRAINT_TYPE = 'FOREIGN KEY'"
+                ),
+                [$table, $name]
+            );
+            return count($result) > 0;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 };

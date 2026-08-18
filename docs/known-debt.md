@@ -239,3 +239,24 @@
 - **Çözüm:** `resources/views/admin/finans/komisyonlar/index.blade.php` Alpine.js fetch mimarisi + istatistikler, filtreler, pagination, approve/pay aksiyonları. Ek olarak: create, show, edit view'ları + `/api/admin/komisyonlar` API routes.
 - **Risk:** 🟢 LOW — Admin UI tamamlandı
 - **Durum:** ✅ KAPALI (Sprint 4.1 — 2026-07-03)
+
+### 37. Availability Sync — SQLite Test Schema Gap (CERT-DEBT) ⏳ AÇIK
+- **Kaynak:** `b98bb10` — Single Materializer Cutover certification run
+- **Etkilenen testler:**
+  - `AvailabilitySynchronizationServiceTest::test_it_blocks_availability_for_confirmed_reservation`
+  - `AvailabilitySynchronizationServiceTest::test_it_detects_conflict_when_same_date_blocked_by_different_reservation`
+  - `ReservationServiceTest::test_fails_if_dates_overlap_with_airbnb`
+- **Sorun:** `SQLSTATE[HY000]: General error: 1 no such table: property_availability` — `phpunit.xml` SQLite kullanıyor (`DB_CONNECTION=sqlite`) ama `php artisan migrate` SQLite'e `property_availability` tablosunu oluşturmuyor. `migrate` yerine MySQL schema dump kullanılıyor; SQLite migration path'ı çalışmıyor.
+- **Risk:** 🟡 MEDIUM — Test suite'enviro test hatası; production runtime etkilenmiyor
+- **Durum:** ⏳ AÇIK — Test altyapısı düzeltmesi gerekiyor (Availability Sync mimarisinden bağımsız)
+- **Çözüm:** Ya `phpunit.xml`'i MySQL'e yönlendir ya da SQLite migration path'ını `property_availability` create statement ile tamamla
+- **Not:** Certification için bu 3 test atlanabilir; asıl doğrulama `ChannexCanonicalMutationTest` (4/4 PASS) ve `ReservationEventBackboneTest` (7/7 PASS) üzerinden yapıldı.
+
+### 38. DTO-based Retryable Channel Failures — GAP-03 Debt ⏳ AÇIK
+- **Kaynak:** `471dff1` — GAP-03 Retry Boundary Fix (2026-08-15)
+- **Sorun:** GAP-03 BookingAvailabilityException retry boundary düzeltildi. Ancak Airbnb/Channex `ChannelSyncResponse::retryable=true` path'i exception throw etmiyor. Bu channel'lar için aynı retry lifecycle garanti değil. `CERT-DEBT-GAP03-01` olarak izleniyor.
+- **Örnek:** `AirbnbRetryableException` mevcut değil — adapter retryable 5xx'i `ChannelSyncResponse::failure(retryable=true)` olarak dönebilir. Bu path `syncToChannel()`'da yakalanıp `SyncResult::failure()` üretir; exception fırlatmaz. Laravel retry tetiklenmez.
+- **Risk:** 🟡 MEDIUM — Airbnb/Channex 5xx failure'ları için retry lifecycle farklı davranabilir
+- **Durum:** ⏳ AÇIK — Sonraki sprint'te Airbnb/Channex adapter retry path'ı normalize edilmeli
+- **Çözüm:** Airbnb/Channex adapter'larında retryable 5xx → `AirbnbRetryableException` (veya `ChannexRetryableException`) fırlatmalı. `AvailabilitySynchronizationService::isRetryableException()` güncellenmeli.
+- **Not:** GAP-03 Booking retry recovery geçersiz kılmaz — Booking 5xx → Laravel retry ✅ garantili. Airbnb/Channex için aynı garantinin sağlanması gerekiyor.

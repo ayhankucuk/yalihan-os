@@ -1,0 +1,148 @@
+version: '3.8'
+
+# YALIHAN OS — Production Deployment
+#
+# Architecture:
+#   yalihanai-nginx (:8010) → yalihanai-app (:9000 FPM)
+#   Legacy yalihanai-app (:8002 artisan serve) — untouched
+#
+# Host Gateway (set in .env.production):
+#   DB_HOST       — Host gateway IP (e.g. 172.19.0.1 or host IP)
+#   REDIS_HOST    — Same as DB_HOST (co-located)
+#   Host storage: /opt/yalihan-os-production/storage
+#
+# Rules:
+#   - No secrets in image
+#   - .env NOT baked into image
+#   - APP_KEY injected at container start
+#   - DB_HOST and REDIS_HOST must be explicitly defined in .env
+#
+# Start:
+#   docker compose --env-file .env.production -f docker-compose.production.yml up -d --build
+#
+# Health:
+#   curl http://127.0.0.1:8010/api/v1/health
+#
+# Rollback:
+#   docker compose -f docker-compose.production.yml down
+#   (legacy container on :8002 remains untouched)
+
+services:
+    # ── Nginx reverse proxy ─────────────────────────────────────────
+    yalihanai-nginx-v2:
+        image: yalihanai-nginx-v2:latest
+        build:
+            context: .
+            dockerfile: docker/Dockerfile.production
+            target: nginx
+        container_name: yalihanai-nginx-v2
+        restart: unless-stopped
+        ports:
+            # Only localhost — not exposed to the internet directly
+            - "127.0.0.1:8010:80"
+        depends_on:
+            yalihanai-app-v2:
+                condition: service_healthy
+        volumes:
+            # SSL termination: handled by Cloudflare — no certs in container
+            - /dev/null:/etc/nginx/ssl:ro
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost/api/v1/health"]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 15s
+        networks:
+            - yalihanai-production-net
+
+    # ── PHP-FPM application ─────────────────────────────────────
+    yalihanai-app-v2:
+        image: yalihanai-app-v2:latest
+        build:
+            context: .
+            dockerfile: docker/Dockerfile.production
+            target: php-fpm
+        container_name: yalihanai-app-v2
+        restart: unless-stopped
+        expose:
+            # Internal: only Nginx accesses this
+            - "9000"
+        environment:
+            # Required at runtime — no defaults
+            APP_KEY: "${APP_KEY:?APP_KEY is required}"
+
+            # Framework
+            APP_ENV: "production"
+            APP_DEBUG: "false"
+            APP_URL: "https://api.yalihanemlak.com.tr"
+            APP_LOCALE: "tr"
+
+            # Database (host gateway — set via DB_HOST in .env)
+            DB_CONNECTION: "mysql"
+            DB_HOST: "${DB_HOST:?DB_HOST is required — set to host gateway IP in .env}"
+            DB_PORT: "${DB_PORT:-3306}"
+            DB_DATABASE: "${DB_DATABASE:?DB_DATABASE required}"
+            DB_USERNAME: "${DB_USERNAME:?DB_USERNAME required}"
+            DB_PASSWORD: "${DB_PASSWORD:-}"
+
+            # Redis (host gateway — set via REDIS_HOST in .env)
+            REDIS_CLIENT: "phpredis"
+            REDIS_HOST: "${REDIS_HOST:?REDIS_HOST is required — set to host gateway IP in .env}"
+            REDIS_PORT: "${REDIS_PORT:-6379}"
+            REDIS_PASSWORD: "${REDIS_PASSWORD:-}"
+
+            # Cache & Queue
+            CACHE_STORE: "redis"
+            QUEUE_CONNECTION: "redis"
+            SESSION_DRIVER: "redis"
+
+            # Logging
+            LOG_CHANNEL: "daily"
+            LOG_LEVEL: "warning"
+
+            # WhatsApp / Meta (optional — set WHATSAPP_WEBHOOK_VERIFY_TOKEN in .env)
+            WHATSAPP_WEBHOOK_VERIFY_TOKEN: "${WHATSAPP_WEBHOOK_VERIFY_TOKEN:-}"
+
+            # TZ
+            TZ: "Europe/Istanbul"
+
+        volumes:
+            # Persistent storage — survive container restart
+            - yalihan-storage:/app/storage
+            - yalihan-cache:/app/bootstrap/cache
+
+        healthcheck:
+            test: ["CMD-SHELL", "php-fpm-healthcheck"]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 20s
+
+        networks:
+            - yalihanai-production-net
+
+        deploy:
+            resources:
+                limits:
+                    memory: 1536M
+                reservations:
+                    memory: 512M
+
+        # Security
+        read_only: false   # Laravel needs temp files
+        user: "1000:1000"
+
+volumes:
+    # Persistent storage survives container rebuild
+    yalihan-storage:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: /opt/yalihan-os-production/storage
+    yalihan-cache:
+        driver: local
+
+networks:
+    yalihanai-production-net:
+        driver: bridge

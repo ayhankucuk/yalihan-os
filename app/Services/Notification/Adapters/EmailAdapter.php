@@ -42,9 +42,11 @@ class EmailAdapter
                 $mailable = new $mailableClass(...$mailableArgs);
                 Mail::to($recipient)->send($mailable);
             } else {
-                // Fallback: Raw email delivery for generic notifications
-                $subject = $data['subject'] ?? 'Yalihan Emlak Bilgilendirme';
-                $body = $data['body'] ?? 'Bildirim içeriği bulunamadı.';
+                // W3-INV-1: Use getRenderedBody() for credential notifications.
+                // The rendered body contains the plaintext credential but is NEVER stored
+                // in OutboundNotification.payload_data. It is used only at send time.
+                $subject = $data['subject'] ?? 'Yalihan Emlak — Giriş Bilgileriniz';
+                $body = $notification->getRenderedBody() ?: ($data['body'] ?? 'Bildirim içeriği bulunamadı.');
 
                 Mail::raw($body, function ($message) use ($recipient, $subject) {
                     $message->to($recipient)->subject($subject);

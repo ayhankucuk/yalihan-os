@@ -1,0 +1,13 @@
+{"timestamp":"2026-08-04T20:04:22.340Z","sessionId":"43f6172a9dbb","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-04T20:18:57.359Z","sessionId":"f2ef2e1bd88c","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-04T20:19:43.526Z","sessionId":"3c8428d95fca","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-04T20:44:32.556Z","sessionId":"aebccda4dd7c","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-04T20:54:59.861Z","sessionId":"964830f17a54","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-04T20:56:14.871Z","sessionId":"26f22f217472","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-06T11:51:23.563Z","sessionId":"e107eba29cfd","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-06T21:55:14.704Z","sessionId":"4a0b81dcd9c6","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-10T11:09:04.982Z","sessionId":"7c9cdab4c9d9","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-12T05:20:45.439Z","sessionId":"83c02a795be4","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-12T10:38:14.276Z","sessionId":"4613ef45d78d","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-12T15:08:26.436Z","sessionId":"bc91f4bdcd4a","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-14T19:57:12.306Z","sessionId":"d7d2d73acb18","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}

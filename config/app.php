@@ -163,7 +163,7 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        App\Providers\TelescopeServiceProvider::class,
+        // TelescopeServiceProvider loaded conditionally in bootstrap/providers.php (requires-dev, local only)
         App\Providers\ViewNamespaceServiceProvider::class, // #60: ModuleServiceProvider isim çakışması giderildi
         App\Providers\RoleServiceProvider::class,
         // GovernanceCore — Fix #57: 16 sınıf DI'a kayıt edildi (2026-05-15)

@@ -1,0 +1,86 @@
+# ─── Stage 1: PHP-FPM application ───────────────────────────────────────────
+FROM php:8.4-fpm-alpine AS php-fpm
+
+# Install deps
+RUN apk add --update --no-cache \
+    build-base autoconf \
+    libpng-dev libjpeg-turbo-dev freetype-dev \
+    zip unzip git curl vim \
+    mysql-client redis \
+    icu-dev libxml2-dev libzip-dev \
+    nodejs npm
+
+# PHP extensions
+RUN docker-php-ext-install \
+    pdo_mysql bcmath fileinfo xml gd pcntl zip intl
+
+# Redis
+RUN pecl install redis && docker-php-ext-enable redis
+
+# PHP config
+COPY docker/php/php.ini /usr/local/etc/php/php.ini
+COPY docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
+
+# Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# App user + dirs
+RUN addgroup -g 1000 appuser && \
+    adduser -D -u 1000 -G appuser appuser && \
+    mkdir -p /app/storage/framework/{sessions,views,cache} \
+               /app/storage/logs \
+               /app/bootstrap/cache \
+               /app/public \
+               /var/log/php && \
+    chown -R appuser:appuser /app/storage /app/bootstrap/cache && \
+    chmod -R 775 /app/storage /app/bootstrap/cache
+
+WORKDIR /app
+
+# Copy + install (user appuser for security)
+COPY --chown=appuser:appuser . .
+
+# Re-create runtime dirs AFTER copy — build context may have empty/missing dirs
+# Separate RUN to ensure clean layer cache
+RUN mkdir -p \
+        /app/storage/framework/cache \
+        /app/storage/framework/sessions \
+        /app/storage/framework/views \
+        /app/storage/logs \
+        /app/bootstrap/cache \
+    && chown -R appuser:appuser /app/storage /app/bootstrap/cache \
+    && composer install --no-interaction --optimize-autoloader --no-dev \
+    && chown -R appuser:appuser /app/storage /app/bootstrap/cache
+
+# Health check for PHP-FPM — process-based, no HTTP to :9000
+RUN printf '#!/bin/sh\nps aux | grep -v grep | grep php-fpm > /dev/null 2>&1 || exit 1\n' > /usr/local/bin/php-fpm-healthcheck && \
+    chmod +x /usr/local/bin/php-fpm-healthcheck
+
+USER appuser
+EXPOSE 9000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD php-fpm-healthcheck
+
+# Entrypoint — --chmod=755 while still root (USER appuser is at line 59)
+COPY --chmod=755 docker/production/entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["php-fpm"]
+
+
+# ─── Stage 2: Nginx ──────────────────────────────────────────────────────────
+FROM nginx:1.26-alpine AS nginx
+
+# Remove default config
+RUN rm -f /etc/nginx/conf.d/default.conf
+
+# Production Nginx config — nginx:alpine reads /etc/nginx/conf.d/*.conf by default
+COPY docker/nginx/production.conf /etc/nginx/conf.d/production.conf
+
+# Health check
+RUN printf '#!/bin/sh\ncurl -sf http://localhost/api/v1/health > /dev/null 2>&1 || exit 1\n' > /healthcheck.sh && chmod +x /healthcheck.sh
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD /healthcheck.sh
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

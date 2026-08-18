@@ -110,7 +110,7 @@ jobs:
       - name: 🧪 PHP Tests (Parallel)
         run: php artisan test --parallel --recreate-databases
 
-      - name: 🛡️ Phase 4B.3: Tenant Isolation Tests
+      - name: "🛡️ Phase 4B.3: Tenant Isolation Tests"
         run: |
           echo "🔒 Running Phase 4B.3 Tenant Isolation Validation..."
           php artisan test tests/Unit/Repositories/CRMTenantIsolationTest.php --stop-on-failure
@@ -143,7 +143,7 @@ jobs:
           grep -r "DB::table" app/Http/Controllers && (echo "❌ Governance Violation: Direct DB write detected in Controller. Use Service/Repository layer."; exit 1) || true
           echo "✅ Service Integrity OK"
 
-      - name: 🛡️ Phase 4B: Repository Authority Enforcement
+      - name: "🛡️ Phase 4B: Repository Authority Enforcement"
         run: |
           echo "🔍 Scanning for Phase 4B governance violations..."
 

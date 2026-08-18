@@ -6,6 +6,212 @@
 
 ---
 
+## 2026-08-14 | Oturum 122 | RESERVATION-GUEST-COMM-WAVE-1 ✅ CERTIFIED (19/19 PASS)
+
+### RESERVATION-GUEST-COMM-WAVE-1 — Guest Confirmation Notification Pipeline
+
+**Commit:** `e681d3b` + `4da2e37` + `9719ac2`
+**Baseline:** `31e8065` (Reservation Event Backbone)
+
+#### Canonical Pipeline
+
+```
+ReservationCreatedEvent
+  → ProcessReservationCreated::handle()
+    → SendGuestConfirmationJob ($tries=3, backoff=[30,60,120])
+      → GuestCommunicationPolicy (consent + contact + idempotency)
+        → GuestConfirmationNotification DTO
+          → NotificationDispatcher::dispatch()
+            → OutboundNotification (evidence: SENT/FAILED/CANCELLED)
+```
+
+#### New Files (6)
+
+| File | Purpose |
+|------|---------|
+| `app/Jobs/Reservation/SendGuestConfirmationJob.php` | Idempotent, tenant-scoped queued job |
+| `app/Services/Notification/GuestCommunicationPolicy.php` | Phone normalization + consent + idempotency |
+| `app/DTOs/Notification/GuestConfirmationNotification.php` | NotificationContract impl |
+| `app/Contracts/Reservation/ReservationNotificationDispatcherContract.php` | Contract |
+| `app/Services/Reservation/NullReservationNotificationDispatcher.php` | Null object |
+| `tests/Feature/Reservation/GuestCommunicationWave1Test.php` | 12 tests |
+
+#### Test Results
+
+```
+GuestCommunicationWave1Test:   12/12 PASS
+ReservationEventBackboneTest:   7/7 PASS
+TOTAL:                      19/19 PASS
+SAB integrity: 0 new violations (70 pre-existing)
+```
+
+#### Feature Flag Compliance
+
+| Scenario | Expected | Result |
+|----------|----------|--------|
+| `whatsapp_pilot_global=false` | STATE_CANCELLED | ✅ |
+| Tenant not in allowlist | STATE_CANCELLED | ✅ |
+| Valid phone + flag on | Dispatched | ✅ |
+| No phone or email | Skip silently | ✅ |
+| Idempotency | Single per channel | ✅ |
+| Tenant isolation | tenantId in envelope | ✅ |
+
+#### SAAB Kararı (Oturum 121)
+
+| Alan | Durum |
+|------|-------|
+| Event Backbone | ✅ CERTIFIED |
+| Guest Communication W1 | ✅ CERTIFIED |
+| EB Regression | ✅ 7/7 |
+| Yeni SAB ihlali | ✅ 0 |
+| LIFECYCLE-DEBT | 🟡 OPEN (cancellation wave öncesi SAAB kararı şart) |
+| G34 REGRESSION-DEBT | 🟡 TRACKED |
+| Sonraki capability | ▶ Availability Sync (Charter → SAAB approval) |
+
+---
+
+## 2026-08-14 | Oturum 121 | RESERVATION EVENT BACKBONE ✅ CERTIFIED
+
+### EB Certification — Canonical Event-Driven Automation Foundation
+
+**Commit:** `31e8065`
+
+**Mimari Kazanım:**
+
+```
+ÖNCE:  Rezervasyon → DB → availability → ACK → DUR
+ŞİMDİ: Rezervasyon → canonical event → Listener → Job → downstream capabilities
+```
+
+### Guest Communication Wave — RESERVATION-GUEST-COMM-WAVE-1 (NEXT)
+
+**Scope (Wave 1):** Sadece rezervasyon oluşturuldu bildirimi.
+
+```
+ReservationCreatedEvent
+        ↓
+queued listener/job
+        ↓
+Guest Communication Policy
+        ↓
+confirmation template
+        ↓
+NotificationDispatcher
+        ↓
+SUPERVISED / SEND-SAFE
+        ↓
+delivery evidence
+```
+
+**Güvenlik Kuralı:** `whatsapp_pilot_global=false` feature flag mevcut. İlk implementasyon feature flag/consent/recipient kurallarına uymalı; gerçek gönderim uygun değilse `prepared/pending` evidence.
+
+### Kayıt Edilen Debt
+
+| Tip | Açıklama | Öncelik |
+|-----|---------|---------|
+| LIFECYCLE-DEBT | Override cancellation → DB UPDATE → `ReservationCancelledEvent` üretilmiyor. İleride downstream listener'lar bağlandığında iki farklı lifecycle davranışı riski. Guest Communication cancellation wave'inden önce SAAB'a sunulacak. | Medium |
+| REGRESSION-DEBT | Full regression 1 pre-existing fail (Booking G34). EB certification'ı bozmadığı için geri alınmadı. | Low |
+
+### Program Sequence
+
+```
+Reservation Core ✅
+    ↓
+Canonical Event Backbone ✅ (this session)
+    ↓
+Guest Communication Wave 1 ▶ NEXT
+    ↓
+Availability Sync
+    ↓
+Airbnb Inbound
+    ↓
+Check-in/out
+    ↓
+Financial Closure
+```
+
+---
+
+## 2026-08-12 | Oturum Sprint 4.15 | Booking.com Production Certification ⏳ AWAITING BOOKING.COM ONBOARDING (34/35 PASS)
+
+### Sprint 4.15 — Booking Production Certification
+
+**71 PASS (Waves 1-5 + Channex) + 2 Sprint içi fix**
+
+### Değişiklikler
+
+| Tür | Dosya | Değişiklik |
+|-----|-------|-----------|
+| FIX | `AirbnbChannelAdapter.php` | Tenant isolation JOIN — SAB Kural 1 fix |
+| FIX | `ChannelManagerProviderWave1Test.php` | T8 adaptasyonu: stub → BW4 semantics |
+| CREATE | `BookingConnectionResult.php` | G34 DTO: 5 status (CONNECTED/AUTH_FAILED/NOT_REGISTERED/CONNECTION_ERROR/PROVIDER_ERROR) |
+| CREATE | `BookingConnectionProbeService.php` | Non-destructive probe: token validation → GET /reservations |
+| MODIFY | `BookingConnectivityAdapter.php` | testConnection() → production ready |
+| CREATE | `BookingG34ConnectivityProbeTest.php` | G34-01..G34-10: 10/10 PASS |
+| UPDATE | `BEKCI_CHANGELOG.md` | Oturum 112 + Sprint 4.15 girişi |
+| UPDATE | `memory/SESSION_NOTES.md` | Oturum 112 |
+| UPDATE | `memory/CHANGELOG_AGENT.md` | Bu giriş |
+
+### Sağlık Kontrolleri
+
+- AirbnbChannelAdapter SAB violations: **0 yeni** ✅
+- Booking suite: **73/73 PASS** ✅
+- G34 ConnectivityProbeTest: **10/10 PASS** ✅
+- **Certification Skoru: 34/35 PASS (97%)**
+
+### Bilinen Sorunlar (Değiştirilmedi — Sınıflandırıldı)
+
+- AirbnbAdapterTest: 25 FAIL (Laravel RefreshDatabase event dispatcher — P2, Booking'i engellemiyor)
+- ChannelManagerWave2Test: 10 FAIL (SQLite corruption — P2, Booking'i engellemiyor)
+- bekci:health: KB dizini yok (P2)
+- BookingConnectivityAdapter: Wave 2 retrieval methods NOT_IMPLEMENTED (ayrı sprint)
+- **G35 Production smoke test: ⏳ BLOCKED — Booking.com Partner onboarding gerekiyor**
+
+---
+
+## 2026-08-12 | Oturum Sprint 4.14 | Booking Channel Manager Wave 5: Rates Out 🟢 CERTIFIED ✅
+
+### Sprint 4.14 — Booking Channel Manager Wave 5 Sertifikasyonu
+
+**71/71 PASS** — Booking regression (63) + Channex regression (8)
+
+| Dalga | Test Sayısı | Durum |
+|-------|-----------|-------|
+| Wave 1 — Auth / Transport | 10 PASS | ✅ |
+| Wave 2 — Reservation Inbound | 12 PASS | ✅ |
+| Wave 3 — Lifecycle / Recovery | 12 PASS | ✅ |
+| Wave 4 — Availability Out | 12 PASS | ✅ |
+| Wave 5 — Rates Out | 17 PASS | ✅ |
+| Channex regression | 8 PASS | ✅ |
+| **TOPLAM** | **71 PASS** | 🟢 |
+
+### Oluşturulan Dosyalar (4 yeni + 1 test)
+
+| Dosya | Amaç |
+|-------|------|
+| `RateProjectionService.php` | `PropertyPricingService` → `[['date','rate','currency']]` rate projeksiyonu |
+| `SynchronizeRatesCommand.php` | Date range + idempotency key Command DTO |
+| `SynchronizationService.php` | Idempotency → record → queue dispatch orchestratörü |
+| `SynchronizeRatesJob.php` | Queue boundary: `$tries=3`, `$backoff=30s`, `afterCommit()`, `processed_at` guard |
+| `BookingWave5RatesTest.php` (BW5-13..17) | Wave 5 rate push testleri |
+
+### Değiştirilen Dosyalar
+
+| Dosya | Değişiklik |
+|-------|-----------|
+| `ChannelSyncContract.php` | `pushRates()` interface metodu eklendi |
+| `AirbnbChannelAdapter.php` | `pushRates()` stub (Wave 5'te implementasyon beklenmiyor) |
+| `BookingChannelAdapter.php` | Rate collapsing + `buildOtaRatesPayload()` fix |
+| `PropertyPricingService.php` | `resolveNightlyRateForDate()` public olarak açıldı |
+| `PropertySeasonalRate.php` | `$casts['is_active']` → `$casts['aktiflik_durumu']` — latent bug fix |
+
+### Bug Fixes
+
+1. **`PropertySeasonalRate::$casts` latent bug** — `is_active` yanlış kolon adı tüm seasonal rate lookuplarını etkiliyordu, `aktiflik_durumu` olarak düzeltildi
+2. **BW5-02 test expectation** — OTA spec'e göre `EndDate` = `StartDate` olmamalı; test beklentisi düzeltildi
+
+---
+
 ## 2026-07-16 | Oturum Sprint 15 | M2 Property Runtime — 🟢 CERTIFIED ✅
 
 ### Sprint 15 Program B: Operations Console Product Validation
@@ -1005,6 +1211,95 @@ Tam repository analizi raporu:
 - CQRS Event flows (12 event, 10 job category)
 - AI provider ecosystem (DeepSeek, Ollama, OpenAI)
 - External integrations (Telegram, N8N, TKGM, TurkiyeAPI)
+
+---
+
+## 2026-07-30 | Oturum 104 | Sprint 14 E01 Property Command Center Skeleton ✅ IMPLEMENTED
+
+### Değişiklik
+
+Sprint 14 Launch — Property Command Center application composition layer başlatıldı.
+
+**E01 Üretilen Dosyalar:**
+- `resources/views/admin/property/show.blade.php` — 853 satır PCC view
+- `resources/views/admin/property/index.blade.php` — Property list view
+
+**Test Aktivasyonu:**
+- 4 yeni test aktif edildi
+- 36 passed · 130 assertions · 0 failures
+
+**SAAB Değerlendirmesi:**
+- Sprint 13 servisleri yeniden yazılmadı — application composition katmanı oluşturuldu
+- "Workspace/Property is the source of truth" prensibi korundu
+- 0 yeni SAB ihlali
+
+**E02 Hedefi:**
+- Sprint 13 Availability Synchronization → PCC'e canlı bağlantı
+- Reservation + Availability state, Last Sync, Conflict Status, Execution History, Retry Action
+
+**Refactoring Adayı (non-blocking):**
+- `show.blade.php` → tab-based ayrıştırma (`tabs/general.blade.php`, `tabs/reservations.blade.php`, vb.)
+
+**SAAB Mimari Değerlendirme (E01 Sonrası):**
+- foamy-fire branch: PropertyCommandCenterController + routes EKSİK (feature branch'de mevcut)
+- E01 = View skeleton sadece — controller yok → E02 başlayamaz
+- Sprint 13 entegrasyonu: data bağlantısı yok (loadAvailability placeholder)
+- SAAB dokümanı: `docs/ERA_V/Phase_Reports/SAAB-SPRINT14-E01-REVIEW.md`
+
+**SAAB Kararı:**
+- E01: ✅ VIEW FOUNDATION ONLY
+- E02: 🟡 KOŞULLU — controller + routes önce oluşturulmalı
+- Mimari: Application composition uyumlu ✅
+
+---
+
+## 2026-07-30 | Oturum 104b | SAAB E01 Mimari Değerlendirme + E02 Hazırlık
+
+### Değişiklik
+
+Sprint 14 E01 SAAB Mimari Değerlendirmesi tamamlandı.
+
+**E01 Eksik Bileşenler:**
+- `PropertyCommandCenterController` — foamy-fire'da BULUNAMADI
+- routes/admin.php PCC route tanımı — BULUNAMADI
+- `PropertyCommandCenterQueryService` — BULUNAMADI
+
+**E02 İçin Sprint 13 Veri Kaynakları:**
+- `ChannelSyncExecution::forProperty($propertyId)` → last sync, health, conflicts
+- `PropertyAvailability::forProperty($propertyId)` → availability state
+- `IlanTakvimSync` → platform bilgisi, sync durumu
+
+**Üretilen Dosyalar:**
+- `docs/ERA_V/Phase_Reports/SAAB-SPRINT14-E01-REVIEW.md` — SAAB mimari değerlendirme
+
+**BEKCI_CHANGELOG Güncellemesi:**
+- E01 SAAB kararı: VIEW FOUNDATION ONLY
+- E02: koşullu yetkilendirme
+
+---
+
+## 2026-07-30 | Oturum 104c | SAAB E01 Option B — Sprint 14 PCC Worktree
+
+### Değişiklik
+
+SAAB Option B Controlled uygulandı:
+- foamy-fire "view-only" branch olarak bırakıldı
+- Yeni git branch + worktree oluşturuldu:
+  - `feature/sprint-14-property-command-center` (f5b5e8a bazlı)
+  - Worktree path: `/Users/macbookpro/dev/yalihan2026/.kilo/worktrees/sprint-14-property-command-center`
+- Eksik modeller (Property, WorkforceExecution, CommercialOffering) zaten mevcut ✅
+- Agent Manager oturumu başlatıldı: `am-1785408941862-ifkz2l`
+
+### E01.1 Hedefi
+
+- PropertyCommandCenterController (index, show, api*)
+- PropertyCommandCenterQueryService (Provider decomposition)
+- Baseline test: PCC açılış testi
+
+### Üretilen Dokümanlar
+
+- `docs/ERA_V/Phase_Reports/SAAB-SPRINT14-E01-WIRING-BLOCKER.md` — Mimari seçenek analizi
+- `docs/ERA_V/Phase_Reports/SAAB-SPRINT14-E01-REVIEW.md` — Mimari değerlendirme
 
 ---
 

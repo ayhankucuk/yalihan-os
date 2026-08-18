@@ -212,6 +212,28 @@ class Kernel extends ConsoleKernel
             ->dailyAt('04:00')
             ->appendOutputTo(storage_path('logs/ai-deal-predictor.log'));
 
+        // CHECKOUT-D1/Q4: Reservation completion — runs daily at 01:00
+        // Marks reservations as completed where end_date <= today
+        // Dispatches ReservationCompletedEvent → turnover Gorev creation
+        $schedule->command('reservation:complete')
+            ->dailyAt('01:00')
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/reservation-complete.log'));
+
+        // CHECKIN_CHECKOUT Wave 2: Open check-in windows for eligible reservations
+        // Runs daily at 07:00 — opens windows where start_date - 24h <= now()
+        $schedule->job(new \App\Jobs\Reservation\OpenCheckinWindowJob)
+            ->dailyAt('07:00')
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/checkin-window-open.log'));
+
+        // CHECKIN_CHECKOUT Wave 2: Cleanup expired access credentials
+        // Runs daily at 02:00 — marks expired credentials as inactive
+        $schedule->job(new \App\Jobs\Reservation\ResetAccessCredentialJob)
+            ->dailyAt('02:00')
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/access-credential-reset.log'));
+
         $schedule->call(function () {
             foreach (\App\Models\SaaS\Tenant::where('aktiflik_durumu', 1)->get() as $tenant) {
                 dispatch(new \App\Jobs\AI\DailySnapshotsJob($tenant->id));

@@ -28,7 +28,7 @@ class PropertySeasonalRate extends BaseModel
     protected $casts = [
         'start_date'       => 'date',
         'end_date'         => 'date',
-        'is_active'  => \App\Enums\AktiflikDurumu::class,
+        'aktiflik_durumu'  => \App\Enums\AktiflikDurumu::class,
     ];
 
     public function ilan(): BelongsTo

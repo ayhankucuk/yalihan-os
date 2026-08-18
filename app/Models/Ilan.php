@@ -326,6 +326,7 @@ class Ilan extends BaseModel
         'fiyat_notu',                // ✅ Optional strategy note
         // ✅ REQUIRED: Fiyatın yazıyla gösterimi
         'para_birimi',               // ✅ REQUIRED: Para birimi (varchar(10), NOT NULL, default: TRY)
+        'tenant_id',                // ✅ MULTI-TENANT: Tenant isolation key
         'yayin_durumu',              // ✅ PHYSICAL: İlan durumu (Aktif/Pasif/Taslak) - SSOT Confirmed
         'il_id',                     // ✅ REQUIRED: İl bilgisi (bigint unsigned, NULL allowed)
         'ilce_id',                   // ✅ REQUIRED: İlçe bilgisi (bigint unsigned, NULL allowed)

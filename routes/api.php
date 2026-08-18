@@ -81,6 +81,10 @@ Route::prefix('v1')->middleware([ThrottleApiRequests::class])->group(function ()
     Route::post('/webhook/drive', [\App\Http\Controllers\Api\DriveWebhookController::class, 'handle'])
         ->name('api.drive.webhook');
 
+    // Channex Channel Manager Reservation Webhook (CHANNEL_MANAGER_PROVIDER Wave 2 — ADR-007)
+    Route::post('/webhook/channex', [\App\Http\Controllers\Api\ChannexWebhookController::class, 'handle'])
+        ->name('api.webhook.channex');
+
     // 🤖 Telegram Integration (secured by X-Telegram-Bot-Api-Secret-Token)
     Route::post('/integrations/telegram/webhook', [\App\Http\Controllers\Api\Integrations\TelegramAdvisorAdapterController::class, 'handleWebhook'])
         ->middleware('telegram.secret')
