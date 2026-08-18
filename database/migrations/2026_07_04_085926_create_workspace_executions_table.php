@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreignId('workspace_id')
                 ->constrained('portfolio_drive_workspaces')
                 ->cascadeOnDelete();
-            $table->foreignId('ilan_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('ilan_id')->nullable()->constrained('ilanlar')->nullOnDelete();
             $table->foreignId('tenant_id')->nullable()->index();
 
             // ── Execution Identity ──────────────────────────────────────────
