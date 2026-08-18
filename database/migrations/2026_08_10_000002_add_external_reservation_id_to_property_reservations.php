@@ -10,10 +10,11 @@ return new class extends Migration
     {
         Schema::table('property_reservations', function (Blueprint $table) {
             if (!Schema::hasColumn('property_reservations', 'external_reservation_id')) {
-                $table->string('external_reservation_id', 255)->nullable()->after('ilan_id');
+                // Note: property_reservations has property_id, NOT ilan_id — append without positional dependency
+                $table->string('external_reservation_id', 255)->nullable();
             }
             if (!Schema::hasColumn('property_reservations', 'external_channel')) {
-                $table->string('external_channel', 50)->nullable()->after('external_reservation_id');
+                $table->string('external_channel', 50)->nullable();
             }
         });
 
