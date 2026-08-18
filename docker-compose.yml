@@ -12,6 +12,7 @@ services:
             - APP_KEY=${APP_KEY}
             - APP_ENV=${APP_ENV:-local}
             - APP_DEBUG=${APP_DEBUG:-true}
+            - PRODUCTION_LOCK=${PRODUCTION_LOCK:-OPEN}
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - CACHE_DRIVER=redis
