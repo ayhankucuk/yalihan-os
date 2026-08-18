@@ -94,6 +94,16 @@ Route::get('/yalihan', function () {
     return view('yaliihan-home-clean');
 })->name('yalihan.home');
 
+// 🔐 Legal Pages — Meta App Publish Compliance
+Route::prefix('legal')->name('legal.')->group(function () {
+    Route::get('/privacy', [App\Http\Controllers\Public\LegalController::class, 'privacy'])
+        ->name('privacy');
+    Route::get('/terms', [App\Http\Controllers\Public\LegalController::class, 'terms'])
+        ->name('terms');
+    Route::get('/data-deletion', [App\Http\Controllers\Public\LegalController::class, 'dataDeletion'])
+        ->name('data-deletion');
+});
+
 // Context7 demo route removed - use admin.dashboard
 
 // Yalihan Design System - Component Version (Kaldırıldı)
