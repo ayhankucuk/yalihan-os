@@ -107,7 +107,8 @@ services:
             TZ: "Europe/Istanbul"
 
             # ProductionLockMiddleware — OPEN required for web routes
-            PRODUCTION_LOCK: OPEN
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         volumes:
             # Persistent storage — survive container restart
             - yalihan-storage:/app/storage
