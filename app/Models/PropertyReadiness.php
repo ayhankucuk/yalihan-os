@@ -99,7 +99,7 @@ class PropertyReadiness extends BaseModel
     public function computeIsReady(): bool
     {
         foreach (self::REQUIRED_DIMENSIONS as $dimension) {
-            if ($this->{$dimension} !== true) {
+            if (! (bool) $this->{$dimension}) {
                 return false;
             }
         }
@@ -130,7 +130,7 @@ class PropertyReadiness extends BaseModel
     {
         $pending = [];
         foreach (self::REQUIRED_DIMENSIONS as $dimension) {
-            if ($this->{$dimension} !== true) {
+            if (! (bool) $this->{$dimension}) {
                 $pending[] = $dimension;
             }
         }

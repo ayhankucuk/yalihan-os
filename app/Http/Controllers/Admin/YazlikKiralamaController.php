@@ -477,18 +477,57 @@ class YazlikKiralamaController extends AdminController
     }
 
     /**
-     * Handle booking management
+     * Handle booking management (Wave 6: Operations Control Surface)
      * Context7: Eloquent relationship usage - direct table access removed
-
      */
     public function bookings(Request $request, $id = null)
     {
-        $query = PropertyReservation::with('ilan:id,baslik');
+        $tenantId = $this->resolveTenantId($request);
+
+        $tenantService = app(\App\Services\SaaS\TenantContextService::class);
+        if (!$tenantService->hasTenant() || $tenantService->getTenant()->id !== $tenantId) {
+            $tenant = \App\Models\SaaS\Tenant::find($tenantId);
+            if ($tenant) {
+                $tenantService->setTenant($tenant);
+            }
+        }
+
+        $query = PropertyReservation::where('tenant_id', $tenantId)
+            ->with(['ilan:id,baslik', 'readiness', 'prepTask', 'turnoverTask']);
 
         if ($id) {
             $query->where(function ($q) use ($id) {
                 $q->where('property_id', $id)->orWhere('ilan_id', $id);
             });
+        }
+
+        $filter = $request->get('filter');
+
+        if ($filter === 'arrival_today') {
+            $query->whereDate('start_date', Carbon::today()->toDateString())
+                ->whereNull('cancelled_at')
+                ->whereNull('checked_in_at');
+        } elseif ($filter === 'readiness_blocked') {
+            $query->whereNull('cancelled_at')
+                ->whereNull('checked_in_at')
+                ->where(function ($q) {
+                    $q->whereDoesntHave('readiness')
+                        ->orWhereHas('readiness', function ($rq) {
+                            $rq->where('is_ready', false);
+                        });
+                });
+        } elseif ($filter === 'in_house') {
+            $query->whereNotNull('checked_in_at')
+                ->whereNull('checked_out_at')
+                ->whereNull('cancelled_at');
+        } elseif ($filter === 'turnover_pending') {
+            $query->whereNotNull('checked_out_at')
+                ->where(function ($q) {
+                    $q->whereDoesntHave('turnoverTask')
+                        ->orWhereHas('turnoverTask', function ($tq) {
+                            $tq->where('gorev_durumu', '!=', 'tamamlandi');
+                        });
+                });
         }
 
         if ($request->filled('rezervasyon_durumu') || $request->filled('reservation_state')) {
@@ -506,10 +545,41 @@ class YazlikKiralamaController extends AdminController
             }
         }
 
-        $bookings = $query->orderBy('created_at', 'desc') // context7-ignore
+        $bookings = $query->orderBy('start_date', 'desc')
+            ->orderBy('id', 'desc')
             ->paginate(20);
 
-        return view('admin.yazlik-kiralama.bookings', compact('bookings', 'id'));
+        // Operational counts for filter tabs
+        $counts = [
+            'all' => PropertyReservation::where('tenant_id', $tenantId)->count(),
+            'arrival_today' => PropertyReservation::where('tenant_id', $tenantId)
+                ->whereDate('start_date', Carbon::today()->toDateString())
+                ->whereNull('cancelled_at')
+                ->whereNull('checked_in_at')
+                ->count(),
+            'readiness_blocked' => PropertyReservation::where('tenant_id', $tenantId)
+                ->whereNull('cancelled_at')
+                ->whereNull('checked_in_at')
+                ->where(function ($q) {
+                    $q->whereDoesntHave('readiness')
+                        ->orWhereHas('readiness', fn($rq) => $rq->where('is_ready', false));
+                })
+                ->count(),
+            'in_house' => PropertyReservation::where('tenant_id', $tenantId)
+                ->whereNotNull('checked_in_at')
+                ->whereNull('checked_out_at')
+                ->whereNull('cancelled_at')
+                ->count(),
+            'turnover_pending' => PropertyReservation::where('tenant_id', $tenantId)
+                ->whereNotNull('checked_out_at')
+                ->where(function ($q) {
+                    $q->whereDoesntHave('turnoverTask')
+                        ->orWhereHas('turnoverTask', fn($tq) => $tq->where('gorev_durumu', '!=', 'tamamlandi'));
+                })
+                ->count(),
+        ];
+
+        return view('admin.yazlik-kiralama.bookings', compact('bookings', 'id', 'filter', 'counts'));
     }
 
     /**

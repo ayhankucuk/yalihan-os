@@ -1,5 +1,27 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 135 — 2026-08-20 | WAVE 6: RESERVATION OPERATIONS CONTROL SURFACE ✅ CERTIFIED
+
+### WAVE 6 — Reservation Operations Control Surface (Read-Model / Visibility)
+
+**Authority:** SAAB  
+**Baseline:** `99034f8`  
+**Certification Status:** ✅ CERTIFIED (Waves 1–6 91/91 PASS, W6 14/14 PASS)
+
+#### Architecture Summary
+- **Zero Migration & Zero Mutation:** Read-model only. No new database tables, no changes to `ReservationState` enum, no persisted UI state.
+- **Canonical Model Relationships:** Added `readiness`, `operationalTasks`, `prepTask`, `turnoverTask` to `PropertyReservation`.
+- **Eager Loading & N+1 Elimination:** `YazlikKiralamaController::bookings()` eagerly loads `['ilan:id,baslik', 'readiness', 'prepTask', 'turnoverTask']`.
+- **Server-Side Operational Filters:** Added `arrival_today`, `readiness_blocked`, `in_house`, `turnover_pending`.
+- **7-Stage Operational Control UI:** Compact stepper displaying `Rezervasyon → Hazırlık → Hazır (5/5) → Giriş → Konaklama → Çıkış → Temizlik` with state-aware badges.
+- **Fail-Closed Tenant Scoping:** Preserved strict `resolveTenantId()` and `TenantContextService` synchronization.
+
+#### Test Evidence
+- **Wave 6 Gates:** 14/14 PASS (W6-01 to W6-14)
+- **Waves 1–6 Regression:** 91/91 PASS, 225 assertions, 0 failures, 0 errors.
+
+---
+
 ## Oturum 134 — 2026-08-16 | GUEST_CONCIERGE Phase 1 ✅ DEBT-GC-01 CLOSED
 
 ### GUEST_CONCIERGE Phase 1 — DEBT-GC-01 Recovery

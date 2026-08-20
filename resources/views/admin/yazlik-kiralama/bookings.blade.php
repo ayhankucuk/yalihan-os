@@ -1,24 +1,24 @@
 @extends('admin.layouts.admin')
 
-@section('title', 'Rezervasyon Yönetimi')
+@section('title', 'Rezervasyon Operasyonları Kontrol Merkezi')
 
 @section('content')
     <div class="min-h-screen bg-gray-50 py-8 dark:bg-slate-900">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
             {{-- Header --}}
-            <div class="mb-8 flex items-center justify-between">
+            <div class="mb-6 flex items-center justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900 dark:text-slate-100 dark:text-white">
-                        📅 Rezervasyon Yönetimi
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-slate-100">
+                        📅 Rezervasyon Operasyonları
                     </h1>
                     <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        Yazlık kiralama rezervasyonlarını yönetin
+                        Uçtan uca operasyonel kontrol: Hazırlık → Readiness → Giriş → Konaklama → Çıkış → Temizlik
                     </p>
                 </div>
 
                 <a href="{{ route('admin.yazlik-kiralama.index') }}"
-                    class="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-4 py-2 text-gray-700 transition-all hover:bg-gray-300 dark:bg-gray-700 dark:text-slate-200 dark:text-slate-300 dark:hover:bg-gray-600">
+                    class="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-4 py-2 text-gray-700 transition-all hover:bg-gray-300 dark:bg-gray-700 dark:text-slate-200 dark:hover:bg-gray-600">
                     ← Geri Dön
                 </a>
             </div>
@@ -42,118 +42,72 @@
                 </div>
             @endif
 
-            {{-- Filters --}}
-            <div class="mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
-                x-data="{
-                    showFilters: false,
-                    rezervasyon_durumu: '{{ request('rezervasyon_durumu', request('reservation_state')) }}',
-                    dateRange: '{{ request('date_range') }}'
-                }">
+            {{-- Wave 6: Operational Filter Tabs --}}
+            <div class="mb-6 flex flex-wrap gap-2">
+                <a href="{{ route('admin.yazlik-kiralama.bookings', ['id' => $id ?? null]) }}"
+                    class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all {{ empty($filter) ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:text-gray-200 dark:border-slate-700' }}">
+                    <span>Tümü</span>
+                    <span class="rounded-full px-2 py-0.5 text-xs {{ empty($filter) ? 'bg-blue-700 text-white' : 'bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-gray-300' }}">
+                        {{ $counts['all'] ?? 0 }}
+                    </span>
+                </a>
 
-                {{-- Filter Toggle --}}
-                <div class="mb-4 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-slate-100 dark:text-white">
-                        🔍 Filtreler
-                    </h2>
-                    <button @click="showFilters = !showFilters"
-                        class="text-sm text-blue-600 hover:underline dark:text-blue-400">
-                        <span x-text="showFilters ? 'Gizle' : 'Göster'"></span>
-                    </button>
-                </div>
+                <a href="{{ route('admin.yazlik-kiralama.bookings', ['id' => $id ?? null, 'filter' => 'arrival_today']) }}"
+                    class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all {{ $filter === 'arrival_today' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:text-gray-200 dark:border-slate-700' }}">
+                    <span>📅 Bugün Gelenler</span>
+                    <span class="rounded-full px-2 py-0.5 text-xs {{ $filter === 'arrival_today' ? 'bg-amber-700 text-white' : 'bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-gray-300' }}">
+                        {{ $counts['arrival_today'] ?? 0 }}
+                    </span>
+                </a>
 
-                {{-- Filter Form --}}
-                <form method="GET" action="{{ route('admin.yazlik-kiralama.bookings', $id ?? null) }}"
-                    x-show="showFilters" x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 transform scale-95"
-                    x-transition:enter-end="opacity-100 transform scale-100" class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <a href="{{ route('admin.yazlik-kiralama.bookings', ['id' => $id ?? null, 'filter' => 'readiness_blocked']) }}"
+                    class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all {{ $filter === 'readiness_blocked' ? 'bg-rose-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:text-gray-200 dark:border-slate-700' }}">
+                    <span>⚠️ Hazır Olmayanlar</span>
+                    <span class="rounded-full px-2 py-0.5 text-xs {{ $filter === 'readiness_blocked' ? 'bg-rose-700 text-white' : 'bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-gray-300' }}">
+                        {{ $counts['readiness_blocked'] ?? 0 }}
+                    </span>
+                </a>
 
-                    {{-- Status Filter --}}
-                    <div>
-                        <label for="rezervasyon_durumu"
-                            class="mb-2 block text-sm font-bold text-gray-900 dark:text-slate-100 dark:text-white">
-                            Durum
-                        </label>
-                        <select name="rezervasyon_durumu" id="rezervasyon_durumu" x-model="rezervasyon_durumu"
-                            class="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-2 font-semibold text-black transition-colors focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-900 dark:text-white">
-                            <option value="">Tümü</option>
-                            <option value="pending">Beklemede</option>
-                            <option value="confirmed">Onaylandı</option>
-                            <option value="cancelled">İptal Edildi</option>
-                            <option value="completed">Tamamlandı</option>
-                        </select>
-                    </div>
+                <a href="{{ route('admin.yazlik-kiralama.bookings', ['id' => $id ?? null, 'filter' => 'in_house']) }}"
+                    class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all {{ $filter === 'in_house' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:text-gray-200 dark:border-slate-700' }}">
+                    <span>🏡 Konaklayanlar</span>
+                    <span class="rounded-full px-2 py-0.5 text-xs {{ $filter === 'in_house' ? 'bg-emerald-700 text-white' : 'bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-gray-300' }}">
+                        {{ $counts['in_house'] ?? 0 }}
+                    </span>
+                </a>
 
-                    {{-- Date Range Filter --}}
-                    <div>
-                        <label for="date_range"
-                            class="mb-2 block text-sm font-bold text-gray-900 dark:text-slate-100 dark:text-white">
-                            Tarih Aralığı
-                        </label>
-                        <input type="text" name="date_range" id="date_range" x-model="dateRange"
-                            placeholder="2025-01-01 - 2025-12-31"
-                            class="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-2 font-semibold text-black placeholder-gray-600 transition-colors focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-900 dark:text-white dark:placeholder-gray-500">
-                    </div>
-
-                    {{-- Submit Button --}}
-                    <div class="flex items-end">
-                        <button type="submit"
-                            class="w-full rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-semibold text-white shadow-lg transition-all hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-95">
-                            Filtrele
-                        </button>
-                    </div>
-                </form>
+                <a href="{{ route('admin.yazlik-kiralama.bookings', ['id' => $id ?? null, 'filter' => 'turnover_pending']) }}"
+                    class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all {{ $filter === 'turnover_pending' ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:text-gray-200 dark:border-slate-700' }}">
+                    <span>🧹 Temizlik Bekleyenler</span>
+                    <span class="rounded-full px-2 py-0.5 text-xs {{ $filter === 'turnover_pending' ? 'bg-purple-700 text-white' : 'bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-gray-300' }}">
+                        {{ $counts['turnover_pending'] ?? 0 }}
+                    </span>
+                </a>
             </div>
 
-            {{-- Bookings List --}}
-            <div
-                class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+            {{-- Bookings Operations List --}}
+            <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
                 @if ($bookings->isEmpty())
-                    {{-- Empty State --}}
                     <div class="py-16 text-center">
                         <div class="mb-4 text-6xl">📅</div>
-                        <h3 class="mb-2 text-xl font-bold text-gray-900 dark:text-slate-100 dark:text-white">
+                        <h3 class="mb-2 text-xl font-bold text-gray-900 dark:text-slate-100">
                             Rezervasyon Bulunamadı
                         </h3>
                         <p class="text-gray-600 dark:text-gray-400">
-                            Henüz hiç rezervasyon yapılmamış veya filtrelere uygun rezervasyon yok.
+                            Seçilen operasyonel filtreye uygun rezervasyon kaydı bulunmuyor.
                         </p>
                     </div>
                 @else
-                    {{-- Table --}}
                     <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead
-                                class="border-b border-gray-200 bg-gray-50 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
+                        <table class="w-full text-left">
+                            <thead class="border-b border-gray-200 bg-gray-50 text-xs font-bold uppercase tracking-wider text-gray-700 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-300">
                                 <tr>
-                                    <th
-                                        class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-slate-100 dark:text-white">
-                                        ID
-                                    </th>
-                                    <th
-                                        class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-slate-100 dark:text-white">
-                                        İlan
-                                    </th>
-                                    <th
-                                        class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-slate-100 dark:text-white">
-                                        Check-in
-                                    </th>
-                                    <th
-                                        class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-slate-100 dark:text-white">
-                                        Check-out
-                                    </th>
-                                    <th
-                                        class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-slate-100 dark:text-white">
-                                        Misafir
-                                    </th>
-                                    <th
-                                        class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-slate-100 dark:text-white">
-                                        Durum
-                                    </th>
-                                    <th
-                                        class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-slate-100 dark:text-white">
-                                        İşlemler
-                                    </th>
+                                    <th class="px-5 py-3.5">ID / İlan</th>
+                                    <th class="px-5 py-3.5">Tarihler</th>
+                                    <th class="px-5 py-3.5">Misafir</th>
+                                    <th class="px-5 py-3.5">Operasyonel Durum Zinciri (7 Aşama)</th>
+                                    <th class="px-5 py-3.5 text-right">İşlemler</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -161,111 +115,219 @@
                                     @php
                                         $rawState = $booking->reservation_state instanceof \App\Enums\ReservationState
                                             ? $booking->reservation_state->value
-                                            : ($booking->reservation_state ?? $booking->rezervasyon_durumu ?? 'pending');
+                                            : ($booking->reservation_state ?? 'pending');
+
                                         $isConfirmed = ($rawState === 'confirmed');
                                         $isCancelled = ($rawState === 'cancelled' || $booking->cancelled_at !== null);
                                         $isCheckedIn = ($booking->checked_in_at !== null);
                                         $isCheckedOut = ($booking->checked_out_at !== null || $booking->completed_at !== null || $rawState === 'completed');
+
+                                        // Readiness Dimensions
+                                        $readiness = $booking->readiness;
+                                        $isReady = $readiness?->is_ready ?? false;
+                                        $readinessScore = 0;
+                                        if ($readiness) {
+                                            if ($readiness->property_clean) $readinessScore++;
+                                            if ($readiness->access_credential_ready) $readinessScore++;
+                                            if ($readiness->guest_contact_ready) $readinessScore++;
+                                            if ($readiness->amenity_check_complete) $readinessScore++;
+                                            if ($readiness->welcome_kit_prepared) $readinessScore++;
+                                        }
+
+                                        // Tasks
+                                        $prepTask = $booking->prepTask;
+                                        $prepDone = ($prepTask?->gorev_durumu === 'tamamlandi');
+
+                                        $turnoverTask = $booking->turnoverTask;
+                                        $turnoverDone = ($turnoverTask?->gorev_durumu === 'tamamlandi');
                                     @endphp
-                                    <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                        {{-- ID --}}
-                                        <td
-                                            class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-slate-100 dark:text-white">
-                                            #{{ $booking->id }}
-                                        </td>
 
-                                        {{-- İlan --}}
-                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-slate-100 dark:text-white">
-                                            <div class="font-semibold">{{ $booking->ilan->baslik ?? 'N/A' }}</div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                İlan ID: {{ $booking->ilan_id ?? $booking->property_id }}
+                                    <tr class="transition-colors hover:bg-gray-50/70 dark:hover:bg-slate-800/50">
+                                        {{-- ID & Listing --}}
+                                        <td class="px-5 py-4 align-top">
+                                            <div class="font-bold text-gray-900 dark:text-slate-100">#{{ $booking->id }}</div>
+                                            <div class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                {{ $booking->ilan->baslik ?? 'İlan #' . ($booking->property_id ?? $booking->ilan_id) }}
+                                            </div>
+                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                {{ $booking->nights ?? 1 }} Gece · {{ $booking->guest_count ?? 1 }} Kişi
                                             </div>
                                         </td>
 
-                                        {{-- Check-in --}}
-                                        <td
-                                            class="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-slate-100 dark:text-white">
-                                            {{ \Carbon\Carbon::parse($booking->start_date ?? $booking->check_in)->format('d.m.Y') }}
-                                        </td>
-
-                                        {{-- Check-out --}}
-                                        <td
-                                            class="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-slate-100 dark:text-white">
-                                            {{ \Carbon\Carbon::parse($booking->end_date ?? $booking->check_out)->format('d.m.Y') }}
-                                        </td>
-
-                                        {{-- Misafir --}}
-                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-slate-100 dark:text-white">
-                                            <div class="font-semibold">{{ $booking->guest_name ?? 'N/A' }}</div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                {{ $booking->guest_email ?? 'N/A' }}
+                                        {{-- Dates --}}
+                                        <td class="px-5 py-4 align-top whitespace-nowrap text-sm text-gray-900 dark:text-slate-100">
+                                            <div class="font-medium text-emerald-700 dark:text-emerald-400">
+                                                Giriş: {{ \Carbon\Carbon::parse($booking->start_date)->format('d.m.Y') }}
+                                            </div>
+                                            <div class="text-rose-700 dark:text-rose-400">
+                                                Çıkış: {{ \Carbon\Carbon::parse($booking->end_date)->format('d.m.Y') }}
                                             </div>
                                         </td>
 
-                                        {{-- Status --}}
-                                        <td class="whitespace-nowrap px-6 py-4">
-                                            @if ($isCancelled)
-                                                <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-800 dark:bg-red-900 dark:text-red-200">
-                                                    ✕ İptal
-                                                </span>
-                                            @elseif ($isCheckedOut)
-                                                <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                                    ✓ Tamamlandı
-                                                </span>
-                                            @elseif ($isCheckedIn)
-                                                <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
-                                                    🏡 Konaklıyor
-                                                </span>
-                                            @elseif ($isConfirmed)
-                                                <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                    ✓ Onaylandı
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                                                    ⏳ Beklemede
-                                                </span>
-                                            @endif
+                                        {{-- Guest --}}
+                                        <td class="px-5 py-4 align-top text-sm">
+                                            <div class="font-semibold text-gray-900 dark:text-slate-100">{{ $booking->guest_name ?? 'N/A' }}</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ $booking->guest_phone ?? $booking->guest_email ?? '—' }}</div>
                                         </td>
 
-                                        {{-- Actions --}}
-                                        <td class="whitespace-nowrap px-6 py-4 text-sm">
-                                            <div class="flex items-center gap-2">
-                                                @if ($isConfirmed && !$isCheckedIn && !$isCancelled && !$isCheckedOut)
-                                                    {{-- Eligible Arrival: Show Check-in --}}
-                                                    <form method="POST" action="{{ route('admin.yazlik-kiralama.bookings.check-in', $booking->id) }}">
-                                                        @csrf
-                                                        <button type="submit"
-                                                            id="btn-checkin-{{ $booking->id }}"
-                                                            class="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700">
-                                                            <span>🚪</span> Misafir Geldi
-                                                        </button>
-                                                    </form>
-                                                @elseif ($isCheckedIn && !$isCheckedOut && !$isCancelled)
-                                                    {{-- Checked in / Active Stay: Show Check-out with confirmation --}}
-                                                    <form method="POST" action="{{ route('admin.yazlik-kiralama.bookings.check-out', $booking->id) }}"
-                                                        onsubmit="return confirm('Misafirin çıkış yaptığını onaylıyor musunuz?\nTemizlik operasyonu başlatılacaktır.');">
-                                                        @csrf
-                                                        <button type="submit"
-                                                            id="btn-checkout-{{ $booking->id }}"
-                                                            class="inline-flex items-center gap-1 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-amber-700">
-                                                            <span>🧹</span> Misafir Çıktı
-                                                        </button>
-                                                    </form>
-                                                @elseif ($isCheckedOut)
-                                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-                                                        Çıkış Yapıldı
+                                        {{-- 7-Stage Visual Operational Stepper --}}
+                                        <td class="px-5 py-4 align-top">
+                                            <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                                                {{-- 1. Rezervasyon --}}
+                                                @if ($isCancelled)
+                                                    <span class="inline-flex items-center gap-1 rounded bg-red-100 px-2 py-0.5 font-medium text-red-800 dark:bg-red-900/50 dark:text-red-300" title="İptal Edildi">
+                                                        ✕ Rezervasyon
                                                     </span>
-                                                @elseif ($isCancelled)
-                                                    <span class="text-xs font-medium text-gray-400">
-                                                        İşlem Yok
+                                                @elseif ($isConfirmed || $isCheckedIn || $isCheckedOut)
+                                                    <span class="inline-flex items-center gap-1 rounded bg-green-100 px-2 py-0.5 font-medium text-green-800 dark:bg-green-900/50 dark:text-green-300" title="Onaylı Rezervasyon">
+                                                        ✓ Rezervasyon
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1 rounded bg-yellow-100 px-2 py-0.5 font-medium text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300" title="Onay Bekliyor">
+                                                        ⏳ Rezervasyon
                                                     </span>
                                                 @endif
 
-                                                <a href="{{ route('admin.yazlik-kiralama.show', $booking->ilan_id ?? $booking->property_id ?? 1) }}"
-                                                    class="rounded-lg bg-gray-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700">
-                                                    Detay
-                                                </a>
+                                                <span class="text-gray-300 dark:text-gray-600">→</span>
+
+                                                {{-- 2. Hazırlık Görevi --}}
+                                                @if ($prepDone)
+                                                    <span class="inline-flex items-center gap-1 rounded bg-green-100 px-2 py-0.5 font-medium text-green-800 dark:bg-green-900/50 dark:text-green-300" title="Hazırlık görevi tamamlandı">
+                                                        ✓ Hazırlık
+                                                    </span>
+                                                @elseif ($prepTask)
+                                                    <span class="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-0.5 font-medium text-blue-800 dark:bg-blue-900/50 dark:text-blue-300" title="Hazırlık görevi devam ediyor">
+                                                        ⏳ Hazırlık
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-0.5 font-medium text-gray-500 dark:bg-slate-800 dark:text-gray-400" title="Hazırlık görevi planlanmadı">
+                                                        — Hazırlık
+                                                    </span>
+                                                @endif
+
+                                                <span class="text-gray-300 dark:text-gray-600">→</span>
+
+                                                {{-- 3. Readiness (Hazır) --}}
+                                                @if ($isReady)
+                                                    <span class="inline-flex items-center gap-1 rounded bg-green-100 px-2 py-0.5 font-bold text-green-800 dark:bg-green-900/50 dark:text-green-300" title="Tüm readiness kriterleri (5/5) tamam">
+                                                        ✓ Hazır (5/5)
+                                                    </span>
+                                                @elseif ($readiness)
+                                                    <span class="inline-flex items-center gap-1 rounded bg-rose-100 px-2 py-0.5 font-bold text-rose-800 dark:bg-rose-900/50 dark:text-rose-300" title="Readiness eksikleri var">
+                                                        ⚠️ Hazır Değil ({{ $readinessScore }}/5)
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-0.5 font-medium text-gray-500 dark:bg-slate-800 dark:text-gray-400" title="Readiness değerlendirilmedi">
+                                                        — Hazırlık (0/5)
+                                                    </span>
+                                                @endif
+
+                                                <span class="text-gray-300 dark:text-gray-600">→</span>
+
+                                                {{-- 4. Giriş (Check-in) --}}
+                                                @if ($isCheckedIn || $isCheckedOut)
+                                                    <span class="inline-flex items-center gap-1 rounded bg-green-100 px-2 py-0.5 font-medium text-green-800 dark:bg-green-900/50 dark:text-green-300" title="Giriş yapıldı: {{ $booking->checked_in_at?->format('d.m.Y H:i') }}">
+                                                        ✓ Giriş
+                                                    </span>
+                                                @elseif ($isReady && !$isCancelled)
+                                                    <span class="inline-flex items-center gap-1 rounded bg-emerald-100 px-2 py-0.5 font-bold text-emerald-800 ring-1 ring-emerald-500 dark:bg-emerald-900/50 dark:text-emerald-300" title="Giriş için hazır">
+                                                        ● Giriş Bekliyor
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-0.5 font-medium text-gray-500 dark:bg-slate-800 dark:text-gray-400">
+                                                        — Giriş
+                                                    </span>
+                                                @endif
+
+                                                <span class="text-gray-300 dark:text-gray-600">→</span>
+
+                                                {{-- 5. Konaklama --}}
+                                                @if ($isCheckedOut)
+                                                    <span class="inline-flex items-center gap-1 rounded bg-green-100 px-2 py-0.5 font-medium text-green-800 dark:bg-green-900/50 dark:text-green-300">
+                                                        ✓ Konaklama
+                                                    </span>
+                                                @elseif ($isCheckedIn)
+                                                    <span class="inline-flex items-center gap-1 rounded bg-emerald-100 px-2 py-0.5 font-bold text-emerald-800 ring-1 ring-emerald-500 dark:bg-emerald-900/50 dark:text-emerald-300">
+                                                        🏡 Konaklıyor
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-0.5 font-medium text-gray-500 dark:bg-slate-800 dark:text-gray-400">
+                                                        — Konaklama
+                                                    </span>
+                                                @endif
+
+                                                <span class="text-gray-300 dark:text-gray-600">→</span>
+
+                                                {{-- 6. Çıkış (Check-out) --}}
+                                                @if ($isCheckedOut)
+                                                    <span class="inline-flex items-center gap-1 rounded bg-green-100 px-2 py-0.5 font-medium text-green-800 dark:bg-green-900/50 dark:text-green-300" title="Çıkış yapıldı: {{ $booking->checked_out_at?->format('d.m.Y H:i') }}">
+                                                        ✓ Çıkış
+                                                    </span>
+                                                @elseif ($isCheckedIn)
+                                                    <span class="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-0.5 font-medium text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
+                                                        ⏳ Çıkış Bekliyor
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-0.5 font-medium text-gray-500 dark:bg-slate-800 dark:text-gray-400">
+                                                        — Çıkış
+                                                    </span>
+                                                @endif
+
+                                                <span class="text-gray-300 dark:text-gray-600">→</span>
+
+                                                {{-- 7. Temizlik (Turnover) --}}
+                                                @if ($turnoverDone)
+                                                    <span class="inline-flex items-center gap-1 rounded bg-green-100 px-2 py-0.5 font-bold text-green-800 dark:bg-green-900/50 dark:text-green-300" title="Temizlik tamamlandı">
+                                                        ✓ Temizlendi
+                                                    </span>
+                                                @elseif ($turnoverTask)
+                                                    <span class="inline-flex items-center gap-1 rounded bg-purple-100 px-2 py-0.5 font-bold text-purple-800 ring-1 ring-purple-500 dark:bg-purple-900/50 dark:text-purple-300" title="Temizlik görevi aktif/bekliyor">
+                                                        🧹 Temizlik ({{ $turnoverTask->gorev_durumu }})
+                                                    </span>
+                                                @elseif ($isCheckedOut)
+                                                    <span class="inline-flex items-center gap-1 rounded bg-amber-100 px-2 py-0.5 font-bold text-amber-800 dark:bg-amber-900/50 dark:text-amber-300" title="Çıkış sonrası temizlik görevi bekleniyor">
+                                                        ⏳ Temizlik Bekliyor
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-0.5 font-medium text-gray-500 dark:bg-slate-800 dark:text-gray-400">
+                                                        — Temizlik
+                                                    </span>
+                                                @endif
                                             </div>
+                                        </td>
+
+                                        {{-- Actions --}}
+                                        <td class="px-5 py-4 align-top text-right whitespace-nowrap">
+                                            @if (!$isCancelled && !$isCheckedIn && !$isCheckedOut)
+                                                {{-- Check-in Action (Wave 5) --}}
+                                                <form action="{{ route('admin.yazlik-kiralama.bookings.check-in', $booking->id) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="submit"
+                                                        id="btn-checkin-{{ $booking->id }}"
+                                                        class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow transition-all hover:bg-emerald-700 active:scale-95">
+                                                        <span>Misafir Geldi</span>
+                                                    </button>
+                                                </form>
+                                            @elseif ($isCheckedIn && !$isCheckedOut)
+                                                {{-- Check-out Action (Wave 5) --}}
+                                                <form action="{{ route('admin.yazlik-kiralama.bookings.check-out', $booking->id) }}" method="POST" class="inline"
+                                                    onsubmit="return confirm('Misafirin çıkış yaptığını onaylıyor musunuz?');">
+                                                    @csrf
+                                                    <button type="submit"
+                                                        id="btn-checkout-{{ $booking->id }}"
+                                                        class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow transition-all hover:bg-blue-700 active:scale-95">
+                                                        <span>Misafir Çıktı</span>
+                                                    </button>
+                                                </form>
+                                            @elseif ($isCheckedOut)
+                                                <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900/60 dark:text-blue-200">
+                                                    ✓ Tamamlandı (Çıkış Yapıldı)
+                                                </span>
+                                            @elseif ($isCancelled)
+                                                <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-800 dark:bg-red-900/60 dark:text-red-200">
+                                                    ✕ İptal (İşlem Yok)
+                                                </span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -274,10 +336,11 @@
                     </div>
 
                     {{-- Pagination --}}
-                    <div
-                        class="border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                        {{ $bookings->links() }}
-                    </div>
+                    @if ($bookings->hasPages())
+                        <div class="border-t border-gray-200 bg-white px-6 py-4 dark:border-slate-700 dark:bg-slate-900">
+                            {{ $bookings->appends(request()->query())->links() }}
+                        </div>
+                    @endif
                 @endif
             </div>
 

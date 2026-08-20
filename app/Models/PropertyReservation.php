@@ -7,6 +7,9 @@ use App\Traits\HasCountryScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Modules\TakimYonetimi\Models\Gorev;
 
 class PropertyReservation extends BaseModel
 {
@@ -85,5 +88,37 @@ class PropertyReservation extends BaseModel
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    /**
+     * Wave 6: Guest arrival readiness aggregate relation
+     */
+    public function readiness(): HasOne
+    {
+        return $this->hasOne(PropertyReadiness::class, 'reservation_id')->withoutGlobalScopes();
+    }
+
+    /**
+     * Wave 6: All operational tasks associated with this reservation
+     */
+    public function operationalTasks(): HasMany
+    {
+        return $this->hasMany(Gorev::class, 'reservation_id');
+    }
+
+    /**
+     * Wave 6: Pre-arrival preparation task
+     */
+    public function prepTask(): HasOne
+    {
+        return $this->hasOne(Gorev::class, 'reservation_id')->where('gorev_tipi', 'hazirlik');
+    }
+
+    /**
+     * Wave 6: Post-checkout turnover cleaning task
+     */
+    public function turnoverTask(): HasOne
+    {
+        return $this->hasOne(Gorev::class, 'reservation_id')->where('gorev_tipi', 'temizlik');
     }
 }
