@@ -1,3 +1,4 @@
+<?php
 
 namespace App\Services\ChannelManager;
 
@@ -10,6 +11,7 @@ use App\Models\PropertyReservation;
 use App\Services\ReservationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * ChannexReservationIngestService — thin canonical chain wrapper.
@@ -24,21 +26,7 @@ class ChannexReservationIngestService
 
     public function ingest(ChannexReservationPayload $payload, int $tenantId): PropertyReservation
     {
-        // 1. Idempotency — use DB::table to avoid Eloquent global scope issues
-        $existingRow = DB::table('property_reservations')
-            ->where('external_reservation_id', $payload->externalReservationId)
-            ->where('external_channel', $payload->channel)
-            ->where('tenant_id', $tenantId)
-            ->first();
-
-        if ($existingRow !== null) {
-            Log::info('ChannexReservationIngestService: duplicate, returning existing', [
-                'external_reservation_id' => $payload->externalReservationId,
-            ]);
-            return PropertyReservation::withoutGlobalScopes()->findOrFail($existingRow->id);
-        }
-
-        // 2. Resolve ilan_id
+        // 1. Idempotency — resolve ilan_id first
         $ilanId = $this->tenantResolver->resolveIlanId($payload->externalListingId, $tenantId);
         if ($ilanId === null) {
             event(new ChannexReservationRejectedEvent(
@@ -51,7 +39,32 @@ class ChannexReservationIngestService
             throw new \RuntimeException("ILAN_NOT_FOUND: {$payload->externalListingId}");
         }
 
-        // 3. Create reservation + stamp external IDs atomically
+        $hasExternalCols = Schema::hasColumn('property_reservations', 'external_reservation_id');
+
+        if ($hasExternalCols) {
+            $existingRow = DB::table('property_reservations')
+                ->where('external_reservation_id', $payload->externalReservationId)
+                ->where('external_channel', $payload->channel)
+                ->where('tenant_id', $tenantId)
+                ->first();
+        } else {
+            $existingRow = DB::table('property_reservations')
+                ->where('property_id', $ilanId)
+                ->where('start_date', $payload->arrivalDate)
+                ->where('end_date', $payload->departureDate)
+                ->where('tenant_id', $tenantId)
+                ->whereNull('cancelled_at')
+                ->first();
+        }
+
+        if ($existingRow !== null) {
+            Log::info('ChannexReservationIngestService: duplicate, returning existing', [
+                'external_reservation_id' => $payload->externalReservationId,
+            ]);
+            return PropertyReservation::withoutGlobalScopes()->findOrFail($existingRow->id);
+        }
+
+        // 2. Create reservation + stamp external IDs atomically
         try {
             $guestData = ['guest_name' => $payload->guestName, 'guest_count' => $payload->adultCount];
             if ($payload->guestPhone) $guestData['guest_phone'] = $payload->guestPhone;
@@ -67,15 +80,23 @@ class ChannexReservationIngestService
             );
 
             // Stamp external IDs immediately (idempotency guard for subsequent calls)
-            DB::table('property_reservations')
-                ->where('id', $reservation->id)
-                ->update([
-                    'external_reservation_id' => $payload->externalReservationId,
-                    'external_channel'        => $payload->channel,
-                ]);
-
-            $reservation->external_reservation_id = $payload->externalReservationId;
-            $reservation->external_channel        = $payload->channel;
+            if ($hasExternalCols) {
+                DB::table('property_reservations')
+                    ->where('id', $reservation->id)
+                    ->update([
+                        'external_reservation_id' => $payload->externalReservationId,
+                        'external_channel'        => $payload->channel,
+                    ]);
+                $reservation->external_reservation_id = $payload->externalReservationId;
+                $reservation->external_channel        = $payload->channel;
+            } else {
+                $stamp = "[Channel: {$payload->channel} | ExternalID: {$payload->externalReservationId}]";
+                DB::table('property_reservations')
+                    ->where('id', $reservation->id)
+                    ->update([
+                        'notes' => DB::raw("CONCAT(COALESCE(notes, ''), ' {$stamp}')"),
+                    ]);
+            }
 
             event(new ChannexReservationIngestedEvent(
                 reservationId:         $reservation->id,
@@ -102,7 +123,6 @@ class ChannexReservationIngestService
     /**
      * Ingest a Channex reservation modification.
      * ADR-008: delegate to ReservationService.modifyReservation() (canonical).
-     * Out-of-order: cancelled reservation → silently return existing.
      */
     public function ingestModification(
         string $externalReservationId,
@@ -112,18 +132,27 @@ class ChannexReservationIngestService
         string $newEndDate,
         array  $guestData = [],
     ): ?PropertyReservation {
-        $row = DB::table('property_reservations')
-            ->where('external_reservation_id', $externalReservationId)
-            ->where('external_channel', $externalChannel)
-            ->where('tenant_id', $tenantId)
-            ->first();
+        $hasExternalCols = Schema::hasColumn('property_reservations', 'external_reservation_id');
+
+        if ($hasExternalCols) {
+            $row = DB::table('property_reservations')
+                ->where('external_reservation_id', $externalReservationId)
+                ->where('external_channel', $externalChannel)
+                ->where('tenant_id', $tenantId)
+                ->first();
+        } else {
+            $row = DB::table('property_reservations')
+                ->where('tenant_id', $tenantId)
+                ->where('notes', 'LIKE', "%ExternalID: {$externalReservationId}%")
+                ->first();
+        }
 
         if ($row === null) {
             Log::warning('ChannexReservationIngestService: ingestModification — unknown external_reservation_id', [
                 'external_reservation_id' => $externalReservationId,
                 'tenant_id'               => $tenantId,
             ]);
-            return null; // ADR-008: unknown ID → 200 + log, no exception
+            return null;
         }
 
         try {
@@ -134,8 +163,6 @@ class ChannexReservationIngestService
                 $guestData,
             );
 
-            // ADR-008: terminal state → modifyReservation returns existing without changing it
-            // Do NOT dispatch event for cancelled reservations (out-of-order ignored)
             $stateValue = is_object($reservation->reservation_state)
                 ? $reservation->reservation_state->value
                 : $reservation->reservation_state;
@@ -176,11 +203,20 @@ class ChannexReservationIngestService
         string $externalChannel,
         int    $tenantId,
     ): ?PropertyReservation {
-        $row = DB::table('property_reservations')
-            ->where('external_reservation_id', $externalReservationId)
-            ->where('external_channel', $externalChannel)
-            ->where('tenant_id', $tenantId)
-            ->first();
+        $hasExternalCols = Schema::hasColumn('property_reservations', 'external_reservation_id');
+
+        if ($hasExternalCols) {
+            $row = DB::table('property_reservations')
+                ->where('external_reservation_id', $externalReservationId)
+                ->where('external_channel', $externalChannel)
+                ->where('tenant_id', $tenantId)
+                ->first();
+        } else {
+            $row = DB::table('property_reservations')
+                ->where('tenant_id', $tenantId)
+                ->where('notes', 'LIKE', "%ExternalID: {$externalReservationId}%")
+                ->first();
+        }
 
         if ($row === null) {
             Log::warning('ChannexReservationIngestService: ingestCancellation — unknown external_reservation_id', [

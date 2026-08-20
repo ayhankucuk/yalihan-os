@@ -45,7 +45,7 @@ class CreateOperationalTasksJob implements ShouldQueue
         ]);
 
         // Load reservation and ilan — verify tenant isolation
-        $reservation = PropertyReservation::query()
+        $reservation = PropertyReservation::withoutGlobalScopes()
             ->where('id', $this->event->reservationId)
             ->where('tenant_id', $this->event->tenantId)
             ->first();
@@ -58,7 +58,7 @@ class CreateOperationalTasksJob implements ShouldQueue
             return; // Non-retryable — reservation doesn't exist
         }
 
-        $ilan = Ilan::query()
+        $ilan = Ilan::withoutGlobalScopes()
             ->where('id', $this->event->ilanId)
             ->where('tenant_id', $this->event->tenantId)
             ->first();

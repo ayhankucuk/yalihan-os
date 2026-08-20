@@ -82,7 +82,7 @@ class PropertyReservation extends BaseModel
 
     public function ilan(): BelongsTo
     {
-        return $this->belongsTo(Ilan::class, 'property_id');
+        return $this->belongsTo(Ilan::class, 'property_id')->withoutGlobalScopes();
     }
 
     public function creator(): BelongsTo

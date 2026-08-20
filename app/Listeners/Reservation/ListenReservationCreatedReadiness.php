@@ -30,7 +30,7 @@ class ListenReservationCreatedReadiness
         try {
             $service = app(GuestArrivalReadinessService::class);
 
-            $reservation = \App\Models\PropertyReservation::query()
+            $reservation = \App\Models\PropertyReservation::withoutGlobalScopes()
                 ->where('id', $event->reservationId)
                 ->where('tenant_id', $event->tenantId)
                 ->first();

@@ -1,5 +1,28 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 137 — 2026-08-20 | WAVE 7 PHASE B1: PRODUCTION PORTFOLIO BOOTSTRAP & OPERATIONAL CHAIN ✅ CERTIFIED
+
+### WAVE 7 PHASE B1 — Production Portfolio Bootstrap & End-to-End Operational Proof
+
+**Authority:** SAAB  
+**Baseline:** `e95a5fa`  
+**Certification Status:** ✅ CERTIFIED (Waves 1–7 + B1 107/107 PASS)
+
+#### Architecture Summary
+- **Repeatable Idempotent Onboarding:** Created `BootstrapProductionPilotCommand` (`php artisan ops:bootstrap-pilot-villa`).
+- **Yalıhan Tenant & Admin User:** Bootstrapped `yalihan-emlak` / `yalihan.com.tr` and assigned `admin@yalihan.com.tr`.
+- **Pilot Luxury Villa:** Onboarded `Yalıhan Mandarin Oriental Luxury Villa #101` with `rental_enabled: true` and pricing.
+- **Channex Channel Mapping:** Created `IlanTakvimSync` mapping `CHNX-BODRUM-VILLA-101` ↔ Villa ID ↔ Tenant ID.
+- **Automated Operational Truth Chain Verified:**
+  - `Inbound Reservation -> PropertyReservation -> PropertyReadiness -> Gorev (Hazırlık) -> Wave 7 Exception Engine (EXC-01...EXC-06)`
+- **Tenant Scope Resilience:** Added `withoutGlobalScopes()` in listeners and jobs to ensure background/webhook workers maintain tenant isolation without null-context drops.
+
+#### Test Evidence
+- **Wave 7 Phase B1 Tests:** 2/2 PASS (21 assertions)
+- **Full Regression Suite:** 107/107 PASS, 274 assertions, 0 failures, 0 errors.
+
+---
+
 ## Oturum 136 — 2026-08-20 | WAVE 7 PHASE A: DETERMINISTIC OPERATIONAL EXCEPTION DETECTION ✅ CERTIFIED
 
 ### WAVE 7 PHASE A — Operational Exception Intelligence (Read-Model / Detection)
