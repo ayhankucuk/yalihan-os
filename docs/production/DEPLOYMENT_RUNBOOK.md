@@ -1,12 +1,43 @@
 # 🚀 Yalıhan AI OS — Production Deployment Runbook
 
-**Version:** 3.0 (Hetzner)
-**Son Güncelleme:** 2026-06-16
-**Stack:** PHP 8.2 / Laravel 11 / MySQL / Redis / Supervisor / Horizon / N8N / Telegram
-**Hedef Sunucu:** Hetzner CX33 — `157.180.116.63` — Cloudflare Tunnel aktif
-**SAB Uyumu:** Zorunlu — deploy öncesi `php artisan sab:integrity-scan` geçmeli
+**Version:** 4.0 (Docker V2 Architecture)
+**Son Güncelleme:** 2026-08-20
+**Stack:** PHP 8.4-FPM / Laravel 10 / Nginx 1.26 / MySQL 8.0 / Redis / Docker Compose V2 / Cloudflare
+**Hedef Sunucu:** Hetzner VPS — `157.180.116.63` — Cloudflare Edge aktif
+**SAB Uyumu:** Zorunlu — deploy öncesi testler ve full gate geçmeli
 
-> ⚠️ **Eski sunucu:** Oracle Cloud `168.138.101.124` — DEVRE DIŞI, kullanılmıyor.
+---
+
+## 0. Production Docker V2 Topology & Host Infrastructure
+
+### Container Topology
+```
+yalihanai-nginx-v2 (127.0.0.1:8010 -> 80)
+   ├── yalihanai-app-v2 (PHP 8.4-FPM on :9000)
+   └── yalihanai-queue-v2 (php artisan queue:work redis --queue=default)
+```
+
+### Host-Level Dependencies & Network Configuration
+1. **Docker Network Gateway:** `current_yalihanai-network` uses `172.18.0.1` as host gateway.
+2. **Redis Binding (`/etc/redis/redis.conf`):**
+   ```
+   bind 127.0.0.1 172.18.0.1 172.19.0.1 -::1
+   requirepass "<REDIS_PASSWORD>"
+   protected-mode yes
+   ```
+3. **Host Firewall (UFW):**
+   ```bash
+   ufw allow from 172.18.0.0/16 to any port 6379 proto tcp
+   ufw allow from 172.18.0.0/16 to any port 3306 proto tcp
+   ```
+4. **Compose Host Mapping (`docker-compose.production.yml`):**
+   ```yaml
+   extra_hosts:
+       - "host.docker.internal:172.18.0.1"
+   ```
+5. **Queue Worker Container (`yalihanai-queue-v2`):**
+   Executes `php artisan queue:work redis --queue=default --sleep=3 --tries=3 --timeout=60 --max-time=3600`
+   Graceful reload: `docker exec yalihanai-app-v2 php artisan queue:restart`
 
 ---
 

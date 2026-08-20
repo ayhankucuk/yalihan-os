@@ -136,6 +136,81 @@ services:
         read_only: false   # Laravel needs temp files
         user: "1000:1000"
 
+    # ── Queue worker ────────────────────────────────────────────
+    yalihanai-queue-v2:
+        image: yalihanai-app-v2:latest
+        container_name: yalihanai-queue-v2
+        restart: unless-stopped
+        command: ["php", "artisan", "queue:work", "redis", "--queue=default", "--sleep=3", "--tries=3", "--timeout=60", "--max-time=3600"]
+        environment:
+            # Required at runtime — no defaults
+            APP_KEY: "${APP_KEY:?APP_KEY is required}"
+
+            # Framework
+            APP_ENV: "production"
+            APP_DEBUG: "false"
+            APP_URL: "https://api.yalihanemlak.com.tr"
+            APP_LOCALE: "tr"
+
+            # Database (host gateway — set via DB_HOST in .env)
+            DB_CONNECTION: "mysql"
+            DB_HOST: "${DB_HOST:?DB_HOST is required — set to host gateway IP in .env}"
+            DB_PORT: "${DB_PORT:-3306}"
+            DB_DATABASE: "${DB_DATABASE:?DB_DATABASE required}"
+            DB_USERNAME: "${DB_USERNAME:?DB_USERNAME required}"
+            DB_PASSWORD: "${DB_PASSWORD:-}"
+
+            # Redis (host gateway — set via REDIS_HOST in .env)
+            REDIS_CLIENT: "phpredis"
+            REDIS_HOST: "${REDIS_HOST:?REDIS_HOST is required — set to host gateway IP in .env}"
+            REDIS_PORT: "${REDIS_PORT:-6379}"
+            REDIS_PASSWORD: "${REDIS_PASSWORD:-}"
+
+            # Cache & Queue
+            CACHE_STORE: "redis"
+            QUEUE_CONNECTION: "redis"
+            SESSION_DRIVER: "redis"
+
+            # Logging
+            LOG_CHANNEL: "daily"
+            LOG_LEVEL: "warning"
+
+            # WhatsApp / Meta (optional — set WHATSAPP_WEBHOOK_VERIFY_TOKEN in .env)
+            WHATSAPP_WEBHOOK_VERIFY_TOKEN: "${WHATSAPP_WEBHOOK_VERIFY_TOKEN:-}"
+
+            # TZ
+            TZ: "Europe/Istanbul"
+
+            # ProductionLockMiddleware — OPEN required for web routes
+            PRODUCTION_LOCK: OPEN
+        extra_hosts:
+            - "host.docker.internal:172.18.0.1"
+        volumes:
+            # Persistent storage — survive container restart
+            - yalihan-storage:/app/storage
+            - yalihan-cache:/app/bootstrap/cache
+
+        healthcheck:
+            test: ["CMD-SHELL", "ps aux | grep -v grep | grep 'queue:work' > /dev/null 2>&1 || exit 1"]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 15s
+
+        networks:
+            - yalihanai-network
+
+        deploy:
+            resources:
+                limits:
+                    memory: 512M
+                reservations:
+                    memory: 128M
+
+        # Security
+        read_only: false   # Laravel needs temp files
+        user: "1000:1000"
+
 volumes:
     # Persistent storage survives container rebuild
     yalihan-storage:
