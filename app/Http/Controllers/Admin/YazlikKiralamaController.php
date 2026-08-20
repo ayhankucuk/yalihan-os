@@ -513,11 +513,24 @@ class YazlikKiralamaController extends AdminController
     }
 
     /**
+     * Resolve authenticated tenant ID safely (SAB Rule 1 — Fail-Closed)
+     */
+    private function resolveTenantId(Request $request): int
+    {
+        $user = $request->user();
+        if (!$user || empty($user->tenant_id)) {
+            abort(403, 'Tenant context is required.');
+        }
+
+        return (int) $user->tenant_id;
+    }
+
+    /**
      * Wave 5: Field Check-in Action
      */
     public function checkIn(Request $request, int $id)
     {
-        $tenantId = $request->user()?->tenant_id ?? 1;
+        $tenantId = $this->resolveTenantId($request);
 
         try {
             $this->reservationService->checkIn($id, $tenantId);
@@ -539,7 +552,7 @@ class YazlikKiralamaController extends AdminController
      */
     public function checkOut(Request $request, int $id)
     {
-        $tenantId = $request->user()?->tenant_id ?? 1;
+        $tenantId = $this->resolveTenantId($request);
 
         try {
             $this->reservationService->checkOut($id, $tenantId);

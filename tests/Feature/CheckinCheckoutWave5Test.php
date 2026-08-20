@@ -198,6 +198,54 @@ class CheckinCheckoutWave5Test extends TestCase
     }
 
     // ═══════════════════════════════════════════════════════════════════════
+    // W5-E4-B: Null Tenant Fail-Closed on Check-in (SAB Rule 1)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    public function test_authenticated_admin_with_null_tenant_cannot_check_in(): void
+    {
+        $reservation = $this->createCheckInReadyReservation(1, $this->ilan);
+
+        $nullTenantAdmin = User::factory()->create(['tenant_id' => null]);
+        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $nullTenantAdmin->assignRole($adminRole);
+
+        $response = $this->actingAs($nullTenantAdmin)
+            ->post(route('admin.yazlik-kiralama.bookings.check-in', $reservation->id));
+
+        $response->assertStatus(403);
+
+        $fresh = PropertyReservation::find($reservation->id);
+        $this->assertNull($fresh->checked_in_at, 'Null-tenant admin must never mutate checked_in_at');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // W5-E4-C: Null Tenant Fail-Closed on Check-out (SAB Rule 1)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    public function test_authenticated_admin_with_null_tenant_cannot_check_out(): void
+    {
+        $reservation = $this->createCheckInReadyReservation(1, $this->ilan);
+        $reservation->update(['checked_in_at' => now()]);
+
+        $nullTenantAdmin = User::factory()->create(['tenant_id' => null]);
+        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $nullTenantAdmin->assignRole($adminRole);
+
+        $response = $this->actingAs($nullTenantAdmin)
+            ->post(route('admin.yazlik-kiralama.bookings.check-out', $reservation->id));
+
+        $response->assertStatus(403);
+
+        $fresh = PropertyReservation::find($reservation->id);
+        $this->assertNull($fresh->checked_out_at, 'Null-tenant admin must never mutate checked_out_at');
+        $this->assertNull($fresh->completed_at, 'Null-tenant admin must never mutate completed_at');
+
+        // Verify no turnover task was created
+        $gorevCount = Gorev::where('reservation_id', $reservation->id)->count();
+        $this->assertEquals(0, $gorevCount, 'No turnover task side effect must occur');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
     // W5-E5: Cancelled reservation cannot check in
     // ═══════════════════════════════════════════════════════════════════════
 
