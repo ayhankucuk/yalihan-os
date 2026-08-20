@@ -53,7 +53,7 @@ services:
             retries: 3
             start_period: 15s
         networks:
-            - yalihanai-production-net
+            - yalihanai-network
 
     # ── PHP-FPM application ─────────────────────────────────────
     yalihanai-app-v2:
@@ -121,7 +121,7 @@ services:
             start_period: 20s
 
         networks:
-            - yalihanai-production-net
+            - yalihanai-network
 
         deploy:
             resources:
@@ -146,5 +146,6 @@ volumes:
         driver: local
 
 networks:
-    yalihanai-production-net:
-        driver: bridge
+    yalihanai-network:
+        name: current_yalihanai-network
+        external: true
