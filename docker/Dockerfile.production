@@ -59,7 +59,8 @@ RUN mkdir -p \
         /app/storage/logs \
         /app/bootstrap/cache \
     && chown -R appuser:appuser /app/storage /app/bootstrap/cache \
-    && composer install --no-interaction --optimize-autoloader --no-dev \
+    && composer install --no-interaction --optimize-autoloader --no-dev
+
 # Copy built frontend assets from frontend stage
 COPY --from=frontend-build /src/public/build /app/public/build
 
