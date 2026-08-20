@@ -2,16 +2,22 @@
 
 namespace App\Services;
 
+use App\DTOs\Reservation\ValidityResult;
 use App\Enums\ReservationState;
+use App\Events\Reservation\ReservationCancelledEvent;
+use App\Events\Reservation\ReservationCheckedInEvent;
+use App\Events\Reservation\ReservationCheckedOutEvent;
+use App\Events\Reservation\ReservationCompletedEvent;
 use App\Events\Reservation\ReservationCreatedEvent;
 use App\Events\Reservation\ReservationModifiedEvent;
-use App\Events\Reservation\ReservationCancelledEvent;
 use App\Models\Ilan;
 use App\Models\PropertyAvailability;
 use App\Models\PropertyReservation;
+use App\Services\Reservation\GuestArrivalReadinessService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Traits\GuardsAgentWrites;
 
 class ReservationService
@@ -681,6 +687,196 @@ class ReservationService
 
         // Cancelled state returns early with $resultData['reservation'] = $reservation (not fresh)
         return $resultData['reservation'] ?? $resultData['reservation'];
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Wave 4: Real-Time Check-in / Check-out
+    // SAAB Decision WAVE4-CHECKIN / WAVE4-CHECKOUT
+    // Baseline: 8406c78
+    // ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * Record guest physical check-in.
+     *
+     * Invariants enforced (in order):
+     *  1. Tenant isolation — reservation must belong to $tenantId
+     *  2. Reservation must be CONFIRMED
+     *  3. Reservation must not be cancelled
+     *  4. Idempotency — checked_in_at must be null (lockForUpdate)
+     *  5. Readiness gate — GuestArrivalReadinessService::canCheckIn() must PASS
+     *
+     * Fires ReservationCheckedInEvent after transaction commits.
+     *
+     * @throws Exception on invariant violation
+     */
+    public function checkIn(int $reservationId, int $tenantId): PropertyReservation
+    {
+        $this->blockAgentWrite(__FUNCTION__);
+
+        $reservation = null;
+
+        DB::transaction(function () use ($reservationId, $tenantId, &$reservation) {
+            /** @var PropertyReservation|null $locked */
+            $locked = PropertyReservation::lockForUpdate()
+                ->where('id', $reservationId)
+                ->where('tenant_id', $tenantId)
+                ->first();
+
+            if ($locked === null) {
+                throw new Exception(
+                    "Check-in failed: reservation #{$reservationId} not found or tenant mismatch."
+                );
+            }
+
+            // INV-W4-CI-1: must be CONFIRMED
+            $state = $locked->reservation_state instanceof ReservationState
+                ? $locked->reservation_state->value
+                : (string) $locked->reservation_state;
+
+            if ($state !== 'confirmed') {
+                throw new Exception(
+                    "Check-in failed: reservation #{$reservationId} is not CONFIRMED (current: {$state})."
+                );
+            }
+
+            // INV-W4-CI-2: must not be cancelled
+            if ($locked->cancelled_at !== null) {
+                throw new Exception(
+                    "Check-in failed: reservation #{$reservationId} is cancelled."
+                );
+            }
+
+            // INV-W4-CI-3: idempotency — cannot check in twice
+            if ($locked->checked_in_at !== null) {
+                Log::info('ReservationService::checkIn: idempotent — already checked in', [
+                    'reservation_id' => $reservationId,
+                    'tenant_id'      => $tenantId,
+                    'checked_in_at'  => $locked->checked_in_at->toIso8601String(),
+                ]);
+                $reservation = $locked;
+                return; // Idempotent: return existing state, no double-stamp
+            }
+
+            // INV-W4-CI-4: readiness gate — reuse existing canonical policy
+            // SAAB Decision Q2: canCheckIn() must be enforced here.
+            // GuestArrivalReadinessService::canCheckIn() is the canonical readiness policy.
+            $readinessService = app(GuestArrivalReadinessService::class);
+            $validityResult = $readinessService->canCheckIn($locked);
+
+            if (! $validityResult->canCheckIn) {
+                throw new Exception(
+                    "Check-in blocked [{$validityResult->blockedCode}]: {$validityResult->blockedReason}"
+                );
+            }
+
+            // All invariants passed — stamp check-in
+            $locked->update(['checked_in_at' => now()]);
+
+            Log::info('ReservationService::checkIn: checked_in_at stamped', [
+                'reservation_id' => $reservationId,
+                'tenant_id'      => $tenantId,
+                'checked_in_at'  => $locked->checked_in_at?->toIso8601String() ?? now()->toIso8601String(),
+            ]);
+
+            $reservation = $locked->fresh();
+        });
+
+        // Dispatch canonical event after commit
+        event(ReservationCheckedInEvent::fromModel($reservation));
+
+        return $reservation;
+    }
+
+    /**
+     * Record guest physical check-out and immediately trigger turnover.
+     *
+     * Invariants enforced (in order):
+     *  1. Tenant isolation — reservation must belong to $tenantId
+     *  2. Idempotency — checked_out_at must be null (lockForUpdate)
+     *  3. Soft guard — if checked_in_at IS NULL, emits structured warning and continues
+     *     (SAAB Decision Q1: checkout must not be blocked by missing check-in record)
+     *
+     * Stamps checked_out_at and completed_at.
+     * Fires ReservationCheckedOutEvent (domain fact) and
+     * ReservationCompletedEvent (reuses canonical turnover pipeline).
+     *
+     * @throws Exception on invariant violation
+     */
+    public function checkOut(int $reservationId, int $tenantId): PropertyReservation
+    {
+        $this->blockAgentWrite(__FUNCTION__);
+
+        $reservation = null;
+        $hadFormalCheckin = true;
+
+        DB::transaction(function () use ($reservationId, $tenantId, &$reservation, &$hadFormalCheckin) {
+            /** @var PropertyReservation|null $locked */
+            $locked = PropertyReservation::lockForUpdate()
+                ->where('id', $reservationId)
+                ->where('tenant_id', $tenantId)
+                ->first();
+
+            if ($locked === null) {
+                throw new Exception(
+                    "Check-out failed: reservation #{$reservationId} not found or tenant mismatch."
+                );
+            }
+
+            // INV-W4-CO-1: idempotency — cannot check out twice
+            if ($locked->checked_out_at !== null) {
+                Log::info('ReservationService::checkOut: idempotent — already checked out', [
+                    'reservation_id'  => $reservationId,
+                    'tenant_id'       => $tenantId,
+                    'checked_out_at'  => $locked->checked_out_at->toIso8601String(),
+                ]);
+                $reservation = $locked;
+                return; // Idempotent
+            }
+
+            // INV-W4-CO-2: soft guard — warn if check-in was never formally recorded
+            if ($locked->checked_in_at === null) {
+                $hadFormalCheckin = false;
+                Log::warning('ReservationService::checkOut: soft-guard — checkout without formal check-in', [
+                    'reservation_id' => $reservationId,
+                    'tenant_id'      => $tenantId,
+                    'executed_at'    => now()->toIso8601String(),
+                    'audit_note'     => 'SAAB-Q1: checkout proceeds, checked_in_at was null. Manual reconciliation may be required.',
+                ]);
+            }
+
+            $now = now();
+            $updates = [
+                'checked_out_at' => $now,
+            ];
+
+            // Stamp completed_at only if not already set (idempotent canonical completion)
+            if ($locked->completed_at === null) {
+                $updates['completed_at'] = $now;
+            }
+
+            $locked->update($updates);
+
+            Log::info('ReservationService::checkOut: checked_out_at stamped', [
+                'reservation_id'   => $reservationId,
+                'tenant_id'        => $tenantId,
+                'checked_out_at'   => $now->toIso8601String(),
+                'completed_at'     => $locked->fresh()->completed_at?->toIso8601String(),
+                'had_formal_checkin' => $hadFormalCheckin,
+            ]);
+
+            $reservation = $locked->fresh();
+        });
+
+        // ── Dispatch domain fact event (checkout record) ────────────────
+        event(ReservationCheckedOutEvent::fromModel($reservation));
+
+        // ── Reuse canonical turnover pipeline ───────────────────────────
+        // ReservationCompletedEvent → ListenReservationCompleted
+        //   → ProcessReservationCompletedJob → OperationalGorevService::createTurnoverTask()
+        // Idempotent: OperationalGorevService checks for existing temizlik gorev before creating.
+        event(ReservationCompletedEvent::fromModel($reservation));
+
+        return $reservation;
     }
 
     /**

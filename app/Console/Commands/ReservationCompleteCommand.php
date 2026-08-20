@@ -47,6 +47,7 @@ class ReservationCompleteCommand extends Command
         $query = PropertyReservation::query()
             ->whereDate('end_date', '<=', $today)
             ->whereNull('completed_at')
+            ->whereNull('checked_out_at')  // Wave 4: skip reservations already completed by real-time checkOut()
             ->whereNotIn('reservation_state', ['cancelled']);
 
         if ($tenantId) {

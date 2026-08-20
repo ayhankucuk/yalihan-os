@@ -165,6 +165,13 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\Reservation\CheckinWindowOpenedEvent::class => [
             \App\Listeners\Reservation\ListenCheckinWindowOpened::class,
         ],
+
+        // CHECKIN_CHECKOUT Wave 4: Real-time Check-in / Check-out
+        // SAAB Decision WAVE4-CHECKIN / WAVE4-CHECKOUT
+        // Listeners omitted intentionally: no empty extension-point classes.
+        // Downstream handlers will be added here when a real business need exists.
+        \App\Events\Reservation\ReservationCheckedInEvent::class  => [],
+        \App\Events\Reservation\ReservationCheckedOutEvent::class => [],
     ];
 
     /**
