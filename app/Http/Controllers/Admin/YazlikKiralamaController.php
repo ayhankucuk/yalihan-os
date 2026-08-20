@@ -477,7 +477,7 @@ class YazlikKiralamaController extends AdminController
     }
 
     /**
-     * Handle booking management (Wave 6: Operations Control Surface)
+     * Handle booking management (Wave 6+7: Operations Control Surface & Exception Intelligence)
      * Context7: Eloquent relationship usage - direct table access removed
      */
     public function bookings(Request $request, $id = null)
@@ -492,6 +492,16 @@ class YazlikKiralamaController extends AdminController
             }
         }
 
+        $evaluator = app(\App\Services\Reservation\OperationalExceptionEvaluatorService::class);
+
+        // Pre-evaluate exceptions across tenant reservations for accurate count & filter
+        $candidateReservations = PropertyReservation::where('tenant_id', $tenantId)
+            ->whereNull('cancelled_at')
+            ->with(['readiness', 'prepTask', 'turnoverTask'])
+            ->get();
+        $allExceptionsMap = $evaluator->evaluateCollection($candidateReservations);
+        $exceptionIds = array_keys($allExceptionsMap);
+
         $query = PropertyReservation::where('tenant_id', $tenantId)
             ->with(['ilan:id,baslik', 'readiness', 'prepTask', 'turnoverTask']);
 
@@ -503,7 +513,9 @@ class YazlikKiralamaController extends AdminController
 
         $filter = $request->get('filter');
 
-        if ($filter === 'arrival_today') {
+        if ($filter === 'exceptions' || $filter === 'intervention_needed') {
+            $query->whereIn('id', $exceptionIds ?: [0]);
+        } elseif ($filter === 'arrival_today') {
             $query->whereDate('start_date', Carbon::today()->toDateString())
                 ->whereNull('cancelled_at')
                 ->whereNull('checked_in_at');
@@ -549,9 +561,13 @@ class YazlikKiralamaController extends AdminController
             ->orderBy('id', 'desc')
             ->paginate(20);
 
+        // Exceptions map for current page items
+        $exceptionsMap = $evaluator->evaluateCollection($bookings->items());
+
         // Operational counts for filter tabs
         $counts = [
             'all' => PropertyReservation::where('tenant_id', $tenantId)->count(),
+            'exceptions' => count($allExceptionsMap),
             'arrival_today' => PropertyReservation::where('tenant_id', $tenantId)
                 ->whereDate('start_date', Carbon::today()->toDateString())
                 ->whereNull('cancelled_at')
@@ -579,7 +595,7 @@ class YazlikKiralamaController extends AdminController
                 ->count(),
         ];
 
-        return view('admin.yazlik-kiralama.bookings', compact('bookings', 'id', 'filter', 'counts'));
+        return view('admin.yazlik-kiralama.bookings', compact('bookings', 'id', 'filter', 'counts', 'exceptionsMap'));
     }
 
     /**

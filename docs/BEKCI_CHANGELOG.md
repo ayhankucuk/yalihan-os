@@ -1,5 +1,32 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 136 — 2026-08-20 | WAVE 7 PHASE A: DETERMINISTIC OPERATIONAL EXCEPTION DETECTION ✅ CERTIFIED
+
+### WAVE 7 PHASE A — Operational Exception Intelligence (Read-Model / Detection)
+
+**Authority:** SAAB  
+**Baseline:** `b39ec07`  
+**Certification Status:** ✅ CERTIFIED (Waves 1–7 105/105 PASS, W7 14/14 PASS)
+
+#### Architecture Summary
+- **Zero Side-Effects & Zero Migration:** Detection only (Detection ≠ Decision ≠ Execution). 0 DB writes, 0 events, 0 jobs dispatched, 0 notifications sent, 0 AI calls.
+- **6 Deterministic Exception Rules:**
+  - `EXC-01` (P0): `IMMINENT_ARRIVAL_UNREADY` — Today arrival + unready.
+  - `EXC-02` (P0): `MISSING_ACCESS_CREDENTIAL` — Today arrival + access credential false.
+  - `EXC-03` (P1): `OVERDUE_CHECKIN` — Past start date + not checked in.
+  - `EXC-04` (P0): `OVERDUE_CHECKOUT` — Past end date + not checked out (Overstay).
+  - `EXC-05` (P1): `UNSTARTED_TURNOVER` — Checked out + turnover unstarted 2h+.
+  - `EXC-06` (P0): `BACK_TO_BACK_TURNOVER_RISK` — Checked out + turnover incomplete + next active booking within 24h on same property.
+- **DTO & Evaluator Engine:** Created `OperationalExceptionDTO` and `OperationalExceptionEvaluatorService`.
+- **Operations Surface Integration:** Added `⚠️ Müdahale Gerekenler (X)` filter tab and prominent P0/P1 exception alert badges on reservation rows.
+- **Strict Invariants:** Cancelled reservations produce 0 exceptions. Deterministic priority sorting (P0 before P1). Fail-closed tenant isolation.
+
+#### Test Evidence
+- **Wave 7 Gates:** 14/14 PASS (`W7-01` to `W7-14`)
+- **Waves 1–7 Regression:** 105/105 PASS, 253 assertions, 0 failures, 0 errors.
+
+---
+
 ## Oturum 135 — 2026-08-20 | WAVE 6: RESERVATION OPERATIONS CONTROL SURFACE ✅ CERTIFIED
 
 ### WAVE 6 — Reservation Operations Control Surface (Read-Model / Visibility)

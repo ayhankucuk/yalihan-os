@@ -1,6 +1,6 @@
 @extends('admin.layouts.admin')
 
-@section('title', 'Rezervasyon Operasyonları Kontrol Merkezi')
+@section('title', 'Rezervasyon Operasyonları & İstisna Kontrol Merkezi')
 
 @section('content')
     <div class="min-h-screen bg-gray-50 py-8 dark:bg-slate-900">
@@ -13,7 +13,7 @@
                         📅 Rezervasyon Operasyonları
                     </h1>
                     <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        Uçtan uca operasyonel kontrol: Hazırlık → Readiness → Giriş → Konaklama → Çıkış → Temizlik
+                        Uçtan uca operasyonel kontrol ve deterministik istisna tespiti (Wave 7)
                     </p>
                 </div>
 
@@ -42,8 +42,17 @@
                 </div>
             @endif
 
-            {{-- Wave 6: Operational Filter Tabs --}}
+            {{-- Wave 6+7: Operational Filter Tabs --}}
             <div class="mb-6 flex flex-wrap gap-2">
+                {{-- Priority Exception Filter --}}
+                <a href="{{ route('admin.yazlik-kiralama.bookings', ['id' => $id ?? null, 'filter' => 'exceptions']) }}"
+                    class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all {{ $filter === 'exceptions' || $filter === 'intervention_needed' ? 'bg-red-600 text-white shadow-md ring-2 ring-red-400' : (($counts['exceptions'] ?? 0) > 0 ? 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:text-gray-200 dark:border-slate-700') }}">
+                    <span>⚠️ Müdahale Gerekenler</span>
+                    <span class="rounded-full px-2 py-0.5 text-xs font-bold {{ $filter === 'exceptions' || $filter === 'intervention_needed' ? 'bg-red-700 text-white' : 'bg-red-200 text-red-900 dark:bg-red-900 dark:text-red-200' }}">
+                        {{ $counts['exceptions'] ?? 0 }}
+                    </span>
+                </a>
+
                 <a href="{{ route('admin.yazlik-kiralama.bookings', ['id' => $id ?? null]) }}"
                     class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all {{ empty($filter) ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:text-gray-200 dark:border-slate-700' }}">
                     <span>Tümü</span>
@@ -106,7 +115,7 @@
                                     <th class="px-5 py-3.5">ID / İlan</th>
                                     <th class="px-5 py-3.5">Tarihler</th>
                                     <th class="px-5 py-3.5">Misafir</th>
-                                    <th class="px-5 py-3.5">Operasyonel Durum Zinciri (7 Aşama)</th>
+                                    <th class="px-5 py-3.5">Operasyonel Durum Zinciri & İstisnalar</th>
                                     <th class="px-5 py-3.5 text-right">İşlemler</th>
                                 </tr>
                             </thead>
@@ -140,9 +149,12 @@
 
                                         $turnoverTask = $booking->turnoverTask;
                                         $turnoverDone = ($turnoverTask?->gorev_durumu === 'tamamlandi');
+
+                                        // Wave 7: Exceptions for this reservation
+                                        $rowExceptions = $exceptionsMap[$booking->id] ?? [];
                                     @endphp
 
-                                    <tr class="transition-colors hover:bg-gray-50/70 dark:hover:bg-slate-800/50">
+                                    <tr class="transition-colors hover:bg-gray-50/70 dark:hover:bg-slate-800/50 {{ !empty($rowExceptions) ? 'bg-red-50/30 dark:bg-red-950/10' : '' }}">
                                         {{-- ID & Listing --}}
                                         <td class="px-5 py-4 align-top">
                                             <div class="font-bold text-gray-900 dark:text-slate-100">#{{ $booking->id }}</div>
@@ -170,8 +182,9 @@
                                             <div class="text-xs text-gray-500 dark:text-gray-400">{{ $booking->guest_phone ?? $booking->guest_email ?? '—' }}</div>
                                         </td>
 
-                                        {{-- 7-Stage Visual Operational Stepper --}}
+                                        {{-- 7-Stage Visual Operational Stepper & Exceptions --}}
                                         <td class="px-5 py-4 align-top">
+                                            {{-- Stepper --}}
                                             <div class="flex flex-wrap items-center gap-1.5 text-xs">
                                                 {{-- 1. Rezervasyon --}}
                                                 @if ($isCancelled)
@@ -294,6 +307,18 @@
                                                     </span>
                                                 @endif
                                             </div>
+
+                                            {{-- Wave 7: Exception Banners --}}
+                                            @if (!empty($rowExceptions))
+                                                <div class="mt-2.5 flex flex-col gap-1">
+                                                    @foreach ($rowExceptions as $exc)
+                                                        <div class="inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-xs font-semibold {{ $exc->isP0() ? 'border-red-300 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/60 dark:text-red-200' : 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-200' }}" title="{{ $exc->reason }}">
+                                                            <span class="font-bold">{{ $exc->isP0() ? '🔴 P0' : '🟡 P1' }} — {{ $exc->title }}:</span>
+                                                            <span class="font-normal">{{ $exc->reason }}</span>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
                                         </td>
 
                                         {{-- Actions --}}

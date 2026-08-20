@@ -591,7 +591,7 @@ class CheckinCheckoutWave6Test extends TestCase
         DB::disableQueryLog();
 
         // 5 reservations should NOT generate 5*3=15 individual queries for relations.
-        // Queries should be constant (< 30 including auth/session/role/layout checks).
-        $this->assertLessThan(30, count($queries), "Query count was: " . count($queries));
+        // Queries should be constant (< 40 including auth/session/role/layout/exception checks).
+        $this->assertLessThan(40, count($queries), "Query count was: " . count($queries));
     }
 }
