@@ -1397,6 +1397,10 @@ Route::prefix('admin/yazlik-kiralama')->name('admin.yazlik-kiralama.')->middlewa
     Route::get('/bookings/{id?}', [\App\Http\Controllers\Admin\YazlikKiralamaController::class, 'bookings'])->name('bookings');
     // Route::put('/bookings/{id}/durum', [\App\Http\Controllers\Admin\YazlikKiralamaController::class, 'updateBookingDurumu'])->name('bookings.update-durum');
 
+    // Wave 5: Field Check-in / Check-out Action Surface (POST)
+    Route::post('/bookings/{id}/check-in', [\App\Http\Controllers\Admin\YazlikKiralamaController::class, 'checkIn'])->name('bookings.check-in');
+    Route::post('/bookings/{id}/check-out', [\App\Http\Controllers\Admin\YazlikKiralamaController::class, 'checkOut'])->name('bookings.check-out');
+
     // Takvim - Calendar View (MUST be second!)
     Route::prefix('takvim')->name('takvim.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\TakvimController::class, 'index'])->name('index');

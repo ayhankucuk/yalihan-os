@@ -14,8 +14,10 @@ use App\Models\FeatureCategory;
 use App\Models\Ilan;
 use App\Models\IlanFotografi;
 use App\Models\IlanKategori;
+use App\Models\PropertyReservation;
 use App\Models\YazlikRezervasyon;
 use App\Services\Ilan\YazlikKiralamaService;
+use App\Services\ReservationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -25,7 +27,8 @@ use Illuminate\Support\Facades\Validator;
 class YazlikKiralamaController extends AdminController
 {
     public function __construct(
-        private YazlikKiralamaService $yazlikService
+        private YazlikKiralamaService $yazlikService,
+        private ReservationService $reservationService
     ) {}
     /**
      * Display summer rental listings dashboard
@@ -480,21 +483,23 @@ class YazlikKiralamaController extends AdminController
      */
     public function bookings(Request $request, $id = null)
     {
-        $query = YazlikRezervasyon::with('ilan:id,baslik');
+        $query = PropertyReservation::with('ilan:id,baslik');
 
         if ($id) {
-            $query->where('ilan_id', $id);
+            $query->where(function ($q) use ($id) {
+                $q->where('property_id', $id)->orWhere('ilan_id', $id);
+            });
         }
 
-        if ($request->filled('aktiflik_durumu')) {
-            $query->where('aktiflik_durumu', $request->get('aktiflik_durumu'));
+        if ($request->filled('rezervasyon_durumu') || $request->filled('reservation_state')) {
+            $state = $request->get('reservation_state', $request->get('rezervasyon_durumu'));
+            $query->where('reservation_state', $state);
         }
-
 
         if ($request->filled('date_range')) {
             $dateRange = explode(' - ', $request->get('date_range'));
             if (count($dateRange) === 2) {
-                $query->whereBetween('check_in', [
+                $query->whereBetween('start_date', [
                     Carbon::parse($dateRange[0])->format('Y-m-d'),
                     Carbon::parse($dateRange[1])->format('Y-m-d'),
                 ]);
@@ -505,6 +510,50 @@ class YazlikKiralamaController extends AdminController
             ->paginate(20);
 
         return view('admin.yazlik-kiralama.bookings', compact('bookings', 'id'));
+    }
+
+    /**
+     * Wave 5: Field Check-in Action
+     */
+    public function checkIn(Request $request, int $id)
+    {
+        $tenantId = $request->user()?->tenant_id ?? 1;
+
+        try {
+            $this->reservationService->checkIn($id, $tenantId);
+
+            return back()->with('success', 'Misafir girişi başarıyla kaydedildi.');
+        } catch (\Exception $e) {
+            Log::warning('YazlikKiralamaController::checkIn failed', [
+                'reservation_id' => $id,
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Check-in başarısız: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Wave 5: Field Check-out Action
+     */
+    public function checkOut(Request $request, int $id)
+    {
+        $tenantId = $request->user()?->tenant_id ?? 1;
+
+        try {
+            $this->reservationService->checkOut($id, $tenantId);
+
+            return back()->with('success', 'Misafir çıkışı kaydedildi. Temizlik operasyonu başlatıldı.');
+        } catch (\Exception $e) {
+            Log::warning('YazlikKiralamaController::checkOut failed', [
+                'reservation_id' => $id,
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Check-out başarısız: ' . $e->getMessage());
+        }
     }
 
     /**

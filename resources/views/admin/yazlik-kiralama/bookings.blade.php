@@ -23,11 +23,30 @@
                 </a>
             </div>
 
+            {{-- Flash Messages --}}
+            @if (session('success'))
+                <div class="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold">✓</span>
+                        <p class="font-medium">{{ session('success') }}</p>
+                    </div>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold">✕</span>
+                        <p class="font-medium">{{ session('error') }}</p>
+                    </div>
+                </div>
+            @endif
+
             {{-- Filters --}}
             <div class="mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
                 x-data="{
                     showFilters: false,
-                    rezervasyon_durumu: '{{ request('rezervasyon_durumu') }}',
+                    rezervasyon_durumu: '{{ request('rezervasyon_durumu', request('reservation_state')) }}',
                     dateRange: '{{ request('date_range') }}'
                 }">
 
@@ -139,12 +158,16 @@
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                 @foreach ($bookings as $booking)
-                                    <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                                        x-data="{
-                                            bookingId: {{ $booking->id }},
-                                            rezervasyon_durumu: '{{ $booking->rezervasyon_durumu }}',
-                                            updating: false
-                                        }">
+                                    @php
+                                        $rawState = $booking->reservation_state instanceof \App\Enums\ReservationState
+                                            ? $booking->reservation_state->value
+                                            : ($booking->reservation_state ?? $booking->rezervasyon_durumu ?? 'pending');
+                                        $isConfirmed = ($rawState === 'confirmed');
+                                        $isCancelled = ($rawState === 'cancelled' || $booking->cancelled_at !== null);
+                                        $isCheckedIn = ($booking->checked_in_at !== null);
+                                        $isCheckedOut = ($booking->checked_out_at !== null || $booking->completed_at !== null || $rawState === 'completed');
+                                    @endphp
+                                    <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                         {{-- ID --}}
                                         <td
                                             class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-slate-100 dark:text-white">
@@ -155,20 +178,20 @@
                                         <td class="px-6 py-4 text-sm text-gray-900 dark:text-slate-100 dark:text-white">
                                             <div class="font-semibold">{{ $booking->ilan->baslik ?? 'N/A' }}</div>
                                             <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                İlan ID: {{ $booking->ilan_id }}
+                                                İlan ID: {{ $booking->ilan_id ?? $booking->property_id }}
                                             </div>
                                         </td>
 
                                         {{-- Check-in --}}
                                         <td
                                             class="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-slate-100 dark:text-white">
-                                            {{ \Carbon\Carbon::parse($booking->check_in)->format('d.m.Y') }}
+                                            {{ \Carbon\Carbon::parse($booking->start_date ?? $booking->check_in)->format('d.m.Y') }}
                                         </td>
 
                                         {{-- Check-out --}}
                                         <td
                                             class="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-slate-100 dark:text-white">
-                                            {{ \Carbon\Carbon::parse($booking->check_out)->format('d.m.Y') }}
+                                            {{ \Carbon\Carbon::parse($booking->end_date ?? $booking->check_out)->format('d.m.Y') }}
                                         </td>
 
                                         {{-- Misafir --}}
@@ -181,34 +204,67 @@
 
                                         {{-- Status --}}
                                         <td class="whitespace-nowrap px-6 py-4">
-                                            <span
-                                                class="@if ($booking->rezervasyon_durumu === 'confirmed') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
-                                        @elseif($booking->rezervasyon_durumu === 'pending') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
-                                        @elseif($booking->rezervasyon_durumu === 'cancelled') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
-                                        @elseif($booking->rezervasyon_durumu === 'completed') bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
-                                        @else bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 @endif inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-                                                @if ($booking->rezervasyon_durumu === 'confirmed') ✓
-                                                    Onaylandı
-                                                @elseif($booking->rezervasyon_durumu === 'pending')
-                                                    ⏳ Beklemede
-                                                @elseif($booking->rezervasyon_durumu === 'cancelled')
+                                            @if ($isCancelled)
+                                                <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-800 dark:bg-red-900 dark:text-red-200">
                                                     ✕ İptal
-                                                @elseif($booking->rezervasyon_durumu === 'completed')
+                                                </span>
+                                            @elseif ($isCheckedOut)
+                                                <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                                                     ✓ Tamamlandı
-                                                @else
-                                                    {{ $booking->rezervasyon_durumu }}
+                                                </span>
+                                            @elseif ($isCheckedIn)
+                                                <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
+                                                    🏡 Konaklıyor
+                                                </span>
+                                            @elseif ($isConfirmed)
+                                                <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                    ✓ Onaylandı
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                                    ⏳ Beklemede
+                                                </span>
+                                            @endif
+                                        </td>
 
-                                                    {{-- Actions --}}
+                                        {{-- Actions --}}
                                         <td class="whitespace-nowrap px-6 py-4 text-sm">
                                             <div class="flex items-center gap-2">
-                                                <button @click="alert('Detay modal açılacak')"
-                                                    class="rounded-lg bg-blue-600 px-3 py-1 text-white transition-colors hover:bg-blue-700">
+                                                @if ($isConfirmed && !$isCheckedIn && !$isCancelled && !$isCheckedOut)
+                                                    {{-- Eligible Arrival: Show Check-in --}}
+                                                    <form method="POST" action="{{ route('admin.yazlik-kiralama.bookings.check-in', $booking->id) }}">
+                                                        @csrf
+                                                        <button type="submit"
+                                                            id="btn-checkin-{{ $booking->id }}"
+                                                            class="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700">
+                                                            <span>🚪</span> Misafir Geldi
+                                                        </button>
+                                                    </form>
+                                                @elseif ($isCheckedIn && !$isCheckedOut && !$isCancelled)
+                                                    {{-- Checked in / Active Stay: Show Check-out with confirmation --}}
+                                                    <form method="POST" action="{{ route('admin.yazlik-kiralama.bookings.check-out', $booking->id) }}"
+                                                        onsubmit="return confirm('Misafirin çıkış yaptığını onaylıyor musunuz?\nTemizlik operasyonu başlatılacaktır.');">
+                                                        @csrf
+                                                        <button type="submit"
+                                                            id="btn-checkout-{{ $booking->id }}"
+                                                            class="inline-flex items-center gap-1 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-amber-700">
+                                                            <span>🧹</span> Misafir Çıktı
+                                                        </button>
+                                                    </form>
+                                                @elseif ($isCheckedOut)
+                                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                                        Çıkış Yapıldı
+                                                    </span>
+                                                @elseif ($isCancelled)
+                                                    <span class="text-xs font-medium text-gray-400">
+                                                        İşlem Yok
+                                                    </span>
+                                                @endif
+
+                                                <a href="{{ route('admin.yazlik-kiralama.show', $booking->ilan_id ?? $booking->property_id ?? 1) }}"
+                                                    class="rounded-lg bg-gray-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700">
                                                     Detay
-                                                </button>
-                                                <button @click="alert('Durum güncelleme modal açılacak')"
-                                                    class="rounded-lg bg-gray-600 px-3 py-1 text-white transition-colors hover:bg-gray-700">
-                                                    Düzenle
-                                                </button>
+                                                </a>
                                             </div>
                                         </td>
                                     </tr>
