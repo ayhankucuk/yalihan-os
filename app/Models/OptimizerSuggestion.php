@@ -21,24 +21,31 @@ class OptimizerSuggestion extends BaseModel
 
     // ─── Scopes ─────────────────────────────────────────────
 
+    protected static function statusColumn(): string
+    {
+        return \Illuminate\Support\Facades\Schema::hasColumn('optimizer_suggestions', 'oneri_durumu')
+            ? 'oneri_durumu'
+            : 'status';
+    }
+
     public function scopePending($query)
     {
-        return $query->where('oneri_durumu', 'pending');
+        return $query->where(static::statusColumn(), 'pending');
     }
 
     public function scopeApproved($query)
     {
-        return $query->where('oneri_durumu', 'approved');
+        return $query->where(static::statusColumn(), 'approved');
     }
 
     public function scopeApplied($query)
     {
-        return $query->where('oneri_durumu', 'applied');
+        return $query->where(static::statusColumn(), 'applied');
     }
 
     public function scopeRejected($query)
     {
-        return $query->where('oneri_durumu', 'rejected');
+        return $query->where(static::statusColumn(), 'rejected');
     }
 
     public function scopeHighConfidence($query, float $threshold = 0.8)
@@ -51,7 +58,7 @@ class OptimizerSuggestion extends BaseModel
     public function approve(int $userId): void
     {
         $this->update([
-            'oneri_durumu' => 'approved',
+            static::statusColumn() => 'approved',
             'approved_by' => $userId,
         ]);
     }
@@ -59,7 +66,7 @@ class OptimizerSuggestion extends BaseModel
     public function reject(int $userId): void
     {
         $this->update([
-            'oneri_durumu' => 'rejected',
+            static::statusColumn() => 'rejected',
             'approved_by' => $userId,
         ]);
     }
