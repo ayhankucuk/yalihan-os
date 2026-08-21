@@ -45,9 +45,9 @@ class GmailApiOAuthService
     private ?int $tokenExpiry = null;
 
     public function __construct(
-        private readonly string $clientId,
-        private readonly string $clientSecret,
-        private readonly string $redirectUri,
+        private readonly ?string $clientId = null,
+        private readonly ?string $clientSecret = null,
+        private readonly ?string $redirectUri = null,
     ) {}
 
     // ── OAuth 2.0 Flow ─────────────────────────────────────────────────
