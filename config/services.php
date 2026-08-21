@@ -318,4 +318,16 @@ return [
         'rate_limit' => env('FRONTEND_API_RATE_LIMIT', 60), // istek/dakika
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Channex Channel Manager API
+    |--------------------------------------------------------------------------
+    */
+    'channex' => [
+        'api_key' => env('CHANNEX_API_KEY', ''),
+        'webhook_secret' => env('CHANNEX_WEBHOOK_SECRET', ''),
+        'property_id' => env('CHANNEX_PROPERTY_ID', ''),
+        'environment' => env('CHANNEX_ENVIRONMENT', 'staging'), // staging | production
+    ],
+
 ];

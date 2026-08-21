@@ -179,6 +179,14 @@ class ChannexClient
 
     // ─── Private HTTP helpers ────────────────────────────────────────
 
+    private function getBaseUrl(): string
+    {
+        $env = config('services.channex.environment', 'staging');
+        return $env === 'production'
+            ? 'https://app.channex.io/api/v1'
+            : 'https://staging.channex.io/api/v1';
+    }
+
     private function post(string $apiKey, string $path, array $data, string $correlationId): Response
     {
         try {
@@ -190,7 +198,7 @@ class ChannexClient
                 ])
                 ->timeout(self::TIMEOUT_SECONDS)
                 ->connectTimeout(self::CONNECT_TIMEOUT_SECONDS)
-                ->post(self::BASE_URL . $path, $data);
+                ->post($this->getBaseUrl() . $path, $data);
 
             $this->handleHttpError($response, $path);
 
@@ -222,7 +230,7 @@ class ChannexClient
                 ])
                 ->timeout(self::TIMEOUT_SECONDS)
                 ->connectTimeout(self::CONNECT_TIMEOUT_SECONDS)
-                ->get(self::BASE_URL . $path, $query);
+                ->get($this->getBaseUrl() . $path, $query);
 
             $this->handleHttpError($response, $path);
 
