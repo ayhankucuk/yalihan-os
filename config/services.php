@@ -357,7 +357,7 @@ return [
             'client_id'      => env('GMAIL_OAUTH_CLIENT_ID', ''),
             'client_secret'  => env('GMAIL_OAUTH_CLIENT_SECRET', ''),
             'redirect_uri'   => env('GMAIL_OAUTH_REDIRECT_URI',
-                config('app.url') . '/auth/google/callback'),
+                config('app.url') . '/owner/auth/google/callback'),
             'user_email'    => env('GMAIL_OAUTH_USER_EMAIL', 'ayhan@yalihanemlak.com.tr'),
             'default_tenant_id' => env('GMAIL_OAUTH_DEFAULT_TENANT_ID', 5),
         ],
