@@ -66,8 +66,8 @@ class GmailServiceProvider extends ServiceProvider
             $workspaceService = $app->make(GmailWorkspaceMailboxService::class);
 
             return new GmailMultiMailboxOrchestrator(
-                primaryMailbox:   $oauthService->isEnabled() ? $oauthService : null,
-                secondaryMailbox: $workspaceService->isEnabled() ? $workspaceService : null,
+                primaryMailbox:   $workspaceService->isEnabled() ? $workspaceService : null,
+                secondaryMailbox: $oauthService->isEnabled() ? $oauthService : null,
             );
         });
     }

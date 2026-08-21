@@ -386,6 +386,112 @@ class GmailApiOAuthService
         }
     }
 
+    /**
+     * Yeni mesajlari al (GmailMultiMailboxOrchestrator tarafindan cagirilir).
+     * Ilk sync icin: en son N okunmamis mesaji al.
+     * Devamli sync icin: history.list ile degisiklikleri al.
+     *
+     * @param string|null $sinceHistoryId Null = ilk sync (maxResults kadar al)
+     * @return list<array{message_id: string, thread_id: string, from: string, subject: string, date: string, snippet: string, label_ids: list<string>}>
+     */
+    public function fetchNewMessages(?string $sinceHistoryId = null): array
+    {
+        $token = $this->getAccessToken();
+        if ($token === null) {
+            return [];
+        }
+
+        if ($sinceHistoryId !== null) {
+            return $this->fetchViaHistoryList($token, $sinceHistoryId);
+        }
+
+        // Ilk sync — en son okunmamis mesajlari al
+        return $this->fetchInitialMessages($token);
+    }
+
+    /**
+     * Yeni mesajlari history.list ile al.
+     *
+     * @return list<array>
+     */
+    private function fetchViaHistoryList(string $accessToken, string $historyId): array
+    {
+        try {
+            $resp = Http::withToken($accessToken)
+                ->timeout(15)
+                ->get(
+                    self::GMAIL_API_BASE . '/gmail/v1/users/me/history',
+                    [
+                        'startHistoryId' => $historyId,
+                        'historyTypes'    => 'messageAdded',
+                        'maxResults'     => 100,
+                    ]
+                );
+
+            if (! $resp->successful()) {
+                return [];
+            }
+
+            $historyItems = $resp->json('history', []);
+            $messages = [];
+
+            foreach ($historyItems as $item) {
+                foreach ($item['messagesAdded'] ?? [] as $msgAdded) {
+                    $msgId = $msgAdded['message']['id'];
+                    $meta = $this->fetchMessageMetadata($accessToken, $msgId);
+                    if ($meta !== null) {
+                        $messages[] = $meta;
+                    }
+                }
+            }
+
+            return $messages;
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * Ilk sync icin en son N okunmamis mesaji al.
+     *
+     * @return list<array>
+     */
+    private function fetchInitialMessages(string $accessToken): array
+    {
+        try {
+            $resp = Http::withToken($accessToken)
+                ->timeout(15)
+                ->get(self::GMAIL_API_BASE . '/gmail/v1/users/me/messages', [
+                    'maxResults' => 20,
+                    'q'          => 'is:unread',
+                ]);
+
+            if (! $resp->successful()) {
+                return [];
+            }
+
+            $msgRefs = $resp->json('messages', []);
+            $messages = [];
+
+            foreach ($msgRefs as $ref) {
+                $meta = $this->fetchMessageMetadata($accessToken, $ref['id']);
+                if ($meta !== null) {
+                    $messages[] = $meta;
+                }
+            }
+
+            return $messages;
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    public function isEnabled(): bool
+    {
+        $cfg = config('services.gmail.oauth', []);
+        return ! empty($cfg['client_id']) && ! empty($cfg['client_secret']);
+    }
+
     // ── Private ──────────────────────────────────────────────────
 
     private function headerVal(array $headers, string $name): ?string

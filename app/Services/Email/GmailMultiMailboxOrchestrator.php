@@ -28,7 +28,7 @@ class GmailMultiMailboxOrchestrator
 
     public function __construct(
         private readonly ?GmailWorkspaceMailboxService $primaryMailbox = null,
-        private readonly ?GmailOAuthService $secondaryMailbox = null,
+        private readonly ?GmailApiOAuthService $secondaryMailbox = null,
     ) {}
 
     /**
@@ -85,7 +85,7 @@ class GmailMultiMailboxOrchestrator
      * @return int Number of messages processed
      */
     private function pollMailbox(
-        GmailWorkspaceMailboxService|GmailOAuthService $service,
+        GmailWorkspaceMailboxService|GmailApiOAuthService $service,
         string $mailboxLabel,
         callable $webhookPayloadFn,
     ): int {
@@ -144,16 +144,20 @@ class GmailMultiMailboxOrchestrator
     }
 
     /**
-     * OAuth (GmailOAuthService) icin history.list cagir.
+     * OAuth (GmailApiOAuthService) icin history.list cagir.
      *
      * @return list<array>
      */
-    private function fetchViaHistoryList(GmailOAuthService $oauth, ?string $historyId): array
+    private function fetchViaHistoryList(GmailApiOAuthService $oauth, ?string $historyId): array
     {
         if ($historyId === null) {
             return [];
         }
-        return $oauth->getHistory($historyId, $oauth->getAccessToken() ?? '')['history'] ?? [];
+        $token = $oauth->getAccessToken();
+        if ($token === null) {
+            return [];
+        }
+        return $oauth->fetchHistory($historyId, $token);
     }
 
     /**
@@ -167,12 +171,14 @@ class GmailMultiMailboxOrchestrator
     private function dispatchToWebhook(array $payload, string $mailboxLabel): bool
     {
         $baseUrl = config('app.url');
+        $tenantId = (int) config('services.gmail.oauth.default_tenant_id', 5);
 
         try {
             $response = Http::timeout(15)
                 ->withHeaders([
                     'Accept' => 'application/json',
                     'X-Mailbox-Source' => $mailboxLabel,
+                    'X-Tenant-Id' => (string) $tenantId,
                 ])
                 ->post($baseUrl . '/api/v1/webhook/email/inbound', $payload);
 
