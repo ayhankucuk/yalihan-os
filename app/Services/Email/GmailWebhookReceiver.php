@@ -93,11 +93,17 @@ class GmailWebhookReceiver
      * Full pipeline: AI extract → severity → save → Hermes event.
      *
      * @return array{communication: Communication, hermes_log_id: int}
+     * @param array $emailData        Normalized email data (sender_email, subject, body_text)
+     * @param string|null $messageId  Gmail Message-ID header
+     * @param string|null $sourceMailbox  Mailbox identifier (e.g. 'yalihanemlak.com.tr')
+     * @param list<string>|null $gmailLabels  Gmail label IDs
      */
     public function dispatchHermesEvent(
         Tenant $tenant,
         array $emailData,
         ?string $messageId,
+        ?string $sourceMailbox = null,
+        ?array $gmailLabels = null,
     ): array {
         $emailAddress = $emailData['sender_email'];
         $subject = $emailData['subject'];
@@ -170,12 +176,14 @@ class GmailWebhookReceiver
         $communication = Communication::create([
             'tenant_id'           => $tenant->id,
             'channel'             => 'email',
+            'source_mailbox'      => $sourceMailbox,
             'external_message_id' => $messageId,
             'sender_email'        => $emailAddress,
             'sender_name'         => $extraction?->guestName,
             'subject'             => $subject,
             'message'             => $bodyText,
             'platform'            => $extraction?->sourcePlatform,
+            'gmail_labels'        => ! empty($gmailLabels) ? $gmailLabels : null,
             'severity'            => $severity,
             'ai_extracted_data'  => $aiData,
             'reservation_id'       => $reservationMatch['reservation_id'] ?? null,

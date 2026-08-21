@@ -34,6 +34,14 @@ class GmailOAuthService
     ) {}
 
     /**
+     * Bu servis etkin mi (credential var mi)?
+     */
+    public function isEnabled(): bool
+    {
+        return ! empty($this->clientId);
+    }
+
+    /**
      * Gmail API'ye erisim icin access token al.
      *
      * @return string|null Access token veya basarisizlikta null

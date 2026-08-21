@@ -86,9 +86,20 @@ class EmailWebhookController extends Controller
             ], 200);
         }
 
+        // ── 3b. Mailbox metadata (multi-mailbox audit trail) ────────────────
+        // source_mailbox ve gmail_labels polling service'ten gelir
+        $sourceMailbox = $payload['source_mailbox'] ?? null;
+        $gmailLabels = $payload['gmail_labels'] ?? null;
+
         // ── 4. Hermes event tetikle ────────────────────────────────────
         try {
-            $hermesResult = $this->receiver->dispatchHermesEvent($tenant, $emailData, $messageId);
+            $hermesResult = $this->receiver->dispatchHermesEvent(
+                tenant: $tenant,
+                emailData: $emailData,
+                messageId: $messageId,
+                sourceMailbox: $sourceMailbox,
+                gmailLabels: $gmailLabels,
+            );
 
             Log::info('[EmailWebhook] Email processed', [
                 'tenant_id'     => $tenant->id,

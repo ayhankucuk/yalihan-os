@@ -2,8 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Email\GmailOAuthService;
-use App\Services\Email\GmailPollingService;
+use App\Services\Email\GmailMultiMailboxOrchestrator;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -31,7 +30,7 @@ class GmailPollingCommand extends Command
     protected $description = 'Gmail inbox polling — yeni mailleri Yalihan OS\'a iletir (Wave 2)';
 
     public function __construct(
-        private readonly GmailPollingService $pollingService,
+        private readonly GmailMultiMailboxOrchestrator $orchestrator,
     ) {
         parent::__construct();
     }
@@ -43,7 +42,7 @@ class GmailPollingCommand extends Command
             return Command::SUCCESS;
         }
 
-        $this->info('Gmail polling basladi...');
+        $this->info('Gmail multi-mailbox polling basladi...');
 
         if ($this->option('daemon')) {
             return $this->runDaemon();
@@ -55,17 +54,17 @@ class GmailPollingCommand extends Command
     private function runOnce(): int
     {
         try {
-            $result = $this->pollingService->poll();
+            $result = $this->orchestrator->pollAll();
 
-            if ($result['new_messages'] === 0) {
+            if ($result['total'] === 0) {
                 $this->info('Yeni email yok.');
                 return Command::SUCCESS;
             }
 
-            $this->info("{$result['new_messages']} yeni email islendi.");
+            $this->info("{$result['total']} yeni email islendi.");
 
-            foreach ($result['processed'] as $msg) {
-                $this->line("  - [{$msg['status']}] {$msg['subject']} ({$msg['from']})");
+            foreach ($result['by_mailbox'] as $mailbox => $count) {
+                $this->line("  - [{$mailbox}] {$count} yeni email");
             }
 
             return Command::SUCCESS;
@@ -85,10 +84,10 @@ class GmailPollingCommand extends Command
 
         while (true) {
             try {
-                $result = $this->pollingService->poll();
+                $result = $this->orchestrator->pollAll();
 
-                if ($result['new_messages'] > 0) {
-                    $this->info(date('H:i:s') . " — {$result['new_messages']} yeni email.");
+                if ($result['total'] > 0) {
+                    $this->info(date('H:i:s') . " — {$result['total']} yeni email.");
                 }
             } catch (\Throwable $e) {
                 $this->error(date('H:i:s') . ' — Hata: ' . $e->getMessage());

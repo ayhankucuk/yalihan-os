@@ -332,20 +332,42 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Gmail API — Wave 2 Communications Intelligence
+    | Gmail API — Wave 2 Phase 2 Multi-mailbox Integration
     |--------------------------------------------------------------------------
-    | Service Account credentials (GCP Console'dan indirilir)
-    | Ayrıca: Google Cloud Console > IAM > Service Accounts > Keys
+    |
+    | PRIMARY:   Workspace Service Account + Domain-Wide Delegation
+    |   @yalihanemlak.com.tr — Ayhan'in kurumsal Gmail hesabi
+    |   GMAIL_WORKSPACE_ENABLED=true + Service Account JSON
+    |
+    | SECONDARY: Personal Gmail OAuth (gelecek faz)
+    |   yalihanemlak@gmail.com
+    |   Normal OAuth 2.0 kullanici yetkilendirmesi
     */
     'gmail' => [
         'enabled' => env('GMAIL_ENABLED', false),
-        'client_id' => env('GMAIL_CLIENT_ID', ''),
-        'client_email' => env('GMAIL_CLIENT_EMAIL', ''),
-        'private_key' => env('GMAIL_PRIVATE_KEY', ''),
-        'user_id' => env('GMAIL_USER_ID', 'me'), // 'me' = authenticated user
+
+        // ── Workspace (PRIMARY) ────────────────────────────────────────────
+        'workspace' => [
+            'enabled'         => env('GMAIL_WORKSPACE_ENABLED', false),
+            'client_id'       => env('GMAIL_WORKSPACE_CLIENT_ID', ''),
+            'client_email'    => env('GMAIL_WORKSPACE_CLIENT_EMAIL', ''),
+            'private_key'     => env('GMAIL_WORKSPACE_PRIVATE_KEY', ''),
+            'delegated_user'  => env('GMAIL_WORKSPACE_DELEGATED_USER', 'ayhan@yalihanemlak.com.tr'),
+            'credentials_file' => env('GMAIL_WORKSPACE_CREDENTIALS_FILE', ''),
+            'history_id'      => env('GMAIL_WORKSPACE_HISTORY_ID', ''),
+        ],
+
+        // ── Personal Gmail (SECONDARY) ───────────────────────────────────
+        'personal' => [
+            'enabled'         => env('GMAIL_PERSONAL_ENABLED', false),
+            'client_id'       => env('GMAIL_PERSONAL_CLIENT_ID', ''),
+            'client_email'    => env('GMAIL_PERSONAL_CLIENT_EMAIL', ''),
+            'private_key'     => env('GMAIL_PERSONAL_PRIVATE_KEY', ''),
+            'credentials_file' => env('GMAIL_PERSONAL_CREDENTIALS_FILE', ''),
+        ],
+
+        // ── Shared ────────────────────────────────────────────────────────
         'poll_interval_minutes' => env('GMAIL_POLL_INTERVAL', 5),
-        'history_id' => env('GMAIL_HISTORY_ID', ''),
-        'credentials_file' => env('GMAIL_CREDENTIALS_FILE', ''),
     ],
 
 ];
