@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\Drive\DriveWorkspaceService;
+use App\Domain\Hermes\Handlers\CommunicationEmailHandler;
 use App\Services\Hermes\Handlers\AnalyticsHandler;
 use App\Services\Hermes\Handlers\GovernanceNotificationHandler;
 use App\Services\Hermes\Handlers\NotificationAgentHandler;
@@ -79,6 +80,9 @@ class HermesServiceProvider extends ServiceProvider
         $this->app->singleton(NotificationAgent::class, fn ($app) => new NotificationAgent(
             $app->make(HermesService::class)
         ));
+
+        // Gmail Communications Intelligence — Wave 1
+        $this->app->singleton(CommunicationEmailHandler::class, fn () => new CommunicationEmailHandler());
     }
 
     /**
@@ -101,6 +105,9 @@ class HermesServiceProvider extends ServiceProvider
             $this->app->make(PropertyScoreAgent::class),
             $this->app->make(PublishDecisionAgent::class),
             $this->app->make(NotificationAgent::class),
+
+            // Gmail Communications Intelligence — Wave 1
+            $this->app->make(CommunicationEmailHandler::class),
         ];
 
         foreach ($handlers as $handler) {

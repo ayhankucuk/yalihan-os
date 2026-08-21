@@ -85,6 +85,12 @@ Route::prefix('v1')->middleware([ThrottleApiRequests::class])->group(function ()
     Route::post('/webhook/channex', [\App\Http\Controllers\Api\ChannexWebhookController::class, 'handle'])
         ->name('api.webhook.channex');
 
+    // 📧 Gmail / Email Inbound Webhook — WAVE1 Gmail Communications Intelligence
+    Route::post('/webhook/email/inbound', [\App\Http\Controllers\Api\V1\EmailWebhookController::class, 'handleInbound'])
+        ->name('api.webhook.email.inbound');
+    Route::get('/webhook/email/verify', [\App\Http\Controllers\Api\V1\EmailWebhookController::class, 'verify'])
+        ->name('api.webhook.email.verify');
+
     // 🤖 Telegram Integration (secured by X-Telegram-Bot-Api-Secret-Token)
     Route::post('/integrations/telegram/webhook', [\App\Http\Controllers\Api\Integrations\TelegramAdvisorAdapterController::class, 'handleWebhook'])
         ->middleware('telegram.secret')

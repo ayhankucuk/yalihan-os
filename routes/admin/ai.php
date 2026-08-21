@@ -49,6 +49,14 @@ Route::prefix('/ai')->name('ai.')->group(function () {
     Route::post('/calls/{activity}/analyze', [\App\Http\Controllers\Admin\CallAnalysisController::class, 'analyze'])
         ->name('calls.analyze');
 
+    // Gmail Communications Intelligence — WAVE1
+    Route::get('/communications', [\App\Http\Controllers\Admin\CommunicationsController::class, 'index'])
+        ->name('communications');
+    Route::get('/communications.json', [\App\Http\Controllers\Admin\CommunicationsController::class, 'apiIndex'])
+        ->name('communications.json');
+    Route::patch('/communications/{id}/resolve', [\App\Http\Controllers\Admin\CommunicationsController::class, 'resolve'])
+        ->name('communications.resolve');
+
     // Property Hub AI (Stage 1 Refactor)
     Route::prefix('/property')->name('property.')->group(function () {
         Route::post('/analyze', [\App\Http\Controllers\Admin\AI\PropertyAIController::class, 'analyze'])->name('analyze');

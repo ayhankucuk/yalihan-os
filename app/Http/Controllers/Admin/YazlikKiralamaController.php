@@ -16,6 +16,7 @@ use App\Models\IlanFotografi;
 use App\Models\IlanKategori;
 use App\Models\PropertyReservation;
 use App\Models\YazlikRezervasyon;
+use App\Services\Communication\CommunicationExceptionEvaluatorService;
 use App\Services\Ilan\YazlikKiralamaService;
 use App\Services\ReservationService;
 use Carbon\Carbon;
@@ -28,7 +29,8 @@ class YazlikKiralamaController extends AdminController
 {
     public function __construct(
         private YazlikKiralamaService $yazlikService,
-        private ReservationService $reservationService
+        private ReservationService $reservationService,
+        private CommunicationExceptionEvaluatorService $commEvaluator,
     ) {}
     /**
      * Display summer rental listings dashboard
@@ -492,15 +494,37 @@ class YazlikKiralamaController extends AdminController
             }
         }
 
-        $evaluator = app(\App\Services\Reservation\OperationalExceptionEvaluatorService::class);
+        $operationalEvaluator = app(\App\Services\Reservation\OperationalExceptionEvaluatorService::class);
 
         // Pre-evaluate exceptions across tenant reservations for accurate count & filter
         $candidateReservations = PropertyReservation::where('tenant_id', $tenantId)
             ->whereNull('cancelled_at')
             ->with(['readiness', 'prepTask', 'turnoverTask'])
             ->get();
-        $allExceptionsMap = $evaluator->evaluateCollection($candidateReservations);
-        $exceptionIds = array_keys($allExceptionsMap);
+
+        // ── Wave 7: Operational exceptions ─────────────────────────────────
+        $operationalExceptionsMap = $operationalEvaluator->evaluateCollection($candidateReservations);
+
+        // ── Wave 1: Communication exceptions (D6 cockpit integration) ─────────
+        // CommunicationExceptionEvaluatorService returns array<int, CommunicationExceptionDTO>
+        // for each reservation that has an unresolved P0/P1 email communication.
+        // The two maps are kept separate (different detection domains) then merged
+        // for display. No duplicates are possible since the DTO types are different.
+        $commExceptionsMap = [];
+        foreach ($candidateReservations as $reservation) {
+            $commExceptions = $this->commEvaluator->evaluate($reservation);
+            if (count($commExceptions) > 0) {
+                $commExceptionsMap[$reservation->id] = $commExceptions;
+            }
+        }
+
+        // Merge both exception types — blade template renders both uniformly via isP0()/isP1()
+        $allExceptionsMap = array_merge_recursive($operationalExceptionsMap, $commExceptionsMap);
+
+        $exceptionIds = array_unique(array_merge(
+            array_keys($operationalExceptionsMap),
+            array_keys($commExceptionsMap)
+        ));
 
         $query = PropertyReservation::where('tenant_id', $tenantId)
             ->with(['ilan:id,baslik', 'readiness', 'prepTask', 'turnoverTask']);
@@ -561,8 +585,12 @@ class YazlikKiralamaController extends AdminController
             ->orderBy('id', 'desc')
             ->paginate(20);
 
-        // Exceptions map for current page items
-        $exceptionsMap = $evaluator->evaluateCollection($bookings->items());
+        // Exceptions map for current page items — extract from pre-computed merged map
+        $pageReservationIds = collect($bookings->items())->pluck('id')->all();
+        $exceptionsMap = array_intersect_key(
+            $allExceptionsMap,
+            array_flip($pageReservationIds)
+        );
 
         // Operational counts for filter tabs
         $counts = [
