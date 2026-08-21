@@ -335,18 +335,34 @@ return [
     | Gmail API — Wave 2 Phase 2 Multi-mailbox Integration
     |--------------------------------------------------------------------------
     |
-    | PRIMARY:   Workspace Service Account + Domain-Wide Delegation
-    |   @yalihanemlak.com.tr — Ayhan'in kurumsal Gmail hesabi
-    |   GMAIL_WORKSPACE_ENABLED=true + Service Account JSON
+    | ACTIVE METHOD: OAuth 2.0 Authorization Code Flow
+    |   - GMAIL_OAUTH_CLIENT_ID + GMAIL_OAUTH_CLIENT_SECRET
+    |   - refresh_token veritabaninda encrypt edilmis sekilde saklanir
+    |   - Ayhan bir kez /auth/google ziyaret eder
+    |   - Hiçbir secret Git'e yazilmaz
     |
-    | SECONDARY: Personal Gmail OAuth (gelecek faz)
-    |   yalihanemlak@gmail.com
-    |   Normal OAuth 2.0 kullanici yetkilendirmesi
+    | FUTURE: Workspace Service Account (signJwt) — gelecek faz
+    |   - gmail-reader@... Service Account ile
+    |   - signJwt IAMCredentials API ile token alinir
+    |   - private key gerektirmez
+    |
+    | AUTHENTICATION: KEYLESS — service account key YOK
     */
     'gmail' => [
         'enabled' => env('GMAIL_ENABLED', false),
 
-        // ── Workspace (PRIMARY) ────────────────────────────────────────────
+        // ── OAuth 2.0 (ACTIVE — Ayhan'in onaylamasi ile) ──────────────
+        'oauth' => [
+            'enabled'        => env('GMAIL_OAUTH_ENABLED', false),
+            'client_id'      => env('GMAIL_OAUTH_CLIENT_ID', ''),
+            'client_secret'  => env('GMAIL_OAUTH_CLIENT_SECRET', ''),
+            'redirect_uri'   => env('GMAIL_OAUTH_REDIRECT_URI',
+                config('app.url') . '/auth/google/callback'),
+            'user_email'    => env('GMAIL_OAUTH_USER_EMAIL', 'ayhan@yalihanemlak.com.tr'),
+            'default_tenant_id' => env('GMAIL_OAUTH_DEFAULT_TENANT_ID', 5),
+        ],
+
+        // ── Workspace / Service Account (gelecek faz — signJwt ile) ──────
         'workspace' => [
             'enabled'         => env('GMAIL_WORKSPACE_ENABLED', false),
             'client_id'       => env('GMAIL_WORKSPACE_CLIENT_ID', ''),
@@ -357,16 +373,7 @@ return [
             'history_id'      => env('GMAIL_WORKSPACE_HISTORY_ID', ''),
         ],
 
-        // ── Personal Gmail (SECONDARY) ───────────────────────────────────
-        'personal' => [
-            'enabled'         => env('GMAIL_PERSONAL_ENABLED', false),
-            'client_id'       => env('GMAIL_PERSONAL_CLIENT_ID', ''),
-            'client_email'    => env('GMAIL_PERSONAL_CLIENT_EMAIL', ''),
-            'private_key'     => env('GMAIL_PERSONAL_PRIVATE_KEY', ''),
-            'credentials_file' => env('GMAIL_PERSONAL_CREDENTIALS_FILE', ''),
-        ],
-
-        // ── Shared ────────────────────────────────────────────────────────
+        // ── Shared ────────────────────────────────────────────────────
         'poll_interval_minutes' => env('GMAIL_POLL_INTERVAL', 5),
     ],
 

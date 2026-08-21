@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\Email\GmailApiOAuthService;
 use App\Services\Email\GmailMultiMailboxOrchestrator;
-use App\Services\Email\GmailOAuthService;
 use App\Services\Email\GmailWorkspaceMailboxService;
 use Illuminate\Support\ServiceProvider;
 
@@ -15,27 +15,42 @@ use Illuminate\Support\ServiceProvider;
  * SAAB Kural: Tum Gmail servisleri bu provider uzerinden resolve edilir.
  * Direkt "new GmailXxx()" YASAK.
  *
- * Container singletons:
- *   GmailWorkspaceMailboxService  — PRIMARY: @yalihanemlak.com.tr (DWD/Service Account)
- *   GmailOAuthService           — SECONDARY: yalihanemlak@gmail.com (User OAuth)
- *   GmailMultiMailboxOrchestrator — Tum mailbox'lari yonetir
- *   GmailPollingCommand          — Orchestrator kullanir
+ * Auth Yontemi: OAuth 2.0 Authorization Code Flow
+ *   - Ayhan bir kez /auth/google ziyaret eder
+ *   - Google consent ekrani gorur, onaylar
+ *   - refresh_token encrypt edilip oauth_tokens tablosuna kaydedilir
+ *   - access_token 1 saatte bir yenilenir
+ *   - Hiçbir secret Git'e yazilmaz
  */
 class GmailServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // ── PRIMARY: Workspace / Service Account ─────────────────────────
+        // ── OAuth 2.0 (PRIMARY — kullandigimiz yontem) ──────────────────
+        $this->app->singleton(GmailApiOAuthService::class, function ($app) {
+            $cfg = config('services.gmail.oauth', []);
+
+            $clientId     = $cfg['client_id']     ?? '';
+            $clientSecret = $cfg['client_secret'] ?? '';
+            $redirectUri  = $cfg['redirect_uri']  ?? '';
+
+            return new GmailApiOAuthService(
+                clientId:    $clientId,
+                clientSecret: $clientSecret,
+                redirectUri: $redirectUri,
+            );
+        });
+
+        // ── Workspace / Service Account (gelecek faz — signJwt ile) ─────────
         $this->app->singleton(GmailWorkspaceMailboxService::class, function ($app) {
             $cfg = config('services.gmail.workspace', []);
 
-            $clientId     = $cfg['client_id']     ?? '';
-            $clientEmail  = $cfg['client_email']  ?? '';
-            $privateKey   = $cfg['private_key']   ?? '';
-            $delegatedUser = $cfg['delegated_user'] ?? 'ayhan@yalihanemlak.com.tr';
-            $mailboxLabel = 'workspace';
+            $clientId      = $cfg['client_id']      ?? '';
+            $clientEmail   = $cfg['client_email']   ?? '';
+            $privateKey    = $cfg['private_key']    ?? '';
+            $delegatedUser = $cfg['delegated_user']  ?? '';
+            $mailboxLabel  = 'workspace';
 
-            // Credentials file overwrite
             if (empty($clientId) && ! empty($cfg['credentials_file'])) {
                 $creds = $this->loadCredentialsFile($cfg['credentials_file']);
                 if ($creds) {
@@ -46,52 +61,22 @@ class GmailServiceProvider extends ServiceProvider
             }
 
             return new GmailWorkspaceMailboxService(
-                clientId:     $clientId,
-                clientEmail:  $clientEmail,
+                clientId:      $clientId,
+                clientEmail:   $clientEmail,
                 privateKey:   $privateKey,
                 delegatedUser: $delegatedUser,
-                mailboxLabel: $mailboxLabel,
-                tenantId:     null,
+                mailboxLabel:  $mailboxLabel,
             );
         });
 
-        // ── SECONDARY: Personal Gmail / User OAuth ────────────────────
-        $this->app->singleton(GmailOAuthService::class, function ($app) {
-            $cfg = config('services.gmail.personal', []);
-
-            $clientId    = $cfg['client_id'] ?? '';
-            $clientEmail = $cfg['client_email'] ?? '';
-            $privateKey  = $cfg['private_key'] ?? '';
-
-            if (empty($clientId) && ! empty($cfg['credentials_file'])) {
-                $creds = $this->loadCredentialsFile($cfg['credentials_file']);
-                if ($creds) {
-                    $clientId    = $creds['client_id']    ?? '';
-                    $clientEmail = $creds['client_email'] ?? '';
-                    $privateKey  = $creds['private_key']  ?? '';
-                }
-            }
-
-            if (empty($clientId)) {
-                // SECONDARY disabled — return null placeholder
-                return new GmailOAuthService('', '', '');
-            }
-
-            return new GmailOAuthService(
-                clientId:    $clientId,
-                clientEmail: $clientEmail,
-                privateKey:  $privateKey,
-            );
-        });
-
-        // ── Multi-mailbox Orchestrator ─────────────────────────────────
+        // ── Multi-mailbox Orchestrator ─────────────────────────────────────
         $this->app->singleton(GmailMultiMailboxOrchestrator::class, function ($app) {
-            $primary   = $app->make(GmailWorkspaceMailboxService::class);
-            $secondary = $app->make(GmailOAuthService::class);
+            $oauthService = $app->make(GmailApiOAuthService::class);
+            $workspaceService = $app->make(GmailWorkspaceMailboxService::class);
 
             return new GmailMultiMailboxOrchestrator(
-                primaryMailbox:   $primary->isEnabled() ? $primary : null,
-                secondaryMailbox: $secondary->isEnabled() ? $secondary : null,
+                primaryMailbox:   $oauthService->isEnabled() ? $oauthService : null,
+                secondaryMailbox: $workspaceService->isEnabled() ? $workspaceService : null,
             );
         });
     }

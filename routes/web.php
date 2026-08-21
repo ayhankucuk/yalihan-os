@@ -717,4 +717,17 @@ Route::prefix('owner')->name('owner.')->middleware(['web', 'check.owner'])->grou
 
     // Ana sayfayı dashboard'a yönlendir
     Route::redirect('/', '/owner/dashboard')->name('home');
+
+    // ── Gmail OAuth 2.0 Authorization Code Flow ──────────────────────────
+    // Wave 2 Phase 2 — Keyless Gmail Integration
+    Route::prefix('auth/google')->name('auth.google.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Auth\GoogleOAuthController::class, 'redirect'])
+            ->name('redirect');
+        Route::get('/callback', [App\Http\Controllers\Auth\GoogleOAuthController::class, 'callback'])
+            ->name('callback');
+        Route::get('/status', [App\Http\Controllers\Auth\GoogleOAuthController::class, 'status'])
+            ->name('status');
+        Route::delete('/disconnect', [App\Http\Controllers\Auth\GoogleOAuthController::class, 'disconnect'])
+            ->name('disconnect');
+    });
 });
