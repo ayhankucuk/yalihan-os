@@ -515,4 +515,37 @@ class ChannexReliabilityRecoveryB1RTest extends TestCase
 
         $this->assertTrue(true);
     }
+
+    // B1R-16: Activation command maps real UUID and cleans canary
+    public function test_b1r_16_activate_property_command_maps_uuid_and_cleans_canary(): void
+    {
+        // Create synthetic canary
+        $canary = PropertyReservation::withoutGlobalScopes()->create([
+            'tenant_id'               => $this->tenant->id,
+            'property_id'             => $this->ilan->id,
+            'external_reservation_id' => 'RES-CHNX-PILOT-001',
+            'external_channel'        => 'airbnb',
+            'start_date'              => '2026-08-20',
+            'end_date'                => '2026-08-23',
+            'nights'                  => 3,
+            'guest_name'              => 'Canary Guest',
+            'reservation_state'       => 'confirmed',
+        ]);
+
+        $this->artisan('channex:activate-property', [
+            '--property-uuid' => 'REAL-CHANNEX-VILLA-UUID-1234',
+            '--listing-id'    => $this->ilan->id,
+            '--clean-canary'  => true,
+        ])->assertExitCode(0);
+
+        $this->assertDatabaseMissing('property_reservations', [
+            'external_reservation_id' => 'RES-CHNX-PILOT-001',
+        ]);
+
+        $this->assertDatabaseHas('ilan_takvim_sync', [
+            'ilan_id'             => $this->ilan->id,
+            'external_listing_id' => 'REAL-CHANNEX-VILLA-UUID-1234',
+        ]);
+    }
 }
+
