@@ -162,6 +162,49 @@ class EmailWebhookControllerTest extends TestCase
         $resolver->resolveFromMetaId('NONEXISTENT_TENANT_UUID');
     }
 
+    /** @test D4 — unknown intent → review_required (fail-safe) */
+    public function unknown_intent_returns_review_required(): void
+    {
+        // Override mock to return unknown intent (literal 'unknown' string)
+        $fakeResult = new EmailExtractionResult(
+            intent: 'unknown',
+            language: 'unknown',
+            sourcePlatform: 'unknown',
+            guestName: 'Test Guest',
+            reservationRef: null,
+            messageSummary: 'Test',
+            sentiment: 'neutral',
+            isUrgent: false,
+            extractedFields: [],
+        );
+
+        $mockService = Mockery::mock(EmailIntelligenceService::class);
+        $mockService->shouldReceive('extractSignals')->andReturn($fakeResult);
+        $this->app->instance(EmailIntelligenceService::class, $mockService);
+
+        $tenant = $this->resolveTenant();
+        $result = $this->dispatchPipeline($tenant, [
+            'sender_email' => 'test@test.com',
+            'sender_name'  => 'Test',
+            'subject'      => 'Test',
+            'body_text'    => 'Test body',
+        ], 'msg-unknown-001');
+
+        $this->assertTrue($result['success']);
+
+        // Communication should have review_required severity
+        $comm = Communication::where('external_message_id', 'msg-unknown-001')
+            ->where('tenant_id', $tenant->id)
+            ->first();
+        $this->assertNotNull($comm);
+        $this->assertSame('review_required', $comm->severity);
+
+        $aiData = is_string($comm->ai_extracted_data)
+            ? json_decode($comm->ai_extracted_data, true)
+            : $comm->ai_extracted_data;
+        $this->assertSame('unclassified', $aiData['classification_status']);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────
 
     /**

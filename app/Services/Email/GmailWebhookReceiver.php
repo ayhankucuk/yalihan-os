@@ -104,16 +104,34 @@ class GmailWebhookReceiver
         $bodyText = $emailData['body_text'];
 
         // ── 1. AI: Signal extraction ──────────────────────────────────────────
-        $extraction = $this->llmService->extractSignals($emailAddress, $subject, $bodyText);
+        $classificationStatus = 'classified';
+        try {
+            $extraction = $this->llmService->extractSignals($emailAddress, $subject, $bodyText);
 
-        Log::info('[GmailWebhookReceiver] AI extraction complete', [
-            'intent'  => $extraction->intent,
-            'platform' => $extraction->sourcePlatform,
-            'urgent'  => $extraction->isUrgent,
-        ]);
+            Log::info('[GmailWebhookReceiver] AI extraction complete', [
+                'intent'   => $extraction->intent,
+                'platform'  => $extraction->sourcePlatform,
+                'urgent'   => $extraction->isUrgent,
+            ]);
 
-        // ── 2. Severity: Deterministic PHP policy ─────────────────────────────
-        $severity = \App\Policies\CommunicationSeverityPolicy::determineSeverity($extraction);
+            // Unclassified: LLM succeeded but returned unknown intent
+            if ($extraction->intent === 'unknown') {
+                $classificationStatus = 'unclassified';
+            }
+        } catch (\Throwable $e) {
+            Log::error('[GmailWebhookReceiver] AI extraction failed — fail-safe triggered', [
+                'error'   => $e->getMessage(),
+                'email'   => $emailAddress,
+            ]);
+            $extraction = null;
+            $classificationStatus = 'failed';
+        }
+
+        // ── 2. Severity: Deterministic PHP policy (fail-safe) ─────────────────
+        $severity = \App\Policies\CommunicationSeverityPolicy::determineSeverityWithFallback(
+            $extraction,
+            $classificationStatus,
+        );
 
         Log::info('[GmailWebhookReceiver] Severity determined', [
             'severity' => $severity,
@@ -133,27 +151,33 @@ class GmailWebhookReceiver
         ]);
 
         // ── 4. Persist Communication ─────────────────────────────────────────
+        $aiData = [
+            'classification_status' => $classificationStatus,
+        ];
+
+        if ($extraction !== null) {
+            $aiData['intent']           = $extraction->intent;
+            $aiData['language']         = $extraction->language;
+            $aiData['source_platform']  = $extraction->sourcePlatform;
+            $aiData['guest_name']       = $extraction->guestName;
+            $aiData['reservation_ref']  = $extraction->reservationRef;
+            $aiData['message_summary']  = $extraction->messageSummary;
+            $aiData['sentiment']        = $extraction->sentiment;
+            $aiData['is_urgent']        = $extraction->isUrgent;
+            $aiData['extracted_fields'] = $extraction->extractedFields;
+        }
+
         $communication = Communication::create([
             'tenant_id'           => $tenant->id,
             'channel'             => 'email',
             'external_message_id' => $messageId,
             'sender_email'        => $emailAddress,
-            'sender_name'         => $extraction->guestName,
+            'sender_name'         => $extraction?->guestName,
             'subject'             => $subject,
             'message'             => $bodyText,
-            'platform'            => $extraction->sourcePlatform,
+            'platform'            => $extraction?->sourcePlatform,
             'severity'            => $severity,
-            'ai_extracted_data'  => [
-                'intent'           => $extraction->intent,
-                'language'         => $extraction->language,
-                'source_platform'  => $extraction->sourcePlatform,
-                'guest_name'       => $extraction->guestName,
-                'reservation_ref'  => $extraction->reservationRef,
-                'message_summary'  => $extraction->messageSummary,
-                'sentiment'        => $extraction->sentiment,
-                'is_urgent'        => $extraction->isUrgent,
-                'extracted_fields' => $extraction->extractedFields,
-            ],
+            'ai_extracted_data'  => $aiData,
             'reservation_id'       => $reservationMatch['reservation_id'] ?? null,
             'reply_durumu'        => 'bekliyor',
         ]);

@@ -42,6 +42,9 @@ enum HermesCapability: string
     case DETECT_FINDING = 'detection.finding';
     case DETECT_QUALITY_ISSUE = 'detection.quality_issue';
 
+    // ─── Communication Capabilities — WAVE1 ────────────────────────
+    case COMMUNICATION_EMAIL_RECEIVED = 'communication.email_received';
+
     // ─── Learning Capabilities ───────────────────────────────────────
     case LEARN_OPTIMIZE = 'learning.optimize';
     case LEARN_PATTERN_RECOGNITION = 'learning.pattern_recognition';
@@ -95,6 +98,7 @@ enum HermesCapability: string
             self::DETECT_QUALITY_ISSUE => 'Kalite Sorunu Tespiti',
             self::LEARN_OPTIMIZE => 'Optimizasyon Öğrenme',
             self::LEARN_PATTERN_RECOGNITION => 'Örüntü Tanıma',
+            self::COMMUNICATION_EMAIL_RECEIVED => 'Email İletişim Bildirimi',
         };
     }
 }

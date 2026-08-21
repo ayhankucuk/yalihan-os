@@ -330,4 +330,22 @@ return [
         'environment' => env('CHANNEX_ENVIRONMENT', 'staging'), // staging | production
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Gmail API — Wave 2 Communications Intelligence
+    |--------------------------------------------------------------------------
+    | Service Account credentials (GCP Console'dan indirilir)
+    | Ayrıca: Google Cloud Console > IAM > Service Accounts > Keys
+    */
+    'gmail' => [
+        'enabled' => env('GMAIL_ENABLED', false),
+        'client_id' => env('GMAIL_CLIENT_ID', ''),
+        'client_email' => env('GMAIL_CLIENT_EMAIL', ''),
+        'private_key' => env('GMAIL_PRIVATE_KEY', ''),
+        'user_id' => env('GMAIL_USER_ID', 'me'), // 'me' = authenticated user
+        'poll_interval_minutes' => env('GMAIL_POLL_INTERVAL', 5),
+        'history_id' => env('GMAIL_HISTORY_ID', ''),
+        'credentials_file' => env('GMAIL_CREDENTIALS_FILE', ''),
+    ],
+
 ];

@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Services\AI\EmailExtractionResult;
+use Illuminate\Support\Facades\Log;
 
 /**
  * CommunicationSeverityPolicy
@@ -89,18 +90,69 @@ class CommunicationSeverityPolicy
 
     /**
      * P0 veya P1 — bildirim gerekli mi?
+     * review_required → Ayhan'a bildirim gönderilir (manuel kontrol gerekli).
      * P2 alarm oluşturmaz.
      */
     public static function requiresNotification(string $severity): bool
     {
-        return in_array($severity, ['P0', 'P1'], true);
+        return in_array($severity, ['P0', 'P1', 'review_required'], true);
     }
 
     /**
      * Cockpit'te gösterilmeli mi?
+     * review_required → Cockpit'te kırmızı badge ile görünür.
      */
     public static function showInCockpit(string $severity): bool
     {
-        return in_array($severity, ['P0', 'P1', 'P2'], true);
+        return in_array($severity, ['P0', 'P1', 'P2', 'review_required'], true);
+    }
+
+    /**
+     * Severity badge rengi Cockpit için.
+     */
+    public static function badgeColor(string $severity): string
+    {
+        return match ($severity) {
+            'P0'             => 'red',
+            'P1'             => 'orange',
+            'P2'             => 'blue',
+            'review_required' => 'yellow',
+            default          => 'gray',
+        };
+    }
+
+    // ── Fail-safe severity (Wave 2) ─────────────────────────────────────────
+
+    /**
+     * Fail-safe severity kararı — AI extraction sonucuna göre.
+     *
+     * Kural:
+     *   1. classification_status = 'failed'  → review_required (LLM çöktü, manuel bakılmalı)
+     *   2. classification_status = 'unclassified' → review_required (intent=unknown, risk var)
+     *   3. classification_status = 'classified'   → standart policy (P0/P1/P2)
+     *
+     * SAAB Wave 2 kararı:
+     *   AI bilinmiyorsa → sessizce P2'ye düşme YOK.
+     *   Bilinmeyen → review_required → Ayhan bildirimi + Cockpit'te görünür.
+     *
+     * @param EmailExtractionResult|null $extraction  LLM sonucu (null = LLM crash)
+     * @param string                   $status        'classified'|'unclassified'|'failed'
+     * @return string P0|P1|P2|review_required
+     */
+    public static function determineSeverityWithFallback(
+        ?EmailExtractionResult $extraction,
+        string $classificationStatus,
+    ): string {
+        // Fail-safe: LLM başarısız veya intent bilinmiyor
+        if ($classificationStatus !== 'classified') {
+            Log::warning('[CommunicationSeverityPolicy] Fail-safe triggered', [
+                'status' => $classificationStatus,
+                'intent'  => $extraction?->intent ?? 'null',
+            ]);
+            return 'review_required';
+        }
+
+        // Normal classification — deterministic policy
+        return self::determineSeverity($extraction);
     }
 }

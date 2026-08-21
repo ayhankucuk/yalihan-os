@@ -57,7 +57,10 @@ class CommunicationEmailHandler implements HermesHandlerContract
             ];
         }
 
-        // ── P0/P1: Ayhan bildirimi ─────────────────────────────────────────
+        // ── review_required: AI bilinmedi — Ayhan'a bildirim GEREKLI ─────────
+        // SAAB Wave 2 kararı: Sessizce P2'ye düşmek YOK.
+        // Bilinmeyen intent veya LLM hatası → Manuel inceleme zorunlu.
+        // ── P0/P1/review_required: Ayhan bildirimi ─────────────────────────
         $this->sendNotification($event->tenantId(), $payload, $aiData);
 
         return [
@@ -100,13 +103,21 @@ class CommunicationEmailHandler implements HermesHandlerContract
         };
 
         $severityEmoji = match ($severity) {
-            'P0' => '🔴',
-            'P1' => '🟡',
-            default => 'ℹ️',
+            'P0'             => '🔴',
+            'P1'             => '🟡',
+            'review_required' => '⚠️',
+            default          => 'ℹ️',
+        };
+
+        $severityLabel = match ($severity) {
+            'P0'             => 'ACIL MÜDAHALE',
+            'P1'             => 'ÖNCELİKLİ',
+            'review_required' => '⚠️ İNCELENMELİ',
+            default          => 'Normal',
         };
 
         $message = <<<MSG
-{$severityEmoji} *Yeni Email — {$platformLabel}*
+{$severityEmoji} *Yeni Email — {$platformLabel}* [{$severityLabel}]
 *{$guestName}*
 
 _{$summary}_
