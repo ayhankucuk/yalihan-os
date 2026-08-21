@@ -77,6 +77,83 @@ class ChannexClient
     }
 
     /**
+     * Retrieve a specific booking revision by ID from Channex API.
+     *
+     * @param string $apiKey     Channex API key — NEVER logged
+     * @param string $revisionId Booking revision UUID
+     * @return array
+     */
+    public function getBookingRevision(string $apiKey, string $revisionId): array
+    {
+        $response = $this->get(
+            apiKey: $apiKey,
+            path: "/booking_revisions/{$revisionId}",
+        );
+
+        return $response->json() ?? [];
+    }
+
+    /**
+     * Retrieve the unacknowledged booking revisions feed.
+     *
+     * @param string $apiKey Channex API key — NEVER logged
+     * @param array  $query  Optional query params (limit, etc.)
+     * @return array
+     */
+    public function getBookingRevisionsFeed(string $apiKey, array $query = []): array
+    {
+        $response = $this->get(
+            apiKey: $apiKey,
+            path: '/booking_revisions/feed',
+            query: $query,
+        );
+
+        return $response->json() ?? [];
+    }
+
+    /**
+     * Explicitly acknowledge a booking revision in Channex API.
+     *
+     * @param string $apiKey        Channex API key — NEVER logged
+     * @param string $revisionId    Booking revision UUID
+     * @param string $correlationId Idempotency tracking key
+     * @return bool
+     *
+     * @throws ChannexAcknowledgementException on failure
+     */
+    public function acknowledgeBookingRevision(
+        string $apiKey,
+        string $revisionId,
+        string $correlationId = '',
+    ): bool {
+        if ($correlationId === '') {
+            $correlationId = 'ack_' . $revisionId . '_' . time();
+        }
+
+        try {
+            $response = $this->post(
+                apiKey: $apiKey,
+                path: "/booking_revisions/{$revisionId}/ack",
+                data: [],
+                correlationId: $correlationId,
+            );
+
+            return $response->successful();
+        } catch (\Exception $e) {
+            $status = ($e instanceof ChannexTransportException && $e->getPrevious() instanceof \Illuminate\Http\Client\RequestException)
+                ? (int) $e->getPrevious()->response?->status()
+                : 0;
+
+            throw new ChannexAcknowledgementException(
+                httpStatus: $status,
+                isRetryable: true,
+                message: "Channex ACK failed for revision {$revisionId}: {$e->getMessage()}",
+                previous: $e,
+            );
+        }
+    }
+
+    /**
      * Test connection / credential validation.
      *
      * @param string $apiKey Channex API key — NEVER logged

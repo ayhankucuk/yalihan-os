@@ -1,5 +1,36 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 138 — 2026-08-21 | WAVE 7 PHASE B1.1R: CHANNEX RELIABILITY RECOVERY & PROTOCOL COMPLIANCE ✅ IMPLEMENTED
+
+### WAVE 7 PHASE B1.1R — Channex Ingestion Reliability & Protocol Compliance
+
+**Authority:** SAAB  
+**Baseline:** `6e49457`  
+**Certification Status:** ✅ 100% TEST PASS (12/12 B1R PASS, Waves 1–7 119/119 PASS)
+
+#### Architecture Summary
+- **Protocol Distinction (HTTP 200 vs Booking ACK):**
+  - Explicitly decoupled HTTP 200 webhook delivery receipt from business-level Booking Acknowledgment (`POST /api/v1/booking_revisions/{id}/ack`).
+- **Transport Extension (`ChannexClient`):**
+  - Added `getBookingRevision(string $revisionId)` to fetch revision details by ID.
+  - Added `getBookingRevisionsFeed(array $query)` to fetch unacknowledged revisions feed.
+  - Added `acknowledgeBookingRevision(string $revisionId)` with typed exception handling (`ChannexAcknowledgementException`).
+- **Unified Canonical Processor (`ChannexRevisionProcessor`):**
+  - Single convergence entrypoint for both Webhook Push and 15-Minute Recovery Feed.
+  - Normalizes payloads, resolves tenant/listing fail-closed, and delegates to `ReservationService`.
+  - **COMMIT -> ACK Invariant:** Post-transaction acknowledgment occurs ONLY after successful DB commit. ACK failures are non-fatal to the committed reservation (zero rollback, zero duplicate on retry).
+- **15-Minute Revisions Feed Recovery Poller:**
+  - Created `ChannexRevisionsRecoveryJob` and `ChannexSyncRevisionsCommand` (`php artisan channex:sync-revisions`).
+  - Registered in `app/Console/Kernel.php` with `->everyFifteenMinutes()->withoutOverlapping()`.
+- **Zero Secret Leakage:** Strict protection across logs, error messages, and tests.
+
+#### Test Evidence
+- **B1.1R Gates:** 12/12 PASS (`B1R-01` to `B1R-15`)
+- **Channel Manager & Booking Suite:** 80/80 PASS
+- **Waves 1–7 Full Regression Suite:** 119/119 PASS (315 assertions, 0 regressions)
+
+---
+
 ## Oturum 137 — 2026-08-20 | WAVE 7 PHASE B1: PRODUCTION PORTFOLIO BOOTSTRAP & OPERATIONAL CHAIN ✅ CERTIFIED
 
 ### WAVE 7 PHASE B1 — Production Portfolio Bootstrap & End-to-End Operational Proof

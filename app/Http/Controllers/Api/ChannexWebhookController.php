@@ -33,9 +33,18 @@ class ChannexWebhookController extends Controller
             return response()->json(['ok' => false, 'reason' => 'invalid_signature'], 401);
         }
 
-        $payload               = $request->json()->all();
-        $externalReservationId = $payload['reservation']['id'] ?? null;
-        $externalListingId     = $payload['reservation']['property_id'] ?? null;
+        $payload = $request->json()->all();
+
+        // Support both legacy flat payload and JSON:API revision payload
+        $externalReservationId = $payload['reservation']['id']
+            ?? $payload['data']['attributes']['booking_id']
+            ?? $payload['data']['attributes']['id']
+            ?? $payload['data']['id']
+            ?? null;
+
+        $externalListingId = $payload['reservation']['property_id']
+            ?? $payload['data']['attributes']['property_id']
+            ?? null;
 
         if (!$externalReservationId || !$externalListingId) {
             return response()->json(['ok' => true, 'reason' => 'payload_incomplete'], 200);
@@ -52,6 +61,15 @@ class ChannexWebhookController extends Controller
         // Modification and cancellation can be re-processed on the same reservation.
         $action  = $payload['action'] ?? 'new';
         $channel = strtolower($payload['reservation']['channel_name'] ?? 'channex');
+
+        $isDuplicate = PropertyReservation::withoutGlobalScopes()
+            ->where('external_reservation_id', $externalReservationId)
+            ->where('tenant_id', $tenantId)
+            ->exists();
+
+        if ($action === 'new' && $isDuplicate) {
+            return response()->json(['ok' => true, 'reason' => 'already_processed'], 200);
+        }
 
         if ($action === 'cancelled') {
             ChannexReservationCancelJob::dispatch($externalReservationId, $channel, $tenantId);

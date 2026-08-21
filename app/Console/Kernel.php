@@ -206,6 +206,16 @@ class Kernel extends ConsoleKernel
                 LogService::error('SyncAirbnbCalendarFeed: iCal feed senkronizasyonu başarısız oldu!');
             });
 
+        // 🔄 Channex Channel Manager: Booking Revisions Feed Recovery Poller (Wave 7 B1.1R)
+        // Her 15 dakikada bir kaçırılan webhook'ları ve unacknowledged revision'ları toparlar
+        $schedule->command('channex:sync-revisions')
+            ->everyFifteenMinutes()
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/channex-sync-revisions.log'))
+            ->onFailure(function () {
+                LogService::error('ChannexSyncRevisions: Revisions feed senkronizasyonu başarısız oldu!');
+            });
+
         // 📈 AI: Deal Predictor & Daily Snapshots (SAB v16.5)
         // Her gün 04:00'te portföyü tara ve günlük snapshot üret
         $schedule->command('ai:scan-deals --limit=500')
@@ -239,6 +249,7 @@ class Kernel extends ConsoleKernel
                 dispatch(new \App\Jobs\AI\DailySnapshotsJob($tenant->id));
             }
         })
+            ->name('daily-tenant-snapshots')
             ->dailyAt('04:30')
             ->onOneServer();
 

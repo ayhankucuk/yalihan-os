@@ -3,7 +3,7 @@
 namespace App\Jobs\ChannelManager;
 
 use App\DTOs\ChannelManager\ChannexReservationPayload;
-use App\Services\ChannelManager\ChannexReservationIngestService;
+use App\Services\ChannelManager\ChannexRevisionProcessor;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -23,9 +23,9 @@ class ChannexReservationIngestJob implements ShouldQueue
         public readonly int                       $tenantId,
     ) {}
 
-    public function handle(ChannexReservationIngestService $ingestService): void
+    public function handle(ChannexRevisionProcessor $processor): void
     {
-        $ingestService->ingest($this->payload, $this->tenantId);
+        $processor->process($this->payload, $this->tenantId);
     }
 
     public function failed(\Throwable $exception): void
