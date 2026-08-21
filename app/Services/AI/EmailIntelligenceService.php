@@ -4,6 +4,7 @@ namespace App\Services\AI;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Services\AI\Providers\DeepSeekProvider;
 
 /**
  * EmailIntelligenceService
