@@ -224,9 +224,13 @@ class ReservationService
             throw new Exception("Minimum stay is {$ilan->min_stay_nights} nights.");
         }
 
-        return DB::transaction(function () use (
+        // Pass-by-reference so $cancelledConflict is available after transaction
+        $cancelledConflict = null;
+
+        $reservation = DB::transaction(function () use (
             $propertyId, $start, $end, $nights, $guestData, $userId,
             $conflictReservationId, $overrideAuthorizedBy,
+            &$cancelledConflict,  // ← receive cancelled model after commit
         ) {
             // ── 1. Lock the conflicting reservation ──────────────────────────────
             $conflict = PropertyReservation::lockForUpdate()->find($conflictReservationId);
@@ -252,27 +256,14 @@ class ReservationService
                 );
             }
 
-            // ── 2. Cancel the conflicting reservation ─────────────────────────
-            // Release its availability blocks synchronously within this transaction.
-            // The event dispatched after commit (see below) triggers channel sync only —
-            // it does NOT re-release the blocks (idempotency key prevents double-release).
-            $conflict->update([
-                'reservation_state' => ReservationState::CANCELLED->value,
-                'cancelled_at'     => now(),
-            ]);
-
-            // Release conflicting reservation's internal availability blocks synchronously.
-            // This is REQUIRED because the cancellation event's listener would release them
-            // asynchronously (via queue), but the new reservation needs them available NOW
-            // within the same transaction.
-            PropertyAvailability::where('reservation_id', $conflictReservationId)
-                ->where('source_system', 'internal')
-                ->where('is_available', false)
-                ->update([
-                    'is_available'   => true,
-                    'block_reason'   => null,
-                    'reservation_id' => null,
-                ]);
+            // ── 2. Cancel the conflicting reservation via canonical path ────────
+            // Uses cancelReservationInternal() so the cancellation DB logic is defined
+            // in ONE place. Event dispatch happens below (ReservationCancelledEvent).
+            //
+            // idempotency: if conflict is already cancelled, cancelReservationInternal()
+            // returns null and no availability is released (already free). The new
+            // reservation then proceeds to create and lock — correct behavior.
+            $cancelledConflict = $this->cancelReservationInternal($conflictReservationId);
 
             // ── 3. Create new reservation (same logic as createReservation) ─────
             $dates = [];
@@ -370,9 +361,10 @@ class ReservationService
             overrideOccurredAt:    $reservation->override_occurred_at?->toIso8601String(),
         ));
 
-        // 2. Conflicting reservation cancelled — triggers ProcessReservationCancelled →
-        //    AvailabilitySynchronizationService.release() for external channel sync
-        $cancelledConflict = PropertyReservation::find($conflictReservationId);
+        // 2. Conflicting reservation cancelled — ONLY if cancelReservationInternal()
+        //    actually cancelled it (not idempotent-already-cancelled). This uses the
+        //    canonical cancellation path so DB logic lives in ONE place.
+        //    Triggers ProcessReservationCancelled → availability sync + financial reversal.
         if ($cancelledConflict !== null) {
             $cancelledAt = $cancelledConflict->cancelled_at;
             event(new ReservationCancelledEvent(
@@ -558,7 +550,7 @@ class ReservationService
             // External channel blocks (source_system = 'airbnb_ical', etc.) are preserved.
             // Only rows with is_available = false are updated (already-blocked rows are skipped).
             PropertyAvailability::where('reservation_id', $reservationId)
-                ->where('source_system', 'internal')
+                ->whereIn('source_system', ['internal', 'canonical'])
                 ->where('is_available', false)
                 ->update([
                     'is_available' => true,

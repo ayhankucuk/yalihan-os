@@ -426,35 +426,52 @@ class YdlReservationOverrideTest extends TestCase
     {
         FakeConflictOverrideService::$shouldOverride = true;
 
+        // Conflict: start=day10, end=day12, availability rows for day10 + day11 (2 nights)
         $conflict = $this->createConflictingReservation();
         $conflictStart = $conflict->start_date;
-        $conflictEnd   = $conflict->end_date;
+        $conflictEnd   = $conflict->end_date;  // exclusive — last night is end-1
 
+        // Override for the SAME dates as conflict — forces cancel + immediate re-block.
+        // After override: conflict cancelled → same dates immediately re-blocked by new res.
+        // Key invariant: cancellation MUST run atomically within the override transaction,
+        // then new reservation MUST create and block its dates within the same transaction.
         $readiness = $this->orchestrator->evaluateOverrideReadiness(
             ilanId:    $this->ilan->id,
             tenantId:  $this->ilan->tenant_id,
-            startDate: now()->addDays(10)->format('Y-m-d'),
-            endDate:   now()->addDays(12)->format('Y-m-d'),
+            startDate: $conflictStart,   // same dates as conflict → creates conflict
+            endDate:   $conflictEnd,
             userId:    $this->user->id,
         );
         $token = $this->orchestrator->requestOverrideApproval($readiness);
 
-        $this->orchestrator->executeOverride(
+        $evidence = $this->orchestrator->executeOverride(
             $token,
             $this->user->id,
             $this->guestData(),
         );
 
-        // Conflict cancelled
+        // 1. Conflict cancelled via canonical path (cancelReservationInternal)
         $conflict->refresh();
-        $this->assertSame(ReservationState::CANCELLED->value, $conflict->reservation_state->value);
+        $this->assertSame(ReservationState::CANCELLED->value, $conflict->reservation_state->value,
+            'Conflict must be cancelled');
 
-        // Old dates now available
-        $oldAvailable = PropertyAvailability::where('property_id', $this->ilan->id)
-            ->whereBetween('date', [$conflictStart, $conflictEnd])
-            ->where('is_available', true)
+        // 2. Same dates now blocked by the NEW reservation (re-blocked immediately)
+        $conflictLastNight = Carbon::parse($conflictEnd)->subDay()->format('Y-m-d');
+        $datesBlockedByNew = PropertyAvailability::where('property_id', $this->ilan->id)
+            ->whereBetween('date', [$conflictStart, $conflictLastNight])
+            ->where('is_available', false)
+            ->where('reservation_id', '!=', $conflict->id)
             ->count();
-        $this->assertGreaterThan(0, $oldAvailable);
+        $this->assertEquals(2, $datesBlockedByNew,
+            'Same dates must be blocked by new reservation, not old conflict id');
+
+        // 3. New reservation has correct override audit fields
+        $newReservation = PropertyReservation::find($evidence->reservationId);
+        $this->assertNotNull($newReservation);
+        $this->assertSame($conflict->id, $newReservation->override_of_id,
+            'New reservation must record override_of_id');
+        $this->assertSame($this->user->id, $newReservation->override_authorized_by,
+            'New reservation must record override_authorized_by');
     }
 
     // ─────────────────────────────────────────────────────────────────

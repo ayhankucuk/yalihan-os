@@ -14,6 +14,9 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
+use App\Models\PropertyReservation;
+use App\Services\FinancialLedgerService;
+
 /**
  * ProcessReservationCreated — Queue-safe listener boundary.
  *
@@ -21,7 +24,7 @@ use Illuminate\Support\Facades\Log;
  * that need to react to a new reservation:
  *   - Guest confirmation notification
  *   - Availability outbound sync
- *   - Financial recording
+ *   - Financial recording (Double-Entry Ledger)
  *   - Stay operation task generation
  *
  * Queue-safe: idempotent, tenant-scoped, retryable.
@@ -41,8 +44,10 @@ class ProcessReservationCreated implements ShouldQueue
         public readonly ReservationCreatedEvent $event,
     ) {}
 
-    public function handle(AvailabilitySynchronizationService $availabilityService): void
-    {
+    public function handle(
+        AvailabilitySynchronizationService $availabilityService,
+        FinancialLedgerService $financialLedgerService
+    ): void {
         Log::info('ProcessReservationCreated: handling', [
             'reservation_id'   => $this->event->reservationId,
             'tenant_id'        => $this->event->tenantId,
@@ -56,16 +61,52 @@ class ProcessReservationCreated implements ShouldQueue
         // channel push via the single materializer.
         $this->syncAvailability($availabilityService);
 
+        // ── Financial Recording (Double-Entry Ledger) ────────────────────────
+        $this->recordFinancials($financialLedgerService);
+
         // ── Wave 1: Guest Communication ──────────────────────────────────────
         SendGuestConfirmationJob::dispatch($this->event);
 
         // ── Wave 1: Operational Task Creation ────────────────────────────────
         // CHECKOUT-D2: Creates hazirlik Gorev → GorevCreated → n8n → Telegram/WhatsApp
         CreateOperationalTasksJob::dispatch($this->event);
+    }
 
-        // ── Future waves ─────────────────────────────────────────────────────
-        // Stay Operation: pool check, garden service
-        // Financial Recording → FinancialTransaction record
+    /**
+     * Record initial reservation financial entry in double-entry ledger.
+     */
+    private function recordFinancials(FinancialLedgerService $ledgerService): void
+    {
+        try {
+            $reservation = PropertyReservation::withoutGlobalScopes()
+                ->where('id', $this->event->reservationId)
+                ->where('tenant_id', $this->event->tenantId)
+                ->first();
+
+            if (!$reservation) {
+                Log::warning('ProcessReservationCreated: reservation not found for financial recording', [
+                    'reservation_id' => $this->event->reservationId,
+                    'tenant_id'      => $this->event->tenantId,
+                ]);
+                return;
+            }
+
+            $txGroupId = $ledgerService->recordReservationInitialBooking(
+                $reservation,
+                $this->event->createdByUserId ?? 0
+            );
+
+            Log::info('ProcessReservationCreated: financial ledger entry recorded', [
+                'reservation_id'       => $this->event->reservationId,
+                'transaction_group_id' => $txGroupId,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('ProcessReservationCreated: financial recording failed', [
+                'reservation_id' => $this->event->reservationId,
+                'error'          => $e->getMessage(),
+            ]);
+            throw $e;
+        }
     }
 
     /**

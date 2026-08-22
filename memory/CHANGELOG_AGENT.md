@@ -1337,3 +1337,51 @@ SAAB Option B Controlled uygulandı:
 - SyncPropertyCalendarFeedTest: 3/3 PASS ✅
 - PropertyAggregateTest: 13/13 PASS ✅
 
+---
+
+## 2026-08-17 | Oturum 135 | SAAB PRODUCTION PILOT PREFLIGHT ✅
+
+### Görev
+Guest Concierge — WhatsApp Micro Pilot credential preflight + güvenlik invariant doğrulaması
+
+### Yapılanlar
+
+#### 1. Preflight Audit (Tamamlandan)
+- GuestMessage pipeline: ✅ Tüm yapı hazır
+- Kill-switch mekanizması: ✅ OFF (güvenli)
+- Tenant isolation: ✅ `tenant_id` scope
+- Append-only audit: ✅ `GuestMessage::create()`
+- Idempotency: ✅ `external_message_id` unique constraint
+- Credential guard: ✅ `INTENT_CREDENTIAL_REQUEST` → ZERO AUTHORITY
+
+#### 2. Blokaj Tespiti
+- Meta WhatsApp credentials: ❌ Boş (token, phone_id, business_account_id)
+- Queue worker: ❌ Horizon INACTIVE
+- Test data: ⚠️ guest_phone tüm rezervasyonlarda boş
+
+#### 3. Güvenlik Düzeltmesi (YAPILDI)
+- `GuestConciergePilotGate.php`: PILOT-GATE-01 invariant docstring güncellendi
+- **Önceki yanlış:** "Empty allowlist = tüm tenant'lar test edilir"
+- **Doğru invariant:** "Empty tenant allowlist = FAIL-CLOSED (no one passes)"
+- **Commit:** `54ca834` — fix(concierge): PILOT-GATE-01 — document FAIL-CLOSED invariant explicitly
+
+#### 4. Yapısal Sağlık Kontrolü
+- GuestMessage model: ✅ 240 satır, tüm sabitler ve scope'lar doğru
+- SendWhatsAppMessageJob: ✅ 131 satır, retry + fail logic
+- ProcessGuestMessageJob: ✅ 450 satır, append-only audit, authority check
+- GuestConciergeRouter: ✅ 251 satır, phone-lookup, reservation lookup
+- ResolveWhatsAppInboundJob: ✅ PILOT-GATE-01 entegrasyonu
+
+### LIVE PILOT Durumu
+| Bloker | Durum |
+|--------|-------|
+| Meta WhatsApp credentials | 🔴 Production secret store'da bekliyor |
+| Horizon queue worker | 🔴 Worker başlatılacak |
+| Gerçek rezervasyon + guest_phone | 🔴 Üretim veritabanında mevcut değil |
+| Allowlist yanlış yorumu | ✅ Düzeltildi (54ca834) |
+
+### Öğrenilen
+1. **Allowlist invariant asla tersine çevrilemez:** Empty = FAIL-CLOSED, bunu değiştiren herhangi bir yorum veya checklist güvenlik açığı yaratır
+2. **1×1 Production Pilot = gerçek veri:** Sahte telefon numarası ile test kanıt sayılmaz
+3. **PilotGate isAllowed() → isTenantAllowed() → empty check:** Fail-closed chain her zaman korunmalı
+

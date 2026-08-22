@@ -81,7 +81,6 @@ class AvailabilitySynchronizationService
             foreach ($command->getDates() as $date) {
                 $existing = PropertyAvailability::where('property_id', $command->propertyId)
                     ->where('date', $date)
-                    ->where('tenant_id', $command->tenantId)
                     ->lockForUpdate()
                     ->first();
 
@@ -110,7 +109,6 @@ class AvailabilitySynchronizationService
                         PropertyAvailability::create([
                             'property_id' => $command->propertyId,
                             'date' => $date,
-                            'tenant_id' => $command->tenantId,
                             'is_available' => $command->available,
                             'block_reason' => $command->isBlocking() ? $command->blockReason : null,
                             'source_system' => 'canonical',
@@ -369,7 +367,8 @@ class AvailabilitySynchronizationService
 
     private function enforceTenantIsolation(int $tenantId, int $propertyId): void
     {
-        $property = Ilan::where('id', $propertyId)
+        $property = Ilan::withoutGlobalScopes()
+            ->where('id', $propertyId)
             ->where('tenant_id', $tenantId)
             ->first();
 
@@ -504,7 +503,7 @@ class AvailabilitySynchronizationService
         DB::transaction(function () use ($propertyId, $reservationId, $tenantId, &$releasedCount) {
             $releasedCount = PropertyAvailability::where('property_id', $propertyId)
                 ->where('reservation_id', $reservationId)
-                ->where('source_system', 'internal')
+                ->whereIn('source_system', ['internal', 'canonical'])
                 ->where('is_available', false)
                 ->update([
                     'is_available' => true,

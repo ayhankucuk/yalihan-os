@@ -39,6 +39,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\SaaS\UsageMeteringService::class);
         $this->app->singleton(\App\Services\SaaS\AiMonetizationService::class);
 
+        // 📅 Channel Manager Availability Synchronizer
+        $this->app->bind(
+            \App\Domain\ChannelManager\Contracts\AvailabilitySynchronizer::class,
+            \App\Infrastructure\ChannelManager\Services\DefaultAvailabilitySynchronizer::class
+        );
+
         // Modül servisini kaydediyoruz
         $this->app->register(ModuleServiceProvider::class);
 

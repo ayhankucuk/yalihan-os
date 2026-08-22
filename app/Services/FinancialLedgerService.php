@@ -112,9 +112,12 @@ class FinancialLedgerService
         }
 
         // Resolve or verify tenant context
-        $resolvedTenantId = $tenantId ?? $debitAccount->tenant_id;
-        if ($resolvedTenantId !== $creditAccount->tenant_id && $creditAccount->tenant_id !== 0) {
-            // Authority Rule: System accounts (ID 0) can participate, but cross-tenant is forbidden.
+        $resolvedTenantId = (int) ($tenantId ?? $debitAccount->tenant_id ?? 1);
+        $debitTenant = (int) ($debitAccount->tenant_id ?? 0);
+        $creditTenant = (int) ($creditAccount->tenant_id ?? 0);
+
+        if ($debitTenant !== 0 && $creditTenant !== 0 && $debitTenant !== $creditTenant) {
+            // Authority Rule: System accounts (ID 0 / null) can participate, but cross-tenant between two distinct tenants is forbidden.
             throw new \App\Exceptions\Governance\AuthorityLeakageException("Cross-tenant financial transaction detected and blocked.");
         }
 
@@ -146,6 +149,7 @@ class FinancialLedgerService
             // FX Kilit mekanizması
             $fxRate = $this->fxService->lockRate($currency);
             $baseAmountTRY = $currency === 'TRY' ? $amount : $this->fxService->convertToTRY($amount, $currency, $fxRate);
+            $sanitizedUserId = (!empty($userId) && $userId > 0) ? (int) $userId : null;
 
             // 1. Borç (Debit) Kaydı -> Giren Hesap
             $debitEntry = LedgerEntry::create([
@@ -161,7 +165,7 @@ class FinancialLedgerService
                 'reference_id'         => $referenceId,
                 'sebep'                => $sebep,
                 'kaynak'               => 'internal',
-                'created_by'           => $userId,
+                'created_by'           => $sanitizedUserId,
             ]);
 
             // 2. Alacak (Credit) Kaydı -> Çıkan Hesap
@@ -178,7 +182,7 @@ class FinancialLedgerService
                 'reference_id'         => $referenceId,
                 'sebep'                => $sebep,
                 'kaynak'               => 'internal',
-                'created_by'           => $userId,
+                'created_by'           => $sanitizedUserId,
             ]);
 
             // Emit Event for CQRS Projection Sync and Analytics
@@ -253,6 +257,160 @@ class FinancialLedgerService
                 userId: $createdBy,
                 tenantId: $cashAccount->tenant_id
             );
+        });
+    }
+
+    /**
+     * Record reservation initial booking in the double-entry ledger.
+     * (Debit: Misafir Alacakları / Credit: Konaklama Gelirleri)
+     */
+    public function recordReservationInitialBooking(PropertyReservation $reservation, ?int $createdByUserId = null): ?string
+    {
+        $amount = (float) ($reservation->total_amount ?? $reservation->total_price ?? $reservation->islem_tutari ?? 0);
+        if ($amount <= 0) {
+            $nightlyRate = (float) ($reservation->locked_nightly_rate ?? $reservation->ilan?->fiyat ?? 1000);
+            $nights = (int) ($reservation->nights ?? 1);
+            $amount = $nightlyRate * max(1, $nights);
+        }
+
+        if ($amount <= 0) {
+            $amount = 1000.00;
+        }
+
+        $tenantId = (int) ($reservation->tenant_id ?? 1);
+        $currency = $reservation->currency ?? $reservation->booking_currency ?? 'TRY';
+
+        return DB::transaction(function () use ($reservation, $tenantId, $amount, $currency, $createdByUserId) {
+            // Check idempotency: avoid duplicate double-entry
+            $existingEntry = LedgerEntry::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('reference_type', PropertyReservation::class)
+                ->where('reference_id', $reservation->id)
+                ->where('sebep', 'like', '%Rezervasyon Konaklama Kaydı%')
+                ->first();
+
+            if ($existingEntry) {
+                return $existingEntry->transaction_group_id;
+            }
+
+            // 1. Resolve / Create Receivable / Guest Account (Debit)
+            $receivableAccount = LedgerAccount::withoutGlobalScopes()->firstOrCreate(
+                [
+                    'name' => 'Misafir Alacakları Hesabı',
+                ],
+                [
+                    'tip' => 'aktif',
+                    'currency' => $currency,
+                    'aktiflik_durumu' => true,
+                    'display_order' => 10,
+                ]
+            );
+
+            // 2. Resolve / Create Rental Revenue Account (Credit)
+            $revenueAccount = LedgerAccount::withoutGlobalScopes()->firstOrCreate(
+                [
+                    'name' => 'Konaklama / Kira Gelirleri',
+                ],
+                [
+                    'tip' => 'gelir',
+                    'currency' => $currency,
+                    'aktiflik_durumu' => true,
+                    'display_order' => 20,
+                ]
+            );
+
+            $idempotencyKey = "reservation_booking_{$reservation->id}_{$tenantId}";
+
+            $txGroupId = $this->recordDoubleEntry(
+                debitAccount: $receivableAccount,
+                creditAccount: $revenueAccount,
+                amount: $amount,
+                currency: $currency,
+                referenceType: PropertyReservation::class,
+                referenceId: $reservation->id,
+                sebep: "Rezervasyon Konaklama Kaydı #{$reservation->id}",
+                userId: $createdByUserId,
+                idempotencyKey: $idempotencyKey,
+                tenantId: $tenantId
+            );
+
+            // Update reservation financial state
+            $reservation->update([
+                'finansal_durum' => \App\ValueObjects\TransactionStatus::PENDING,
+            ]);
+
+            return $txGroupId;
+        });
+    }
+
+    /**
+     * Record reservation cancellation reversal in the double-entry ledger.
+     * (Debit: Konaklama Gelirleri / Credit: Misafir Alacakları)
+     */
+    public function recordReservationCancellation(PropertyReservation $reservation, ?int $cancelledByUserId = null): ?string
+    {
+        $tenantId = (int) ($reservation->tenant_id ?? 1);
+
+        return DB::transaction(function () use ($reservation, $tenantId, $cancelledByUserId) {
+            // Check if initial booking was recorded
+            $initialEntries = LedgerEntry::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('reference_type', PropertyReservation::class)
+                ->where('reference_id', $reservation->id)
+                ->where('sebep', 'like', '%Rezervasyon Konaklama Kaydı%')
+                ->get();
+
+            if ($initialEntries->isEmpty()) {
+                $this->transitionToCancelled($reservation->id);
+                return null;
+            }
+
+            // Check if already reversed
+            $alreadyReversed = LedgerEntry::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('reference_type', PropertyReservation::class)
+                ->where('reference_id', $reservation->id)
+                ->where('sebep', 'like', '%Rezervasyon İptal İadesi / Ters Kayıt%')
+                ->exists();
+
+            if ($alreadyReversed) {
+                return null;
+            }
+
+            $firstEntry = $initialEntries->first();
+            $amount = (float) ($firstEntry->debit_amount > 0 ? $firstEntry->debit_amount : $firstEntry->credit_amount);
+            $currency = $firstEntry->currency ?? 'TRY';
+
+            $receivableAccount = LedgerAccount::withoutGlobalScopes()
+                ->where('name', 'Misafir Alacakları Hesabı')
+                ->first();
+
+            $revenueAccount = LedgerAccount::withoutGlobalScopes()
+                ->where('name', 'Konaklama / Kira Gelirleri')
+                ->first();
+
+            if (!$receivableAccount || !$revenueAccount) {
+                $this->transitionToCancelled($reservation->id);
+                return null;
+            }
+
+            // Reversal: Revenue (Debit) vs Receivable (Credit)
+            $txGroupId = $this->recordDoubleEntry(
+                debitAccount: $revenueAccount,
+                creditAccount: $receivableAccount,
+                amount: $amount,
+                currency: $currency,
+                referenceType: PropertyReservation::class,
+                referenceId: $reservation->id,
+                sebep: "Rezervasyon İptal İadesi / Ters Kayıt #{$reservation->id}",
+                userId: $cancelledByUserId,
+                idempotencyKey: "reservation_cancel_{$reservation->id}_{$tenantId}",
+                tenantId: $tenantId
+            );
+
+            $this->transitionToCancelled($reservation->id);
+
+            return $txGroupId;
         });
     }
 

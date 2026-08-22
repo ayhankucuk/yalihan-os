@@ -176,10 +176,13 @@ class ReservationEventBackboneTest extends TestCase
     }
 
     // ─── G5: Override → conflict cancelled, new reservation created ─────────
-    // NOTE: createReservationWithOverride does NOT call cancelReservation(),
-    // so ReservationCancelledEvent is NOT fired for the conflicting reservation.
-    // The conflict is cancelled via direct update inside the transaction.
-    // This is documented behavior (PILOT-002 Wave 3).
+    // After LIFECYCLE-DEBT closure (A1): createReservationWithOverride now uses
+    // cancelReservationInternal() as the canonical cancellation path. This means:
+    //   1. DB cancellation logic lives in ONE place (cancelReservationInternal)
+    //   2. ReservationCancelledEvent IS fired for the conflicting reservation
+    //   3. ProcessReservationCancelled (availability sync + financial reversal) IS triggered
+    // Idempotency: if conflict was already cancelled, no event fires (cancelReservationInternal
+    // returns null) and createReservationInternal proceeds as normal.
 
     public function test_override_cancels_conflict_and_dispatches_both_jobs(): void
     {
@@ -204,9 +207,12 @@ class ReservationEventBackboneTest extends TestCase
             $this->user->id,
         );
 
-        // Override fires ReservationCreatedEvent (its own path fires event).
-        // NOTE: If the conflict was already cancelled, createReservationInternal is called
-        // and no second event fires. We verify the conflict IS cancelled in DB.
+        // Override fires BOTH ReservationCreatedEvent AND ReservationCancelledEvent
+        // via canonical cancellation path (cancelReservationInternal).
+        // ProcessReservationCancelled is queued → availability sync + financial reversal.
+        Queue::assertPushed(ProcessReservationCancelled::class, 1);
+
+        // Conflict cancelled in DB
         $first->refresh();
         $this->assertEquals(ReservationState::CANCELLED, $first->reservation_state);
         $this->assertNotEquals($first->id, $second->id);

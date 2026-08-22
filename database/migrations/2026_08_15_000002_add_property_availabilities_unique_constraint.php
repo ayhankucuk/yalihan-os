@@ -28,9 +28,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('property_availabilities', function (Blueprint $table) {
-            $table->unique(['property_id', 'date'], 'property_availabilities_property_id_date_unique');
-        });
+        $indexExists = false;
+        try {
+            $indices = \Illuminate\Support\Facades\DB::select("SHOW INDEX FROM property_availabilities WHERE Key_name = 'property_availabilities_property_id_date_unique'");
+            $indexExists = !empty($indices);
+        } catch (\Throwable $e) {
+            $indexExists = false;
+        }
+
+        if (!$indexExists) {
+            Schema::table('property_availabilities', function (Blueprint $table) {
+                $table->unique(['property_id', 'date'], 'property_availabilities_property_id_date_unique');
+            });
+        }
     }
 
     /**
@@ -38,8 +48,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('property_availabilities', function (Blueprint $table) {
-            $table->dropUnique('property_availabilities_property_id_date_unique');
-        });
+        try {
+            Schema::table('property_availabilities', function (Blueprint $table) {
+                $table->dropUnique('property_availabilities_property_id_date_unique');
+            });
+        } catch (\Throwable $e) {
+            // Ignore if already dropped
+        }
     }
 };

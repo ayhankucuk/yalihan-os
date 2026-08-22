@@ -1,5 +1,30 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 139 — 2026-08-22 | RESERVATION FINANCIAL RECORDING & CANCELLATION SYNC ✅ IMPLEMENTED
+
+### RESERVATION_FINANCIAL_RECORDING_AND_CANCELLATION_SYNC
+
+**Authority:** SAAB  
+**Certification Status:** ✅ 100% TEST PASS (4/4 PASS, 38 assertions)
+
+#### Architecture Summary
+- **Double-Entry Ledger Integration:**
+  - `FinancialLedgerService::recordReservationInitialBooking` automatically records double-entry bookkeeping (Debit: `Misafir Alacakları Hesabı` 120.01 / Credit: `Konaklama / Kira Gelirleri` 600.01) upon reservation creation.
+  - `FinancialLedgerService::recordReservationCancellation` automatically executes reversal double-entry bookkeeping upon reservation cancellation.
+- **Event-Driven Asynchronous Pipeline:**
+  - `ProcessReservationCreated` job wired to invoke `FinancialLedgerService::recordReservationInitialBooking` alongside availability synchronization and operational tasks.
+  - `ProcessReservationCancelled` job wired to invoke `FinancialLedgerService::recordReservationCancellation` and outbound availability release synchronization.
+- **Availability Invariants & Reversals:**
+  - Standardized `whereIn('source_system', ['internal', 'canonical'])` unblock logic on cancellation.
+  - Idempotent migration for `property_availabilities_property_id_date_unique`.
+- **Tenant Isolation & System Accounts:**
+  - Multi-tenant foreign key enforcement and Chart of Accounts isolation verified across discrete tenants.
+
+#### Test Evidence
+- **Feature Test:** `tests/Feature/Reservation/ReservationEndToEndLifecycleTest.php` (4/4 tests PASS, 38 assertions).
+
+---
+
 ## Oturum 138 — 2026-08-21 | WAVE 7 PHASE B1.1R: CHANNEX RELIABILITY RECOVERY & PROTOCOL COMPLIANCE ✅ IMPLEMENTED
 
 ### WAVE 7 PHASE B1.1R — Channex Ingestion Reliability & Protocol Compliance

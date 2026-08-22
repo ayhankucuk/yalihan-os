@@ -11,6 +11,9 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
+use App\Models\PropertyReservation;
+use App\Services\FinancialLedgerService;
+
 /**
  * ProcessReservationCancelled — Queue-safe listener boundary.
  *
@@ -31,8 +34,10 @@ class ProcessReservationCancelled implements ShouldQueue
         public readonly ReservationCancelledEvent $event,
     ) {}
 
-    public function handle(AvailabilitySynchronizationService $availabilityService): void
-    {
+    public function handle(
+        AvailabilitySynchronizationService $availabilityService,
+        FinancialLedgerService $financialLedgerService
+    ): void {
         Log::info('ProcessReservationCancelled: handling', [
             'reservation_id'  => $this->event->reservationId,
             'tenant_id'       => $this->event->tenantId,
@@ -47,9 +52,47 @@ class ProcessReservationCancelled implements ShouldQueue
         // push to propagate the release to external platforms.
         $this->syncRelease($availabilityService);
 
+        // ── Financial Reversal (Double-Entry Ledger) ────────────────────────
+        $this->reverseFinancials($financialLedgerService);
+
         // ── Future waves ─────────────────────────────────────────────────────
         // Guest cancellation notification → NotificationDispatcher
-        // Financial reversal → FinancialTransaction reversal
+    }
+
+    /**
+     * Reverse reservation financial entry in double-entry ledger.
+     */
+    private function reverseFinancials(FinancialLedgerService $ledgerService): void
+    {
+        try {
+            $reservation = PropertyReservation::withoutGlobalScopes()
+                ->where('id', $this->event->reservationId)
+                ->where('tenant_id', $this->event->tenantId)
+                ->first();
+
+            if (!$reservation) {
+                Log::warning('ProcessReservationCancelled: reservation not found for financial reversal', [
+                    'reservation_id' => $this->event->reservationId,
+                    'tenant_id'      => $this->event->tenantId,
+                ]);
+                return;
+            }
+
+            $txGroupId = $ledgerService->recordReservationCancellation(
+                $reservation,
+                null
+            );
+
+            Log::info('ProcessReservationCancelled: financial ledger reversal recorded', [
+                'reservation_id'       => $this->event->reservationId,
+                'transaction_group_id' => $txGroupId,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('ProcessReservationCancelled: financial reversal failed', [
+                'reservation_id' => $this->event->reservationId,
+                'error'          => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
