@@ -135,6 +135,13 @@ class ProcessFinancialCompletionJob implements ShouldQueue, ShouldBeUnique
         try {
             $ledgerService->transitionToConfirmed($reservation->id);
 
+            // ── C3.2: Owner Payable Accrual ───────────────────────────────
+            // Called AFTER CONFIRMED transition. Safe: reservation is now in
+            // terminal financial state. Cancellation is no longer possible.
+            // Idempotent: recordOwnerPayableAccrual checks ledger entries
+            // by idempotency key before writing (no double-entry on replay).
+            $ledgerService->recordOwnerPayableAccrual($reservation);
+
             Log::info('ProcessFinancialCompletionJob: financial completion applied', [
                 'reservation_id' => $this->event->reservationId,
                 'tenant_id' => $this->event->tenantId,

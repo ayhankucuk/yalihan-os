@@ -83,6 +83,11 @@ class ProcessReservationCancelled implements ShouldQueue
                 null
             );
 
+            // ── C3.2: Reverse owner payable accrual ───────────────────────────
+            // Reverses commission split and owner entitlement entries created
+            // by recordOwnerPayableAccrual(). Safe to call even if none exist.
+            $ledgerService->reverseOwnerPayableAccrual($reservation);
+
             Log::info('ProcessReservationCancelled: financial ledger reversal recorded', [
                 'reservation_id'       => $this->event->reservationId,
                 'transaction_group_id' => $txGroupId,

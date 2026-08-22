@@ -439,6 +439,219 @@ class FinancialLedgerService
     }
 
     /**
+     * C3.2: Owner Payable Accrual
+     *
+     * Creates two sub-entries that split the gross reservation revenue into:
+     *   - Yalihan commission (revenue)
+     *   - Owner entitlement (liability)
+     *
+     * Called AFTER transitionToConfirmed(), inside the same pipeline.
+     *
+     * Business rules:
+     *   - FULL_MANAGEMENT  (0.1500) → commission 15%, owner 85%
+     *   - CHECKIN_CHECKOUT (0.1000) → commission 10%, owner 90%
+     *   - NONE             (0.0000) → commission SKIP, owner 100%
+     *   - CUSTOM           (rate)  → commission rate%, owner (1-rate)%
+     *   - Legacy NULL snapshot     → STOP, no accrual, audit log
+     *
+     * @throws \InvalidArgumentException if CUSTOM model has no valid custom_commission_rate
+     */
+    public function recordOwnerPayableAccrual(PropertyReservation $reservation): void
+    {
+        $tenantId = (int) ($reservation->tenant_id ?? 1);
+
+        // ── C3.1 contract: NULL snapshot = STOP (no invented financial policy) ──
+        if ($reservation->commission_rate_snapshot === null) {
+            Log::info('recordOwnerPayableAccrual: legacy reservation #{$reservation->id} has no commission snapshot — skipping accrual', [
+                'reservation_id' => $reservation->id,
+                'tenant_id' => $tenantId,
+            ]);
+            return;
+        }
+
+        $rate = (float) $reservation->commission_rate_snapshot;
+
+        // ── Resolve gross amount ──────────────────────────────────────────────
+        $grossAmount = (float) ($reservation->total_amount
+            ?? $reservation->islem_tutari
+            ?? $reservation->locked_nightly_rate * $reservation->nights
+            ?? 0);
+
+        if ($grossAmount <= 0) {
+            Log::warning('recordOwnerPayableAccrual: zero gross amount for reservation #{$reservation->id} — skipping', [
+                'reservation_id' => $reservation->id,
+                'tenant_id' => $tenantId,
+            ]);
+            return;
+        }
+
+        $currency = $reservation->currency ?? $reservation->booking_currency ?? 'TRY';
+
+        // ── Compute commission and owner entitlement ─────────────────────────────
+        $commissionAmount = $grossAmount * $rate;
+        $ownerAmount = $grossAmount - $commissionAmount;
+
+        // ── Resolve / Create revenue account (Komisyon Gelirleri) ────────────────
+        // Tenant-specific: each tenant has their own commission revenue account.
+        $commissionAccount = LedgerAccount::firstOrCreate(
+            ['name' => 'Komisyon Gelirleri Hesabı', 'tenant_id' => $tenantId],
+            ['tip' => 'gelir', 'aktiflik_durumu' => true, 'display_order' => 30]
+        );
+
+        // ── Resolve / Create owner payable account (Sahip Yükümlülükleri) ──────
+        // Tenant-specific liability: Yalıhan owes the owner.
+        $ownerPayableAccount = LedgerAccount::firstOrCreate(
+            ['name' => 'Sahip Yükümlülükleri Hesabı', 'tenant_id' => $tenantId],
+            ['tip' => 'yükümlülük', 'aktiflik_durumu' => true, 'display_order' => 40]
+        );
+
+        // ── Resolve gross revenue account (Konaklama Gelirleri) ────────────────
+        // This account already received the full CR entry from recordReservationInitialBooking.
+        // We now reduce it by debiting it.
+        $revenueAccount = LedgerAccount::withoutGlobalScopes()
+            ->where('name', 'Konaklama / Kira Gelirleri')
+            ->first();
+
+        if (!$revenueAccount) {
+            throw new \RuntimeException(
+                "recordOwnerPayableAccrual: 'Konaklama / Kira Gelirleri' account not found. "
+                . "Ensure recordReservationInitialBooking has been called for reservation #{$reservation->id}."
+            );
+        }
+
+        $idempotencyKeyBase = "owner_accrual_{$reservation->id}_{$tenantId}";
+
+        // ── TX2: Commission split ─────────────────────────────────────────────
+        // DB:  Konaklama Gelirleri (revenue reduction)
+        // CR:  Komisyon Gelirleri (Yalihan revenue)
+        if ($commissionAmount > 0) {
+            $commissionKey = "{$idempotencyKeyBase}_commission";
+            $this->recordDoubleEntry(
+                debitAccount: $revenueAccount,
+                creditAccount: $commissionAccount,
+                amount: $commissionAmount,
+                currency: $currency,
+                referenceType: PropertyReservation::class,
+                referenceId: $reservation->id,
+                sebep: "Yalihan Komisyon Tahsili #{$reservation->id}",
+                idempotencyKey: $commissionKey,
+                tenantId: $tenantId
+            );
+        }
+
+        // ── TX3: Owner payable accrual ────────────────────────────────────────
+        // DB:  Konaklama Gelirleri (revenue reduction)
+        // CR:  Sahip Yükümlülükleri (liability: Yalıhan owes owner)
+        $ownerKey = "{$idempotencyKeyBase}_owner";
+        $this->recordDoubleEntry(
+            debitAccount: $revenueAccount,
+            creditAccount: $ownerPayableAccount,
+            amount: $ownerAmount,
+            currency: $currency,
+            referenceType: PropertyReservation::class,
+            referenceId: $reservation->id,
+            sebep: "Sahip Tahakkuk #{$reservation->id}",
+            idempotencyKey: $ownerKey,
+            tenantId: $tenantId
+        );
+
+        Log::info('recordOwnerPayableAccrual: applied', [
+            'reservation_id' => $reservation->id,
+            'tenant_id' => $tenantId,
+            'gross_amount' => $grossAmount,
+            'currency' => $currency,
+            'rate_snapshot' => $rate,
+            'commission_amount' => $commissionAmount,
+            'owner_amount' => $ownerAmount,
+            'model_snapshot' => $reservation->management_model_snapshot,
+        ]);
+    }
+
+    /**
+     * C3.2: Reverse owner payable accrual on cancellation.
+     *
+     * Reverses both commission split and owner payable entries created by
+     * recordOwnerPayableAccrual(). Safe to call even if no accrual entries exist.
+     *
+     * Idempotent: checks for existing reversal entries before writing.
+     */
+    public function reverseOwnerPayableAccrual(PropertyReservation $reservation): void
+    {
+        $tenantId = (int) ($reservation->tenant_id ?? 1);
+        $currency = $reservation->currency ?? $reservation->booking_currency ?? 'TRY';
+
+        $rate = $reservation->commission_rate_snapshot;
+        if ($rate === null) {
+            return; // Legacy — nothing to reverse
+        }
+
+        $grossAmount = (float) ($reservation->total_amount
+            ?? $reservation->islem_tutari
+            ?? $reservation->locked_nightly_rate * $reservation->nights
+            ?? 0);
+
+        if ($grossAmount <= 0) {
+            return;
+        }
+
+        $commissionAmount = $grossAmount * (float) $rate;
+        $ownerAmount = $grossAmount - $commissionAmount;
+
+        $revenueAccount = LedgerAccount::withoutGlobalScopes()
+            ->where('name', 'Konaklama / Kira Gelirleri')
+            ->first();
+
+        $commissionAccount = LedgerAccount::firstOrCreate(
+            ['name' => 'Komisyon Gelirleri Hesabı', 'tenant_id' => $tenantId],
+            ['tip' => 'gelir', 'aktiflik_durumu' => true, 'display_order' => 30]
+        );
+
+        $ownerPayableAccount = LedgerAccount::firstOrCreate(
+            ['name' => 'Sahip Yükümlülükleri Hesabı', 'tenant_id' => $tenantId],
+            ['tip' => 'yükümlülük', 'aktiflik_durumu' => true, 'display_order' => 40]
+        );
+
+        $idempotencyKeyBase = "owner_accrual_{$reservation->id}_{$tenantId}";
+
+        // Reverse commission split (CR: Konaklama Gelirleri / DB: Komisyon Gelirleri)
+        if ($commissionAmount > 0) {
+            $commissionReversalKey = "{$idempotencyKeyBase}_commission_reversal";
+            $this->recordDoubleEntry(
+                debitAccount: $commissionAccount,  // debit the commission revenue account
+                creditAccount: $revenueAccount,   // credit back to revenue
+                amount: $commissionAmount,
+                currency: $currency,
+                referenceType: PropertyReservation::class,
+                referenceId: $reservation->id,
+                sebep: "Yalihan Komisyon İptal #{$reservation->id}",
+                idempotencyKey: $commissionReversalKey,
+                tenantId: $tenantId
+            );
+        }
+
+        // Reverse owner payable (CR: Konaklama Gelirleri / DB: Sahip Yükümlülükleri)
+        $ownerReversalKey = "{$idempotencyKeyBase}_owner_reversal";
+        $this->recordDoubleEntry(
+            debitAccount: $ownerPayableAccount,
+            creditAccount: $revenueAccount,
+            amount: $ownerAmount,
+            currency: $currency,
+            referenceType: PropertyReservation::class,
+            referenceId: $reservation->id,
+            sebep: "Sahip Tahakkuk İptal #{$reservation->id}",
+            idempotencyKey: $ownerReversalKey,
+            tenantId: $tenantId
+        );
+
+        Log::info('reverseOwnerPayableAccrual: reversal applied', [
+            'reservation_id' => $reservation->id,
+            'tenant_id' => $tenantId,
+            'commission_amount' => $commissionAmount,
+            'owner_amount' => $ownerAmount,
+        ]);
+    }
+
+    /**
      * Get all transactions for a reservation using morph relationship.
      */
     public function getReservationLedger(int $reservationId): \Illuminate\Support\Collection

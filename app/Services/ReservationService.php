@@ -957,6 +957,7 @@ class ReservationService
 
         PropertyReservation::withoutGlobalScopes()
             ->where('id', $reservation->id)
+            ->where('tenant_id', $ilan->tenant_id)  // C3.2 hardening: explicit tenant scope
             ->update([
                 'management_model_snapshot' => $modelSnapshot,
                 'commission_rate_snapshot' => $effectiveRate,
