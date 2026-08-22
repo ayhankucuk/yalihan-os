@@ -142,6 +142,35 @@ class ProcessFinancialCompletionJob implements ShouldQueue, ShouldBeUnique
             // by idempotency key before writing (no double-entry on replay).
             $ledgerService->recordOwnerPayableAccrual($reservation);
 
+            // ── C3.3: Payout Readiness event ─────────────────────────────
+            // Signal that this reservation is now payout-ready for admin/operator review.
+            // No automatic payment. Human approves before payout.
+            // Skip if legacy NULL snapshot (C3.1 contract: no invented policy).
+            if ($reservation->commission_rate_snapshot !== null) {
+                $grossAmount = (float) ($reservation->total_amount
+                    ?? $reservation->islem_tutari
+                    ?? $reservation->locked_nightly_rate * $reservation->nights
+                    ?? 0);
+                $rate = (float) $reservation->commission_rate_snapshot;
+                $commissionAmount = $grossAmount * $rate;
+                $ownerEntitlement = $grossAmount - $commissionAmount;
+
+                $ilan = $reservation->ilan;
+                $ownerKisiId = $ilan?->ilan_sahibi_id ?? null;
+                $ownerName = $ilan?->ilanSahibi?->ad
+                    ? trim($ilan->ilanSahibi->ad . ' ' . ($ilan->ilanSahibi->soyad ?? ''))
+                    : null;
+
+                event(\App\Events\Reservation\ReservationPayoutReadyEvent::fromReservation(
+                    $reservation,
+                    $grossAmount,
+                    $commissionAmount,
+                    $ownerEntitlement,
+                    $ownerKisiId,
+                    $ownerName,
+                ));
+            }
+
             Log::info('ProcessFinancialCompletionJob: financial completion applied', [
                 'reservation_id' => $this->event->reservationId,
                 'tenant_id' => $this->event->tenantId,

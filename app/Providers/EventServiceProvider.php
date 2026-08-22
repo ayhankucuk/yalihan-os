@@ -154,6 +154,11 @@ class EventServiceProvider extends ServiceProvider
             \App\Listeners\Reservation\ListenReservationCompleted::class,
         ],
 
+        // C3.3: ReservationPayoutReadyEvent — payout readiness surface for admin/operator
+        \App\Events\Reservation\ReservationPayoutReadyEvent::class => [
+            \App\Listeners\Reservation\ListenPayoutReady::class,
+        ],
+
         // CHECKIN_CHECKOUT Wave 2: Guest Arrival Readiness
         // GorevDurumChanged → readiness update (hazirlik task completion)
         \App\Events\GorevDurumChanged::class => [

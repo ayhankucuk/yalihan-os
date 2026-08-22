@@ -1699,6 +1699,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin/finance')->name('admin.
     // Calculators (Income Simulator)
     Route::post('/simulate-commission', [\App\Http\Controllers\Admin\FinanceController::class, 'simulateCommission'])->name('simulate.commission');
     Route::post('/simulate-bonus', [\App\Http\Controllers\Admin\FinanceController::class, 'simulateBonus'])->name('simulate.bonus');
+
+    // C3.3: Payout Readiness
+    Route::get('/payout-ready', [\App\Http\Controllers\Admin\FinanceController::class, 'payoutReady'])->name('payout-ready');
 });
 
 // Agent Wallet (Self-Service Finance)
