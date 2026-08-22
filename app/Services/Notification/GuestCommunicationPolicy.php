@@ -45,13 +45,19 @@ class GuestCommunicationPolicy
     /**
      * Check if a notification for this reservation was already sent or is pending.
      * Idempotency: deduplicate by reservationId + templateKey + channel.
+     *
+     * @param int         $reservationId
+     * @param string      $channel
+     * @param string|null $templateKey  Defaults to 'reservation_confirmation'.
+     *                                  Use 'reservation_cancellation' for cancellation notifications.
      */
-    public function isAlreadySent(int $reservationId, string $channel): bool
+    public function isAlreadySent(int $reservationId, string $channel, ?string $templateKey = null): bool
     {
         // Idempotency: deduplicate per reservationId + templateKey + channel.
         // STATE_CANCELLED is included — even a blocked notification counts as "already processed."
+        $templateKey ??= 'reservation_confirmation';
         $existing = OutboundNotification::query()
-            ->where('template_key', 'reservation_confirmation')
+            ->where('template_key', $templateKey)
             ->whereJsonContains('payload_data', ['reservation_id' => $reservationId])
             ->where('channel', $channel)
             ->orderBy('id', 'desc')

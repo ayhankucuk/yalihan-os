@@ -144,9 +144,10 @@ class EventServiceProvider extends ServiceProvider
             \App\Listeners\Reservation\CancelPendingCredentialNotifications::class . '@handleModification', // Wave 3
         ],
         \App\Events\Reservation\ReservationCancelledEvent::class => [
-            \App\Listeners\Reservation\ListenReservationCancelled::class,               // Wave 1
-            \App\Listeners\Reservation\ListenReadinessOnCancellation::class,         // Wave 2
-            \App\Listeners\Reservation\CancelPendingCredentialNotifications::class . '@handleCancellation', // Wave 3
+            \App\Listeners\Reservation\ListenReservationCancelled::class,                                        // Wave 1
+            \App\Listeners\Reservation\ListenReadinessOnCancellation::class,                                  // Wave 2
+            \App\Listeners\Reservation\CancelPendingCredentialNotifications::class . '@handleCancellation',       // Wave 3
+            \App\Listeners\Reservation\ListenCancellationCommunication::class,                                   // A2: Cancellation Communication
         ],
         // CHECKOUT-D1: ReservationCompletedEvent — now wired
         \App\Events\Reservation\ReservationCompletedEvent::class => [
