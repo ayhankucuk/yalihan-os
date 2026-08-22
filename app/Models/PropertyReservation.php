@@ -29,6 +29,7 @@ class PropertyReservation extends BaseModel
         'notes',
         'reservation_state',
         'islem_tutari',
+        'total_amount',  // B1: test/production schema compatibility
         'currency',
         'created_by_user_id',
         'cancelled_at',
@@ -65,6 +66,7 @@ class PropertyReservation extends BaseModel
         'cancelled_at'     => 'datetime',
         'confirmed_at'     => 'datetime',
         'islem_tutari'     => 'decimal:2',
+        'total_amount'     => 'decimal:2',  // B1: test/production schema compatibility
         'depozito_tutari'  => 'decimal:2',
         'booking_fx_rate'  => 'float',
         'ulke_id'          => 'integer',

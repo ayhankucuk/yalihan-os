@@ -18,6 +18,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use App\Traits\GuardsAgentWrites;
 
 class ReservationService
@@ -116,7 +117,10 @@ class ReservationService
             }
 
             // 2. Create reservation
-            $reservation = PropertyReservation::create([
+            // B1: financial fields — conditionally persisted based on column existence.
+            // Both production (islem_tutari) and test (total_amount) schemas supported.
+            $financialAmount = $guestData['total_amount'] ?? $guestData['total_price'] ?? null;
+            $createData = [
                 'tenant_id' => $ilan->tenant_id,
                 'property_id' => $propertyId,
                 'start_date' => $start->format('Y-m-d'),
@@ -130,7 +134,19 @@ class ReservationService
                 'reservation_state' => 'confirmed',
                 'created_by_user_id' => $userId,
                 'confirmed_at' => now(),
-            ]);
+            ];
+            // Only set financial fields when amount is explicitly provided (Channel Manager ingestion).
+            // If amount is null, model uses DB defaults — no FxService call in downstream pipeline.
+            if ($financialAmount !== null) {
+                $currency = $guestData['currency'] ?? $ilan->para_birimi ?? 'TRY';
+                if (Schema::hasColumn('property_reservations', 'islem_tutari')) {
+                    $createData['islem_tutari'] = $financialAmount;
+                } elseif (Schema::hasColumn('property_reservations', 'total_amount')) {
+                    $createData['total_amount'] = $financialAmount;
+                }
+                $createData['currency'] = $currency;
+            }
+            $reservation = PropertyReservation::create($createData);
 
             // 3. Update availability objects directly using locked models
             foreach ($dates as $dateStr) {
@@ -229,7 +245,7 @@ class ReservationService
 
         $reservation = DB::transaction(function () use (
             $propertyId, $start, $end, $nights, $guestData, $userId,
-            $conflictReservationId, $overrideAuthorizedBy,
+            $conflictReservationId, $overrideAuthorizedBy, $ilan,
             &$cancelledConflict,  // ← receive cancelled model after commit
         ) {
             // ── 1. Lock the conflicting reservation ──────────────────────────────
@@ -302,7 +318,9 @@ class ReservationService
                 }
             }
 
-            $reservation = PropertyReservation::create([
+            // B1: financial fields — conditionally persisted based on column existence.
+            $createData = [
+                'tenant_id'           => $ilan->tenant_id,
                 'property_id'         => $propertyId,
                 'start_date'          => $start->format('Y-m-d'),
                 'end_date'            => $end->format('Y-m-d'),
@@ -319,7 +337,19 @@ class ReservationService
                 'override_of_id'             => $conflictReservationId,
                 'override_authorized_by'     => $overrideAuthorizedBy,
                 'override_occurred_at'       => now(),
-            ]);
+            ];
+            // B1: only set financial fields when amount is explicitly provided
+            $financialAmount = $guestData['total_amount'] ?? $guestData['total_price'] ?? null;
+            if ($financialAmount !== null) {
+                $currency = $guestData['currency'] ?? $ilan->para_birimi ?? 'TRY';
+                if (Schema::hasColumn('property_reservations', 'islem_tutari')) {
+                    $createData['islem_tutari'] = $financialAmount;
+                } elseif (Schema::hasColumn('property_reservations', 'total_amount')) {
+                    $createData['total_amount'] = $financialAmount;
+                }
+                $createData['currency'] = $currency;
+            }
+            $reservation = PropertyReservation::create($createData);
 
             foreach ($dates as $dateStr) {
                 $avail = $existingAvailabilities[$dateStr];
@@ -643,6 +673,18 @@ class ReservationService
             }
             if (array_key_exists('guest_count', $guestData)) {
                 $updateData['guest_count'] = $guestData['guest_count'];
+            }
+            // B1: financial fields — Channel Manager ingestion may carry price updates
+            if (array_key_exists('total_amount', $guestData) || array_key_exists('total_price', $guestData)) {
+                $amount = $guestData['total_amount'] ?? $guestData['total_price'] ?? null;
+                if (Schema::hasColumn('property_reservations', 'islem_tutari')) {
+                    $updateData['islem_tutari'] = $amount;
+                } elseif (Schema::hasColumn('property_reservations', 'total_amount')) {
+                    $updateData['total_amount'] = $amount;
+                }
+            }
+            if (array_key_exists('currency', $guestData)) {
+                $updateData['currency'] = $guestData['currency'];
             }
 
             $reservation->update($updateData);

@@ -66,7 +66,13 @@ class ChannexReservationIngestService
 
         // 2. Create reservation + stamp external IDs atomically
         try {
-            $guestData = ['guest_name' => $payload->guestName, 'guest_count' => $payload->adultCount];
+            // B1: carry financial data from Channex payload through to canonical service
+            $guestData = [
+                'guest_name'   => $payload->guestName,
+                'guest_count'  => $payload->adultCount,
+                'total_amount' => $payload->totalPrice,
+                'currency'     => $payload->currency,
+            ];
             if ($payload->guestPhone) $guestData['guest_phone'] = $payload->guestPhone;
             if ($payload->guestEmail) $guestData['guest_email'] = $payload->guestEmail;
 
