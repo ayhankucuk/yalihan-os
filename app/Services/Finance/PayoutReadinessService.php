@@ -2,10 +2,12 @@
 
 namespace App\Services\Finance;
 
+use App\Enums\ManagementModel;
 use App\Models\Ilan;
 use App\Models\LedgerEntry;
 use App\Models\PropertyReservation;
 use App\ValueObjects\TransactionStatus;
+use Illuminate\Support\Collection;
 
 /**
  * PayoutReadinessService — C3.3: Payout Readiness
@@ -48,7 +50,7 @@ class PayoutReadinessService
             ->with('ilan')
             ->first();
 
-        if (!$reservation) {
+        if (! $reservation) {
             return null;
         }
 
@@ -74,7 +76,7 @@ class PayoutReadinessService
             ->orderBy('completed_at', 'desc')
             ->get();
 
-        return $reservations->map(fn($r) => $this->buildReadinessState($r))->filter()->values()->all();
+        return $reservations->map(fn ($r) => $this->buildReadinessState($r))->filter()->values()->all();
     }
 
     /**
@@ -89,7 +91,7 @@ class PayoutReadinessService
         $grouped = [];
         foreach ($ready as $item) {
             $ownerKey = ($item['owner_kisi_id'] ?? 'unknown');
-            if (!isset($grouped[$ownerKey])) {
+            if (! isset($grouped[$ownerKey])) {
                 $grouped[$ownerKey] = [
                     'owner_kisi_id' => $item['owner_kisi_id'],
                     'owner_name' => $item['owner_name'],
@@ -146,8 +148,12 @@ class PayoutReadinessService
 
         // Validate ledger entries exist (proof of accrual)
         $ledgerEntries = $this->getReservationLedgerEntries($reservation->id, $reservation->tenant_id ?? 0);
-        $hasCommissionEntry = $ledgerEntries->contains(fn($e) => str_contains($e['sebep'] ?? '', 'Komisyon Tahsili'));
-        $hasOwnerEntry = $ledgerEntries->contains(fn($e) => str_contains($e['sebep'] ?? '', 'Sahip Tahakkuk'));
+        $hasCommissionEntry = $ledgerEntries->contains(fn ($e) => str_contains($e['sebep'] ?? '', 'Komisyon Tahsili'));
+        $hasOwnerEntry = $ledgerEntries->contains(fn ($e) => str_contains($e['sebep'] ?? '', 'Sahip Tahakkuk'));
+
+        $modelValue = $reservation->management_model_snapshot instanceof ManagementModel
+            ? $reservation->management_model_snapshot->value
+            : (string) ($reservation->management_model_snapshot ?? 'UNKNOWN');
 
         return [
             'reservation_id' => $reservation->id,
@@ -181,8 +187,8 @@ class PayoutReadinessService
             'owner_entitlement_try' => $ownerEntitlementTry,
 
             // Management model
-            'management_model_snapshot' => (string) ($reservation->management_model_snapshot ?? 'UNKNOWN'),
-            'management_model_label' => $this->getModelLabel((string) ($reservation->management_model_snapshot ?? null)),
+            'management_model_snapshot' => $modelValue,
+            'management_model_label' => $this->getModelLabel($modelValue),
 
             // Owner
             'owner_kisi_id' => $ownerKisiId,
@@ -219,6 +225,7 @@ class PayoutReadinessService
         if ($hasOwnerEntry) {
             return 'ready_for_payout';
         }
+
         return 'awaiting_accrual';
     }
 
@@ -244,7 +251,7 @@ class PayoutReadinessService
         };
     }
 
-    private function getReservationLedgerEntries(int $reservationId, int $tenantId): \Illuminate\Support\Collection
+    private function getReservationLedgerEntries(int $reservationId, int $tenantId): Collection
     {
         return LedgerEntry::withoutGlobalScopes()
             ->where('reference_type', PropertyReservation::class)
@@ -258,18 +265,20 @@ class PayoutReadinessService
         if (strtoupper($currency) === 'TRY') {
             return $amount;
         }
+
         return round($amount * $fxRate, 2);
     }
 
     private function resolveOwnerName(?Ilan $ilan): ?string
     {
-        if (!$ilan) {
+        if (! $ilan) {
             return null;
         }
         $sahibi = $ilan->ilanSahibi;
         if ($sahibi) {
-            return trim(($sahibi->ad . ' ' . ($sahibi->soyad ?? '')));
+            return trim(($sahibi->ad.' '.($sahibi->soyad ?? '')));
         }
+
         return null;
     }
 }
