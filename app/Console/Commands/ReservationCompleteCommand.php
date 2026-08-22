@@ -6,6 +6,7 @@ use App\Events\Reservation\ReservationCompletedEvent;
 use App\Models\PropertyReservation;
 use App\Models\Ilan;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -97,25 +98,29 @@ class ReservationCompleteCommand extends Command
                 continue;
             }
 
-            // Mark as completed
-            $current->completed_at = now();
-            $current->save();
+            // C2: Atomic save + event — if event() throws, transaction rolls back.
+            // ShouldQueueAfterCommit listener ensures jobs are queued only after commit.
+            DB::transaction(function () use ($current) {
+                $current->completed_at = now();
+                $current->save();
 
-            Log::info('ReservationCompleteCommand: reservation marked completed', [
-                'reservation_id' => $current->id,
-                'tenant_id' => $current->tenant_id,
-                'end_date' => $current->end_date,
-                'completed_at' => $current->completed_at->toIso8601String(),
-            ]);
+                Log::info('ReservationCompleteCommand: reservation marked completed', [
+                    'reservation_id' => $current->id,
+                    'tenant_id' => $current->tenant_id,
+                    'end_date' => $current->end_date,
+                    'completed_at' => $current->completed_at->toIso8601String(),
+                ]);
 
-            // Dispatch ReservationCompletedEvent → wired listener → turnover Gorev
-            $event = ReservationCompletedEvent::fromModel($current);
-            event($event);
+                // Dispatch ReservationCompletedEvent → ShouldQueueAfterCommit listener
+                // → ProcessFinancialCompletionJob + ProcessReservationCompletedJob
+                $event = ReservationCompletedEvent::fromModel($current);
+                event($event);
 
-            Log::info('ReservationCompleteCommand: ReservationCompletedEvent dispatched', [
-                'reservation_id' => $current->id,
-                'tenant_id' => $current->tenant_id,
-            ]);
+                Log::info('ReservationCompleteCommand: ReservationCompletedEvent dispatched', [
+                    'reservation_id' => $current->id,
+                    'tenant_id' => $current->tenant_id,
+                ]);
+            });
 
             $completed++;
         }

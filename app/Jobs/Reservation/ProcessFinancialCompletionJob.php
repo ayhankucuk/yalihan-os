@@ -7,6 +7,7 @@ use App\Models\PropertyReservation;
 use App\Services\FinancialLedgerService;
 use App\ValueObjects\TransactionStatus;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -14,10 +15,14 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
 /**
- * ProcessFinancialCompletionJob — C1: Financial Completion
+ * ProcessFinancialCompletionJob — C1: Financial Completion + C2: Queue Safety
  *
  * Receives canonical ReservationCompletedEvent and transitions the reservation's
  * financial state to the canonical terminal state (CONFIRMED).
+ *
+ * C2: implements ShouldBeUnique — prevents concurrent duplicate execution.
+ * The database queue driver uses a failed_jobs row as the uniqueness lock.
+ * A second dispatch while the first is in-flight throws LockConflictException.
  *
  * This job is idempotent: calling it multiple times with the same event
  * produces exactly one economic outcome (no duplicate ledger impact).
@@ -34,15 +39,22 @@ use Illuminate\Support\Facades\Log;
  * Scope exclusion (C1): payout notification, bank transfer, reconciliation,
  * channel fee separation, tax/KDV ledger, commission architecture — all deferred.
  *
- * Baseline: 667c1b4
- * SAAB Decision: C1 Certification
+ * Baseline: 667c1b4 (C1), 33f9f50 (C2)
+ * SAAB Decision: C1 + C2 Certification
  */
-class ProcessFinancialCompletionJob implements ShouldQueue
+class ProcessFinancialCompletionJob implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
     public array $backoff = [30, 60, 120];
+
+    /**
+     * Lock timeout: if a job with this uniqueId is still running after 5 minutes,
+     * the lock is considered stale and a new job may proceed.
+     * Covers the case where a worker crashes mid-execution.
+     */
+    public int $uniqueFor = 300;
 
     public function __construct(
         public readonly ReservationCompletedEvent $event,
