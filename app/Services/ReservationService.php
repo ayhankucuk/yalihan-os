@@ -148,6 +148,14 @@ class ReservationService
             }
             $reservation = PropertyReservation::create($createData);
 
+            // ── C3.1: Management agreement snapshot ─────────────────────────
+            // Snapshot is taken from the Ilan's CURRENT agreement at reservation time.
+            // This is immutable — changing ilan.management_model later does NOT affect existing reservations.
+            // Schema::hasColumn guard: graceful no-op before migration is applied.
+            if (Schema::hasColumn('property_reservations', 'commission_rate_snapshot')) {
+                $this->_snapshotManagementAgreement($reservation, $ilan);
+            }
+
             // 3. Update availability objects directly using locked models
             foreach ($dates as $dateStr) {
                 $avail = $existingAvailabilities[$dateStr];
@@ -925,5 +933,33 @@ class ReservationService
             return $date->format('Y-m-d');
         }
         return (string) $date;
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // C3.1: Management Agreement Snapshot Helper
+    // Writes management_model_snapshot + commission_rate_snapshot to a reservation.
+    // Called INSIDE the same DB transaction that creates the reservation.
+    //
+    // @throws \InvalidArgumentException if CUSTOM model has no custom rate
+    // ─────────────────────────────────────────────────────────────────
+
+    private function _snapshotManagementAgreement(
+        PropertyReservation $reservation,
+        Ilan $ilan,
+    ): void {
+        // Resolve the effective rate (throws if CUSTOM has no custom_commission_rate)
+        $effectiveRate = $ilan->getEffectiveCommissionRate();
+
+        // Cast model enum to string value for DB storage
+        $modelSnapshot = $ilan->management_model instanceof \App\Enums\ManagementModel
+            ? $ilan->management_model->value
+            : (string) $ilan->management_model;
+
+        PropertyReservation::withoutGlobalScopes()
+            ->where('id', $reservation->id)
+            ->update([
+                'management_model_snapshot' => $modelSnapshot,
+                'commission_rate_snapshot' => $effectiveRate,
+            ]);
     }
 }

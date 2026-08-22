@@ -422,6 +422,11 @@ class Ilan extends BaseModel
         'deposit_amount',            // HYBRID: Security deposit (float)
         'rental_currency',           // HYBRID: Para birimi (TRY vb.)
 
+        // C3.1: Property Management Agreement
+        // ======================================================================
+        'management_model',           // C3.1: FULL_MANAGEMENT|CHECKIN_CHECKOUT|NONE|CUSTOM
+        'custom_commission_rate',    // C3.1: Custom rate for CUSTOM model (fraction, e.g. 0.1200)
+
         // ======================================================================
         // 🔵 OPTIONAL FIELDS - Opsiyonel Bilgiler
         // ======================================================================
@@ -754,6 +759,10 @@ class Ilan extends BaseModel
         'operating_expenses_annual' => 'float',
         'investor_target_roi'       => 'float',
         'source_locale'             => 'string',
+
+        // C3.1: Property Management Agreement
+        'management_model' => \App\Enums\ManagementModel::class,  // C3.1: enum cast
+        'custom_commission_rate' => 'float',          // C3.1: DECIMAL(5,4) → float
     ];
 
     // ======================================================================
@@ -1871,5 +1880,62 @@ class Ilan extends BaseModel
     public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // C3.1: Property Management Agreement Helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Resolve the effective commission rate for this listing.
+     *
+     * For CUSTOM model: returns custom_commission_rate (must be set).
+     * For other models: returns the canonical rate.
+     *
+     * @throws \InvalidArgumentException if CUSTOM model has no custom rate
+     */
+    public function getEffectiveCommissionRate(): float
+    {
+        $model = $this->management_model;
+
+        if ($model instanceof \App\Enums\ManagementModel) {
+            $modelValue = $model->value;
+        } else {
+            $modelValue = $model;
+        }
+
+        if ($modelValue === 'CUSTOM') {
+            $custom = $this->custom_commission_rate;
+            if ($custom === null || $custom <= 0) {
+                throw new \InvalidArgumentException(
+                    "Property {$this->id}: CUSTOM management model requires custom_commission_rate to be set and > 0"
+                );
+            }
+            return (float) $custom;
+        }
+
+        $canonical = \App\Enums\ManagementModel::CANONICAL_RATES[$modelValue] ?? null;
+        if ($canonical === null) {
+            throw new \InvalidArgumentException(
+                "Property {$this->id}: Unknown management_model '{$modelValue}'"
+            );
+        }
+
+        return (float) $canonical;
+    }
+
+    /**
+     * Get the management model enum instance.
+     * Handles both string and enum values from DB hydration.
+     */
+    public function getManagementModelEnum(): \App\Enums\ManagementModel
+    {
+        $model = $this->management_model;
+
+        if ($model instanceof \App\Enums\ManagementModel) {
+            return $model;
+        }
+
+        return \App\Enums\ManagementModel::from((string) $model);
     }
 }

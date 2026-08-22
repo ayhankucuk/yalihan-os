@@ -58,6 +58,9 @@ class PropertyReservation extends BaseModel
         'checkin_window_opened_at',
         'arrival_time_estimated',
         'arrival_notes',
+        // C3.1: Management Agreement Snapshot (immutable at booking time)
+        'management_model_snapshot',
+        'commission_rate_snapshot',
     ];
 
     protected $casts = [
@@ -80,6 +83,9 @@ class PropertyReservation extends BaseModel
         'completed_at'     => 'datetime',
         // CHECKIN_CHECKOUT Wave 2
         'checkin_window_opened_at' => 'datetime',
+        // C3.1: Management Agreement Snapshot
+        'management_model_snapshot' => \App\Enums\ManagementModel::class,
+        'commission_rate_snapshot' => 'float',          // DECIMAL(5,4) → float (fraction, e.g. 0.1500)
     ];
 
     public function ilan(): BelongsTo
@@ -122,5 +128,69 @@ class PropertyReservation extends BaseModel
     public function turnoverTask(): HasOne
     {
         return $this->hasOne(Gorev::class, 'reservation_id')->where('gorev_tipi', 'temizlik');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // C3.1: Management Agreement Snapshot Helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Whether this reservation has a C3.1 management snapshot.
+     */
+    public function hasManagementSnapshot(): bool
+    {
+        return $this->management_model_snapshot !== null
+            && $this->commission_rate_snapshot !== null;
+    }
+
+    /**
+     * Get the snapshot model as enum instance.
+     */
+    public function getSnapshotModelEnum(): ?\App\Enums\ManagementModel
+    {
+        $val = $this->management_model_snapshot;
+        if ($val === null) {
+            return null;
+        }
+        if ($val instanceof \App\Enums\ManagementModel) {
+            return $val;
+        }
+        return \App\Enums\ManagementModel::tryFrom((string) $val);
+    }
+
+    /**
+     * Compute owner entitlement from snapshot.
+     * gross_booking_amount × (1 − commission_rate_snapshot)
+     *
+     * Returns null if no snapshot exists (legacy reservation).
+     */
+    public function computeOwnerEntitlement(?float $grossAmount = null): ?float
+    {
+        if (!$this->hasManagementSnapshot()) {
+            return null;
+        }
+
+        $gross = $grossAmount ?? (float) $this->islem_tutari;
+        $rate = (float) $this->commission_rate_snapshot;
+
+        return $gross * (1 - $rate);
+    }
+
+    /**
+     * Compute Yalihan commission from snapshot.
+     * gross_booking_amount × commission_rate_snapshot
+     *
+     * Returns null if no snapshot exists.
+     */
+    public function computeYalihanCommission(?float $grossAmount = null): ?float
+    {
+        if (!$this->hasManagementSnapshot()) {
+            return null;
+        }
+
+        $gross = $grossAmount ?? (float) $this->islem_tutari;
+        $rate = (float) $this->commission_rate_snapshot;
+
+        return $gross * $rate;
     }
 }
