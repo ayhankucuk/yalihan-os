@@ -1,0 +1,122 @@
+- generic [ref=e4]:
+  - generic [ref=e7]:
+    - img "Google" [ref=e10]
+    - generic [ref=e11]:
+      - generic [ref=e13]:
+        - heading "Oturum açın" [level=1] [ref=e14]
+        - paragraph [ref=e15]: Google Cloud Platform'a devam etmek için Google Hesabınızla oturum açın. Bu hesap, tarayıcıda diğer Google uygulamaları tarafından kullanılabilecek.
+      - generic [ref=e18]:
+        - generic [ref=e21]:
+          - generic [ref=e26]:
+            - textbox "E-posta veya telefon" [active] [ref=e27]
+            - generic: E-posta veya telefon
+          - paragraph [ref=e28]:
+            - link "E-posta adresinizi mi unuttunuz?" [ref=e29] [cursor=pointer]:
+              - /url: /signin/usernamerecovery?continue=https://console.cloud.google.com/apis/credentials?project%3Dyalihan-n8n&dsh=S-1424902173:1787320967561618&flowEntry=ServiceLogin&flowName=WebLiteSignIn&followup=https://console.cloud.google.com/apis/credentials?project%3Dyalihan-n8n&osid=1&service=cloudconsole
+        - paragraph [ref=e32]:
+          - text: Bu bilgisayar sizin değil mi? Oturum açmak için bir gizli göz atma penceresi kullanın.
+          - link "Misafir modunu kullanma hakkında daha fazla bilgi (harici, yeni pencerede açılır)" [ref=e33] [cursor=pointer]:
+            - /url: https://support.google.com/accounts?p=signin_privatebrowsing&hl=tr
+            - text: Misafir modunu kullanma hakkında daha fazla bilgi
+        - generic [ref=e35]:
+          - button "Sonraki" [ref=e37]
+          - link "Hesap oluşturun" [ref=e39] [cursor=pointer]:
+            - /url: /lifecycle/flows/signup?continue=https://console.cloud.google.com/apis/credentials?project%3Dyalihan-n8n&dsh=S-1424902173:1787320967561618&flowEntry=SignUp&flowName=GlifWebSignIn&followup=https://console.cloud.google.com/apis/credentials?project%3Dyalihan-n8n&nogm=1&osid=1&service=cloudconsole
+  - contentinfo [ref=e40]:
+    - combobox [ref=e43] [cursor=pointer]:
+      - option "Afrikaans"
+      - option "azərbaycan"
+      - option "bosanski"
+      - option "català"
+      - option "Čeština"
+      - option "Cymraeg"
+      - option "Dansk"
+      - option "Deutsch"
+      - option "eesti"
+      - option "English (United Kingdom)"
+      - option "English (United States)"
+      - option "Español (España)"
+      - option "Español (Latinoamérica)"
+      - option "euskara"
+      - option "Filipino"
+      - option "Français (Canada)"
+      - option "Français (France)"
+      - option "Gaeilge"
+      - option "galego"
+      - option "Hrvatski"
+      - option "Indonesia"
+      - option "Italiano"
+      - option "isiZulu"
+      - option "íslenska"
+      - option "Kiswahili"
+      - option "latviešu"
+      - option "lietuvių"
+      - option "magyar"
+      - option "Melayu"
+      - option "Nederlands"
+      - option "norsk"
+      - option "o‘zbek"
+      - option "polski"
+      - option "Português (Brasil)"
+      - option "Português (Portugal)"
+      - option "română"
+      - option "shqip"
+      - option "Slovenčina"
+      - option "slovenščina"
+      - option "srpski (latinica)"
+      - option "Suomi"
+      - option "Svenska"
+      - option "Tiếng Việt"
+      - option "Türkçe" [selected]
+      - option "Ελληνικά"
+      - option "беларуская"
+      - option "български"
+      - option "кыргызча"
+      - option "қазақ тілі"
+      - option "македонски"
+      - option "монгол"
+      - option "Русский"
+      - option "српски (ћирилица)"
+      - option "Українська"
+      - option "ქართული"
+      - option "հայերեն"
+      - option "‫עברית‬‎"
+      - option "‫اردو‬‎"
+      - option "‫العربية‬‎"
+      - option "‫فارسی‬‎"
+      - option "አማርኛ"
+      - option "नेपाली"
+      - option "मराठी"
+      - option "हिन्दी"
+      - option "অসমীয়া"
+      - option "বাংলা"
+      - option "ਪੰਜਾਬੀ"
+      - option "ગુજરાતી"
+      - option "ଓଡ଼ିଆ"
+      - option "தமிழ்"
+      - option "తెలుగు"
+      - option "ಕನ್ನಡ"
+      - option "മലയാളം"
+      - option "සිංහල"
+      - option "ไทย"
+      - option "ລາວ"
+      - option "မြန်မာ"
+      - option "ខ្មែរ"
+      - option "한국어"
+      - option "中文（香港）"
+      - option "日本語"
+      - option "简体中文"
+      - option "繁體中文"
+    - list [ref=e44]:
+      - listitem [ref=e45]:
+        - link "Google Hesabı Yardım Merkezi'ni açın (harici, yeni pencerede açılır)" [ref=e46] [cursor=pointer]:
+          - /url: https://support.google.com/accounts?hl=tr&p=account_iph
+          - text: Yardım
+      - listitem [ref=e47]:
+        - link "Gizlilik Politikası (harici, yeni pencerede açılır)" [ref=e48] [cursor=pointer]:
+          - /url: https://accounts.google.com/TOS?loc=TR&hl=tr&privacy=true
+          - text: Gizlilik
+      - listitem [ref=e49]:
+        - link "Google Hizmet Şartları (harici, yeni pencerede açılır)" [ref=e50] [cursor=pointer]:
+          - /url: https://accounts.google.com/TOS?loc=TR&hl=tr
+          - text: Şartlar
