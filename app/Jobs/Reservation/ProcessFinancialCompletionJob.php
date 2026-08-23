@@ -4,6 +4,7 @@ namespace App\Jobs\Reservation;
 
 use App\Enums\ChannelFeeBearer;
 use App\Enums\ChannelFeeSource;
+use App\Exceptions\Governance\ChannelFeeTrustException;
 use App\Events\Reservation\ReservationCompletedEvent;
 use App\Events\Reservation\ReservationPayoutReadyEvent;
 use App\Models\PropertyReservation;
@@ -26,6 +27,15 @@ use Illuminate\Support\Facades\Log;
  * C2: implements ShouldBeUnique — prevents concurrent duplicate execution.
  * The database queue driver uses a failed_jobs row as the uniqueness lock.
  * A second dispatch while the first is in-flight throws LockConflictException.
+ *
+ * afterCommit = true: job is dispatched only after the parent transaction
+ * commits. This prevents the job from running against uncommitted reservation
+ * data when the event is dispatched from within a DB transaction.
+ *
+ * CASE routing (SAAB C4.2 Certification Recovery):
+ *   CASE A — Direct / zero-fee: use C3 flow (commission + owner payable)
+ *   CASE B — OTA + verified fee: use C4.2 full triple split (TX1+TX2+TX3)
+ *   CASE C — OTA + unresolved: fall back to C3 flow; payout BLOCKED
  *
  * This job is idempotent: calling it multiple times with the same event
  * produces exactly one economic outcome (no duplicate ledger impact).
@@ -63,7 +73,19 @@ class ProcessFinancialCompletionJob implements ShouldBeUnique, ShouldQueue
 
     public function __construct(
         public readonly ReservationCompletedEvent $event,
-    ) {}
+    ) {
+        // afterCommit = true: job runs only after the parent transaction commits.
+        //
+        // Laravel dispatches queued jobs immediately when dispatched() is called,
+        // even if the parent transaction has not yet committed. This means a job
+        // can run against uncommitted data if the event is dispatched from within
+        // a DB transaction. Setting afterCommit = true defers job execution until
+        // the transaction commits, ensuring the job always sees committed state.
+        //
+        // SAAB C4.2 Certification Recovery: confirmed-after-commit is the
+        // correct protection, not "queue is isolated".
+        $this->afterCommit = true;
+    }
 
     /**
      * Idempotency key prevents duplicate processing across queue retries.
@@ -141,110 +163,143 @@ class ProcessFinancialCompletionJob implements ShouldBeUnique, ShouldQueue
         // Only reachable for: PENDING, REFUNDED, FAILED states.
         // transitionToConfirmed() wraps the UPDATE in a DB::transaction and
         // re-checks the current state inside that transaction (race-condition guard).
+        $ledgerService->transitionToConfirmed($reservation->id);
+
+        // ── CASE Routing (SAAB C4.2 Certification Recovery) ──────────
+        // Determine CASE A/B/C before any financial accrual attempt.
+        // CASE C throws ChannelFeeTrustException which must be caught here
+        // and handled with C3 fallback — NOT allowed to escape the job.
+        $case = $ledgerService->classifyChannelFeeCase($reservation);
+        Log::info('ProcessFinancialCompletionJob: channel fee case', [
+            'reservation_id' => $this->event->reservationId,
+            'case' => $case['case'],
+            'description' => $case['description'],
+        ]);
+
+        $c4Applied = false;
+
         try {
-            $ledgerService->transitionToConfirmed($reservation->id);
-
-            // ── C4.2: Channel Fee Triple-Entry Accrual ────────────────────
-            // Replaces C3.2 (recordOwnerPayableAccrual) for OWNER_BORNE.
-            //
-            // OWNER_BORNE / COMMISSION_SHARE (channel fee required):
-            //   gross = verified_channel_fee + yalihan_commission + owner_payable
-            //   → TX1 (channel fee) + TX2 (commission) + TX3 (owner) all created here.
-            //   C4.1 Trust Gate: PROVIDER_REPORTED required, amount must not be null.
-            //
-            // YALIHAN_BORNE (no channel fee on owner):
-            //   gross = yalihan_commission + owner_payable
-            //   → Only TX2 (commission) + TX3 (owner); TX1 is a no-op (0 amount).
-            //   Identical economic outcome to C3.2 but within C4.2 atomic boundary.
-            //
-            // Idempotent: recordChannelFeeAccrual checks idempotency keys before writing.
-            // All three legs share one outer DB::transaction() — any failure → full rollback.
-            //
-            // NOTE: recordOwnerPayableAccrual (C3.2) is NOT called here.
-            // For OWNER_BORNE, C4.2 is the sole authoritative accrual.
-            // For YALIHAN_BORNE, C4.2 produces the same result as C3.2.
-            $ledgerService->recordChannelFeeAccrual($reservation);
-
-            // ── C3.3: Payout Readiness event ─────────────────────────────
-            // Signal that this reservation is now payout-ready for admin/operator review.
-            // No automatic payment. Human approves before payout.
-            // Skip if legacy NULL snapshot (C3.1 contract: no invented policy).
-            if ($reservation->commission_rate_snapshot !== null) {
-                $grossAmount = (float) ($reservation->total_amount
-                    ?? $reservation->islem_tutari
-                    ?? $reservation->locked_nightly_rate * $reservation->nights
-                    ?? 0);
-                $rate = (float) $reservation->commission_rate_snapshot;
-                $commissionAmount = $grossAmount * $rate;
-                $ownerEntitlement = $grossAmount - $commissionAmount;
-
-                $ilan = $reservation->ilan;
-                $ownerKisiId = $ilan?->ilan_sahibi_id ?? null;
-                $ownerName = $ilan?->ilanSahibi?->ad
-                    ? trim($ilan->ilanSahibi->ad.' '.($ilan->ilanSahibi->soyad ?? ''))
-                    : null;
-
-                // C4.1: Channel fee fields from reservation snapshot.
-                // Model casts to enum. PHP 8 throws when ?? is applied to enum objects,
-                // so we must check instanceof FIRST before any ?? fallback.
-                $channelFeeBearerRaw = $reservation->channel_fee_bearer;
-                if ($channelFeeBearerRaw instanceof ChannelFeeBearer) {
-                    $channelFeeBearer = $channelFeeBearerRaw->value;
-                } elseif (is_string($channelFeeBearerRaw)) {
-                    $channelFeeBearer = $channelFeeBearerRaw;
-                } else {
-                    $channelFeeBearer = $channelFeeBearerRaw !== null ? (string) $channelFeeBearerRaw : '';
-                }
-                $channelFeeSourceRaw = $reservation->channel_fee_source;
-                if ($channelFeeSourceRaw instanceof ChannelFeeSource) {
-                    $channelFeeSource = $channelFeeSourceRaw->value;
-                } elseif (is_string($channelFeeSourceRaw)) {
-                    $channelFeeSource = $channelFeeSourceRaw;
-                } else {
-                    $channelFeeSource = $channelFeeSourceRaw !== null ? (string) $channelFeeSourceRaw : '';
-                }
-                $channelFeeAmount = $reservation->channel_fee_amount !== null
-                    ? (float) $reservation->channel_fee_amount
-                    : null;
-
-                // C4.2: ownerEntitlement for event = gross - commission (the event
-                // will subtract channel fee internally via computeOwnerEntitlementAfterChannel)
-                $ownerEntitlementAfterChannel = $grossAmount - $commissionAmount
-                    - ($channelFeeBearerRaw?->requiresChannelFeeKnown() ? ($channelFeeAmount ?? 0) : 0);
-
-                event(ReservationPayoutReadyEvent::fromReservation(
-                    $reservation,
-                    $grossAmount,
-                    $commissionAmount,
-                    $ownerEntitlementAfterChannel,
-                    $ownerKisiId,
-                    $ownerName,
-                    $channelFeeAmount,
-                    $reservation->channel_fee_currency,
-                    $reservation->channel_fee_rate !== null ? (float) $reservation->channel_fee_rate : null,
-                    $channelFeeSource,
-                    $channelFeeBearer,
-                    (bool) $reservation->channel_fee_is_verified,
-                ));
+            // CASE B: OTA + verified → full C4.2 triple split (TX1+TX2+TX3)
+            if ($case['case'] === 'B') {
+                $ledgerService->recordChannelFeeAccrual($reservation);
+                $c4Applied = true;
             }
-
-            Log::info('ProcessFinancialCompletionJob: financial completion applied', [
+            // CASE A: Direct / zero-fee → falls through to C3 fallback below
+            // CASE C: OTA + unresolved → falls through to C3 fallback below
+            //         (recordChannelFeeAccrual would throw ChannelFeeTrustException)
+        } catch (ChannelFeeTrustException $e) {
+            // CASE C: ChannelFeeTrustException MUST NOT escape the job.
+            // Fall back to C3 flow: commission + owner payable without channel fee.
+            // This preserves financial completion for OTA reservations where
+            // channel fee is not yet known, while still blocking payout readiness.
+            Log::warning('ProcessFinancialCompletionJob: CASE C detected — falling back to C3 flow', [
                 'reservation_id' => $this->event->reservationId,
-                'tenant_id' => $this->event->tenantId,
-                'previous_finansal_durum' => $reservation->finansal_durum,
-                'new_finansal_durum' => TransactionStatus::CONFIRMED,
+                'case' => $e->case,
+                'bearer' => $e->channelFeeBearer,
+                'source' => $e->channelFeeSource,
+                'message' => $e->getMessage(),
             ]);
-        } catch (\Throwable $e) {
-            // If another process already set CONFIRMED between our read and write,
-            // the UPDATE will affect 0 rows. The transaction in transitionToConfirmed
-            // does not throw in that case, so this catch handles unexpected errors only.
-            Log::error('ProcessFinancialCompletionJob: failed to transition', [
-                'reservation_id' => $this->event->reservationId,
-                'tenant_id' => $this->event->tenantId,
-                'error' => $e->getMessage(),
-            ]);
-            throw $e;
         }
+
+        // CASE A + CASE C: C3 fallback — commission + owner payable (no channel fee deduction).
+        // Also called for CASE B when C4.2 is not applicable (YALIHAN_BORNE).
+        // recordOwnerPayableAccrual is idempotent: checks commission_rate_snapshot
+        // before writing. Safe to call even if C4.2 already wrote commission entries
+        // (idempotency keys prevent duplicate).
+        if ($reservation->commission_rate_snapshot !== null) {
+            $ledgerService->recordOwnerPayableAccrual($reservation);
+        }
+
+        // ── Payout Readiness event ─────────────────────────────────────
+        // CASE B (C4.2 full): payout ready after C4.2 completes.
+        // CASE A (Direct): payout ready after C3 completes.
+        // CASE C (OTA unresolved): payout BLOCKED — do NOT emit PayoutReadyEvent.
+        if ($case['case'] === 'C') {
+            Log::info('ProcessFinancialCompletionJob: payout BLOCKED — CASE C awaiting channel fee reconciliation', [
+                'reservation_id' => $this->event->reservationId,
+                'tenant_id' => $this->event->tenantId,
+            ]);
+        } else {
+            $this->dispatchPayoutReadyEvent($reservation);
+        }
+
+        Log::info('ProcessFinancialCompletionJob: financial completion applied', [
+            'reservation_id' => $this->event->reservationId,
+            'tenant_id' => $this->event->tenantId,
+            'previous_finansal_durum' => $reservation->finansal_durum,
+            'new_finansal_durum' => TransactionStatus::CONFIRMED,
+            'c4_applied' => $c4Applied,
+            'case' => $case['case'],
+        ]);
+    }
+
+    /**
+     * Dispatch ReservationPayoutReadyEvent if commission snapshot exists.
+     *
+     * Only called for CASE A (Direct) and CASE B (OTA + verified).
+     * NOT called for CASE C (OTA + unresolved) — payout remains BLOCKED.
+     */
+    private function dispatchPayoutReadyEvent(PropertyReservation $reservation): void
+    {
+        if ($reservation->commission_rate_snapshot === null) {
+            return;
+        }
+
+        $grossAmount = (float) ($reservation->total_amount
+            ?? $reservation->islem_tutari
+            ?? $reservation->locked_nightly_rate * $reservation->nights
+            ?? 0);
+        $rate = (float) $reservation->commission_rate_snapshot;
+        $commissionAmount = $grossAmount * $rate;
+        $ownerEntitlement = $grossAmount - $commissionAmount;
+
+        $ilan = $reservation->ilan;
+        $ownerKisiId = $ilan?->ilan_sahibi_id ?? null;
+        $ownerName = $ilan?->ilanSahibi?->ad
+            ? trim($ilan->ilanSahibi->ad.' '.($ilan->ilanSahibi->soyad ?? ''))
+            : null;
+
+        // C4.1: Channel fee fields from reservation snapshot.
+        // PHP 8: check instanceof FIRST before ?? fallback to avoid ErrorException.
+        $channelFeeBearerRaw = $reservation->channel_fee_bearer;
+        if ($channelFeeBearerRaw instanceof ChannelFeeBearer) {
+            $channelFeeBearer = $channelFeeBearerRaw->value;
+        } elseif (is_string($channelFeeBearerRaw)) {
+            $channelFeeBearer = $channelFeeBearerRaw;
+        } else {
+            $channelFeeBearer = $channelFeeBearerRaw !== null ? (string) $channelFeeBearerRaw : '';
+        }
+        $channelFeeSourceRaw = $reservation->channel_fee_source;
+        if ($channelFeeSourceRaw instanceof ChannelFeeSource) {
+            $channelFeeSource = $channelFeeSourceRaw->value;
+        } elseif (is_string($channelFeeSourceRaw)) {
+            $channelFeeSource = $channelFeeSourceRaw;
+        } else {
+            $channelFeeSource = $channelFeeSourceRaw !== null ? (string) $channelFeeSourceRaw : '';
+        }
+        $channelFeeAmount = $reservation->channel_fee_amount !== null
+            ? (float) $reservation->channel_fee_amount
+            : null;
+
+        // C4.2: ownerEntitlement for event = gross - commission
+        // (event will subtract channel fee internally via computeOwnerEntitlementAfterChannel)
+        $ownerEntitlementAfterChannel = $grossAmount - $commissionAmount
+            - ($channelFeeBearerRaw?->requiresChannelFeeKnown() ? ($channelFeeAmount ?? 0) : 0);
+
+        event(ReservationPayoutReadyEvent::fromReservation(
+            $reservation,
+            $grossAmount,
+            $commissionAmount,
+            $ownerEntitlementAfterChannel,
+            $ownerKisiId,
+            $ownerName,
+            $channelFeeAmount,
+            $reservation->channel_fee_currency,
+            $reservation->channel_fee_rate !== null ? (float) $reservation->channel_fee_rate : null,
+            $channelFeeSource,
+            $channelFeeBearer,
+            (bool) $reservation->channel_fee_is_verified,
+        ));
     }
 
     public function failed(\Throwable $exception): void

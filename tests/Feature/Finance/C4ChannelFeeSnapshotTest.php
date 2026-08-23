@@ -122,6 +122,8 @@ class C4ChannelFeeSnapshotTest extends TestCase
         };
 
         // Mark as CONFIRMED (finansal_durum) for payout readiness
+        // external_channel: set to 'booking_com' for OTA tests to correctly classify as CASE B.
+        // C4.2 uses external_channel to determine Direct vs OTA (CASE A vs CASE B/C).
         $reservation->update([
             'finansal_durum' => TransactionStatus::CONFIRMED,
             'completed_at' => now(),
@@ -134,6 +136,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
             'channel_fee_bearer' => $channelFeeBearer,
             'channel_fee_is_verified' => $channelFeeVerified,
             'channel_fee_captured_at' => $channelFeeVerified ? now() : null,
+            'external_channel' => 'booking_com',
         ]);
 
         $reservation->refresh();

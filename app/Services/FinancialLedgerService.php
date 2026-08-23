@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\ChannelFeeBearer;
 use App\Enums\ChannelFeeSource;
+use App\Exceptions\Governance\ChannelFeeTrustException;
 use App\Events\LedgerDoubleEntryRecorded;
 use App\Exceptions\Governance\AuthorityLeakageException;
 use App\Models\LedgerAccount;
@@ -449,8 +450,8 @@ class FinancialLedgerService
      *
      * C4.1 Trust Gate (MANDATORY — SAAB C4.2 gate lock):
      *   - OWNER_BORNE / COMMISSION_SHARE: channel_fee_source MUST be PROVIDER_REPORTED
-     *   - UNKNOWN / insufficient source   → throws → payout remains BLOCKED
-     *   - channel_fee_amount === null    → throws → payout remains BLOCKED
+     *   - UNKNOWN / insufficient source   → throws ChannelFeeTrustException → payout BLOCKED
+     *   - channel_fee_amount === null    → throws ChannelFeeTrustException → payout BLOCKED
      *   - YALIHAN_BORNE                  → channel fee is Yalihan's cost; bypassed
      *
      * Atomicity:
@@ -462,8 +463,8 @@ class FinancialLedgerService
      *   owner_accrual_{reservationId}_{tenantId}_commission
      *   owner_accrual_{reservationId}_{tenantId}_owner
      *
-     * @throws \RuntimeException C4.1 trust violation (source insufficient or UNKNOWN)
-     * @throws \RuntimeException C4.1 trust violation (amount null for bearer that requires it)
+     * @throws ChannelFeeTrustException C4.1 trust violation (source insufficient or amount null)
+     *   — caller must fall back to C3 flow (commission + owner payable without channel fee)
      */
     public function recordChannelFeeAccrual(PropertyReservation $reservation): void
     {
@@ -496,23 +497,31 @@ class FinancialLedgerService
         $bearerRequiresChannelFee = $bearerEnum?->requiresChannelFeeKnown() ?? true;
 
         if ($bearerRequiresChannelFee) {
-            // C4.1 Gate 1a: UNKNOWN or insufficient source → BLOCKED
+            // C4.1 Gate 1a: UNKNOWN or insufficient source → CASE C → ChannelFeeTrustException
             if ($sourceEnum === null || ! $sourceEnum->isSufficientForPayoutReadiness()) {
                 $label = $sourceEnum?->label() ?? 'null';
                 $sourceValue = $sourceEnum?->value ?? 'null';
-                throw new \RuntimeException(
+                throw new ChannelFeeTrustException(
                     "C4.2 Trust Gate: channel_fee_source [{$sourceValue}] {$label} is not sufficient for accrual. "
-                    .'PROVIDER_REPORTED required for OWNER_BORNE/COMMISSION_SHARE. '
-                    ."Payout remains BLOCKED. Reservation #{$reservation->id}."
+                    ."PROVIDER_REPORTED required for OWNER_BORNE/COMMISSION_SHARE. "
+                    ."Payout remains BLOCKED. Reservation #{$reservation->id}.",
+                    reservationId: $reservation->id,
+                    channelFeeBearer: $bearerEnum?->value,
+                    channelFeeSource: $sourceValue,
+                    case: 'C'
                 );
             }
 
-            // C4.1 Gate 1b: amount must not be null
+            // C4.1 Gate 1b: amount must not be null → CASE C → ChannelFeeTrustException
             if ($reservation->channel_fee_amount === null) {
-                throw new \RuntimeException(
-                    'C4.2 Trust Gate: channel_fee_amount is null. '
-                    .'Cannot compute owner payable without known channel fee. '
-                    ."Payout remains BLOCKED. Reservation #{$reservation->id}."
+                throw new ChannelFeeTrustException(
+                    "C4.2 Trust Gate: channel_fee_amount is null. "
+                    ."Cannot compute owner payable without known channel fee. "
+                    ."Payout remains BLOCKED. Reservation #{$reservation->id}.",
+                    reservationId: $reservation->id,
+                    channelFeeBearer: $bearerEnum?->value,
+                    channelFeeSource: $sourceEnum?->value,
+                    case: 'C'
                 );
             }
         }
@@ -635,6 +644,82 @@ class FinancialLedgerService
             'bearer' => $bearerRaw,
             'source' => $sourceRaw,
         ]);
+    }
+
+    /**
+     * C4.2: Classify reservation into CASE A/B/C for channel fee handling.
+     *
+     * CASE A — Direct / Zero-fee:
+     *   external_channel is null/empty AND channel_fee_bearer is YALIHAN_BORNE
+     *   → No OTA involvement. Channel fee = 0. Use C3 flow (commission + owner payable).
+     *   → Safe to proceed to payout readiness via C3 flow.
+     *
+     * CASE B — OTA + Verified:
+     *   external_channel is set AND channel_fee_bearer requires channel fee (OWNER_BORNE/COMMISSION_SHARE)
+     *   AND channel_fee_source is PROVIDER_REPORTED AND amount is not null
+     *   → Full C4.2 triple split applies. Safe to proceed.
+     *
+     * CASE C — OTA + Unresolved:
+     *   external_channel is set AND bearer requires channel fee
+     *   AND (source is insufficient OR amount is null)
+     *   → DO NOT guess. Block payout. Leave in awaiting_channel_fee_reconciliation state.
+     *   → recordChannelFeeAccrual() will throw ChannelFeeTrustException.
+     *   → Caller falls back to C3 flow for completion safety.
+     *
+     * SAAB C4.2 Certification Recovery: direct semantic determination before
+     * any financial accrual attempt prevents premature exception escapes.
+     *
+     * @return array{case: string, description: string, requires_c3_fallback: bool, is_direct: bool}
+     */
+    public function classifyChannelFeeCase(PropertyReservation $reservation): array
+    {
+        $externalChannel = $reservation->external_channel;
+        $isDirect = empty(trim((string) $externalChannel));
+
+        $bearerRaw = $reservation->channel_fee_bearer;
+        $bearerEnum = $bearerRaw instanceof ChannelFeeBearer
+            ? $bearerRaw
+            : ($bearerRaw !== null ? ChannelFeeBearer::tryFrom($bearerRaw) : null);
+
+        $sourceRaw = $reservation->channel_fee_source;
+        $sourceEnum = $sourceRaw instanceof ChannelFeeSource
+            ? $sourceRaw
+            : ($sourceRaw !== null ? ChannelFeeSource::tryFrom($sourceRaw) : null);
+
+        $amountKnown = $reservation->channel_fee_amount !== null;
+        $sourceSufficient = $sourceEnum?->isSufficientForPayoutReadiness() ?? false;
+
+        // CASE A: Direct reservation (no external channel)
+        if ($isDirect) {
+            return [
+                'case' => 'A',
+                'description' => 'Direct reservation — no OTA fee. C3 flow applies.',
+                'requires_c3_fallback' => false,
+                'is_direct' => true,
+            ];
+        }
+
+        // CASE B: OTA + verified channel fee
+        if ($bearerEnum !== null
+            && $bearerEnum->requiresChannelFeeKnown()
+            && $sourceSufficient
+            && $amountKnown
+        ) {
+            return [
+                'case' => 'B',
+                'description' => 'OTA + verified channel fee — C4.2 full formula applies.',
+                'requires_c3_fallback' => false,
+                'is_direct' => false,
+            ];
+        }
+
+        // CASE C: OTA + unresolved / unverified channel fee
+        return [
+            'case' => 'C',
+            'description' => 'OTA + unresolved/unverified channel fee — payout BLOCKED. C3 fallback for safety.',
+            'requires_c3_fallback' => true,
+            'is_direct' => false,
+        ];
     }
 
     /**
