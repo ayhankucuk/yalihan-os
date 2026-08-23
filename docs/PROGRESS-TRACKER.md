@@ -27,8 +27,10 @@
 | **📡 AVAILABILITY SYNC — E03** | **Airbnb Inbound — Per-Channel Execution Isolation — E3.1–E3.6 PASS + GAP-03 CERTIFIED — Airbnb/Booking/Channex independent job isolation** | **SPRINT 13 E03** | **✅ CERTIFIED WITH DEBT — CERT-DEBT-GAP03-01 OPEN / NON-BLOCKING** |
 | **📡 AVAILABILITY SYNC — GAP-03** | **Retry Boundary Fix — BookingAvailabilityException propagation to Laravel queue — 7/7 PASS, dual-inspector audit PASS, 0 regressions** | **GAP-03** | **✅ CLOSED — Certification restored (`471dff1`)** |
 | **📡 AVAILABILITY SYNC — E02** | **Availability Synchronization — Queue-first + Retry/Evidence + Canonical Mutation Invariant** | **SPRINT 13 E02** | **✅ CERTIFIED** |
-
-**ERA IV:** 🚀 ACTIVE — First Advisor Pilot | Sprint 5.0
+| **💰 FINANCIAL ENGINE** | **C4.2 — Channel Fee Double-Entry Ledger Accrual & Reversal** | **C4.2** | **✅ PRODUCTION CERTIFIED (`35b4e6c`)** |
+| **💰 FINANCIAL ENGINE** | **C5.1 — Settlement Domain Foundation — 26 tests / 115 assertions PASS** | **C5.1** | **✅ CERTIFIED — 26 PASS (tenant isolation, idempotency, APPEND-ONLY, VCC helpers)** |
+| **🏠 REAL OPERATION** | **FIRST_REAL_PROPERTY_PILOT — Pilot-01 (Villa Betül)** | **PILOT-01** | **🚀 ACTIVE — Real Operation → Observe → Capture Defect/Friction → Prioritize → Fix → Certify → Re-test** |
+| **ERA IV:** | 🚀 ACTIVE — First Advisor Pilot | Sprint 5.0 | |
 
 ---
 

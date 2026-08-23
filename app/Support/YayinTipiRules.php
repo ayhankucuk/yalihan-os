@@ -39,10 +39,14 @@ class YayinTipiRules
             'kat-karsiligi' => 'kat-karsiligi',
             'kat-karsiligi-satis' => 'kat-karsiligi',
 
-            // Composite Slugs
+            // Composite Slugs (PILOT-01-003 Recovery: Villa seasonal rental)
             'konut-satilik' => 'satilik',
             'villa-satilik' => 'satilik',
             'villa-kiralik' => 'kiralik',
+            'villa-gunluk' => 'gunluk',
+            'villa-haftalik' => 'haftalik',
+            'villa-aylik' => 'aylik',
+            'villa-sezonluk' => 'sezonluk',
             'daire-satilik' => 'satilik',
             'daire-kiralik' => 'kiralik',
             'mustakil-ev-satilik' => 'satilik',

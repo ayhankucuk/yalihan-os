@@ -9,7 +9,6 @@ use App\Enums\PayoutType;
 use App\Enums\ReconciliationResult;
 use App\Enums\SettlementStatus;
 use App\Enums\VccStatus;
-use App\Models\BankAccount;
 use App\Models\Ilan;
 use App\Models\PropertyReservation;
 use App\Models\Settlement\BankTransaction;

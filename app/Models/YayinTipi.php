@@ -22,12 +22,11 @@ class YayinTipi extends BaseModel
     protected $fillable = [
         'name',
         'slug',
-        'is_active',
-        'display_order',
+        'aktiflik_durumu',
     ];
 
     protected $casts = [
-        'is_active' => \App\Enums\AktiflikDurumu::class,
+        'aktiflik_durumu' => \App\Enums\AktiflikDurumu::class,
     ];
 
     /**

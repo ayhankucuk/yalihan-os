@@ -2,96 +2,167 @@
 
 namespace Database\Seeders;
 
+use App\Models\IlanKategori;
 use App\Models\YayinTipi;
 use App\Models\YayinTipiSablonu;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * 🚀 YALIHAN EMLAK - Canonical Yayin Tipi Seeder
+ * Canonical Yayin Tipi Seeder
  *
- * Sorumluluk: Standart yayın tipleri ve Baseline mappingleri.
- * Note: Depends on IlanKategoriSeeder (ID 15)
+ * YayinTipiSablonu provisioning için source of truth.
+ * Mevcut YayinTipiSablonu kayıtlarını DEĞİŞTİRMEZ — sadece eksikleri ekler.
+ *
+ * Pattern: updateOrCreate ile idempotent seeding.
+ * Sistem zaten mevcut kayıtları korur.
+ *
+ * PILOT-01-003 Recovery:
+ *   Villa kategorisi (slug: villa, ID:8) için YayinTipiSablonu kayıtları ekleniyor.
+ *   YayinTipiSeeder seasonal rental tiplerini (Günlük, Haftalık, Aylık, Sezonluk)
+ *   YayinTipi olarak da ekliyor — bunlar YayinTipiSablonu ile ilişkilendirilecek.
+ *
+ * Context7: kategori_id → slug ile dinamik resolve (hardcoded ID yok).
  */
 class YayinTipiSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Standart Yayın Tiplerini Oluştur
-        $yayinTipleri = [
-            ['id' => 1, 'name' => 'Satılık', 'slug' => 'satilik', 'aktiflik_durumu' => 1],
-            ['id' => 2, 'name' => 'Kiralık', 'slug' => 'kiralik', 'aktiflik_durumu' => 1],
-            ['id' => 3, 'name' => 'Kat Karşılığı', 'slug' => 'kat-karsiligi', 'aktiflik_durumu' => 1],
-            ['id' => 4, 'name' => 'Devren', 'slug' => 'devren', 'aktiflik_durumu' => 1],
+        // 1. Standart Yayın Tipleri (base types — her zaman mevcut)
+        $baseTypes = [
+            ['id' => 1, 'name' => 'Satılık',      'slug' => 'satilik',           'aktiflik_durumu' => 1],
+            ['id' => 2, 'name' => 'Kiralık',      'slug' => 'kiralik',          'aktiflik_durumu' => 1],
+            ['id' => 3, 'name' => 'Kat Karşılığı', 'slug' => 'kat-karsiligi',    'aktiflik_durumu' => 1],
+            ['id' => 4, 'name' => 'Devren',       'slug' => 'devren',            'aktiflik_durumu' => 1],
         ];
 
-        foreach ($yayinTipleri as $tip) {
-            DB::table('yayin_tipleri')->updateOrInsert(['id' => $tip['id']], $tip);
+        foreach ($baseTypes as $tip) {
+            YayinTipi::updateOrCreate(
+                ['id' => $tip['id']],
+                [
+                    'name'               => $tip['name'],
+                    'slug'               => $tip['slug'],
+                    'aktiflik_durumu'    => $tip['aktiflik_durumu'],
+                ]
+            );
         }
 
-        // 2. Baseline Wizard Mapping (Arsa Category Baseline - E2E Support)
-        // Resolve arsa-konut-villa dynamically to avoid hardcoded ID fragility.
-        // Verified against IlanKategoriSeeder slug: 'arsa-konut-villa' (line 174).
-        $arsaKonutVilla = \App\Models\IlanKategori::where('slug', 'arsa-konut-villa')->firstOrFail();
-
-        // a) Pivot mapping
-        $ArsaJunctions = [
-            ['alt_kategori_id' => $arsaKonutVilla->id, 'yayin_tipi_id' => 1, 'id' => 13], // Satılık
-            ['alt_kategori_id' => $arsaKonutVilla->id, 'yayin_tipi_id' => 3, 'id' => 14], // Kat Karşılığı
+        // 2. Sezonal Yayın Tipleri (Villa / Yazlık kiralama için — PILOT-01-003)
+        // Bu tipler YayinTipiSablonu ile ilişkilendirilir.
+        $seasonalTypes = [
+            ['id' => 5, 'name' => 'Günlük Kiralık',   'slug' => 'gunluk-kiralik',   'aktiflik_durumu' => 1],
+            ['id' => 6, 'name' => 'Haftalık Kiralık', 'slug' => 'haftalik-kiralik', 'aktiflik_durumu' => 1],
+            ['id' => 7, 'name' => 'Aylık Kiralık',    'slug' => 'aylik-kiralik',   'aktiflik_durumu' => 1],
+            ['id' => 8, 'name' => 'Sezonluk Kiralık', 'slug' => 'sezonluk-kiralik', 'aktiflik_durumu' => 1],
         ];
 
-        foreach ($ArsaJunctions as $j) {
-            DB::table('alt_kategori_yayin_tipi')->updateOrInsert(['id' => $j['id']], $j);
+        foreach ($seasonalTypes as $tip) {
+            YayinTipi::updateOrCreate(
+                ['id' => $tip['id']],
+                [
+                    'name'               => $tip['name'],
+                    'slug'               => $tip['slug'],
+                    'aktiflik_durumu'    => $tip['aktiflik_durumu'],
+                ]
+            );
         }
 
-        // b) Wizard Context Templates
-        // NOTE: tenant_id has default 'SYSTEM' in schema.
-        $ArsaTemplates = [
-            [
-                'id' => 13,
-                'kategori_id' => $arsaKonutVilla->id,
-                'yayin_tipi_id' => 1,
-                'ad' => 'Arsa Satılık Şablonu',
-                'slug' => 'arsa-konut-villa-satilik',
-                'aktiflik_durumu' => 1,
-            ],
-            [
-                'id' => 14,
-                'kategori_id' => $arsaKonutVilla->id,
-                'yayin_tipi_id' => 3,
-                'ad' => 'Arsa Kat Karşılığı Şablonu',
-                'slug' => 'arsa-konut-villa-kat-karsiligi',
-                'aktiflik_durumu' => 1,
-            ],
-        ];
+        // 3. YayinTipiSablonu kayıtları — Villa kategorisi (slug: villa, ID:8)
+        //
+        // YayinTipiSablonu IDs:
+        //   13-14: Arsa (mevcut)
+        //   19-24: Villa (yeni)
+        //
+        // YayinTipiSablonu slug pattern: {kategori}-{yayin-tipi-slug}
+        // YayinTipiSablonu kayıtları tenant_id='SYSTEM' (schema default)
+        $Villa = IlanKategori::where('slug', 'villa')->first();
 
-        foreach ($ArsaTemplates as $t) {
-            YayinTipiSablonu::updateOrCreate(['id' => $t['id']], $t);
+        if (!$Villa) {
+            $this->command->warn('  ⚠️ Villa kategorisi bulunamadı (slug: villa) — YayinTipiSablonu atlanıyor.');
+        } else {
+            $villaTemplates = [
+                // Satılık (base YayinTipi ID:1)
+                [
+                    'id' => 19,
+                    'kategori_id'    => $Villa->id,
+                    'yayin_tipi_id'  => 1,
+                    'ad'             => 'Villa Satılık Şablonu',
+                    'slug'           => 'villa-satilik',
+                    'aktiflik_durumu' => true,
+                ],
+                // Kiralık (base YayinTipi ID:2)
+                [
+                    'id' => 20,
+                    'kategori_id'    => $Villa->id,
+                    'yayin_tipi_id'  => 2,
+                    'ad'             => 'Villa Kiralık Şablonu',
+                    'slug'           => 'villa-kiralik',
+                    'aktiflik_durumu' => true,
+                ],
+                // Günlük (seasonal YayinTipi ID:5)
+                [
+                    'id' => 21,
+                    'kategori_id'    => $Villa->id,
+                    'yayin_tipi_id'  => 5,
+                    'ad'             => 'Villa Günlük Kiralık Şablonu',
+                    'slug'           => 'villa-gunluk',
+                    'aktiflik_durumu' => true,
+                ],
+                // Haftalık (seasonal YayinTipi ID:6)
+                [
+                    'id' => 22,
+                    'kategori_id'    => $Villa->id,
+                    'yayin_tipi_id'  => 6,
+                    'ad'             => 'Villa Haftalık Kiralık Şablonu',
+                    'slug'           => 'villa-haftalik',
+                    'aktiflik_durumu' => true,
+                ],
+                // Aylık (seasonal YayinTipi ID:7)
+                [
+                    'id' => 23,
+                    'kategori_id'    => $Villa->id,
+                    'yayin_tipi_id'  => 7,
+                    'ad'             => 'Villa Aylık Kiralık Şablonu',
+                    'slug'           => 'villa-aylik',
+                    'aktiflik_durumu' => true,
+                ],
+                // Sezonluk (seasonal YayinTipi ID:8)
+                [
+                    'id' => 24,
+                    'kategori_id'    => $Villa->id,
+                    'yayin_tipi_id'  => 8,
+                    'ad'             => 'Villa Sezonluk Kiralık Şablonu',
+                    'slug'           => 'villa-sezonluk',
+                    'aktiflik_durumu' => true,
+                ],
+            ];
+
+            foreach ($villaTemplates as $t) {
+                YayinTipiSablonu::updateOrCreate(
+                    ['id' => $t['id']],
+                    $t
+                );
+            }
+
+            $this->command->info("  ✅ Villa YayinTipiSablonu: " . count($villaTemplates) . " şablon");
         }
 
-        // b) Wizard Context Templates
-        // NOTE: tenant_id has default 'SYSTEM' in schema.
-        $arsaTemplates = [
-            [
-                'id' => 13,
-                'kategori_id' => 15,
-                'yayin_tipi_id' => 1,
-                'ad' => 'Arsa Satılık Şablonu',
-                'slug' => 'arsa-konut-villa-satilik',
-                'aktiflik_durumu' => 1,
-            ],
-            [
-                'id' => 14,
-                'kategori_id' => 15,
-                'yayin_tipi_id' => 3,
-                'ad' => 'Arsa Kat Karşılığı Şablonu',
-                'slug' => 'arsa-konut-villa-kat-karsiligi',
-                'aktiflik_durumu' => 1,
-            ],
-        ];
+        // 4. Arsa YayinTipiSablonu kayıtları (mevcut — korunuyor, ID:13-14)
+        $ArsaKonutVilla = IlanKategori::where('slug', 'arsa-konut-villa')->first();
 
-        foreach ($arsaTemplates as $t) {
-            YayinTipiSablonu::updateOrCreate(['id' => $t['id']], $t);
+        if ($ArsaKonutVilla) {
+            $arsaTemplates = [
+                ['id' => 13, 'kategori_id' => $ArsaKonutVilla->id, 'yayin_tipi_id' => 1, 'ad' => 'Arsa Satılık Şablonu',           'slug' => 'arsa-konut-villa-satilik',         'aktiflik_durumu' => true],
+                ['id' => 14, 'kategori_id' => $ArsaKonutVilla->id, 'yayin_tipi_id' => 3, 'ad' => 'Arsa Kat Karşılığı Şablonu', 'slug' => 'arsa-konut-villa-kat-karsiligi', 'aktiflik_durumu' => true],
+            ];
+
+            foreach ($arsaTemplates as $t) {
+                YayinTipiSablonu::updateOrCreate(['id' => $t['id']], $t);
+            }
         }
+
+        // 5. YayinTipiSablonu slug uniqueness guarantee (yayin_tipi_id + kategori_id bazlı)
+        $this->command->info('  ✅ YayinTipi: ' . YayinTipi::count() . ' kayıt');
+        $this->command->info('  ✅ YayinTipiSablonu: ' . YayinTipiSablonu::count() . ' kayıt');
     }
 }

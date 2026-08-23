@@ -1,5 +1,86 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 141 — 2026-08-23 | C5.1 SETTLEMENT DOMAIN FOUNDATION ✅ CERTIFIED
+
+### SAAB_C5_1_SETTLEMENT_DOMAIN_FOUNDATION
+
+**Authority:** SAAB / Financial Engine  
+**Baseline:** 35b4e6c (C4.2 Certified)  
+**Certification Status:** ✅ 26 TESTS / 115 ASSERTIONS PASS
+
+#### C5.1 Foundation Components Implemented
+- **Models (4):**
+  - `ProviderSettlement` — RAW immutable OTA/channel payout evidence
+  - `SettlementAllocation` — Per-reservation allocation from settlement batch
+  - `BankTransaction` — RAW immutable bank account movements
+  - `ReconciliationExecution` — APPEND-ONLY replay-safe reconciliation log
+- **Enums (5):**
+  - `SettlementStatus` (PENDING, ALLOCATED, RECONCILED, DISCREPANCY)
+  - `AllocationStatus` (PENDING, MATCHED, DISCREPANCY, RECONCILED)
+  - `ReconciliationResult` (EXACT_MATCH, WITHIN_TOLERANCE, DISCREPANCY, NO_MATCH, PENDING)
+  - `BankTransactionMatchStatus` (UNMATCHED, MATCHED, IGNORED)
+  - `VccStatus` — Booking.com Payments API wire contract (7 values)
+- **Service (1):**
+  - `ReconciliationExecutionService` — Replay-safe reconciliation engine
+- **Factories (4):**
+  - ProviderSettlementFactory, SettlementAllocationFactory, BankTransactionFactory, ReconciliationExecutionFactory
+- **New (C5.1 + C5.3):**
+  - `BankAccount` model + migration (bank account metadata)
+  - `BankAccountFactory`
+
+#### Key Invariants Certified
+1. **Tenant Isolation** — Cross-tenant access blocked on all 4 models
+2. **Idempotency** — Duplicate ingest via idempotency_key returns existing record
+3. **APPEND-ONLY** — Replays create NEW records, never mutate old
+4. **RECONCILED ≠ PAYOUT_SETTLED** — Reconciliation ≠ payout release
+5. **VCC Separate Lifecycle** — VccStatus enum, not a bank transfer
+6. **No Tolerance Invention** — C5.4 policy decision pending
+
+---
+
+## Oturum 140 — 2026-08-23 | SAAB C4.2 PRODUCTION CERTIFIED, C5 INITIATED & PROPERTY ONBOARDING 2.0 DISCOVERY ✅
+
+### PROPERTY_ONBOARDING_2_0_DISCOVERY_AND_PILOT_01_READINESS
+
+**Authority:** SAAB / Release Authority  
+**Candidate & Production Deployed SHA:** `35b4e6c0d1b08bb2fd0dcfd01527ebfeda088547`  
+**Status:** ✅ DISCOVERY & PILOT-01 READINESS COMPLETE — ZERO CODE MUTATION  
+
+#### Summary & Discovery Deliverables
+- **PILOT-01 Candidate (Villa Betül):** Formally selected under `FULL_MANAGEMENT` model (%15 commission).
+- **Read-Only Production Readiness Audit:**
+  - Database & migrations: 89 migrations healthy (`[Ran]`), zero pending schema debt.
+  - Tenant & Admin: `tenant_id: 1` (`Yalıhan Emlak`), Admin `admin@yalihan.com.tr` (`id: 1`).
+  - Storage & Media: Verified `/app/storage` volume, flagged Nginx `internal;` rule on `/storage/`.
+- **Property Onboarding 2.0 Enterprise Architecture (`docs/discovery/PROPERTY_ONBOARDING_2_0_DISCOVERY.md`):**
+  - Synthesized the 9-Pillar Canonical Pipeline: `Property → Owner → Spatial Twin → Media → Operations → Compliance → Commercial → Distribution → Readiness`.
+  - Audited Wizard 1.0 UX & validation frictions (premature JS validation on Step 1, strict integer `oda_sayisi`, junction locking).
+  - Triaged P0/P1 emergency patches for immediate implementation handover vs. 2.0 architectural roadmap.
+
+---
+
+### SAAB_C4_2_CHANNEL_FEE_LEDGER_PRODUCTION_CERTIFIED
+
+**Authority:** SAAB / Release Authority  
+**Candidate & Production Deployed SHA:** `35b4e6c0d1b08bb2fd0dcfd01527ebfeda088547`  
+**Certification Status:** ✅ C4_2_PRODUCTION_CERTIFICATION_PASS / C4_2_PRODUCTION_DEPLOYMENT_PASS  
+
+#### Architecture & Production Verification Summary
+- **Independent Re-Certification Audit (Gemini 3 Pro + Antigravity):**
+  - CASE A (Direct): 0 channel fee, C3 commission + owner payable preserved (100K = 15K Yalıhan + 85K Owner).
+  - CASE B (Verified OTA): Canonical triple split (100K = 15.5K Channel Fee TX1 + 15K Yalıhan Commission TX2 + 69.5K Owner Payable TX3). $\Sigma\text{ Debit} = \Sigma\text{ Credit} = 100\text{K}$.
+  - CASE C (Unresolved OTA): `ChannelFeeTrustException` caught inside `ProcessFinancialCompletionJob`, Payout BLOCKED, observable in `awaiting_channel_fee_reconciliation`, zero partial mutation.
+  - Regression Test Suite: 81 Tests / 258 Assertions across C1–C4 (100% PASS).
+- **Controlled Production Deployment (Hetzner 157.180.116.63):**
+  - Pre-deployment DB backup verified with gzip integrity (`yalihanai_v2_production_20260823_143200.sql.gz`).
+  - Containers `yalihanai-app-v2`, `yalihanai-nginx-v2`, `yalihanai-queue-v2` healthy; API health HTTP 200 OK.
+  - Transaction-protected synthetic production proofs executed for CASE A, CASE B, and CASE C.
+  - Pre/Post baseline metrics identical (1 reservation / 0 ledger entries / 0 transactions). Zero test residue.
+- **C5 Settlement & Reconciliation Discovery:**
+  - Published `docs/discovery/C5_SETTLEMENT_RECONCILIATION_DISCOVERY.md` analyzing OTA payout feeds, bank statement matching, tolerance engines, and double-entry cash flow settlement.
+
+---
+
 ## Oturum 139 — 2026-08-22 | RESERVATION FINANCIAL RECORDING & CANCELLATION SYNC ✅ IMPLEMENTED
 
 ### RESERVATION_FINANCIAL_RECORDING_AND_CANCELLATION_SYNC
