@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\AktiflikDurumu;
 use App\Models\IlanKategori;
 use App\Models\YayinTipi;
 use App\Models\YayinTipiSablonu;
@@ -50,8 +51,11 @@ class PILOT01003VillaPublicationTypeTest extends TestCase
         $this->seedYayinTipleri();
         $this->seedVillaTemplates();
 
-        $policy = app(PropertyPublicationPolicy::class);
         $villa = IlanKategori::where('slug', 'villa')->firstOrFail();
+        $templateCount = YayinTipiSablonu::where('kategori_id', $villa->id)->count();
+        $this->assertEquals(6, $templateCount, "Villa YayinTipiSablonu sayısı 6 olmalı, {$templateCount} var. Villa ID={$villa->id}");
+
+        $policy = app(PropertyPublicationPolicy::class);
         $types = $policy->getAllowedTypes($villa->id);
 
         $this->assertGreaterThanOrEqual(
@@ -111,7 +115,8 @@ class PILOT01003VillaPublicationTypeTest extends TestCase
         $this->seedYayinTipleri();
 
         $tip = YayinTipi::where('slug', 'gunluk-kiralik')->firstOrFail();
-        $this->assertEquals(1, (int) $tip->aktiflik_durumu);
+        // aktiflik_durumu Enum cast'li — enum değeri kontrol et
+        $this->assertEquals(AktiflikDurumu::AKTIF, $tip->aktiflik_durumu);
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -119,7 +124,7 @@ class PILOT01003VillaPublicationTypeTest extends TestCase
     // ─────────────────────────────────────────────────────────────────
     private function seedYayinTipleri(): void
     {
-        // Base YayinTipleri
+        // Base YayinTipleri (updateOrCreate - unique constraint güvenli)
         $base = [
             ['id' => 1, 'name' => 'Satılık',       'slug' => 'satilik',        'aktiflik_durumu' => 1],
             ['id' => 2, 'name' => 'Kiralık',       'slug' => 'kiralik',       'aktiflik_durumu' => 1],
@@ -132,24 +137,26 @@ class PILOT01003VillaPublicationTypeTest extends TestCase
         ];
 
         foreach ($base as $t) {
-            YayinTipi::updateOrCreate(['id' => $t['id']], $t);
+            YayinTipi::updateOrCreate(['slug' => $t['slug']], $t);
         }
     }
 
     private function seedVillaTemplates(): void
     {
         $villa = IlanKategori::where('slug', 'villa')->firstOrFail();
+        // ID'ler AUTO_INCREMENT ile otomatik atanır. Policy slug bazlı eşleşiyor (canonicalizeSlug).
         $base = [
-            ['id' => 19, 'kategori_id' => $villa->id, 'yayin_tipi_id' => 1, 'ad' => 'Villa Satılık Şablonu', 'slug' => 'villa-satilik',  'aktiflik_durumu' => 1],
-            ['id' => 20, 'kategori_id' => $villa->id, 'yayin_tipi_id' => 2, 'ad' => 'Villa Kiralık Şablonu', 'slug' => 'villa-kiralik', 'aktiflik_durumu' => 1],
-            ['id' => 21, 'kategori_id' => $villa->id, 'yayin_tipi_id' => 5, 'ad' => 'Villa Günlük Kiralık Şablonu', 'slug' => 'villa-gunluk',  'aktiflik_durumu' => 1],
-            ['id' => 22, 'kategori_id' => $villa->id, 'yayin_tipi_id' => 6, 'ad' => 'Villa Haftalık Şablonu', 'slug' => 'villa-haftalik', 'aktiflik_durumu' => 1],
-            ['id' => 23, 'kategori_id' => $villa->id, 'yayin_tipi_id' => 7, 'ad' => 'Villa Aylık Şablonu', 'slug' => 'villa-aylik', 'aktiflik_durumu' => 1],
-            ['id' => 24, 'kategori_id' => $villa->id, 'yayin_tipi_id' => 8, 'ad' => 'Villa Sezonluk Şablonu', 'slug' => 'villa-sezonluk', 'aktiflik_durumu' => 1],
+            // ID AUTO_INCREMENT: Yukarıdaki [25-30] yorumu referans içindir, gerçek ID'ler DB'den gelir.
+            ['kategori_id' => $villa->id, 'yayin_tipi_id' => 1, 'ad' => 'Villa Satılık Şablonu', 'slug' => 'villa-satilik',  'aktiflik_durumu' => 1],
+            ['kategori_id' => $villa->id, 'yayin_tipi_id' => 2, 'ad' => 'Villa Kiralık Şablonu', 'slug' => 'villa-kiralik', 'aktiflik_durumu' => 1],
+            ['kategori_id' => $villa->id, 'yayin_tipi_id' => 5, 'ad' => 'Villa Günlük Kiralık Şablonu', 'slug' => 'villa-gunluk',  'aktiflik_durumu' => 1],
+            ['kategori_id' => $villa->id, 'yayin_tipi_id' => 6, 'ad' => 'Villa Haftalık Şablonu', 'slug' => 'villa-haftalik', 'aktiflik_durumu' => 1],
+            ['kategori_id' => $villa->id, 'yayin_tipi_id' => 7, 'ad' => 'Villa Aylık Şablonu', 'slug' => 'villa-aylik', 'aktiflik_durumu' => 1],
+            ['kategori_id' => $villa->id, 'yayin_tipi_id' => 8, 'ad' => 'Villa Sezonluk Şablonu', 'slug' => 'villa-sezonluk', 'aktiflik_durumu' => 1],
         ];
 
         foreach ($base as $t) {
-            YayinTipiSablonu::updateOrCreate(['id' => $t['id']], $t);
+            YayinTipiSablonu::updateOrCreate(['kategori_id' => $t['kategori_id'], 'yayin_tipi_id' => $t['yayin_tipi_id']], $t);
         }
     }
 }

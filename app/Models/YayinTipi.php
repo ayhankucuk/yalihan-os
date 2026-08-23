@@ -21,6 +21,7 @@ class YayinTipi extends BaseModel
 
     protected $fillable = [
         'name',
+        'adi', // context7: alias for 'name' (blade compatibility)
         'slug',
         'aktiflik_durumu',
     ];
@@ -28,6 +29,14 @@ class YayinTipi extends BaseModel
     protected $casts = [
         'aktiflik_durumu' => \App\Enums\AktiflikDurumu::class,
     ];
+
+    /**
+     * Context7: 'adi' alias for 'name' (blade compatibility)
+     */
+    public function getAdiAttribute()
+    {
+        return $this->name;
+    }
 
     /**
      * Kategori bazlı yayın tipi eşleşmeleri (pivotlar)

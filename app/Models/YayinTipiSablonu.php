@@ -92,6 +92,14 @@ class YayinTipiSablonu extends BaseModel
     }
 
     /**
+     * Yayın tipi ilişkisi (BelongsTo)
+     */
+    public function yayinTipi(): BelongsTo
+    {
+        return $this->belongsTo(YayinTipi::class, 'yayin_tipi_id');
+    }
+
+    /**
      * Feature assignments (Polymorphic)
      */
     public function featureAssignments(): MorphMany

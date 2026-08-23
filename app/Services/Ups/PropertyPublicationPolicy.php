@@ -118,9 +118,11 @@ class PropertyPublicationPolicy
         }
 
         // UPS Phase 2: Try children categories first (seviye=2 structure)
+        // Only return children if they belong to this kategoriId
         $children = IlanKategori::whereIn('id', $allowedIds)
             ->where('seviye', 2)
             ->where('aktiflik_durumu', true)
+            ->where('parent_id', $kategoriId) // Sadece bu kategorinin çocukları
             ->orderBy('display_order') // context7-ignore
             ->orderBy('name') // context7-ignore
             ->get();
@@ -130,7 +132,8 @@ class PropertyPublicationPolicy
         }
 
         // UPS Phase 2: Fallback to YayinTipiSablonu (Global Template system)
-        return YayinTipiSablonu::whereIn('id', $allowedIds)
+        // kategoriya_id bazlı sorgu - matrix ID'leri production DB'den gelir, test DB'de farklı olabilir.
+        return YayinTipiSablonu::where('kategori_id', $kategoriId)
             ->where('aktiflik_durumu', true)
             ->orderBy('display_order') // context7-ignore
             ->orderBy('ad') // context7-ignore

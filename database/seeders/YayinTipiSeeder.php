@@ -38,7 +38,7 @@ class YayinTipiSeeder extends Seeder
 
         foreach ($baseTypes as $tip) {
             YayinTipi::updateOrCreate(
-                ['id' => $tip['id']],
+                ['slug' => $tip['slug']],
                 [
                     'name'               => $tip['name'],
                     'slug'               => $tip['slug'],
@@ -58,7 +58,7 @@ class YayinTipiSeeder extends Seeder
 
         foreach ($seasonalTypes as $tip) {
             YayinTipi::updateOrCreate(
-                ['id' => $tip['id']],
+                ['slug' => $tip['slug']],
                 [
                     'name'               => $tip['name'],
                     'slug'               => $tip['slug'],
@@ -69,79 +69,24 @@ class YayinTipiSeeder extends Seeder
 
         // 3. YayinTipiSablonu kayıtları — Villa kategorisi (slug: villa, ID:8)
         //
-        // YayinTipiSablonu IDs:
-        //   13-14: Arsa (mevcut)
-        //   19-24: Villa (yeni)
-        //
-        // YayinTipiSablonu slug pattern: {kategori}-{yayin-tipi-slug}
-        // YayinTipiSablonu kayıtları tenant_id='SYSTEM' (schema default)
+        // Template ID'leri matrix [25-30] ile eşleşmeli (PropertyPublicationPolicy getMatrixPolicyIds)
+        // YayinTipiSablonu IDs: 13-14: Arsa (mevcut), 25-30: Villa (yeni)
         $Villa = IlanKategori::where('slug', 'villa')->first();
 
         if (!$Villa) {
             $this->command->warn('  ⚠️ Villa kategorisi bulunamadı (slug: villa) — YayinTipiSablonu atlanıyor.');
         } else {
             $villaTemplates = [
-                // Satılık (base YayinTipi ID:1)
-                [
-                    'id' => 19,
-                    'kategori_id'    => $Villa->id,
-                    'yayin_tipi_id'  => 1,
-                    'ad'             => 'Villa Satılık Şablonu',
-                    'slug'           => 'villa-satilik',
-                    'aktiflik_durumu' => true,
-                ],
-                // Kiralık (base YayinTipi ID:2)
-                [
-                    'id' => 20,
-                    'kategori_id'    => $Villa->id,
-                    'yayin_tipi_id'  => 2,
-                    'ad'             => 'Villa Kiralık Şablonu',
-                    'slug'           => 'villa-kiralik',
-                    'aktiflik_durumu' => true,
-                ],
-                // Günlük (seasonal YayinTipi ID:5)
-                [
-                    'id' => 21,
-                    'kategori_id'    => $Villa->id,
-                    'yayin_tipi_id'  => 5,
-                    'ad'             => 'Villa Günlük Kiralık Şablonu',
-                    'slug'           => 'villa-gunluk',
-                    'aktiflik_durumu' => true,
-                ],
-                // Haftalık (seasonal YayinTipi ID:6)
-                [
-                    'id' => 22,
-                    'kategori_id'    => $Villa->id,
-                    'yayin_tipi_id'  => 6,
-                    'ad'             => 'Villa Haftalık Kiralık Şablonu',
-                    'slug'           => 'villa-haftalik',
-                    'aktiflik_durumu' => true,
-                ],
-                // Aylık (seasonal YayinTipi ID:7)
-                [
-                    'id' => 23,
-                    'kategori_id'    => $Villa->id,
-                    'yayin_tipi_id'  => 7,
-                    'ad'             => 'Villa Aylık Kiralık Şablonu',
-                    'slug'           => 'villa-aylik',
-                    'aktiflik_durumu' => true,
-                ],
-                // Sezonluk (seasonal YayinTipi ID:8)
-                [
-                    'id' => 24,
-                    'kategori_id'    => $Villa->id,
-                    'yayin_tipi_id'  => 8,
-                    'ad'             => 'Villa Sezonluk Kiralık Şablonu',
-                    'slug'           => 'villa-sezonluk',
-                    'aktiflik_durumu' => true,
-                ],
+                ['id' => 25, 'kategori_id' => $Villa->id, 'yayin_tipi_id' => 1, 'ad' => 'Villa Satılık Şablonu', 'slug' => 'villa-satilik', 'aktiflik_durumu' => true],
+                ['id' => 26, 'kategori_id' => $Villa->id, 'yayin_tipi_id' => 2, 'ad' => 'Villa Kiralık Şablonu', 'slug' => 'villa-kiralik', 'aktiflik_durumu' => true],
+                ['id' => 27, 'kategori_id' => $Villa->id, 'yayin_tipi_id' => 5, 'ad' => 'Villa Günlük Kiralık Şablonu', 'slug' => 'villa-gunluk', 'aktiflik_durumu' => true],
+                ['id' => 28, 'kategori_id' => $Villa->id, 'yayin_tipi_id' => 6, 'ad' => 'Villa Haftalık Kiralık Şablonu', 'slug' => 'villa-haftalik', 'aktiflik_durumu' => true],
+                ['id' => 29, 'kategori_id' => $Villa->id, 'yayin_tipi_id' => 7, 'ad' => 'Villa Aylık Kiralık Şablonu', 'slug' => 'villa-aylik', 'aktiflik_durumu' => true],
+                ['id' => 30, 'kategori_id' => $Villa->id, 'yayin_tipi_id' => 8, 'ad' => 'Villa Sezonluk Kiralık Şablonu', 'slug' => 'villa-sezonluk', 'aktiflik_durumu' => true],
             ];
 
             foreach ($villaTemplates as $t) {
-                YayinTipiSablonu::updateOrCreate(
-                    ['id' => $t['id']],
-                    $t
-                );
+                YayinTipiSablonu::updateOrCreate(['id' => $t['id']], $t);
             }
 
             $this->command->info("  ✅ Villa YayinTipiSablonu: " . count($villaTemplates) . " şablon");
