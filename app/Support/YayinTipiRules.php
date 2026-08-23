@@ -39,8 +39,9 @@ class YayinTipiRules
             'kat-karsiligi' => 'kat-karsiligi',
             'kat-karsiligi-satis' => 'kat-karsiligi',
 
-            // Composite Slugs (PILOT-01-003 Recovery: Villa seasonal rental)
+            // Konut Family Composite Slugs
             'konut-satilik' => 'satilik',
+            'konut-kiralik' => 'kiralik',
             'villa-satilik' => 'satilik',
             'villa-kiralik' => 'kiralik',
             'villa-gunluk' => 'gunluk',
@@ -53,32 +54,112 @@ class YayinTipiRules
             'mustakil-ev-kiralik' => 'kiralik',
             'dubleks-satilik' => 'satilik',
             'dubleks-kiralik' => 'kiralik',
+
+            // İşyeri Family Composite Slugs
             'isyeri-satilik' => 'satilik',
             'isyeri-kiralik' => 'kiralik',
+            'isyeri-devren' => 'devren',
+            'ofis-satilik' => 'satilik',
+            'ofis-kiralik' => 'kiralik',
+            'ofis-devren' => 'devren',
+            'dukkan-satilik' => 'satilik',
+            'dukkan-kiralik' => 'kiralik',
+            'dukkan-devren' => 'devren',
+            'fabrika-satilik' => 'satilik',
+            'fabrika-kiralik' => 'kiralik',
+            'fabrika-devren' => 'devren',
+            'depo-satilik' => 'satilik',
+            'depo-kiralik' => 'kiralik',
 
-            // Günlük kiralama
+            // Yazlık Kiralama Family Composite Slugs
+            'yazlik-kiralama-gunluk' => 'gunluk',
+            'yazlik-kiralama-haftalik' => 'haftalik',
+            'yazlik-kiralama-aylik' => 'aylik',
+            'yazlik-kiralama-sezonluk' => 'sezonluk',
+            'villa-tipi-satilik' => 'satilik',
+            'villa-tipi-gunluk' => 'gunluk',
+            'villa-tipi-haftalik' => 'haftalik',
+            'villa-tipi-aylik' => 'aylik',
+            'villa-tipi-sezonluk' => 'sezonluk',
+            'rezidans-tipi-satilik' => 'satilik',
+            'rezidans-tipi-gunluk' => 'gunluk',
+            'rezidans-tipi-haftalik' => 'haftalik',
+            'rezidans-tipi-aylik' => 'aylik',
+            'rezidans-tipi-sezonluk' => 'sezonluk',
+            'daire-tipi-satilik' => 'satilik',
+            'daire-tipi-gunluk' => 'gunluk',
+            'daire-tipi-haftalik' => 'haftalik',
+            'daire-tipi-aylik' => 'aylik',
+            'daire-tipi-sezonluk' => 'sezonluk',
+            'tas-ev-tipi-satilik' => 'satilik',
+            'tas-ev-tipi-gunluk' => 'gunluk',
+            'tas-ev-tipi-haftalik' => 'haftalik',
+            'tas-ev-tipi-aylik' => 'aylik',
+            'tas-ev-tipi-sezonluk' => 'sezonluk',
+            'malikane-tipi-satilik' => 'satilik',
+            'malikane-tipi-gunluk' => 'gunluk',
+            'malikane-tipi-haftalik' => 'haftalik',
+            'malikane-tipi-aylik' => 'aylik',
+            'malikane-tipi-sezonluk' => 'sezonluk',
+            'minimal-tipi-satilik' => 'satilik',
+            'minimal-tipi-gunluk' => 'gunluk',
+            'minimal-tipi-haftalik' => 'haftalik',
+            'minimal-tipi-aylik' => 'aylik',
+            'minimal-tipi-sezonluk' => 'sezonluk',
+
+            // Turistik Tesisler Family Composite Slugs
+            'turistik-tesisler-satilik' => 'satilik',
+            'turistik-tesisler-kiralik' => 'kiralik',
+            'otel-satilik' => 'satilik',
+            'otel-kiralik' => 'kiralik',
+            'pansiyon-satilik' => 'satilik',
+            'pansiyon-kiralik' => 'kiralik',
+            'tatil-koyu-satilik' => 'satilik',
+            'tatil-koyu-kiralik' => 'kiralik',
+
+            // Seasonal Rental Types (standalone)
             'gunluk' => 'gunluk',
             'gunluk-kiralik' => 'gunluk',
             'gunluk-kiralama' => 'gunluk',
-
-            // Haftalık kiralama
             'haftalik' => 'haftalik',
             'haftalik-kiralik' => 'haftalik',
             'haftalik-kiralama' => 'haftalik',
-
-            // Aylık kiralama
             'aylik' => 'aylik',
             'aylik-kiralik' => 'aylik',
             'aylik-kiralama' => 'aylik',
-
-            // Sezonluk kiralama
             'sezonluk' => 'sezonluk',
             'sezonluk-kiralik' => 'sezonluk',
             'sezonluk-kiralama' => 'sezonluk',
 
-            // Phase 6.7: Yazlık → Sezonluk migration (legacy support)
+            // Legacy Support
             'yazlik' => 'sezonluk',
             'yazlik-kiralik' => 'sezonluk',
+            'yazlik-satilik' => 'satilik',
+
+            // Arsa Family Composite Slugs
+            'arsa-arazi-satilik' => 'satilik',
+            'arsa-arazi-kiralik' => 'kiralik',
+            'arsa-konut-villa-satilik' => 'satilik',
+            'arsa-konut-villa-kiralik' => 'kiralik',
+            'arsa-konut-villa-kat-karsiligi' => 'kat-karsiligi',
+            'sanayi-ticari-imar-satilik' => 'satilik',
+            'sanayi-ticari-imar-kiralik' => 'kiralik',
+            'tarla-satilik' => 'satilik',
+            'tarla-kiralik' => 'kiralik',
+            'zeytinlik-satilik' => 'satilik',
+            'bag-bahce-satilik' => 'satilik',
+            'zeytinli-tarla-satilik' => 'satilik',
+            'zeytinli-tarla-kiralik' => 'kiralik',
+            'turizm-otel-kamp-satilik' => 'satilik',
+            'turizm-otel-kamp-kiralik' => 'kiralik',
+            'turizm-konut-satilik' => 'satilik',
+            'turizm-konut-kiralik' => 'kiralik',
+
+            // Proje Family Composite Slugs
+            'projeden-satis-satilik' => 'satilik',
+            'konut-projesi-satilik' => 'satilik',
+            'villa-projesi-satilik' => 'satilik',
+            'karma-proje-satilik' => 'satilik',
         ];
 
         $canonical = $map[$normalized] ?? $normalized;
