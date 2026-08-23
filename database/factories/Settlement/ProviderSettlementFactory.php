@@ -38,13 +38,13 @@ class ProviderSettlementFactory extends Factory
             'payout_status' => PayoutStatus::PENDING->value,
             'bank_transfer_reference' => null,
             'payout_date' => $this->faker->dateTimeBetween('-30 days', 'now'),
-            // VCC fields (C5.1-D01)
+            'value_date' => $this->faker->dateTimeBetween('-30 days', 'now'),
+            // VCC fields (C5.1-D01 Recovery: Booking.com wire contract)
             'vcc_status' => null,
             'vcc_reference' => null,
             'vcc_charged_amount' => null,
             'vcc_charge_date' => null,
             'vcc_currency' => null,
-            'value_date' => $this->faker->dateTimeBetween('-30 days', 'now'),
             'raw_payload' => ['source' => 'api', 'version' => '2.0'],
             'raw_source' => 'api',
             'settlement_status' => SettlementStatus::PENDING->value,

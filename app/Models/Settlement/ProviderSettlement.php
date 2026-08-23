@@ -129,7 +129,10 @@ class ProviderSettlement extends BaseModel
     }
 
     // ──────────────────────────────────────────────────────────────
-    // VCC helpers (C5.1-D01)
+    // VCC helpers (C5.1-D01 Recovery)
+    // Booking.com wire contract: AVAILABLE, NOT_LOADED, FUNDED,
+    // PARTIALLY_CHARGED, FULLY_CHARGED, CANCELLED, UNKNOWN.
+    // Chargeability: only FUNDED → true.
     // ──────────────────────────────────────────────────────────────
 
     /**
@@ -138,12 +141,13 @@ class ProviderSettlement extends BaseModel
      */
     public function isVcc(): bool
     {
-        return !empty($this->vcc_reference) || !empty($this->vcc_status);
+        return !empty($this->vcc_reference);
     }
 
     /**
      * Is the VCC in a chargeable state?
-     * Only ACTIVE/FUNDED VCCs can be charged.
+     * Booking.com semantics: only FUNDED → chargeable.
+     * AVAILABLE, NOT_LOADED, PARTIALLY_CHARGED, FULLY_CHARGED, CANCELLED, UNKNOWN → false.
      */
     public function isVccChargeable(): bool
     {
@@ -152,7 +156,7 @@ class ProviderSettlement extends BaseModel
 
     /**
      * Is the VCC in a terminal state?
-     * Terminal VCCs cannot be modified.
+     * Booking.com semantics: FULLY_CHARGED, CANCELLED, UNKNOWN → terminal.
      */
     public function isVccTerminal(): bool
     {

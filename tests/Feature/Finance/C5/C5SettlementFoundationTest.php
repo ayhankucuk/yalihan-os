@@ -25,7 +25,8 @@ use Tests\TestCase;
 /**
  * C5.1: Settlement Domain Foundation — Certification Tests
  *
- * SAAB Phase C5.1 — Authority: 35b4e6c (C4.2 Certified Baseline)
+ * SAAB Phase C5.1 — Baseline: 35b4e6c (C4.2 Certified)
+ * C5.1-D01 Recovery — Commit: 877f45d (recovery from Antigravity FAIL)
  *
  * Required certification coverage:
  *  1.  Tenant isolation — cross-tenant access blocked on all 4 models
@@ -33,12 +34,17 @@ use Tests\TestCase;
  *  3.  APPEND-ONLY reconciliation — replays create NEW records, never mutate old
  *  4.  RECONCILED ≠ PAYOUT_SETTLED invariant
  *  5.  RAW evidence immutability — raw_* columns not in $fillable (model enforced)
- *  6.  VCC separate lifecycle — VccStatus enum present, not a bank transfer
- *  7.  PayoutType/PayoutStatus state machine — correct values from Booking.com API
+ *  6.  VCC separate lifecycle — VccStatus enum, not a bank transfer
+ *  7.  PayoutType/PayoutStatus state machine — Booking.com API values
  *  8.  AllocationStatus state machine
  *  9.  No reconciliation_tolerance invented (C5.4 policy decision pending)
  * 10.  C4 channel fee snapshot not mutated by C5.1 operations
- * 11.  VccStatus enum has correct Booking.com lifecycle values
+ * 11.  VccStatus Booking.com wire contract (C5.1-D01 Recovery):
+ *      AVAILABLE, NOT_LOADED, FUNDED, PARTIALLY_CHARGED, FULLY_CHARGED,
+ *      CANCELLED, UNKNOWN — exact 7 values
+ * 12.  fromProviderStatus normalization: case-insensitive, fail-safe UNKNOWN
+ * 13.  isChargeable: only FUNDED → true; all others → false
+ * 14.  isTerminal: FULLY_CHARGED, CANCELLED, UNKNOWN → true
  *
  * C5.1 scope exclusions (must NOT appear in this test suite):
  *  - Bank API ingest (C5.3 deferred)
@@ -326,35 +332,36 @@ class C5SettlementFoundationTest extends TestCase
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // TEST 10: VCC Separate Lifecycle — Not a Bank Transfer
+    // TEST 10: VCC Booking.com Wire Contract — Canonical 7 Status
+    // C5.1-D01 Recovery: Booking.com Payments API wire values
     // ─────────────────────────────────────────────────────────────────
     public function test_vcc_status_enum_has_booking_lifecycle_values(): void
     {
-        // VccStatus enum must have Booking.com VCC lifecycle values
-        // VCC ≠ bank transfer — separate domain concept
-
+        // Canonical Booking.com VCC status values
         $expectedCases = [
-            'active',
+            'available',
+            'not_loaded',
             'funded',
             'partially_charged',
             'fully_charged',
-            'expired',
-            'blocked',
             'cancelled',
+            'unknown',
         ];
         $actualCases = array_column(VccStatus::cases(), 'value');
+        sort($expectedCases);
+        sort($actualCases);
 
-        foreach ($expectedCases as $expected) {
-            $this->assertContains(
-                $expected,
-                $actualCases,
-                "VccStatus must include '{$expected}' from Booking.com VCC lifecycle."
-            );
-        }
+        $this->assertEquals(
+            $expectedCases,
+            $actualCases,
+            'VccStatus must match Booking.com Payments API wire contract exactly.'
+        );
 
-        // VCC-specific values (FUNDED, PARTIALLY_CHARGED, FULLY_CHARGED) must NOT be in PayoutStatus.
-        // CANCELLED is a shared terminal state — acceptable in both domains.
-        $vccSpecificValues = ['funded', 'partially_charged', 'fully_charged'];
+        // VCC-specific values must NOT appear in PayoutStatus
+        $vccSpecificValues = [
+            'available', 'not_loaded', 'funded',
+            'partially_charged', 'fully_charged',
+        ];
         $payoutValues = array_column(PayoutStatus::cases(), 'value');
 
         foreach ($vccSpecificValues as $vccVal) {
@@ -367,78 +374,148 @@ class C5SettlementFoundationTest extends TestCase
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // TEST 10b: VCC Helpers on ProviderSettlement
+    // TEST 10b: fromProviderStatus Normalization Boundary
+    // Case-insensitive, fail-safe UNKNOWN for unrecognized values
     // ─────────────────────────────────────────────────────────────────
-    public function test_vcc_helper_methods(): void
+    public function test_vcc_from_provider_status_normalization(): void
     {
-        // isVcc() returns true when vcc_reference is set
+        // Canonical values — exact match
+        $this->assertEquals(VccStatus::AVAILABLE, VccStatus::fromProviderStatus('available'));
+        $this->assertEquals(VccStatus::NOT_LOADED, VccStatus::fromProviderStatus('not_loaded'));
+        $this->assertEquals(VccStatus::FUNDED, VccStatus::fromProviderStatus('funded'));
+        $this->assertEquals(VccStatus::PARTIALLY_CHARGED, VccStatus::fromProviderStatus('partially_charged'));
+        $this->assertEquals(VccStatus::FULLY_CHARGED, VccStatus::fromProviderStatus('fully_charged'));
+        $this->assertEquals(VccStatus::CANCELLED, VccStatus::fromProviderStatus('cancelled'));
+        $this->assertEquals(VccStatus::UNKNOWN, VccStatus::fromProviderStatus('unknown'));
+
+        // Case-insensitive matching
+        $this->assertEquals(VccStatus::FUNDED, VccStatus::fromProviderStatus('FUNDED'));
+        $this->assertEquals(VccStatus::FUNDED, VccStatus::fromProviderStatus('Funded'));
+        $this->assertEquals(VccStatus::FUNDED, VccStatus::fromProviderStatus('  Funded  '));
+
+        // Unknown/unrecognized → UNKNOWN (never null)
+        $this->assertEquals(VccStatus::UNKNOWN, VccStatus::fromProviderStatus('ACTIVE'));
+        $this->assertEquals(VccStatus::UNKNOWN, VccStatus::fromProviderStatus('BLOCKED'));
+        $this->assertEquals(VccStatus::UNKNOWN, VccStatus::fromProviderStatus('EXPIRED'));
+        $this->assertEquals(VccStatus::UNKNOWN, VccStatus::fromProviderStatus('random_garbage'));
+        $this->assertEquals(VccStatus::UNKNOWN, VccStatus::fromProviderStatus('CHARGED'));
+
+        // Null / empty → UNKNOWN (never null)
+        $this->assertEquals(VccStatus::UNKNOWN, VccStatus::fromProviderStatus(null));
+        $this->assertEquals(VccStatus::UNKNOWN, VccStatus::fromProviderStatus(''));
+        $this->assertEquals(VccStatus::UNKNOWN, VccStatus::fromProviderStatus('   '));
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // TEST 10c: isChargeable — Booking.com Semantics
+    // Only FUNDED → chargeable. All others → false.
+    // ─────────────────────────────────────────────────────────────────
+    public function test_vcc_chargeability_booking_semantics(): void
+    {
+        // FUNDED → true (chargeable)
+        $this->assertTrue(VccStatus::FUNDED->isChargeable());
+
+        // NOT chargeable:
+        $this->assertFalse(VccStatus::AVAILABLE->isChargeable());
+        $this->assertFalse(VccStatus::NOT_LOADED->isChargeable());
+        $this->assertFalse(VccStatus::PARTIALLY_CHARGED->isChargeable());
+        $this->assertFalse(VccStatus::FULLY_CHARGED->isChargeable());
+        $this->assertFalse(VccStatus::CANCELLED->isChargeable());
+        $this->assertFalse(VccStatus::UNKNOWN->isChargeable());
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // TEST 10d: isTerminal — Booking.com Semantics
+    // FULLY_CHARGED, CANCELLED, UNKNOWN → terminal
+    // ─────────────────────────────────────────────────────────────────
+    public function test_vcc_terminal_states(): void
+    {
+        $this->assertTrue(VccStatus::FULLY_CHARGED->isTerminal());
+        $this->assertTrue(VccStatus::CANCELLED->isTerminal());
+        $this->assertTrue(VccStatus::UNKNOWN->isTerminal());
+
+        $this->assertFalse(VccStatus::AVAILABLE->isTerminal());
+        $this->assertFalse(VccStatus::NOT_LOADED->isTerminal());
+        $this->assertFalse(VccStatus::FUNDED->isTerminal());
+        $this->assertFalse(VccStatus::PARTIALLY_CHARGED->isTerminal());
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // TEST 10e: ProviderSettlement VCC helpers with Booking semantics
+    // ─────────────────────────────────────────────────────────────────
+    public function test_provider_settlement_vcc_helpers(): void
+    {
+        // FUNDED: isVcc=true, isVccChargeable=true, isVccTerminal=false
         $ps = ProviderSettlement::factory()->create([
             'tenant_id' => $this->tenantId,
             'reservation_id' => $this->reservation->id,
-            'vcc_reference' => 'VCC-REF-001',
-            'vcc_status' => VccStatus::ACTIVE->value,
+            'vcc_reference' => 'VCC-BKM-001',
+            'vcc_status' => VccStatus::FUNDED->value,
         ]);
-
         $this->assertTrue($ps->isVcc());
         $this->assertTrue($ps->isVccChargeable());
         $this->assertFalse($ps->isVccTerminal());
 
-        // Terminal VCC: FULLY_CHARGED
+        // FULLY_CHARGED: chargeable=false, terminal=true
         $ps2 = ProviderSettlement::factory()->create([
             'tenant_id' => $this->tenantId,
             'reservation_id' => $this->reservation->id,
-            'vcc_reference' => 'VCC-REF-002',
+            'vcc_reference' => 'VCC-BKM-002',
             'vcc_status' => VccStatus::FULLY_CHARGED->value,
         ]);
-
         $this->assertTrue($ps2->isVcc());
         $this->assertFalse($ps2->isVccChargeable());
         $this->assertTrue($ps2->isVccTerminal());
 
-        // BLOCKED VCC
+        // NOT_LOADED: not chargeable
         $ps3 = ProviderSettlement::factory()->create([
             'tenant_id' => $this->tenantId,
             'reservation_id' => $this->reservation->id,
-            'vcc_reference' => 'VCC-REF-003',
-            'vcc_status' => VccStatus::BLOCKED->value,
+            'vcc_reference' => 'VCC-BKM-003',
+            'vcc_status' => VccStatus::NOT_LOADED->value,
         ]);
+        $this->assertFalse($ps3->isVccChargeable());
 
-        $this->assertTrue($ps3->isVcc());
-        $this->assertTrue($ps3->isVccTerminal());
-
-        // Non-VCC settlement: no vcc_reference → isVcc() returns false
+        // UNKNOWN (unknown provider value)
         $ps4 = ProviderSettlement::factory()->create([
+            'tenant_id' => $this->tenantId,
+            'reservation_id' => $this->reservation->id,
+            'vcc_reference' => 'VCC-BKM-004',
+            'vcc_status' => VccStatus::UNKNOWN->value,
+        ]);
+        $this->assertFalse($ps4->isVccChargeable());
+        $this->assertTrue($ps4->isVccTerminal());
+
+        // Non-VCC: no vcc_reference → isVcc()=false
+        $ps5 = ProviderSettlement::factory()->create([
             'tenant_id' => $this->tenantId,
             'reservation_id' => $this->reservation->id,
             'vcc_reference' => null,
             'vcc_status' => null,
         ]);
-
-        $this->assertFalse($ps4->isVcc());
+        $this->assertFalse($ps5->isVcc());
+        $this->assertFalse($ps5->isVccChargeable());
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // TEST 10c: VccStatus isChargeable / isTerminal helpers
+    // TEST 10f: Model persistence + enum cast round-trip
     // ─────────────────────────────────────────────────────────────────
-    public function test_vcc_status_is_chargeable_and_is_terminal(): void
+    public function test_vcc_status_persists_and_casts_correctly(): void
     {
-        // Chargeable: ACTIVE, FUNDED
-        $this->assertTrue(VccStatus::ACTIVE->isChargeable());
-        $this->assertTrue(VccStatus::FUNDED->isChargeable());
-        $this->assertFalse(VccStatus::PARTIALLY_CHARGED->isChargeable());
-        $this->assertFalse(VccStatus::FULLY_CHARGED->isChargeable());
-        $this->assertFalse(VccStatus::EXPIRED->isChargeable());
-        $this->assertFalse(VccStatus::BLOCKED->isChargeable());
-        $this->assertFalse(VccStatus::CANCELLED->isChargeable());
+        $ps = ProviderSettlement::factory()->create([
+            'tenant_id' => $this->tenantId,
+            'reservation_id' => $this->reservation->id,
+            'vcc_reference' => 'VCC-ROUND-TRIP',
+            'vcc_status' => VccStatus::PARTIALLY_CHARGED->value,
+            'vcc_charged_amount' => 500.0000,
+            'vcc_currency' => 'USD',
+        ]);
 
-        // Terminal: FULLY_CHARGED, EXPIRED, BLOCKED, CANCELLED
-        $this->assertTrue(VccStatus::FULLY_CHARGED->isTerminal());
-        $this->assertTrue(VccStatus::EXPIRED->isTerminal());
-        $this->assertTrue(VccStatus::BLOCKED->isTerminal());
-        $this->assertTrue(VccStatus::CANCELLED->isTerminal());
-        $this->assertFalse(VccStatus::ACTIVE->isTerminal());
-        $this->assertFalse(VccStatus::FUNDED->isTerminal());
-        $this->assertFalse(VccStatus::PARTIALLY_CHARGED->isTerminal());
+        $ps->refresh();
+
+        $this->assertInstanceOf(VccStatus::class, $ps->vcc_status);
+        $this->assertEquals(VccStatus::PARTIALLY_CHARGED, $ps->vcc_status);
+        $this->assertEquals('Kısmi Çekim', $ps->vcc_status->label());
     }
 
     // ─────────────────────────────────────────────────────────────────
