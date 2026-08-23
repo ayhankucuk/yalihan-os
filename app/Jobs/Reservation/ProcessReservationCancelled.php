@@ -4,15 +4,14 @@ namespace App\Jobs\Reservation;
 
 use App\Application\ChannelManager\Services\AvailabilitySynchronizationService;
 use App\Events\Reservation\ReservationCancelledEvent;
+use App\Models\PropertyReservation;
+use App\Services\FinancialLedgerService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-
-use App\Models\PropertyReservation;
-use App\Services\FinancialLedgerService;
 
 /**
  * ProcessReservationCancelled — Queue-safe listener boundary.
@@ -28,6 +27,7 @@ class ProcessReservationCancelled implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $backoff = 60;
 
     public function __construct(
@@ -39,11 +39,11 @@ class ProcessReservationCancelled implements ShouldQueue
         FinancialLedgerService $financialLedgerService
     ): void {
         Log::info('ProcessReservationCancelled: handling', [
-            'reservation_id'  => $this->event->reservationId,
-            'tenant_id'       => $this->event->tenantId,
-            'ilan_id'         => $this->event->ilanId,
-            'dates_released'  => count($this->event->getDatesToRelease()),
-            'cancelled_by'   => $this->event->cancelledBy,
+            'reservation_id' => $this->event->reservationId,
+            'tenant_id' => $this->event->tenantId,
+            'ilan_id' => $this->event->ilanId,
+            'dates_released' => count($this->event->getDatesToRelease()),
+            'cancelled_by' => $this->event->cancelledBy,
         ]);
 
         // ── E02: Availability Outbound Sync (release) ───────────────────────
@@ -70,11 +70,12 @@ class ProcessReservationCancelled implements ShouldQueue
                 ->where('tenant_id', $this->event->tenantId)
                 ->first();
 
-            if (!$reservation) {
+            if (! $reservation) {
                 Log::warning('ProcessReservationCancelled: reservation not found for financial reversal', [
                     'reservation_id' => $this->event->reservationId,
-                    'tenant_id'      => $this->event->tenantId,
+                    'tenant_id' => $this->event->tenantId,
                 ]);
+
                 return;
             }
 
@@ -83,19 +84,25 @@ class ProcessReservationCancelled implements ShouldQueue
                 null
             );
 
-            // ── C3.2: Reverse owner payable accrual ───────────────────────────
-            // Reverses commission split and owner entitlement entries created
-            // by recordOwnerPayableAccrual(). Safe to call even if none exist.
-            $ledgerService->reverseOwnerPayableAccrual($reservation);
+            // ── C4.2: Reverse channel fee accrual ─────────────────────────────
+            // Reverses all three legs (channel fee, commission, owner payable)
+            // created by recordChannelFeeAccrual(). Idempotent: checks for existing
+            // reversal entries before writing. Atomic: outer transaction rollback.
+            //
+            // NOTE: reverseOwnerPayableAccrual (C3.2) is NOT called here.
+            // For OWNER_BORNE, C4.2 is the sole accrual authority and must be the
+            // sole reversal authority. For YALIHAN_BORNE, C4.2 reversal produces
+            // the same result as C3.2 reversal would have.
+            $ledgerService->reverseChannelFeeAccrual($reservation);
 
             Log::info('ProcessReservationCancelled: financial ledger reversal recorded', [
-                'reservation_id'       => $this->event->reservationId,
+                'reservation_id' => $this->event->reservationId,
                 'transaction_group_id' => $txGroupId,
             ]);
         } catch (\Throwable $e) {
             Log::error('ProcessReservationCancelled: financial reversal failed', [
                 'reservation_id' => $this->event->reservationId,
-                'error'          => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -117,13 +124,13 @@ class ProcessReservationCancelled implements ShouldQueue
 
             Log::info('ProcessReservationCancelled: availability release dispatched', [
                 'reservation_id' => $this->event->reservationId,
-                'success'       => $result->success,
+                'success' => $result->success,
                 'sync_record_id' => $result->metadata['sync_record_id'] ?? null,
             ]);
         } catch (\Throwable $e) {
             Log::error('ProcessReservationCancelled: availability release failed', [
                 'reservation_id' => $this->event->reservationId,
-                'error'         => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
             throw $e;
         }
@@ -133,9 +140,9 @@ class ProcessReservationCancelled implements ShouldQueue
     {
         Log::error('ProcessReservationCancelled: all retries exhausted', [
             'reservation_id' => $this->event->reservationId,
-            'tenant_id'      => $this->event->tenantId,
-            'ilan_id'        => $this->event->ilanId,
-            'error'         => $exception->getMessage(),
+            'tenant_id' => $this->event->tenantId,
+            'ilan_id' => $this->event->ilanId,
+            'error' => $exception->getMessage(),
         ]);
     }
 }

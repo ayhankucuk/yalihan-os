@@ -218,7 +218,7 @@ class PayoutReadinessService
 
             // Source is insufficient (PROPERTY_CONFIG or EXPLICIT_RULE) → BLOCKED
             // Only PROVIDER_REPORTED is sufficient for payout readiness
-            if ($sourceEnum !== null && !$sourceEnum->isSufficientForPayoutReadiness()) {
+            if ($sourceEnum !== null && ! $sourceEnum->isSufficientForPayoutReadiness()) {
                 return null;
             }
         }
@@ -249,6 +249,7 @@ class PayoutReadinessService
         $ledgerEntries = $this->getReservationLedgerEntries($reservation->id, $reservation->tenant_id ?? 0);
         $hasCommissionEntry = $ledgerEntries->contains(fn ($e) => str_contains($e['sebep'] ?? '', 'Komisyon Tahsili'));
         $hasOwnerEntry = $ledgerEntries->contains(fn ($e) => str_contains($e['sebep'] ?? '', 'Sahip Tahakkuk'));
+        $hasChannelFeeEntry = $this->hasChannelFeeLedgerEntry($reservation);
 
         $modelValue = $reservation->management_model_snapshot instanceof ManagementModel
             ? $reservation->management_model_snapshot->value
@@ -331,6 +332,7 @@ class PayoutReadinessService
             'is_ready' => $hasCommissionEntry || $hasOwnerEntry,
             'has_commission_ledger_entry' => $hasCommissionEntry,
             'has_owner_ledger_entry' => $hasOwnerEntry,
+            'has_channel_fee_ledger_entry' => $hasChannelFeeEntry,
             'is_legacy_null_snapshot' => false, // NULL snapshot already filtered
             'ledger_entry_count' => $ledgerEntries->count(),
 
@@ -369,6 +371,17 @@ class PayoutReadinessService
             }
         }
 
+        // C4.2: Ledger evidence gate
+        // If bearer requires channel fee (OWNER_BORNE/COMMISSION_SHARE),
+        // verified channel fee snapshot is NOT sufficient for payout.
+        // Canonical ledger evidence (TX1 entry) must exist.
+        $bearerRequiresChannelFee = $bearerEnum?->requiresChannelFeeKnown() ?? true;
+        $hasChannelFeeEntry = $this->hasChannelFeeLedgerEntry($reservation);
+
+        if ($bearerRequiresChannelFee && ! $hasChannelFeeEntry) {
+            return 'awaiting_channel_fee_accrual';
+        }
+
         if ($hasOwnerEntry) {
             return 'ready_for_payout';
         }
@@ -377,6 +390,20 @@ class PayoutReadinessService
         // this reservation IS payout-ready — it just hasn't been processed yet.
         // The absence of ledger entries is a processing lag, not a readiness blocker.
         return 'ready_for_payout';
+    }
+
+    /**
+     * C4.2: Check whether channel fee accrual ledger entry exists.
+     * Used by determineReadinessStatus() for payout readiness gate.
+     */
+    private function hasChannelFeeLedgerEntry(PropertyReservation $reservation): bool
+    {
+        return LedgerEntry::withoutGlobalScopes()
+            ->where('reference_type', PropertyReservation::class)
+            ->where('reference_id', $reservation->id)
+            ->where('tenant_id', $reservation->tenant_id ?? 0)
+            ->where('sebep', 'like', '%Kanal Komisyonu Tahakkuku%')
+            ->exists();
     }
 
     private function getStatusLabel(string $status): string
@@ -388,6 +415,7 @@ class PayoutReadinessService
             'awaiting_accrual' => 'Tahakkuk Bekliyor',
             'awaiting_channel_fee_amount' => 'Kanal Ücreti Bekleniyor',
             'awaiting_channel_fee_unknown' => 'Kanal Ücreti Kaynağı Bilinmiyor',
+            'awaiting_channel_fee_accrual' => 'Kanal Komisyonu Tahakkuku Bekleniyor (C4.2)',
             default => 'Bilinmeyen Durum',
         };
     }
@@ -445,6 +473,7 @@ class PayoutReadinessService
         if ($value === null) {
             return null;
         }
+
         return ChannelFeeBearer::tryFrom((string) $value);
     }
 
@@ -459,6 +488,7 @@ class PayoutReadinessService
         if ($value === null) {
             return null;
         }
+
         return ChannelFeeSource::tryFrom((string) $value);
     }
 
@@ -473,6 +503,7 @@ class PayoutReadinessService
         if ($value !== null) {
             return (string) $value === ChannelFeeSource::UNKNOWN->value;
         }
+
         return false;
     }
 
@@ -486,18 +517,18 @@ class PayoutReadinessService
      * Bearer null: default to OWNER_BORNE behavior → null if unknown.
      */
     private function computeOwnerEntitlementAfterChannel(
-        float   $grossAmount,
-        float   $commissionAmount,
-        ?float  $channelFeeAmount,
+        float $grossAmount,
+        float $commissionAmount,
+        ?float $channelFeeAmount,
         ?string $channelFeeBearer,
     ): ?float {
-        if ($channelFeeBearer === \App\Enums\ChannelFeeBearer::YALIHAN_BORNE->value) {
+        if ($channelFeeBearer === ChannelFeeBearer::YALIHAN_BORNE->value) {
             return $grossAmount - $commissionAmount;
         }
 
         if (in_array($channelFeeBearer, [
-            \App\Enums\ChannelFeeBearer::OWNER_BORNE->value,
-            \App\Enums\ChannelFeeBearer::COMMISSION_SHARE->value,
+            ChannelFeeBearer::OWNER_BORNE->value,
+            ChannelFeeBearer::COMMISSION_SHARE->value,
         ], true)) {
             return $channelFeeAmount !== null
                 ? $grossAmount - $channelFeeAmount - $commissionAmount

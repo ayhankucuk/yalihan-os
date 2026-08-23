@@ -2,7 +2,10 @@
 
 namespace App\Jobs\Reservation;
 
+use App\Enums\ChannelFeeBearer;
+use App\Enums\ChannelFeeSource;
 use App\Events\Reservation\ReservationCompletedEvent;
+use App\Events\Reservation\ReservationPayoutReadyEvent;
 use App\Models\PropertyReservation;
 use App\Services\FinancialLedgerService;
 use App\ValueObjects\TransactionStatus;
@@ -15,7 +18,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
 /**
- * ProcessFinancialCompletionJob — C1: Financial Completion + C2: Queue Safety
+ * ProcessFinancialCompletionJob — C1: Financial Completion + C2: Queue Safety + C4.2: Channel Fee Accrual
  *
  * Receives canonical ReservationCompletedEvent and transitions the reservation's
  * financial state to the canonical terminal state (CONFIRMED).
@@ -32,8 +35,9 @@ use Illuminate\Support\Facades\Log;
  *
  * Tenant isolation: all DB queries scope by tenantId carried in the event.
  *
- * Ledger integrity: this job does NOT create ledger entries.
- * It only transitions the financial state column (finansal_durum).
+ * Ledger integrity: all ledger entries are created through FinancialLedgerService.
+ * transitionToConfirmed() creates only the finansal_durum UPDATE.
+ * recordChannelFeeAccrual() (C4.2) creates all accrual double-entries.
  * No UPDATE, DELETE, or re-booking of existing ledger entries.
  *
  * Scope exclusion (C1): payout notification, bank transfer, reconciliation,
@@ -42,11 +46,12 @@ use Illuminate\Support\Facades\Log;
  * Baseline: 667c1b4 (C1), 33f9f50 (C2)
  * SAAB Decision: C1 + C2 Certification
  */
-class ProcessFinancialCompletionJob implements ShouldQueue, ShouldBeUnique
+class ProcessFinancialCompletionJob implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public array $backoff = [30, 60, 120];
 
     /**
@@ -83,11 +88,12 @@ class ProcessFinancialCompletionJob implements ShouldQueue, ShouldBeUnique
             ->where('tenant_id', $this->event->tenantId)
             ->first();
 
-        if (!$reservation) {
+        if (! $reservation) {
             Log::error('ProcessFinancialCompletionJob: reservation not found or tenant mismatch — skipping', [
                 'reservation_id' => $this->event->reservationId,
                 'tenant_id' => $this->event->tenantId,
             ]);
+
             return;
         }
 
@@ -101,6 +107,7 @@ class ProcessFinancialCompletionJob implements ShouldQueue, ShouldBeUnique
                 'tenant_id' => $this->event->tenantId,
                 'finansal_durum' => $reservation->finansal_durum,
             ]);
+
             return;
         }
 
@@ -115,6 +122,7 @@ class ProcessFinancialCompletionJob implements ShouldQueue, ShouldBeUnique
                 'reservation_id' => $this->event->reservationId,
                 'tenant_id' => $this->event->tenantId,
             ]);
+
             return;
         }
 
@@ -125,6 +133,7 @@ class ProcessFinancialCompletionJob implements ShouldQueue, ShouldBeUnique
                 'reservation_id' => $this->event->reservationId,
                 'tenant_id' => $this->event->tenantId,
             ]);
+
             return;
         }
 
@@ -135,12 +144,26 @@ class ProcessFinancialCompletionJob implements ShouldQueue, ShouldBeUnique
         try {
             $ledgerService->transitionToConfirmed($reservation->id);
 
-            // ── C3.2: Owner Payable Accrual ───────────────────────────────
-            // Called AFTER CONFIRMED transition. Safe: reservation is now in
-            // terminal financial state. Cancellation is no longer possible.
-            // Idempotent: recordOwnerPayableAccrual checks ledger entries
-            // by idempotency key before writing (no double-entry on replay).
-            $ledgerService->recordOwnerPayableAccrual($reservation);
+            // ── C4.2: Channel Fee Triple-Entry Accrual ────────────────────
+            // Replaces C3.2 (recordOwnerPayableAccrual) for OWNER_BORNE.
+            //
+            // OWNER_BORNE / COMMISSION_SHARE (channel fee required):
+            //   gross = verified_channel_fee + yalihan_commission + owner_payable
+            //   → TX1 (channel fee) + TX2 (commission) + TX3 (owner) all created here.
+            //   C4.1 Trust Gate: PROVIDER_REPORTED required, amount must not be null.
+            //
+            // YALIHAN_BORNE (no channel fee on owner):
+            //   gross = yalihan_commission + owner_payable
+            //   → Only TX2 (commission) + TX3 (owner); TX1 is a no-op (0 amount).
+            //   Identical economic outcome to C3.2 but within C4.2 atomic boundary.
+            //
+            // Idempotent: recordChannelFeeAccrual checks idempotency keys before writing.
+            // All three legs share one outer DB::transaction() — any failure → full rollback.
+            //
+            // NOTE: recordOwnerPayableAccrual (C3.2) is NOT called here.
+            // For OWNER_BORNE, C4.2 is the sole authoritative accrual.
+            // For YALIHAN_BORNE, C4.2 produces the same result as C3.2.
+            $ledgerService->recordChannelFeeAccrual($reservation);
 
             // ── C3.3: Payout Readiness event ─────────────────────────────
             // Signal that this reservation is now payout-ready for admin/operator review.
@@ -158,26 +181,48 @@ class ProcessFinancialCompletionJob implements ShouldQueue, ShouldBeUnique
                 $ilan = $reservation->ilan;
                 $ownerKisiId = $ilan?->ilan_sahibi_id ?? null;
                 $ownerName = $ilan?->ilanSahibi?->ad
-                    ? trim($ilan->ilanSahibi->ad . ' ' . ($ilan->ilanSahibi->soyad ?? ''))
+                    ? trim($ilan->ilanSahibi->ad.' '.($ilan->ilanSahibi->soyad ?? ''))
                     : null;
 
-                // C4.1: Channel fee fields from reservation snapshot
-                $channelFeeBearer = $reservation->channel_fee_bearer;
+                // C4.1: Channel fee fields from reservation snapshot.
+                // Model casts to enum. PHP 8 throws when ?? is applied to enum objects,
+                // so we must check instanceof FIRST before any ?? fallback.
+                $channelFeeBearerRaw = $reservation->channel_fee_bearer;
+                if ($channelFeeBearerRaw instanceof ChannelFeeBearer) {
+                    $channelFeeBearer = $channelFeeBearerRaw->value;
+                } elseif (is_string($channelFeeBearerRaw)) {
+                    $channelFeeBearer = $channelFeeBearerRaw;
+                } else {
+                    $channelFeeBearer = $channelFeeBearerRaw !== null ? (string) $channelFeeBearerRaw : '';
+                }
+                $channelFeeSourceRaw = $reservation->channel_fee_source;
+                if ($channelFeeSourceRaw instanceof ChannelFeeSource) {
+                    $channelFeeSource = $channelFeeSourceRaw->value;
+                } elseif (is_string($channelFeeSourceRaw)) {
+                    $channelFeeSource = $channelFeeSourceRaw;
+                } else {
+                    $channelFeeSource = $channelFeeSourceRaw !== null ? (string) $channelFeeSourceRaw : '';
+                }
                 $channelFeeAmount = $reservation->channel_fee_amount !== null
                     ? (float) $reservation->channel_fee_amount
                     : null;
 
-                event(\App\Events\Reservation\ReservationPayoutReadyEvent::fromReservation(
+                // C4.2: ownerEntitlement for event = gross - commission (the event
+                // will subtract channel fee internally via computeOwnerEntitlementAfterChannel)
+                $ownerEntitlementAfterChannel = $grossAmount - $commissionAmount
+                    - ($channelFeeBearerRaw?->requiresChannelFeeKnown() ? ($channelFeeAmount ?? 0) : 0);
+
+                event(ReservationPayoutReadyEvent::fromReservation(
                     $reservation,
                     $grossAmount,
                     $commissionAmount,
-                    $ownerEntitlement,
+                    $ownerEntitlementAfterChannel,
                     $ownerKisiId,
                     $ownerName,
                     $channelFeeAmount,
                     $reservation->channel_fee_currency,
                     $reservation->channel_fee_rate !== null ? (float) $reservation->channel_fee_rate : null,
-                    $reservation->channel_fee_source,
+                    $channelFeeSource,
                     $channelFeeBearer,
                     (bool) $reservation->channel_fee_is_verified,
                 ));

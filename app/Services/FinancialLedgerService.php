@@ -2,9 +2,17 @@
 
 namespace App\Services;
 
+use App\Enums\ChannelFeeBearer;
+use App\Enums\ChannelFeeSource;
+use App\Events\LedgerDoubleEntryRecorded;
+use App\Exceptions\Governance\AuthorityLeakageException;
 use App\Models\LedgerAccount;
+use App\Models\LedgerBalance;
 use App\Models\LedgerEntry;
 use App\Models\PropertyReservation;
+use App\ValueObjects\TransactionStatus;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -29,16 +37,16 @@ class FinancialLedgerService
     /**
      * ✅ SAB Phase 12: Core Atomic Reusable Double-Entry Function (Tenant Aware)
      *
-     * @param LedgerAccount $debitAccount  Paranın girdiği / borçlanan hesap
-     * @param LedgerAccount $creditAccount Paranın çıktığı / alacaklanan hesap
-     * @param float $amount İşlem tutarı
-     * @param string $currency İşlem para birimi
-     * @param string|null $referenceType İliskili model
-     * @param int|null $referenceId İlişkili ID
-     * @param string|null $sebep İşlem açıklaması
-     * @param int|null $userId Yapan kullanıcı
-     * @param string|null $idempotencyKey Tekrar önleme anahtarı
-     * @param int|null $tenantId Kiracı ID
+     * @param  LedgerAccount  $debitAccount  Paranın girdiği / borçlanan hesap
+     * @param  LedgerAccount  $creditAccount  Paranın çıktığı / alacaklanan hesap
+     * @param  float  $amount  İşlem tutarı
+     * @param  string  $currency  İşlem para birimi
+     * @param  string|null  $referenceType  İliskili model
+     * @param  int|null  $referenceId  İlişkili ID
+     * @param  string|null  $sebep  İşlem açıklaması
+     * @param  int|null  $userId  Yapan kullanıcı
+     * @param  string|null  $idempotencyKey  Tekrar önleme anahtarı
+     * @param  int|null  $tenantId  Kiracı ID
      * @return string transaction_group_id
      */
     public function recordDoubleEntry(
@@ -55,10 +63,10 @@ class FinancialLedgerService
     ): string {
         if (is_numeric($debitAccount) && is_numeric($creditAccount) && is_numeric($amount)) {
             // Old/Legacy signature: recordDoubleEntry($tenantId, $debitAccountId, $creditAccountId, $amount, $currency, $sebep)
-            $actualTenantId = (int)$debitAccount;
-            $actualDebitAccountId = (int)$creditAccount;
-            $actualCreditAccountId = (int)$amount;
-            $actualAmount = (float)$currency;
+            $actualTenantId = (int) $debitAccount;
+            $actualDebitAccountId = (int) $creditAccount;
+            $actualCreditAccountId = (int) $amount;
+            $actualAmount = (float) $currency;
             $actualCurrency = is_string($referenceType) ? $referenceType : 'TRY';
             $actualSebep = is_string($referenceId) ? $referenceId : null;
 
@@ -66,10 +74,10 @@ class FinancialLedgerService
             $resolvedDebit = LedgerAccount::where('tenant_id', $actualTenantId)
                 ->where('id', $actualDebitAccountId)
                 ->first();
-            if (!$resolvedDebit && $actualDebitAccountId === 1) {
+            if (! $resolvedDebit && $actualDebitAccountId === 1) {
                 $resolvedDebit = LedgerAccount::where('id', 1)->first();
             }
-            if (!$resolvedDebit) {
+            if (! $resolvedDebit) {
                 $resolvedDebit = LedgerAccount::create([
                     'id' => $actualDebitAccountId,
                     'tenant_id' => $actualTenantId,
@@ -83,10 +91,10 @@ class FinancialLedgerService
             $resolvedCredit = LedgerAccount::where('tenant_id', $actualTenantId)
                 ->where('id', $actualCreditAccountId)
                 ->first();
-            if (!$resolvedCredit && $actualCreditAccountId === 1) {
+            if (! $resolvedCredit && $actualCreditAccountId === 1) {
                 $resolvedCredit = LedgerAccount::where('id', 1)->first();
             }
-            if (!$resolvedCredit) {
+            if (! $resolvedCredit) {
                 $resolvedCredit = LedgerAccount::create([
                     'id' => $actualCreditAccountId,
                     'tenant_id' => $actualTenantId,
@@ -108,7 +116,7 @@ class FinancialLedgerService
         }
 
         if ($amount <= 0) {
-            throw new \InvalidArgumentException("Ledger işlem tutarı sıfırdan büyük olmalıdır.");
+            throw new \InvalidArgumentException('Ledger işlem tutarı sıfırdan büyük olmalıdır.');
         }
 
         // Resolve or verify tenant context
@@ -118,7 +126,7 @@ class FinancialLedgerService
 
         if ($debitTenant !== 0 && $creditTenant !== 0 && $debitTenant !== $creditTenant) {
             // Authority Rule: System accounts (ID 0 / null) can participate, but cross-tenant between two distinct tenants is forbidden.
-            throw new \App\Exceptions\Governance\AuthorityLeakageException("Cross-tenant financial transaction detected and blocked.");
+            throw new AuthorityLeakageException('Cross-tenant financial transaction detected and blocked.');
         }
 
         return DB::transaction(function () use (
@@ -149,49 +157,49 @@ class FinancialLedgerService
             // FX Kilit mekanizması
             $fxRate = $this->fxService->lockRate($currency);
             $baseAmountTRY = $currency === 'TRY' ? $amount : $this->fxService->convertToTRY($amount, $currency, $fxRate);
-            $sanitizedUserId = (!empty($userId) && $userId > 0) ? (int) $userId : null;
+            $sanitizedUserId = (! empty($userId) && $userId > 0) ? (int) $userId : null;
 
             // 1. Borç (Debit) Kaydı -> Giren Hesap
             $debitEntry = LedgerEntry::create([
-                'tenant_id'            => $resolvedTenantId,
+                'tenant_id' => $resolvedTenantId,
                 'transaction_group_id' => $transactionGroupId,
-                'account_id'           => $debitAccount->id,
-                'debit_amount'         => $amount,
-                'credit_amount'        => 0,
-                'currency'             => $currency,
-                'fx_rate_locked'       => $fxRate,
-                'base_amount'          => $baseAmountTRY,
-                'reference_type'       => $referenceType,
-                'reference_id'         => $referenceId,
-                'sebep'                => $sebep,
-                'kaynak'               => 'internal',
-                'created_by'           => $sanitizedUserId,
+                'account_id' => $debitAccount->id,
+                'debit_amount' => $amount,
+                'credit_amount' => 0,
+                'currency' => $currency,
+                'fx_rate_locked' => $fxRate,
+                'base_amount' => $baseAmountTRY,
+                'reference_type' => $referenceType,
+                'reference_id' => $referenceId,
+                'sebep' => $sebep,
+                'kaynak' => 'internal',
+                'created_by' => $sanitizedUserId,
             ]);
 
             // 2. Alacak (Credit) Kaydı -> Çıkan Hesap
             $creditEntry = LedgerEntry::create([
-                'tenant_id'            => $resolvedTenantId,
+                'tenant_id' => $resolvedTenantId,
                 'transaction_group_id' => $transactionGroupId,
-                'account_id'           => $creditAccount->id,
-                'debit_amount'         => 0,
-                'credit_amount'        => $amount,
-                'currency'             => $currency,
-                'fx_rate_locked'       => $fxRate,
-                'base_amount'          => $baseAmountTRY,
-                'reference_type'       => $referenceType,
-                'reference_id'         => $referenceId,
-                'sebep'                => $sebep,
-                'kaynak'               => 'internal',
-                'created_by'           => $sanitizedUserId,
+                'account_id' => $creditAccount->id,
+                'debit_amount' => 0,
+                'credit_amount' => $amount,
+                'currency' => $currency,
+                'fx_rate_locked' => $fxRate,
+                'base_amount' => $baseAmountTRY,
+                'reference_type' => $referenceType,
+                'reference_id' => $referenceId,
+                'sebep' => $sebep,
+                'kaynak' => 'internal',
+                'created_by' => $sanitizedUserId,
             ]);
 
             // Emit Event for CQRS Projection Sync and Analytics
-            event(new \App\Events\LedgerDoubleEntryRecorded($debitEntry, $creditEntry));
+            event(new LedgerDoubleEntryRecorded($debitEntry, $creditEntry));
 
             Log::info("Ledger Double-Entry Recorded [{$transactionGroupId}] for Tenant [{$resolvedTenantId}]", [
                 'debit_account' => $debitAccount->name,
                 'credit_account' => $creditAccount->name,
-                'amount' => "{$amount} {$currency}"
+                'amount' => "{$amount} {$currency}",
             ]);
 
             return $transactionGroupId;
@@ -202,17 +210,17 @@ class FinancialLedgerService
      * Record deposit payment (Double Entry: Kasa/Banka DB vs Depozito Yükümlülüğü CR)
      */
     public function recordDepositTransaction(
-        int    $propertyId,
-        int    $reservationId,
-        float  $depositAmountTRY,
+        int $propertyId,
+        int $reservationId,
+        float $depositAmountTRY,
         LedgerAccount $cashAccount,
         LedgerAccount $depositLiabilityAccount,
-        ?int   $createdBy = null
+        ?int $createdBy = null
     ): string {
         return DB::transaction(function () use ($reservationId, $depositAmountTRY, $cashAccount, $depositLiabilityAccount, $createdBy) {
             // Update reservation deposit state
             PropertyReservation::where('id', $reservationId)->update([
-                'depozito_durumu' => \App\ValueObjects\TransactionStatus::PAID,
+                'depozito_durumu' => TransactionStatus::PAID,
             ]);
 
             return $this->recordDoubleEntry(
@@ -233,17 +241,17 @@ class FinancialLedgerService
      * Record deposit refund (Double Entry: Depozito Yükümlülüğü DB vs Kasa CR)
      */
     public function recordDepositRefund(
-        int    $propertyId,
-        int    $reservationId,
-        float  $refundAmountTRY,
+        int $propertyId,
+        int $reservationId,
+        float $refundAmountTRY,
         LedgerAccount $cashAccount,
         LedgerAccount $depositLiabilityAccount,
         string $sebep = 'Depozito iadesi',
-        ?int   $createdBy = null
+        ?int $createdBy = null
     ): string {
         return DB::transaction(function () use ($reservationId, $refundAmountTRY, $cashAccount, $depositLiabilityAccount, $sebep, $createdBy) {
             PropertyReservation::where('id', $reservationId)->update([
-                'depozito_durumu' => \App\ValueObjects\TransactionStatus::REFUNDED,
+                'depozito_durumu' => TransactionStatus::REFUNDED,
             ]);
 
             return $this->recordDoubleEntry(
@@ -336,7 +344,7 @@ class FinancialLedgerService
 
             // Update reservation financial state
             $reservation->update([
-                'finansal_durum' => \App\ValueObjects\TransactionStatus::PENDING,
+                'finansal_durum' => TransactionStatus::PENDING,
             ]);
 
             return $txGroupId;
@@ -362,6 +370,7 @@ class FinancialLedgerService
 
             if ($initialEntries->isEmpty()) {
                 $this->transitionToCancelled($reservation->id);
+
                 return null;
             }
 
@@ -389,8 +398,9 @@ class FinancialLedgerService
                 ->where('name', 'Konaklama / Kira Gelirleri')
                 ->first();
 
-            if (!$receivableAccount || !$revenueAccount) {
+            if (! $receivableAccount || ! $revenueAccount) {
                 $this->transitionToCancelled($reservation->id);
+
                 return null;
             }
 
@@ -421,9 +431,391 @@ class FinancialLedgerService
     {
         DB::transaction(function () use ($reservationId) {
             PropertyReservation::where('id', $reservationId)->update([
-                'finansal_durum' => \App\ValueObjects\TransactionStatus::CANCELLED,
+                'finansal_durum' => TransactionStatus::CANCELLED,
             ]);
         });
+    }
+
+    /**
+     * C4.2: Channel Fee Triple-Entry Accrual
+     *
+     * Splits gross reservation revenue across three financial obligations:
+     *   TX1 — Kanal Komisyonu Yükümlülüğü  (channel fee → liability)
+     *   TX2 — Yalihan Komisyon Geliri       (management commission → revenue)
+     *   TX3 — Sahip Yükümlülüğü             (owner payable → liability)
+     *
+     * Canonical OWNER_BORNE formula (certified by SAAB C4.2):
+     *   gross = verified_channel_fee + yalihan_management_commission + owner_payable
+     *
+     * C4.1 Trust Gate (MANDATORY — SAAB C4.2 gate lock):
+     *   - OWNER_BORNE / COMMISSION_SHARE: channel_fee_source MUST be PROVIDER_REPORTED
+     *   - UNKNOWN / insufficient source   → throws → payout remains BLOCKED
+     *   - channel_fee_amount === null    → throws → payout remains BLOCKED
+     *   - YALIHAN_BORNE                  → channel fee is Yalihan's cost; bypassed
+     *
+     * Atomicity:
+     *   All three entries share one outer DB::transaction().
+     *   Any exception → full rollback → zero partial state.
+     *
+     * Idempotency keys (charter canonical):
+     *   owner_accrual_{reservationId}_{tenantId}_channel_fee
+     *   owner_accrual_{reservationId}_{tenantId}_commission
+     *   owner_accrual_{reservationId}_{tenantId}_owner
+     *
+     * @throws \RuntimeException C4.1 trust violation (source insufficient or UNKNOWN)
+     * @throws \RuntimeException C4.1 trust violation (amount null for bearer that requires it)
+     */
+    public function recordChannelFeeAccrual(PropertyReservation $reservation): void
+    {
+        $tenantId = (int) ($reservation->tenant_id ?? 1);
+        $grossAmount = (float) ($reservation->total_amount
+            ?? $reservation->islem_tutari
+            ?? $reservation->locked_nightly_rate * $reservation->nights
+            ?? 0);
+
+        if ($grossAmount <= 0) {
+            Log::warning('recordChannelFeeAccrual: zero gross for reservation #{$reservation->id} — skipping', [
+                'reservation_id' => $reservation->id,
+                'tenant_id' => $tenantId,
+            ]);
+
+            return;
+        }
+
+        $currency = $reservation->currency ?? $reservation->booking_currency ?? 'TRY';
+        $bearerRaw = $reservation->channel_fee_bearer;
+        $bearerEnum = $bearerRaw instanceof ChannelFeeBearer
+            ? $bearerRaw
+            : ($bearerRaw !== null ? ChannelFeeBearer::tryFrom($bearerRaw) : null);
+
+        $sourceRaw = $reservation->channel_fee_source;
+        $sourceEnum = $sourceRaw instanceof ChannelFeeSource
+            ? $sourceRaw
+            : ($sourceRaw !== null ? ChannelFeeSource::tryFrom($sourceRaw) : null);
+
+        $bearerRequiresChannelFee = $bearerEnum?->requiresChannelFeeKnown() ?? true;
+
+        if ($bearerRequiresChannelFee) {
+            // C4.1 Gate 1a: UNKNOWN or insufficient source → BLOCKED
+            if ($sourceEnum === null || ! $sourceEnum->isSufficientForPayoutReadiness()) {
+                $label = $sourceEnum?->label() ?? 'null';
+                $sourceValue = $sourceEnum?->value ?? 'null';
+                throw new \RuntimeException(
+                    "C4.2 Trust Gate: channel_fee_source [{$sourceValue}] {$label} is not sufficient for accrual. "
+                    .'PROVIDER_REPORTED required for OWNER_BORNE/COMMISSION_SHARE. '
+                    ."Payout remains BLOCKED. Reservation #{$reservation->id}."
+                );
+            }
+
+            // C4.1 Gate 1b: amount must not be null
+            if ($reservation->channel_fee_amount === null) {
+                throw new \RuntimeException(
+                    'C4.2 Trust Gate: channel_fee_amount is null. '
+                    .'Cannot compute owner payable without known channel fee. '
+                    ."Payout remains BLOCKED. Reservation #{$reservation->id}."
+                );
+            }
+        }
+
+        // ── Compute triple split ──────────────────────────────────────────────────
+        $channelFeeAmount = 0.0;
+        $commissionAmount = 0.0;
+        $ownerPayableAmount = 0.0;
+
+        if ($bearerRequiresChannelFee) {
+            $channelFeeAmount = (float) $reservation->channel_fee_amount;
+        }
+
+        $commissionRate = (float) ($reservation->commission_rate_snapshot ?? 0);
+        $commissionAmount = $grossAmount * $commissionRate;
+        $ownerPayableAmount = $grossAmount - $channelFeeAmount - $commissionAmount;
+
+        // ── Resolve accounts ──────────────────────────────────────────────────────
+        // TX1 target: Kanal Komisyonu Yükümlülükleri (#329 — canonical account)
+        $channelFeeLiabilityAccount = LedgerAccount::firstOrCreate(
+            ['name' => 'Kanal Komisyonu Yükümlülükleri Hesabı', 'tenant_id' => $tenantId],
+            ['tip' => 'yükümlülük', 'aktiflik_durumu' => true, 'display_order' => 35]
+        );
+
+        // TX2 target: Komisyon Gelirleri (Yalihan management commission — C3.2 pattern)
+        $commissionAccount = LedgerAccount::firstOrCreate(
+            ['name' => 'Komisyon Gelirleri Hesabı', 'tenant_id' => $tenantId],
+            ['tip' => 'gelir', 'aktiflik_durumu' => true, 'display_order' => 30]
+        );
+
+        // TX3 target: Sahip Yükümlülükleri (owner payable — C3.2 pattern)
+        $ownerPayableAccount = LedgerAccount::firstOrCreate(
+            ['name' => 'Sahip Yükümlülükleri Hesabı', 'tenant_id' => $tenantId],
+            ['tip' => 'yükümlülük', 'aktiflik_durumu' => true, 'display_order' => 40]
+        );
+
+        // Shared DR side: Konaklama / Kira Gelirleri (already CR'd by booking entry)
+        $revenueAccount = LedgerAccount::withoutGlobalScopes()
+            ->where('name', 'Konaklama / Kira Gelirleri')
+            ->first();
+
+        if (! $revenueAccount) {
+            throw new \RuntimeException(
+                "recordChannelFeeAccrual: 'Konaklama / Kira Gelirleri' account not found. "
+                .'Ensure recordReservationInitialBooking has been called. '
+                ."Reservation #{$reservation->id}."
+            );
+        }
+
+        $idempotencyKeyBase = "owner_accrual_{$reservation->id}_{$tenantId}";
+
+        // ── All-or-nothing: single outer transaction guarantees atomicity ─────────
+        DB::transaction(function () use (
+            $reservation, $tenantId, $channelFeeAmount,
+            $commissionAmount, $ownerPayableAmount, $currency,
+            $revenueAccount, $channelFeeLiabilityAccount,
+            $commissionAccount, $ownerPayableAccount,
+            $idempotencyKeyBase
+        ) {
+            // TX1: Channel fee accrual
+            // DR: Konaklama Gelirleri  |  CR: Kanal Komisyonu Yükümlülükleri
+            if ($channelFeeAmount > 0) {
+                $channelFeeKey = "{$idempotencyKeyBase}_channel_fee";
+                $this->recordDoubleEntry(
+                    debitAccount: $revenueAccount,
+                    creditAccount: $channelFeeLiabilityAccount,
+                    amount: $channelFeeAmount,
+                    currency: $currency,
+                    referenceType: PropertyReservation::class,
+                    referenceId: $reservation->id,
+                    sebep: "Kanal Komisyonu Tahakkuku #{$reservation->id}",
+                    idempotencyKey: $channelFeeKey,
+                    tenantId: $tenantId
+                );
+            }
+
+            // TX2: Management commission accrual
+            // DR: Konaklama Gelirleri  |  CR: Komisyon Gelirleri
+            if ($commissionAmount > 0) {
+                $commissionKey = "{$idempotencyKeyBase}_commission";
+                $this->recordDoubleEntry(
+                    debitAccount: $revenueAccount,
+                    creditAccount: $commissionAccount,
+                    amount: $commissionAmount,
+                    currency: $currency,
+                    referenceType: PropertyReservation::class,
+                    referenceId: $reservation->id,
+                    sebep: "Yalihan Komisyon Tahsili #{$reservation->id}",
+                    idempotencyKey: $commissionKey,
+                    tenantId: $tenantId
+                );
+            }
+
+            // TX3: Owner payable accrual
+            // DR: Konaklama Gelirleri  |  CR: Sahip Yükümlülükleri
+            if ($ownerPayableAmount > 0) {
+                $ownerKey = "{$idempotencyKeyBase}_owner";
+                $this->recordDoubleEntry(
+                    debitAccount: $revenueAccount,
+                    creditAccount: $ownerPayableAccount,
+                    amount: $ownerPayableAmount,
+                    currency: $currency,
+                    referenceType: PropertyReservation::class,
+                    referenceId: $reservation->id,
+                    sebep: "Sahip Tahakkuk #{$reservation->id}",
+                    idempotencyKey: $ownerKey,
+                    tenantId: $tenantId
+                );
+            }
+        });
+
+        Log::info('recordChannelFeeAccrual: applied', [
+            'reservation_id' => $reservation->id,
+            'tenant_id' => $tenantId,
+            'gross_amount' => $grossAmount,
+            'currency' => $currency,
+            'channel_fee_amount' => $channelFeeAmount,
+            'commission_amount' => $commissionAmount,
+            'owner_payable_amount' => $ownerPayableAmount,
+            'bearer' => $bearerRaw,
+            'source' => $sourceRaw,
+        ]);
+    }
+
+    /**
+     * C4.2: Reverse channel fee accrual on reservation cancellation.
+     *
+     * Creates inverse double-entries for all three accrual components:
+     *   - Channel fee liability reversal
+     *   - Commission revenue reversal
+     *   - Owner payable reversal
+     *
+     * Idempotent: checks for existing reversal entries before writing.
+     * Atomic: outer DB::transaction() guarantees all-or-nothing.
+     *
+     * Compatible with both OWNER_BORNE and YALIHAN_BORNE cancellation flows.
+     */
+    public function reverseChannelFeeAccrual(PropertyReservation $reservation): void
+    {
+        $tenantId = (int) ($reservation->tenant_id ?? 1);
+        $currency = $reservation->currency ?? $reservation->booking_currency ?? 'TRY';
+
+        $grossAmount = (float) ($reservation->total_amount
+            ?? $reservation->islem_tutari
+            ?? $reservation->locked_nightly_rate * $reservation->nights
+            ?? 0);
+
+        if ($grossAmount <= 0) {
+            return;
+        }
+
+        $bearerRaw = $reservation->channel_fee_bearer;
+        $bearerEnum = $bearerRaw instanceof ChannelFeeBearer
+            ? $bearerRaw
+            : ($bearerRaw !== null ? ChannelFeeBearer::tryFrom($bearerRaw) : null);
+
+        $bearerRequiresChannelFee = $bearerEnum?->requiresChannelFeeKnown() ?? true;
+        $channelFeeAmount = $bearerRequiresChannelFee ? (float) ($reservation->channel_fee_amount ?? 0) : 0.0;
+        $commissionAmount = $grossAmount * (float) ($reservation->commission_rate_snapshot ?? 0);
+        $ownerPayableAmount = $grossAmount - $channelFeeAmount - $commissionAmount;
+
+        // ── Resolve accounts ──────────────────────────────────────────────────────
+        $revenueAccount = LedgerAccount::withoutGlobalScopes()
+            ->where('name', 'Konaklama / Kira Gelirleri')
+            ->first();
+
+        if (! $revenueAccount) {
+            return; // Nothing to reverse without revenue account
+        }
+
+        $channelFeeLiabilityAccount = LedgerAccount::firstOrCreate(
+            ['name' => 'Kanal Komisyonu Yükümlülükleri Hesabı', 'tenant_id' => $tenantId],
+            ['tip' => 'yükümlülük', 'aktiflik_durumu' => true, 'display_order' => 35]
+        );
+
+        $commissionAccount = LedgerAccount::firstOrCreate(
+            ['name' => 'Komisyon Gelirleri Hesabı', 'tenant_id' => $tenantId],
+            ['tip' => 'gelir', 'aktiflik_durumu' => true, 'display_order' => 30]
+        );
+
+        $ownerPayableAccount = LedgerAccount::firstOrCreate(
+            ['name' => 'Sahip Yükümlülükleri Hesabı', 'tenant_id' => $tenantId],
+            ['tip' => 'yükümlülük', 'aktiflik_durumu' => true, 'display_order' => 40]
+        );
+
+        // ── Idempotency: check for existing reversal entries ─────────────────────
+        $idempotencyKeyBase = "owner_accrual_{$reservation->id}_{$tenantId}";
+
+        $alreadyReversed = LedgerEntry::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('reference_type', PropertyReservation::class)
+            ->where('reference_id', $reservation->id)
+            ->where('sebep', 'like', '%Kanal Komisyonu Tahakkuk İptal%')
+            ->exists();
+
+        if ($alreadyReversed) {
+            return;
+        }
+
+        DB::transaction(function () use (
+            $reservation, $tenantId, $channelFeeAmount,
+            $commissionAmount, $ownerPayableAmount, $currency,
+            $revenueAccount, $channelFeeLiabilityAccount,
+            $commissionAccount, $ownerPayableAccount,
+            $idempotencyKeyBase
+        ) {
+            // Reverse TX1: Channel fee liability
+            // CR: Konaklama Gelirleri  |  DR: Kanal Komisyonu Yükümlülükleri
+            if ($channelFeeAmount > 0) {
+                $channelFeeReversalKey = "{$idempotencyKeyBase}_channel_fee_reversal";
+                $this->recordDoubleEntry(
+                    debitAccount: $channelFeeLiabilityAccount,
+                    creditAccount: $revenueAccount,
+                    amount: $channelFeeAmount,
+                    currency: $currency,
+                    referenceType: PropertyReservation::class,
+                    referenceId: $reservation->id,
+                    sebep: "Kanal Komisyonu Tahakkuk İptal #{$reservation->id}",
+                    idempotencyKey: $channelFeeReversalKey,
+                    tenantId: $tenantId
+                );
+            }
+
+            // Reverse TX2: Commission revenue
+            // CR: Konaklama Gelirleri  |  DR: Komisyon Gelirleri
+            if ($commissionAmount > 0) {
+                $commissionReversalKey = "{$idempotencyKeyBase}_commission_reversal";
+                $this->recordDoubleEntry(
+                    debitAccount: $commissionAccount,
+                    creditAccount: $revenueAccount,
+                    amount: $commissionAmount,
+                    currency: $currency,
+                    referenceType: PropertyReservation::class,
+                    referenceId: $reservation->id,
+                    sebep: "Yalihan Komisyon İptal #{$reservation->id}",
+                    idempotencyKey: $commissionReversalKey,
+                    tenantId: $tenantId
+                );
+            }
+
+            // Reverse TX3: Owner payable
+            // CR: Konaklama Gelirleri  |  DR: Sahip Yükümlülükleri
+            if ($ownerPayableAmount > 0) {
+                $ownerReversalKey = "{$idempotencyKeyBase}_owner_reversal";
+                $this->recordDoubleEntry(
+                    debitAccount: $ownerPayableAccount,
+                    creditAccount: $revenueAccount,
+                    amount: $ownerPayableAmount,
+                    currency: $currency,
+                    referenceType: PropertyReservation::class,
+                    referenceId: $reservation->id,
+                    sebep: "Sahip Tahakkuk İptal #{$reservation->id}",
+                    idempotencyKey: $ownerReversalKey,
+                    tenantId: $tenantId
+                );
+            }
+        });
+
+        Log::info('reverseChannelFeeAccrual: reversal applied', [
+            'reservation_id' => $reservation->id,
+            'tenant_id' => $tenantId,
+            'channel_fee_amount' => $channelFeeAmount,
+            'commission_amount' => $commissionAmount,
+            'owner_payable_amount' => $ownerPayableAmount,
+        ]);
+    }
+
+    /**
+     * C4.2: Check whether channel fee accrual has been recorded for a reservation.
+     *
+     * Used by payout readiness to verify canonical ledger evidence exists.
+     * A reservation with verified channel_fee but no ledger accrual
+     * remains BLOCKED from payout (C4.2 Payout Readiness gate).
+     *
+     * @return bool true if at least one channel fee accrual entry exists
+     */
+    public function hasChannelFeeAccrual(PropertyReservation $reservation): bool
+    {
+        $tenantId = (int) ($reservation->tenant_id ?? 1);
+
+        return LedgerEntry::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('reference_type', PropertyReservation::class)
+            ->where('reference_id', $reservation->id)
+            ->where('sebep', 'like', '%Kanal Komisyonu Tahakkuku%')
+            ->exists();
+    }
+
+    /**
+     * C4.2: Check whether channel fee accrual has been reversed for a reservation.
+     *
+     * @return bool true if reversal entry exists
+     */
+    public function hasChannelFeeReversal(PropertyReservation $reservation): bool
+    {
+        $tenantId = (int) ($reservation->tenant_id ?? 1);
+
+        return LedgerEntry::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('reference_type', PropertyReservation::class)
+            ->where('reference_id', $reservation->id)
+            ->where('sebep', 'like', '%Kanal Komisyonu Tahakkuk İptal%')
+            ->exists();
     }
 
     /**
@@ -433,7 +825,7 @@ class FinancialLedgerService
     {
         DB::transaction(function () use ($reservationId) {
             PropertyReservation::where('id', $reservationId)->update([
-                'finansal_durum' => \App\ValueObjects\TransactionStatus::CONFIRMED,
+                'finansal_durum' => TransactionStatus::CONFIRMED,
             ]);
         });
     }
@@ -466,6 +858,7 @@ class FinancialLedgerService
                 'reservation_id' => $reservation->id,
                 'tenant_id' => $tenantId,
             ]);
+
             return;
         }
 
@@ -482,6 +875,7 @@ class FinancialLedgerService
                 'reservation_id' => $reservation->id,
                 'tenant_id' => $tenantId,
             ]);
+
             return;
         }
 
@@ -512,10 +906,10 @@ class FinancialLedgerService
             ->where('name', 'Konaklama / Kira Gelirleri')
             ->first();
 
-        if (!$revenueAccount) {
+        if (! $revenueAccount) {
             throw new \RuntimeException(
                 "recordOwnerPayableAccrual: 'Konaklama / Kira Gelirleri' account not found. "
-                . "Ensure recordReservationInitialBooking has been called for reservation #{$reservation->id}."
+                ."Ensure recordReservationInitialBooking has been called for reservation #{$reservation->id}."
             );
         }
 
@@ -654,7 +1048,7 @@ class FinancialLedgerService
     /**
      * Get all transactions for a reservation using morph relationship.
      */
-    public function getReservationLedger(int $reservationId): \Illuminate\Support\Collection
+    public function getReservationLedger(int $reservationId): Collection
     {
         return LedgerEntry::where('reference_type', PropertyReservation::class)
             ->where('reference_id', $reservationId)
@@ -672,8 +1066,8 @@ class FinancialLedgerService
         $cacheKey = "ledger_balance:{$accountId}:{$currency}";
 
         // Feature: CQRS Read-Model Caching
-        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
-            return (float) \Illuminate\Support\Facades\Cache::get($cacheKey);
+        if (Cache::has($cacheKey)) {
+            return (float) Cache::get($cacheKey);
         }
 
         $balance = DB::transaction(function () use ($accountId, $currency) {
@@ -681,7 +1075,7 @@ class FinancialLedgerService
             $account = LedgerAccount::where('id', $accountId)->lockForUpdate()->firstOrFail();
             // Optimization (Read Model): Use Materialized LedgerBalance instead of views
             // This complies with SAB Concurrency & CQRS Read Model guidelines.
-            $projection = \App\Models\LedgerBalance::where('account_id', $accountId)
+            $projection = LedgerBalance::where('account_id', $accountId)
                 ->where('tenant_id', $account->tenant_id)
                 ->where('currency', $currency)
                 ->first();
@@ -690,7 +1084,7 @@ class FinancialLedgerService
         });
 
         // Store forever, it will be invalidated by the UpdateLedgerBalanceProjection Listener
-        \Illuminate\Support\Facades\Cache::forever($cacheKey, $balance);
+        Cache::forever($cacheKey, $balance);
 
         return $balance;
     }
@@ -698,9 +1092,9 @@ class FinancialLedgerService
     /**
      * ✅ SAB Architecture: Get full balance projection for an account.
      */
-    public function getProjection(int $accountId, string $currency = 'TRY'): ?\App\Models\LedgerBalance
+    public function getProjection(int $accountId, string $currency = 'TRY'): ?LedgerBalance
     {
-        return \App\Models\LedgerBalance::where('account_id', $accountId)
+        return LedgerBalance::where('account_id', $accountId)
             ->where('currency', $currency)
             ->first();
     }
@@ -719,7 +1113,7 @@ class FinancialLedgerService
      * ✅ SAB Architecture: Get all accounts with their balances using eager loading.
      * Prevents N+1 query violations in controllers.
      */
-    public function getAccountsWithBalances(): \Illuminate\Support\Collection
+    public function getAccountsWithBalances(): Collection
     {
         return LedgerAccount::with('balances')
             ->where('aktiflik_durumu', true)
@@ -730,7 +1124,7 @@ class FinancialLedgerService
     /**
      * ✅ Thin Controller compliance: Move data shaping logic to service.
      */
-    public function getAccountsSummary(): \Illuminate\Support\Collection
+    public function getAccountsSummary(): Collection
     {
         return $this->getAccountsWithBalances()->map(function ($account) {
             return [
@@ -751,7 +1145,7 @@ class FinancialLedgerService
     /**
      * ✅ Thin Controller compliance: Format projection data for response.
      */
-    public function formatBalanceProjection(LedgerAccount $account, string $currency, ?\App\Models\LedgerBalance $projection): array
+    public function formatBalanceProjection(LedgerAccount $account, string $currency, ?LedgerBalance $projection): array
     {
         return [
             'account_id' => $account->id,
@@ -765,4 +1159,3 @@ class FinancialLedgerService
         ];
     }
 }
-

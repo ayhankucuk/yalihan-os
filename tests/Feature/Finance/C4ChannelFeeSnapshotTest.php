@@ -5,11 +5,8 @@ namespace Tests\Feature\Finance;
 use App\Enums\ChannelFeeBearer;
 use App\Enums\ChannelFeeSource;
 use App\Enums\ManagementModel;
-use App\Enums\ReservationState;
-use App\Events\Reservation\ReservationCompletedEvent;
-use App\Jobs\Reservation\ProcessFinancialCompletionJob;
 use App\Models\Ilan;
-use App\Models\LedgerEntry;
+use App\Models\LedgerAccount;
 use App\Models\PropertyReservation;
 use App\Models\User;
 use App\Services\Finance\PayoutReadinessService;
@@ -52,8 +49,11 @@ class C4ChannelFeeSnapshotTest extends TestCase
     use RefreshDatabase;
 
     protected ReservationService $reservationService;
+
     protected FinancialLedgerService $ledgerService;
+
     protected User $user;
+
     protected Ilan $ilan;
 
     protected function setUp(): void
@@ -65,10 +65,10 @@ class C4ChannelFeeSnapshotTest extends TestCase
         $this->user = User::factory()->create();
 
         $this->ilan = Ilan::factory()->create([
-            'rental_enabled'  => true,
+            'rental_enabled' => true,
             'min_stay_nights' => 1,
-            'fiyat'          => 5000.00,
-            'para_birimi'    => 'TRY',
+            'fiyat' => 5000.00,
+            'para_birimi' => 'TRY',
             'management_model' => ManagementModel::FULL_MANAGEMENT,
         ]);
     }
@@ -81,6 +81,10 @@ class C4ChannelFeeSnapshotTest extends TestCase
      * Note: processCompletion() is NOT called because it requires ledger accounts
      * to exist. C4.1 tests focus on the service-level channel fee gating logic,
      * not ledger entry creation (which is covered by C3.2 tests).
+     *
+     * C4.2 UPDATE: When channel fee is sufficient (PROVIDER_REPORTED + amount not null),
+     * recordChannelFeeAccrual is called to create the required ledger entries.
+     * PayoutReadinessService now requires ledger evidence per C4.2 gate lock.
      */
     private function createReservationWithChannelFee(
         ?float $channelFeeAmount,
@@ -91,10 +95,10 @@ class C4ChannelFeeSnapshotTest extends TestCase
     ): PropertyReservation {
         // Create ilan with rental_enabled=true so ReservationService accepts it
         $ilan = Ilan::factory()->create([
-            'rental_enabled'  => true,
+            'rental_enabled' => true,
             'min_stay_nights' => 1,
-            'fiyat'          => 5000.00,
-            'para_birimi'    => 'TRY',
+            'fiyat' => 5000.00,
+            'para_birimi' => 'TRY',
             'management_model' => ManagementModel::FULL_MANAGEMENT,
         ]);
         $ilan->tenant_id = 1;
@@ -109,11 +113,20 @@ class C4ChannelFeeSnapshotTest extends TestCase
             $this->user->id
         );
 
+        // Commission rate snapshot: FULL_MANAGEMENT = 0.1500
+        $snapshotRate = match (true) {
+            $ilan->custom_commission_rate !== null => (float) $ilan->custom_commission_rate,
+            $ilan->management_model === ManagementModel::FULL_MANAGEMENT => 0.1500,
+            $ilan->management_model === ManagementModel::CHECKIN_CHECKOUT => 0.1000,
+            default => 0.0000,
+        };
+
         // Mark as CONFIRMED (finansal_durum) for payout readiness
         $reservation->update([
             'finansal_durum' => TransactionStatus::CONFIRMED,
             'completed_at' => now(),
             'checked_out_at' => now(),
+            'commission_rate_snapshot' => $snapshotRate,
             'channel_fee_amount' => $channelFeeAmount,
             'channel_fee_currency' => 'TRY',
             'channel_fee_rate' => $channelFeeAmount !== null ? $channelFeeAmount / $gross : null,
@@ -123,7 +136,33 @@ class C4ChannelFeeSnapshotTest extends TestCase
             'channel_fee_captured_at' => $channelFeeVerified ? now() : null,
         ]);
 
-        return $reservation->fresh();
+        $reservation->refresh();
+
+        // C4.2: When channel fee is sufficient, record ledger accrual entries.
+        // PayoutReadinessService now requires ledger evidence as the payout readiness gate.
+        $bearerRequiresChannelFee = ($channelFeeBearer === ChannelFeeBearer::OWNER_BORNE->value
+            || $channelFeeBearer === ChannelFeeBearer::COMMISSION_SHARE->value);
+        $sourceIsSufficient = in_array($channelFeeSource, [
+            ChannelFeeSource::PROVIDER_REPORTED->value,
+        ], true);
+        $amountIsKnown = $channelFeeAmount !== null && $bearerRequiresChannelFee;
+
+        if ($bearerRequiresChannelFee && $sourceIsSufficient && $amountIsKnown) {
+            // recordChannelFeeAccrual requires Konaklama / Kira Gelirleri account.
+            // Create it if not exists (it is created by recordReservationInitialBooking).
+            LedgerAccount::firstOrCreate(
+                ['name' => 'Konaklama / Kira Gelirleri'],
+                ['tip' => 'gelir', 'aktiflik_durumu' => true, 'display_order' => 20, 'currency' => 'TRY']
+            );
+
+            try {
+                $this->ledgerService->recordChannelFeeAccrual($reservation);
+            } catch (\Throwable $e) {
+                $this->fail("recordChannelFeeAccrual failed: {$e->getMessage()}");
+            }
+        }
+
+        return $reservation;
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -139,7 +178,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
             true
         );
 
-        $service = new PayoutReadinessService();
+        $service = new PayoutReadinessService;
         $result = $service->getPayoutReadyReservations(1);
 
         $this->assertNotEmpty($result, 'Provider reported OWNER_BORNE should be payout ready');
@@ -162,7 +201,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
             true
         );
 
-        $service = new PayoutReadinessService();
+        $service = new PayoutReadinessService;
         $result = $service->getPayoutReadyReservations(1);
 
         $this->assertNotEmpty($result);
@@ -189,7 +228,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
             ChannelFeeBearer::OWNER_BORNE->value
         );
 
-        $service = new PayoutReadinessService();
+        $service = new PayoutReadinessService;
         $result = $service->getPayoutReadyReservations(1);
 
         $this->assertEmpty($result, 'UNKNOWN source should BLOCK payout readiness');
@@ -203,7 +242,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
             ChannelFeeBearer::OWNER_BORNE->value
         );
 
-        $service = new PayoutReadinessService();
+        $service = new PayoutReadinessService;
         $result = $service->getPayoutReadyReservations(1);
 
         $this->assertEmpty($result, 'OWNER_BORNE without amount should BLOCK payout');
@@ -218,7 +257,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
             false
         );
 
-        $service = new PayoutReadinessService();
+        $service = new PayoutReadinessService;
         $result = $service->getPayoutReadyReservations(1);
 
         $this->assertEmpty($result, 'PROPERTY_CONFIG should block payout until C5 reconciliation');
@@ -233,7 +272,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
             false
         );
 
-        $service = new PayoutReadinessService();
+        $service = new PayoutReadinessService;
         $result = $service->getPayoutReadyReservations(1);
 
         $this->assertEmpty($result, 'EXPLICIT_RULE should block payout until reconciled');
@@ -248,7 +287,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
             true
         );
 
-        $service = new PayoutReadinessService();
+        $service = new PayoutReadinessService;
         $result = $service->getPayoutReadyReservations(1);
 
         $this->assertNotEmpty($result);
@@ -268,7 +307,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
             ChannelFeeBearer::YALIHAN_BORNE->value
         );
 
-        $service = new PayoutReadinessService();
+        $service = new PayoutReadinessService;
         $result = $service->getPayoutReadyReservations(1);
 
         $this->assertNotEmpty($result, 'YALIHAN_BORNE should be payout ready even without channel fee');
@@ -289,7 +328,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
             true
         );
 
-        $service = new PayoutReadinessService();
+        $service = new PayoutReadinessService;
         $result = $service->getPayoutReadyReservations(1);
 
         $this->assertNotEmpty($result);
@@ -313,7 +352,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
             true
         );
 
-        $service = new PayoutReadinessService();
+        $service = new PayoutReadinessService;
         $result = $service->getPayoutReadyReservations(1);
 
         $this->assertNotEmpty($result);
@@ -329,7 +368,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
             ChannelFeeBearer::COMMISSION_SHARE->value
         );
 
-        $service = new PayoutReadinessService();
+        $service = new PayoutReadinessService;
         $result = $service->getPayoutReadyReservations(1);
 
         $this->assertEmpty($result, 'COMMISSION_SHARE without channel fee should be blocked');
@@ -348,7 +387,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
         );
 
         // Directly call buildReadinessState via reflection to verify it returns null
-        $service = new PayoutReadinessService();
+        $service = new PayoutReadinessService;
         $reflMethod = new \ReflectionMethod($service, 'buildReadinessState');
         $reflMethod->setAccessible(true);
         $state = $reflMethod->invoke($service, $reservation);
@@ -369,7 +408,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
             ChannelFeeBearer::YALIHAN_BORNE->value
         );
 
-        $service = new PayoutReadinessService();
+        $service = new PayoutReadinessService;
         $awaiting = $service->getAwaitingChannelFeeReconciliation(1);
 
         $this->assertEmpty($awaiting, 'YALIHAN_BORNE should not appear in awaiting list');
@@ -385,7 +424,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
         );
 
         // Directly verify buildReadinessState returns ready status
-        $service = new PayoutReadinessService();
+        $service = new PayoutReadinessService;
         $reflMethod = new \ReflectionMethod($service, 'buildReadinessState');
         $reflMethod->setAccessible(true);
         $directState = $reflMethod->invoke($service, $reservation);
@@ -424,7 +463,7 @@ class C4ChannelFeeSnapshotTest extends TestCase
             'channel_fee_bearer' => null,
         ]);
 
-        $service = new PayoutReadinessService();
+        $service = new PayoutReadinessService;
         $result = $service->getPayoutReadyReservations(1);
 
         $this->assertEmpty($result, 'Null bearer should default to requiring channel fee');
