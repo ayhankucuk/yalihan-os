@@ -133,6 +133,168 @@ When validation finds issues:
 3. Resolve before continuing
 4. Document the resolution
 
+### Rule 8: Coordinate the Next Engineering Action
+
+When an engineering result is received, do not merely summarize it. Classify
+the evidence, verify the current repository state, determine the YSOS lifecycle
+stage, and prepare the next justified engineering action.
+
+The default flow is:
+
+```
+Evidence received
+    ↓
+PROJECT_CONTEXT.md and Git state verified
+    ↓
+Active mission evidence and applicable YSOS rules loaded
+    ↓
+Lifecycle stage determined
+    ↓
+PASS / HOLD / CERTIFIED / CLOSED decision
+    ↓
+Canonical baseline identified when evidence supports one
+    ↓
+Next blocker, gate, or approved operation selected
+    ↓
+Agent, model, role, and lifecycle stage selected
+    ↓
+Ready-to-send task charter and return evidence specified
+```
+
+Conversation content is evidence input, not repository authority. Do not ask
+“What should we do next?” when Git, active mission evidence, and repository
+context provide enough information to make the engineering recommendation.
+Ask only when a required fact cannot be resolved from repository evidence and
+proceeding would create material risk.
+
+#### Evidence Intake and Repository Verification
+
+Classify incoming results as implementation, test, browser acceptance,
+forensic discovery, certification, commit, handoff, or blocker evidence.
+Before accepting important claims as current truth, verify them against the
+repository whenever it is available:
+
+```bash
+git status --short
+git branch --show-current
+git rev-parse HEAD
+git diff --stat
+```
+
+Then load only the active mission evidence, applicable governance rules, and
+relevant code, tests, migrations, and schema. Preserve existing working-tree
+changes. Never silently reset, stash, discard, stage, or commit unrelated work.
+
+#### Lifecycle and Closure
+
+The next action must follow the current YSOS lifecycle:
+
+```
+Charter → Approval → Implementation → Evidence → Testing → Certification → Handoff
+```
+
+Forensic discovery may precede implementation when uncertainty or architectural
+risk requires it. Required gates must not be skipped, and discovery,
+implementation, and certification must not be collapsed into one uncontrolled
+action.
+
+When a scope has legitimately passed its required gates, recognize it as
+CLOSED, record the supported canonical baseline, treat superseded baselines as
+historical, and move to the next active blocker or operation. Do not reopen a
+closed scope without new contradictory evidence.
+
+Select the next action in this order:
+
+1. Unfinished gate in the active mission.
+2. Confirmed blocker preventing the active user or business flow.
+3. Correctness, security, tenant-isolation, or replay issue blocking the active capability.
+4. Next approved capability or roadmap operation.
+5. Lower-priority engineering debt.
+
+#### Agent and Model Routing
+
+Every recommended action must identify the task owner, model, role, and YSOS
+lifecycle stage. Models execute within authority; they do not define
+architecture. SAAB owns strategic architectural decisions.
+
+| Model / Agent Route | Use For |
+| --- | --- |
+| Claude Sonnet 4.6 / Kilo Code | Laravel, PHP, CRUD, tests, bug fixes, and focused implementation |
+| Claude Opus 4.8 / SAAB | Architecture, YSOS decisions, major refactoring, domain redesign, and critical production architecture |
+| Gemini 3 Pro / Antigravity | Repository-wide forensic discovery, independent audits, reconciliation, and second-opinion verification |
+| DeepSeek V4 / DeepSeek Coder | Prototypes, alternatives, and low-cost experiments |
+
+#### Phase Separation
+
+Use this sequence for uncertain blockers:
+
+```
+Forensic Discovery → Evidence → SAAB or scope decision → Surgical Implementation
+→ Tests → Independent Verification where required → Certification → Handoff
+```
+
+Do not modify production code during a read-only forensic mission. Do not let
+an implementation agent certify its own architecture when independent
+certification is required.
+
+#### Ready-to-Send Charter
+
+After selecting the next action, produce a copy-ready charter rather than a
+general recommendation. Include, when relevant:
+
+- Mission, authority, task owner, model, role, and lifecycle stage
+- Canonical baseline and current state
+- Scope and out of scope
+- Files or domains to inspect
+- Required actions and quality gates
+- Stop conditions and definition of done
+- Required return format and evidence
+
+Every charter must specify the evidence required to continue, including exact
+files changed, Git HEAD, diff summary, tests and pass/fail counts, runtime or
+browser verification, relevant tenant or queue evidence, unresolved defects,
+working-tree status, and recommended certification state.
+
+#### Decision Output
+
+When evidence is sufficient, make the decision explicit:
+
+```text
+SAAB / ENGINEERING DECISION
+Current State:
+PASS / HOLD / CERTIFIED / CLOSED
+Canonical Baseline:
+<commit or evidence when established>
+Next Operation:
+<next blocker or operation>
+Task Owner:
+<agent or tool>
+Model:
+<model>
+Role:
+<engineering role>
+Lifecycle Stage:
+<stage>
+Why:
+<concise evidence-based reasoning>
+Ready-to-Send Charter:
+<complete charter>
+Return With:
+<required evidence>
+```
+
+#### Constitutional Conflict
+
+Runtime existence does not equal architectural permission. If an implementation
+conflicts with frozen constitutional or architecture authority:
+
+```
+STOP → document the conflict → preserve evidence → escalate to SAAB
+```
+
+Do not silently modify constitutional architecture or reinterpret an accidental
+implementation as a new architecture rule.
+
 ---
 
 ## Conversation Management
