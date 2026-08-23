@@ -161,6 +161,12 @@ class ProcessFinancialCompletionJob implements ShouldQueue, ShouldBeUnique
                     ? trim($ilan->ilanSahibi->ad . ' ' . ($ilan->ilanSahibi->soyad ?? ''))
                     : null;
 
+                // C4.1: Channel fee fields from reservation snapshot
+                $channelFeeBearer = $reservation->channel_fee_bearer;
+                $channelFeeAmount = $reservation->channel_fee_amount !== null
+                    ? (float) $reservation->channel_fee_amount
+                    : null;
+
                 event(\App\Events\Reservation\ReservationPayoutReadyEvent::fromReservation(
                     $reservation,
                     $grossAmount,
@@ -168,6 +174,12 @@ class ProcessFinancialCompletionJob implements ShouldQueue, ShouldBeUnique
                     $ownerEntitlement,
                     $ownerKisiId,
                     $ownerName,
+                    $channelFeeAmount,
+                    $reservation->channel_fee_currency,
+                    $reservation->channel_fee_rate !== null ? (float) $reservation->channel_fee_rate : null,
+                    $reservation->channel_fee_source,
+                    $channelFeeBearer,
+                    (bool) $reservation->channel_fee_is_verified,
                 ));
             }
 

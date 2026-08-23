@@ -61,6 +61,14 @@ class PropertyReservation extends BaseModel
         // C3.1: Management Agreement Snapshot (immutable at booking time)
         'management_model_snapshot',
         'commission_rate_snapshot',
+        // C4.1: Channel Fee Snapshot (OWNER_BORNE model)
+        'channel_fee_amount',
+        'channel_fee_currency',
+        'channel_fee_rate',
+        'channel_fee_source',
+        'channel_fee_bearer',
+        'channel_fee_captured_at',
+        'channel_fee_is_verified',
     ];
 
     protected $casts = [
@@ -86,6 +94,13 @@ class PropertyReservation extends BaseModel
         // C3.1: Management Agreement Snapshot
         'management_model_snapshot' => \App\Enums\ManagementModel::class,
         'commission_rate_snapshot' => 'float',          // DECIMAL(5,4) → float (fraction, e.g. 0.1500)
+        // C4.1: Channel Fee Snapshot
+        'channel_fee_amount'        => 'decimal:4',
+        'channel_fee_rate'         => 'float',           // DECIMAL(7,6) → float (fraction, e.g. 0.1500)
+        'channel_fee_captured_at'  => 'datetime',
+        'channel_fee_is_verified'  => 'boolean',
+        'channel_fee_bearer'       => \App\Enums\ChannelFeeBearer::class,
+        'channel_fee_source'       => \App\Enums\ChannelFeeSource::class,
     ];
 
     public function ilan(): BelongsTo

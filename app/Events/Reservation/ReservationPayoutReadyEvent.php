@@ -45,6 +45,7 @@ final readonly class ReservationPayoutReadyEvent
         public string  $currency,
         public float   $lockedFxRate,
         public float   $commissionAmount,
+        // ownerEntitlement: C3.2 value (gross - yalihan_commission) — for ledger accrual
         public float   $ownerEntitlement,
         public string  $managementModelSnapshot,
         public float   $commissionRateSnapshot,
@@ -57,10 +58,28 @@ final readonly class ReservationPayoutReadyEvent
         // Ilan info
         public string  $ilanBaslik,
         public ?string $ilanSlug,
+        // C4.1: Channel Fee Snapshot
+        public ?float  $channelFeeAmount,
+        public ?string $channelFeeCurrency,
+        public ?float  $channelFeeRate,
+        public ?string $channelFeeSource,
+        public ?string $channelFeeBearer,
+        public bool    $channelFeeIsVerified,
+        // C4.1: ownerEntitlementAfterChannel = gross - channelFee - yalihanComm
+        // null means channel fee unknown (payout blocked until reconciled)
+        public ?float  $ownerEntitlementAfterChannel,
     ) {}
 
     /**
      * Factory from model + computed financial fields.
+     *
+     * C4.1 Invariant 1:
+     *   ownerEntitlementAfterChannel = grossAmount - channelFeeAmount - commissionAmount
+     *   For OWNER_BORNE model.
+     *
+     * C4.1 Invariant 2:
+     *   If channel fee source is UNKNOWN or bearer requires fee but fee is unknown:
+     *   ownerEntitlementAfterChannel = null → payout readiness BLOCKED
      */
     public static function fromReservation(
         PropertyReservation $reservation,
@@ -69,8 +88,23 @@ final readonly class ReservationPayoutReadyEvent
         float   $ownerEntitlement,
         ?int    $ownerKisiId = null,
         ?string $ownerName = null,
+        ?float  $channelFeeAmount = null,
+        ?string $channelFeeCurrency = null,
+        ?float  $channelFeeRate = null,
+        ?string $channelFeeSource = null,
+        ?string $channelFeeBearer = null,
+        bool    $channelFeeIsVerified = false,
     ): self {
         $ilan = $reservation->ilan;
+
+        // C4.1 Invariant 1: compute ownerEntitlementAfterChannel
+        // Only if channel fee is known and bearer requires it (OWNER_BORNE, COMMISSION_SHARE)
+        $ownerEntitlementAfterChannel = self::computeOwnerEntitlementAfterChannel(
+            $grossAmount,
+            $commissionAmount,
+            $channelFeeAmount,
+            $channelFeeBearer,
+        );
 
         return new self(
             reservationId:          $reservation->id,
@@ -86,7 +120,7 @@ final readonly class ReservationPayoutReadyEvent
             guestName:            $reservation->guest_name,
             guestEmail:           $reservation->guest_email,
             guestPhone:          $reservation->guest_phone,
-            guestCount:          $reservation->guest_count,
+            guestCount:          $reservation->guest_count ?? 0,
             grossAmount:         $grossAmount,
             currency:            $reservation->currency ?? 'TRY',
             lockedFxRate:        (float) ($reservation->booking_fx_rate ?? 1.0),
@@ -101,7 +135,55 @@ final readonly class ReservationPayoutReadyEvent
             ownerName:            $ownerName,
             ilanBaslik:          $ilan?->baslik ?? 'Bilinmeyen İlan',
             ilanSlug:            $ilan?->slug,
+            // C4.1: Channel Fee Snapshot
+            channelFeeAmount:       $channelFeeAmount,
+            channelFeeCurrency:    $channelFeeCurrency,
+            channelFeeRate:        $channelFeeRate,
+            channelFeeSource:      $channelFeeSource,
+            channelFeeBearer:      $channelFeeBearer,
+            channelFeeIsVerified:  $channelFeeIsVerified,
+            // C4.1: Derived
+            ownerEntitlementAfterChannel: $ownerEntitlementAfterChannel,
         );
+    }
+
+    /**
+     * C4.1 Invariant 1 & 2 implementation.
+     *
+     * Returns ownerEntitlementAfterChannel = gross - channelFee - yalihanCommission
+     * For OWNER_BORNE model.
+     *
+     * Returns null if:
+     *   - channel fee amount is null (Invariant 2: UNKNOWN → BLOCK payout)
+     *   - bearer is YALIHAN_BORNE (channel fee is Yalihan's cost, not deducted from owner)
+     *
+     * C4.1 Invariant 2:
+     *   UNKNOWN channel fee → null → payout readiness BLOCKED
+     */
+    private static function computeOwnerEntitlementAfterChannel(
+        float   $grossAmount,
+        float   $commissionAmount,
+        ?float  $channelFeeAmount,
+        ?string $channelFeeBearer,
+    ): ?float {
+        // YALIHAN_BORNE: channel fee is Yalihan's problem
+        // Owner gets gross - yalihan commission (same as C3.2)
+        if ($channelFeeBearer === 'YALIHAN_BORNE') {
+            return $grossAmount - $commissionAmount;
+        }
+
+        // OWNER_BORNE and COMMISSION_SHARE: need channel fee to be known
+        if ($channelFeeBearer === 'OWNER_BORNE' || $channelFeeBearer === 'COMMISSION_SHARE') {
+            if ($channelFeeAmount === null) {
+                // C4.1 Invariant 2: DO NOT GUESS
+                return null;
+            }
+            return $grossAmount - $channelFeeAmount - $commissionAmount;
+        }
+
+        // Bearer unknown: treat as unknown channel fee — block payout
+        // (C4.1 Invariant 2: UNKNOWN → BLOCK)
+        return null;
     }
 
     /**
