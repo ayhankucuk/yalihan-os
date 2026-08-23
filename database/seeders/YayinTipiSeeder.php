@@ -58,18 +58,28 @@ class YayinTipiSeeder extends Seeder
     /**
      * V2 YayinTipiSablonu: Kategori-specific templates
      * Policy matrix'e göre tüm kategoriler için template üretir.
+     *
+     * RECOVERY-B: IlanKategori Authority ayrımı
+     * - YayinTipiSeeder IlanKategori OLUŞTURMAZ
+     * - Sadece mevcut IlanKategori'lere YayinTipiSablonu ekler
+     * - IlanKategoriSeeder canonical authority'dir
      */
     private function seedAllCategoryTemplates(): void
     {
         $matrix = $this->getCanonicalMatrix();
 
-        // Önce eksik kategorileri oluştur (test database desteği)
-        $this->ensureCategories($matrix);
+        // IlanKategoriSeeder çalıştırılmadan önce seeder atlar
+        $existingCategories = IlanKategori::count();
+        if ($existingCategories === 0) {
+            $this->command->warn('  ⚠️ IlanKategori tablosu boş. IlanKategoriSeeder önce çalıştırılmalı.');
+            return;
+        }
 
         foreach ($matrix as $kategoriSlug => $allowedTypes) {
             $kategori = IlanKategori::where('slug', $kategoriSlug)->first();
 
             if (!$kategori) {
+                // RECOVERY-B: Kategori yoksa YENİ OLUŞTURMA, atla
                 $this->command->warn("  ⚠️ Kategori bulunamadı: {$kategoriSlug} — atlanıyor.");
                 continue;
             }
@@ -85,67 +95,6 @@ class YayinTipiSeeder extends Seeder
             if ($count > 0) {
                 $this->command->info("  ✅ {$kategoriSlug}: {$count} template");
             }
-        }
-    }
-
-    /**
-     * Test database desteği için eksik kategorileri oluşturur
-     */
-    private function ensureCategories(array $matrix): void
-    {
-        $categoryNames = [
-            'arsa-arazi'              => 'Arsa Arazi',
-            'arsa-konut-villa'       => 'Arsa Konut Villa',
-            'sanayi-ticari-imar'     => 'Sanayi Ticari İmar',
-            'tarla'                  => 'Tarla',
-            'zeytinlik'              => 'Zeytinlik',
-            'bag-bahce'              => 'Bağ Bahçe',
-            'zeytinli-tarla'         => 'Zeytinli Tarla',
-            'turizm-otel-kamp'       => 'Turizm Otel Kamp',
-            'turizm-konut'           => 'Turizm Konut',
-            'konut'                  => 'Konut',
-            'daire'                  => 'Daire',
-            'villa'                  => 'Villa',
-            'mustakil-ev'           => 'Müstakil Ev',
-            'dubleks'               => 'Dubleks',
-            'isyeri'                 => 'İşyeri',
-            'ofis'                  => 'Ofis',
-            'dukkan'                => 'Dükkan',
-            'fabrika'               => 'Fabrika',
-            'depo'                  => 'Depo',
-            'yazlik-kiralama'        => 'Yazlık Kiralama',
-            'villa-tipi'            => 'Villa Tipi',
-            'rezidans-tipi'         => 'Rezidans Tipi',
-            'daire-tipi'            => 'Daire Tipi',
-            'tas-ev-tipi'           => 'Taş Ev Tipi',
-            'malikane-tipi'         => 'Malikane Tipi',
-            'minimal-tipi'          => 'Minimal Tipi',
-            'turistik-tesisler'      => 'Turistik Tesisler',
-            'otel'                  => 'Otel',
-            'pansiyon'              => 'Pansiyon',
-            'tatil-koyu'            => 'Tatil Köyü',
-            'projeden-satis'         => 'Projeden Satış',
-            'konut-projesi'         => 'Konut Projesi',
-            'villa-projesi'         => 'Villa Projesi',
-            'karma-proje'           => 'Karma Proje',
-        ];
-
-        foreach (array_keys($matrix) as $slug) {
-            if (!isset($categoryNames[$slug])) {
-                $categoryNames[$slug] = ucfirst(str_replace('-', ' ', $slug));
-            }
-        }
-
-        foreach ($categoryNames as $slug => $name) {
-            IlanKategori::firstOrCreate(
-                ['slug' => $slug],
-                [
-                    'name' => $name,
-                    'slug' => $slug,
-                    'seviye' => 1,
-                    'aktiflik_durumu' => true,
-                ]
-            );
         }
     }
 
@@ -169,17 +118,27 @@ class YayinTipiSeeder extends Seeder
         $templateSlug = $kategori->slug . '-' . $this->shortenSlug($typeSlug);
         $templateName = $kategori->name . ' ' . ucfirst($this->shortenSlug($typeSlug));
 
-        return YayinTipiSablonu::updateOrCreate(
-            [
+        // Check if template already exists by slug
+        $existing = YayinTipiSablonu::where('slug', $templateSlug)->first();
+
+        if ($existing) {
+            // Update existing
+            $existing->update([
                 'kategori_id'   => $kategori->id,
                 'yayin_tipi_id' => $yayinTipi->id,
-            ],
-            [
                 'ad'             => $templateName,
-                'slug'           => $templateSlug,
                 'aktiflik_durumu' => true,
-            ]
-        );
+            ]);
+            return $existing;
+        }
+
+        return YayinTipiSablonu::create([
+            'kategori_id'   => $kategori->id,
+            'yayin_tipi_id' => $yayinTipi->id,
+            'ad'             => $templateName,
+            'slug'           => $templateSlug,
+            'aktiflik_durumu' => true,
+        ]);
     }
 
     /**
