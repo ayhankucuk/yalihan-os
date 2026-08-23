@@ -2154,6 +2154,11 @@ if (typeof window.poiSelector === 'undefined') {
                 const fileInput = document.getElementById('fotograflar');
                 if (!uploadArea || !fileInput) return;
 
+                // ✅ Recovery-C: Keep Alpine and native input in sync (bi-directional)
+                window.addEventListener('wizard:photos-updated', (e) => {
+                    this.updatePhotoPreview(e.detail.files);
+                });
+
                 // Drag & Drop events
                 uploadArea.addEventListener('dragover', (e) => {
                     e.preventDefault();
@@ -2198,6 +2203,9 @@ if (typeof window.poiSelector === 'undefined') {
                 const dataTransfer = new window.DataTransfer();
                 newFiles.forEach((file) => dataTransfer.items.add(file));
                 fileInput.files = dataTransfer.files;
+
+                // ✅ Recovery-C Fix: Notify Alpine photoWizardStep2 to sync its state
+                window.dispatchEvent(new CustomEvent('wizard:photos-updated', { detail: { files: newFiles } }));
 
                 // Preview göster
                 this.updatePhotoPreview(newFiles);
@@ -2246,6 +2254,9 @@ if (typeof window.poiSelector === 'undefined') {
         const dataTransfer = new window.DataTransfer();
         files.forEach((file) => dataTransfer.items.add(file));
         fileInput.files = dataTransfer.files;
+
+        // ✅ Recovery-C Fix: Notify Alpine photoWizardStep2 to sync its state
+        window.dispatchEvent(new CustomEvent('wizard:photos-updated', { detail: { files } }));
 
         // Update preview
         const wizard = document.querySelector('[x-data*="ilanWizard"]');

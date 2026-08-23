@@ -20,7 +20,7 @@
                 </svg>
                 İlan Fotoğrafları <span class="text-red-500">*</span>
             </span>
-            <span class="text-xs text-slate-500 dark:text-slate-400 !mt-0 uppercase tracking-wider font-bold">En az 3 fotoğraf önerilir (Maks: 20)</span>
+            <span class="text-xs text-slate-500 dark:text-slate-400 !mt-0 uppercase tracking-wider font-bold">En az 3 fotoğraf önerilir (Maks: 10)</span>
         </label>
 
         <div
@@ -289,6 +289,33 @@
                     this.context = e.detail.context;
                     console.info('[WIZARD] context + component: PhotoWizard Step2 syncing from SSOT');
                 });
+
+                // ✅ Recovery-C Fix: Sync Alpine state when ilanWizard changes native input
+                window.addEventListener('wizard:photos-updated', (e) => {
+                    // Rebuild Alpine photos array from native input files (authoritative source)
+                    const fileInput = this.$refs.fileInput;
+                    if (fileInput && fileInput.files) {
+                        const incoming = Array.from(e.detail.files || []);
+                        // Merge: existing Alpine photos + incoming, deduplicated by name
+                        const existingNames = this.photos.map(p => p.name);
+                        incoming.forEach(file => {
+                            if (!existingNames.includes(file.name)) {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => {
+                                    this.photos.push({
+                                        file: file,
+                                        preview: ev.target.result,
+                                        name: file.name,
+                                        size: file.size,
+                                        analyzing: false,
+                                        analysis: null
+                                    });
+                                };
+                                reader.readAsDataURL(file);
+                            }
+                        });
+                    }
+                });
             },
             // 🆕 Computed Properties
             get autoApplySuggestions() {
@@ -309,6 +336,18 @@
                 const fileArray = Array.from(files).filter(file => file.type.startsWith('image/'));
                 if (fileArray.length === 0) return;
 
+                // ✅ Recovery-C Fix: Sync with native input so FormData submission includes these files
+                const fileInput = this.$refs.fileInput;
+                if (fileInput) {
+                    const existing = Array.from(fileInput.files || []);
+                    const combined = [...existing, ...fileArray];
+                    const dt = new DataTransfer();
+                    combined.forEach(f => dt.items.add(f));
+                    fileInput.files = dt.files;
+                    // Dispatch event for ilanWizard to also update its preview
+                    window.dispatchEvent(new CustomEvent('wizard:photos-updated', { detail: { files: combined } }));
+                }
+
                 fileArray.forEach(file => {
                     const reader = new FileReader();
                     reader.onload = (e) => {
@@ -326,6 +365,16 @@
             },
 
             removePhoto(index) {
+                // ✅ Recovery-C Fix: Sync native input when removing a photo
+                const fileInput = this.$refs.fileInput;
+                if (fileInput) {
+                    const files = Array.from(fileInput.files);
+                    files.splice(index, 1);
+                    const dt = new DataTransfer();
+                    files.forEach(f => dt.items.add(f));
+                    fileInput.files = dt.files;
+                    window.dispatchEvent(new CustomEvent('wizard:photos-updated', { detail: { files } }));
+                }
                 this.photos.splice(index, 1);
             },
 
@@ -427,24 +476,38 @@
 
             // 🆕 Apply Feature to Wizard
             applyFeatureToWizard(slug, isAutoApply = false) {
-                const featureCheckbox = document.querySelector(`input[name="features[]"][value="${slug}"]`);
+                // ✅ Recovery-C Fix: Match actual field naming: features[slug] not features[]
+                const featureInput = document.querySelector(`input[name="features[${slug}]"]`);
 
-                if (!featureCheckbox) {
+                if (!featureInput) {
                     console.warn('⚠️ UPS Guard: Feature not in template, skipping:', slug);
                     return false;
                 }
 
-                if (!featureCheckbox.checked) {
-                    featureCheckbox.checked = true;
-                    featureCheckbox.dispatchEvent(new Event('change', {
-                        bubbles: true
-                    }));
+                // Boolean checkbox: check it if not already checked
+                if (featureInput.type === 'checkbox') {
+                    if (!featureInput.checked) {
+                        featureInput.checked = true;
+                        featureInput.dispatchEvent(new Event('change', { bubbles: true }));
+                        if (!isAutoApply) {
+                            this.appliedSuggestions.push(slug);
+                            this.logTelemetry(slug, 'user_applied');
+                        }
+                        console.log('✅ Feature checked:', slug);
+                        return true;
+                    }
+                    return false;
+                }
 
+                // For text/select/number: if it has a value already, skip
+                // (AI suggestion sets a meaningful value — if empty, set a default)
+                if (!featureInput.value || featureInput.value.trim() === '') {
+                    featureInput.value = '1';
+                    featureInput.dispatchEvent(new Event('change', { bubbles: true }));
                     if (!isAutoApply) {
                         this.appliedSuggestions.push(slug);
                         this.logTelemetry(slug, 'user_applied');
                     }
-
                     console.log('✅ Feature applied:', slug);
                     return true;
                 }
