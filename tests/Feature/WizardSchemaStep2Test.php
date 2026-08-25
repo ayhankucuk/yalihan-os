@@ -189,6 +189,9 @@ class WizardSchemaStep2Test extends TestCase
      * relied on cross-listing-type inheritance that FeatureTemplateResolver does not support.
      * With explicit listing_type_id=5 assignments, both listing types should resolve identically.
      *
+     * SAAB-4 finding: Villa sub_category_id = 8 (NOT 36). Kategori 36 does not exist.
+     *   sub-category 8 = Villa in ilan_kategorileri table (parent=1, seviye=1).
+     *
      * Runs in ISOLATED state: clears ALL feature data first, then runs seeder fresh.
      * This prevents test fixture data (features 1-4) from creating duplicate scope collisions
      * that break the resolver's collapse logic.
@@ -203,11 +206,11 @@ class WizardSchemaStep2Test extends TestCase
 
         $resolver = app(\App\Services\Wizard\FeatureTemplateResolver::class);
 
-        // Villa Satilik = main=11, sub=36, lt=1
-        // Villa Gunluk  = main=11, sub=36, lt=5
+        // Villa Satilik = main=11, sub=8, lt=1
+        // Villa Gunluk  = main=11, sub=8, lt=5
         // Both should return the same visible feature count
-        $satilikFeatures = $resolver->resolveFeatures(11, 36, 1);
-        $gunlukFeatures  = $resolver->resolveFeatures(11, 36, 5);
+        $satilikFeatures = $resolver->resolveFeatures(11, 8, 1);
+        $gunlukFeatures  = $resolver->resolveFeatures(11, 8, 5);
 
         $this->assertGreaterThan(0, $satilikFeatures->count(), 'Satilik must have features');
         $this->assertGreaterThan(0, $gunlukFeatures->count(),  'Gunluk must have features');
