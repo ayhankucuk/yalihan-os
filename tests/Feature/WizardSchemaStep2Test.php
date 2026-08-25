@@ -94,60 +94,6 @@ class WizardSchemaStep2Test extends TestCase
             );
         }
 
-        // 🛡️ Seed kategori_yayin_tipi_field_dependencies table for FieldResolver
-        foreach ([
-            [
-                'kategori_slug' => 'konut',
-                'yayin_tipi' => 'satilik',
-                'yayin_tipi_id' => 1,
-                'field_slug' => 'brut-metrekare',
-                'field_name' => 'Brüt Metrekare',
-                'field_type' => 'number',
-                'field_category' => 'Temel Bilgiler',
-                'required' => true,
-                'display_order' => 1,
-                'aktiflik_durumu' => true,
-            ],
-            [
-                'kategori_slug' => 'konut',
-                'yayin_tipi' => 'satilik',
-                'yayin_tipi_id' => 1,
-                'field_slug' => 'tapu-durumu',
-                'field_name' => 'Tapu Durumu',
-                'field_type' => 'select',
-                'field_options' => json_encode(['Müstakil Tapu', 'Kat Mülkiyeti', 'Kat İrtifakı', 'Hisseli Tapu']),
-                'field_category' => 'Temel Bilgiler',
-                'required' => true,
-                'display_order' => 2,
-                'aktiflik_durumu' => true,
-            ],
-            [
-                'kategori_slug' => 'konut',
-                'yayin_tipi' => 'satilik',
-                'yayin_tipi_id' => 1,
-                'field_slug' => 'balkon',
-                'field_name' => 'Balkon',
-                'field_type' => 'boolean',
-                'field_category' => 'Oda ve Alan',
-                'required' => false,
-                'display_order' => 3,
-                'aktiflik_durumu' => true,
-            ],
-            [
-                'kategori_slug' => 'konut',
-                'yayin_tipi' => 'satilik',
-                'yayin_tipi_id' => 1,
-                'field_slug' => 'oda-sayisi',
-                'field_name' => 'Oda Sayısı',
-                'field_type' => 'text',
-                'field_category' => 'Oda ve Alan',
-                'required' => true,
-                'display_order' => 4,
-                'aktiflik_durumu' => true,
-            ],
-        ] as $dep) {
-            \Illuminate\Support\Facades\DB::table('kategori_yayin_tipi_field_dependencies')->insert($dep);
-        }
     }
 
     // ── Schema Resolution Tests ──
@@ -234,6 +180,63 @@ class WizardSchemaStep2Test extends TestCase
         $this->assertEmpty($schema['fields']);
         $this->assertEquals(0, $schema['meta']['field_count']);
         $this->assertEquals(0, $schema['meta']['required_count']);
+    }
+
+    /**
+     * Regression: Villa Günlük (lt=5) must return the same feature count as Villa Satılık (lt=1).
+     *
+     * SAAB-3 finding: before fix, Gunluk received only 5 global features because the seeder
+     * relied on cross-listing-type inheritance that FeatureTemplateResolver does not support.
+     * With explicit listing_type_id=5 assignments, both listing types should resolve identically.
+     *
+     * Runs in ISOLATED state: clears ALL feature data first, then runs seeder fresh.
+     * This prevents test fixture data (features 1-4) from creating duplicate scope collisions
+     * that break the resolver's collapse logic.
+     */
+    public function test_villa_gunluk_resolves_same_features_as_villa_satilik(): void
+    {
+        // ── Isolated setup: clear everything, seed canonical data only ──
+        \Illuminate\Support\Facades\DB::table('feature_assignments')->delete();
+        \Illuminate\Support\Facades\DB::table('features')->delete();
+        \Illuminate\Support\Facades\DB::table('feature_categories')->delete();
+        $this->seed(\Database\Seeders\FeatureAssignmentSeeder::class);
+
+        $resolver = app(\App\Services\Wizard\FeatureTemplateResolver::class);
+
+        // Villa Satilik = main=11, sub=36, lt=1
+        // Villa Gunluk  = main=11, sub=36, lt=5
+        // Both should return the same visible feature count
+        $satilikFeatures = $resolver->resolveFeatures(11, 36, 1);
+        $gunlukFeatures  = $resolver->resolveFeatures(11, 36, 5);
+
+        $this->assertGreaterThan(0, $satilikFeatures->count(), 'Satilik must have features');
+        $this->assertGreaterThan(0, $gunlukFeatures->count(),  'Gunluk must have features');
+
+        // Core assertion: Gunluk must NOT be limited to only global scope features
+        $this->assertEquals(
+            $satilikFeatures->count(),
+            $gunlukFeatures->count(),
+            'Villa Günlük must resolve the same number of features as Villa Satılık. '
+            . 'If Gunluk < Satilik, cross-listing-type inheritance may be broken again.'
+        );
+
+        // Verify both have listing_type scoped features (not just global)
+        $satilikListingType = $satilikFeatures->where('scope_type', 'listing_type');
+        $gunlukListingType  = $gunlukFeatures->where('scope_type', 'listing_type');
+
+        $this->assertGreaterThan(5, $satilikListingType->count(),
+            'Satilik must have >5 listing_type features (not just global)');
+        $this->assertEquals($satilikListingType->count(), $gunlukListingType->count(),
+            'Gunluk listing_type scoped count must equal Satilik');
+
+        // Key features present in both
+        $keySlugs = ['brut-alan', 'esyali', 'havuz', 'tapu-durumu', 'manzara'];
+        foreach ($keySlugs as $slug) {
+            $this->assertTrue(
+                $gunlukFeatures->contains('slug', $slug),
+                "Gunluk schema must include key feature: {$slug}"
+            );
+        }
     }
 
     // ── DynamicFieldValueMapper Tests ──

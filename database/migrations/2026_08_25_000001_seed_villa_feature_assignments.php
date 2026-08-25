@@ -8,13 +8,16 @@ use Illuminate\Support\Facades\DB;
  * and feature_assignments tables.
  *
  * Coverage:
- *   Villa Satilik  (main=11, sub=36, listing_type=1) → 34 fields
- *   Villa Kiralik  (main=11, sub=36, listing_type=2) →  1 field  (depozito)
- *   Villa Gunluk   (main=11, sub=36, listing_type=5) →  0 new (reuses Satilik)
- *   Konut Global  (main=11, sub=null, lt=null)       →  8 fields
- *   Global        (main=null, sub=null, lt=null)     →  5 fields
+ *   Villa Satilik  (main=11, sub=36, listing_type=1) = 34 fields
+ *   Villa Kiralik  (main=11, sub=36, listing_type=2) =  1 field (depozito)
+ *   Villa Gunluk   (main=11, sub=36, listing_type=5) = 34 fields (explicit, NOT inherited)
+ *   Konut Global   (main=11, sub=null, lt=null)      =  8 fields @ main_category
+ *   Global         (main=null, sub=null, lt=null)     =  5 fields @ global
  *
- * Total: feature_categories=7, features=36, feature_assignments=48
+ * Total: feature_categories=7, features=36, feature_assignments=82
+ *
+ * IMPORTANT: FeatureTemplateResolver does NOT cascade across listing_type values.
+ * Explicit assignments required for each listing type.
  *
  * Run: php artisan migrate
  * Rollback: php artisan migrate:rollback --step=1
@@ -141,9 +144,12 @@ return new class extends Migration
 
     private function seedAssignments(): void
     {
+        // NOTE: unique constraint = (feature_id, assignable_type, assignable_id, scope_type)
+        // Same feature CANNOT appear twice with scope_type=listing_type.
+        // Villa Günlük (lt=5) REUSES Villa Satilik (lt=1) fields — no separate assignment needed.
         // [feature_id, main_cat, sub_cat, listing_type, group_name, required, visible, order, scope_type]
         $rows = [
-            // Villa Satılık (junction=25, yayin_tipi=1, kategori=36) — 34 fields
+            // Villa Satilik (junction=25, yayin_tipi=1, kategori=36) — 34 fields
             [1,  11, 36, 1, 'Temel Bilgiler',    true,   true,   1],
             [2,  11, 36, 1, 'Temel Bilgiler',    false,  true,   2],
             [3,  11, 36, 1, 'Temel Bilgiler',    true,   true,   3],
@@ -180,8 +186,45 @@ return new class extends Migration
             [35, 11, 36, 1, 'Tapu ve İmar',    false,  true,   1],
             [36, 11, 36, 1, 'Tapu ve İmar',    false,  false,  2],
 
-            // Villa Kiralık (junction=26, yayin_tipi=2) — 1 field (depozito)
+            // Villa Kiralik (junction=26, yayin_tipi=2) — 1 field (depozito)
             [32, 11, 36, 2, 'Maliyet ve Aidat', true,   false,  2],
+
+            // Villa Gunluk (junction=27, yayin_tipi=5) — 34 fields (explicit)
+            [1,  11, 36, 5, 'Temel Bilgiler',    true,   true,   1],
+            [2,  11, 36, 5, 'Temel Bilgiler',    false,  true,   2],
+            [3,  11, 36, 5, 'Temel Bilgiler',    true,   true,   3],
+            [4,  11, 36, 5, 'Temel Bilgiler',    false,  true,   4],
+            [5,  11, 36, 5, 'Temel Bilgiler',    false,  true,   5],
+            [6,  11, 36, 5, 'Temel Bilgiler',    false,  true,   6],
+            [7,  11, 36, 5, 'Temel Bilgiler',    false,  true,   7],
+            [8,  11, 36, 5, 'Konum ve Arsa',    false,  true,   1],
+            [9,  11, 36, 5, 'Konum ve Arsa',    false,  true,   2],
+            [10, 11, 36, 5, 'Konum ve Arsa',    false,  true,   3],
+            [11, 11, 36, 5, 'Konum ve Arsa',    false,  true,   4],
+            [12, 11, 36, 5, 'Konum ve Arsa',    false,  true,   5],
+            [13, 11, 36, 5, 'Yapı Özellikleri', false,  true,   1],
+            [14, 11, 36, 5, 'Yapı Özellikleri', false,  true,   2],
+            [15, 11, 36, 5, 'Yapı Özellikleri', false,  true,   3],
+            [16, 11, 36, 5, 'Yapı Özellikleri', false,  true,   4],
+            [17, 11, 36, 5, 'Yapı Özellikleri', false,  true,   5],
+            [18, 11, 36, 5, 'Yapı Özellikleri', false,  true,   6],
+            [19, 11, 36, 5, 'Yapı Özellikleri', false,  true,   7],
+            [20, 11, 36, 5, 'Yapı Özellikleri', false,  false,  8],
+            [21, 11, 36, 5, 'Dış Özellikler',   false,  true,   1],
+            [22, 11, 36, 5, 'Dış Özellikler',   false,  true,   2],
+            [23, 11, 36, 5, 'Dış Özellikler',   false,  true,   3],
+            [24, 11, 36, 5, 'Dış Özellikler',   false,  true,   4],
+            [25, 11, 36, 5, 'İç Özellikler',    false,  true,   1],
+            [26, 11, 36, 5, 'İç Özellikler',    false,  true,   2],
+            [27, 11, 36, 5, 'İç Özellikler',    false,  true,   3],
+            [28, 11, 36, 5, 'İç Özellikler',    false,  true,   4],
+            [29, 11, 36, 5, 'İç Özellikler',    false,  true,   5],
+            [30, 11, 36, 5, 'İç Özellikler',    false,  false,  6],
+            [31, 11, 36, 5, 'Maliyet ve Aidat', false,  false,  1],
+            [33, 11, 36, 5, 'Maliyet ve Aidat', false,  true,   3],
+            [34, 11, 36, 5, 'Maliyet ve Aidat', false,  true,   4],
+            [35, 11, 36, 5, 'Tapu ve İmar',    false,  true,   1],
+            [36, 11, 36, 5, 'Tapu ve İmar',    false,  false,  2],
 
             // Konut Global (main=11, sub=null, lt=null) — 8 fields
             [1,  11, null, null, 'Temel Bilgiler', true,   true,   1, 'main_category'],
@@ -214,8 +257,10 @@ return new class extends Migration
             $ord = $r[7];
             $scope = $r[8] ?? 'listing_type';
 
-            // Generate deterministic ID to avoid uniqueness conflicts
-            $pk = $i + 1;
+            // Skip if feature doesn't exist in DB yet (auto-increment IDs may differ)
+            if (!DB::table('features')->where('id', $fi)->exists()) {
+                continue;
+            }
 
             DB::table('feature_assignments')->updateOrInsert(
                 [
@@ -225,7 +270,6 @@ return new class extends Migration
                     'listing_type_id'   => $lt,
                 ],
                 [
-                    'id'                => $pk,
                     'assignable_type'   => 'App\\Models\\Ilan',
                     'assignable_id'     => 0,
                     'scope_type'        => $scope,
