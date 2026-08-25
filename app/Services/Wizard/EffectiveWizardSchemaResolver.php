@@ -21,6 +21,13 @@ use Illuminate\Support\Str;
  * Delegates to: FeatureTemplateResolver (Wizard-scoped; system SSOT = Ups\FeatureTemplateResolver),
  *               DependencyRuleEvaluator (conditional field logic).
  * Used by: IlanWizardController@schema, DynamicFieldValueMapper, Step 2 dynamic rendering.
+ *
+ * ID CONVENTION:
+ *   $yayinTipiId may be either:
+ *     - A yayin_tipi_sablonlari.id (sablon/template/junction ID, e.g. 22=Satilik, 24=Gunluk)
+ *     - A yayin_tipleri.id (publication type ID, e.g. 1=Satilik, 5=Gunluk)
+ *   This resolver auto-detects: if a sablon ID is passed, it is resolved to the
+ *   underlying yayin_tipi_id before querying feature_assignments.
  */
 class EffectiveWizardSchemaResolver
 {
@@ -32,13 +39,44 @@ class EffectiveWizardSchemaResolver
     /**
      * Resolve full schema contract for a category + publication type.
      *
-     * @param int $kategoriId Category ID (main or sub — treated as main when called from legacy code)
-     * @param int $yayinTipiId Publication Type ID
+     * @param int $kategoriId Category ID — when a sablon ID is passed for yayin_tipi_id,
+     *                              this is treated as the sub-category ID (NOT the parent main category).
+     * @param int $yayinTipiId Sablon ID (yayin_tipi_sablonlari.id) OR yayin_tipi ID (yayin_tipleri.id)
+     *                              Auto-detected: sablon IDs are resolved to publication type IDs
+     *                              and their kategori_id becomes the sub-category.
      * @return array Schema contract array
      */
     public function resolve(int $kategoriId, int $yayinTipiId): array
     {
-        $features = $this->featureResolver->resolveFeatures($kategoriId, null, $yayinTipiId);
+        // IlanWizardController@schema passes:
+        //   - kategori_id = sub-category (Villa=8) when sablon is used
+        //   - yayin_tipi_id = sablon_id (e.g. 22=Satilik, 24=Gunluk)
+        //
+        // WizardFeatureController passes:
+        //   - ana_kategori_id = main category (Konut=11)
+        //   - alt_kategori_id = sub-category (Villa=8)
+        //   - yayin_tipi_id = yayin_tipi_id (1=Satilik, 5=Gunluk)
+        //
+        // This method handles both conventions by detecting sablon IDs.
+
+        $sablon = \App\Models\YayinTipiSablonu::find($yayinTipiId);
+        $isSablonId = $sablon && !empty($sablon->yayin_tipi_id);
+
+        if ($isSablonId) {
+            // Sablon ID path (IlanWizardController convention):
+            // kategori_id IS the sub-category ID (e.g. 8 for Villa)
+            // yayin_tipi_id IS the sablon ID (e.g. 24 for Villa Gunluk)
+            $publicationTypeId = (int) $sablon->yayin_tipi_id;
+            $subCategoryId = $kategoriId; // kategori_id IS the sub-category here
+            $mainCategoryId = (int) $sablon->kategori_id; // sablon's kategori_id = main category
+        } else {
+            // Raw yayin_tipi_id path (WizardFeatureController convention)
+            $publicationTypeId = $yayinTipiId;
+            $subCategoryId = null;
+            $mainCategoryId = $kategoriId;
+        }
+
+        $features = $this->featureResolver->resolveFeatures($mainCategoryId, $subCategoryId, $publicationTypeId);
 
         $fields = $features->map(function (array $feature) {
             return [
@@ -261,5 +299,27 @@ class EffectiveWizardSchemaResolver
     public function getDependencyEvaluator(): DependencyRuleEvaluator
     {
         return $this->dependencyEvaluator;
+    }
+
+    /**
+     * Resolve a sablon/junction ID to the underlying yayin_tipi_id.
+     *
+     * IlanWizardController@schema passes sablon IDs (22, 24) which are IDs in the
+     * yayin_tipi_sablonlari table. The resolver must detect these and convert them
+     * to the actual publication type ID (1, 5) before querying feature_assignments.
+     *
+     * Detection: if a row exists in yayin_tipi_sablonlari with this ID,
+     * use its yayin_tipi_id. Otherwise treat as a raw yayin_tipi_id.
+     *
+     * @param int $id Sablon ID (yayin_tipi_sablonlari.id) OR yayin_tipi ID (yayin_tipleri.id)
+     * @return int Actual yayin_tipi_id
+     */
+    private function resolvePublicationTypeId(int $id): int
+    {
+        $sablon = \App\Models\YayinTipiSablonu::find($id);
+
+        return $sablon && !empty($sablon->yayin_tipi_id)
+            ? (int) $sablon->yayin_tipi_id
+            : $id;
     }
 }

@@ -32,7 +32,13 @@ class FeatureTemplateResolver
     /**
      * Resolve effective features for a category + listing type combination.
      *
-     * @param int $mainCategoryId Ana kategori ID
+     * Cascade: when a sub-category (e.g. Villa=8) is provided but the seeder
+     * seeds data with its parent main category (e.g. Konut=1), this method
+     * traverses the ilan_kategorileri parent chain to find the actual
+     * main category ID that matches the seeded data.
+     *
+     * @param int $mainCategoryId Ana kategori ID — may be a sub-category ID when
+     *                              cascading from a sablon junction (kategori_id IS sub-category)
      * @param int|null $subCategoryId Alt kategori ID (nullable)
      * @param int $listingTypeId Yayın tipi ID
      * @return Collection Collection of resolved feature arrays
@@ -42,13 +48,24 @@ class FeatureTemplateResolver
         ?int $subCategoryId,
         int $listingTypeId
     ): Collection {
+        // When sub_category is provided, check if main_category is actually a sub-category.
+        // The seeder seeds feature_assignments using the parent main_category (e.g. Konut=1),
+        // not the sub-category itself (e.g. Villa=8). Traverse ilan_kategorileri parent chain.
+        $resolvedMainCategoryId = $mainCategoryId;
+        if ($subCategoryId !== null) {
+            $parentId = $this->resolveMainCategoryFromSub($subCategoryId);
+            if ($parentId !== null) {
+                $resolvedMainCategoryId = $parentId;
+            }
+        }
+
         $rows = DB::table('feature_assignments as fa')
             ->join('features as f', 'f.id', '=', 'fa.feature_id')
             ->leftJoin('feature_categories as fc', 'fc.id', '=', 'f.feature_category_id')
             ->whereNull('fa.rolled_back_at')
             ->where('fa.aktiflik_durumu', true)
             ->where('fa.is_visible', true)
-            ->where(function ($q) use ($mainCategoryId, $subCategoryId, $listingTypeId) {
+            ->where(function ($q) use ($resolvedMainCategoryId, $subCategoryId, $listingTypeId) {
                 // Global scope (no category/listing type)
                 $q->where(function ($q2) {
                     $q2->whereNull('fa.main_category_id')
@@ -57,39 +74,39 @@ class FeatureTemplateResolver
                 });
 
                 // Main category scope
-                $q->orWhere(function ($q2) use ($mainCategoryId) {
-                    $q2->where('fa.main_category_id', $mainCategoryId)
+                $q->orWhere(function ($q2) use ($resolvedMainCategoryId) {
+                    $q2->where('fa.main_category_id', $resolvedMainCategoryId)
                         ->whereNull('fa.sub_category_id')
                         ->whereNull('fa.listing_type_id');
                 });
 
                 // Sub category scope
                 if ($subCategoryId) {
-                    $q->orWhere(function ($q2) use ($mainCategoryId, $subCategoryId) {
-                        $q2->where('fa.main_category_id', $mainCategoryId)
+                    $q->orWhere(function ($q2) use ($resolvedMainCategoryId, $subCategoryId) {
+                        $q2->where('fa.main_category_id', $resolvedMainCategoryId)
                             ->where('fa.sub_category_id', $subCategoryId)
                             ->whereNull('fa.listing_type_id');
                     });
                 }
 
                 // Listing type scope (global + category-specific)
-                $q->orWhere(function ($q2) use ($mainCategoryId, $subCategoryId, $listingTypeId) {
+                $q->orWhere(function ($q2) use ($resolvedMainCategoryId, $subCategoryId, $listingTypeId) {
                     $q2->where('fa.listing_type_id', $listingTypeId)
-                        ->where(function ($inner) use ($mainCategoryId, $subCategoryId) {
+                        ->where(function ($inner) use ($resolvedMainCategoryId, $subCategoryId) {
                             // Global listing-type assignments (no category filter)
                             $inner->where(function ($g) {
                                 $g->whereNull('fa.main_category_id')
                                     ->whereNull('fa.sub_category_id');
                             });
                             // Main-category scoped listing-type assignments
-                            $inner->orWhere(function ($m) use ($mainCategoryId) {
-                                $m->where('fa.main_category_id', $mainCategoryId)
+                            $inner->orWhere(function ($m) use ($resolvedMainCategoryId) {
+                                $m->where('fa.main_category_id', $resolvedMainCategoryId)
                                     ->whereNull('fa.sub_category_id');
                             });
                             // Sub-category scoped listing-type assignments
                             if ($subCategoryId) {
-                                $inner->orWhere(function ($s) use ($mainCategoryId, $subCategoryId) {
-                                    $s->where('fa.main_category_id', $mainCategoryId)
+                                $inner->orWhere(function ($s) use ($resolvedMainCategoryId, $subCategoryId) {
+                                    $s->where('fa.main_category_id', $resolvedMainCategoryId)
                                         ->where('fa.sub_category_id', $subCategoryId);
                                 });
                             }
@@ -129,10 +146,37 @@ class FeatureTemplateResolver
 
         return $this->collapseScopedAssignments(
             $rows,
-            $mainCategoryId,
+            $resolvedMainCategoryId,
             $subCategoryId,
             $listingTypeId
         );
+    }
+
+    /**
+     * Traverse ilan_kategorileri parent chain to find the main (seviye=0) category.
+     *
+     * When a sub-category (e.g. Villa=8) is passed but seeder data uses the parent
+     * main_category (e.g. Konut=1), this method finds the actual main category ID
+     * that the seeder seeds feature_assignments with.
+     *
+     * @param int $subCategoryId Sub-category ID
+     * @return int|null The parent main category ID, or null if not found / already root
+     */
+    private function resolveMainCategoryFromSub(int $subCategoryId): ?int
+    {
+        $visited = [];
+        $current = DB::table('ilan_kategorileri')->where('id', $subCategoryId)->first();
+
+        while ($current && $current->parent_id !== null) {
+            if (in_array($current->parent_id, $visited, true)) {
+                break; // Prevent infinite loops
+            }
+            $visited[] = $current->id;
+            $current = DB::table('ilan_kategorileri')->where('id', $current->parent_id)->first();
+        }
+
+        // $current is now the root (seviye=0) category
+        return $current ? (int) $current->id : null;
     }
 
     /**

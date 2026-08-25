@@ -183,18 +183,17 @@ class WizardSchemaStep2Test extends TestCase
     }
 
     /**
-     * Regression: Villa Günlük (lt=5) must return the same feature count as Villa Satılık (lt=1).
+     * Regression: Villa Günlük must return the same feature count as Villa Satılık.
      *
      * SAAB-3 finding: before fix, Gunluk received only 5 global features because the seeder
      * relied on cross-listing-type inheritance that FeatureTemplateResolver does not support.
-     * With explicit listing_type_id=5 assignments, both listing types should resolve identically.
-     *
      * SAAB-4 finding: Villa sub_category_id = 8 (NOT 36). Kategori 36 does not exist.
-     *   sub-category 8 = Villa in ilan_kategorileri table (parent=1, seviye=1).
+     * SAAB-5 finding: EffectiveWizardSchemaResolver must detect sablon IDs (22=Satilik, 24=Gunluk)
+     * and resolve them to actual yayin_tipi_id (1=Satilik, 5=Gunluk) before querying.
      *
-     * Runs in ISOLATED state: clears ALL feature data first, then runs seeder fresh.
-     * This prevents test fixture data (features 1-4) from creating duplicate scope collisions
-     * that break the resolver's collapse logic.
+     * This test uses FeatureTemplateResolver directly with EXPLICIT correct parameters
+     * (main=1, sub=8, listing_type=1/5) to test the cascade logic independently of sablon detection.
+     * SQLite test DB lacks yayin_tipi_sablonlari records 22/24, so sablon-ID path is tested separately.
      */
     public function test_villa_gunluk_resolves_same_features_as_villa_satilik(): void
     {
@@ -204,13 +203,13 @@ class WizardSchemaStep2Test extends TestCase
         \Illuminate\Support\Facades\DB::table('feature_categories')->delete();
         $this->seed(\Database\Seeders\FeatureAssignmentSeeder::class);
 
+        // Correct cascade parameters:
+        //   main_category=1 (Konut, Villa's parent)
+        //   sub_category=8 (Villa)
+        //   listing_type: 1=Satilik, 5=Gunluk
         $resolver = app(\App\Services\Wizard\FeatureTemplateResolver::class);
-
-        // Villa Satilik = main=11, sub=8, lt=1
-        // Villa Gunluk  = main=11, sub=8, lt=5
-        // Both should return the same visible feature count
-        $satilikFeatures = $resolver->resolveFeatures(11, 8, 1);
-        $gunlukFeatures  = $resolver->resolveFeatures(11, 8, 5);
+        $satilikFeatures = $resolver->resolveFeatures(1, 8, 1);
+        $gunlukFeatures  = $resolver->resolveFeatures(1, 8, 5);
 
         $this->assertGreaterThan(0, $satilikFeatures->count(), 'Satilik must have features');
         $this->assertGreaterThan(0, $gunlukFeatures->count(),  'Gunluk must have features');
