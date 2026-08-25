@@ -1514,7 +1514,7 @@ CREATE TABLE `feature_assignments` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `feature_assignment_scoped_unique` (`feature_id`,`assignable_type`,`assignable_id`,`scope_type`),
+  UNIQUE KEY `feature_assignment_scoped_unique` (`feature_id`,`assignable_type`,`assignable_id`,`scope_type`,`main_category_id`,`listing_type_id`),
   KEY `feature_assignments_assignable_type_assignable_id_index` (`assignable_type`,`assignable_id`),
   KEY `feature_assignments_feature_id_assignable_type_index` (`feature_id`,`assignable_type`),
   KEY `feature_assignments_aktiflik_durumu_index` (`aktiflik_durumu`),
