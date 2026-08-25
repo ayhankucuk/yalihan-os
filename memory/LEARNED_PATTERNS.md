@@ -29,6 +29,16 @@
 
 ## TEKRARLANAN HATALAR
 
+### LP-004: Feature Seed Data Eksikliği → "0 Kart" (Wizard Step 2)
+**Tarih:** 2026-08-25 (Oturum 144)
+**Sorun:** Wizard Step 2'də "özel özellik bulunmamaktadır" — backend 0 field dönüyor
+**Kök Neden:** `feature_categories` / `features` / `feature_assignments` tabloları boş (Okteto DB'de seed çalışmamış)
+**Tanı:** `php artisan tinker --execute="DB::table('feature_assignments')->count()"` → 0
+**Düzeltme:** `FeatureAssignmentSeeder` oluşturuldu; Okteto deploy sonrası çalıştırılacak
+**Koruma:** DatabaseSeeder'a FeatureAssignmentSeeder eklendi — yeni ortamlarda otomatik
+
+---
+
 ### LP-001: Yanlış Layout Seçimi
 **Tarih:** 2026-05-21 (Oturum 1-31)
 **Sorun:** `layouts.app` frontend view'larda kullanılıyordu

@@ -6,6 +6,78 @@
 
 ---
 
+## OTURUM 144 | 2026-08-25 | Step 2 Schema Render Kök Neden Analizi — HOLD ✅
+
+### Bulgu
+
+Wizard Step 2 "0 kart" sorunu — **kök neden: hedef DB'de seed data eksikliği**.
+
+#### Sorun
+- Browser: Villa (ana=11, alt=36, junction=25) → Step 2: **0 kart** + "özel özellik bulunmamaktadır"
+- API Raporu: "28 kart" → **geçersiz kanıt** (farklı API veya eski oturum)
+
+#### Kök Neden Analizi (Tüm Tablolar Sıfır)
+```
+feature_categories: 0  (Okteto DB)
+features:           0  (Okteto DB)
+feature_assignments: 0  (Okteto DB) ← SSOT tablosu BOŞ
+```
+
+#### Backend Sözleşmesi DOĞRU ÇALIŞIYOR
+```
+Local curl test:
+GET /api/v1/wizard/features?ana_kategori_id=11&alt_kategori_id=36&yayin_tipi_id=25
+→ 31 field (Villa Satılık) ✅
+```
+
+#### Oluşturulan Seed Data
+`database/seeders/FeatureAssignmentSeeder.php` → 83 assignment:
+- Villa Satılık (junction 25): 34 fields
+- Villa Kiralık (junction 26): 35 fields  
+- Villa Günlük (junction 27): 35 fields
+- Konut Global: 8 fields
+- Global: 5 fields
+
+#### HOLD Durumu
+- Okteto deploy + DB seed → DevOps yetkisi gerekli
+- Browser retest → deploy sonrası
+
+---
+
+## OTURUM 143 | 2026-08-24 | Recovery-B Test Sonuçları & Kapanış Analizi ✅
+
+### Recovery-B Final Durum
+
+**Commit:** `e49868e` | **Baseline:** `65a6421` | **Status:** ✅ SAAB CERTIFIED
+
+#### Test Sonuçları Özeti
+
+| Kategori | Sonuç |
+|----------|--------|
+| Contract Tests | 5/6 PASS + 1 SKIP (tasarım kararı) |
+| Browser Acceptance | 4/4 PASS |
+| Root Cause Fix | ✅ APPLIED |
+| Console Errors | 1→0 |
+| SAAB Certification | ✅ CERTIFIED |
+
+#### Root Cause Fix
+
+`Alpine.store('listing')` guard eklendi — store yüklenmeden çalışan handler engellendi.
+
+#### Taxonomy Baseline Locked
+
+> `e49868e` — bundan sonraki auditlerde yeni baseline olarak kullanılacak.
+
+#### Devam Eden İş: Recovery-C (Step 3 Media)
+
+| Blocker | Durum |
+|---------|-------|
+| Step 1 Taxonomy | ✅ CLOSED |
+| Step 2 Property Details | 🔲 OPEN |
+| Step 3 Media | 🔲 NEXT |
+
+---
+
 ## OTURUM 116 | 2026-08-13 | SAAB Program-Level Metrics Framework ✅ ADOPTED
 
 ### Üçlü Sağlık Çerçevesi — Canonical Reporting Model

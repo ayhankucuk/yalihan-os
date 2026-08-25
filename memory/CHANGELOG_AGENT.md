@@ -6,6 +6,26 @@
 
 ---
 
+## 2026-08-25 | Oturum 144 | Step 2 Schema Kök Neden + FeatureAssignmentSeeder — HOLD
+
+### Kök Neden Analizi: Wizard Step 2 "0 Kart" Sorunu
+
+**Sorun:** Browser'da Villa (ana=11, alt=36, junction=25) → Step 2: 0 kart + "özel özellik bulunmamaktadır"
+
+**Kök Neden:** Okteto DB'de `feature_categories`/`features`/`feature_assignments` tabloları BOŞ
+- Backend sözleşmesi DOĞRU (local curl: 31 field ✅)
+- Sorun: deploy'da seed data eksik
+
+**Yeni Dosyalar (1):**
+- `database/seeders/FeatureAssignmentSeeder.php` — 83 villa-specific feature assignment
+
+**Değiştirilen Dosyalar (1):**
+- `database/seeders/DatabaseSeeder.php` — FeatureAssignmentSeeder aktifleştirildi
+
+**HOLD:** Okteto deploy + DB seed bekleniyor
+
+---
+
 ## 2026-08-14 | Oturum 122 | RESERVATION-GUEST-COMM-WAVE-1 ✅ CERTIFIED (19/19 PASS)
 
 ### RESERVATION-GUEST-COMM-WAVE-1 — Guest Confirmation Notification Pipeline

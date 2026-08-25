@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
         // ================================================
         $this->command->info('🔐 1/5 Roles & Permissions Loading...');
         $this->call([
+            TenantBaselineSeeder::class,     // Tenant kaydı önce (AdminUserSeeder tenant_id'ye ihtiyaç duyar)
             RoleSeeder::class,               // Spatie roles (super-admin, admin, danisman, musteri)
         ]);
         $this->command->newLine();
@@ -42,7 +43,7 @@ class DatabaseSeeder extends Seeder
         // ================================================
         $this->command->info('📦 2/5 Core System Loading...');
         $this->call([
-            AdminUserSeeder::class,          // Super-admin users (ayhankucuk@gmail.com, yalihanemlak@gmail.com)
+            AdminUserSeeder::class,          // Super-admin users (ayhankucuk@gmail.com, yalihanemlak@gmail.com) — tenant_id+role_id backfill dahil
             // Context7MasterSeeder::class,     // Kategori, özellikler, sistem verileri (Deleted/Missing)
             IlanKategoriSeeder::class,
             YayinTipiSeeder::class,          // Canonical publication types
@@ -51,6 +52,7 @@ class DatabaseSeeder extends Seeder
             PropertyHubOzelliklerSeeder::class,
             SmartFormsCanonicalSeeder::class,
             ExpenseItemSeeder::class,
+            TurkiyeLocationSeeder::class,    // 81 İl + Muğla ilçeleri + Bodrum mahalleleri (Bodrum-First Strategy)
         ]);
         $this->command->newLine();
 
@@ -79,10 +81,9 @@ class DatabaseSeeder extends Seeder
 
         // Feature Assignments (Orphaned Features'ı atamak için)
         $this->command->info('   → Running Feature Assignment Seeder...');
-        // $this->call([
-        //     FeatureAssignmentSeeder::class, (Deleted)
-        //     UpsTemplateTableSeeder::class, // Phase 35 Alignment (Deleted)
-        // ]);
+        $this->call([
+            FeatureAssignmentSeeder::class,
+        ]);
 
         // Golden Visa (geçici olarak devre dışı - minimal schema)
         $this->command->warn('   → Golden Visa seeder skipped (minimal schema)');
