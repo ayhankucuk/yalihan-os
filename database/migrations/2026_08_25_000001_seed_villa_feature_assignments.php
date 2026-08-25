@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Seed villa-specific feature data into feature_categories, features,
@@ -243,6 +244,7 @@ return new class extends Migration
         ];
 
         $ts = now()->toDateTimeString();
+        $hasTenantId = Schema::hasColumn('feature_assignments', 'tenant_id');
 
         foreach ($rows as $i => $r) {
             $fi = $r[0];
@@ -260,20 +262,17 @@ return new class extends Migration
                 continue;
             }
 
-            DB::table('feature_assignments')->updateOrInsert(
-                [
+            $match = [
                     'feature_id'        => $fi,
                     'main_category_id'  => $mc,
                     'sub_category_id'   => $sc,
                     'listing_type_id'   => $lt,
-                    'tenant_id'         => null, // canonical_seed = template-level, no tenant
-                ],
-                [
+            ];
+            $values = [
                     'assignable_type'   => 'App\\Models\\Ilan',
                     'assignable_id'     => 0,
                     'scope_type'        => $scope,
                     'source_type'       => 'canonical_seed',
-                    'tenant_id'         => null,
                     'group_name'        => $gn,
                     'field_slug'        => DB::table('features')->where('id', $fi)->value('slug'),
                     'is_required'      => $req,
@@ -282,8 +281,15 @@ return new class extends Migration
                     'display_order'     => $ord,
                     'created_at'       => $ts,
                     'updated_at'       => $ts,
-                ]
-            );
+            ];
+
+            // tenant_id is added by the following migration.
+            if ($hasTenantId) {
+                $match['tenant_id'] = null;
+                $values['tenant_id'] = null;
+            }
+
+            DB::table('feature_assignments')->updateOrInsert($match, $values);
         }
     }
 };
