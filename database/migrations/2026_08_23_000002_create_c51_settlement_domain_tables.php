@@ -103,9 +103,6 @@ return new class extends Migration
 
             $table->foreign('provider_settlement_id')
                 ->references('id')->on('provider_settlements')->onDelete('cascade');
-            $table->foreign('reconciliation_execution_id')
-                ->references('id')->on('reconciliation_executions')->onDelete('set null');
-
             $table->index(['tenant_id', 'allocation_status'], 'sa_t_status_idx');
             $table->index(['tenant_id', 'reservation_id'], 'sa_t_rsv_idx');
         });
@@ -197,6 +194,12 @@ return new class extends Migration
             $table->index(['tenant_id', 'result_status'], 're_t_status_idx');
             $table->index(['tenant_id', 'result'], 're_t_result_idx');
             $table->index(['tenant_id', 'reservation_id'], 're_t_rsv_idx');
+        });
+
+        // Add this FK only after reconciliation_executions exists.
+        Schema::table('settlement_allocations', function (Blueprint $table) {
+            $table->foreign('reconciliation_execution_id')
+                ->references('id')->on('reconciliation_executions')->onDelete('set null');
         });
     }
 
