@@ -132,9 +132,8 @@ return new class extends Migration
                     'is_searchable'        => $sea,
                     'display_order'        => $ord,
                     'aktiflik_durumu'     => 1,
-                    'aktif_mi'            => 1,
-                    'created_at'           => now(),
-                    'updated_at'           => now(),
+                    'created_at'          => now(),
+                    'updated_at'          => now(),
                 ]
             );
         }
