@@ -266,12 +266,14 @@ return new class extends Migration
                     'main_category_id'  => $mc,
                     'sub_category_id'   => $sc,
                     'listing_type_id'   => $lt,
+                    'tenant_id'         => null, // canonical_seed = template-level, no tenant
                 ],
                 [
                     'assignable_type'   => 'App\\Models\\Ilan',
                     'assignable_id'     => 0,
                     'scope_type'        => $scope,
                     'source_type'       => 'canonical_seed',
+                    'tenant_id'         => null,
                     'group_name'        => $gn,
                     'field_slug'        => DB::table('features')->where('id', $fi)->value('slug'),
                     'is_required'      => $req,

@@ -41,7 +41,9 @@ class FeatureAssignmentSeeder extends Seeder
         $fc = DB::table('feature_categories')->count();
         $f  = DB::table('features')->count();
         $fa = DB::table('feature_assignments')->count();
-        $this->command->info("✅ FeatureAssignmentSeeder: {$fc} categories, {$f} features, {$fa} assignments");
+        if ($this->command) {
+            $this->command->info("✅ FeatureAssignmentSeeder: {$fc} categories, {$f} features, {$fa} assignments");
+        }
     }
 
     // ─── FEATURE CATEGORIES ─────────────────────────────────────────────────
