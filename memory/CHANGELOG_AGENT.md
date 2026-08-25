@@ -6,7 +6,7 @@
 
 ---
 
-## 2026-08-25 | Oturum 144 | Step 2 Schema Kök Neden + FeatureAssignmentSeeder — HOLD
+## 2026-08-25 | Oturum 144 | Step 2 Schema Kök Neden + FeatureAssignmentSeeder ✅
 
 ### Kök Neden Analizi: Wizard Step 2 "0 Kart" Sorunu
 
@@ -16,13 +16,26 @@
 - Backend sözleşmesi DOĞRU (local curl: 31 field ✅)
 - Sorun: deploy'da seed data eksik
 
-**Yeni Dosyalar (1):**
-- `database/seeders/FeatureAssignmentSeeder.php` — 83 villa-specific feature assignment
+**Çözüm (2 commit):**
 
-**Değiştirilen Dosyalar (1):**
-- `database/seeders/DatabaseSeeder.php` — FeatureAssignmentSeeder aktifleştirildi
+`462c191` — `database/migrations/2026_08_25_000001_seed_villa_feature_assignments.php`
+- SQL migration: feature_categories(7) + features(36) + feature_assignments(48)
+- Rollback-safe: sadece source_type=canonical_seed satırlarını siler
+- `php artisan migrate` → 31 fields Villa Satilik API ✅
+- `php artisan migrate:rollback` → 0 assignments ✅
 
-**HOLD:** Okteto deploy + DB seed bekleniyor
+`2eeea45` — `app/Console/Commands/SeedFeatureAssignmentsCommand.php`
+- Artisan wrapper: `php artisan feature:seed-villa [--dry-run] [--force]`
+
+`8c4e29b` — `database/seeders/FeatureAssignmentSeeder.php` + DatabaseSeeder update
+
+**Git Push:** `integration/era-v-phase2a-e01` → `origin` ✅
+
+**Deploy Adımları (DevOps):**
+1. GitHub → `integration/era-v-phase2a-e01` → merge to `main`
+2. Okteto: `git pull` + `php artisan migrate` (migration otomatik çalışır)
+3. Doğrulama: `curl "https://<domain>/api/v1/wizard/features?ana_kategori_id=11&alt_kategori_id=36&yayin_tipi_id=25"` → 31 fields
+4. Browser: Wizard → Quick Select (Villa) → Step 2 → 31+ kart görmeli
 
 ---
 
