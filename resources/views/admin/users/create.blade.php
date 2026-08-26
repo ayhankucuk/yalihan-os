@@ -35,8 +35,8 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h1
-                        class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                        👥 Yeni Kullanıcı Ekle
+                        class="text-3xl font-bold text-gray-900 dark:text-slate-100">
+                        Yeni Kullanıcı Ekle
                     </h1>
                     <p class="mt-3 text-lg text-gray-600 dark:text-gray-400">
                         Sisteme yeni kullanıcı ekleyin
@@ -292,8 +292,10 @@
                     ← İptal
                 </a>
                 <button type="submit" id="user-submit-btn"
-                    class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 dark:shadow-none">
-                    <svg id="user-submit-icon" class="fas fa-save mr-2"></svg>
+                    class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm hover:shadow transition-all duration-200">
+                    <svg id="user-submit-icon" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
                     <span id="user-submit-text">Kaydet</span>
                     <svg id="user-submit-spinner" class="hidden w-4 h-4 mr-2 animate-spin" fill="none"
                         viewBox="0 0 24 24">

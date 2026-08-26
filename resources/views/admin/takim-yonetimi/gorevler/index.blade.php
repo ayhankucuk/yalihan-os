@@ -21,7 +21,7 @@
                                 </path>
                             </svg>
                         </div>
-                        📋 Görev Yönetimi
+                        Görev Yönetimi
                     </h1>
                     <p class="mt-3 text-xl text-gray-600 dark:text-gray-400">
                         Takım üyelerine görev atayın, takip edin ve performanslarını analiz edin

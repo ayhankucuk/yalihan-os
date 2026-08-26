@@ -13,27 +13,27 @@
     <div x-data="{ markingAll: false, loading: false }">
     <!-- Context7 Header -->
     <div class="content-header mb-8">
-        <h1 class="text-3xl font-bold flex items-center">
+        <h1 class="text-3xl font-bold flex items-center text-gray-900 dark:text-slate-100">
             <div
-                class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center mr-4">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6zM4 5h6V1H4v4zM15 3h5v6h-5V3z"></path>
                 </svg>
             </div>
-            📢 Bildirimler
+            Bildirimler
         </h1>
         <div class="flex items-center space-x-3 mt-4">
             <button @click="markingAll = true; markAllAsRead()"
                     :disabled="markingAll"
-                    class="inline-flex items-center px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 hover:scale-105 hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200 touch-target-optimized dark:shadow-none">
+                    class="inline-flex items-center px-4 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-200 font-medium text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-200">
                 <svg class="w-4 h-4 mr-2" :class="markingAll ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
                 <span x-text="markingAll ? 'İşaretleniyor...' : 'Tümünü Okundu İşaretle'"></span>
             </button>
             @can('create', App\Models\Notification::class)
-                <a href="{{ route('admin.notifications.create') }}" class="inline-flex items-center px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg shadow-md hover:bg-orange-700 hover:scale-105 hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none transition-all duration-200 touch-target-optimized dark:shadow-none">
+                <a href="{{ route('admin.notifications.create') }}" class="inline-flex items-center px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg shadow-sm hover:shadow transition-all duration-200">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>

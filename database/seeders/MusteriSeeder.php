@@ -34,6 +34,26 @@ class MusteriSeeder extends Seeder
 
         $musteriler = [
             [
+                'ad' => 'Önder',
+                'soyad' => 'Barlas',
+                'email' => 'barlas8@hotmail.com',
+                'telefon' => '0532 247 1030',
+                'danisman_id' => $atilay->id,
+                'notlar' => 'İlan sahibi - Portföy',
+                'kisi_tipi' => \App\Enums\KisiTipi::EV_SAHIBI,
+                'type' => 'Owner',
+            ],
+            [
+                'ad' => 'Rıza',
+                'soyad' => 'Esen',
+                'email' => 'riza.esen@yalihan.test',
+                'telefon' => '+905332704393',
+                'danisman_id' => $atilay->id,
+                'notlar' => 'İlgili kişi / Aracı / İrtibat',
+                'kisi_tipi' => \App\Enums\KisiTipi::ARACI,
+                'type' => 'Related',
+            ],
+            [
                 'ad' => 'Ahmet',
                 'soyad' => 'Yılmaz',
                 'email' => 'ahmet.yilmaz@test.com',
@@ -86,7 +106,7 @@ class MusteriSeeder extends Seeder
         ];
 
         foreach ($musteriler as $musteriData) {
-            $kisi = Kisi::firstOrCreate(
+            $kisi = Kisi::withoutGlobalScopes()->updateOrCreate(
                 ['eposta' => $musteriData['email']],
                 [
                     'ad' => $musteriData['ad'],
@@ -97,6 +117,7 @@ class MusteriSeeder extends Seeder
                     'danisman_id' => $musteriData['danisman_id'],
                     'notlar' => $musteriData['notlar'],
                     'ulke_id' => 1, // TR
+                    'tenant_id' => 1,
                 ]
             );
 

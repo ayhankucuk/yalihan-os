@@ -15,12 +15,16 @@
                                 sistemi</p>
                         </div>
                         <div class="flex items-center space-x-3">
-                            <button @click="showBulkQuery = true" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 dark:text-slate-300">
-                                <i class="fas fa-list"></i>
+                            <button @click="showBulkQuery = true" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                                </svg>
                                 Toplu Sorgulama
                             </button>
-                            <button @click="showHistory = true" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 dark:text-slate-300">
-                                <i class="fas fa-history"></i>
+                            <button @click="showHistory = true" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 Sorgulama Geçmişi
                             </button>
                         </div>
@@ -78,14 +82,18 @@
 
                             <!-- Submit Button -->
                             <div class="flex items-center justify-between">
-                                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50" :disabled="loading">
-                                    <i class="fas fa-search"></i>
+                                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 font-medium text-sm disabled:opacity-50" :disabled="loading">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
                                     <span x-show="!loading">Parsel Sorgula</span>
                                     <span x-show="loading">Sorgulanıyor...</span>
                                 </button>
 
-                                <button type="button" @click="resetForm()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 dark:text-slate-300">
-                                    <i class="fas fa-redo"></i>
+                                <button type="button" @click="resetForm()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
                                     Temizle
                                 </button>
                             </div>
@@ -100,7 +108,9 @@
                         <div x-show="result && result.success" class="space-y-4">
                             <div class="bg-green-50 border border-green-200 rounded-lg p-4">
                                 <div class="flex items-center">
-                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                    <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
                                     <span class="text-green-800 font-medium">Parsel bilgileri başarıyla bulundu</span>
                                 </div>
                             </div>
@@ -150,8 +160,10 @@
                                         <p class="text-sm text-blue-700 mt-1">Bu parsel için KAKS/TAKS hesaplama ve yatırım
                                             analizi yapabilirsiniz.</p>
                                     </div>
-                                    <button @click="goToArsaCalculation()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200">
-                                        <i class="fas fa-calculator"></i>
+                                    <button @click="goToArsaCalculation()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 font-medium text-sm shadow-sm">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                        </svg>
                                         Hesapla
                                     </button>
                                 </div>
@@ -162,7 +174,9 @@
                         <div x-show="result && !result.success" class="space-y-4">
                             <div class="bg-red-50 border border-red-200 rounded-lg p-4">
                                 <div class="flex items-start">
-                                    <i class="fas fa-exclamation-triangle text-red-500 mr-2 mt-0.5"></i>
+                                    <svg class="w-5 h-5 text-red-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
                                     <div>
                                         <span class="text-red-800 font-medium">Sorgulama başarısız</span>
                                         <p class="text-red-700 text-sm mt-1" x-text="result.message"></p>
@@ -180,13 +194,15 @@
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 dark:text-slate-100">Son Sorgular</h3>
 
                         <div x-show="recentQueries.length === 0" class="text-center py-4">
-                            <i class="fas fa-search text-gray-400 text-2xl mb-2"></i>
+                            <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
                             <p class="text-sm text-gray-500">Henüz sorgulama yapılmadı</p>
                         </div>
 
                         <div x-show="recentQueries.length > 0" class="space-y-3">
                             <template x-for="query in recentQueries" :key="query.id">
-                                <div class="border rounded-lg p-3 cursor-pointer hover:bg-gray-50"
+                                <div class="border rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800"
                                     @click="loadQuery(query)">
                                     <div class="flex items-start justify-between">
                                         <div>
@@ -198,12 +214,10 @@
                                         <div>
                                             <span x-show="query.success"
                                                 class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                                                <i class="fas fa-check mr-1"></i>
                                                 Başarılı
                                             </span>
                                             <span x-show="!query.success"
                                                 class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
-                                                <i class="fas fa-times mr-1"></i>
                                                 Başarısız
                                             </span>
                                         </div>
@@ -232,8 +246,10 @@
                             </div>
                         </div>
 
-                        <button @click="loadStats()" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 w-full mt-4 dark:text-slate-300">
-                            <i class="fas fa-sync"></i>
+                        <button @click="loadStats()" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 w-full mt-4">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
                             Güncelle
                         </button>
                     </div>
@@ -244,19 +260,27 @@
 
                         <div class="space-y-3 text-sm text-gray-600">
                             <div class="flex items-start">
-                                <i class="fas fa-info-circle text-blue-500 mr-2 mt-0.5"></i>
+                                <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 <span>Ada ve parsel numaralarını doğru girin</span>
                             </div>
                             <div class="flex items-start">
-                                <i class="fas fa-map-marker-alt text-blue-500 mr-2 mt-0.5"></i>
+                                <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                </svg>
                                 <span>İl ve ilçe adlarını tam olarak yazın</span>
                             </div>
                             <div class="flex items-start">
-                                <i class="fas fa-clock text-blue-500 mr-2 mt-0.5"></i>
+                                <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 <span>Sorgulama 5-10 saniye sürebilir</span>
                             </div>
                             <div class="flex items-start">
-                                <i class="fas fa-calculator text-blue-500 mr-2 mt-0.5"></i>
+                                <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
                                 <span>Başarılı sorgular için arsa hesaplama yapılabilir</span>
                             </div>
                         </div>
@@ -273,7 +297,9 @@
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-medium">Toplu Parsel Sorgulama</h3>
                         <button @click="showBulkQuery = false" class="text-gray-400 hover:text-gray-600">
-                            <i class="fas fa-times"></i>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                         </button>
                     </div>
 
@@ -285,8 +311,10 @@
                             placeholder="Format: ada,parsel,il,ilce,mahalle&#10;Örnek:&#10;123,45,İstanbul,Kadıköy,Fenerbahçe&#10;456,78,Ankara,Çankaya,Kızılay"></textarea>
 
                         <div class="flex items-center justify-between">
-                            <button @click="processBulkQuery()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50" :disabled="bulkLoading">
-                                <i class="fas fa-search"></i>
+                            <button @click="processBulkQuery()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 font-medium text-sm disabled:opacity-50" :disabled="bulkLoading">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
                                 <span x-show="!bulkLoading">Toplu Sorgula</span>
                                 <span x-show="bulkLoading">Sorgulanıyor...</span>
                             </button>
@@ -335,14 +363,18 @@
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-medium">Sorgulama Geçmişi</h3>
                         <button @click="showHistory = false" class="text-gray-400 hover:text-gray-600">
-                            <i class="fas fa-times"></i>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                         </button>
                     </div>
 
                     <div class="space-y-4">
                         <div class="max-h-96 overflow-y-auto">
                             <div x-show="historyQueries.length === 0" class="text-center py-8">
-                                <i class="fas fa-history text-gray-400 text-3xl mb-2"></i>
+                                <svg class="w-10 h-10 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 <p class="text-gray-500">Henüz sorgulama geçmişi bulunmuyor</p>
                             </div>
 
@@ -362,8 +394,10 @@
                                                 <span x-show="!query.success"
                                                     class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">Başarısız</span>
                                                 <button @click="loadQuery(query)"
-                                                    class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 dark:text-slate-300">
-                                                    <i class="fas fa-redo"></i>
+                                                    class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                    </svg>
                                                     Tekrar
                                                 </button>
                                             </div>
@@ -374,8 +408,10 @@
                         </div>
 
                         <div class="flex justify-center">
-                            <button @click="loadHistory()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 dark:text-slate-300">
-                                <i class="fas fa-sync"></i>
+                            <button @click="loadHistory()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
                                 Geçmişi Yenile
                             </button>
                         </div>

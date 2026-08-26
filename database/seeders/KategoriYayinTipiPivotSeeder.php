@@ -24,7 +24,7 @@ class KategoriYayinTipiPivotSeeder extends Seeder
         $satilik       = $yt['satilik']        ?? null;
         $kiralik       = $yt['kiralik']         ?? null;
         $gunlukKiralik = $yt['gunluk-kiralik']  ?? null;
-        $devrenSatilik = $yt['devren-satilik']  ?? null;
+        $devrenSatilik = $yt['devren']          ?? $yt['devren-satilik'] ?? null;
         $katKarsiligi  = $yt['kat-karsiligi']   ?? null;
 
         // Atama Matrisi: [alt_kategori_slug => [yayin_tipi_id, ...]]

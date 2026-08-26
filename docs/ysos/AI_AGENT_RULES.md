@@ -295,6 +295,51 @@ STOP → document the conflict → preserve evidence → escalate to SAAB
 Do not silently modify constitutional architecture or reinterpret an accidental
 implementation as a new architecture rule.
 
+### Rule 9: Apply Engineering Reasoning Discipline
+
+For cross-layer or production-sensitive work, apply the following reasoning
+discipline before recommending implementation:
+
+#### Evidence Grading
+
+Classify important findings as one of:
+
+- **VERIFIED FACT** — directly supported by current code, tests, migrations, schema, Git, or runtime evidence.
+- **DOCUMENTATION CLAIM** — stated by a repository document but not yet verified against runtime evidence.
+- **INFERENCE** — a reasoned conclusion derived from verified evidence.
+- **UNKNOWN** — not established; do not present it as fact.
+
+#### Contract Tracing
+
+Trace the requested behavior across its complete boundary:
+
+```text
+UI field → request → validation → service → model/database
+→ event/job → storage or external output
+```
+
+Identify the authoritative contract at each boundary and report mismatches
+instead of silently adapting them.
+
+#### Invariant Thinking
+
+Extract conditions that must never be violated. For tenant-safe,
+event-driven, or replay-sensitive work, check at minimum:
+
+- Data cannot cross tenant boundaries.
+- Rejected or deleted input cannot enter final submission.
+- Retries do not create duplicate durable records.
+- Final submission does not depend on temporary state that may be unavailable.
+- Optional AI or processing failure does not corrupt the primary business operation.
+- Replay does not mutate historical executions.
+
+#### Failure-First Reasoning
+
+Before concluding that a flow works, examine partial failure, duplicate input,
+authorization failure, storage failure, processing failure, retry behavior,
+orphaned records, and recovery behavior. Prefer the smallest scope that closes
+the confirmed failure without redesigning unrelated architecture.
+
 ---
 
 ## Conversation Management

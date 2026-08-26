@@ -3,8 +3,8 @@
 @section('content')
     <div class="container mx-auto px-4 py-6">
         <div class="flex items-center justify-between mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white dark:text-slate-100">⚙️ Sistem Ayarları</h1>
-            <a href="{{ route('admin.ayarlar.create') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 touch-target-optimized dark:shadow-none">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white dark:text-slate-100">Sistem Ayarları</h1>
+            <a href="{{ route('admin.ayarlar.create') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm hover:shadow transition-all duration-200">
                 Yeni Ayar Ekle
             </a>
         </div>

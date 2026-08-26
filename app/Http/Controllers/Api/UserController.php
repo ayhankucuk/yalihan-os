@@ -71,13 +71,8 @@ class UserController extends Controller
                 ->values() // ✅ Collection index'lerini sıfırla (array uyumluluğu)
                 ->toArray(); // ✅ SAB: Array döndür (JavaScript uyumluluğu için)
 
-            // ✅ REFACTORED: Using ResponseService
-            return ResponseService::success([
-                'data' => $formattedUsers,
-                'count' => count($formattedUsers),
-                'query' => $query,
-                'source' => 'users', // To differentiate from kisiler
-            ], 'Danışman araması başarıyla tamamlandı');
+            // ✅ REFACTORED: Using ResponseService with direct array payload
+            return ResponseService::success($formattedUsers, 'Danışman araması başarıyla tamamlandı');
         } catch (\Exception $e) {
             Log::error('User search error: '.$e->getMessage());
 

@@ -518,8 +518,17 @@ class YazlikKiralamaController extends AdminController
             }
         }
 
-        // Merge both exception types — blade template renders both uniformly via isP0()/isP1()
-        $allExceptionsMap = array_merge_recursive($operationalExceptionsMap, $commExceptionsMap);
+        // Merge both exception types — preserving integer reservation_id keys.
+        // array_merge_recursive() would re-index integer keys (0,1,2...) losing the mapping.
+        // Instead we manually merge: comm exceptions are appended to existing operational arrays.
+        $allExceptionsMap = $operationalExceptionsMap;
+        foreach ($commExceptionsMap as $resId => $commExcs) {
+            if (isset($allExceptionsMap[$resId])) {
+                $allExceptionsMap[$resId] = array_merge($allExceptionsMap[$resId], $commExcs);
+            } else {
+                $allExceptionsMap[$resId] = $commExcs;
+            }
+        }
 
         $exceptionIds = array_unique(array_merge(
             array_keys($operationalExceptionsMap),

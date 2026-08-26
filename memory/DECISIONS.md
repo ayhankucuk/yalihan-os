@@ -6,6 +6,64 @@
 
 ---
 
+## 2026-08-24 | Oturum 143 | Browser Acceptance — Tenant Context Altyapı Kararı
+
+### Karar: SAAB Browser Acceptance Test Altyapısı
+
+**Durum:** HOLD — SAAB onayı bekleniyor
+**Root Cause:** Test kullanıcısı `yalihanemlak@gmail.com` → `tenant_id: null`
+**Etki:** `SetTenantContext` middleware → 403 SAB_KURAL_1_IHLAL
+
+### SAAB Kararı
+
+| # | Seçenek | Karar | Gerekçe |
+|---|---------|-------|---------|
+| **A** | Disposable test kullanıcısı (`tenant_id=1`) | ✅ ONAYLANDI | Browser acceptance için |
+| **B** | Laravel `actingAs()` + canonical fixture | ✅ ONAYLANDI | Otomatik testler için |
+| **C** | Tenant isolation bypass | ❌ REDDETİLDİ | SAB Kural 1 ihlali |
+| **D** | Sabit token ile auth | 🔲 BEKLEMEDE | Mevcut token altyapısı yok |
+
+### Doğrulanan Mimari Davranış
+
+```
+Request → SetTenantContext → tenant_id null? → 403 SAB_KURAL_1_IHLAL
+```
+
+Bu **güvenlik davranışıdır**, bug değil. Tenant-isolated API'lara tenant context olmadan erişim reddedilmelidir.
+
+### Mevcut Test Altyapısı
+
+| Tip | Yöntem | Durum |
+|-----|--------|-------|
+| Otomatik testler | `User::factory()->create(['tenant_id' => 1])` + `actingAs()` | ✅ ÇALIŞIYOR |
+| Browser acceptance | Manuel kullanıcı (`tenant_id: null`) | ❌ BLOKE |
+
+### Uygulama Planı
+
+1. **Disposable browser test kullanıcısı oluştur:**
+   - `tenant_id: 1` (Yalıhan Emlak)
+   - Test/acceptance için ayrılmış
+   - Production kullanıcıları DEĞİŞTİRİLMEYECEK
+
+2. **Otomatik testler:** Mevcut `actingAs()` pattern korunacak
+
+3. **Recovery-C sonrası:** Browser acceptance altyapısı sabitlenecek
+
+### Yasaklanan Uygulamalar
+
+- ❌ Mevcut `yalihanemlak@gmail.com` kullanıcısına `tenant_id` yazılması
+- ❌ Tenant isolation bypass
+- ❌ Guest token ile tenant context atlatma
+
+### Sonraki Adımlar
+
+1. Disposable browser test kullanıcısı hazırla
+2. Browser acceptance test fixture oluştur
+3. Recovery-C browser acceptance çalıştır
+4. Recovery-B certification tamamla
+
+---
+
 ## 2026-08-14 | Oturum 121 | LIFECYCLE-DEBT — Override Cancellation Event Gap
 
 ### Karar: Override Path'inde ReservationCancelledEvent Üretilmiyor — Documented Debt
@@ -791,5 +849,29 @@ Controller → Service → IlanCrudService → Repository → DB
 ```
 Controller → Service → Projection Tables (listing_search_projection)
 ```
+
+---
+
+## 2026-08-24 | PILOT-01 | CORTEX TRUST/UI CORRECTNESS — AI Kalite Skoru Semantic Boundary
+
+**Durum:** HOLD — ayrı blocker olarak schedule edilecek
+
+**Bulgulan:**
+- Boş başlık formunda `CortexObserver.js:198` sadece uyarı metni üretiyor (`"İlan başlığı girmelisiniz"`)
+- Aynı durumda `CortexObserver.js:234-240`: Yüksek uyarı skoru 20 puan düşürüyor → `100 - 20 = 80`
+- Widget bu 80 puanı yeşil + "Mükemmel İlan" olarak sunuyor (`cortex-observer-widget.blade.php:57-74`)
+
+**Çelişki:**
+Sistem fiilen diyor ki: "Başlık eksik, fakat ilan %80 kaliteli."
+Bu yapay başlangıç skoru. AI Trust Contract'a göre boş form → `UNKNOWN/INCOMPLETE` olmalı; sayısal kalite skoru göstermemeli.
+
+**Ayrı Blocker Kararı:**
+- Recovery-C Media scope'una eklenmedi (doküman kararı: charter dışı)
+- Codex forensic review olarak schedule edilecek
+- Owner: Codex / Claude Sonnet 4.6
+- Scope: sadece Cortex başlangıç durumu ve skor semantiği
+- Workflow: önce test (boş/kısmi/tam form), sonra cerrahi düzeltme
+
+**Etiket:** `CORTEX-TRUST-BLOCKER`
 
 **Düzeltme:** Projection'a direkt yazma YASAK — sadece Event ile tetikle

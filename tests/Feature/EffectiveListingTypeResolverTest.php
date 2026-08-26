@@ -2,43 +2,67 @@
 
 namespace Tests\Feature;
 
-use App\Models\IlanKategori;
+use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\SAB\GlobalWriteGuard;
+use App\Models\Kisi;
+use App\Models\User;
 use App\Models\YayinTipiSablonu;
 use App\Services\Ups\PropertyPublicationPolicy;
 use App\Services\Wizard\EffectiveListingTypeResolver;
-use Tests\TestCase;
+use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
+use Illuminate\Support\Facades\Event;
 use Tests\Helpers\TestFixtureHelper;
+use Tests\TestCase;
 
 /**
  * EffectiveListingTypeResolver + PropertyPublicationPolicy acceptance tests.
  *
  * Validates the category → allowed publication types resolution chain.
+ * Aligned with canonical YayinTipiSablonu template matrix and IDs.
  */
 class EffectiveListingTypeResolverTest extends TestCase
 {
     use TestFixtureHelper;
 
     private PropertyPublicationPolicy $policy;
+
     private EffectiveListingTypeResolver $resolver;
 
     protected function setUp(): void
     {
         parent::setUp();
-        \Illuminate\Support\Facades\Event::fake();
+        Event::fake();
 
         $this->policy = app(PropertyPublicationPolicy::class);
         $this->resolver = app(EffectiveListingTypeResolver::class);
 
-        // Seed YayinTipiSablonu (6 global types) using idempotent helpers
-        $this->ensureYayinTipi('satilik', ['id' => 1, 'ad' => 'Satılık', 'display_order' => 1]);
-        $this->ensureYayinTipi('kiralik', ['id' => 2, 'ad' => 'Kiralık', 'display_order' => 2]);
-        $this->ensureYayinTipi('gunluk-kiralama', ['id' => 3, 'ad' => 'Günlük Kiralama', 'display_order' => 3]);
-        $this->ensureYayinTipi('haftalik-kiralama', ['id' => 4, 'ad' => 'Haftalık Kiralama', 'display_order' => 4]);
-        $this->ensureYayinTipi('aylik-kiralama', ['id' => 5, 'ad' => 'Aylık Kiralama', 'display_order' => 5]);
-        $this->ensureYayinTipi('sezonluk-kiralama', ['id' => 6, 'ad' => 'Sezonluk Kiralama', 'display_order' => 6]);
+        // Seed master yayin_tipleri table
+        $this->seedYayinTipleri();
 
-        // Seed categories (matching production DB structure)
+        // Seed categories & templates (matching canonical production DB structure)
         $this->seedCategories();
+        $this->seedTemplates();
+    }
+
+    private function seedYayinTipleri(): void
+    {
+        $types = [
+            ['id' => 1, 'name' => 'Satılık', 'slug' => 'satilik', 'aktiflik_durumu' => 1],
+            ['id' => 2, 'name' => 'Kiralık', 'slug' => 'kiralik', 'aktiflik_durumu' => 1],
+            ['id' => 3, 'name' => 'Kat Karşılığı', 'slug' => 'kat-karsiligi', 'aktiflik_durumu' => 1],
+            ['id' => 4, 'name' => 'Devren', 'slug' => 'devren', 'aktiflik_durumu' => 1],
+            ['id' => 5, 'name' => 'Günlük Kiralama', 'slug' => 'gunluk-kiralik', 'aktiflik_durumu' => 1],
+            ['id' => 6, 'name' => 'Haftalık Kiralama', 'slug' => 'haftalik-kiralik', 'aktiflik_durumu' => 1],
+            ['id' => 7, 'name' => 'Aylık Kiralama', 'slug' => 'aylik-kiralik', 'aktiflik_durumu' => 1],
+            ['id' => 8, 'name' => 'Sezonluk Kiralama', 'slug' => 'sezonluk-kiralik', 'aktiflik_durumu' => 1],
+        ];
+
+        foreach ($types as $t) {
+            \Illuminate\Support\Facades\DB::table('yayin_tipleri')->updateOrInsert(
+                ['id' => $t['id']],
+                array_merge($t, ['updated_at' => now(), 'created_at' => now()])
+            );
+        }
     }
 
     private function seedCategories(): void
@@ -73,24 +97,95 @@ class EffectiveListingTypeResolverTest extends TestCase
         }
     }
 
+    private function seedTemplates(): void
+    {
+        $templates = [
+            // Arsa & Arazi (3)
+            ['id' => 1, 'kategori_id' => 3, 'yayin_tipi_id' => 1, 'slug' => 'arsa-arazi-satilik', 'ad' => 'Arsa & Arazi Satılık'],
+            ['id' => 2, 'kategori_id' => 3, 'yayin_tipi_id' => 2, 'slug' => 'arsa-arazi-kiralik', 'ad' => 'Arsa & Arazi Kiralık'],
+            // Arsa (Konut/Villa) (15)
+            ['id' => 3, 'kategori_id' => 15, 'yayin_tipi_id' => 1, 'slug' => 'arsa-konut-villa-satilik', 'ad' => 'Arsa (Konut/Villa) Satılık'],
+            ['id' => 4, 'kategori_id' => 15, 'yayin_tipi_id' => 2, 'slug' => 'arsa-konut-villa-kiralik', 'ad' => 'Arsa (Konut/Villa) Kiralık'],
+            ['id' => 5, 'kategori_id' => 15, 'yayin_tipi_id' => 3, 'slug' => 'arsa-konut-villa-kat-karsiligi', 'ad' => 'Arsa (Konut/Villa) Kat Karşılığı'],
+            // Zeytinlik (18)
+            ['id' => 10, 'kategori_id' => 18, 'yayin_tipi_id' => 1, 'slug' => 'zeytinlik-satilik', 'ad' => 'Zeytinlik Satılık'],
+            // Konut (1)
+            ['id' => 18, 'kategori_id' => 1, 'yayin_tipi_id' => 1, 'slug' => 'konut-satilik', 'ad' => 'Konut Satılık'],
+            ['id' => 19, 'kategori_id' => 1, 'yayin_tipi_id' => 2, 'slug' => 'konut-kiralik', 'ad' => 'Konut Kiralık'],
+            // Daire (7)
+            ['id' => 20, 'kategori_id' => 7, 'yayin_tipi_id' => 1, 'slug' => 'daire-satilik', 'ad' => 'Daire Satılık'],
+            ['id' => 21, 'kategori_id' => 7, 'yayin_tipi_id' => 2, 'slug' => 'daire-kiralik', 'ad' => 'Daire Kiralık'],
+            // Villa (8)
+            ['id' => 22, 'kategori_id' => 8, 'yayin_tipi_id' => 1, 'slug' => 'villa-satilik', 'ad' => 'Villa Satılık'],
+            ['id' => 23, 'kategori_id' => 8, 'yayin_tipi_id' => 2, 'slug' => 'villa-kiralik', 'ad' => 'Villa Kiralık'],
+            ['id' => 24, 'kategori_id' => 8, 'yayin_tipi_id' => 5, 'slug' => 'villa-gunluk', 'ad' => 'Villa Günlük'],
+            ['id' => 25, 'kategori_id' => 8, 'yayin_tipi_id' => 6, 'slug' => 'villa-haftalik', 'ad' => 'Villa Haftalık'],
+            ['id' => 26, 'kategori_id' => 8, 'yayin_tipi_id' => 7, 'slug' => 'villa-aylik', 'ad' => 'Villa Aylık'],
+            ['id' => 27, 'kategori_id' => 8, 'yayin_tipi_id' => 8, 'slug' => 'villa-sezonluk', 'ad' => 'Villa Sezonluk'],
+            // İşyeri (2)
+            ['id' => 32, 'kategori_id' => 2, 'yayin_tipi_id' => 1, 'slug' => 'isyeri-satilik', 'ad' => 'İşyeri Satılık'],
+            ['id' => 33, 'kategori_id' => 2, 'yayin_tipi_id' => 2, 'slug' => 'isyeri-kiralik', 'ad' => 'İşyeri Kiralık'],
+            ['id' => 34, 'kategori_id' => 2, 'yayin_tipi_id' => 4, 'slug' => 'isyeri-devren', 'ad' => 'İşyeri Devren'],
+            // Ofis (11)
+            ['id' => 35, 'kategori_id' => 11, 'yayin_tipi_id' => 1, 'slug' => 'ofis-satilik', 'ad' => 'Ofis Satılık'],
+            ['id' => 36, 'kategori_id' => 11, 'yayin_tipi_id' => 2, 'slug' => 'ofis-kiralik', 'ad' => 'Ofis Kiralık'],
+            ['id' => 37, 'kategori_id' => 11, 'yayin_tipi_id' => 4, 'slug' => 'ofis-devren', 'ad' => 'Ofis Devren'],
+            // Dükkan (12)
+            ['id' => 38, 'kategori_id' => 12, 'yayin_tipi_id' => 1, 'slug' => 'dukkan-satilik', 'ad' => 'Dükkan Satılık'],
+            ['id' => 39, 'kategori_id' => 12, 'yayin_tipi_id' => 2, 'slug' => 'dukkan-kiralik', 'ad' => 'Dükkan Kiralık'],
+            ['id' => 40, 'kategori_id' => 12, 'yayin_tipi_id' => 4, 'slug' => 'dukkan-devren', 'ad' => 'Dükkan Devren'],
+            // Yazlık Kiralama (4)
+            ['id' => 46, 'kategori_id' => 4, 'yayin_tipi_id' => 5, 'slug' => 'yazlik-kiralama-gunluk', 'ad' => 'Yazlık Kiralama Günlük'],
+            ['id' => 47, 'kategori_id' => 4, 'yayin_tipi_id' => 6, 'slug' => 'yazlik-kiralama-haftalik', 'ad' => 'Yazlık Kiralama Haftalık'],
+            ['id' => 48, 'kategori_id' => 4, 'yayin_tipi_id' => 7, 'slug' => 'yazlik-kiralama-aylik', 'ad' => 'Yazlık Kiralama Aylık'],
+            ['id' => 49, 'kategori_id' => 4, 'yayin_tipi_id' => 8, 'slug' => 'yazlik-kiralama-sezonluk', 'ad' => 'Yazlık Kiralama Sezonluk'],
+            // Villa Tipi (26)
+            ['id' => 50, 'kategori_id' => 26, 'yayin_tipi_id' => 5, 'slug' => 'villa-tipi-gunluk', 'ad' => 'Villa Tipi Günlük'],
+            ['id' => 51, 'kategori_id' => 26, 'yayin_tipi_id' => 6, 'slug' => 'villa-tipi-haftalik', 'ad' => 'Villa Tipi Haftalık'],
+            ['id' => 52, 'kategori_id' => 26, 'yayin_tipi_id' => 7, 'slug' => 'villa-tipi-aylik', 'ad' => 'Villa Tipi Aylık'],
+            ['id' => 53, 'kategori_id' => 26, 'yayin_tipi_id' => 8, 'slug' => 'villa-tipi-sezonluk', 'ad' => 'Villa Tipi Sezonluk'],
+            // Turistik Tesisler (5)
+            ['id' => 74, 'kategori_id' => 5, 'yayin_tipi_id' => 1, 'slug' => 'turistik-tesisler-satilik', 'ad' => 'Turistik Tesisler Satılık'],
+            ['id' => 75, 'kategori_id' => 5, 'yayin_tipi_id' => 2, 'slug' => 'turistik-tesisler-kiralik', 'ad' => 'Turistik Tesisler Kiralık'],
+            // Otel (32)
+            ['id' => 76, 'kategori_id' => 32, 'yayin_tipi_id' => 1, 'slug' => 'otel-satilik', 'ad' => 'Otel Satılık'],
+            ['id' => 77, 'kategori_id' => 32, 'yayin_tipi_id' => 2, 'slug' => 'otel-kiralik', 'ad' => 'Otel Kiralık'],
+            // Projeden Satış (6)
+            ['id' => 82, 'kategori_id' => 6, 'yayin_tipi_id' => 1, 'slug' => 'projeden-satis-satilik', 'ad' => 'Projeden Satış Satılık'],
+            // Konut Projesi (23)
+            ['id' => 83, 'kategori_id' => 23, 'yayin_tipi_id' => 1, 'slug' => 'konut-projesi-satilik', 'ad' => 'Konut Projesi Satılık'],
+        ];
+
+        foreach ($templates as $tmpl) {
+            $this->ensureYayinTipi($tmpl['slug'], [
+                'id' => $tmpl['id'],
+                'kategori_id' => $tmpl['kategori_id'],
+                'yayin_tipi_id' => $tmpl['yayin_tipi_id'],
+                'ad' => $tmpl['ad'],
+                'aktiflik_durumu' => true,
+                'display_order' => 1,
+            ]);
+        }
+    }
+
     // ── Policy Matrix Tests ──
 
     public function test_konut_allows_satilik_kiralik(): void
     {
         $ids = $this->policy->allowedForCategory(1);
-        $this->assertEqualsCanonicalizing([1, 2], $ids);
+        $this->assertEqualsCanonicalizing([18, 19], $ids);
     }
 
     public function test_daire_allows_satilik_kiralik(): void
     {
         $ids = $this->policy->allowedForCategory(7);
-        $this->assertEqualsCanonicalizing([1, 2], $ids);
+        $this->assertEqualsCanonicalizing([20, 21], $ids);
     }
 
     public function test_villa_allows_all_six_types(): void
     {
         $ids = $this->policy->allowedForCategory(8);
-        $this->assertEqualsCanonicalizing([1, 2, 3, 4, 5, 6], $ids);
+        $this->assertEqualsCanonicalizing([22, 23, 24, 25, 26, 27], $ids);
     }
 
     public function test_arsa_arazi_allows_satilik_kiralik(): void
@@ -101,82 +196,79 @@ class EffectiveListingTypeResolverTest extends TestCase
 
     public function test_arsa_konut_villa_allows_satilik_kiralik(): void
     {
-        // kat-karsiligi (ID:7) exists in test DB migration, so it matches the matrix too
         $ids = $this->policy->allowedForCategory(15);
-        $this->assertContains(1, $ids, 'Arsa/Konut/Villa should include Satılık');
-        $this->assertContains(2, $ids, 'Arsa/Konut/Villa should include Kiralık');
+        $this->assertContains(3, $ids, 'Arsa/Konut/Villa should include Satılık');
+        $this->assertContains(4, $ids, 'Arsa/Konut/Villa should include Kiralık');
+        $this->assertContains(5, $ids, 'Arsa/Konut/Villa should include Kat Karşılığı');
     }
 
     public function test_zeytinlik_allows_only_satilik(): void
     {
         $ids = $this->policy->allowedForCategory(18);
-        $this->assertEquals([1], $ids);
+        $this->assertEquals([10], $ids);
     }
 
     public function test_yazlik_kiralama_allows_seasonal_types(): void
     {
         $ids = $this->policy->allowedForCategory(4);
-        $this->assertEqualsCanonicalizing([3, 4, 5, 6], $ids);
+        $this->assertEqualsCanonicalizing([46, 47, 48, 49], $ids);
     }
 
-    public function test_villa_tipi_yazlik_allows_satilik_plus_seasonal(): void
+    public function test_villa_tipi_yazlik_allows_seasonal(): void
     {
         $ids = $this->policy->allowedForCategory(26);
-        $this->assertEqualsCanonicalizing([1, 3, 4, 5, 6], $ids);
+        $this->assertEqualsCanonicalizing([50, 51, 52, 53], $ids);
     }
 
     public function test_turistik_tesisler_allows_satilik_kiralik(): void
     {
         $ids = $this->policy->allowedForCategory(5);
-        $this->assertEqualsCanonicalizing([1, 2], $ids);
+        $this->assertEqualsCanonicalizing([74, 75], $ids);
     }
 
     public function test_projeden_satis_allows_only_satilik(): void
     {
         $ids = $this->policy->allowedForCategory(6);
-        $this->assertEquals([1], $ids);
+        $this->assertEquals([82], $ids);
     }
 
     public function test_ofis_allows_satilik_kiralik(): void
     {
-        // devren-satilik (ID:8) and devren-kiralik (ID:9) exist in test DB
-        // Both canonicalize to 'devren' which is in the ofis matrix
         $ids = $this->policy->allowedForCategory(11);
-        $this->assertContains(1, $ids, 'Ofis should include Satılık');
-        $this->assertContains(2, $ids, 'Ofis should include Kiralık');
+        $this->assertContains(35, $ids, 'Ofis should include Satılık');
+        $this->assertContains(36, $ids, 'Ofis should include Kiralık');
+        $this->assertContains(37, $ids, 'Ofis should include Devren');
     }
 
     // ── Slug Canonical Matching Tests ──
 
     public function test_gunluk_kiralama_slug_matches_gunluk_matrix_key(): void
     {
-        // Matrix uses 'gunluk' but DB slug is 'gunluk-kiralama'
-        // Canonical matching should bridge this gap
         $ids = $this->policy->allowedForCategory(8); // Villa
-        $this->assertContains(3, $ids, 'Günlük Kiralama (ID:3, slug:gunluk-kiralama) should match matrix key gunluk');
+        $this->assertContains(24, $ids, 'Villa Günlük (ID:24, slug:villa-gunluk) should match matrix key gunluk');
     }
 
     public function test_sezonluk_kiralama_slug_matches_sezonluk_matrix_key(): void
     {
         $ids = $this->policy->allowedForCategory(8); // Villa
-        $this->assertContains(6, $ids, 'Sezonluk Kiralama (ID:6, slug:sezonluk-kiralama) should match matrix key sezonluk');
+        $this->assertContains(27, $ids, 'Villa Sezonluk (ID:27, slug:villa-sezonluk) should match matrix key sezonluk');
     }
 
     // ── isAllowed Tests ──
 
-    public function test_isAllowed_returns_true_for_valid_combo(): void
+    public function test_is_allowed_returns_true_for_valid_combo(): void
     {
-        $this->assertTrue($this->policy->isAllowed(7, 1)); // Daire + Satılık
+        $this->assertTrue($this->policy->isAllowed(7, 20)); // Daire + Satılık
     }
 
-    public function test_isAllowed_returns_false_for_invalid_combo(): void
+    public function test_is_allowed_returns_false_for_invalid_combo(): void
     {
-        $this->assertFalse($this->policy->isAllowed(7, 3)); // Daire + Günlük = not allowed
+        $this->assertFalse($this->policy->isAllowed(7, 24)); // Daire + Villa Günlük = not allowed
     }
 
-    public function test_isAllowed_returns_false_for_nonexistent_category(): void
+    public function test_is_allowed_returns_false_for_nonexistent_category(): void
     {
-        $this->assertFalse($this->policy->isAllowed(9999, 1));
+        $this->assertFalse($this->policy->isAllowed(9999, 20));
     }
 
     // ── validate() Tests ──
@@ -184,12 +276,12 @@ class EffectiveListingTypeResolverTest extends TestCase
     public function test_validate_throws_for_invalid_combo(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->policy->validate(7, 3); // Daire + Günlük = not allowed
+        $this->policy->validate(7, 24); // Daire + Villa Günlük = not allowed
     }
 
     public function test_validate_passes_for_valid_combo(): void
     {
-        $this->policy->validate(8, 3); // Villa + Günlük = allowed
+        $this->policy->validate(8, 24); // Villa + Villa Günlük = allowed
         $this->assertTrue(true); // No exception = pass
     }
 
@@ -197,28 +289,28 @@ class EffectiveListingTypeResolverTest extends TestCase
 
     public function test_resolver_prefers_sub_category(): void
     {
-        // Villa (sub) allows 6 types, Konut (main) allows 2
+        // Villa (sub: 8) allows 6 types, Konut (main: 1) allows 2
         $ids = $this->resolver->resolveIds(1, 8);
-        $this->assertEqualsCanonicalizing([1, 2, 3, 4, 5, 6], $ids);
+        $this->assertEqualsCanonicalizing([22, 23, 24, 25, 26, 27], $ids);
     }
 
     public function test_resolver_falls_back_to_main_category(): void
     {
         // Sub-category with no policy → falls back to main
         $mainIds = $this->resolver->resolveIds(1, null);
-        $this->assertEqualsCanonicalizing([1, 2], $mainIds);
+        $this->assertEqualsCanonicalizing([18, 19], $mainIds);
     }
 
-    public function test_resolver_isAllowed_checks_sub_first(): void
+    public function test_resolver_is_allowed_checks_sub_first(): void
     {
-        // Villa allows Günlük, Konut doesn't — sub wins
-        $this->assertTrue($this->resolver->isAllowed(1, 8, 3));
+        // Villa allows Günlük (24), Konut doesn't — sub wins
+        $this->assertTrue($this->resolver->isAllowed(1, 8, 24));
     }
 
-    public function test_resolver_isAllowed_rejects_invalid(): void
+    public function test_resolver_is_allowed_rejects_invalid(): void
     {
-        // Neither Konut nor Daire allows Günlük
-        $this->assertFalse($this->resolver->isAllowed(1, 7, 3));
+        // Neither Konut nor Daire allows Villa Günlük (24)
+        $this->assertFalse($this->resolver->isAllowed(1, 7, 24));
     }
 
     public function test_resolver_debug_returns_chain_info(): void
@@ -242,9 +334,9 @@ class EffectiveListingTypeResolverTest extends TestCase
         $types = $response->json('data.types');
         $slugs = array_column($types, 'slug');
 
-        $this->assertContains('satilik', $slugs);
-        $this->assertContains('kiralik', $slugs);
-        $this->assertNotContains('gunluk-kiralama', $slugs, 'Daire should NOT have Günlük Kiralama');
+        $this->assertContains('daire-satilik', $slugs);
+        $this->assertContains('daire-kiralik', $slugs);
+        $this->assertNotContains('villa-gunluk', $slugs, 'Daire should NOT have Günlük Kiralama');
     }
 
     public function test_publication_types_endpoint_villa_includes_seasonal(): void
@@ -255,9 +347,9 @@ class EffectiveListingTypeResolverTest extends TestCase
         $types = $response->json('data.types');
         $slugs = array_column($types, 'slug');
 
-        $this->assertContains('satilik', $slugs);
-        $this->assertContains('gunluk-kiralama', $slugs);
-        $this->assertContains('sezonluk-kiralama', $slugs);
+        $this->assertContains('villa-satilik', $slugs);
+        $this->assertContains('villa-gunluk', $slugs);
+        $this->assertContains('villa-sezonluk', $slugs);
         $this->assertCount(6, $types);
     }
 
@@ -268,7 +360,7 @@ class EffectiveListingTypeResolverTest extends TestCase
 
         $types = $response->json('data.types');
         $this->assertCount(1, $types);
-        $this->assertEquals('satilik', $types[0]['slug']);
+        $this->assertEquals('konut-projesi-satilik', $types[0]['slug']);
     }
 
     public function test_publication_types_endpoint_nonexistent_category(): void
@@ -281,13 +373,13 @@ class EffectiveListingTypeResolverTest extends TestCase
 
     public function test_store_request_accepts_valid_category_yayin_tipi_combo(): void
     {
-        // Konut(1) > Daire(7) + Kiralık(2) = allowed by policy
-        $user = \App\Models\User::factory()->create();
+        // Konut(1) > Daire(7) + Daire Kiralık(21) = allowed by policy
+        $user = User::factory()->create();
 
         $response = $this->withoutMiddleware([
-            \App\Http\Middleware\RoleMiddleware::class,
-            \App\Http\Middleware\SAB\GlobalWriteGuard::class,
-            \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+            RoleMiddleware::class,
+            GlobalWriteGuard::class,
+            EnsureEmailIsVerified::class,
         ])->actingAs($user)->post(route('admin.ilanlar.store'), [
             'baslik' => 'Test İlan Valid Combo',
             'aciklama' => 'Test açıklama',
@@ -295,8 +387,8 @@ class EffectiveListingTypeResolverTest extends TestCase
             'para_birimi' => 'TRY',
             'ana_kategori_id' => 1, // Konut
             'alt_kategori_id' => 7, // Daire
-            'yayin_tipi_id' => 2,   // Kiralık — allowed for Daire
-            'ilan_sahibi_id' => \App\Models\Kisi::factory()->create()->id,
+            'yayin_tipi_id' => 21,  // Daire Kiralık — allowed for Daire
+            'ilan_sahibi_id' => Kisi::factory()->create()->id,
             'yayin_durumu' => 'taslak',
         ]);
 
@@ -315,7 +407,17 @@ class EffectiveListingTypeResolverTest extends TestCase
     {
         $response = $this->getJson('/api/v1/wizard/quick-selections');
         $response->assertOk();
-        $response->assertJsonStructure(['data' => [['label', 'icon', 'color', 'ana_kategori_id', 'alt_kategori_id', 'yayin_tipi_id', 'ana_slug', 'alt_slug', 'yayin_tipi_slug']]]);
+
+        // Assert all 6 curated combos are returned
+        $this->assertCount(6, $response->json('data'), 'Quick selections must return exactly 6 cards');
+        foreach ($response->json('data') as $item) {
+            $this->assertArrayHasKey('label', $item);
+            $this->assertArrayHasKey('ana_kategori_id', $item);
+            $this->assertArrayHasKey('alt_kategori_id', $item);
+            $this->assertArrayHasKey('yayin_tipi_id', $item);
+            $this->assertArrayHasKey('yayin_tipi_slug', $item);
+            $this->assertNotEmpty($item['yayin_tipi_slug'], 'yayin_tipi_slug must not be null');
+        }
     }
 
     public function test_quick_selections_never_returns_invalid_combinations(): void

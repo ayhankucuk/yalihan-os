@@ -12,15 +12,15 @@
 @section('content')
     <!-- Header -->
     <div class="content-header mb-8">
-        <h1 class="text-3xl font-bold flex items-center">
+        <h1 class="text-3xl font-bold flex items-center text-gray-900 dark:text-slate-100">
             <div
-                class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mr-4">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="w-12 h-12 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl flex items-center justify-center mr-4">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
-            📊 Aktivite Akışı
+            Aktivite Akışı
         </h1>
     </div>
 

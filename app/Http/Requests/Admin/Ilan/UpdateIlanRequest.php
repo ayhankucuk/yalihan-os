@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin\Ilan;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 /**
  * Update Ilan Request
@@ -87,6 +88,8 @@ class UpdateIlanRequest extends FormRequest
 
             // Owner & Agent
             'ilan_sahibi_id' => 'required|exists:kisiler,id',
+            // İlgili Kişi: Step 2 wizard field — nullable, tenant-scoped via withValidator
+            'ilgili_kisi_id' => ['nullable', Rule::exists('kisiler', 'id')],
             'danisman_id' => 'nullable|exists:users,id',
 
             // Location
@@ -213,6 +216,71 @@ class UpdateIlanRequest extends FormRequest
             'yayin_tipi_id.required' => 'Yayın tipi seçimi zorunludur.',
             'ilan_sahibi_id.required' => 'İlan sahibi seçimi zorunludur.',
         ];
+    }
+
+    /**
+     * SAAB Strict Brokerage Model: tenant scope guards for danisman_id and ilgili_kisi_id on update.
+     * Mirrors StoreIlanRequest::withValidator — closes the documented cross-tenant gaps.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        // Tenant scope: ilgili_kisi_id must belong to same tenant (when provided).
+        $validator->after(function (Validator $validator) {
+            if ($validator->errors()->has('ilgili_kisi_id')) {
+                return;
+            }
+
+            $ilgiliKisiId = $this->integer('ilgili_kisi_id');
+            $authUser     = $this->user();
+
+            if (!$ilgiliKisiId || !$authUser || !$authUser->tenant_id) {
+                return;
+            }
+
+            $exists = \App\Models\Kisi::where('id', $ilgiliKisiId)
+                ->where('tenant_id', $authUser->tenant_id)
+                ->exists();
+
+            if (!$exists) {
+                $validator->errors()->add(
+                    'ilgili_kisi_id',
+                    'Seçilen ilgili kişi bu organizasyona ait değil.'
+                );
+            }
+        });
+
+        $validator->after(function (Validator $validator) {
+            if ($validator->errors()->has('danisman_id')) {
+                return; // already failed exists check
+            }
+
+            $danismanId = $this->integer('danisman_id');
+            $authUser   = $this->user();
+
+            // danisman_id is nullable on update — only validate when provided
+            if (!$danismanId || !$authUser || !$authUser->tenant_id) {
+                return;
+            }
+
+            $danisman = \App\Modules\Auth\Models\User::where('id', $danismanId)
+                ->where('tenant_id', $authUser->tenant_id)
+                ->first();
+
+            if (!$danisman) {
+                $validator->errors()->add(
+                    'danisman_id',
+                    'Seçilen danışman bu organizasyona ait değil.'
+                );
+                return;
+            }
+
+            if (!$danisman->aktiflik_durumu) {
+                $validator->errors()->add(
+                    'danisman_id',
+                    'Seçilen danışman aktif değil.'
+                );
+            }
+        });
     }
 
     /**

@@ -995,17 +995,22 @@ if (typeof window.poiSelector === 'undefined') {
                     }
                 }
 
-                // ✅ YENİ YAPI: Step 3 - Fotoğraf (Opsiyonel, sadece uyarı)
+                // ✅ YENİ YAPI: Step 3 - Fotoğraf (ENGEL: minimum 1 fotoğraf zorunlu)
                 if (this.currentStep === 3) {
-                    // Not: Bu alanda Alpine.js photoWizardStep2() component'i kullanılıyor.
-                    // photos array'i ana wizard state'inde olduğu için oradan kontrol edilebilir.
+                    // P0-FIX: SSOT = native input.files (DataTransfer sync)
+                    // Alpine listener keeps both aligned; total = Math.max not sum
+                    const photoInput = document.getElementById('fotograflar');
+                    const nativeCount = photoInput?.files?.length || 0;
+                    const cacheCount = (nativeCount === 0 && Array.isArray(window.__wizardUploadedPhotos))
+                        ? window.__wizardUploadedPhotos.length : 0;
+                    const photoCount = Math.max(nativeCount, cacheCount);
 
-                    if (this.photos?.length === 0) {
-                        // Fotoğraf yoksa uyarı ver ama engelleme
-                        this.showNotification(
-                            '💡 İpucu: En az 3 fotoğraf eklemeniz önerilir. Devam edebilirsiniz.',
-                            'warning'
-                        );
+                    console.info(`[WIZARD] nextStep Step3: native=${nativeCount} cache=${cacheCount} total=${photoCount}`);
+
+                    if (photoCount === 0) {
+                        // ENGEL: Fotoğraf yoksa step geçişi engellenir
+                        this.showNotification('⚠️ En az 1 fotoğraf yüklemelisiniz.', 'error');
+                        return false;
                     }
                 }
 
@@ -1471,7 +1476,7 @@ if (typeof window.poiSelector === 'undefined') {
                                 !yayinTipiSelect.disabled &&
                                 yayinTipiSelect.value
                             ) {
-                                this.hideFieldError(yayinTipiField);
+                                this.hideFieldError(yayinTipiSelect);
                             }
                         }, 500); // AJAX yükleme için bekle
                     });
@@ -1979,12 +1984,35 @@ if (typeof window.poiSelector === 'undefined') {
             },
 
             async submitForm() {
+                // P2-FIX: Double-submit guard
+                if (this.__submitting) {
+                    console.warn('[WIZARD] submitForm: already submitting, ignoring duplicate call');
+                    return;
+                }
+                this.__submitting = true;
+
+                // Validate step 3 first (includes photo check)
                 if (!this.validateStep(3)) {
+                    this.__submitting = false;
+                    return;
+                }
+
+                // P0-FIX: SSOT photo count — native input OR window cache (Math.max not sum)
+                const photoInput = document.getElementById('fotograflar');
+                const nativeCount = photoInput?.files?.length || 0;
+                const cacheCount = (nativeCount === 0 && Array.isArray(window.__wizardUploadedPhotos))
+                    ? window.__wizardUploadedPhotos.length : 0;
+                const totalPhotos = Math.max(nativeCount, cacheCount);
+
+                console.info(`[WIZARD] submitForm: native=${nativeCount} cache=${cacheCount} total=${totalPhotos}`);
+
+                if (totalPhotos === 0) {
+                    this.showNotification('⚠️ En az 1 fotoğraf yüklemelisiniz.', 'error');
+                    this.__submitting = false;
                     return;
                 }
 
                 const form = document.getElementById('ilan-wizard-form');
-                const submitButton = form.querySelector('button[type="submit"]');
 
                 // ✅ Phase D/G: Check publish gate soft-blocking
                 const qualityResult = window.ilanWizardQualityResult || null;
@@ -1997,6 +2025,7 @@ if (typeof window.poiSelector === 'undefined') {
                         '⚠️ Kalite kontrolü engelliyor. Lütfen "Override" checkbox\'unu işaretleyin.',
                         'error'
                     );
+                    this.__submitting = false;
                     return;
                 }
 
@@ -2006,17 +2035,21 @@ if (typeof window.poiSelector === 'undefined') {
 
                 if (!yayinTipiSlug) {
                     this.showNotification('Yayın tipi seçmeden devam edemezsiniz.', 'error');
+                    this.__submitting = false;
                     return;
                 }
                 if (!kategoriSlug) {
                     this.showNotification('Kategori seçmeden devam edemezsiniz.', 'error');
+                    this.__submitting = false;
                     return;
                 }
 
+                const submitBtn = form?.querySelector('button[type="submit"]');
+
                 // Disable submit button
-                if (submitButton) {
-                    submitButton.disabled = true;
-                    submitButton.textContent = 'Kaydediliyor...';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Kaydediliyor...';
                 }
 
                 // Price formatting
@@ -2028,6 +2061,20 @@ if (typeof window.poiSelector === 'undefined') {
                 }
 
                 const formData = new FormData(form);
+
+                // P0-FIX: Photo sync — attach from native input (DataTransfer keeps in sync)
+                formData.delete('fotograflar[]');
+                formData.delete('fotograflar');
+                const photoFiles = (photoInput && photoInput.files && photoInput.files.length > 0)
+                    ? Array.from(photoInput.files)
+                    : (Array.isArray(window.__wizardUploadedPhotos) ? window.__wizardUploadedPhotos : []);
+                if (photoFiles.length > 0) {
+                    photoFiles.forEach((file) => {
+                        if (file && (file instanceof File || file instanceof Blob) && file.size > 0) {
+                            formData.append('fotograflar[]', file);
+                        }
+                    });
+                }
 
                 // ✅ SAB SafetyNet: Manually append critical IDs if missed by FormData
                 // This ensures that even if these fields are manipulated by JS or outside the form scope, they are included.
@@ -2076,10 +2123,11 @@ if (typeof window.poiSelector === 'undefined') {
                         } else {
                             this.showNotification(errorData.message || 'Bir hata oluştu', 'error');
                         }
-                        if (submitButton) {
-                            submitButton.disabled = false;
-                            submitButton.textContent = '✅ Yayınla';
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = '✅ Yayınla';
                         }
+                        this.__submitting = false;
                         return;
                     }
 
@@ -2092,7 +2140,7 @@ if (typeof window.poiSelector === 'undefined') {
                     if (window.autoSaveManager) window.autoSaveManager.clearDraft();
 
                     // Step 2: Call Publish Gate
-                    if (submitButton) submitButton.textContent = 'Yayınlanıyor...';
+                    if (submitBtn) submitBtn.textContent = 'Yayınlanıyor...';
 
                     const draftFeatures = this.collectDraftFeatures
                         ? this.collectDraftFeatures()
@@ -2138,13 +2186,15 @@ if (typeof window.poiSelector === 'undefined') {
                             window.location.href = `/admin/ilanlar/${ilanId}/edit`;
                         }, 1500);
                     }
+                    this.__submitting = false; // P2-FIX: success path reset
                 } catch (error) {
                     console.error('Wizard submission error:', error);
                     this.showNotification('Sistem hatası oluştu. Lütfen tekrar deneyin.', 'error');
-                    if (submitButton) {
-                        submitButton.disabled = false;
-                        submitButton.textContent = '✅ Yayınla';
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = '✅ Yayınla';
                     }
+                    this.__submitting = false; // P2-FIX: error path reset
                 }
             },
 

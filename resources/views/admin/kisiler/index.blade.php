@@ -6,14 +6,14 @@
     {{-- 🎯 CRM RADAR EKRANI - Modern Tailwind + Dark Mode + Telemetri Işıkları --}}
     <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950 p-6 transition-all duration-300">
         
-        {{-- 📡 RADAR HEADER --}}
+        {{-- RADAR HEADER --}}
         <div class="mb-8">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-4xl font-black bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent mb-2 transition-all">
-                        🎯 CRM Radar Ekranı
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-slate-100 mb-2">
+                        CRM Kişiler & Müşteri Yönetimi
                     </h1>
-                    <p class="text-gray-600 dark:text-gray-400 text-lg">
+                    <p class="text-gray-600 dark:text-gray-400 text-base">
                         Kişi portföyünüzü gerçek zamanlı izleyin ve yönetin
                     </p>
                 </div>
@@ -21,14 +21,11 @@
                 {{-- Action Buttons --}}
                 <div class="flex gap-3">
                     <a href="{{ route('admin.kisiler.create') }}"
-                        class="group relative px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white dark:text-slate-50 rounded-xl hover:shadow-2xl dark:hover:shadow-blue-500/20 hover:scale-105 dark:hover:scale-105 active:scale-95 dark:active:scale-95 transition-all duration-300 font-bold overflow-hidden">
-                        <span class="absolute inset-0 bg-white/20 dark:bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
-                        <span class="relative flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            Yeni Kişi Ekle
-                        </span>
+                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow transition-all duration-200 font-medium text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Yeni Kişi Ekle
                     </a>
                 </div>
             </div>

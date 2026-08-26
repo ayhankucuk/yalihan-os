@@ -15,11 +15,14 @@ class KisiTest extends TestCase
      */
     public function test_kisi_can_be_created(): void
     {
+        $tenantId = $this->getDefaultTenantId();
+
         $kisiId = DB::table('kisiler')->insertGetId([
-            'ad' => 'Test',
-            'soyad' => 'Kisi',
-            'eposta' => 'test@example.com',
-            'telefon' => '5551234567',
+            'tenant_id'  => $tenantId,
+            'ad'         => 'Test',
+            'soyad'      => 'Kisi',
+            'eposta'     => 'test@example.com',
+            'telefon'    => '5551234567',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -37,22 +40,26 @@ class KisiTest extends TestCase
      */
     public function test_kisi_belongs_to_danisman(): void
     {
+        $tenantId = $this->getDefaultTenantId();
+
         $danismanId = DB::table('users')->insertGetId([
-            'name' => 'Test Danışman',
-            'email' => 'danisman@example.com',
-            'password' => Hash::make('password'),
+            'name'       => 'Test Danışman',
+            'email'      => 'danisman@example.com',
+            'password'   => Hash::make('password'),
+            'tenant_id'  => $tenantId,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         $kisiId = DB::table('kisiler')->insertGetId([
-            'ad' => 'Test',
-            'soyad' => 'Kisi',
-            'eposta' => 'test@example.com',
-            'telefon' => '5551234567',
+            'tenant_id'   => $tenantId,
+            'ad'          => 'Test',
+            'soyad'       => 'Kisi',
+            'eposta'      => 'kisi-danisman@example.com',
+            'telefon'     => '5551234567',
             'danisman_id' => $danismanId,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'created_at'  => now(),
+            'updated_at'  => now(),
         ]);
 
         $kisi = Kisi::find($kisiId);
@@ -68,11 +75,14 @@ class KisiTest extends TestCase
      */
     public function test_kisi_has_ilanlar(): void
     {
-        $kisiId = DB::table('kisiler')->insertGetId([
-            'ad' => 'Test',
-            'soyad' => 'Kisi',
-            'eposta' => 'test@example.com',
-            'telefon' => '5551234567',
+        $tenantId = $this->getDefaultTenantId();
+
+        DB::table('kisiler')->insertGetId([
+            'tenant_id'  => $tenantId,
+            'ad'         => 'Test',
+            'soyad'      => 'Kisi',
+            'eposta'     => 'kisi-ilanlar@example.com',
+            'telefon'    => '5551234567',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -81,13 +91,14 @@ class KisiTest extends TestCase
         // So we just verify we can insert to ilanlar and skip relationship check
         DB::table('ilanlar')->insert([
             [
-                'baslik' => 'İlan 1',
-                'slug' => 'kisi-ilan-1',
-                'fiyat' => 100000,
-                'para_birimi' => 'TL',
-                'yayin_durumu' => 'yayinda',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'tenant_id'     => $tenantId,
+                'baslik'        => 'İlan 1',
+                'slug'          => 'kisi-ilan-1',
+                'fiyat'         => 100000,
+                'para_birimi'   => 'TL',
+                'yayin_durumu'  => 'yayinda',
+                'created_at'    => now(),
+                'updated_at'    => now(),
             ],
         ]);
 
@@ -99,23 +110,27 @@ class KisiTest extends TestCase
      */
     public function test_kisi_has_talepler(): void
     {
+        $tenantId = $this->getDefaultTenantId();
+
         $kisiId = DB::table('kisiler')->insertGetId([
-            'ad' => 'Test',
-            'soyad' => 'Kisi',
-            'eposta' => 'test@example.com',
-            'telefon' => '5551234567',
+            'tenant_id'  => $tenantId,
+            'ad'         => 'Test',
+            'soyad'      => 'Kisi',
+            'eposta'     => 'kisi-talepler@example.com',
+            'telefon'    => '5551234567',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         DB::table('talepler')->insert([
             [
-                'talep_tipi' => 'Konut',
-                'kisi_id' => $kisiId,
+                'tenant_id'    => $tenantId,
+                'talep_tipi'   => 'Konut',
+                'kisi_id'      => $kisiId,
                 'talep_durumu' => 'yayinda',
-                'emlak_tipi' => 'Daire',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'emlak_tipi'   => 'Daire',
+                'created_at'   => now(),
+                'updated_at'   => now(),
             ],
         ]);
 
@@ -131,24 +146,28 @@ class KisiTest extends TestCase
      */
     public function test_kisi_scope_active(): void
     {
+        $tenantId = $this->getDefaultTenantId();
+
         DB::table('kisiler')->insert([
             [
-                'ad' => 'Active Kisi',
-                'soyad' => 'Test',
-                'eposta' => 'active@example.com',
-                'telefon' => '5551234567',
+                'tenant_id'       => $tenantId,
+                'ad'              => 'Active Kisi',
+                'soyad'           => 'Test',
+                'eposta'          => 'active@example.com',
+                'telefon'         => '5551234567',
                 'aktiflik_durumu' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at'      => now(),
+                'updated_at'      => now(),
             ],
             [
-                'ad' => 'Inactive Kisi',
-                'soyad' => 'Test',
-                'eposta' => 'inactive@example.com',
-                'telefon' => '5551234568',
+                'tenant_id'       => $tenantId,
+                'ad'              => 'Inactive Kisi',
+                'soyad'           => 'Test',
+                'eposta'          => 'inactive@example.com',
+                'telefon'         => '5551234568',
                 'aktiflik_durumu' => false,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at'      => now(),
+                'updated_at'      => now(),
             ],
         ]);
 
@@ -168,12 +187,15 @@ class KisiTest extends TestCase
      */
     public function test_kisi_context7_compliance(): void
     {
+        $tenantId = $this->getDefaultTenantId();
+
         $kisiId = DB::table('kisiler')->insertGetId([
-            'ad' => 'Test',
-            'soyad' => 'Kisi',
-            'eposta' => 'test@example.com',
-            'telefon' => '5551234567',
-            'notlar' => 'Test notları',
+            'tenant_id'  => $tenantId,
+            'ad'         => 'Test',
+            'soyad'      => 'Kisi',
+            'eposta'     => 'kisi-context7@example.com',
+            'telefon'    => '5551234567',
+            'notlar'     => 'Test notları',
             'created_at' => now(),
             'updated_at' => now(),
         ]);

@@ -8,23 +8,29 @@
             <div>
                 <h1 class="text-3xl font-bold flex items-center text-gray-800 dark:text-slate-200">
                     <div
-                        class="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                        <i class="fas fa-tags text-white text-xl"></i>
+                        class="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5a1.99 1.99 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
                     </div>
-                    Etiket Management
+                    Etiket Yönetimi
                 </h1>
-                <p class="text-lg text-gray-600 mt-2">Manage system labels and tags</p>
+                <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">Sistem etiketlerini ve kategorilerini yönetin</p>
             </div>
             <div class="flex gap-3">
                 <a href="{{ route('admin.etiket.create') }}"
-                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg hover:scale-105 active:scale-95 dark:shadow-none">
-                    <i class="fas fa-plus mr-2"></i>
-                    New Etiket
+                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Yeni Etiket
                 </a>
                 <a href="{{ route('admin.etiket.export') }}"
-                    class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md dark:shadow-none">
-                    <i class="fas fa-download mr-2"></i>
-                    Export
+                    class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Dışa Aktar
                 </a>
             </div>
         </div>
@@ -61,9 +67,11 @@
                         <option value="0" {{ request('aktiflik_durumu') == '0' ? 'selected' : '' }}>Inactive</option>
                     </select>
                     <button type="submit"
-                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg col-span-1 md:col-span-1 dark:shadow-none">
-                        <i class="fas fa-search mr-2"></i>
-                        Filter
+                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow col-span-1 md:col-span-1">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        Filtrele
                     </button>
                 </div>
             </form>
@@ -74,16 +82,18 @@
                 <div class="flex items-center gap-4">
                     <select style="color-scheme: light dark;" name="action"
                         class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 form-select transition-all duration-200 dark:text-slate-100">
-                        <option value="">Bulk Actions</option>
-                        <option value="activate">Activate</option>
-                        <option value="deactivate">Deactivate</option>
-                        <option value="delete">Delete</option>
+                        <option value="">Toplu İşlemler</option>
+                        <option value="activate">Aktif Yap</option>
+                        <option value="deactivate">Pasif Yap</option>
+                        <option value="delete">Sil</option>
                     </select>
                     <button type="submit"
-                        class="inline-flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg dark:shadow-none"
+                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow"
                         onclick="return confirmBulkAction()">
-                        <i class="fas fa-check mr-2"></i>
-                        Apply
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Uygula
                     </button>
                 </div>
             </form>
@@ -185,13 +195,17 @@
                             <tr>
                                 <td colspan="8" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                     <div class="flex flex-col items-center py-8">
-                                        <i class="fas fa-tags text-gray-400 text-4xl mb-4"></i>
-                                        <p class="text-lg font-medium text-gray-900 mb-2 dark:text-slate-100 dark:text-white">No etiketler found</p>
-                                        <p class="text-gray-500 mb-4">Create your first etiket to get started</p>
+                                        <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5a1.99 1.99 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                        </svg>
+                                        <p class="text-lg font-medium text-gray-900 mb-2 dark:text-slate-100 dark:text-white">Henüz etiket bulunamadı</p>
+                                        <p class="text-gray-500 mb-4">Başlamak için ilk etiketinizi oluşturun</p>
                                         <a href="{{ route('admin.etiket.create') }}"
-                                            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg dark:shadow-none">
-                                            <i class="fas fa-plus mr-2"></i>
-                                            Create Etiket
+                                            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                            </svg>
+                                            Etiket Oluştur
                                         </a>
                                     </div>
                                 </td>

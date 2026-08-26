@@ -41,20 +41,8 @@ class C5WizardMediaContractTest extends TestCase
         parent::setUp();
         Storage::fake('public');
 
-        // Disable IlanFotografiObserver to prevent ListingRankingService → ilan_metinleri crash
+        // Disable IlanFotografiObserver to prevent ListingRankingService dispatching jobs in tests
         \App\Models\IlanFotografi::unsetEventDispatcher();
-
-        // Create missing ilan_metinleri table for RankingService
-        if (!\Illuminate\Support\Facades\Schema::hasTable('ilan_metinleri')) {
-            \Illuminate\Support\Facades\Schema::create('ilan_metinleri', function ($table) {
-                $table->id();
-                $table->unsignedBigInteger('ilan_id')->nullable();
-                $table->string('yapay_zeka_durumu')->default('beklemede');
-                $table->text('meta_description')->nullable();
-                $table->text('meta_keywords')->nullable();
-                $table->timestamps();
-            });
-        }
 
         $this->seedIlanKategori();
         $this->seedPublicationTypes();

@@ -13,13 +13,33 @@
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <template x-for="item in selections" :key="item.ana_slug + item.alt_slug + item.yayin_tipi_slug">
             <button type="button" x-on:click="applySelection(item)"
-                class="flex flex-col items-center justify-center p-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:shadow-sm transition-all duration-200 group"
+                class="flex flex-col items-center justify-center p-3 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-all duration-200 group"
                 :class="hoverClass(item.color)">
-                <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"
-                    :class="iconBgClass(item.color)">
-                    <i :class="[item.icon, iconTextClass(item.color)]"></i>
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"
+                    :class="[iconBgClass(item.color), iconTextClass(item.color)]">
+                    <svg x-show="item.icon === 'bina'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    <svg x-show="item.icon === 'anahtar'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                    </svg>
+                    <svg x-show="item.icon === 'arsa'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                    </svg>
+                    <svg x-show="item.icon === 'villa'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    <svg x-show="item.icon === 'tatil'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <svg x-show="item.icon === 'dukkan'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    <svg x-show="!['bina', 'anahtar', 'arsa', 'villa', 'tatil', 'dukkan'].includes(item.icon)" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"></path>
+                    </svg>
                 </div>
-                <span class="text-xs font-bold text-gray-900 dark:text-white text-center dark:text-slate-100"
+                <span class="text-xs font-bold text-gray-900 dark:text-slate-100 text-center"
                     x-text="item.label"></span>
             </button>
         </template>
@@ -33,12 +53,23 @@
 
             async loadSelections() {
                 try {
-                    const res = await fetch('/api/v1/wizard/quick-selections');
-                    if (!res.ok) return;
+                    const url = '/api/v1/wizard/quick-selections';
+                    const res = await fetch(url);
+                    console.log('[QuickSelections] HTTP:', res.status, 'URL:', url);
+                    if (!res.ok) {
+                        console.warn('[QuickSelections] HTTP error:', res.status, res.statusText, '-> selections stays empty');
+                        return;
+                    }
                     const json = await res.json();
-                    this.selections = json.data || [];
+                    console.log('[QuickSelections] json:', json, 'json.data:', json?.data, 'length:', json?.data?.length);
+                    if (json?.data?.length > 0) {
+                        this.selections = json.data;
+                        console.log('[QuickSelections] ✅ SET:', this.selections.length, 'cards');
+                    } else {
+                        console.warn('[QuickSelections] ⚠️ json.data is empty — API returned 200 but data[] is empty. Check backend resolver/policy.');
+                    }
                 } catch (e) {
-                    console.warn('[QuickSelections] API fetch failed:', e);
+                    console.error('[QuickSelections] ❌ Fetch failed:', e);
                 }
             },
 

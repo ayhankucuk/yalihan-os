@@ -132,8 +132,22 @@ class PropertyPublicationPolicy
         }
 
         // UPS Phase 2: Fallback to YayinTipiSablonu (Global Template system)
-        // kategoriya_id bazlı sorgu - matrix ID'leri production DB'den gelir, test DB'de farklı olabilir.
-        return YayinTipiSablonu::where('kategori_id', $kategoriId)
+        // Priority 1: Match by allowed IDs (from matrix resolution)
+        $byId = YayinTipiSablonu::whereIn('id', $allowedIds)
+            ->where('aktiflik_durumu', true)
+            ->orderBy('display_order') // context7-ignore
+            ->orderBy('ad') // context7-ignore
+            ->get();
+
+        if ($byId->isNotEmpty()) {
+            return $byId;
+        }
+
+        // Priority 2: Match by kategori_id or NULL (global templates)
+        return YayinTipiSablonu::where(function ($q) use ($kategoriId) {
+                $q->where('kategori_id', $kategoriId)
+                  ->orWhereNull('kategori_id');
+            })
             ->where('aktiflik_durumu', true)
             ->orderBy('display_order') // context7-ignore
             ->orderBy('ad') // context7-ignore
@@ -236,26 +250,26 @@ class PropertyPublicationPolicy
 
             // ── Yazlık Kiralama Family ──
             'yazlik-kiralama' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'], // Ana kategori (ID:4)
-            'villa-tipi' => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],       // ID:26
-            'rezidans-tipi' => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],    // ID:27
-            'daire-tipi' => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],       // ID:28
-            'tas-ev-tipi' => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],      // ID:29
-            'malikane-tipi' => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],    // ID:30
-            'minimal-tipi' => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],     // ID:31
+            'villa-tipi' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],       // ID:26
+            'rezidans-tipi' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],    // ID:27
+            'daire-tipi' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],       // ID:28
+            'tas-ev-tipi' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],      // ID:29
+            'malikane-tipi' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],    // ID:30
+            'minimal-tipi' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],     // ID:31
             // Legacy yazlık slugs
             'yazlik' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
             'gunluk-kiralama' => ['gunluk'],
             'haftalik-kiralama' => ['haftalik'],
             'aylik-kiralama' => ['aylik'],
-            'yazlik-villa' => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],
-            'yazlik-daire' => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],
-            'yazlik-residence' => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],
-            'yazlik-mustakil-ev' => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],
-            'yazlik-bungalov' => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],
-            'yazlik-studio' => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],
-            'yazlik-apart' => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],
-            'yazlik-ciftlik-evi' => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],
-            'yazlik-kosk' => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],
+            'yazlik-villa' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
+            'yazlik-daire' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
+            'yazlik-residence' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
+            'yazlik-mustakil-ev' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
+            'yazlik-bungalov' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
+            'yazlik-studio' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
+            'yazlik-apart' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
+            'yazlik-ciftlik-evi' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
+            'yazlik-kosk' => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
 
             // ── Turistik Tesisler Family ──
             'turistik-tesisler' => ['satilik', 'kiralik'],                   // Ana kategori (ID:5)
@@ -301,13 +315,17 @@ class PropertyPublicationPolicy
         }
 
         // 2. Fallback or Secondary check: YayinTipiSablonu (V2)
-        // Canonical matching: matrix keys use short slugs (e.g. 'gunluk'),
-        // DB may use long slugs (e.g. 'gunluk-kiralama').
-        // YayinTipiRules::canonicalizeSlug() is the SSOT for this mapping.
+        // Canonical matching: If subcategory has specific templates, query only those (prevent parent pollution).
+        // If not, fallback to parent category templates.
+        $hasSpecificTemplates = YayinTipiSablonu::where('aktiflik_durumu', true)
+            ->where('kategori_id', $kategoriId)
+            ->exists();
+
+        $targetSearchIds = $hasSpecificTemplates ? [$kategoriId] : $searchIds;
+
         $allTemplates = YayinTipiSablonu::where('aktiflik_durumu', true)
-            ->where(function ($query) use ($searchIds) {
-                $query->whereIn('kategori_id', $searchIds)
-                      ->orWhereNull('kategori_id');
+            ->where(function ($query) use ($targetSearchIds) {
+                $query->whereIn('kategori_id', $targetSearchIds);
             })
             ->get(['id', 'slug']);
 

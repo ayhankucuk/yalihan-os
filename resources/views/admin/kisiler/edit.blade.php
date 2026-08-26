@@ -22,33 +22,30 @@
     <style></style>
 @endsection
 
-@section('content_header')
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white dark:text-slate-100">
-                👤 {{ $kisi->ad }} {{ $kisi->soyad }} - Düzenle
-            </h1>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Kişi bilgilerini güncelleyin</p>
-        </div>
-        <div class="flex items-center space-x-3">
-            <a href="{{ route('admin.kisiler.index') }}"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-all duration-200 dark:text-slate-100">
-                ← Geri Dön
-            </a>
-            <button onclick="deleteKisi({{ $kisi->id }})"
-                class="inline-flex items-center px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 hover:scale-105 active:scale-95 transition-all duration-200">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                Sil
-            </button>
-        </div>
-    </div>
-@endsection
-
 @section('content')
     <div class="space-y-6">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white dark:text-slate-100">
+                    {{ $kisi->ad }} {{ $kisi->soyad }} - Düzenle
+                </h1>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Kişi bilgilerini güncelleyin</p>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="{{ route('admin.kisiler.index') }}"
+                    class="inline-flex items-center px-4 py-2 text-sm font-medium bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-200">
+                    ← Geri Dön
+                </a>
+                <button onclick="deleteKisi({{ $kisi->id }})"
+                    class="inline-flex items-center px-4 py-2 bg-red-600 text-white font-medium text-sm rounded-lg hover:bg-red-700 shadow-sm hover:shadow transition-all duration-200">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Sil
+                </button>
+            </div>
+        </div>
 
         {{-- Success Message --}}
         @if (session('success'))
@@ -88,14 +85,11 @@
             @method('PUT')
 
             <!-- Temel Bilgiler -->
-            <div class="bg-gray-50 dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm dark:shadow-none dark:border-slate-700">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm dark:shadow-none dark:border-slate-700">
                 <div class="p-6">
-                    <h2 class="text-xl font-bold text-blue-800 mb-6 flex items-center">
-                        <svg class="w-6 h-6 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        👤 Temel Bilgiler
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-slate-100 mb-6 flex items-center">
+                        <span class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">1</span>
+                        Temel Bilgiler
                     </h2>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -293,96 +287,84 @@
                 </div>
             </div>
 
-            {{-- Section 3: Context7 Location System (Wizard Port) --}}
+            {{-- Section 2: Adres Bilgileri --}}
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm mb-6 dark:shadow-none dark:border-slate-700"
                 x-data="locationWizard()" x-init="init()">
                 <div class="p-6">
-                    <h2 class="text-xl font-bold text-blue-800 mb-6 flex items-center">
-                        <svg class="w-6 h-6 mr-3 text-blue-600" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        📍 Adres Bilgileri
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-slate-100 mb-6 flex items-center">
+                        <span class="bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">2</span>
+                        Adres Bilgileri
                     </h2>
                     {{-- Address Grid --}}
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         {{-- İl --}}
                         <div>
-                            <label for="il_id" class="block text-sm font-medium text-gray-900 dark:text-white mb-2 dark:text-slate-100">
+                            <label for="il_id" class="block text-sm font-medium text-gray-900 dark:text-slate-100 mb-2">
                                 İl <span class="text-red-500">*</span>
                             </label>
                             <select name="il_id" id="il_id" required x-model="selectedCity"
                                 @change="fetchDistricts()"
-                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-colors dark:text-slate-100">
+                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-colors">
                                 <option value="">İl Seçin</option>
                                 @foreach ($iller as $il)
-                                    <option value="{{ $il->id }}">{{ $il->il_adi }}</option>
+                                    <option value="{{ $il->id }}" {{ old('il_id', $kisi->il_id) == $il->id ? 'selected' : '' }}>{{ $il->il_adi }}</option>
                                 @endforeach
                             </select>
                         </div>
 
                         {{-- İlçe --}}
                         <div>
-                            <label for="ilce_id" class="block text-sm font-medium text-gray-900 dark:text-white mb-2 dark:text-slate-100">
+                            <label for="ilce_id" class="block text-sm font-medium text-gray-900 dark:text-slate-100 mb-2">
                                 İlçe <span class="text-red-500">*</span>
                             </label>
                             <select name="ilce_id" id="ilce_id" required x-model="selectedDistrict"
                                 @change="fetchNeighborhoods()" :disabled="!selectedCity || loadingDistricts"
-                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-slate-100">
-                                <option value="">Önce İl Seçin</option>
+                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                <option value="" x-text="loadingDistricts ? 'İlçeler yükleniyor...' : 'İlçe Seçin'"></option>
                                 <template x-for="district in districts" :key="district.id">
                                     <option :value="district.id" x-text="district.name || district.ilce_adi"
-                                        :selected="district.id == '{{ $kisi->ilce_id }}'"></option>
+                                        :selected="district.id == '{{ old('ilce_id', $kisi->ilce_id) }}'"></option>
                                 </template>
                             </select>
                         </div>
 
                         {{-- Mahalle --}}
                         <div>
-                            <label for="mahalle_id" class="block text-sm font-medium text-gray-900 dark:text-white mb-2 dark:text-slate-100">
+                            <label for="mahalle_id" class="block text-sm font-medium text-gray-900 dark:text-slate-100 mb-2">
                                 Mahalle <span class="text-red-500">*</span>
                             </label>
                             <select name="mahalle_id" id="mahalle_id" required x-model="selectedNeighborhood"
-                                @change="focusNeighborhood()" :disabled="!selectedDistrict || loadingNeighborhoods"
-                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-slate-100">
-                                <option value="">Önce İlçe Seçin</option>
+                                :disabled="!selectedDistrict || loadingNeighborhoods"
+                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                <option value="" x-text="loadingNeighborhoods ? 'Mahalleler yükleniyor...' : 'Mahalle Seçin'"></option>
                                 <template x-for="hood in neighborhoods" :key="hood.id">
                                     <option :value="hood.id" x-text="hood.name || hood.mahalle_adi"
-                                        :selected="hood.id == '{{ $kisi->mahalle_id }}'"></option>
+                                        :selected="hood.id == '{{ old('mahalle_id', $kisi->mahalle_id) }}'"></option>
                                 </template>
                             </select>
                         </div>
                     </div>
 
-                    {{-- ✅ Harita kaldırıldı - CRM/Kişi formalarında harita gösterilmiyor --}}
-                    {{-- Harita sadece İlan Oluşturma sayfasında kullanılıyor --}}
                     <input type="hidden" name="lat" id="lat" value="{{ $kisi->lat }}">
-                    <input type="hidden" name="lng" id="lng" value="{{ $kisi->lng }}"} <!-- Adres Detayı
-                        -->
-                    <div class="mb-6 mt-6">
-                        <label for="adres_detay" class="block text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">
-                            <span class="block text-sm font-medium text-gray-900 dark:text-white-text dark:text-slate-100">Adres Detayı</span>
+                    <input type="hidden" name="lng" id="lng" value="{{ $kisi->lng }}">
+
+                    <div class="mb-2 mt-4">
+                        <label for="adres_detay" class="block text-sm font-medium text-gray-900 dark:text-slate-100 mb-2">
+                            Adres Detayı
                         </label>
-                        <textarea name="adres_detay" rows="3"
-                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 text-base dark:text-slate-100"
+                        <textarea name="adres_detay" id="adres_detay" rows="3"
+                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 text-sm"
                             placeholder="Sokak, cadde, bina numarası, daire no vb. detay bilgiler">{{ old('adres_detay', $kisi->adres_detay ?? '') }}</textarea>
                     </div>
                 </div>
             </div>
 
             <!-- Notlar -->
-            <div class="bg-gray-50 dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm dark:shadow-none dark:border-slate-700">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm dark:shadow-none dark:border-slate-700">
                 <div class="p-6">
-                    <h2 class="text-xl font-bold text-purple-800 mb-6 flex items-center">
-                        <svg class="w-6 h-6 mr-3 text-purple-600" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        📝 Notlar
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-slate-100 mb-6 flex items-center">
+                        <span class="bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">3</span>
+                        Notlar
                     </h2>
 
                     <div class="mb-6">
@@ -400,15 +382,14 @@
             <!-- Form Butonları -->
             <div class="flex justify-end space-x-4">
                 <a href="{{ route('admin.kisiler.index') }}"
-                    class="inline-flex items-center px-6 py-3 bg-gray-600 dark:bg-gray-700 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 dark:hover:bg-gray-600 hover:scale-105 hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200 dark:shadow-none">
+                    class="inline-flex items-center px-5 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-200 font-medium text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-200">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                     İptal
                 </a>
                 <button type="submit" id="kisi-edit-submit-btn"
-                    class="inline-flex items-center px-6 py-3 bg-orange-600 dark:bg-orange-700 text-white font-semibold rounded-lg shadow-md hover:bg-orange-700 dark:hover:bg-orange-600 hover:scale-105 hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 dark:shadow-none"
-                    onsubmit="const btn = document.getElementById('kisi-edit-submit-btn'); const icon = document.getElementById('kisi-edit-submit-icon'); const text = document.getElementById('kisi-edit-submit-text'); const spinner = document.getElementById('kisi-edit-submit-spinner'); if(btn && icon && text && spinner) { btn.disabled = true; icon.classList.add('hidden'); spinner.classList.remove('hidden'); text.textContent = 'Kaydediliyor...'; }">
+                    class="inline-flex items-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg shadow-sm hover:shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg id="kisi-edit-submit-icon" class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -434,9 +415,9 @@
         // Location Wizard Logic (Inlined from resources/js/admin/location-wizard.js for stability)
         window.locationWizard = function() {
             return {
-                selectedCity: '',
-                selectedDistrict: '',
-                selectedNeighborhood: '',
+                selectedCity: '{{ old('il_id', $kisi->il_id ?? '') }}',
+                selectedDistrict: '{{ old('ilce_id', $kisi->ilce_id ?? '') }}',
+                selectedNeighborhood: '{{ old('mahalle_id', $kisi->mahalle_id ?? '') }}',
 
                 districts: [],
                 neighborhoods: [],
@@ -444,115 +425,31 @@
                 loadingDistricts: false,
                 loadingNeighborhoods: false,
 
-                lat: 37.0344, // Default: Bodrum
-                lng: 27.4305,
-
-                map: null,
-                marker: null,
-
-                init() {
-                    this.initMap();
-
-                    // Bodrum-First Strategy: Muğla (ID: 48) otomatik seçili gelsin
-                    const ilSelect = document.getElementById('il_id');
-                    if (ilSelect) {
-                        if (ilSelect.value) {
-                            this.selectedCity = ilSelect.value;
+                async init() {
+                    if (this.selectedCity) {
+                        await this.fetchDistricts();
+                        if (this.selectedDistrict) {
+                            await this.fetchNeighborhoods();
                         }
-                        this.fetchDistricts();
                     }
-                },
-
-                initMap() {
-                    // Leaflet global check
-                    if (typeof L === 'undefined') {
-                        console.error('❌ Leaflet JS bulunamadı!');
-                        return;
-                    }
-
-                    const mapElement = document.getElementById('map-step4') || document.getElementById('map');
-                    if (!mapElement) return;
-
-                    if (mapElement._leaflet_id) {
-                        // Safer fallback since L.Map.getInstance is missing in this version
-                        mapElement._leaflet_id = null;
-                    }
-
-                    // Get coordinates from hidden inputs (Priority)
-                    const latInput = document.getElementById('lat');
-                    const lngInput = document.getElementById('lng');
-
-                    if (latInput && latInput.value) this.lat = parseFloat(latInput.value);
-                    if (lngInput && lngInput.value) this.lng = parseFloat(lngInput.value);
-
-                    // Ensure valid
-                    if (isNaN(this.lat) || isNaN(this.lng)) {
-                        this.lat = 37.0344;
-                        this.lng = 27.4305;
-                    }
-
-                    this.map = L.map(mapElement).setView([this.lat, this.lng], 12);
-
-                    L.tileLayer(
-                        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                            attribution: 'And GIS',
-                            maxZoom: 19
-                        }).addTo(this.map);
-
-                    this.marker = L.marker([this.lat, this.lng], {
-                        draggable: true
-                    }).addTo(this.map);
-
-                    this.marker.on('dragend', (e) => {
-                        const pos = e.target.getLatLng();
-                        this.updateCoordinates(pos.lat, pos.lng);
-                    });
-
-                    this.map.on('click', (e) => {
-                        this.marker.setLatLng(e.latlng);
-                        this.updateCoordinates(e.latlng.lat, e.latlng.lng);
-                    });
-
-                    this.updateCoordinateDisplays();
-                },
-
-                updateCoordinates(lat, lng) {
-                    this.lat = lat;
-                    this.lng = lng;
-
-                    document.getElementById('lat').value = lat;
-                    document.getElementById('lng').value = lng;
-
-                    this.updateCoordinateDisplays();
-                },
-
-                updateCoordinateDisplays() {
-                    const latDisplay = document.getElementById('lat-display-step4');
-                    const lngDisplay = document.getElementById('lng-display-step4');
-
-                    if (latDisplay) latDisplay.textContent = Number(this.lat).toFixed(6);
-                    if (lngDisplay) lngDisplay.textContent = Number(this.lng).toFixed(6);
                 },
 
                 async fetchDistricts() {
                     if (!this.selectedCity) {
                         this.districts = [];
+                        this.selectedDistrict = '';
+                        this.neighborhoods = [];
+                        this.selectedNeighborhood = '';
                         return;
                     }
 
                     this.loadingDistricts = true;
-                    this.districts = [];
-                    // Keep selected district if it matches the new city? No, reset.
-                    // But if initial load, we want to keep it.
-                    // init() calls fetchDistricts.
-
                     try {
                         const response = await fetch(`/api/v1/location/districts/${this.selectedCity}`);
                         const result = await response.json();
 
-                        if (result.success) {
+                        if (result.success && Array.isArray(result.data)) {
                             this.districts = result.data;
-                            // Wait for rendering? Alpine handles it.
                         }
                     } catch (error) {
                         console.error('İlçeler yüklenemedi:', error);
@@ -564,17 +461,16 @@
                 async fetchNeighborhoods() {
                     if (!this.selectedDistrict) {
                         this.neighborhoods = [];
+                        this.selectedNeighborhood = '';
                         return;
                     }
 
                     this.loadingNeighborhoods = true;
-                    this.neighborhoods = [];
-
                     try {
                         const response = await fetch(`/api/v1/location/neighborhoods/${this.selectedDistrict}`);
                         const result = await response.json();
 
-                        if (result.success) {
+                        if (result.success && Array.isArray(result.data)) {
                             this.neighborhoods = result.data;
                         }
                     } catch (error) {
@@ -582,11 +478,6 @@
                     } finally {
                         this.loadingNeighborhoods = false;
                     }
-                },
-
-                focusNeighborhood() {
-                    if (!this.selectedNeighborhood) return;
-                    // Optional: Fetch neighborhood coords and flyTo
                 }
             };
         };

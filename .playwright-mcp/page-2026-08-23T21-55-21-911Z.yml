@@ -1,0 +1,141 @@
+- generic [active] [ref=f9e1]:
+  - link "İçeriğe atla" [ref=f9e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f9e4]:
+    - complementary [ref=f9e5]:
+      - generic [ref=f9e7]:
+        - generic [ref=f9e8] [cursor=pointer]: "Y"
+        - generic [ref=f9e12]:
+          - heading "Yalıhan Emlak" [level=2] [ref=f9e13]
+          - paragraph [ref=f9e16]: Yönetim Paneli
+      - navigation [ref=f9e17]:
+        - textbox "Menüde ara..." [ref=f9e20]
+        - menu [ref=f9e21]:
+          - listitem [ref=f9e22]:
+            - menuitem "Dashboard" [ref=f9e23] [cursor=pointer]
+          - listitem [ref=f9e31]:
+            - button "İlanlar & Portföy" [expanded] [ref=f9e32] [cursor=pointer]
+            - generic [ref=f9e40]:
+              - menuitem "İlanlarım" [ref=f9e42] [cursor=pointer]
+              - menuitem "Tüm İlanlar" [ref=f9e45] [cursor=pointer]
+              - menuitem "Yeni İlan AI" [ref=f9e48] [cursor=pointer]:
+                - generic [ref=f9e50]: Yeni İlan
+                - generic [ref=f9e51]: AI
+              - menuitem "Danışmanlar" [ref=f9e52] [cursor=pointer]
+          - listitem [ref=f9e55]:
+            - button "CRM & Müşteri" [ref=f9e56] [cursor=pointer]
+          - listitem [ref=f9e81]:
+            - button "Takım & Operasyon" [ref=f9e82] [cursor=pointer]
+          - listitem [ref=f9e104]:
+            - button "Finans & Satış" [ref=f9e105] [cursor=pointer]
+          - listitem [ref=f9e121]:
+            - menuitem "Bildirimler" [ref=f9e122] [cursor=pointer]
+          - listitem [ref=f9e128]:
+            - button "Property Engine" [ref=f9e129] [cursor=pointer]
+          - listitem [ref=f9e162]:
+            - button "Cortex" [ref=f9e163] [cursor=pointer]
+          - listitem [ref=f9e197]:
+            - button "Governance" [ref=f9e198] [cursor=pointer]
+          - listitem [ref=f9e238]:
+            - button "Automation Hub" [ref=f9e239] [cursor=pointer]
+          - listitem [ref=f9e262]:
+            - button "Sistem" [ref=f9e263] [cursor=pointer]
+      - generic [ref=f9e294]:
+        - generic [ref=f9e295]: A
+        - generic [ref=f9e296]:
+          - paragraph [ref=f9e297]: Ayhan Kucuk
+          - paragraph [ref=f9e298]: Süper Yönetici
+    - generic [ref=f9e299]:
+      - banner [ref=f9e300]:
+        - generic [ref=f9e302]:
+          - button "Hızlı Arama... ⌘K" [ref=f9e304] [cursor=pointer]:
+            - generic [ref=f9e307]: Hızlı Arama...
+            - generic [ref=f9e308]: ⌘K
+          - button "Bildirimler" [ref=f9e310] [cursor=pointer]
+          - button "Tema" [ref=f9e312] [cursor=pointer]
+          - button "A" [ref=f9e318] [cursor=pointer]
+      - link:
+        - /url: http://127.0.0.1:8000/admin/governance/intelligence-center
+      - generic [ref=f9e329]:
+        - 'link "AI Sistem Watcher: Beklemede Agent: 0/5" [ref=f9e330] [cursor=pointer]':
+          - /url: http://127.0.0.1:8000/admin/governance/intelligence-center
+          - generic [ref=f9e331]:
+            - generic [ref=f9e332]: AI Sistem
+            - generic [ref=f9e333]: "Watcher: Beklemede"
+            - generic [ref=f9e336]: "Agent: 0/5"
+        - generic [ref=f9e337]:
+          - 'link "Bugün Oto: 0 🟢 Düşük" [ref=f9e338] [cursor=pointer]':
+            - /url: http://127.0.0.1:8000/admin/governance/intelligence-center
+          - link "L2" [ref=f9e339] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/admin/governance/autonomy
+      - main [ref=f9e340]:
+        - generic [ref=f9e341]:
+          - generic [ref=f9e342]:
+            - generic [ref=f9e343]:
+              - generic [ref=f9e344]:
+                - heading "Yeni İlan Oluştur" [level=1] [ref=f9e345]
+                - paragraph [ref=f9e346]: Adım adım ilan bilgilerinizi doldurun
+              - link "Geri Dön" [ref=f9e347] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/ilanlar
+            - generic [ref=f9e352]:
+              - generic [ref=f9e353]: İlerleme Durumu
+              - generic [ref=f9e354]: 20%
+            - generic [ref=f9e914]:
+              - generic [ref=f9e915]: 1. Kategori
+              - generic [ref=f9e920]: 2. Bilgiler
+              - generic [ref=f9e925]: 3. Fotoğraf
+              - generic [ref=f9e930]: 4. Adres
+              - generic [ref=f9e935]: 5. Önizleme
+            - generic [ref=f9e361]:
+              - generic [ref=f9e362]:
+                - generic [ref=f9e367]:
+                  - heading "Cortex Zeka Paneli Live Analysis" [level=3] [ref=f9e368]:
+                    - text: Cortex Zeka Paneli
+                    - generic [ref=f9e369]: Live Analysis
+                  - paragraph [ref=f9e370]: İlan kalitesi ve yayın onayı için gerçek zamanlı analiz
+                - generic [ref=f9e375]:
+                  - generic [ref=f9e939]: "80"
+                  - generic [ref=f9e376]: Puan
+              - generic [ref=f9e940]: İlan başlığı girmelisiniz
+            - generic [ref=f9e380]:
+              - generic [ref=f9e381]:
+                - generic [ref=f9e382]:
+                  - heading "İlan Kategorisi" [level=3] [ref=f9e383]
+                  - paragraph [ref=f9e384]: İlanınızın kategorisini seçin
+                - generic [ref=f9e385]:
+                  - generic [ref=f9e386]:
+                    - generic [ref=f9e387]:
+                      - generic [ref=f9e388]: Ana Kategori *
+                      - combobox "Ana Kategori *" [ref=f9e389]:
+                        - option "Ana Kategori Seçin" [selected]
+                        - option "Konut"
+                        - option "İşyeri"
+                        - option "Arsa & Arazi"
+                        - option "Yazlık Kiralama"
+                        - option "Turistik Tesisler"
+                        - option "Projeden Satış"
+                    - generic [ref=f9e390]:
+                      - generic [ref=f9e391]: Alt Kategori *
+                      - combobox "Alt Kategori *" [disabled] [ref=f9e392]:
+                        - option "Önce Ana Kategori Seçin" [selected]
+                    - generic [ref=f9e393]:
+                      - generic [ref=f9e394]: Yayın Tipi *
+                      - combobox [disabled] [ref=f9e395]:
+                        - option "Önce Alt Kategori Seçin" [selected]
+                  - paragraph [ref=f9e397]:
+                    - strong [ref=f9e398]: "İpucu:"
+                    - text: Kategori seçimi, ilanınızın hangi özelliklerin gösterileceğini belirler. Doğru kategori seçimi, alıcıların ilanınızı daha kolay bulmasını sağlar.
+                - generic [ref=f9e399]: veya
+                - generic [ref=f9e405]:
+                  - heading "Hızlı Seçim" [level=4] [ref=f9e407]
+                  - generic [ref=f9e408]: En çok kullanılan kombinasyonlar
+              - button "İleri →" [ref=f9e410] [cursor=pointer]
+          - generic [ref=f9e823] [cursor=pointer]:
+            - generic [ref=f9e824]:
+              - generic [ref=f9e825]: 🧠
+              - generic [ref=f9e827]:
+                - heading "Cortex" [level=3] [ref=f9e828]
+                - paragraph [ref=f9e829]: LIVE
+            - generic [ref=f9e947]: 80%
+  - button [ref=f9e873] [cursor=pointer]
+  - button "Copilot Asistan" [ref=f9e877] [cursor=pointer]

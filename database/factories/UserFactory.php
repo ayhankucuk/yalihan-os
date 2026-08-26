@@ -104,6 +104,33 @@ class UserFactory extends Factory
     }
 
     /**
+     * Browser acceptance test kullanıcısı — tenant_id=1 ile.
+     * Browser acceptance testleri için ayrılmış disposable kullanıcı.
+     */
+    public function acceptance(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tenant_id' => 1,
+            'name' => 'Acceptance Test User',
+            'email' => 'acceptance-test@yalihan.test',
+        ])->afterCreating(function ($user) {
+            $roleModelClass = Role::class;
+            $role = $roleModelClass::where('name', 'admin')->first();
+            if (! $role) {
+                $role = new $roleModelClass;
+                $role->name = 'admin';
+                $role->description = 'Admin';
+                $role->saveQuietly();
+            }
+            $user->role()->associate($role);
+            $user->saveQuietly();
+            if (method_exists($user, 'assignRole')) {
+                $user->assignRole('admin');
+            }
+        });
+    }
+
+    /**
      * Owner rolü ile kullanıcı.
      */
     public function owner(): static

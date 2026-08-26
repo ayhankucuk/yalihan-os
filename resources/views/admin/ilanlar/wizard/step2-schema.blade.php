@@ -49,125 +49,42 @@
     </div>
 
     {{-- Schema-Driven Fields --}}
-    <template x-if="loaded && !loading && fields.length > 0">
-        <div class="space-y-6">
+    <div x-show="loaded && !loading && fields.length > 0" class="space-y-6">
 
-            {{-- Schema Meta Info --}}
-            <div class="flex items-center justify-between px-1">
-                <p class="text-xs text-gray-400 dark:text-slate-500">
-                    <span x-text="meta?.field_count || 0"></span> özellik ·
-                    <span x-text="meta?.required_count || 0"></span> zorunlu
-                    <template x-if="ilanId">
-                        <span class="ml-2 text-blue-400">· düzenleme modu</span>
-                    </template>
-                </p>
-            </div>
-
-            {{-- Grouped Fields --}}
-            <template x-for="groupItem in groups" :key="groupItem.group">
-                <div
-                    class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
-
-                    {{-- Group Header --}}
-                    <div
-                        class="px-5 py-3 border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50">
-                        <h4 class="text-sm font-semibold text-gray-700 dark:text-slate-300 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                            <span x-text="groupItem.group"></span>
-                        </h4>
-                    </div>
-
-                    {{-- Group Fields Grid --}}
-                    <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <template x-for="field in groupItem.fields" :key="field.feature_id">
-                            <div class="dynamic-field" x-show="isVisible(field)" x-transition
-                                :data-field-slug="field.slug" :data-field-type="field.type">
-
-                                {{-- Label --}}
-                                <label :for="'feature-' + field.slug"
-                                    class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
-                                    <span x-text="field.label"></span>
-                                    <span x-show="isRequired(field)" class="text-red-500 ml-0.5">*</span>
-                                    <span x-show="field.unit" class="text-xs text-gray-400 dark:text-slate-500 ml-1"
-                                        x-text="field.unit ? '(' + field.unit + ')' : ''"></span>
-                                </label>
-
-                                {{-- Number Input --}}
-                                <template x-if="field.type === 'number'">
-                                    <input type="number" :id="'feature-' + field.slug"
-                                        :name="'features[' + field.slug + ']'" :required="isRequired(field)"
-                                        :disabled="!isEnabled(field)" step="any" x-model="form[field.slug]"
-                                        class="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" />
-                                </template>
-
-                                {{-- Select Input --}}
-                                <template x-if="field.type === 'select'">
-                                    <select :id="'feature-' + field.slug" :name="'features[' + field.slug + ']'"
-                                        :required="isRequired(field)" :disabled="!isEnabled(field)"
-                                        x-model="form[field.slug]"
-                                        class="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                                        <option value="">Seçiniz</option>
-                                        <template x-for="opt in (field.options || [])" :key="opt.value">
-                                            <option :value="opt.value" x-text="opt.label"></option>
-                                        </template>
-                                    </select>
-                                </template>
-
-                                {{-- Boolean (Checkbox) Input --}}
-                                <template x-if="field.type === 'boolean'">
-                                    <div class="flex items-center gap-2 mt-1">
-                                        <input type="checkbox" :id="'feature-' + field.slug"
-                                            :name="'features[' + field.slug + ']'" value="1"
-                                            :disabled="!isEnabled(field)" x-model="form[field.slug]"
-                                            class="rounded border-gray-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 dark:bg-slate-800 h-4 w-4 disabled:opacity-50" />
-                                        <span class="text-sm text-gray-600 dark:text-slate-400"
-                                            x-text="field.label"></span>
-                                    </div>
-                                </template>
-
-                                {{-- Multiselect Input --}}
-                                <template x-if="field.type === 'multiselect'">
-                                    <div
-                                        class="space-y-1 max-h-40 overflow-y-auto border border-gray-300 dark:border-slate-600 rounded-lg p-3 bg-white dark:bg-slate-800">
-                                        <template x-for="opt in (field.options || [])" :key="opt.value">
-                                            <label
-                                                class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300 cursor-pointer py-0.5">
-                                                <input type="checkbox" :name="'features[' + field.slug + '][]'"
-                                                    :value="opt.value" :disabled="!isEnabled(field)"
-                                                    class="rounded border-gray-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 dark:bg-slate-800" />
-                                                <span x-text="opt.label"></span>
-                                            </label>
-                                        </template>
-                                    </div>
-                                </template>
-
-                                {{-- Text Input (default) --}}
-                                <template
-                                    x-if="field.type === 'text' || (!['number','select','boolean','multiselect'].includes(field.type))">
-                                    <input type="text" :id="'feature-' + field.slug"
-                                        :name="'features[' + field.slug + ']'" :required="isRequired(field)"
-                                        :disabled="!isEnabled(field)" maxlength="500" x-model="form[field.slug]"
-                                        class="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" />
-                                </template>
-
-                                {{-- Description --}}
-                                <template x-if="field.description">
-                                    <p class="mt-1 text-xs text-gray-400 dark:text-slate-500"
-                                        x-text="field.description"></p>
-                                </template>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            </template>
-
-            {{-- No Fields Available --}}
+        {{-- Schema Meta Info --}}
+        <div class="flex items-center justify-between px-1">
+            <p class="text-xs text-gray-400 dark:text-slate-500">
+                <span x-text="meta?.field_count || 0"></span> özellik ·
+                <span x-text="meta?.required_count || 0"></span> zorunlu
+                <span x-show="ilanId" class="ml-2 text-blue-400">· düzenleme modu</span>
+            </p>
         </div>
-    </template>
+
+        {{-- Grouped Fields --}}
+        <template x-for="groupItem in groups" :key="groupItem.group">
+            <div
+                class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden mb-6">
+
+                {{-- Group Header --}}
+                <div
+                    class="px-5 py-3 border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50">
+                    <h4 class="text-sm font-semibold text-gray-700 dark:text-slate-300 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <span x-text="groupItem.group"></span>
+                    </h4>
+                </div>
+
+                {{-- Group Fields Grid --}}
+                <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                     x-html="renderGroupHtml(groupItem)">
+                </div>
+            </div>
+        </template>
+    </div>
     
     <div x-show="fields.length === 0 && loaded" x-transition
         class="text-center py-8 text-sm text-gray-400 dark:text-slate-500 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-gray-300 dark:border-slate-700">

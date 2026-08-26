@@ -1,0 +1,994 @@
+- generic [ref=f10e2]:
+  - navigation [ref=f10e3]:
+    - generic [ref=f10e4]:
+      - generic [ref=f10e6]:
+        - list [ref=f10e7]:
+          - listitem [ref=f10e8]:
+            - link [ref=f10e9] [cursor=pointer]:
+              - /url: "#stack"
+              - button [ref=f10e10]
+          - listitem [ref=f10e14]:
+            - link [ref=f10e15] [cursor=pointer]:
+              - /url: "#context"
+              - button [ref=f10e16]
+          - listitem [ref=f10e20]:
+            - link [ref=f10e21] [cursor=pointer]:
+              - /url: "#debug"
+              - button [ref=f10e22]
+          - listitem [ref=f10e26]:
+            - link [ref=f10e27] [cursor=pointer]:
+              - /url: https://flareapp.io/?utm_campaign=ignition&utm_source=ignition
+              - button [ref=f10e28]
+        - list [ref=f10e35]:
+          - listitem [ref=f10e36]:
+            - link [ref=f10e37] [cursor=pointer]:
+              - /url: "#share"
+              - button [ref=f10e38]
+            - generic:
+              - generic:
+                - generic:
+                  - heading "Share with Flare" [level=4]
+                  - link "Docs":
+                    - /url: https://flareapp.io/docs/ignition/introducing-ignition/sharing-errors?utm_campaign=ignition&utm_source=ignition
+                - list:
+                  - listitem:
+                    - generic:
+                      - checkbox "Stack" [checked]
+                      - generic: Stack
+                  - listitem:
+                    - generic:
+                      - checkbox "Context" [checked]
+                      - generic: Context
+                  - listitem:
+                    - generic:
+                      - checkbox "Debug" [checked]
+                      - generic: Debug
+                - generic:
+                  - button "Create Share"
+          - listitem [ref=f10e42]:
+            - link [ref=f10e43] [cursor=pointer]:
+              - /url: https://laravel.com/docs/10.x/eloquent
+              - button [ref=f10e44]
+          - listitem [ref=f10e49]:
+            - link [ref=f10e50] [cursor=pointer]:
+              - /url: "#settings"
+              - button [ref=f10e51]
+            - generic:
+              - generic:
+                - generic:
+                  - heading "Ignition Settings" [level=4]
+                  - link "Docs":
+                    - /url: https://flareapp.io/ignition?utm_campaign=ignition&utm_source=ignition
+                - generic:
+                  - text: Editor
+                  - generic:
+                    - combobox "Editor":
+                      - option "Clipboard"
+                      - option "Sublime"
+                      - option "TextMate"
+                      - option "Emacs"
+                      - option "MacVim"
+                      - option "PhpStorm" [selected]
+                      - option "PHPStorm Remote"
+                      - option "Idea"
+                      - option "VS Code"
+                      - option "VS Code Insiders"
+                      - option "VS Code Remote"
+                      - option "VS Code Insiders Remote"
+                      - option "VS Codium"
+                      - option "Cursor"
+                      - option "Atom"
+                      - option "Nova"
+                      - option "NetBeans"
+                      - option "Zed"
+                      - option "Windsurf"
+                      - option "Xdebug"
+                - generic:
+                  - text: Theme
+                  - button "auto"
+                - generic:
+                  - button "Save settings"
+                - paragraph:
+                  - text: Settings will be saved locally in
+                  - code: ~/.ignition.json
+                  - text: .
+      - 'link "SQLSTATE[42S22]: Column not found: 1054 Unknown column ''email'' in ''field list'' (Connection: mysql, SQL: select `id`, `ad`, `soyad`, `telefon`, `email` from `kisiler` where `kisiler`.`aktiflik_durumu` = 1 and `kisiler`.`deleted_at` is null order by `ad` asc, `soyad` asc)" [ref=f10e57] [cursor=pointer]':
+        - /url: "#top"
+  - main [ref=f10e59]:
+    - generic [ref=f10e62]:
+      - main [ref=f10e63]:
+        - generic [ref=f10e65]:
+          - generic [ref=f10e66]:
+            - generic [ref=f10e68]:
+              - generic [ref=f10e69]: Illuminate
+              - generic [ref=f10e70]: \
+              - generic [ref=f10e71]: Database
+              - generic [ref=f10e72]: \
+              - generic [ref=f10e73]: QueryException
+            - generic [ref=f10e74]:
+              - generic [ref=f10e75]: PHP 8.4.7
+              - generic [ref=f10e76]: 10.50.2
+          - generic [ref=f10e79]: "SQLSTATE[42S22]: Column not found: 1054 Unknown column 'email' in 'field list'"
+          - generic [ref=f10e81] [cursor=pointer]:
+            - code [ref=f10e84]:
+              - code [ref=f10e86]: "select `id`, `ad`, `soyad`, `telefon`, `email` from `kisiler` where `kisiler`.`aktiflik_durumu` = 1 and `kisiler`.`deleted_at` is null order by `ad` asc, `soyad` asc"
+            - button "Copy to clipboard" [ref=f10e88]
+            - button [ref=f10e91]
+      - complementary [ref=f10e94]:
+        - generic [ref=f10e95]:
+          - button [ref=f10e96] [cursor=pointer]
+          - generic [ref=f10e100]:
+            - heading "A column was not found" [level=2] [ref=f10e102]
+            - generic [ref=f10e103]:
+              - button "Run migrations" [ref=f10e104] [cursor=pointer]
+              - generic [ref=f10e107]:
+                - paragraph [ref=f10e108]: You might have forgotten to run your database migrations.
+                - paragraph [ref=f10e109]: "You can try to run your migrations using `php artisan migrate`."
+                - list [ref=f10e110]:
+                  - listitem [ref=f10e111]:
+                    - 'link "Database: Running Migrations docs" [ref=f10e112] [cursor=pointer]':
+                      - /url: https://laravel.com/docs/master/migrations#running-migrations
+    - generic [ref=f10e115]:
+      - complementary [ref=f10e116]:
+        - generic [ref=f10e117]:
+          - button [ref=f10e119] [cursor=pointer]
+          - list [ref=f10e126]:
+            - listitem [ref=f10e127] [cursor=pointer]: 9 vendor frames
+            - listitem [ref=f10e130]:
+              - generic [ref=f10e132]:
+                - generic [ref=f10e133]: App
+                - generic [ref=f10e134]: \
+                - generic [ref=f10e135]: Services
+                - generic [ref=f10e136]: \
+                - generic [ref=f10e137]: Ilan
+                - generic [ref=f10e138]: \
+                - generic [ref=f10e139]: IlanService
+                - generic [ref=f10e140]: ": 617"
+              - generic [ref=f10e141]: getEditFormData
+            - listitem [ref=f10e142]
+            - listitem [ref=f10e143] [cursor=pointer]:
+              - generic [ref=f10e145]:
+                - generic [ref=f10e146]: App
+                - generic [ref=f10e147]: \
+                - generic [ref=f10e148]: Http
+                - generic [ref=f10e149]: \
+                - generic [ref=f10e150]: Controllers
+                - generic [ref=f10e151]: \
+                - generic [ref=f10e152]: Admin
+                - generic [ref=f10e153]: \
+                - generic [ref=f10e154]: IlanCrudController
+                - generic [ref=f10e155]: ": 85"
+              - generic [ref=f10e156]: edit
+            - listitem [ref=f10e157] [cursor=pointer]: 6 vendor frames
+            - listitem [ref=f10e160] [cursor=pointer]:
+              - generic [ref=f10e162]:
+                - generic [ref=f10e163]: App
+                - generic [ref=f10e164]: \
+                - generic [ref=f10e165]: Http
+                - generic [ref=f10e166]: \
+                - generic [ref=f10e167]: Middleware
+                - generic [ref=f10e168]: \
+                - generic [ref=f10e169]: SAB
+                - generic [ref=f10e170]: \
+                - generic [ref=f10e171]: GlobalWriteGuard
+                - generic [ref=f10e172]: ": 17"
+              - generic [ref=f10e173]: handle
+            - listitem [ref=f10e174] [cursor=pointer]: 1 vendor frame
+            - listitem [ref=f10e177] [cursor=pointer]:
+              - generic [ref=f10e179]:
+                - generic [ref=f10e180]: App
+                - generic [ref=f10e181]: \
+                - generic [ref=f10e182]: Http
+                - generic [ref=f10e183]: \
+                - generic [ref=f10e184]: Middleware
+                - generic [ref=f10e185]: \
+                - generic [ref=f10e186]: RoleMiddleware
+                - generic [ref=f10e187]: ": 56"
+              - generic [ref=f10e188]: handle
+            - listitem [ref=f10e189] [cursor=pointer]: 3 vendor frames
+            - listitem [ref=f10e192] [cursor=pointer]:
+              - generic [ref=f10e194]:
+                - generic [ref=f10e195]: App
+                - generic [ref=f10e196]: \
+                - generic [ref=f10e197]: Http
+                - generic [ref=f10e198]: \
+                - generic [ref=f10e199]: Middleware
+                - generic [ref=f10e200]: \
+                - generic [ref=f10e201]: AppStateVersionMiddleware
+                - generic [ref=f10e202]: ": 24"
+              - generic [ref=f10e203]: handle
+            - listitem [ref=f10e204] [cursor=pointer]: 1 vendor frame
+            - listitem [ref=f10e207] [cursor=pointer]:
+              - generic [ref=f10e209]:
+                - generic [ref=f10e210]: App
+                - generic [ref=f10e211]: \
+                - generic [ref=f10e212]: Http
+                - generic [ref=f10e213]: \
+                - generic [ref=f10e214]: Middleware
+                - generic [ref=f10e215]: \
+                - generic [ref=f10e216]: TrackUserActivity
+                - generic [ref=f10e217]: ": 22"
+              - generic [ref=f10e218]: handle
+            - listitem [ref=f10e219] [cursor=pointer]: 9 vendor frames
+            - listitem [ref=f10e222] [cursor=pointer]:
+              - generic [ref=f10e224]:
+                - generic [ref=f10e225]: App
+                - generic [ref=f10e226]: \
+                - generic [ref=f10e227]: Http
+                - generic [ref=f10e228]: \
+                - generic [ref=f10e229]: Middleware
+                - generic [ref=f10e230]: \
+                - generic [ref=f10e231]: LocaleAndCurrencyMiddleware
+                - generic [ref=f10e232]: ": 56"
+              - generic [ref=f10e233]: handle
+            - listitem [ref=f10e234] [cursor=pointer]: 8 vendor frames
+            - listitem [ref=f10e237] [cursor=pointer]:
+              - generic [ref=f10e239]:
+                - generic [ref=f10e240]: App
+                - generic [ref=f10e241]: \
+                - generic [ref=f10e242]: Http
+                - generic [ref=f10e243]: \
+                - generic [ref=f10e244]: Middleware
+                - generic [ref=f10e245]: \
+                - generic [ref=f10e246]: ProductionLockMiddleware
+                - generic [ref=f10e247]: ": 20"
+              - generic [ref=f10e248]: handle
+            - listitem [ref=f10e249] [cursor=pointer]: 10 vendor frames
+            - listitem [ref=f10e252] [cursor=pointer]:
+              - generic [ref=f10e254]:
+                - generic [ref=f10e255]: App
+                - generic [ref=f10e256]: \
+                - generic [ref=f10e257]: Http
+                - generic [ref=f10e258]: \
+                - generic [ref=f10e259]: Middleware
+                - generic [ref=f10e260]: \
+                - generic [ref=f10e261]: SecurityMiddleware
+                - generic [ref=f10e262]: ": 31"
+              - generic [ref=f10e263]: handle
+            - listitem [ref=f10e264] [cursor=pointer]: 18 vendor frames
+            - listitem [ref=f10e267] [cursor=pointer]:
+              - generic [ref=f10e269]:
+                - generic [ref=f10e270]: public
+                - generic [ref=f10e271]: /
+                - generic [ref=f10e272]: index
+                - generic [ref=f10e273]: .php
+                - generic [ref=f10e274]: ": 21"
+              - generic [ref=f10e275]: require_once
+            - listitem [ref=f10e276] [cursor=pointer]: 1 vendor frame
+      - generic [ref=f10e279]:
+        - 'link "app / Services / Ilan / IlanService .php : 617" [ref=f10e281] [cursor=pointer]':
+          - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=617
+          - generic [ref=f10e282]:
+            - generic [ref=f10e283]: app
+            - generic [ref=f10e284]: /
+            - generic [ref=f10e285]: Services
+            - generic [ref=f10e286]: /
+            - generic [ref=f10e287]: Ilan
+            - generic [ref=f10e288]: /
+            - generic [ref=f10e289]: IlanService
+            - generic [ref=f10e290]: .php
+            - generic [ref=f10e291]: ": 617"
+        - main [ref=f10e292]:
+          - navigation [ref=f10e293]:
+            - generic [ref=f10e294]:
+              - paragraph [ref=f10e295]: "602"
+              - paragraph [ref=f10e296]: "603"
+              - paragraph [ref=f10e297]: "604"
+              - paragraph [ref=f10e298]: "605"
+              - paragraph [ref=f10e299]: "606"
+              - paragraph [ref=f10e300]: "607"
+              - paragraph [ref=f10e301]: "608"
+              - paragraph [ref=f10e302]: "609"
+              - paragraph [ref=f10e303]: "610"
+              - paragraph [ref=f10e304]: "611"
+              - paragraph [ref=f10e305]: "612"
+              - paragraph [ref=f10e306]: "613"
+              - paragraph [ref=f10e307]: "614"
+              - paragraph [ref=f10e308]: "615"
+              - paragraph [ref=f10e309]: "616"
+              - paragraph [ref=f10e310]: "617"
+              - paragraph [ref=f10e311]: "618"
+              - paragraph [ref=f10e312]: "619"
+              - paragraph [ref=f10e313]: "620"
+              - paragraph [ref=f10e314]: "621"
+              - paragraph [ref=f10e315]: "622"
+              - paragraph [ref=f10e316]: "623"
+              - paragraph [ref=f10e317]: "624"
+              - paragraph [ref=f10e318]: "625"
+              - paragraph [ref=f10e319]: "626"
+              - paragraph [ref=f10e320]: "627"
+              - paragraph [ref=f10e321]: "628"
+              - paragraph [ref=f10e322]: "629"
+              - paragraph [ref=f10e323]: "630"
+              - paragraph [ref=f10e324]: "631"
+          - code [ref=f10e327]:
+            - generic [ref=f10e328]:
+              - link [ref=f10e329] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=602
+                - button [ref=f10e330]
+              - generic [ref=f10e333]: "})"
+            - generic [ref=f10e335]:
+              - link [ref=f10e336] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=603
+                - button [ref=f10e337]
+              - generic [ref=f10e340]: "->where('aktiflik_durumu', 1)"
+            - generic [ref=f10e342]:
+              - link [ref=f10e343] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=604
+                - button [ref=f10e344]
+              - generic [ref=f10e347]: "->select(['id', 'name', 'email'])"
+            - generic [ref=f10e349]:
+              - link [ref=f10e350] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=605
+                - button [ref=f10e351]
+              - generic [ref=f10e354]: "->get();"
+            - link [ref=f10e356] [cursor=pointer]:
+              - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=606
+              - button [ref=f10e357]
+            - generic [ref=f10e361]:
+              - link [ref=f10e362] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=607
+                - button [ref=f10e363]
+              - generic [ref=f10e366]: $iller = Il::orderBy('il_adi')->select(['id', 'il_adi'])->get();
+            - link [ref=f10e369] [cursor=pointer]:
+              - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=608
+              - button [ref=f10e370]
+            - generic [ref=f10e374]:
+              - link [ref=f10e375] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=609
+                - button [ref=f10e376]
+              - generic [ref=f10e379]: $ulkeler = Ulke::select(['id', 'ulke_adi', 'ulke_kodu'])
+            - generic [ref=f10e381]:
+              - link [ref=f10e382] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=610
+                - button [ref=f10e383]
+              - generic [ref=f10e386]: "->orderBy('ulke_adi') // context7-ignore"
+            - generic [ref=f10e388]:
+              - link [ref=f10e389] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=611
+                - button [ref=f10e390]
+              - generic [ref=f10e393]: "->get();"
+            - link [ref=f10e395] [cursor=pointer]:
+              - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=612
+              - button [ref=f10e396]
+            - generic [ref=f10e400]:
+              - link [ref=f10e401] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=613
+                - button [ref=f10e402]
+              - generic [ref=f10e405]: $kisiler = Kisi::active()
+            - generic [ref=f10e407]:
+              - link [ref=f10e408] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=614
+                - button [ref=f10e409]
+              - generic [ref=f10e412]: "->select(['id', 'ad', 'soyad', 'telefon', 'email'])"
+            - generic [ref=f10e414]:
+              - link [ref=f10e415] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=615
+                - button [ref=f10e416]
+              - generic [ref=f10e419]: "->orderBy('ad') // context7-ignore"
+            - generic [ref=f10e421]:
+              - link [ref=f10e422] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=616
+                - button [ref=f10e423]
+              - generic [ref=f10e426]: "->orderBy('soyad') // context7-ignore"
+            - generic [ref=f10e428]:
+              - link [ref=f10e429] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=617
+                - button [ref=f10e430]
+              - generic [ref=f10e433]: "->get();"
+            - link [ref=f10e435] [cursor=pointer]:
+              - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=618
+              - button [ref=f10e436]
+            - generic [ref=f10e440]:
+              - link [ref=f10e441] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=619
+                - button [ref=f10e442]
+              - generic [ref=f10e445]: $sites = Site::active()
+            - generic [ref=f10e447]:
+              - link [ref=f10e448] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=620
+                - button [ref=f10e449]
+              - generic [ref=f10e452]: "->select(['id', 'name'])"
+            - generic [ref=f10e454]:
+              - link [ref=f10e455] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=621
+                - button [ref=f10e456]
+              - generic [ref=f10e459]: "->orderBy('name') // context7-ignore"
+            - generic [ref=f10e461]:
+              - link [ref=f10e462] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=622
+                - button [ref=f10e463]
+              - generic [ref=f10e466]: "->get();"
+            - link [ref=f10e468] [cursor=pointer]:
+              - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=623
+              - button [ref=f10e469]
+            - generic [ref=f10e473]:
+              - link [ref=f10e474] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=624
+                - button [ref=f10e475]
+              - generic [ref=f10e478]: $autoSaveData = $this->getAutoSaveData();
+            - link [ref=f10e481] [cursor=pointer]:
+              - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=625
+              - button [ref=f10e482]
+            - generic [ref=f10e486]:
+              - link [ref=f10e487] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=626
+                - button [ref=f10e488]
+              - generic [ref=f10e491]: return [
+            - generic [ref=f10e493]:
+              - link [ref=f10e494] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=627
+                - button [ref=f10e495]
+              - generic [ref=f10e498]: "'kategoriler' => $kategoriler,"
+            - generic [ref=f10e500]:
+              - link [ref=f10e501] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=628
+                - button [ref=f10e502]
+              - generic [ref=f10e505]: "'danismanlar' => $danismanlar,"
+            - generic [ref=f10e507]:
+              - link [ref=f10e508] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=629
+                - button [ref=f10e509]
+              - generic [ref=f10e512]: "'iller' => $iller,"
+            - generic [ref=f10e514]:
+              - link [ref=f10e515] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=630
+                - button [ref=f10e516]
+              - generic [ref=f10e519]: "'durumSecenekleri' => $durumSecenekleri,"
+            - generic [ref=f10e521]:
+              - link [ref=f10e522] [cursor=pointer]:
+                - /url: phpstorm://open?file=%2FUsers%2Fmacbookpro%2Frepos%2Fyalihan-os%2Fapp%2FServices%2FIlan%2FIlanService.php&line=631
+                - button [ref=f10e523]
+              - generic [ref=f10e526]: "'taslak' => false,"
+      - generic [ref=f10e528]:
+        - generic [ref=f10e529]: arguments
+        - generic [ref=f10e531]:
+          - term [ref=f10e532]:
+            - generic [ref=f10e533]:
+              - generic [ref=f10e534]:
+                - generic "by reference"
+                - text: $columns
+              - generic [ref=f10e535]: :array
+          - definition [ref=f10e536]:
+            - generic [ref=f10e537]:
+              - code [ref=f10e540]:
+                - code [ref=f10e542]: "[ \"*\" ]"
+              - button "Copy to clipboard" [ref=f10e544] [cursor=pointer]
+    - generic [ref=f10e548]:
+      - navigation [ref=f10e549]:
+        - list [ref=f10e551]:
+          - listitem [ref=f10e552]:
+            - link "App" [ref=f10e553] [cursor=pointer]:
+              - /url: "#context-app"
+            - list [ref=f10e554]:
+              - listitem [ref=f10e555]:
+                - link "Routing" [ref=f10e556] [cursor=pointer]:
+                  - /url: "#context-app-routing"
+          - listitem [ref=f10e561]:
+            - link "Request" [ref=f10e562] [cursor=pointer]:
+              - /url: "#context-request"
+            - list [ref=f10e563]:
+              - listitem [ref=f10e564]:
+                - link "Browser" [ref=f10e565] [cursor=pointer]:
+                  - /url: "#context-request-browser"
+              - listitem [ref=f10e570]:
+                - link "Headers" [ref=f10e571] [cursor=pointer]:
+                  - /url: "#context-request-headers"
+              - listitem [ref=f10e576]:
+                - link "Body" [ref=f10e577] [cursor=pointer]:
+                  - /url: "#context-request-body"
+          - listitem [ref=f10e582]:
+            - link "Context" [ref=f10e583] [cursor=pointer]:
+              - /url: "#context-context"
+            - list [ref=f10e584]:
+              - listitem [ref=f10e585]:
+                - link "User" [ref=f10e586] [cursor=pointer]:
+                  - /url: "#context-user-user"
+              - listitem [ref=f10e591]:
+                - link "Git" [ref=f10e592] [cursor=pointer]:
+                  - /url: "#context-context-git"
+              - listitem [ref=f10e597]:
+                - link "Versions" [ref=f10e598] [cursor=pointer]:
+                  - /url: "#context-context-versions"
+              - listitem [ref=f10e603]:
+                - link "Exception" [ref=f10e604] [cursor=pointer]:
+                  - /url: "#context-context-exception"
+      - generic [ref=f10e609]:
+        - generic [ref=f10e610]:
+          - heading "App" [level=2] [ref=f10e611]
+          - generic [ref=f10e613]:
+            - heading [level=1] [ref=f10e614]
+            - generic [ref=f10e618]:
+              - generic [ref=f10e619]:
+                - term [ref=f10e620]: Controller
+                - definition [ref=f10e621]:
+                  - generic [ref=f10e622]:
+                    - code [ref=f10e625]: App\Http\Controllers\Admin\IlanCrudController@edit
+                    - button "Copy to clipboard" [ref=f10e627] [cursor=pointer]
+              - generic [ref=f10e630]:
+                - term [ref=f10e631]: Route name
+                - definition [ref=f10e632]:
+                  - generic [ref=f10e633]:
+                    - code [ref=f10e636]: admin.ilanlar.edit
+                    - button "Copy to clipboard" [ref=f10e638] [cursor=pointer]
+              - generic [ref=f10e641]:
+                - term [ref=f10e642]: Middleware
+                - definition [ref=f10e643]:
+                  - list [ref=f10e644]:
+                    - listitem [ref=f10e645]:
+                      - generic [ref=f10e646]:
+                        - code [ref=f10e649]: web
+                        - button "Copy to clipboard" [ref=f10e651] [cursor=pointer]
+                    - listitem [ref=f10e654]:
+                      - generic [ref=f10e655]:
+                        - code [ref=f10e658]: auth
+                        - button "Copy to clipboard" [ref=f10e660] [cursor=pointer]
+                    - listitem [ref=f10e663]:
+                      - generic [ref=f10e664]:
+                        - code [ref=f10e667]: verified
+                        - button "Copy to clipboard" [ref=f10e669] [cursor=pointer]
+                    - listitem [ref=f10e672]:
+                      - generic [ref=f10e673]:
+                        - code [ref=f10e676]: role:admin
+                        - button "Copy to clipboard" [ref=f10e678] [cursor=pointer]
+                    - listitem [ref=f10e681]:
+                      - generic [ref=f10e682]:
+                        - code [ref=f10e685]: sab.write.guard
+                        - button "Copy to clipboard" [ref=f10e687] [cursor=pointer]
+        - generic [ref=f10e690]:
+          - heading "Request" [level=2] [ref=f10e691]
+          - generic [ref=f10e692]:
+            - generic [ref=f10e693]:
+              - generic [ref=f10e694]:
+                - generic [ref=f10e695]: http://127.0.0.1:8000/admin/ilanlar/1/edit
+                - generic [ref=f10e696]: GET
+              - generic [ref=f10e698] [cursor=pointer]:
+                - code [ref=f10e701]:
+                  - code [ref=f10e703]: "curl \"http://127.0.0.1:8000/admin/ilanlar/1/edit\" \\ -X GET \\ -H 'host: 127.0.0.1:8000' \\ -H 'connection: keep-alive' \\ -H 'sec-ch-ua: \"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"' \\ -H 'sec-ch-ua-mobile: ?0' \\ -H 'sec-ch-ua-platform: \"macOS\"' \\ -H 'upgrade-insecure-requests: 1' \\ -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36' \\ -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \\ -H 'sec-fetch-site: none' \\ -H 'sec-fetch-mode: navigate' \\ -H 'sec-fetch-user: ?1' \\ -H 'sec-fetch-dest: document' \\ -H 'accept-encoding: gzip, deflate, br, zstd' \\ -H 'accept-language: tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7' \\ -H 'cookie: <CENSORED>';"
+                - button "Copy to clipboard" [ref=f10e705]
+                - button [ref=f10e708]
+            - generic [ref=f10e711]:
+              - heading [level=1] [ref=f10e712]
+              - generic [ref=f10e716]:
+                - code [ref=f10e719]: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36
+                - button "Copy to clipboard" [ref=f10e721] [cursor=pointer]
+            - generic [ref=f10e724]:
+              - heading [level=1] [ref=f10e725]
+              - generic [ref=f10e729]:
+                - generic [ref=f10e730]:
+                  - term [ref=f10e731]: host
+                  - definition [ref=f10e732]:
+                    - generic [ref=f10e733]:
+                      - code [ref=f10e736]: 127.0.0.1:8000
+                      - button "Copy to clipboard" [ref=f10e738] [cursor=pointer]
+                - generic [ref=f10e741]:
+                  - term [ref=f10e742]: connection
+                  - definition [ref=f10e743]:
+                    - generic [ref=f10e744]:
+                      - code [ref=f10e747]: keep-alive
+                      - button "Copy to clipboard" [ref=f10e749] [cursor=pointer]
+                - generic [ref=f10e752]:
+                  - term [ref=f10e753]: sec-ch-ua
+                  - definition [ref=f10e754]:
+                    - generic [ref=f10e755]:
+                      - code [ref=f10e758]: "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\""
+                      - button "Copy to clipboard" [ref=f10e760] [cursor=pointer]
+                - generic [ref=f10e763]:
+                  - term [ref=f10e764]: sec-ch-ua-mobile
+                  - definition [ref=f10e765]:
+                    - generic [ref=f10e766]:
+                      - code [ref=f10e769]: "?0"
+                      - button "Copy to clipboard" [ref=f10e771] [cursor=pointer]
+                - generic [ref=f10e774]:
+                  - term [ref=f10e775]: sec-ch-ua-platform
+                  - definition [ref=f10e776]:
+                    - generic [ref=f10e777]:
+                      - code [ref=f10e780]: "\"macOS\""
+                      - button "Copy to clipboard" [ref=f10e782] [cursor=pointer]
+                - generic [ref=f10e785]:
+                  - term [ref=f10e786]: upgrade-insecure-requests
+                  - definition [ref=f10e787]:
+                    - generic [ref=f10e788]:
+                      - code [ref=f10e791]: "1"
+                      - button "Copy to clipboard" [ref=f10e793] [cursor=pointer]
+                - generic [ref=f10e796]:
+                  - term [ref=f10e797]: user-agent
+                  - definition [ref=f10e798]:
+                    - generic [ref=f10e799]:
+                      - code [ref=f10e802]: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36
+                      - button "Copy to clipboard" [ref=f10e804] [cursor=pointer]
+                - generic [ref=f10e807]:
+                  - term [ref=f10e808]: accept
+                  - definition [ref=f10e809]:
+                    - generic [ref=f10e810]:
+                      - code [ref=f10e813]: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+                      - button "Copy to clipboard" [ref=f10e815] [cursor=pointer]
+                - generic [ref=f10e818]:
+                  - term [ref=f10e819]: sec-fetch-site
+                  - definition [ref=f10e820]:
+                    - generic [ref=f10e821]:
+                      - code [ref=f10e824]: none
+                      - button "Copy to clipboard" [ref=f10e826] [cursor=pointer]
+                - generic [ref=f10e829]:
+                  - term [ref=f10e830]: sec-fetch-mode
+                  - definition [ref=f10e831]:
+                    - generic [ref=f10e832]:
+                      - code [ref=f10e835]: navigate
+                      - button "Copy to clipboard" [ref=f10e837] [cursor=pointer]
+                - generic [ref=f10e840]:
+                  - term [ref=f10e841]: sec-fetch-user
+                  - definition [ref=f10e842]:
+                    - generic [ref=f10e843]:
+                      - code [ref=f10e846]: "?1"
+                      - button "Copy to clipboard" [ref=f10e848] [cursor=pointer]
+                - generic [ref=f10e851]:
+                  - term [ref=f10e852]: sec-fetch-dest
+                  - definition [ref=f10e853]:
+                    - generic [ref=f10e854]:
+                      - code [ref=f10e857]: document
+                      - button "Copy to clipboard" [ref=f10e859] [cursor=pointer]
+                - generic [ref=f10e862]:
+                  - term [ref=f10e863]: accept-encoding
+                  - definition [ref=f10e864]:
+                    - generic [ref=f10e865]:
+                      - code [ref=f10e868]: gzip, deflate, br, zstd
+                      - button "Copy to clipboard" [ref=f10e870] [cursor=pointer]
+                - generic [ref=f10e873]:
+                  - term [ref=f10e874]: accept-language
+                  - definition [ref=f10e875]:
+                    - generic [ref=f10e876]:
+                      - code [ref=f10e879]: tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7
+                      - button "Copy to clipboard" [ref=f10e881] [cursor=pointer]
+                - generic [ref=f10e884]:
+                  - term [ref=f10e885]: cookie
+                  - definition [ref=f10e886]:
+                    - generic [ref=f10e887]:
+                      - code [ref=f10e890]: <CENSORED>
+                      - button "Copy to clipboard" [ref=f10e892] [cursor=pointer]
+            - generic [ref=f10e895]:
+              - heading [level=1] [ref=f10e896]
+              - generic [ref=f10e900]:
+                - code [ref=f10e903]: "[]"
+                - button "Copy to clipboard" [ref=f10e905] [cursor=pointer]
+        - generic [ref=f10e908]:
+          - heading "Context" [level=2] [ref=f10e909]
+          - generic [ref=f10e910]:
+            - generic [ref=f10e911]:
+              - heading [level=1] [ref=f10e912]
+              - generic [ref=f10e916]:
+                - img "test.acceptance@yalihan.test" [ref=f10e918]
+                - generic [ref=f10e919]:
+                  - paragraph [ref=f10e920]: Acceptance Tester
+                  - paragraph [ref=f10e921]: test.acceptance@yalihan.test
+              - generic [ref=f10e922] [cursor=pointer]:
+                - code [ref=f10e925]:
+                  - code [ref=f10e927]: "{ \"id\": 6, \"tenant_id\": 1, \"created_at\": \"2026-08-24T06:03:27.000000Z\", \"updated_at\": \"2026-08-24T06:12:12.000000Z\", \"name\": \"Acceptance Tester\", \"baslik\": null, \"bio\": null, \"instagram_profil\": null, \"linkedin_profil\": null, \"website\": null, \"email\": \"test.acceptance@yalihan.test\", \"telefon\": null, \"ofis_telefon\": null, \"ofis_adres\": null, \"whatsapp_numara\": null, \"email_verified_at\": null, \"ulke_id\": null, \"role_id\": null, \"departman\": null, \"pozisyon\": null, \"uzmanlik_alanlari\": null, \"diller\": null, \"bolge_uzmanliklari\": null, \"lisans_no\": null, \"deneyim_yili\": null, \"aktiflik_durumu\": 1, \"dogrulanmis_mi\": 0, \"telegram_chat_id\": null, \"last_activity_at\": \"2026-08-24T06:12:12.000000Z\", \"deleted_at\": null, \"profile_photo_path\": null, \"role\": null, \"roles\": [ { \"id\": 2, \"name\": \"admin\", \"guard_name\": \"web\", \"description\": null, \"created_at\": \"2026-08-23T21:49:40.000000Z\", \"updated_at\": \"2026-08-23T21:49:40.000000Z\", \"pivot\": { \"model_type\": \"App\\\\Models\\\\User\", \"model_id\": 6, \"role_id\": 2 } } ] }"
+                - button "Copy to clipboard" [ref=f10e929]
+                - button [ref=f10e932]
+            - generic [ref=f10e935]:
+              - heading [level=1] [ref=f10e936]
+              - generic [ref=f10e940]:
+                - generic [ref=f10e941]: "feat(PILOT-01-Recovery-C): Wizard Step 3 Media — Photo upload contract fixes"
+                - generic [ref=f10e942]:
+                  - generic [ref=f10e943]:
+                    - code [ref=f10e946]: 5cd22a945b70ec05661ba9643b677c6ffcbdce3e
+                    - button "Copy to clipboard" [ref=f10e948] [cursor=pointer]
+                  - link [ref=f10e951] [cursor=pointer]:
+                    - /url: https://github.com/ayhankucuk/yalihan-os/commit/5cd22a945b70ec05661ba9643b677c6ffcbdce3e
+                    - button "View commit 5cd22a9" [ref=f10e952]
+              - paragraph [ref=f10e961]: Last commit is dirty. (Un)staged changes have been made since this commit.
+              - generic [ref=f10e963]:
+                - term [ref=f10e964]: Latest tag
+                - definition [ref=f10e965]:
+                  - generic [ref=f10e966]:
+                    - code [ref=f10e969]: v12d-property-ownership-certified
+                    - button "Copy to clipboard" [ref=f10e971] [cursor=pointer]
+            - generic [ref=f10e974]:
+              - heading [level=1] [ref=f10e975]
+              - generic [ref=f10e979]:
+                - generic [ref=f10e980]:
+                  - term [ref=f10e981]: Php Version
+                  - definition [ref=f10e982]:
+                    - generic [ref=f10e983]:
+                      - code [ref=f10e986]: 8.4.7
+                      - button "Copy to clipboard" [ref=f10e988] [cursor=pointer]
+                - generic [ref=f10e991]:
+                  - term [ref=f10e992]: Laravel Version
+                  - definition [ref=f10e993]:
+                    - generic [ref=f10e994]:
+                      - code [ref=f10e997]: 10.50.2
+                      - button "Copy to clipboard" [ref=f10e999] [cursor=pointer]
+                - generic [ref=f10e1002]:
+                  - term [ref=f10e1003]: Laravel Locale
+                  - definition [ref=f10e1004]:
+                    - generic [ref=f10e1005]:
+                      - code [ref=f10e1008]: tr
+                      - button "Copy to clipboard" [ref=f10e1010] [cursor=pointer]
+                - generic [ref=f10e1013]:
+                  - term [ref=f10e1014]: Laravel Config Cached
+                  - definition [ref=f10e1015]:
+                    - generic [ref=f10e1016]: "false"
+                - generic [ref=f10e1020]:
+                  - term [ref=f10e1021]: App Debug
+                  - definition [ref=f10e1022]:
+                    - generic [ref=f10e1023]: "true"
+                - generic [ref=f10e1027]:
+                  - term [ref=f10e1028]: App Env
+                  - definition [ref=f10e1029]:
+                    - generic [ref=f10e1030]:
+                      - code [ref=f10e1033]: local
+                      - button "Copy to clipboard" [ref=f10e1035] [cursor=pointer]
+            - generic [ref=f10e1038]:
+              - heading [level=1] [ref=f10e1039]
+              - generic [ref=f10e1044]:
+                - term [ref=f10e1045]: Raw Sql
+                - definition [ref=f10e1046]:
+                  - generic [ref=f10e1047]:
+                    - code [ref=f10e1050]: "select `id`, `ad`, `soyad`, `telefon`, `email` from `kisiler` where `kisiler`.`aktiflik_durumu` = ? and `kisiler`.`deleted_at` is null order by `ad` asc, `soyad` asc"
+                    - button "Copy to clipboard" [ref=f10e1052] [cursor=pointer]
+    - generic [ref=f10e1056]:
+      - navigation:
+        - list [ref=f10e1057]:
+          - listitem [ref=f10e1058]:
+            - button "16 Queries" [ref=f10e1059] [cursor=pointer]:
+              - generic [ref=f10e1060]: "16"
+              - generic [ref=f10e1061]: Queries
+      - generic [ref=f10e1062]:
+        - generic [ref=f10e1063]:
+          - generic [ref=f10e1064]:
+            - generic [ref=f10e1065]: 09:12:28
+            - generic [ref=f10e1066]:
+              - img "Runtime" [ref=f10e1067]
+              - text: 10ms
+            - generic [ref=f10e1069]:
+              - img "Connection" [ref=f10e1070]
+              - text: mysql
+          - generic [ref=f10e1073] [cursor=pointer]:
+            - code [ref=f10e1076]:
+              - code [ref=f10e1078]: "select table_name as `name`, (data_length + index_length) as `size`, table_comment as `comment`, engine as `engine`, table_collation as `collation` from information_schema.tables where table_schema = 'yalihanai_v2_production' and table_type in ('BASE TABLE', 'SYSTEM VERSIONED') order by table_name"
+            - button "Copy to clipboard" [ref=f10e1080]
+            - button [ref=f10e1083]
+        - generic [ref=f10e1086]:
+          - generic [ref=f10e1087]:
+            - generic [ref=f10e1088]: 09:12:28
+            - generic [ref=f10e1089]:
+              - img "Runtime" [ref=f10e1090]
+              - text: 0.73ms
+            - generic [ref=f10e1092]:
+              - img "Connection" [ref=f10e1093]
+              - text: mysql
+          - generic [ref=f10e1096]:
+            - generic [ref=f10e1097] [cursor=pointer]:
+              - code [ref=f10e1100]:
+                - code [ref=f10e1102]: "select * from `settings` where `key` = voice_api_key limit 1"
+              - button "Copy to clipboard" [ref=f10e1104]
+              - button [ref=f10e1107]
+            - button "1 query parameter" [ref=f10e1111] [cursor=pointer]
+        - generic [ref=f10e1114]:
+          - generic [ref=f10e1115]:
+            - generic [ref=f10e1116]: 09:12:28
+            - generic [ref=f10e1117]:
+              - img "Runtime" [ref=f10e1118]
+              - text: 0.66ms
+            - generic [ref=f10e1120]:
+              - img "Connection" [ref=f10e1121]
+              - text: mysql
+          - generic [ref=f10e1124]:
+            - generic [ref=f10e1125] [cursor=pointer]:
+              - code [ref=f10e1128]:
+                - code [ref=f10e1130]: "select * from `settings` where `key` = openai_api_key limit 1"
+              - button "Copy to clipboard" [ref=f10e1132]
+              - button [ref=f10e1135]
+            - button "1 query parameter" [ref=f10e1139] [cursor=pointer]
+        - generic [ref=f10e1142]:
+          - generic [ref=f10e1143]:
+            - generic [ref=f10e1144]: 09:12:28
+            - generic [ref=f10e1145]:
+              - img "Runtime" [ref=f10e1146]
+              - text: 0.34ms
+            - generic [ref=f10e1148]:
+              - img "Connection" [ref=f10e1149]
+              - text: mysql
+          - generic [ref=f10e1152]:
+            - generic [ref=f10e1153] [cursor=pointer]:
+              - code [ref=f10e1156]:
+                - code [ref=f10e1158]: "select * from `settings` where `key` = google_api_key limit 1"
+              - button "Copy to clipboard" [ref=f10e1160]
+              - button [ref=f10e1163]
+            - button "1 query parameter" [ref=f10e1167] [cursor=pointer]
+        - generic [ref=f10e1170]:
+          - generic [ref=f10e1171]:
+            - generic [ref=f10e1172]: 09:12:28
+            - generic [ref=f10e1173]:
+              - img "Runtime" [ref=f10e1174]
+              - text: 0.81ms
+            - generic [ref=f10e1176]:
+              - img "Connection" [ref=f10e1177]
+              - text: mysql
+          - generic [ref=f10e1180]:
+            - generic [ref=f10e1181] [cursor=pointer]:
+              - code [ref=f10e1184]:
+                - code [ref=f10e1186]: "select * from `users` where `id` = 6 and `users`.`deleted_at` is null limit 1"
+              - button "Copy to clipboard" [ref=f10e1188]
+              - button [ref=f10e1191]
+            - button "1 query parameter" [ref=f10e1195] [cursor=pointer]
+        - generic [ref=f10e1198]:
+          - generic [ref=f10e1199]:
+            - generic [ref=f10e1200]: 09:12:28
+            - generic [ref=f10e1201]:
+              - img "Runtime" [ref=f10e1202]
+              - text: 0.74ms
+            - generic [ref=f10e1204]:
+              - img "Connection" [ref=f10e1205]
+              - text: mysql
+          - generic [ref=f10e1208]:
+            - generic [ref=f10e1209] [cursor=pointer]:
+              - code [ref=f10e1212]:
+                - code [ref=f10e1214]: "select `roles`.*, `model_has_roles`.`model_id` as `pivot_model_id`, `model_has_roles`.`role_id` as `pivot_role_id`, `model_has_roles`.`model_type` as `pivot_model_type` from `roles` inner join `model_has_roles` on `roles`.`id` = `model_has_roles`.`role_id` where `model_has_roles`.`model_id` in (6) and `model_has_roles`.`model_type` = App\\Models\\User"
+              - button "Copy to clipboard" [ref=f10e1216]
+              - button [ref=f10e1219]
+            - button "1 query parameter" [ref=f10e1223] [cursor=pointer]
+        - generic [ref=f10e1226]:
+          - generic [ref=f10e1227]:
+            - generic [ref=f10e1228]: 09:12:28
+            - generic [ref=f10e1229]:
+              - img "Runtime" [ref=f10e1230]
+              - text: 1.75ms
+            - generic [ref=f10e1232]:
+              - img "Connection" [ref=f10e1233]
+              - text: mysql
+          - generic [ref=f10e1236]:
+            - generic [ref=f10e1237] [cursor=pointer]:
+              - code [ref=f10e1240]:
+                - code [ref=f10e1242]: "select * from `ilanlar` where `ilanlar`.`id` = 1 and `ilanlar`.`deleted_at` is null order by `visibility_score` desc limit 1"
+              - button "Copy to clipboard" [ref=f10e1244]
+              - button [ref=f10e1247]
+            - button "1 query parameter" [ref=f10e1251] [cursor=pointer]
+        - generic [ref=f10e1254]:
+          - generic [ref=f10e1255]:
+            - generic [ref=f10e1256]: 09:12:28
+            - generic [ref=f10e1257]:
+              - img "Runtime" [ref=f10e1258]
+              - text: 1.42ms
+            - generic [ref=f10e1260]:
+              - img "Connection" [ref=f10e1261]
+              - text: mysql
+          - generic [ref=f10e1264] [cursor=pointer]:
+            - code [ref=f10e1267]:
+              - code [ref=f10e1269]: "select * from `ilan_fotograflari` where `ilan_fotograflari`.`ilan_id` in (1) order by `display_order` asc"
+            - button "Copy to clipboard" [ref=f10e1271]
+            - button [ref=f10e1274]
+        - generic [ref=f10e1277]:
+          - generic [ref=f10e1278]:
+            - generic [ref=f10e1279]: 09:12:28
+            - generic [ref=f10e1280]:
+              - img "Runtime" [ref=f10e1281]
+              - text: 5.82ms
+            - generic [ref=f10e1283]:
+              - img "Connection" [ref=f10e1284]
+              - text: mysql
+          - generic [ref=f10e1287] [cursor=pointer]:
+            - code [ref=f10e1290]:
+              - code [ref=f10e1292]: "select `features`.*, `ilan_feature`.`ilan_id` as `pivot_ilan_id`, `ilan_feature`.`feature_id` as `pivot_feature_id`, `ilan_feature`.`value` as `pivot_value`, `ilan_feature`.`created_at` as `pivot_created_at`, `ilan_feature`.`updated_at` as `pivot_updated_at` from `features` inner join `ilan_feature` on `features`.`id` = `ilan_feature`.`feature_id` where `ilan_feature`.`ilan_id` in (1) and `features`.`deleted_at` is null"
+            - button "Copy to clipboard" [ref=f10e1294]
+            - button [ref=f10e1297]
+        - generic [ref=f10e1300]:
+          - generic [ref=f10e1301]:
+            - generic [ref=f10e1302]: 09:12:28
+            - generic [ref=f10e1303]:
+              - img "Runtime" [ref=f10e1304]
+              - text: 0.52ms
+            - generic [ref=f10e1306]:
+              - img "Connection" [ref=f10e1307]
+              - text: mysql
+          - generic [ref=f10e1310] [cursor=pointer]:
+            - code [ref=f10e1313]:
+              - code [ref=f10e1315]: "select * from `ilan_kategorileri` where `parent_id` is null and `ilan_kategorileri`.`deleted_at` is null order by `display_order` asc"
+            - button "Copy to clipboard" [ref=f10e1317]
+            - button [ref=f10e1320]
+        - generic [ref=f10e1323]:
+          - generic [ref=f10e1324]:
+            - generic [ref=f10e1325]: 09:12:28
+            - generic [ref=f10e1326]:
+              - img "Runtime" [ref=f10e1327]
+              - text: 0.71ms
+            - generic [ref=f10e1329]:
+              - img "Connection" [ref=f10e1330]
+              - text: mysql
+          - generic [ref=f10e1333] [cursor=pointer]:
+            - code [ref=f10e1336]:
+              - code [ref=f10e1338]: "select * from `ilan_kategorileri` where `ilan_kategorileri`.`parent_id` in (2, 11, 15, 20, 27, 31) and `ilan_kategorileri`.`deleted_at` is null"
+            - button "Copy to clipboard" [ref=f10e1340]
+            - button [ref=f10e1343]
+        - generic [ref=f10e1346]:
+          - generic [ref=f10e1347]:
+            - generic [ref=f10e1348]: 09:12:28
+            - generic [ref=f10e1349]:
+              - img "Runtime" [ref=f10e1350]
+              - text: 0.76ms
+            - generic [ref=f10e1352]:
+              - img "Connection" [ref=f10e1353]
+              - text: mysql
+          - generic [ref=f10e1356]:
+            - generic [ref=f10e1357] [cursor=pointer]:
+              - code [ref=f10e1360]:
+                - code [ref=f10e1362]: "select `id`, `name`, `email` from `users` where exists (select * from `roles` inner join `model_has_roles` on `roles`.`id` = `model_has_roles`.`role_id` where `users`.`id` = `model_has_roles`.`model_id` and `model_has_roles`.`model_type` = App\\Models\\User and `name` = danisman) and `aktiflik_durumu` = 1 and `users`.`deleted_at` is null"
+              - button "Copy to clipboard" [ref=f10e1364]
+              - button [ref=f10e1367]
+            - button "3 query parameters" [ref=f10e1371] [cursor=pointer]
+        - generic [ref=f10e1374]:
+          - generic [ref=f10e1375]:
+            - generic [ref=f10e1376]: 09:12:28
+            - generic [ref=f10e1377]:
+              - img "Runtime" [ref=f10e1378]
+              - text: 0.45ms
+            - generic [ref=f10e1380]:
+              - img "Connection" [ref=f10e1381]
+              - text: mysql
+          - generic [ref=f10e1384] [cursor=pointer]:
+            - code [ref=f10e1387]:
+              - code [ref=f10e1389]: "select `id`, `il_adi` from `iller` where `iller`.`deleted_at` is null order by `il_adi` asc"
+            - button "Copy to clipboard" [ref=f10e1391]
+            - button [ref=f10e1394]
+        - generic [ref=f10e1397]:
+          - generic [ref=f10e1398]:
+            - generic [ref=f10e1399]: 09:12:28
+            - generic [ref=f10e1400]:
+              - img "Runtime" [ref=f10e1401]
+              - text: 1.03ms
+            - generic [ref=f10e1403]:
+              - img "Connection" [ref=f10e1404]
+              - text: mysql
+          - generic [ref=f10e1407] [cursor=pointer]:
+            - code [ref=f10e1410]:
+              - code [ref=f10e1412]: "select `id`, `ulke_adi`, `ulke_kodu` from `ulkeler` order by `ulke_adi` asc"
+            - button "Copy to clipboard" [ref=f10e1414]
+            - button [ref=f10e1417]
+        - generic [ref=f10e1420]:
+          - generic [ref=f10e1421]:
+            - generic [ref=f10e1422]: 09:12:28
+            - generic [ref=f10e1423]:
+              - img "Runtime" [ref=f10e1424]
+              - text: 2.51ms
+            - generic [ref=f10e1426]:
+              - img "Connection" [ref=f10e1427]
+              - text: mysql
+          - generic [ref=f10e1430] [cursor=pointer]:
+            - code [ref=f10e1433]:
+              - code [ref=f10e1435]: "select column_name as `name`, data_type as `type_name`, column_type as `type`, collation_name as `collation`, is_nullable as `nullable`, column_default as `default`, column_comment as `comment`, extra as `extra` from information_schema.columns where table_schema = 'yalihanai_v2_production' and table_name = 'kisiler' order by ordinal_position asc"
+            - button "Copy to clipboard" [ref=f10e1437]
+            - button [ref=f10e1440]
+        - generic [ref=f10e1443]:
+          - generic [ref=f10e1444]:
+            - generic [ref=f10e1445]: 09:12:28
+            - generic [ref=f10e1446]:
+              - img "Runtime" [ref=f10e1447]
+              - text: 2.87ms
+            - generic [ref=f10e1449]:
+              - img "Connection" [ref=f10e1450]
+              - text: mysql
+          - generic [ref=f10e1453] [cursor=pointer]:
+            - code [ref=f10e1456]:
+              - code [ref=f10e1458]: "select column_name as `name`, data_type as `type_name`, column_type as `type`, collation_name as `collation`, is_nullable as `nullable`, column_default as `default`, column_comment as `comment`, extra as `extra` from information_schema.columns where table_schema = 'yalihanai_v2_production' and table_name = 'kisiler' order by ordinal_position asc"
+            - button "Copy to clipboard" [ref=f10e1460]
+            - button [ref=f10e1463]
+    - generic [ref=f10e1467]:
+      - list [ref=f10e1468]:
+        - listitem [ref=f10e1469]
+        - listitem [ref=f10e1478]: ·
+        - listitem [ref=f10e1479]:
+          - link "Source" [ref=f10e1480] [cursor=pointer]:
+            - /url: https://github.com/spatie/laravel-ignition
+        - listitem [ref=f10e1481]: ·
+        - listitem [ref=f10e1482]:
+          - link "Docs" [ref=f10e1483] [cursor=pointer]:
+            - /url: https://flareapp.io/docs/ignition/introducing-ignition/overview
+        - listitem [ref=f10e1484]: ·
+        - listitem [ref=f10e1485]:
+          - link "Laravel" [ref=f10e1486] [cursor=pointer]:
+            - /url: https://laravel.com
+      - paragraph [ref=f10e1488]:
+        - text: Ignition is built by
+        - link "Flare" [ref=f10e1489] [cursor=pointer]:
+          - /url: https://flareapp.io/?utm_campaign=ignition&utm_source=ignition
+        - text: ", the Laravel error reporting service."

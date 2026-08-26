@@ -5,32 +5,65 @@
 {{-- STEP 5: ÖNİZLEME VE YAYIN --}}
 <div class="space-y-6" x-data="{
     summary: {
-        baslik: '',
-        fiyat: '',
-        kategori: '',
-        konum: '',
-        photoCount: 0
+        baslik: 'Başlık Belirtilmedi',
+        fiyat: '0',
+        kategori: 'Kategori Seçilmedi',
+        konum: 'Konum Belirtilmedi',
+        photoCount: 0,
+        ilanSahibi: 'Seçilmedi',
+        ilgiliKisi: 'Belirtilmedi',
+        danisman: '{{ auth()->user()->name ?? 'Atılay' }}'
     },
     updateSummary() {
-        this.summary.baslik = document.getElementById('baslik')?.value || 'Başlık Belirtilmedi';
-        this.summary.fiyat = document.getElementById('fiyat_display')?.value || '0';
+        this.summary.baslik = document.getElementById('baslik')?.value?.trim() || 'Başlık Belirtilmedi';
+        this.summary.fiyat = document.getElementById('fiyat_display')?.value || document.getElementById('fiyat')?.value || '0';
 
         const cat = document.getElementById('alt_kategori_id');
         this.summary.kategori = cat?.options[cat.selectedIndex]?.text || 'Kategori Seçilmedi';
 
         const il = document.getElementById('il_id');
         const ilce = document.getElementById('ilce_id');
-        this.summary.konum = `${il?.options[il.selectedIndex]?.text || ''} / ${ilce?.options[ilce.selectedIndex]?.text || ''}`;
+        const ilText = il?.options[il.selectedIndex]?.text || '';
+        const ilceText = ilce?.options[ilce.selectedIndex]?.text || '';
+        this.summary.konum = (ilText && ilceText) ? `${ilText} / ${ilceText}` : (ilText || ilceText || 'Konum Belirtilmedi');
 
-        // Fotoğraf sayısını senkronize et (Eğer global wizard nesnesi varsa)
-        if (window.wizardService && window.wizardService.photos) {
-            this.summary.photoCount = window.wizardService.photos.length;
-        } else if (typeof photos !== 'undefined') {
-            this.summary.photoCount = photos.length;
+        // CRM & Portföy Alanları
+        let ownerVal = document.getElementById('ilan_sahibi_search')?.value?.trim();
+        if (!ownerVal && window.context7SelectedOwner) ownerVal = window.context7SelectedOwner;
+        this.summary.ilanSahibi = ownerVal || 'Seçilmedi';
+
+        let contactVal = document.getElementById('ilgili_kisi_search')?.value?.trim();
+        if (!contactVal && window.context7SelectedContact) contactVal = window.context7SelectedContact;
+        this.summary.ilgiliKisi = contactVal || 'Belirtilmedi';
+
+        let advVal = document.getElementById('danisman_search')?.value?.trim();
+        if (!advVal && window.context7SelectedAdvisor) advVal = window.context7SelectedAdvisor;
+        this.summary.danisman = advVal || '{{ auth()->user()->name ?? 'Atılay' }}';
+
+        // Fotoğraf sayısını senkronize et
+        const photoInput = document.getElementById('fotograflar');
+        let count = 0;
+        if (photoInput && photoInput.files && photoInput.files.length > 0) {
+            count = photoInput.files.length;
+        } else if (window.__wizardUploadedPhotos && window.__wizardUploadedPhotos.length > 0) {
+            count = window.__wizardUploadedPhotos.length;
+        } else if (window.wizardService && window.wizardService.photos) {
+            count = window.wizardService.photos.length;
+        } else if (typeof photos !== 'undefined' && Array.isArray(photos)) {
+            count = photos.length;
         }
+        this.summary.photoCount = count;
     }
-}" x-init="updateSummary();
-window.addEventListener('wizard-step-changed', (e) => { if (e.detail.step === 5) updateSummary() })">
+}" x-init="
+    window.updateStep5Preview = () => updateSummary();
+    updateSummary();
+    window.addEventListener('wizard-step-changed', () => updateSummary());
+    window.addEventListener('context7:search:selected', () => updateSummary());
+    window.addEventListener('context7:selected', () => updateSummary());
+    document.addEventListener('input', () => updateSummary());
+    document.addEventListener('change', () => updateSummary());
+    {{-- P2-FIX: setInterval polling kaldırıldı — event-driven güncelleme yeterli --}}
+">
 
     <div class="mb-6">
         <h3 class="mb-2 text-xl font-bold text-gray-900 dark:text-slate-100">
@@ -45,7 +78,10 @@ window.addEventListener('wizard-step-changed', (e) => { if (e.detail.step === 5)
         class="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-sm dark:border-blue-800 dark:from-blue-900/20 dark:to-indigo-900/20 dark:shadow-none">
         <div class="mb-6 flex items-center gap-4">
             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg">
-                <i class="fas fa-eye text-xl"></i>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
             </div>
             <div>
                 <h4 class="text-lg font-bold text-gray-900 dark:text-slate-100" x-text="summary.baslik">
@@ -79,163 +115,32 @@ window.addEventListener('wizard-step-changed', (e) => { if (e.detail.step === 5)
         </div>
     </div>
 
-    {{-- 👥 CRM & Sorumlu Yönetimi (Step 2'den taşındı) --}}
-    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-slate-800 dark:bg-slate-900">
-        <div class="mb-6 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div
-                    class="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100 text-orange-600 dark:bg-orange-900/30">
-                    <i class="fas fa-users-cog text-xl"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-slate-100">CRM & Portföy
-                        Yönetimi</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">İlan sahibi ve sorumlu danışman ataması</p>
-                </div>
+    {{-- 👥 CRM & Sorumlu Özeti --}}
+    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div class="mb-4 flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100 text-orange-600 dark:bg-orange-900/30">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-slate-100">CRM & Portföy Özeti</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Step 2'de seçilen kişi ve danışman bilgileri</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {{-- İlan Sahibi --}}
-            <div class="group relative">
-                <label for="ilan_sahibi_id" class="wizard-field-label">İlan Sahibi <span
-                        class="text-red-500">*</span></label>
-
-                <div class="context7-live-search relative w-full" data-search-type="kisiler"
-                    data-placeholder="İsim veya telefon ile ara..." data-endpoint="/api/v1/kisiler/search"
-                    data-max-results="10" data-creatable="true">
-
-                    <input type="hidden" name="ilan_sahibi_id" id="ilan_sahibi_id" value="{{ old('ilan_sahibi_id') }}"
-                        required>
-
-                    <div class="relative">
-                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <i class="fas fa-search text-gray-400 dark:text-slate-500"></i>
-                        </span>
-                        <input type="text" id="ilan_sahibi_search" class="wizard-field pl-10 pr-10"
-                            placeholder="Kişi ara..." autocomplete="off">
-                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                            <i class="fas fa-spinner fa-spin hidden text-gray-400 dark:text-slate-500"
-                                id="ilan_sahibi_loading"></i>
-                        </span>
-                    </div>
-
-                    <div
-                        class="context7-search-results absolute z-50 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
-                    </div>
-                </div>
-
-                <button type="button"
-                    @click="window.dispatchEvent(new CustomEvent('open-quick-client-modal', {detail: {type: 'owner'}}))"
-                    class="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-purple-200 bg-purple-50 py-2 text-xs font-semibold text-purple-600 transition-colors hover:bg-purple-100 dark:border-purple-800/30 dark:bg-purple-900/10 dark:text-purple-400 dark:hover:bg-purple-900/30">
-                    <i class="fas fa-plus"></i> Yeni Kişi Ekle
-                </button>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div class="p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg">
+                <span class="text-xs text-gray-500 dark:text-gray-400 block font-medium">İlan Sahibi</span>
+                <span class="text-sm font-semibold text-gray-900 dark:text-slate-100" x-text="summary.ilanSahibi"></span>
             </div>
-
-            {{-- İlgili Kişi --}}
-            <div class="group relative">
-                <label for="ilgili_kisi_id" class="wizard-field-label">İlgili Kişi <span
-                        class="ml-1 text-xs font-normal text-gray-400">(Opsiyonel)</span></label>
-
-                <div class="context7-live-search relative w-full" data-search-type="kisiler"
-                    data-placeholder="Aracı, avukat vb. ara..." data-endpoint="/api/v1/kisiler/search" data-max-results="10"
-                    data-creatable="true">
-
-                    <input type="hidden" name="ilgili_kisi_id" id="ilgili_kisi_id" value="{{ old('ilgili_kisi_id') }}">
-
-                    <div class="relative">
-                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <i class="fas fa-user-friends text-gray-400 dark:text-slate-500"></i>
-                        </span>
-                        <input type="text" id="ilgili_kisi_search" class="wizard-field pl-10 pr-10"
-                            placeholder="İlgili kişi ara..." autocomplete="off">
-                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                            <i class="fas fa-spinner fa-spin hidden text-gray-400 dark:text-slate-500"
-                                id="ilgili_kisi_loading"></i>
-                        </span>
-                    </div>
-
-                    <div
-                        class="context7-search-results absolute z-50 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
-                    </div>
-                </div>
-
-                <button type="button"
-                    @click="window.dispatchEvent(new CustomEvent('open-quick-client-modal', {detail: {type: 'related'}}))"
-                    class="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-gray-200 bg-gray-50 py-2 text-xs font-semibold text-gray-500 transition-colors hover:bg-gray-100 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-gray-400 dark:hover:bg-gray-700">
-                    <i class="fas fa-plus"></i> Yeni İlgili Ekle
-                </button>
+            <div class="p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg">
+                <span class="text-xs text-gray-500 dark:text-gray-400 block font-medium">İlgili Kişi</span>
+                <span class="text-sm font-semibold text-gray-900 dark:text-slate-100" x-text="summary.ilgiliKisi"></span>
             </div>
-
-            {{-- Sorumlu Danışman --}}
-            <div class="group relative">
-                <label for="danisman_id" class="wizard-field-label">Sorumlu Danışman <span
-                        class="text-red-500">*</span></label>
-
-                <div class="context7-live-search relative w-full" data-search-type="users"
-                    data-placeholder="Sistem kullanıcısı seçin..." data-endpoint="/api/v1/admin/list/danismanlar"
-                    data-max-results="10" data-creatable="false">
-
-                    <input type="hidden" name="danisman_id" id="danisman_id"
-                        value="{{ old('danisman_id', auth()->id()) }}" required>
-
-                    <div class="relative">
-                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <i class="fas fa-user-tie text-blue-400"></i>
-                        </span>
-                        <input type="text" id="danisman_search"
-                            class="wizard-field border-blue-200 bg-blue-50/30 pl-10 pr-10 dark:border-blue-800 dark:bg-blue-900/10"
-                            placeholder="Danışman ara..." autocomplete="off"
-                            value="{{ auth()->user()->name ?? '' }}">
-                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                            <i class="fas fa-spinner fa-spin hidden text-blue-400" id="danisman_loading"></i>
-                        </span>
-                    </div>
-
-                    <div
-                        class="context7-search-results absolute z-50 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
-                    </div>
-                </div>
-
-                <div
-                    class="mt-3 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 dark:border-blue-800/30 dark:bg-blue-900/20">
-                    <p class="flex items-start gap-1.5 text-[10px] leading-tight text-blue-600 dark:text-blue-300">
-                        <i class="fas fa-info-circle mt-0.5"></i>
-                        <span>Sistem kullanıcısıdır. Harici kişi eklenemez.</span>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        {{-- Site/Apartman (Ayrı satır) --}}
-        <div
-            class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-            <div class="group relative max-w-md">
-                <label for="site_id" class="wizard-field-label">Site/Apartman <span
-                        class="ml-1 text-xs font-normal text-gray-400">(Opsiyonel)</span></label>
-
-                <div class="context7-live-search relative w-full" data-search-type="sites"
-                    data-placeholder="Site veya apartman ara..." data-endpoint="/api/v1/sites/search"
-                    data-max-results="10" data-creatable="false">
-
-                    <input type="hidden" name="site_id" id="site_id" value="{{ old('site_id') }}">
-
-                    <div class="relative">
-                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <i class="fas fa-building text-gray-400 dark:text-slate-500"></i>
-                        </span>
-                        <input type="text" id="site_search" class="wizard-field pl-10 pr-10"
-                            placeholder="Site/Apartman ara..." autocomplete="off">
-                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                            <i class="fas fa-spinner fa-spin hidden text-gray-400 dark:text-slate-500"
-                                id="site_loading"></i>
-                        </span>
-                    </div>
-
-                    <div
-                        class="context7-search-results absolute z-50 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
-                    </div>
-                </div>
+            <div class="p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg">
+                <span class="text-xs text-gray-500 dark:text-gray-400 block font-medium">Sorumlu Danışman</span>
+                <span class="text-sm font-semibold text-gray-900 dark:text-slate-100" x-text="summary.danisman"></span>
             </div>
         </div>
     </div>
@@ -247,7 +152,9 @@ window.addEventListener('wizard-step-changed', (e) => { if (e.detail.step === 5)
             class="flex items-center justify-between border-b border-slate-800 bg-gradient-to-r from-slate-900 to-slate-800 p-6">
             <div class="flex items-center gap-3">
                 <div class="group flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/20 text-blue-400">
-                    <i class="fas fa-chart-line transition-transform group-hover:scale-110"></i>
+                    <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
                 </div>
                 <div>
                     <h4 class="text-sm font-black uppercase tracking-tighter text-white">Cortex Price Advisor</h4>
@@ -255,57 +162,55 @@ window.addEventListener('wizard-step-changed', (e) => { if (e.detail.step === 5)
                     </p>
                 </div>
             </div>
-            <template x-if="loading">
-                <div class="flex items-center gap-2">
-                    <div class="h-2 w-2 animate-ping rounded-full bg-blue-500"></div>
-                    <span class="text-[10px] font-black uppercase text-white">Analiz Ediliyor...</span>
-                </div>
-            </template>
+            <div x-show="loading" class="flex items-center gap-2">
+                <div class="h-2 w-2 animate-ping rounded-full bg-blue-500"></div>
+                <span class="text-[10px] font-black uppercase tracking-widest text-blue-400">Piyasa Analizi
+                    Yapılıyor...</span>
+            </div>
+            <div x-show="!loading && analysis" class="flex items-center gap-2">
+                <span
+                    class="rounded-full bg-blue-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-blue-400 border border-blue-500/20">Cortex
+                    v2.4 Active</span>
+            </div>
         </div>
 
-        <div class="p-6" x-show="analysis">
-            <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {{-- Recommended --}}
-                <div class="rounded-2xl border border-slate-700 bg-slate-800/50 p-4">
-                    <span class="mb-1 block text-[9px] font-black uppercase tracking-widest text-slate-500">Önerilen
+        <div x-show="!loading && analysis" class="space-y-6 p-6">
+            {{-- Metrics Grid --}}
+            <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
+                    <span class="text-[10px] font-black uppercase tracking-wider text-slate-500">AI Hedef
                         Fiyat</span>
                     <div class="flex items-baseline gap-1">
-                        <span class="text-lg font-black text-blue-400"
-                            x-text="new Intl.NumberFormat('tr-TR').format(analysis?.recommended_price)"></span>
-                        <span class="text-[10px] font-bold text-slate-500">₺</span>
+                        <span class="text-lg font-black text-white"
+                            x-text="analysis ? formatCurrency(analysis.recommended_price) : ''"></span>
+                        <span class="text-[10px] font-bold text-slate-500">TL</span>
                     </div>
                 </div>
 
-                {{-- Market Range --}}
-                <div class="rounded-2xl border border-slate-700 bg-slate-800/50 p-4">
-                    <span class="mb-1 block text-[9px] font-black uppercase tracking-widest text-slate-500">Piyasa
+                <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
+                    <span class="text-[10px] font-black uppercase tracking-wider text-slate-500">Piyasa
                         Aralığı</span>
-                    <div class="text-[11px] font-bold text-slate-300">
-                        <span x-text="new Intl.NumberFormat('tr-TR').format(analysis?.price_range?.min)"></span> -
-                        <span x-text="new Intl.NumberFormat('tr-TR').format(analysis?.price_range?.max)"></span> ₺
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-xs font-bold text-slate-300"
+                            x-text="analysis ? (formatCurrency(analysis.price_range?.min) + ' - ' + formatCurrency(analysis.price_range?.max)) : ''"></span>
                     </div>
                 </div>
 
-                {{-- Position --}}
-                <div class="rounded-2xl border border-slate-700 bg-slate-800/50 p-4">
+                <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
+                    <span class="text-[10px] font-black uppercase tracking-wider text-slate-500">Fiyat
+                        Konumu</span>
                     <span
-                        class="mb-1 block text-[9px] font-black uppercase tracking-widest text-slate-500">Konumlanma</span>
-                    <div class="flex items-center gap-2">
-                        <div class="h-2 w-2 rounded-full"
-                            :class="{
-                                'bg-green-500': analysis?.market_position === 'BALANCED' || analysis
-                                    ?.market_position === 'COMPETITIVE',
-                                'bg-yellow-500': analysis?.market_position === 'PREMIUM',
-                                'bg-red-500': analysis?.market_position === 'OVERPRICED'
-                            }">
-                        </div>
-                        <span class="text-xs font-black text-white" x-text="analysis?.market_position"></span>
-                    </div>
+                        class="inline-block rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
+                        :class="{
+                            'bg-green-500/20 text-green-400': analysis?.market_position === 'below',
+                            'bg-blue-500/20 text-blue-400': analysis?.market_position === 'fair',
+                            'bg-red-500/20 text-red-400': analysis?.market_position === 'above'
+                        }"
+                        x-text="analysis?.market_position === 'fair' ? 'Piyasa Değerinde' : (analysis?.market_position === 'below' ? 'Fırsat Fiyatı' : 'Piyasa Üstü')"></span>
                 </div>
 
-                {{-- Sale Time --}}
-                <div class="rounded-2xl border border-slate-700 bg-slate-800/50 p-4">
-                    <span class="mb-1 block text-[9px] font-black uppercase tracking-widest text-slate-500">Tahmini
+                <div class="rounded-2xl border border-slate-800 bg-slate-800/40 p-4">
+                    <span class="text-[10px] font-black uppercase tracking-wider text-slate-500">Tahmini
                         Satış</span>
                     <div class="flex items-baseline gap-1">
                         <span class="text-lg font-black text-purple-400"
@@ -319,7 +224,9 @@ window.addEventListener('wizard-step-changed', (e) => { if (e.detail.step === 5)
             <div class="rounded-2xl border border-blue-500/20 bg-blue-600/5 p-5">
                 <div class="flex items-start gap-4">
                     <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white">
-                        <i class="fas fa-brain text-xs"></i>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
                     </div>
                     <div class="space-y-3">
                         <p class="text-[13px] font-medium leading-relaxed text-slate-300"
@@ -348,17 +255,15 @@ window.addEventListener('wizard-step-changed', (e) => { if (e.detail.step === 5)
                         x-text="Math.round(analysis?.confidence * 100) + '%'"></span>
                 </div>
 
-                <template x-if="analysis?.meta?.forecast_signal">
-                    <div class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1">
-                        <span class="text-[10px] font-black uppercase tracking-tighter text-white"
-                            :class="{
-                                'text-green-400': analysis.meta.forecast_signal === 'BUY' || analysis.meta
-                                    .forecast_signal === 'SELL',
-                                'text-yellow-400': analysis.meta.forecast_signal === 'WAIT'
-                            }"
-                            x-text="'FORECAST: ' + analysis.meta.forecast_signal"></span>
-                    </div>
-                </template>
+                <div x-show="analysis?.meta?.forecast_signal" class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1">
+                    <span class="text-[10px] font-black uppercase tracking-tighter text-white"
+                        :class="{
+                            'text-green-400': analysis?.meta?.forecast_signal === 'BUY' || analysis?.meta
+                                ?.forecast_signal === 'SELL',
+                            'text-yellow-400': analysis?.meta?.forecast_signal === 'WAIT'
+                        }"
+                        x-text="'FORECAST: ' + (analysis?.meta?.forecast_signal || '')"></span>
+                </div>
             </div>
         </div>
     </div>
@@ -369,7 +274,10 @@ window.addEventListener('wizard-step-changed', (e) => { if (e.detail.step === 5)
         <div class="rounded-xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-900/10">
             <label for="gizli_not"
                 class="mb-4 flex items-center gap-2 text-sm font-bold text-amber-800 dark:text-amber-200">
-                <i class="fas fa-lock"></i> Gizli Not (Ekibe Özel)
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+                Gizli Not (Ekibe Özel)
             </label>
             <textarea name="gizli_not" id="gizli_not" rows="4"
                 placeholder="Pazarlık payı, acil satış nedeni vb. sadece ekip görebilir..." class="wizard-field"></textarea>
@@ -378,7 +286,10 @@ window.addEventListener('wizard-step-changed', (e) => { if (e.detail.step === 5)
         {{-- Portallar --}}
         <div class="rounded-xl border border-purple-200 bg-purple-50 p-6 dark:border-purple-800 dark:bg-purple-900/10">
             <label class="mb-4 flex items-center gap-2 text-sm font-bold text-purple-800 dark:text-purple-200">
-                <i class="fas fa-external-link-alt"></i> Portal İlan Numaraları
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                </svg>
+                Portal İlan Numaraları
             </label>
             <div class="space-y-3">
                 <div class="flex items-center gap-3">

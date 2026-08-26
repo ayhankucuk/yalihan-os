@@ -42,8 +42,8 @@ class CheckinCheckoutWave7Test extends TestCase
 
         $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
 
-        $this->tenantA = Tenant::firstOrCreate(['slug' => 'tenant-w7-a'], ['name' => 'Tenant W7 A']);
-        $this->tenantB = Tenant::firstOrCreate(['slug' => 'tenant-w7-b'], ['name' => 'Tenant W7 B']);
+        $this->tenantA = Tenant::firstOrCreate(['domain' => 'tenant-w7-a.local'], ['name' => 'Tenant W7 A']);
+        $this->tenantB = Tenant::firstOrCreate(['domain' => 'tenant-w7-b.local'], ['name' => 'Tenant W7 B']);
 
         $this->adminA = User::factory()->create([
             'tenant_id' => $this->tenantA->id,

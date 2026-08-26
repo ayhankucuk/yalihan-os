@@ -167,14 +167,16 @@ class KisiService
         // 1. Aktiflik kontrolü: Sadece aktif kişiler (aktiflik_durumu = 1)
         // 2. Select optimization: Sadece gerekli kolonlar
         // 3. Sıralama: İsim sırasına göre (orderBy tam_ad)
-        return Kisi::select(['id', 'ad', 'soyad', 'telefon', 'email', 'kisi_tipi', 'aktiflik_durumu'])
+        return Kisi::select(['id', 'ad', 'soyad', 'telefon', 'eposta', 'kisi_tipi', 'aktiflik_durumu'])
             ->where('aktiflik_durumu', 1) // ✅ SAB: Sadece aktif kişiler (tinyint)
             ->where(function ($query) use ($searchTerm) {
-                $query->whereRaw("CONCAT(ad, ' ', soyad) LIKE ?", ["%{$searchTerm}%"])
+                $query->where('ad', 'like', "%{$searchTerm}%")
+                    ->orWhere('soyad', 'like', "%{$searchTerm}%")
+                    ->orWhereRaw("CONCAT(ad, ' ', soyad) LIKE ?", ["%{$searchTerm}%"])
                     ->orWhere('telefon', 'like', "%{$searchTerm}%")
-                    ->orWhere('email', 'like', "%{$searchTerm}%");
+                    ->orWhere('eposta', 'like', "%{$searchTerm}%");
             })
-            ->orderByRaw("CONCAT(ad, ' ', soyad)") // ✅ İsim sırasına göre
+            ->orderBy('ad')
             ->limit($limit)
             ->get()
             ->map(function ($kisi) {
@@ -187,7 +189,8 @@ class KisiService
                     'soyad' => $kisi->soyad,
                     'tam_ad' => $tamAd,
                     'telefon' => $kisi->telefon,
-                    'email' => $kisi->email,
+                    'email' => $kisi->eposta, // Context7 fallback
+                    'eposta' => $kisi->eposta,
                     'kisi_tipi' => $kisi->kisi_tipi ?? null,
                     'text' => $tamAd.($kisi->telefon ? ' - '.$kisi->telefon : ''), // Context7 Live Search için
                 ];
@@ -207,9 +210,11 @@ class KisiService
 
         if ($searchTerm) {
             $query->where(function ($q) use ($searchTerm) {
-                $q->whereRaw("CONCAT(ad, ' ', soyad) LIKE ?", ["%{$searchTerm}%"])
+                $q->where('ad', 'like', "%{$searchTerm}%")
+                    ->orWhere('soyad', 'like', "%{$searchTerm}%")
+                    ->orWhereRaw("CONCAT(ad, ' ', soyad) LIKE ?", ["%{$searchTerm}%"])
                     ->orWhere('telefon', 'like', "%{$searchTerm}%")
-                    ->orWhere('email', 'like', "%{$searchTerm}%");
+                    ->orWhere('eposta', 'like', "%{$searchTerm}%");
             });
         }
 

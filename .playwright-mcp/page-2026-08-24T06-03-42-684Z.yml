@@ -1,0 +1,228 @@
+- generic [active] [ref=f6e1]:
+  - link "İçeriğe atla" [ref=f6e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f6e4]:
+    - complementary [ref=f6e5]:
+      - generic [ref=f6e7]:
+        - generic [ref=f6e8] [cursor=pointer]: "Y"
+        - generic [ref=f6e12]:
+          - heading "Yalıhan Emlak" [level=2] [ref=f6e13]
+          - paragraph [ref=f6e16]: Yönetim Paneli
+      - navigation [ref=f6e17]:
+        - textbox "Menüde ara..." [ref=f6e20]
+        - menu [ref=f6e21]:
+          - listitem [ref=f6e22]:
+            - menuitem "Dashboard" [ref=f6e23] [cursor=pointer]
+          - listitem [ref=f6e31]:
+            - button "İlanlar & Portföy" [ref=f6e32] [cursor=pointer]
+          - listitem [ref=f6e40]:
+            - button "CRM & Müşteri" [ref=f6e41] [cursor=pointer]
+          - listitem [ref=f6e48]:
+            - button "Takım & Operasyon" [ref=f6e49] [cursor=pointer]
+          - listitem [ref=f6e57]:
+            - button "Finans & Satış" [ref=f6e58] [cursor=pointer]
+          - listitem [ref=f6e65]:
+            - menuitem "Bildirimler" [ref=f6e66] [cursor=pointer]
+          - listitem [ref=f6e72]:
+            - button "Property Engine" [ref=f6e73] [cursor=pointer]
+          - listitem [ref=f6e80]:
+            - button "Cortex" [ref=f6e81] [cursor=pointer]
+          - listitem [ref=f6e88]:
+            - button "Governance" [ref=f6e89] [cursor=pointer]
+          - listitem [ref=f6e96]:
+            - button "Automation Hub" [ref=f6e97] [cursor=pointer]
+          - listitem [ref=f6e105]:
+            - button "Sistem" [ref=f6e106] [cursor=pointer]
+      - generic [ref=f6e114]:
+        - generic [ref=f6e115]: A
+        - generic [ref=f6e116]:
+          - paragraph [ref=f6e117]: Acceptance Tester
+          - paragraph [ref=f6e118]: Süper Yönetici
+    - generic [ref=f6e119]:
+      - banner [ref=f6e120]:
+        - generic [ref=f6e122]:
+          - button "Hızlı Arama... ⌘K" [ref=f6e124] [cursor=pointer]:
+            - generic [ref=f6e127]: Hızlı Arama...
+            - generic [ref=f6e128]: ⌘K
+          - button "Bildirimler" [ref=f6e130] [cursor=pointer]
+          - button "Tema" [ref=f6e131] [cursor=pointer]
+          - button "A" [ref=f6e135] [cursor=pointer]
+      - link:
+        - /url: http://127.0.0.1:8000/admin/governance/intelligence-center
+      - generic [ref=f6e140]:
+        - 'link "AI Sistem Watcher: Beklemede Agent: 0/5" [ref=f6e141] [cursor=pointer]':
+          - /url: http://127.0.0.1:8000/admin/governance/intelligence-center
+          - generic [ref=f6e142]:
+            - generic [ref=f6e143]: AI Sistem
+            - generic [ref=f6e144]: "Watcher: Beklemede"
+            - generic [ref=f6e147]: "Agent: 0/5"
+        - generic [ref=f6e148]:
+          - 'link "Bugün Oto: 0 🟢 Düşük" [ref=f6e149] [cursor=pointer]':
+            - /url: http://127.0.0.1:8000/admin/governance/intelligence-center
+          - link "L2" [ref=f6e150] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/admin/governance/autonomy
+      - main [ref=f6e151]:
+        - generic [ref=f6e153]:
+          - generic [ref=f6e154]:
+            - heading "Dashboard" [level=1] [ref=f6e155]
+            - paragraph [ref=f6e156]: Sistem genel durumu ve istatistikler
+          - generic [ref=f6e157]:
+            - link "Cortex AI Kredisi 0 Kredi Usage & Billing" [ref=f6e158] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/admin/ai/usage
+              - generic [ref=f6e166]:
+                - term [ref=f6e167]: Cortex AI Kredisi
+                - definition [ref=f6e168]:
+                  - generic [ref=f6e169]: "0"
+                  - generic [ref=f6e170]: Kredi
+              - generic [ref=f6e171]: Usage & Billing
+            - generic [ref=f6e183]:
+              - term [ref=f6e184]: Toplam İlan
+              - definition [ref=f6e185]:
+                - generic [ref=f6e186]: "0"
+            - generic [ref=f6e195]:
+              - term [ref=f6e196]: Aktif İlan
+              - definition [ref=f6e197]:
+                - generic [ref=f6e198]: "0"
+            - generic [ref=f6e207]:
+              - term [ref=f6e208]: Toplam Kullanıcı
+              - definition [ref=f6e209]:
+                - generic [ref=f6e210]: "5"
+            - generic [ref=f6e219]:
+              - term [ref=f6e220]: Toplam Danışman
+              - definition [ref=f6e221]:
+                - generic [ref=f6e222]: "0"
+          - generic [ref=f6e223]:
+            - generic [ref=f6e225]:
+              - generic [ref=f6e226]:
+                - generic [ref=f6e227]:
+                  - heading "🎯 Fırsat Panosu 0" [level=3] [ref=f6e228]:
+                    - text: 🎯 Fırsat Panosu
+                    - generic [ref=f6e229]: "0"
+                  - paragraph [ref=f6e230]: Yüksek potansiyelli acil satış fırsatları
+                - generic [ref=f6e231]:
+                  - button [ref=f6e232] [cursor=pointer]
+                  - link "Tümünü Gör →" [ref=f6e235] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/intelligence/opportunity-board
+              - paragraph [ref=f6e240]: Şu an acil fırsat bulunmuyor.
+              - generic [ref=f6e242]:
+                - generic [ref=f6e243]: Güncel
+                - generic [ref=f6e244]: Canlı İzleme
+            - generic [ref=f6e247]:
+              - generic [ref=f6e248]:
+                - generic [ref=f6e253]:
+                  - heading "💱 Döviz Kurları" [level=3] [ref=f6e254]
+                  - paragraph [ref=f6e255]: "Son güncelleme:"
+                - button "Yenile" [ref=f6e256] [cursor=pointer]
+              - paragraph [ref=f6e273]: "Kaynak: TCMB • Günlük güncelleniyor"
+          - generic [ref=f6e276]:
+            - generic [ref=f6e277]:
+              - generic [ref=f6e282]:
+                - heading "Cortex Günlük İstihbarat" [level=2] [ref=f6e283]
+                - paragraph [ref=f6e284]: Bugünkü öncelikli aksiyonlarınız
+              - button [ref=f6e286] [cursor=pointer]
+            - generic [ref=f6e289]:
+              - generic [ref=f6e290]: "Churn Riski: 0"
+              - generic [ref=f6e291]: "Fiyat Fırsatı: 0"
+              - generic [ref=f6e292]: "Sıcak Eşleşme: 0"
+            - generic [ref=f6e294]:
+              - paragraph [ref=f6e297]: Harika! Bugünlük acil bir durum yok. ☕
+              - paragraph [ref=f6e298]: Cortex tüm ilanlarınızı ve talepleri izliyor.
+          - generic [ref=f6e301]:
+            - generic [ref=f6e302]:
+              - generic [ref=f6e307]:
+                - heading "AI Otomasyon Sistemi" [level=2] [ref=f6e308]
+                - paragraph [ref=f6e309]: n8n, Telegram, Voice Search & Bildirimler
+              - link "Ayarlar" [ref=f6e310] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/integrations
+            - generic [ref=f6e314]:
+              - generic [ref=f6e315]:
+                - generic [ref=f6e320]:
+                  - paragraph [ref=f6e321]: n8n
+                  - paragraph [ref=f6e322]: 10 Workflow
+                - link "Workflow'ları Görüntüle →" [ref=f6e323] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/admin/integrations/n8n-workflows
+              - generic [ref=f6e324]:
+                - generic [ref=f6e329]:
+                  - paragraph [ref=f6e330]: Telegram
+                  - paragraph [ref=f6e331]: 11 Komut
+                - link "Bot'u Yönet →" [ref=f6e332] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/admin/telegram-bot
+              - generic [ref=f6e333]:
+                - generic [ref=f6e338]:
+                  - paragraph [ref=f6e339]: Voice Search
+                  - paragraph [ref=f6e340]: 4 Sağlayıcı
+                - link "Ayarları Görüntüle →" [ref=f6e341] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/admin/voice-search/settings
+              - generic [ref=f6e342]:
+                - generic [ref=f6e347]:
+                  - paragraph [ref=f6e348]: Bildirimler
+                  - paragraph [ref=f6e349]: 6 Kanal
+                - link "Kanalları Yönet →" [ref=f6e350] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/admin/notifications/settings
+          - generic [ref=f6e351]:
+            - generic [ref=f6e352]:
+              - generic [ref=f6e353]:
+                - heading "Market Analysis (TKGM Learning Engine)" [level=2] [ref=f6e354]
+                - paragraph [ref=f6e355]: Hotspot ve özet istatistikler (dinamik API)
+              - generic [ref=f6e356]:
+                - combobox [ref=f6e357]:
+                  - option "Muğla (48)" [selected]
+                  - option "İstanbul (34)"
+                  - option "Ankara (06)"
+                - button "Yenile" [ref=f6e358] [cursor=pointer]
+            - generic [ref=f6e361]:
+              - generic [ref=f6e362]:
+                - generic [ref=f6e367]:
+                  - paragraph [ref=f6e368]: Özet İstatistik
+                  - paragraph [ref=f6e369]: Market Snapshot
+                - generic [ref=f6e370]:
+                  - generic [ref=f6e371]:
+                    - term [ref=f6e372]: Ortalama Fiyat
+                    - definition [ref=f6e373]: "-"
+                  - generic [ref=f6e374]:
+                    - term [ref=f6e375]: Medyan Fiyat
+                    - definition [ref=f6e376]: "-"
+                  - generic [ref=f6e377]:
+                    - term [ref=f6e378]: Satış Hızı
+                    - definition [ref=f6e379]: "-"
+                  - generic [ref=f6e380]:
+                    - term [ref=f6e381]: Dönüşüm Oranı
+                    - definition [ref=f6e382]: "-"
+                - paragraph [ref=f6e383]: API çağrısı bekleniyor…
+              - generic [ref=f6e384]:
+                - generic [ref=f6e385]:
+                  - generic [ref=f6e386]:
+                    - paragraph [ref=f6e387]: Yatırım Hotspot
+                    - paragraph [ref=f6e388]: En iyi 5 mahalle
+                  - generic [ref=f6e389]: "-"
+                - paragraph [ref=f6e394]: API çağrısı bekleniyor…
+          - generic [ref=f6e395]:
+            - generic [ref=f6e396]:
+              - heading "Son Eklenen İlanlar" [level=3] [ref=f6e398]
+              - table [ref=f6e400]:
+                - rowgroup [ref=f6e401]:
+                  - row [ref=f6e402]:
+                    - columnheader "#" [ref=f6e403]
+                    - columnheader "Başlık" [ref=f6e404]
+                    - columnheader "Fiyat" [ref=f6e405]
+                    - columnheader "Durum" [ref=f6e406]
+                    - columnheader "Tarih" [ref=f6e407]
+                - rowgroup [ref=f6e408]:
+                  - row [ref=f6e409]:
+                    - cell "Henüz ilan eklenmemiş" [ref=f6e410]
+            - generic [ref=f6e411]:
+              - heading "Son Kullanıcılar" [level=3] [ref=f6e413]
+              - table [ref=f6e415]:
+                - rowgroup [ref=f6e416]:
+                  - row [ref=f6e417]:
+                    - columnheader "#" [ref=f6e418]
+                    - columnheader "Ad" [ref=f6e419]
+                    - columnheader "Email" [ref=f6e420]
+                    - columnheader "Durum" [ref=f6e421]
+                    - columnheader "Kayıt" [ref=f6e422]
+                - rowgroup [ref=f6e423]:
+                  - row [ref=f6e424]:
+                    - cell "Henüz kullanıcı eklenmemiş" [ref=f6e425]
+          - heading "Sistem Durumu" [level=3] [ref=f6e428]
+  - button [ref=f6e431] [cursor=pointer]
+  - button "Copilot Asistan" [ref=f6e435] [cursor=pointer]

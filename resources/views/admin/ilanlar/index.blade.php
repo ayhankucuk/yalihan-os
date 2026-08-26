@@ -6,16 +6,12 @@
     <div class="space-y-6" x-data="ilanFilter()">
         {{-- Page Header --}}
         <div class="relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 sm:p-8">
-            {{-- Subtle gradient accent --}}
-            <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-orange-500/5 via-amber-500/5 to-transparent dark:from-orange-500/10 dark:via-amber-500/5 rounded-full blur-2xl pointer-events-none"></div>
-            <div class="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-500/5 to-transparent dark:from-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
-
             <div class="relative">
                 <div class="flex items-center gap-3 mb-1">
-                    <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-600 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20">
-                        <x-icon name="bina" class="w-4 h-4 text-white" />
+                    <div class="w-8 h-8 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center">
+                        <x-icon name="bina" class="w-4 h-4" />
                     </div>
-                    <span class="text-[10px] font-black uppercase tracking-[0.25em] text-orange-500 dark:text-orange-400">Yalıhan AI OS</span>
+                    <span class="text-[10px] font-black uppercase tracking-[0.25em] text-blue-600 dark:text-blue-400">Yalıhan AI OS</span>
                 </div>
                 <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tighter">
                     {{ __('admin.listings') }}
@@ -27,7 +23,7 @@
 
             <div class="relative flex items-center gap-3">
                 <a href="{{ route('admin.ilanlar.create-wizard') }}"
-                    class="inline-flex items-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-xl shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105 active:scale-95 transition-all duration-300 font-black text-sm uppercase tracking-tighter dark:shadow-none">
+                    class="inline-flex items-center gap-2.5 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow transition-all duration-200 font-bold text-sm">
                     <x-icon name="ekle" class="w-4 h-4" />
                     {{ __('admin.new_listing') }}
                 </a>
@@ -142,7 +138,7 @@
                     <div class="md:col-span-12 lg:col-span-12 flex flex-col md:flex-row gap-4">
                         <div class="flex-1 relative group">
                             <div
-                                class="absolute inset-y-4 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-orange-500 transition-colors">
+                                class="absolute inset-y-4 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -151,7 +147,7 @@
                             <input type="text" name="search" x-model="filters.search"
                                 @input.debounce.500ms="applyFilters()"
                                 placeholder="İlan başlığı, sahibi veya Site/Bina adı..."
-                                class="w-full pl-14 pr-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-orange-500 dark:focus:border-orange-500 focus:ring-0 transition-all duration-300">
+                                class="w-full pl-14 pr-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-0 transition-all duration-300">
                         </div>
 
                         <button type="button" @click="showFilters = true"
@@ -172,7 +168,7 @@
                         <div>
                             <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-3 ml-1">{{ __('admin.status') }}</label>
                             <select name="yayin_durumu" x-model="filters.yayin_durumu" @change="applyFilters()"
-                                class="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:border-orange-500 dark:focus:border-orange-500 focus:ring-0 transition-all duration-300 cursor-pointer">
+                                class="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-500 focus:ring-0 transition-all duration-300 cursor-pointer">
                                 <option value="">{{ __('admin.all_statuses') }}</option>
                                 <option value="yayinda" {{ request('yayin_durumu') == 'yayinda' ? 'selected' : '' }}>{{ __('admin.status_published') }}</option>
                                 <option value="beklemede" {{ request('yayin_durumu') == 'beklemede' ? 'selected' : '' }}>{{ __('admin.status_pending') }}</option>
@@ -186,7 +182,7 @@
                             <label
                                 class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-3 ml-1">Kategori</label>
                             <select name="kategori_id" x-model="filters.kategori_id" @change="applyFilters()"
-                                class="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:border-orange-500 dark:focus:border-orange-500 focus:ring-0 transition-all duration-300 cursor-pointer">
+                                class="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-500 focus:ring-0 transition-all duration-300 cursor-pointer">
                                 <option value="">Tümü</option>
                                 @if (isset($kategoriler))
                                     @foreach ($kategoriler as $kategori)
@@ -203,7 +199,7 @@
                             <label
                                 class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-3 ml-1">Kiralama</label>
                             <select name="kiralama_turu" x-model="filters.kiralama_turu" @change="applyFilters()"
-                                class="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:border-orange-500 dark:focus:border-orange-500 focus:ring-0 transition-all duration-300 cursor-pointer">
+                                class="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-500 focus:ring-0 transition-all duration-300 cursor-pointer">
                                 <option value="">Tümü</option>
                                 <option value="gunluk" {{ request('kiralama_turu') == 'gunluk' ? 'selected' : '' }}>Günlük
                                 </option>
@@ -222,7 +218,7 @@
                             <label
                                 class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-3 ml-1">Sıralama</label>
                             <select name="sort" x-model="filters.sort" @change="applyFilters()"
-                                class="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:border-orange-500 dark:focus:border-orange-500 focus:ring-0 transition-all duration-300 cursor-pointer">
+                                class="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-500 focus:ring-0 transition-all duration-300 cursor-pointer">
                                 <option value="created_desc" {{ request('sort') === 'created_desc' ? 'selected' : '' }}>En
                                     Yeni</option>
                                 <option value="created_asc" {{ request('sort') === 'created_asc' ? 'selected' : '' }}>En
@@ -242,7 +238,7 @@
                         Sıfırla
                     </button>
                     <button type="button" @click="applyFilters()" :disabled="loading"
-                        class="px-10 py-4 bg-orange-600 text-white font-black rounded-2xl shadow-xl shadow-orange-500/20 hover:bg-orange-700 hover:scale-105 active:scale-95 transition-all duration-300 uppercase tracking-tighter text-xs disabled:opacity-50">
+                        class="px-10 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-500/20 hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all duration-300 uppercase tracking-tighter text-xs disabled:opacity-50">
                         <div class="flex items-center gap-3">
                             <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">

@@ -7,7 +7,6 @@ use App\Services\Wizard\AiFieldSuggestionEngine;
 use App\Services\Wizard\DynamicFieldValueMapper;
 use App\Services\Wizard\EffectiveListingTypeResolver;
 use App\Services\Wizard\FeatureTemplateResolver; // Wizard-scoped resolver; system SSOT = Ups\FeatureTemplateResolver
-use App\Services\Wizard\FieldEngine\FieldResolver;
 use App\Services\Wizard\YayinTipiSablonuResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -38,7 +37,6 @@ class WizardFeatureController extends Controller
         protected FeatureTemplateResolver $featureTemplateResolver,
         protected DynamicFieldValueMapper $valueMapper,
         protected AiFieldSuggestionEngine $suggestionEngine,
-        protected FieldResolver $fieldResolver,
         protected YayinTipiSablonuResolver $sablonResolver,
     ) {}
 
@@ -192,22 +190,12 @@ class WizardFeatureController extends Controller
     /**
      * Resolve fields for Wizard Step 2.
      *
-     * SAAB v8.0 Sprint 6.10: YayinTipiSablonuResolver başarılıysa kombinasyon geçerlidir.
-     * YayinTipiSablonuCanonicalSeeder tüm eksik kayıtları oluşturdu.
+     * SAAB v8.0 Sprint 6.11: FeatureTemplateResolver (SSOT) kullanılıyor.
+     * FieldResolver (kategori_yayin_tipi_field_dependencies tablosuna bağımlı) kaldırıldı.
      */
     private function resolveFields(int $mainCategoryId, ?int $subCategoryId, int $publicationTypeId): \Illuminate\Support\Collection
     {
-        $kategoriSlug = $this->resolveKategoriSlug($mainCategoryId, $subCategoryId);
-        $yayinTipiSlug = $this->resolveYayinTipiSlug($publicationTypeId);
-
-        // FieldResolver slug tabanlı çözümleme
-        $fieldDefs = $this->fieldResolver->resolveBySlug($kategoriSlug, $yayinTipiSlug, $publicationTypeId);
-
-        if (!empty($fieldDefs)) {
-            return collect($fieldDefs)->map(fn ($fd) => $fd->toArray());
-        }
-
-        return collect();
+        return $this->featureTemplateResolver->resolveFeatures($mainCategoryId, $subCategoryId, $publicationTypeId);
     }
 
     /**
@@ -220,31 +208,6 @@ class WizardFeatureController extends Controller
         ?int $sablonId = null
     ): \Illuminate\Support\Collection {
         return $this->resolveFields($mainCategoryId, $subCategoryId, $publicationTypeId);
-    }
-
-    /**
-     * Kategori slug'ini çözümle.
-     */
-    private function resolveKategoriSlug(int $mainCategoryId, ?int $subCategoryId): string
-    {
-        $targetId = $subCategoryId ?? $mainCategoryId;
-
-        // Zincir: önce alt kategori, sonra ana kategori, sonra parent
-        $kategori = \App\Models\IlanKategori::find($targetId);
-        if ($kategori) {
-            return $kategori->slug;
-        }
-
-        $kategori = \App\Models\IlanKategori::find($mainCategoryId);
-        return $kategori?->slug ?? 'genel';
-    }
-
-    /**
-     * Yayın tipi slug'ini çözümle.
-     */
-    private function resolveYayinTipiSlug(int $publicationTypeId): string
-    {
-        return $this->sablonResolver->resolveYayinTipiSlug($publicationTypeId);
     }
 
     /**

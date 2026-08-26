@@ -48,7 +48,7 @@
                     Yayın Tipi <span class="text-red-500">*</span>
                 </label>
                 <select name="junction_id" id="junction_id" required disabled
-                    @change="Alpine.store('listing').fetchConfig($event.target.value)"
+                    @change="Alpine.store('listing') && Alpine.store('listing').fetchConfig($event.target.value)"
                     class="wizard-field disabled:opacity-50 disabled:cursor-not-allowed">
                     <option value="">Önce Alt Kategori Seçin</option>
                 </select>

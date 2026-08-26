@@ -15,10 +15,10 @@
                     <span class="text-sm">Genel Aktiflik Durumu:</span>
                     <span :class="overallBadgeClass()"
                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-all duration-300">
-                        <span x-show="overall?.level === 'green'">🟢 İyi</span>
-                        <span x-show="overall?.level === 'yellow'">🟡 Uyarı</span>
-                        <span x-show="overall?.level === 'red'">🔴 Kritik</span>
-                        <span x-show="!overall?.level || overall?.level === 'unknown'">⚪ Bilinmiyor</span>
+                        <span x-show="overall?.level === 'green'" class="flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 inline-block"></span>İyi</span>
+                        <span x-show="overall?.level === 'yellow'" class="flex items-center"><span class="w-2 h-2 rounded-full bg-amber-500 mr-1.5 inline-block"></span>Uyarı</span>
+                        <span x-show="overall?.level === 'red'" class="flex items-center"><span class="w-2 h-2 rounded-full bg-red-500 mr-1.5 inline-block"></span>Kritik</span>
+                        <span x-show="!overall?.level || overall?.level === 'unknown'" class="flex items-center"><span class="w-2 h-2 rounded-full bg-gray-400 mr-1.5 inline-block"></span>Bilinmiyor</span>
                     </span>
                 </div>
                 <div class="hidden md:flex items-center gap-2">

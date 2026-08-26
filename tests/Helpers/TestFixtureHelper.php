@@ -202,7 +202,7 @@ trait TestFixtureHelper
                 if ($tmpl->trashed()) {
                     $tmpl->restore();
                 }
-                $tmpl->update($attributes);
+                $tmpl->update(array_merge(['slug' => $slug], $attributes));
                 return $tmpl;
             }
             return YayinTipiSablonu::forceCreate(array_merge([

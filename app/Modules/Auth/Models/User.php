@@ -97,10 +97,10 @@ class User extends Authenticatable
         'email',
         'password',
         'role_id',
-        // Context7: canonical active flag
+        'tenant_id',         // SAB Rule 1: tenant isolation — required for admin bootstrap
+        'aktiflik_durumu',   // Context7: canonical active flag
         'last_activity_at',
         'telegram_chat_id',
-        
     ];
 
     /**

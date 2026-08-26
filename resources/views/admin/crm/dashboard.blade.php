@@ -24,7 +24,9 @@
                     <div class="flex items-center gap-3">
                         <div
                             class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-                            <i class="fas fa-chart-line"></i>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                            </svg>
                         </div>
                         <h5 class="text-lg font-bold text-gray-900 dark:text-white dark:text-slate-100">En Yüksek ROI'li Fırsatlar</h5>
                     </div>
@@ -35,7 +37,9 @@
                 <div class="p-6">
                     @if ($topROIOpportunities->isEmpty())
                         <div class="flex flex-col items-center justify-center py-8 text-gray-500 dark:text-gray-400">
-                            <i class="fas fa-search-dollar text-4xl mb-3 opacity-20"></i>
+                            <svg class="w-10 h-10 mb-3 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path>
+                            </svg>
                             <p class="text-sm">Henüz yüksek ROI'li fırsat yakalanmadı.</p>
                         </div>
                     @else
@@ -49,8 +53,10 @@
                                                 class="text-sm font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1 dark:text-slate-100">
                                                 {{ $opp->ilan->baslik ?? 'İlan Başlığı Yok' }}
                                             </h6>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                <i class="fas fa-user mr-1"></i>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center">
+                                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                                </svg>
                                                 {{ $opp->lead->ad_soyad ?? 'Bilinmeyen Müşteri' }}
                                             </p>
                                         </div>
@@ -84,8 +90,11 @@
                                             "{{ Str::limit($opp->firsat_nedeni, 40) }}"
                                         </span>
                                         <a href="#"
-                                            class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline">
-                                            Detay <i class="fas fa-arrow-right ml-1"></i>
+                                            class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                                            Detay
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                                            </svg>
                                         </a>
                                     </div>
                                 </div>
@@ -103,7 +112,9 @@
                     <div class="flex items-center gap-3">
                         <div
                             class="w-8 h-8 rounded-lg bg-red-500 flex items-center justify-center text-white shadow-lg shadow-red-500/30">
-                            <i class="fas fa-user-slash"></i>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"></path>
+                            </svg>
                         </div>
                         <h5 class="text-lg font-bold text-gray-900 dark:text-white dark:text-slate-100">Yüksek Riskli Müşteriler</h5>
                     </div>
@@ -115,7 +126,10 @@
                     <div id="highRiskCustomersWidget" x-data="highRiskCustomersWidget()" x-init="load()" class="min-h-[80px]">
                         <template x-if="loading">
                             <div class="flex items-center justify-center py-8 text-gray-600 dark:text-slate-200">
-                                <i class="fas fa-spinner animate-spin mr-2"></i>
+                                <svg class="w-5 h-5 animate-spin mr-2 text-blue-600" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
                                 <span>Yükleniyor...</span>
                             </div>
                         </template>
@@ -157,7 +171,9 @@
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center bg-blue-500 text-white">
-                                <i class="fas fa-users"></i>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
                             </div>
                         </div>
                         <div class="flex-grow-1 ml-4">
@@ -175,7 +191,9 @@
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center bg-green-500 text-white">
-                                <i class="fas fa-user-check"></i>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
                             </div>
                         </div>
                         <div class="flex-grow-1 ml-4">
@@ -193,7 +211,9 @@
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center bg-yellow-500 text-white">
-                                <i class="fas fa-clock"></i>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
                             </div>
                         </div>
                         <div class="flex-grow-1 ml-4">
@@ -211,7 +231,9 @@
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center bg-cyan-500 text-white">
-                                <i class="fas fa-chart-line"></i>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                </svg>
                             </div>
                         </div>
                         <div class="flex-grow-1 ml-4">
@@ -230,7 +252,9 @@
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center bg-purple-500 text-white">
-                                <i class="fas fa-hand-holding-usd"></i>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
                             </div>
                         </div>
                         <div class="flex-grow-1 ml-4">
@@ -294,8 +318,7 @@
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 flex justify-between items-center dark:border-slate-700">
                         <h5 class="text-lg font-bold text-gray-900 dark:text-white dark:text-slate-100">Son Aktiviteler</h5>
                         <a href="{{ route('admin.crm.customers.index') }}"
-                            class="inline-flex items-center px-4 py-2 bg-orange-600 text-white font-semibold rounded-lg shadow-md hover:bg-orange-700 hover:scale-105 hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none transition-all duration-200 text-sm touch-target-optimized dark:shadow-none">Tümünü
-                            Gör</a>
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200 text-sm">Tümünü Gör</a>
                     </div>
                     <div class="px-6 py-4">
                         <div class="w-full overflow-x-auto">
@@ -315,7 +338,7 @@
                                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                             <td class="text-gray-900 dark:text-white dark:text-slate-100">
                                                 <a href="{{ route('admin.crm.customers.show', $activity['kisi']['id']) }}"
-                                                    class="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 hover:underline transition-colors duration-200">
+                                                    class="text-blue-600 dark:text-blue-400 hover:underline transition-colors duration-200 font-medium">
                                                     {{ $activity['kisi']['ad'] }} {{ $activity['kisi']['soyad'] }}
                                                 </a>
                                             </td>
@@ -323,7 +346,7 @@
                                                 {{ Str::limit($activity['aciklama'], 50) }}</td>
                                             <td>
                                                 <span
-                                                    class="px-3 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 text-xs font-medium rounded-full">{{ $activity['aktivite_tipi'] }}</span>
+                                                    class="px-2.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-full">{{ $activity['aktivite_tipi'] }}</span>
                                             </td>
                                             <td class="text-gray-600 dark:text-gray-400">
                                                 {{ \Carbon\Carbon::parse($activity['aktivite_tarihi'])->format('d.m.Y H:i') }}
@@ -331,13 +354,13 @@
                                             <td>
                                                 @if (($activity['durum'] ?? '') === 'Tamamlandı')
                                                     <span
-                                                        class="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-medium rounded-full">Tamamlandı</span>
+                                                        class="px-2.5 py-0.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium rounded-full">Tamamlandı</span>
                                                 @elseif(($activity['durum'] ?? '') === 'Bekliyor')
                                                     <span
-                                                        class="px-3 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs font-medium rounded-full">Bekliyor</span>
+                                                        class="px-2.5 py-0.5 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 text-xs font-medium rounded-full">Bekliyor</span>
                                                 @else
                                                     <span
-                                                        class="px-3 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 text-xs font-medium rounded-full">İptal</span>
+                                                        class="px-2.5 py-0.5 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-medium rounded-full">İptal</span>
                                                 @endif
                                             </td>
                                         </tr>
@@ -364,17 +387,19 @@
                     <div class="px-6 py-4 p-6">
                         @forelse($upcomingFollowUps as $followUp)
                             <div
-                                class="flex items-center mb-4 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-slate-700">
+                                class="flex items-center mb-4 p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200">
                                 <div class="flex-shrink-0">
                                     <div
-                                        class="w-10 h-10 rounded-full flex items-center justify-center bg-cyan-500 text-white">
-                                        <i class="fas fa-calendar-check"></i>
+                                        class="w-10 h-10 rounded-full flex items-center justify-center bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
                                     </div>
                                 </div>
                                 <div class="flex-grow-1 ml-3">
                                     <h6 class="text-sm font-semibold text-gray-900 dark:text-white mb-1 dark:text-slate-100">
                                         <a href="{{ route('admin.crm.customers.show', $followUp['kisi']['id']) }}"
-                                            class="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 hover:underline transition-colors duration-200">
+                                            class="text-blue-600 dark:text-blue-400 hover:underline transition-colors duration-200">
                                             {{ $followUp['kisi']['ad'] }} {{ $followUp['kisi']['soyad'] }}
                                         </a>
                                     </h6>
@@ -388,7 +413,9 @@
                             </div>
                         @empty
                             <div class="text-center text-gray-500 dark:text-gray-400 py-8">
-                                <i class="fas fa-calendar-times text-2xl mb-2"></i>
+                                <svg class="w-8 h-8 mx-auto mb-2 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
                                 <p>Yaklaşan takip bulunmuyor</p>
                             </div>
                         @endforelse
@@ -402,7 +429,9 @@
             class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow duration-200 mt-8 dark:shadow-none dark:border-slate-700">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 dark:border-slate-700">
                 <h5 class="text-lg font-bold text-gray-900 dark:text-white flex items-center dark:text-slate-100">
-                    <i class="fas fa-brain text-purple-500 mr-2"></i>
+                    <svg class="w-5 h-5 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
                     AI Akıllı Öngörüler
                 </h5>
             </div>

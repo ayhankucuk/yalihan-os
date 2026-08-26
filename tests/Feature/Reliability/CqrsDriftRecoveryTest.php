@@ -11,6 +11,13 @@ class CqrsDriftRecoveryTest extends TestCase
 {
     use DatabaseTransactions;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // SQLite database lock fix: close any pending connections
+        DB::connection('sqlite')->reconnect();
+    }
+
     /** @test */
     public function it_detects_and_reconciles_cqrs_read_model_drift()
     {

@@ -40,177 +40,166 @@
             </div>
         </div>
 
-        <!-- 📊 Takım İstatistikleri -->
+        <!-- Takım İstatistikleri -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <x-context7.card variant="gradient">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-                                </path>
-                            </svg>
-                        </div>
+                    <div class="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                            </path>
+                        </svg>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Toplam Üye</p>
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Toplam Üye</p>
                         <p class="text-2xl font-bold text-gray-900 dark:text-slate-100">
                             {{ $istatistikler['toplam_uye'] ?? 0 }}</p>
                     </div>
                 </div>
-            </x-context7.card>
+            </div>
 
-            <x-context7.card variant="gradient">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
+                    <div class="w-12 h-12 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Aktif Üye</p>
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Aktif Üye</p>
                         <p class="text-2xl font-bold text-gray-900 dark:text-slate-100">
-                            {{ $istatistikler['status_uye'] ?? 0 }}</p>
+                            {{ $istatistikler['aktif_uye_sayisi'] ?? ($istatistikler['status_uye'] ?? 0) }}</p>
                     </div>
                 </div>
-            </x-context7.card>
+            </div>
 
-            <x-context7.card variant="gradient">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
-                                </path>
-                            </svg>
-                        </div>
+                    <div class="w-12 h-12 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+                            </path>
+                        </svg>
                     </div>
                     <div class="ml-4">
-                        <h4 class="text-sm font-medium text-yellow-800">Toplam Görev</h4>
-                        <p class="text-2xl font-bold text-yellow-900">{{ $istatistikler['toplam_gorev'] ?? 0 }}</p>
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Toplam Görev</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-slate-100">{{ $istatistikler['toplam_gorev'] ?? 0 }}</p>
                     </div>
                 </div>
-            </x-context7.card>
+            </div>
 
-        </div>
-
-        <!-- Fourth Stats Card -->
-        <div class="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl border border-purple-200 shadow-sm p-6 dark:shadow-none">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div
-                        class="w-12 h-12 bg-gradient-to-r from-purple-500 to-violet-600 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                         </svg>
                     </div>
-                </div>
-                <div class="ml-4">
-                    <h4 class="text-sm font-medium text-purple-800">Ortalama Performans</h4>
-                    <p class="text-2xl font-bold text-purple-900">{{ $istatistikler['ortalama_performans'] ?? 0 }}%</p>
+                    <div class="ml-4">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Ortalama Performans</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-slate-100">{{ round($istatistikler['ortalama_performans'] ?? 0, 1) }}%</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- 🔍 Filtreler -->
-    <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl border border-gray-200 shadow-sm p-6 mb-8 dark:border-slate-800 dark:shadow-none">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center dark:text-slate-200">
-            <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-            </svg>
-            🔍 Takım Üyesi Filtreleri
-        </h2>
+        <!-- Filtreler -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 mb-8 dark:shadow-none dark:border-slate-700">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                Takım Üyesi Filtreleri
+            </h2>
 
-        <form method="GET" action="{{ route('admin.takim.takimlar.index') }}"
-            class="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div class="space-y-2 relative">
-                <input type="text"
-                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    name="search" placeholder="Üye ara..." value="{{ request('search') }}">
-            </div>
-            <div class="space-y-2 relative">
-                <select style="color-scheme: light dark;"
-                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    name="rol">
-                    <option value="" class="bg-gray-50 dark:bg-slate-900 text-gray-500 dark:text-gray-400">Tüm Roller
-                    </option>
-                    @foreach (['admin', 'danisman', 'alt_kullanici', 'musteri_temsilcisi'] as $rol)
-                        <option value="{{ $rol }}"
-                            class="bg-white dark:bg-slate-900 text-gray-900 dark:text-white dark:text-slate-100"
-                            {{ request('rol') == $rol ? 'selected' : '' }}>
-                            {{ ucfirst(str_replace('_', ' ', $rol)) }}
+            <form method="GET" action="{{ route('admin.takim.takimlar.index') }}"
+                class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="space-y-2 relative">
+                    <input type="text"
+                        class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        name="search" placeholder="Üye ara..." value="{{ request('search') }}">
+                </div>
+                <div class="space-y-2 relative">
+                    <select style="color-scheme: light dark;"
+                        class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        name="rol">
+                        <option value="" class="bg-gray-50 dark:bg-slate-900 text-gray-500 dark:text-gray-400">Tüm Roller
                         </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="space-y-2 relative">
-                <select style="color-scheme: light dark;"
-                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    name="aktiflik_durumu">
-                    <option value="" class="bg-gray-50 dark:bg-slate-900 text-gray-500 dark:text-gray-400">Tüm
-                        Durumlar</option>
-                    @foreach (['active', 'pasif', 'izinli', 'tatilde'] as $statusOption)
-                        <option value="{{ $statusOption }}"
-                            class="bg-white dark:bg-slate-900 text-gray-900 dark:text-white dark:text-slate-100"
-                            {{ request('aktiflik_durumu') == $statusOption ? 'selected' : '' }}>
-                            {{ ucfirst($statusOption) }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="space-y-2 relative">
-                <select style="color-scheme: light dark;"
-                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    name="lokasyon">
-                    <option value="" class="bg-gray-50 dark:bg-slate-900 text-gray-500 dark:text-gray-400">Tüm
-                        Lokasyonlar</option>
-                    @foreach ($lokasyonlar ?? [] as $lokasyon)
-                        <option value="{{ $lokasyon }}"
-                            class="bg-white dark:bg-slate-900 text-gray-900 dark:text-white dark:text-slate-100"
-                            {{ request('lokasyon') == $lokasyon ? 'selected' : '' }}>
-                            {{ $lokasyon }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="space-y-2 relative">
-                <button type="submit"
-                    class="inline-flex items-center px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg shadow-md hover:bg-orange-700 hover:scale-105 hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none transition-all duration-200 w-full touch-target-optimized dark:shadow-none">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    Ara
-                </button>
-            </div>
-        </form>
-    </div>
+                        @foreach (['admin', 'danisman', 'alt_kullanici', 'musteri_temsilcisi'] as $rol)
+                            <option value="{{ $rol }}"
+                                class="bg-white dark:bg-slate-900 text-gray-900 dark:text-white dark:text-slate-100"
+                                {{ request('rol') == $rol ? 'selected' : '' }}>
+                                {{ ucfirst(str_replace('_', ' ', $rol)) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="space-y-2 relative">
+                    <select style="color-scheme: light dark;"
+                        class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        name="aktiflik_durumu">
+                        <option value="" class="bg-gray-50 dark:bg-slate-900 text-gray-500 dark:text-gray-400">Tüm
+                            Durumlar</option>
+                        @foreach (['active', 'pasif', 'izinli', 'tatilde'] as $statusOption)
+                            <option value="{{ $statusOption }}"
+                                class="bg-white dark:bg-slate-900 text-gray-900 dark:text-white dark:text-slate-100"
+                                {{ request('aktiflik_durumu') == $statusOption ? 'selected' : '' }}>
+                                {{ ucfirst($statusOption) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="space-y-2 relative">
+                    <select style="color-scheme: light dark;"
+                        class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        name="lokasyon">
+                        <option value="" class="bg-gray-50 dark:bg-slate-900 text-gray-500 dark:text-gray-400">Tüm
+                            Lokasyonlar</option>
+                        @foreach ($lokasyonlar ?? [] as $lokasyon)
+                            <option value="{{ $lokasyon }}"
+                                class="bg-white dark:bg-slate-900 text-gray-900 dark:text-white dark:text-slate-100"
+                                {{ request('lokasyon') == $lokasyon ? 'selected' : '' }}>
+                                {{ $lokasyon }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="space-y-2 relative">
+                    <button type="submit"
+                        class="inline-flex items-center justify-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200 w-full focus:ring-2 focus:ring-blue-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        Filtrele
+                    </button>
+                </div>
+            </form>
+        </div>
 
-    <!-- 📋 Takım Üyeleri Listesi -->
-    <div
-                <h2 class="text-xl font-bold text-gray-800 dark:text-slate-200">Takım Üyeleri ({{ $takimUyeleri->count() }})</h2>
+        <!-- Takım Üyeleri Listesi -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden mb-8 dark:shadow-none dark:border-slate-700">
+            <div class="border-b border-gray-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-slate-100">Takım Üyeleri ({{ $takimUyeleri->total() }})</h2>
                 <div class="flex items-center space-x-3">
                     <button type="button"
-                        class="inline-flex items-center px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 hover:scale-105 hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200 touch-target-optimized dark:shadow-none"
+                        class="inline-flex items-center px-4 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-200 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-200"
                         onclick="selectAll()">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         Tümünü Seç
                     </button>
                     <button type="button"
-                        class="inline-flex items-center px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 hover:scale-105 hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200 touch-target-optimized dark:shadow-none"
+                        class="inline-flex items-center px-4 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-200 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-200"
                         onclick="clearSelection()">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -218,7 +207,6 @@
                     </button>
                 </div>
             </div>
-        </div>
 
         <div class="p-6">
             @if (session('success'))

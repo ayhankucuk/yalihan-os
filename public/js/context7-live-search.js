@@ -96,17 +96,29 @@ if (typeof window.Context7LiveSearch === 'undefined') {
          * Arama instance'ı başlat
          */
         initializeSearchInstance(element, searchType) {
+            if (element.dataset.c7Initialized === 'true') {
+                return;
+            }
+            element.dataset.c7Initialized = 'true';
+
             const instanceId = this.generateInstanceId();
+            const input = element.tagName === 'INPUT' ? element : element.querySelector('input[type="text"]');
+            const hiddenInput = element.querySelector('input[type="hidden"]') ||
+                (element.tagName === 'INPUT' && element.parentNode ? element.parentNode.querySelector('input[type="hidden"]') : null);
+            const existingResults = element.querySelector('.context7-search-results');
+
             const instance = {
                 id: instanceId,
                 element: element,
+                input: input,
                 searchType: searchType,
                 isLoading: false,
                 currentQuery: '',
                 currentResults: [],
                 selectedIndex: -1,
                 dropdown: null,
-                hiddenInput: null,
+                existingResults: existingResults,
+                hiddenInput: hiddenInput,
                 selectedValue: null,
                 config: this.extractConfig(element),
             };
@@ -122,28 +134,32 @@ if (typeof window.Context7LiveSearch === 'undefined') {
          * Instance event listener'ları kur
          */
         setupInstanceEventListeners(instance) {
-            const input = instance.element;
+            const targetInput = instance.input || instance.element;
 
             // Input event'leri
-            input.addEventListener('input', (e) => {
+            targetInput.addEventListener('input', (e) => {
                 this.handleInput(instance, e.target.value);
             });
 
-            input.addEventListener('keydown', (e) => {
+            targetInput.addEventListener('keydown', (e) => {
                 this.handleKeyDown(instance, e);
             });
 
-            input.addEventListener('focus', () => {
-                this.showDropdown(instance);
+            targetInput.addEventListener('focus', () => {
+                if (targetInput.value && targetInput.value.trim().length >= this.options.minQueryLength) {
+                    this.handleInput(instance, targetInput.value);
+                } else if (instance.currentResults.length > 0) {
+                    this.showDropdown(instance);
+                }
             });
 
-            input.addEventListener('blur', (e) => {
+            targetInput.addEventListener('blur', (e) => {
                 // Dropdown'a tıklama kontrolü için gecikme
                 setTimeout(() => {
-                    if (!e.relatedTarget || !e.relatedTarget.closest('.context7-search-dropdown')) {
+                    if (!e.relatedTarget || (!e.relatedTarget.closest('.context7-search-dropdown') && !e.relatedTarget.closest('.context7-search-results'))) {
                         this.hideDropdown(instance);
                     }
-                }, 150);
+                }, 200);
             });
         }
 
@@ -186,6 +202,7 @@ if (typeof window.Context7LiveSearch === 'undefined') {
 
             try {
                 const apiUrl = this.buildApiUrl(instance);
+                console.log('🔍 Context7 Live Search fetching:', apiUrl);
                 const response = await fetch(apiUrl, {
                     method: 'GET',
                     headers: {
@@ -193,25 +210,30 @@ if (typeof window.Context7LiveSearch === 'undefined') {
                         Accept: 'application/json',
                         'Content-Type': 'application/json',
                     },
+                    credentials: 'same-origin',
                 });
 
-                const data = await response.json();
-
-                if (data.success) {
-                    // ✅ Defensive: ensure currentResults is always an array
-                    const results = this.processResults(data, instance);
-                    instance.currentResults = Array.isArray(results) ? results : [];
+                if (!response.ok) {
+                    console.error('Context7 HTTP Error:', response.status, response.statusText);
+                    instance.currentResults = [];
                     this.renderResults(instance);
                     this.showDropdown(instance);
-                } else {
-                    console.error('Context7 Live Search Error:', data.error);
-                    instance.currentResults = [];
-                    this.hideDropdown(instance);
+                    return;
                 }
+
+                const data = await response.json();
+                console.log('📊 Context7 Live Search raw response:', data);
+
+                const results = this.processResults(data, instance);
+                instance.currentResults = Array.isArray(results) ? results : [];
+                console.log('🎨 Rendering results count:', instance.currentResults.length, 'for instance:', instance.id, 'type:', instance.searchType, 'items:', instance.currentResults);
+                this.renderResults(instance);
+                this.showDropdown(instance);
             } catch (error) {
                 console.error('Context7 Live Search Request Failed:', error);
                 instance.currentResults = [];
-                this.hideDropdown(instance);
+                this.renderResults(instance);
+                this.showDropdown(instance);
             } finally {
                 instance.isLoading = false;
                 this.updateLoadingState(instance, false);
@@ -261,22 +283,69 @@ if (typeof window.Context7LiveSearch === 'undefined') {
          * Sonuçları işle
          */
         processResults(data, instance) {
-            // ✅ Defensive: ensure data exists
-            if (!data) return [];
+            if (!data) {
+                console.warn('⚠️ [processResults] Data is null or undefined');
+                return [];
+            }
+
+            // If string (e.g. unparsed JSON string)
+            if (typeof data === 'string') {
+                try {
+                    data = JSON.parse(data);
+                } catch (e) {
+                    console.error('❌ [processResults] Failed to parse data string:', e);
+                    return [];
+                }
+            }
+
+            console.log('🔍 [processResults input]', {
+                type: typeof data,
+                isArray: Array.isArray(data),
+                hasData: data && typeof data === 'object' ? 'data' in data : false,
+                isDataArray: data && typeof data === 'object' ? Array.isArray(data.data) : false,
+                raw: data,
+            });
 
             try {
-                if (instance.searchType === 'unified') {
-                    // ✅ Ensure results is an object or array
-                    const results = data.results || {};
+                if (Array.isArray(data)) {
+                    console.log('✅ [processResults] Returning direct array, length:', data.length);
+                    return data;
+                }
+
+                if (instance && instance.searchType === 'unified') {
+                    const results = data.results || data.data || {};
                     const processed = this.processUnifiedResults(results);
                     return Array.isArray(processed) ? processed : [];
-                } else {
-                    // ✅ Ensure data.data exists and is an array
-                    const items = data.data || [];
-                    return Array.isArray(items) ? items : [];
                 }
+
+                let items = [];
+                if (Array.isArray(data.data)) {
+                    items = data.data;
+                } else if (data.data && Array.isArray(data.data.data)) {
+                    items = data.data.data;
+                } else if (data.data && Array.isArray(data.data.items)) {
+                    items = data.data.items;
+                } else if (Array.isArray(data.results)) {
+                    items = data.results;
+                } else if (Array.isArray(data.kisiler)) {
+                    items = data.kisiler;
+                } else if (Array.isArray(data.users)) {
+                    items = data.users;
+                } else if (data.data && typeof data.data === 'object') {
+                    items = Object.values(data.data).filter(item => typeof item === 'object' && item !== null);
+                } else if (typeof data === 'object' && data !== null) {
+                    for (const key of Object.keys(data)) {
+                        if (Array.isArray(data[key]) && key !== 'meta') {
+                            items = data[key];
+                            break;
+                        }
+                    }
+                }
+
+                console.log('✅ [processResults] Normalized items count:', items.length, items);
+                return Array.isArray(items) ? items : [];
             } catch (error) {
-                console.error('Error processing results:', error);
+                console.error('❌ [processResults error]:', error);
                 return [];
             }
         }
@@ -306,29 +375,59 @@ if (typeof window.Context7LiveSearch === 'undefined') {
          * Görüntüleme metni al
          */
         getDisplayText(item, type) {
-            switch (type) {
-                case 'kisiler':
-                    return item.display_text || item.tam_ad;
-                case 'danismanlar':
-                    return item.display_text || item.name;
-                case 'sites':
-                    return item.display_text || item.name;
-                default:
-                    return item.display_text || item.name || item.tam_ad;
-            }
+            if (!item) return '';
+            if (item.text) return item.text;
+            if (item.tam_ad) return item.tam_ad + (item.telefon ? ' - ' + item.telefon : '');
+            if (item.ad && item.soyad) return item.ad + ' ' + item.soyad + (item.telefon ? ' - ' + item.telefon : '');
+            if (item.display_text) return item.display_text;
+            if (item.name) return item.name + (item.email ? ' - ' + item.email : '');
+            return String(item.id || '');
         }
 
         /**
          * Sonuçları render et
          */
         renderResults(instance) {
+            // ✅ Defensive: ensure currentResults is an array
+            const results = Array.isArray(instance.currentResults) ? instance.currentResults : [];
+
+            // Case A: Container has existing .context7-search-results element (Wizard UI)
+            if (instance.existingResults) {
+                if (results.length === 0) {
+                    instance.existingResults.innerHTML = `
+                        <div class="p-4 text-center text-gray-500 dark:text-gray-400">
+                            <p class="text-sm">Sonuç bulunamadı</p>
+                        </div>
+                    `;
+                    this.showDropdown(instance);
+                    return;
+                }
+
+                let html = results
+                    .map((result, index) => {
+                        const safeText = this.getDisplayText(result, result.resultType);
+                        const subtitle = result.kisi_tipi
+                            ? `📋 ${result.kisi_tipi}`
+                            : (result.email || result.eposta || result.telefon ? (result.email || result.eposta || result.telefon) : '');
+                        return `
+                            <div class="context7-result-item px-4 py-3 hover:bg-gray-100 dark:hover:bg-slate-800 cursor-pointer border-b border-gray-100 dark:border-slate-800 last:border-b-0 transition-colors duration-150" data-index="${index}">
+                                <div class="font-medium text-gray-900 dark:text-gray-100 text-sm">${safeText}</div>
+                                ${subtitle ? `<div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">${subtitle}</div>` : ''}
+                            </div>
+                        `;
+                    })
+                    .join('');
+
+                instance.existingResults.innerHTML = html;
+                this.showDropdown(instance);
+                return;
+            }
+
+            // Case B: Fallback dropdown container
             const dropdown = instance.dropdown;
             const resultsContainer = dropdown?.querySelector('.results-container');
 
             if (!resultsContainer) return;
-
-            // ✅ Defensive: ensure currentResults is an array
-            const results = Array.isArray(instance.currentResults) ? instance.currentResults : [];
 
             if (results.length === 0) {
                 resultsContainer.innerHTML = this.createNoResultsHTML(instance);
@@ -444,6 +543,19 @@ if (typeof window.Context7LiveSearch === 'undefined') {
          * Dropdown oluştur
          */
         createDropdown(instance) {
+            // Case A: If container has existing .context7-search-results, listen to clicks on it
+            if (instance.existingResults) {
+                instance.existingResults.addEventListener('click', (e) => {
+                    const resultItem = e.target.closest('.context7-result-item') || e.target.closest('.result-item');
+                    if (resultItem && resultItem.dataset.index !== undefined) {
+                        const index = parseInt(resultItem.dataset.index);
+                        this.selectResult(instance, index);
+                    }
+                });
+                return;
+            }
+
+            // Case B: Create new dropdown
             const dropdown = document.createElement('div');
             dropdown.className = 'context7-search-dropdown';
             dropdown.innerHTML = `
@@ -479,7 +591,7 @@ if (typeof window.Context7LiveSearch === 'undefined') {
                     // "Yeni Site Ekle" butonu kontrolü
                     if (resultItem.dataset.action === 'add-site') {
                         e.preventDefault();
-                        this.showAddSiteModal(element);
+                        this.showAddSiteModal(instance.element);
                         return;
                     }
 
@@ -495,12 +607,14 @@ if (typeof window.Context7LiveSearch === 'undefined') {
                 }
             });
 
-            // Hidden input oluştur
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = instance.config.hiddenInputName || instance.element.name + '_id';
-            instance.element.parentNode.appendChild(hiddenInput);
-            instance.hiddenInput = hiddenInput;
+            // Hidden input oluştur eğer henüz yoksa
+            if (!instance.hiddenInput) {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = instance.config.hiddenInputName || ((instance.input ? instance.input.name : instance.element.name) || 'search') + '_id';
+                instance.element.parentNode.appendChild(hiddenInput);
+                instance.hiddenInput = hiddenInput;
+            }
         }
 
         /**
@@ -510,6 +624,7 @@ if (typeof window.Context7LiveSearch === 'undefined') {
             const labels = {
                 kisiler: '👤 Kişi Arama',
                 danismanlar: '👨‍💼 Danışman Arama',
+                users: '👨‍💼 Danışman Arama',
                 sites: '🏢 Site/Apartman Arama',
                 unified: '🔍 Birleşik Arama',
             };
@@ -563,10 +678,17 @@ if (typeof window.Context7LiveSearch === 'undefined') {
          * Seçimi güncelle
          */
         updateSelection(instance) {
-            const items = instance.dropdown.querySelectorAll('.result-item');
+            const container = instance.existingResults || instance.dropdown;
+            if (!container) return;
+            const items = container.querySelectorAll('.context7-result-item, .result-item');
 
             items.forEach((item, index) => {
                 item.classList.toggle('selected', index === instance.selectedIndex);
+                if (index === instance.selectedIndex) {
+                    item.classList.add('bg-purple-50', 'dark:bg-purple-900/30');
+                } else {
+                    item.classList.remove('bg-purple-50', 'dark:bg-purple-900/30');
+                }
             });
         }
 
@@ -577,12 +699,30 @@ if (typeof window.Context7LiveSearch === 'undefined') {
             const result = instance.currentResults[index];
             if (!result) return;
 
+            const displayText = this.getDisplayText(result, result.resultType);
+
             // Input değerini güncelle
-            instance.element.value = this.getDisplayText(result, result.resultType);
+            const targetInput = instance.input || instance.element;
+            if (targetInput) {
+                targetInput.value = displayText;
+                targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+                targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
 
             // Hidden input değerini güncelle
             if (instance.hiddenInput) {
                 instance.hiddenInput.value = result.id;
+                instance.hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
+                instance.hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            // Global state güncelle
+            if (instance.searchType === 'kisi' || instance.element?.id?.includes('ilan_sahibi') || instance.hiddenInput?.id === 'ilan_sahibi_id') {
+                window.context7SelectedOwner = displayText;
+            } else if (instance.element?.id?.includes('ilgili_kisi') || instance.hiddenInput?.id === 'ilgili_kisi_id') {
+                window.context7SelectedContact = displayText;
+            } else if (instance.searchType === 'user' || instance.element?.id?.includes('danisman') || instance.hiddenInput?.id === 'danisman_id') {
+                window.context7SelectedAdvisor = displayText;
             }
 
             // Seçilen değeri sakla
@@ -593,6 +733,10 @@ if (typeof window.Context7LiveSearch === 'undefined') {
 
             // Custom event tetikle
             this.triggerSelectionEvent(instance, result);
+
+            if (typeof window.updateStep5Preview === 'function') {
+                window.updateStep5Preview();
+            }
         }
 
         /**
@@ -600,6 +744,8 @@ if (typeof window.Context7LiveSearch === 'undefined') {
          */
         triggerSelectionEvent(instance, result) {
             const event = new CustomEvent('context7:search:selected', {
+                bubbles: true,
+                cancelable: true,
                 detail: {
                     instance: instance,
                     result: result,
@@ -607,13 +753,22 @@ if (typeof window.Context7LiveSearch === 'undefined') {
                 },
             });
 
-            instance.element.dispatchEvent(event);
+            const target = instance.input || instance.element;
+            if (target) target.dispatchEvent(event);
+            window.dispatchEvent(event);
+            document.dispatchEvent(event);
         }
 
         /**
          * Dropdown'ı göster
          */
         showDropdown(instance) {
+            if (instance.existingResults) {
+                instance.existingResults.classList.remove('hidden');
+                instance.existingResults.style.display = 'block';
+                return;
+            }
+
             if (!instance.dropdown || instance.currentResults.length === 0) return;
 
             instance.dropdown.classList.add('active');
@@ -626,6 +781,10 @@ if (typeof window.Context7LiveSearch === 'undefined') {
          * Dropdown'ı gizle
          */
         hideDropdown(instance) {
+            if (instance.existingResults) {
+                instance.existingResults.classList.add('hidden');
+                instance.existingResults.style.display = 'none';
+            }
             if (instance.dropdown) {
                 instance.dropdown.classList.remove('active');
             }
@@ -1079,13 +1238,27 @@ if (typeof window.Context7LiveSearch === 'undefined') {
     };
 
     // Global instance oluştur
-    window.context7LiveSearchInstance = new window.Context7LiveSearch();
+    if (!window.context7LiveSearchInstance) {
+        window.context7LiveSearchInstance = new window.Context7LiveSearch();
+    }
 }
 
-// Otomatik başlatma
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🔍 Context7 Live Search System ready');
-});
+// Otomatik başlatma ve dinamik bileşen tarayıcı
+const bootstrapContext7LiveSearch = () => {
+    if (window.context7LiveSearchInstance) {
+        window.context7LiveSearchInstance.initializeSearchComponents();
+    }
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootstrapContext7LiveSearch);
+} else {
+    bootstrapContext7LiveSearch();
+}
+
+window.addEventListener('load', bootstrapContext7LiveSearch);
+document.addEventListener('wizard:ready', bootstrapContext7LiveSearch);
+document.addEventListener('ilan-wizard-ready', bootstrapContext7LiveSearch);
 
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {

@@ -7,32 +7,28 @@
     <div
         class="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-950 dark:to-pink-950 p-6 transition-all duration-300">
 
-        {{-- 📡 RADAR HEADER --}}
+        {{-- RADAR HEADER --}}
         <div class="mb-8">
             <div class="flex items-center justify-between">
                 <div>
                     <h1
-                        class="text-4xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 dark:from-purple-400 dark:via-pink-400 dark:to-rose-400 bg-clip-text text-transparent mb-2 transition-all">
-                        🎯 Talep Radar Ekranı
+                        class="text-3xl font-bold text-gray-900 dark:text-slate-100 mb-2 transition-all">
+                        Talep Radar Ekranı
                     </h1>
-                    <p class="text-gray-600 dark:text-gray-400 text-lg">
-                        Müşteri taleplerini gerçek zamanlı izleyin ve eşleştirin
+                    <p class="text-gray-600 dark:text-gray-400 text-base">
+                        Müşteri taleplerini gerçek zamanlı izleyin ve portföyünüzle eşleştirin
                     </p>
                 </div>
 
                 {{-- Action Buttons --}}
                 <div class="flex gap-3">
                     <a href="{{ route('admin.talepler.create') }}"
-                        class="group relative px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-500 dark:to-pink-500 text-white dark:text-slate-50 rounded-xl hover:shadow-2xl dark:hover:shadow-purple-500/20 hover:scale-105 dark:hover:scale-105 active:scale-95 dark:active:scale-95 transition-all duration-300 font-bold overflow-hidden">
-                        <span
-                            class="absolute inset-0 bg-white/20 dark:bg-gray-50/5 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
-                        <span class="relative flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
-                                </path>
-                            </svg>
-                            Yeni Talep Ekle
-                        </span>
+                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow transition-all duration-200 font-medium text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
+                            </path>
+                        </svg>
+                        Yeni Talep Ekle
                     </a>
                 </div>
             </div>

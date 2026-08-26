@@ -1,0 +1,6 @@
+- generic [ref=f5e4]:
+  - generic [ref=f5e5]:
+    - generic [ref=f5e6]: "403"
+    - generic [ref=f5e7]: User does not have the right roles.
+  - link "Ana Sayfaya Dön" [ref=f5e9] [cursor=pointer]:
+    - /url: http://127.0.0.1:8000/admin/dashboard

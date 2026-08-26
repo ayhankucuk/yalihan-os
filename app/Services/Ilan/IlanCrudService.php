@@ -199,9 +199,13 @@ class IlanCrudService
         // SAB §5: State Machine enforcement
         // İlan durumu doğrudan set edilmez, akışın sonunda YalihanLifecycle kullanılır.
         // Ham veri burada sadece yetki kontrolü veya başlangıç değeri için saklanabilir.
-        $ilan->danisman_id = $data['danisman_id'] ?? Auth::id();
+        $resolvedDanismanId = $data['danisman_id'] ?? Auth::id();
+        $ilan->danisman_id = $this->resolveAndGuardDanismanId($resolvedDanismanId);
         $ilan->ilan_sahibi_id = $data['ilan_sahibi_id'] ?? null;
-        $ilan->danisman_id = $data['danisman_id'] ?? Auth::id();
+        // Step 2 wizard field — persist ilgili_kisi_id when provided
+        if (array_key_exists('ilgili_kisi_id', $data)) {
+            $ilan->ilgili_kisi_id = $data['ilgili_kisi_id'] ?: null;
+        }
         $ilan->crm_only = $data['crm_only'] ?? false;
 
         // ======================================================================
@@ -292,6 +296,60 @@ class IlanCrudService
     }
 
     /**
+     * PRIVATE: Service-layer tenant guard for danisman_id.
+     *
+     * When the authenticated user has a tenant_id, the requested advisor must:
+     *   1. Belong to the same tenant
+     *   2. Be active (aktiflik_durumu = 1)
+     *
+     * Falls back to Auth::id() when no danisman_id is requested.
+     * Throws \DomainException on tenant violation so callers can catch/log.
+     *
+     * @throws \DomainException
+     */
+    private function resolveAndGuardDanismanId(?int $danismanId): ?int
+    {
+        if (!$danismanId) {
+            return $danismanId;
+        }
+
+        $authUser = Auth::user();
+
+        // No tenant context → pass-through (super-admin or CLI context)
+        if (!$authUser || !$authUser->tenant_id) {
+            return $danismanId;
+        }
+
+        $danisman = \App\Modules\Auth\Models\User::where('id', $danismanId)
+            ->where('tenant_id', $authUser->tenant_id)
+            ->first();
+
+        if (!$danisman) {
+            Log::warning('IlanCrudService: cross-tenant danisman_id rejected', [
+                'requested_danisman_id' => $danismanId,
+                'auth_user_id'          => $authUser->id,
+                'auth_tenant_id'        => $authUser->tenant_id,
+            ]);
+            throw new \DomainException(
+                "Danışman #{$danismanId} bu organizasyona ait değil. Cross-tenant atama reddedildi."
+            );
+        }
+
+        if (!$danisman->aktiflik_durumu) {
+            Log::warning('IlanCrudService: inactive danisman_id rejected', [
+                'requested_danisman_id' => $danismanId,
+                'auth_user_id'          => $authUser->id,
+                'auth_tenant_id'        => $authUser->tenant_id,
+            ]);
+            throw new \DomainException(
+                "Danışman #{$danismanId} aktif değil. Pasif danışman ataması reddedildi."
+            );
+        }
+
+        return $danismanId;
+    }
+
+    /**
      * PRIVATE: Handle category mapping (3-level standard)
      */
     private function handleCategories(Ilan $ilan, array $data): void
@@ -356,9 +414,18 @@ class IlanCrudService
             return null;
         }
 
+        // GeoJSON polygon rings are closed: first point === last point.
+        // Drop the closing duplicate before averaging to get the true centroid.
+        $firstPoint = $coords[0];
+        $lastPoint  = $coords[count($coords) - 1];
+        $isClosed   = $firstPoint[0] === $lastPoint[0] && $firstPoint[1] === $lastPoint[1];
+        if ($isClosed && count($coords) > 3) {
+            array_pop($coords);
+        }
+
         $latSum = 0;
         $lngSum = 0;
-        $count = count($coords);
+        $count  = count($coords);
 
         foreach ($coords as $point) {
             $lngSum += $point[0]; // GeoJSON: [lng, lat]

@@ -21,7 +21,7 @@
         <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-6 mb-8 shadow-lg">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold">💰 Valuation Dashboard</h1>
+                    <h1 class="text-3xl font-bold">Valuation Dashboard</h1>
                     <p class="text-blue-100 mt-2 text-lg">Enterprise seviye arsa değerleme ve analiz sistemi</p>
                 </div>
                 <div class="text-right">

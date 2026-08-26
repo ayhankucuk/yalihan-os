@@ -21,17 +21,17 @@
 
     {{-- Form --}}
     <form action="{{ route('admin.finans.islemler.store') }}" method="POST" 
-        class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm p-6 space-y-6 dark:shadow-none dark:border-slate-700">
+        class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 sm:p-8 space-y-6">
         @csrf
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             {{-- İşlem Tipi --}}
             <div>
-                <label for="islem_tipi" class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2 dark:text-slate-300">
+                <label for="islem_tipi" class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
                     İşlem Tipi <span class="text-red-500">*</span>
                 </label>
                 <select id="islem_tipi" name="islem_tipi" required
-                    class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 dark:bg-slate-900 dark:text-slate-100">
+                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200">
                     <option value="">Seçiniz</option>
                     <option value="komisyon">Komisyon</option>
                     <option value="odeme">Ödeme</option>
@@ -43,21 +43,21 @@
 
             {{-- Miktar --}}
             <div>
-                <label for="miktar" class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2 dark:text-slate-300">
+                <label for="miktar" class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
                     Miktar <span class="text-red-500">*</span>
                 </label>
                 <input type="number" id="miktar" name="miktar" step="0.01" required
-                    class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 dark:bg-slate-900 dark:text-slate-100"
+                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                     placeholder="0.00">
             </div>
 
             {{-- Para Birimi --}}
             <div>
-                <label for="para_birimi" class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2 dark:text-slate-300">
+                <label for="para_birimi" class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
                     Para Birimi
                 </label>
                 <select id="para_birimi" name="para_birimi"
-                    class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 dark:bg-slate-900 dark:text-slate-100">
+                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200">
                     <option value="TRY" selected>TRY (₺)</option>
                     <option value="USD">USD ($)</option>
                     <option value="EUR">EUR (€)</option>
@@ -67,31 +67,31 @@
 
             {{-- Tarih --}}
             <div>
-                <label for="tarih" class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2 dark:text-slate-300">
+                <label for="tarih" class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
                     İşlem Tarihi <span class="text-red-500">*</span>
                 </label>
                 <input type="date" id="tarih" name="tarih" required value="{{ date('Y-m-d') }}"
-                    class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 dark:bg-slate-900 dark:text-slate-100">
+                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200">
             </div>
         </div>
 
         {{-- Açıklama --}}
         <div>
-            <label for="aciklama" class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2 dark:text-slate-300">
+            <label for="aciklama" class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
                 Açıklama
             </label>
             <textarea id="aciklama" name="aciklama" rows="4"
-                class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 dark:bg-slate-900 dark:text-slate-100"
+                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                 placeholder="İşlemle ilgili notlarınızı buraya girebilirsiniz..."></textarea>
         </div>
 
         {{-- Durum --}}
         <div>
-            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2 dark:text-slate-300">
+            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
                 Durum
             </label>
             <select id="status" name="status"
-                class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 dark:bg-slate-900 dark:text-slate-100">
+                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200">
                 <option value="bekliyor" selected>Bekleyen</option>
                 <option value="onaylandi">Onaylanan</option>
                 <option value="tamamlandi">Tamamlanan</option>
@@ -99,14 +99,14 @@
         </div>
 
         {{-- Actions --}}
-        <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-slate-800 dark:border-slate-700">
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-slate-800">
             <a href="{{ route('admin.finans.islemler.index') }}"
-                class="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 dark:text-slate-300">
+                class="px-5 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 font-medium text-sm transition-all duration-200">
                 İptal
             </a>
             <button type="submit"
-                class="px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg shadow-md hover:bg-orange-700 hover:scale-105 hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all duration-200 dark:shadow-none">
-                <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="inline-flex items-center px-6 py-2.5 bg-blue-600 text-white font-medium text-sm rounded-lg shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
                 Kaydet

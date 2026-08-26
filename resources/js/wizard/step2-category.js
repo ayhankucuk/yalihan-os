@@ -124,17 +124,17 @@ export function wizardStep2Component() {
             const yayinSlug = (yayinOpt.dataset.slug || '').toLowerCase();
             const yayinText = (yayinOpt.text || '').toLowerCase();
 
-            const isSatilik = yayinSlug === 'satilik' || yayinText.includes('satılık');
-            const isKiralik = yayinSlug === 'kiralik' || yayinText.includes('kiralık');
-            const isGunluk = yayinSlug === 'gunluk_kiralik' || yayinText.includes('günlük');
+            const isSatilik = yayinSlug.includes('satilik') || yayinText.includes('satılık') || yayinText.includes('satilik');
+            const isKiralik = (yayinSlug.includes('kiralik') && !yayinSlug.includes('gunluk')) || (yayinText.includes('kiralık') && !yayinText.includes('günlük'));
+            const isGunluk = yayinSlug.includes('gunluk') || yayinSlug.includes('sezonluk') || yayinSlug.includes('haftalik') || yayinSlug.includes('aylik') || yayinText.includes('günlük') || yayinText.includes('sezonluk');
 
-            const isKonut = anaSlug.includes('konut') || anaRootSlug.includes('konut');
-            const isIsyeri = anaSlug.includes('isyeri') || anaRootSlug.includes('isyeri');
-            const isArsa = anaSlug.includes('arsa') || anaRootSlug.includes('arsa');
+            const isKonut = anaSlug.includes('konut') || anaRootSlug.includes('konut') || altSlug.includes('daire') || altSlug.includes('villa');
+            const isIsyeri = anaSlug.includes('isyeri') || anaRootSlug.includes('isyeri') || altSlug.includes('dukkan') || altSlug.includes('ofis');
+            const isArsa = anaSlug.includes('arsa') || anaRootSlug.includes('arsa') || altSlug.includes('arsa') || altSlug.includes('arazi') || altSlug.includes('zeytinlik');
 
             // Detect Forms
-            if (isGunluk || anaSlug.includes('yazlik') || altSlug.includes('yazlik')) {
-                this.currentForm = 'gunluk_kiralik'; // Was 'yazlik' before, standardizing
+            if (isGunluk || anaSlug.includes('yazlik') || altSlug.includes('yazlik') || altSlug.includes('villa-tipi')) {
+                this.currentForm = 'gunluk_kiralik';
                 this.title = 'Günlük Kiralama Detayları';
                 this.subtitle = 'Tesis, fiyatlandırma ve kapasite bilgileri';
             } else if (isKonut && isSatilik) {
@@ -149,10 +149,18 @@ export function wizardStep2Component() {
                 this.currentForm = 'isyeri_satilik';
                 this.title = 'İşyeri Satış Detayları';
                 this.subtitle = 'Devren/Satılık durumu, m² ve ticari özellikler';
-            } else if (isArsa && isSatilik) {
+            } else if (isIsyeri && isKiralik) {
+                this.currentForm = 'isyeri_kiralik';
+                this.title = 'İşyeri Kiralama Detayları';
+                this.subtitle = 'Kira, devir ve ticari kullanım bilgileri';
+            } else if (isArsa) {
                 this.currentForm = 'arsa_satilik';
-                this.title = 'Arsa Satış Detayları';
+                this.title = 'Arsa Detayları';
                 this.subtitle = 'İmar durumu, ada/parsel ve altyapı bilgileri';
+            } else if (anaOpt.value) {
+                this.currentForm = 'schema_form';
+                this.title = (anaOpt.text || 'İlan') + ' Detayları';
+                this.subtitle = 'Özellik ve detay bilgileri';
             } else {
                 this.currentForm = 'default';
                 this.title = 'İlan Bilgileri';

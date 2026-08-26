@@ -1,0 +1,602 @@
+- generic [active] [ref=f4e1]:
+  - link "İçeriğe atla" [ref=f4e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f4e4]:
+    - complementary [ref=f4e5]:
+      - generic [ref=f4e7]:
+        - generic [ref=f4e8] [cursor=pointer]: "Y"
+        - generic [ref=f4e12]:
+          - heading "Yalıhan Emlak" [level=2] [ref=f4e13]
+          - paragraph [ref=f4e16]: Yönetim Paneli
+      - navigation [ref=f4e17]:
+        - textbox "Menüde ara..." [ref=f4e20]
+        - menu [ref=f4e21]:
+          - listitem [ref=f4e22]:
+            - menuitem "Dashboard" [ref=f4e23] [cursor=pointer]
+          - listitem [ref=f4e31]:
+            - button "İlanlar & Portföy" [ref=f4e32] [cursor=pointer]
+            - generic [ref=f4e40]:
+              - menuitem "İlanlarım" [ref=f4e42] [cursor=pointer]
+              - menuitem "Tüm İlanlar" [ref=f4e45] [cursor=pointer]
+              - menuitem "Yeni İlan AI" [ref=f4e48] [cursor=pointer]:
+                - generic [ref=f4e50]: Yeni İlan
+                - generic [ref=f4e51]: AI
+              - menuitem "Danışmanlar" [ref=f4e52] [cursor=pointer]
+          - listitem [ref=f4e55]:
+            - button "CRM & Müşteri" [ref=f4e56] [cursor=pointer]
+            - generic [ref=f4e63]:
+              - menuitem "CRM Dashboard" [ref=f4e65] [cursor=pointer]
+              - menuitem "Kişiler" [ref=f4e68] [cursor=pointer]
+              - menuitem "Kişilerim" [ref=f4e71] [cursor=pointer]
+              - menuitem "Talepler" [ref=f4e74] [cursor=pointer]
+              - menuitem "Eşleştirmeler AI" [ref=f4e77] [cursor=pointer]:
+                - generic [ref=f4e79]: Eşleştirmeler
+                - generic [ref=f4e80]: AI
+          - listitem [ref=f4e81]:
+            - button "Takım & Operasyon" [ref=f4e82] [cursor=pointer]
+            - generic [ref=f4e90]:
+              - menuitem "Takımlar" [ref=f4e92] [cursor=pointer]
+              - menuitem "Görevler" [ref=f4e95] [cursor=pointer]
+              - menuitem "Projeler" [ref=f4e98] [cursor=pointer]
+              - menuitem "Kanban Board" [ref=f4e101] [cursor=pointer]
+          - listitem [ref=f4e104]:
+            - button "Finans & Satış" [ref=f4e105] [cursor=pointer]
+            - generic [ref=f4e112]:
+              - menuitem "Finansal İşlemler" [ref=f4e114] [cursor=pointer]
+              - menuitem "Satışlar 💰" [ref=f4e117] [cursor=pointer]:
+                - generic [ref=f4e119]: Satışlar
+                - generic [ref=f4e120]: 💰
+          - listitem [ref=f4e121]:
+            - menuitem "Bildirimler" [ref=f4e122] [cursor=pointer]
+          - listitem [ref=f4e128]:
+            - button "Property Engine" [ref=f4e129] [cursor=pointer]
+            - generic [ref=f4e136]:
+              - menuitem "Dashboard" [ref=f4e138] [cursor=pointer]
+              - menuitem "Özellik Havuzu" [ref=f4e141] [cursor=pointer]
+              - menuitem "Şablonlar" [ref=f4e144] [cursor=pointer]
+              - menuitem "Özellik Paketleri" [ref=f4e147] [cursor=pointer]
+              - menuitem "Özellik Kategorileri" [ref=f4e150] [cursor=pointer]
+              - menuitem "Kategori Matrisi" [ref=f4e153] [cursor=pointer]
+              - menuitem "Bağımlılık Kuralları" [ref=f4e156] [cursor=pointer]
+              - menuitem "TKGM Parsel" [ref=f4e159] [cursor=pointer]
+          - listitem [ref=f4e162]:
+            - button "Cortex" [ref=f4e163] [cursor=pointer]
+            - generic [ref=f4e170]:
+              - menuitem "AI Dashboard" [ref=f4e172] [cursor=pointer]
+              - menuitem "Cortex Analytics" [ref=f4e175] [cursor=pointer]
+              - menuitem "Cortex Monitoring" [ref=f4e178] [cursor=pointer]
+              - menuitem "AI Alan Önerileri" [ref=f4e181] [cursor=pointer]
+              - menuitem "Kullanım & Maliyet" [ref=f4e184] [cursor=pointer]
+              - menuitem "İstatistikler" [ref=f4e187] [cursor=pointer]
+              - menuitem "Tüm Raporlar" [ref=f4e190] [cursor=pointer]
+              - menuitem "Portfolio Doctor AI" [ref=f4e193] [cursor=pointer]:
+                - generic [ref=f4e195]: Portfolio Doctor
+                - generic [ref=f4e196]: AI
+          - listitem [ref=f4e197]:
+            - button "Governance" [ref=f4e198] [cursor=pointer]
+            - generic [ref=f4e205]:
+              - menuitem "Telemetri İzleme LIVE" [ref=f4e207] [cursor=pointer]:
+                - generic [ref=f4e209]: Telemetri İzleme
+                - generic [ref=f4e210]: LIVE
+              - menuitem "AI Kontrol Merkezi" [ref=f4e211] [cursor=pointer]
+              - menuitem "Karar Kuyruğu" [ref=f4e214] [cursor=pointer]
+              - menuitem "Governance Dashboard" [ref=f4e217] [cursor=pointer]
+              - menuitem "Özellik Sağlık Matrisi" [ref=f4e220] [cursor=pointer]
+              - menuitem "AI Governance" [ref=f4e223] [cursor=pointer]
+              - menuitem "Denetim Kayıtları" [ref=f4e226] [cursor=pointer]
+              - menuitem "Otonom Kontrol" [ref=f4e229] [cursor=pointer]
+              - menuitem "Aksiyon Döngüsü" [ref=f4e232] [cursor=pointer]
+              - menuitem "Yalıhan Bekçi" [ref=f4e235] [cursor=pointer]
+          - listitem [ref=f4e238]:
+            - button "Automation Hub" [ref=f4e239] [cursor=pointer]
+            - generic [ref=f4e247]:
+              - menuitem "Telegram Bot 🤖" [ref=f4e249] [cursor=pointer]:
+                - generic [ref=f4e251]: Telegram Bot
+                - generic [ref=f4e252]: 🤖
+              - menuitem "n8n Workflows" [ref=f4e253] [cursor=pointer]
+              - menuitem "Entegrasyonlar" [ref=f4e256] [cursor=pointer]
+              - menuitem "Sesli Arama" [ref=f4e259] [cursor=pointer]
+          - listitem [ref=f4e262]:
+            - button "Sistem" [ref=f4e263] [cursor=pointer]
+            - generic [ref=f4e270]:
+              - menuitem "Sistem Sağlığı" [ref=f4e272] [cursor=pointer]
+              - menuitem "Telescope" [ref=f4e275] [cursor=pointer]
+              - menuitem "Horizon" [ref=f4e278] [cursor=pointer]
+              - menuitem "Kullanıcılar" [ref=f4e281] [cursor=pointer]
+              - menuitem "Genel Ayarlar" [ref=f4e284] [cursor=pointer]
+              - menuitem "AI Ayarları" [ref=f4e287] [cursor=pointer]
+              - menuitem "Adres Yönetimi" [ref=f4e290] [cursor=pointer]
+      - generic [ref=f4e294]:
+        - generic [ref=f4e295]: A
+        - generic [ref=f4e296]:
+          - paragraph [ref=f4e297]: Ayhan Kucuk
+          - paragraph [ref=f4e298]: Süper Yönetici
+    - generic [ref=f4e299]:
+      - banner [ref=f4e300]:
+        - generic [ref=f4e302]:
+          - button "Hızlı Arama... ⌘K" [ref=f4e304] [cursor=pointer]:
+            - generic [ref=f4e307]: Hızlı Arama...
+            - generic [ref=f4e308]: ⌘K
+          - button "Bildirimler" [ref=f4e310] [cursor=pointer]
+          - button "Tema" [ref=f4e312] [cursor=pointer]
+          - generic [ref=f4e317]:
+            - button "A" [ref=f4e318] [cursor=pointer]
+            - generic [ref=f4e323]:
+              - link "Profil" [ref=f4e324] [cursor=pointer]:
+                - /url: http://127.0.0.1:8001/profile
+              - link "Ayarlar" [ref=f4e325] [cursor=pointer]:
+                - /url: http://127.0.0.1:8001/admin/ayarlar
+              - button "Çıkış" [ref=f4e328] [cursor=pointer]
+      - link:
+        - /url: http://127.0.0.1:8001/admin/governance/intelligence-center
+      - generic [ref=f4e329]:
+        - 'link "AI Sistem Watcher: Beklemede Agent: 0/5" [ref=f4e330] [cursor=pointer]':
+          - /url: http://127.0.0.1:8001/admin/governance/intelligence-center
+          - generic [ref=f4e331]:
+            - generic [ref=f4e332]: AI Sistem
+            - generic [ref=f4e333]: "Watcher: Beklemede"
+            - generic [ref=f4e336]: "Agent: 0/5"
+        - generic [ref=f4e337]:
+          - 'link "Bugün Oto: 0 🟢 Düşük" [ref=f4e338] [cursor=pointer]':
+            - /url: http://127.0.0.1:8001/admin/governance/intelligence-center
+          - link "L2" [ref=f4e339] [cursor=pointer]:
+            - /url: http://127.0.0.1:8001/admin/governance/autonomy
+      - main [ref=f4e340]:
+        - generic [ref=f4e341]:
+          - generic [ref=f4e342]:
+            - generic [ref=f4e343]:
+              - generic [ref=f4e344]:
+                - heading "Yeni İlan Oluştur" [level=1] [ref=f4e345]
+                - paragraph [ref=f4e346]: Adım adım ilan bilgilerinizi doldurun
+              - link "Geri Dön" [ref=f4e347] [cursor=pointer]:
+                - /url: http://127.0.0.1:8001/admin/ilanlar
+            - generic [ref=f4e350]: İlerleme Durumu
+            - generic [ref=f4e362]:
+              - generic [ref=f4e367]:
+                - heading "Cortex Zeka Paneli Live Analysis" [level=3] [ref=f4e368]:
+                  - text: Cortex Zeka Paneli
+                  - generic [ref=f4e369]: Live Analysis
+                - paragraph [ref=f4e370]: İlan kalitesi ve yayın onayı için gerçek zamanlı analiz
+              - generic [ref=f4e371]: Puan
+            - generic [ref=f4e379]:
+              - generic [ref=f4e380]:
+                - generic [ref=f4e381]:
+                  - generic [ref=f4e382]:
+                    - heading "İlan Kategorisi" [level=3] [ref=f4e383]
+                    - paragraph [ref=f4e384]: İlanınızın kategorisini seçin
+                  - generic [ref=f4e385]:
+                    - generic [ref=f4e386]:
+                      - generic [ref=f4e387]:
+                        - generic [ref=f4e388]: Ana Kategori *
+                        - combobox "Ana Kategori *" [ref=f4e389]:
+                          - option "Ana Kategori Seçin" [selected]
+                          - option "Konut"
+                          - option "İşyeri"
+                          - option "Arsa & Arazi"
+                          - option "Yazlık Kiralama"
+                          - option "Turistik Tesisler"
+                          - option "Projeden Satış"
+                      - generic [ref=f4e390]:
+                        - generic [ref=f4e391]: Alt Kategori *
+                        - combobox "Alt Kategori *" [disabled] [ref=f4e392]:
+                          - option "Önce Ana Kategori Seçin" [selected]
+                      - generic [ref=f4e393]:
+                        - generic [ref=f4e394]: Yayın Tipi *
+                        - combobox [disabled] [ref=f4e395]:
+                          - option "Önce Alt Kategori Seçin" [selected]
+                    - paragraph [ref=f4e397]:
+                      - strong [ref=f4e398]: "İpucu:"
+                      - text: Kategori seçimi, ilanınızın hangi özelliklerin gösterileceğini belirler. Doğru kategori seçimi, alıcıların ilanınızı daha kolay bulmasını sağlar.
+                  - generic [ref=f4e399]: veya
+                  - generic [ref=f4e405]:
+                    - heading "Hızlı Seçim" [level=4] [ref=f4e407]
+                    - generic [ref=f4e408]: En çok kullanılan kombinasyonlar
+                - button "İleri →" [ref=f4e410] [cursor=pointer]
+              - generic [ref=f4e412]:
+                - generic [ref=f4e413]:
+                  - generic [ref=f4e416]:
+                    - heading "Temel İlan Bilgileri" [level=4] [ref=f4e417]
+                    - paragraph [ref=f4e418]: Başlık zorunlu, açıklama opsiyonel; fiyat gösterim moduna göre zorunlu
+                  - generic [ref=f4e419]:
+                    - generic [ref=f4e420]:
+                      - generic [ref=f4e421]: İlan Başlığı *
+                      - textbox "İlan Başlığı *" [ref=f4e422]:
+                        - /placeholder: "Örn: Deniz Manzaralı 3+1 Lüks Daire"
+                      - paragraph [ref=f4e423]: En az 10, en fazla 200 karakter
+                    - generic [ref=f4e424]:
+                      - generic [ref=f4e425]: Fiyat *
+                      - spinbutton "Fiyat *" [ref=f4e426]
+                    - generic [ref=f4e427]:
+                      - generic [ref=f4e428]: Para Birimi
+                      - combobox "Para Birimi" [ref=f4e429]:
+                        - option "₺ TRY" [selected]
+                        - option "$ USD"
+                        - option "€ EUR"
+                        - option "£ GBP"
+                    - generic [ref=f4e430]:
+                      - generic [ref=f4e431]:
+                        - generic [ref=f4e432]: İlan Açıklaması
+                        - button "AI ile Oluştur" [ref=f4e433] [cursor=pointer]
+                      - textbox "İlan Açıklaması" [ref=f4e434]:
+                        - /placeholder: İlanınızın detaylı açıklamasını buraya yazın. Konum, özellikler, çevre hakkında bilgi verin...
+                      - paragraph [ref=f4e435]: Opsiyonel. Girerseniz minimum 50 karakter önerilir.
+                - generic [ref=f4e437]:
+                  - generic [ref=f4e438]:
+                    - generic [ref=f4e439]: "1"
+                    - generic [ref=f4e440]: İlan Sahibi *
+                    - textbox "Kişi ara..." [ref=f4e443]
+                    - button "Yeni Kişi Ekle" [ref=f4e444] [cursor=pointer]
+                  - generic [ref=f4e445]:
+                    - generic [ref=f4e446]: "2"
+                    - generic [ref=f4e447]: İlgili Kişi (Opsiyonel)
+                    - textbox "İlgili kişi ara..." [ref=f4e450]
+                    - button "Yeni İlgili Ekle" [ref=f4e451] [cursor=pointer]
+                  - generic [ref=f4e452]:
+                    - generic [ref=f4e453]: "3"
+                    - generic [ref=f4e454]: Danışman *
+                    - textbox "Danışman ara..." [ref=f4e457]
+                - generic [ref=f4e461]:
+                  - generic [ref=f4e462]: Konum Tipi *
+                  - generic [ref=f4e463]:
+                    - generic [ref=f4e464] [cursor=pointer]:
+                      - radio "Site İçi" [ref=f4e465]
+                      - generic [ref=f4e466]: Site İçi
+                    - generic [ref=f4e469] [cursor=pointer]:
+                      - radio "Apartman" [ref=f4e470]
+                      - generic [ref=f4e471]: Apartman
+                    - generic [ref=f4e474] [cursor=pointer]:
+                      - radio "Müstakil" [checked] [ref=f4e475]
+                      - generic [ref=f4e476]: Müstakil
+                - generic:
+                  - heading [level=3]
+                  - paragraph
+                - generic [ref=f4e480]:
+                  - paragraph [ref=f4e484]: Özellikler yükleniyor...
+                  - generic [ref=f4e485]:
+                    - generic [ref=f4e486]:
+                      - paragraph
+                    - button "Tekrar Dene" [ref=f4e489] [cursor=pointer]
+                  - paragraph [ref=f4e493]: Kategori ve yayın tipi seçtikten sonra özellikler burada gösterilecek.
+                  - generic [ref=f4e494]: Bu kategori/yayın tipi için özel özellik tanımı bulunmamaktadır.
+                - paragraph [ref=f4e499]: Lütfen kategori seçimi için Step 1'e dönün.
+                - generic [ref=f4e502]:
+                  - generic [ref=f4e503]:
+                    - generic [ref=f4e504]:
+                      - generic [ref=f4e505]: Anahtar Durumu *
+                      - combobox "Anahtar Durumu *" [ref=f4e507]:
+                        - option "Seçin..." [selected]
+                        - option "🏢 Ofiste"
+                        - option "👤 Sahibinde"
+                        - option "🔐 Emniyette"
+                        - option "⚖️ Noterde"
+                        - option "📦 Diğer"
+                    - generic [ref=f4e508]:
+                      - generic [ref=f4e509]: Anahtar Sayısı
+                      - spinbutton "Anahtar Sayısı" [ref=f4e511]: "1"
+                      - paragraph [ref=f4e512]: "Varsayılan: 1 adet"
+                  - generic [ref=f4e515]:
+                    - paragraph [ref=f4e516]: Detaylı Anahtar Yönetimi
+                    - paragraph [ref=f4e517]: Anahtar teslim bilgileri, fotoğraflar ve detaylı takip için ilan düzenleme sayfasını kullanabilirsiniz.
+                - generic [ref=f4e519]:
+                  - heading "Portal ID Yönetimi" [level=3] [ref=f4e521]
+                  - heading "Portal ID Eşleştirme" [level=3] [ref=f4e523]
+                - generic [ref=f4e524]:
+                  - button "← Geri" [ref=f4e525] [cursor=pointer]
+                  - button "İleri →" [ref=f4e526] [cursor=pointer]
+              - generic [ref=f4e527]:
+                - generic [ref=f4e528]:
+                  - generic [ref=f4e529]:
+                    - heading "📸 Fotoğraf ve Video" [level=3] [ref=f4e530]
+                    - paragraph [ref=f4e531]: İlanınız için fotoğraf ve video ekleyin
+                  - generic [ref=f4e532]:
+                    - generic [ref=f4e533]:
+                      - generic [ref=f4e534]: İlan Fotoğrafları *
+                      - generic [ref=f4e537]: "En az 3 fotoğraf önerilir (Maks: 10)"
+                    - generic [ref=f4e540]:
+                      - generic [ref=f4e544]:
+                        - paragraph [ref=f4e545]: Fotoğrafları sürükleyip bırakın veya
+                        - text: Dosya Seçin
+                      - paragraph [ref=f4e546]: "JPG, PNG, WEBP formatları desteklenir (Maks: 10MB/fotoğraf)"
+                    - button [ref=f4e548] [cursor=pointer]
+                    - generic [ref=f4e549]:
+                      - heading [level=4] [ref=f4e550]:
+                        - text: AI Önerileri
+                        - generic [ref=f4e551]: ( öneri bulundu)
+                      - generic [ref=f4e552]:
+                        - button "Otomatik Uygulandı" [ref=f4e553] [cursor=pointer]
+                        - button "Önerilenler" [ref=f4e556] [cursor=pointer]
+                - generic [ref=f4e559]:
+                  - button "← Geri" [ref=f4e560] [cursor=pointer]
+                  - button "İleri →" [ref=f4e561] [cursor=pointer]
+              - generic [ref=f4e562]:
+                - generic [ref=f4e563]:
+                  - generic [ref=f4e564]:
+                    - heading "📍 İlan Adresi" [level=3] [ref=f4e565]
+                    - paragraph [ref=f4e566]: İlanınızın konum bilgilerini ve harita üzerindeki yerini belirleyin
+                  - generic [ref=f4e567]:
+                    - generic [ref=f4e568]:
+                      - heading "Konum Bilgileri" [level=3] [ref=f4e574]
+                      - generic [ref=f4e575]:
+                        - generic [ref=f4e576]:
+                          - generic [ref=f4e577]:
+                            - generic [ref=f4e578]: İl *
+                            - combobox "İl *" [ref=f4e583]:
+                              - option "İl Seçin"
+                              - option "Adana"
+                              - option "Adıyaman"
+                              - option "Afyonkarahisar"
+                              - option "Ağrı"
+                              - option "Aksaray"
+                              - option "Amasya"
+                              - option "Ankara"
+                              - option "Antalya"
+                              - option "Ardahan"
+                              - option "Artvin"
+                              - option "Aydın"
+                              - option "Balıkesir"
+                              - option "Bartın"
+                              - option "Batman"
+                              - option "Bayburt"
+                              - option "Bilecik"
+                              - option "Bingöl"
+                              - option "Bitlis"
+                              - option "Bolu"
+                              - option "Burdur"
+                              - option "Bursa"
+                              - option "Çanakkale"
+                              - option "Çankırı"
+                              - option "Çorum"
+                              - option "Denizli"
+                              - option "Diyarbakır"
+                              - option "Düzce"
+                              - option "Edirne"
+                              - option "Elazığ"
+                              - option "Erzincan"
+                              - option "Erzurum"
+                              - option "Eskişehir"
+                              - option "Gaziantep"
+                              - option "Giresun"
+                              - option "Gümüşhane"
+                              - option "Hakkari"
+                              - option "Hatay"
+                              - option "Iğdır"
+                              - option "Isparta"
+                              - option "İstanbul"
+                              - option "İzmir"
+                              - option "Kahramanmaraş"
+                              - option "Karabük"
+                              - option "Karaman"
+                              - option "Kars"
+                              - option "Kastamonu"
+                              - option "Kayseri"
+                              - option "Kilis"
+                              - option "Kırıkkale"
+                              - option "Kırklareli"
+                              - option "Kırşehir"
+                              - option "Kocaeli"
+                              - option "Konya"
+                              - option "Kütahya"
+                              - option "Malatya"
+                              - option "Manisa"
+                              - option "Mardin"
+                              - option "Mersin"
+                              - option "Muğla" [selected]
+                              - option "Muş"
+                              - option "Nevşehir"
+                              - option "Niğde"
+                              - option "Ordu"
+                              - option "Osmaniye"
+                              - option "Rize"
+                              - option "Sakarya"
+                              - option "Samsun"
+                              - option "Şanlıurfa"
+                              - option "Siirt"
+                              - option "Sinop"
+                              - option "Sivas"
+                              - option "Şırnak"
+                              - option "Tekirdağ"
+                              - option "Tokat"
+                              - option "Trabzon"
+                              - option "Tunceli"
+                              - option "Uşak"
+                              - option "Van"
+                              - option "Yalova"
+                              - option "Yozgat"
+                              - option "Zonguldak"
+                          - generic [ref=f4e584]:
+                            - generic [ref=f4e585]: İlçe *
+                            - combobox "İlçe *" [disabled] [ref=f4e586]:
+                              - option "Önce İl Seçin" [selected]
+                          - generic [ref=f4e587]:
+                            - generic [ref=f4e588]: Mahalle *
+                            - combobox "Mahalle *" [disabled] [ref=f4e589]:
+                              - option "Önce İlçe Seçin" [selected]
+                        - generic [ref=f4e590]:
+                          - generic [ref=f4e591]: Açık Adres Detayları
+                          - textbox "Açık Adres Detayları" [ref=f4e592]:
+                            - /placeholder: Sokak, Bina No, Kat, Daire, Posta Kodu gibi detayları girin...
+                    - generic [ref=f4e593]:
+                      - generic [ref=f4e599]:
+                        - heading "Yakın Çevre / POI" [level=3] [ref=f4e600]
+                        - paragraph [ref=f4e601]: İlanınızın yakınındaki önemli noktaları seçin
+                      - paragraph [ref=f4e606]: Bu bölge için çevre verisi bulunamadı. Haritada konum seçtikten sonra POI'ler otomatik yüklenecektir.
+                      - paragraph [ref=f4e609]: POI'ler yükleniyor...
+                      - heading "Pazarlama Badge'leri (Otomatik Oluşturulacak)" [level=4] [ref=f4e611]
+                    - generic [ref=f4e614]:
+                      - generic [ref=f4e615]:
+                        - generic [ref=f4e616]:
+                          - generic [ref=f4e621]:
+                            - heading "Arsa Sınırları" [level=4] [ref=f4e622]
+                            - paragraph [ref=f4e623]: Haritada polygon çizin veya GeoJSON yükleyin
+                          - generic [ref=f4e624]:
+                            - button "GeoJSON Yükle" [ref=f4e625] [cursor=pointer]
+                            - button "Temizle" [ref=f4e628] [cursor=pointer]
+                        - generic [ref=f4e631]: Haritada sağ üstteki polygon aracını kullanarak arsa sınırlarını çizin, veya GeoJSON dosyası yükleyin.
+                        - generic [ref=f4e634]:
+                          - generic [ref=f4e635]: Alan
+                          - generic [ref=f4e637]: Centroid Lat
+                          - generic [ref=f4e639]: Centroid Lng
+                      - generic [ref=f4e642]:
+                        - generic [ref=f4e643]:
+                          - heading "GeoJSON Yükle" [level=3] [ref=f4e644]
+                          - button [ref=f4e645] [cursor=pointer]
+                        - generic [ref=f4e648]:
+                          - generic [ref=f4e649]: Dosya Seç (.geojson, .json)
+                          - button "Choose File" [ref=f4e650]
+                        - generic [ref=f4e651]:
+                          - generic [ref=f4e652]: veya GeoJSON yapıştır
+                          - 'textbox "{\"type\": \"Polygon\", \"coordinates\": [[[27.42, 37.05], ...]]}" [ref=f4e653]'
+                        - generic [ref=f4e655]:
+                          - button "İptal" [ref=f4e656] [cursor=pointer]
+                          - button "Yükle & Çiz" [ref=f4e657] [cursor=pointer]
+                    - generic [ref=f4e658]:
+                      - generic [ref=f4e660]:
+                        - generic [ref=f4e665]:
+                          - heading "Harita" [level=3] [ref=f4e666]
+                          - paragraph [ref=f4e667]: Haritaya tıklayarak konum seçin - TKGM verileri otomatik gelecek
+                        - generic [ref=f4e668]:
+                          - button "🗺️ Harita" [ref=f4e669] [cursor=pointer]
+                          - button "🛰️ Uydu" [ref=f4e670] [cursor=pointer]
+                      - generic [ref=f4e671]:
+                        - textbox "Yer ara (Bodrum, Yalıkavak...)" [ref=f4e675]
+                        - generic [ref=f4e677]:
+                          - generic [ref=f4e678]:
+                            - generic [ref=f4e679]: Enlem
+                            - code [ref=f4e680]: "0.000000"
+                          - generic [ref=f4e682]:
+                            - generic [ref=f4e683]: Boylam
+                            - code [ref=f4e684]: "0.000000"
+                - generic [ref=f4e685]:
+                  - button "← Geri" [ref=f4e686] [cursor=pointer]
+                  - button "İleri →" [ref=f4e687] [cursor=pointer]
+              - generic [ref=f4e688]:
+                - generic [ref=f4e689]:
+                  - generic [ref=f4e690]:
+                    - 'heading "✅ Son Adım: Önizleme ve Yayın" [level=3] [ref=f4e691]'
+                    - paragraph [ref=f4e692]: İlanınızı gözden geçirin, CRM bilgilerini tamamlayın ve yayınlayın.
+                  - generic [ref=f4e693]:
+                    - generic [ref=f4e694]:
+                      - generic:
+                        - heading [level=4]
+                        - paragraph
+                    - generic [ref=f4e696]:
+                      - generic [ref=f4e697]: Satış Fiyatı
+                      - generic [ref=f4e699]: Lokasyon
+                      - generic [ref=f4e701]: Fotoğraflar
+                  - generic [ref=f4e703]:
+                    - generic [ref=f4e706]:
+                      - heading "CRM & Portföy Özeti" [level=3] [ref=f4e707]
+                      - paragraph [ref=f4e708]: Step 2'de seçilen kişi ve danışman bilgileri
+                    - generic [ref=f4e709]:
+                      - generic [ref=f4e710]: İlan Sahibi
+                      - generic [ref=f4e712]: İlgili Kişi
+                      - generic [ref=f4e714]: Sorumlu Danışman
+                  - generic [ref=f4e716]:
+                    - generic [ref=f4e720]:
+                      - heading "Cortex Price Advisor" [level=4] [ref=f4e721]
+                      - paragraph [ref=f4e722]: Market Strategy Analysis
+                    - generic [ref=f4e723]:
+                      - generic [ref=f4e724]:
+                        - generic [ref=f4e725]:
+                          - generic [ref=f4e726]: Önerilen Fiyat
+                          - generic [ref=f4e727]: ₺
+                        - generic [ref=f4e729]:
+                          - generic [ref=f4e730]: Piyasa Aralığı
+                          - generic [ref=f4e731]: "- ₺"
+                        - generic [ref=f4e732]: Konumlanma
+                        - generic [ref=f4e736]:
+                          - generic [ref=f4e737]: Tahmini Satış
+                          - generic [ref=f4e738]: Gün
+                      - generic [ref=f4e743]:
+                        - paragraph
+                      - generic [ref=f4e744]: "Güven Skoru:"
+                  - generic [ref=f4e749]:
+                    - generic [ref=f4e750]:
+                      - generic [ref=f4e751]: Gizli Not (Ekibe Özel)
+                      - textbox "Gizli Not (Ekibe Özel)" [ref=f4e752]:
+                        - /placeholder: Pazarlık payı, acil satış nedeni vb. sadece ekip görebilir...
+                    - generic [ref=f4e753]:
+                      - generic [ref=f4e754]: Portal İlan Numaraları
+                      - generic [ref=f4e755]:
+                        - generic [ref=f4e756]:
+                          - generic [ref=f4e757]: "Sahibinden:"
+                          - textbox [ref=f4e758]
+                        - generic [ref=f4e759]:
+                          - generic [ref=f4e760]: "Emlakjet:"
+                          - textbox [ref=f4e761]
+                  - generic [ref=f4e763]:
+                    - generic [ref=f4e764]:
+                      - heading "🚀 Yayına Hazır mısınız?" [level=4] [ref=f4e765]
+                      - paragraph [ref=f4e766]: İlanınızı hemen yayına alabilir veya taslak olarak kaydederek daha sonra tamamlayabilirsiniz.
+                    - generic [ref=f4e767]:
+                      - generic [ref=f4e768] [cursor=pointer]: Hemen Yayınla
+                      - generic [ref=f4e770] [cursor=pointer]: Taslak Kaydet
+                - generic [ref=f4e772]:
+                  - button "← Geri" [ref=f4e773] [cursor=pointer]
+                  - generic [ref=f4e774]:
+                    - button "💾 Taslak Kaydet" [ref=f4e775] [cursor=pointer]
+                    - button "⚠️ Düşük Skorla Kaydet 💾 Taslak Olarak Kaydet ✅ Yayınla" [ref=f4e776] [cursor=pointer]
+          - dialog "AI Açıklama Sihirbazı":
+            - generic [ref=f4e780]:
+              - generic [ref=f4e784]:
+                - heading [level=3]
+                - generic [ref=f4e785]:
+                  - generic [ref=f4e786]:
+                    - generic [ref=f4e787]: Ad *
+                    - textbox [ref=f4e788]
+                  - generic [ref=f4e789]:
+                    - generic [ref=f4e790]: Soyad *
+                    - textbox [ref=f4e791]
+                  - generic [ref=f4e792]:
+                    - generic [ref=f4e793]: Telefon *
+                    - textbox "0555 555 55 55" [ref=f4e794]
+              - generic [ref=f4e795]:
+                - button "Kaydet Kaydediliyor..." [ref=f4e796] [cursor=pointer]:
+                  - generic [ref=f4e797]: Kaydet
+                  - generic [ref=f4e798]: Kaydediliyor...
+                - button "İptal" [ref=f4e799] [cursor=pointer]
+          - generic [ref=f4e800]:
+            - generic [ref=f4e803] [cursor=pointer]:
+              - generic [ref=f4e804]: 🧠
+              - generic [ref=f4e806]:
+                - heading "Cortex" [level=3] [ref=f4e807]
+                - paragraph [ref=f4e808]: LIVE
+            - generic [ref=f4e809]:
+              - generic [ref=f4e810]:
+                - generic [ref=f4e811]:
+                  - generic [ref=f4e812]: 🧠
+                  - generic [ref=f4e814]:
+                    - heading "Yalıhan Cortex" [level=3] [ref=f4e815]
+                    - paragraph [ref=f4e816]: Premium Engine
+                - button [ref=f4e817] [cursor=pointer]
+              - generic [ref=f4e820]: Score
+              - paragraph [ref=f4e829]: Cortex AI tarafından Context7 kurallarına göre analiz edilmiştir.
+  - generic [ref=f4e831] [cursor=pointer]:
+    - paragraph
+    - button [ref=f4e832]
+  - generic [ref=f4e835]:
+    - generic [ref=f4e836]:
+      - link "Yeni İlan" [ref=f4e837] [cursor=pointer]:
+        - /url: http://127.0.0.1:8001/admin/ilanlar/create-wizard
+      - link "Yeni Müşteri" [ref=f4e842] [cursor=pointer]:
+        - /url: http://127.0.0.1:8001/admin/kisiler/create
+      - link "Yeni Görev" [ref=f4e847] [cursor=pointer]:
+        - /url: "#"
+    - button [ref=f4e852] [cursor=pointer]
+  - generic [ref=f4e855]:
+    - button "Copilot Asistan" [ref=f4e856] [cursor=pointer]
+    - generic [ref=f4e862]:
+      - generic [ref=f4e863]:
+        - heading "Copilot" [level=3] [ref=f4e867]
+        - button "Yenile" [ref=f4e869] [cursor=pointer]
+      - generic [ref=f4e872]: Yalıhan Copilot v2.0
+    - generic [ref=f4e876]:
+      - generic [ref=f4e877]:
+        - heading "Değişiklik Önizleme" [level=3] [ref=f4e881]
+        - button "Kapat" [ref=f4e883] [cursor=pointer]
+      - generic [ref=f4e887]:
+        - button "İptal" [ref=f4e888] [cursor=pointer]
+        - generic [ref=f4e889]:
+          - button "Reddet" [ref=f4e890] [cursor=pointer]
+          - button "Tümünü Uygula" [ref=f4e891] [cursor=pointer]
+  - generic [ref=f4e892]: success

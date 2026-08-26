@@ -11,3 +11,6 @@
 {"timestamp":"2026-08-12T10:38:14.276Z","sessionId":"4613ef45d78d","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
 {"timestamp":"2026-08-12T15:08:26.436Z","sessionId":"bc91f4bdcd4a","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
 {"timestamp":"2026-08-14T19:57:12.306Z","sessionId":"d7d2d73acb18","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-24T11:19:22.296Z","sessionId":"d0254b7653ce","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-25T15:18:38.101Z","sessionId":"0044e80abee5","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}
+{"timestamp":"2026-08-26T10:14:26.284Z","sessionId":"f6c0e8b24020","tool":"server_shutdown","tier":"READ_ONLY","status":"ALLOWED","reason":"Signal SIGTERM"}

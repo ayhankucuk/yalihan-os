@@ -33,11 +33,6 @@ class RecoveryEngineServiceTest extends TestCase
     {
         parent::setUp();
 
-        // Skip lifecycle guards for factory-based listing creation
-        \App\Models\Ilan::$skipPropertyIdGuard = true;
-        \App\Services\Listing\YalihanLifecycle::$skipGuards = true;
-        \App\Services\Listing\YalihanLifecycle::$isTransitioningCounter = 0;
-
         // Repository
         $this->repository = new EloquentExecutionRuntimeRepository(new WorkforceExecution());
         $this->app->instance(ExecutionRuntimeRepositoryInterface::class, $this->repository);
@@ -59,9 +54,6 @@ class RecoveryEngineServiceTest extends TestCase
 
     protected function tearDown(): void
     {
-        \App\Models\Ilan::$skipPropertyIdGuard = false;
-        \App\Services\Listing\YalihanLifecycle::$skipGuards = false;
-        \App\Services\Listing\YalihanLifecycle::$isTransitioningCounter = 0;
         Mockery::close();
         parent::tearDown();
     }
@@ -283,16 +275,16 @@ class RecoveryEngineServiceTest extends TestCase
     {
         $ilan = \App\Models\Ilan::factory()->create(['tenant_id' => 1]);
 
-        // Create and fail an execution
-        $result = $this->runtime->startExecution(
-            aggregateType: 'Ilan',
-            aggregateId: $ilan->id,
-            capability: 'publish',
-            triggerType: WorkforceExecution::TRIGGER_MANUAL,
-            tenantId: 1,
-        );
-        $failed = $this->runtime->failExecution(
-            $result['execution']->uuid,
+        // Create and fail an execution using repository
+        $requested = $this->repository->createRequested([
+            'tenant_id' => 1,
+            'aggregate_type' => 'Ilan',
+            'aggregate_id' => $ilan->id,
+            'capability' => 'publish',
+            'trigger_type' => WorkforceExecution::TRIGGER_MANUAL,
+        ]);
+        $failed = $this->repository->markFailed(
+            $requested->uuid,
             'HTTP_503',
             'Service temporarily unavailable',
         );
@@ -325,13 +317,15 @@ class RecoveryEngineServiceTest extends TestCase
     {
         $ilan = \App\Models\Ilan::factory()->create(['tenant_id' => 1]);
 
-        $result = $this->runtime->startExecution(
-            aggregateType: 'Ilan', aggregateId: $ilan->id,
-            capability: 'publish', triggerType: WorkforceExecution::TRIGGER_MANUAL,
-            tenantId: 1,
-        );
-        $failed = $this->runtime->failExecution(
-            $result['execution']->uuid, 'HTTP_500', 'Internal server error',
+        $requested = $this->repository->createRequested([
+            'tenant_id' => 1,
+            'aggregate_type' => 'Ilan',
+            'aggregate_id' => $ilan->id,
+            'capability' => 'publish',
+            'trigger_type' => WorkforceExecution::TRIGGER_MANUAL,
+        ]);
+        $failed = $this->repository->markFailed(
+            $requested->uuid, 'HTTP_500', 'Internal server error',
         );
         $this->recovery->annotateClassification($failed->uuid, RecoveryEngineService::CLASS_TRANSIENT);
 
@@ -362,16 +356,18 @@ class RecoveryEngineServiceTest extends TestCase
     {
         $ilan = \App\Models\Ilan::factory()->create(['tenant_id' => 1]);
 
-        $result = $this->runtime->startExecution(
-            aggregateType: 'Ilan', aggregateId: $ilan->id,
-            capability: 'publish', triggerType: WorkforceExecution::TRIGGER_MANUAL,
-            tenantId: 1,
-        );
+        $requested = $this->repository->createRequested([
+            'tenant_id' => 1,
+            'aggregate_type' => 'Ilan',
+            'aggregate_id' => $ilan->id,
+            'capability' => 'publish',
+            'trigger_type' => WorkforceExecution::TRIGGER_MANUAL,
+        ]);
 
         $this->expectException(\DomainException::class);
         $this->expectExceptionMessage('is not FAILED');
 
-        $this->recovery->recover($result['execution']->uuid, actorId: 1);
+        $this->recovery->recover($requested->uuid, actorId: 1);
     }
 
     /** @test */
@@ -379,13 +375,15 @@ class RecoveryEngineServiceTest extends TestCase
     {
         $ilan = \App\Models\Ilan::factory()->create(['tenant_id' => 1]);
 
-        $result = $this->runtime->startExecution(
-            aggregateType: 'Ilan', aggregateId: $ilan->id,
-            capability: 'publish', triggerType: WorkforceExecution::TRIGGER_MANUAL,
-            tenantId: 1,
-        );
-        $failed = $this->runtime->failExecution(
-            $result['execution']->uuid, 'VALIDATION_FAILED', 'Validation error',
+        $requested = $this->repository->createRequested([
+            'tenant_id' => 1,
+            'aggregate_type' => 'Ilan',
+            'aggregate_id' => $ilan->id,
+            'capability' => 'publish',
+            'trigger_type' => WorkforceExecution::TRIGGER_MANUAL,
+        ]);
+        $failed = $this->repository->markFailed(
+            $requested->uuid, 'VALIDATION_FAILED', 'Validation error',
         );
         $this->recovery->annotateClassification($failed->uuid, RecoveryEngineService::CLASS_PERMANENT);
 
@@ -405,20 +403,24 @@ class RecoveryEngineServiceTest extends TestCase
         $ilan = \App\Models\Ilan::factory()->create(['tenant_id' => 1]);
 
         // Create several failed executions
-        $transient = $this->runtime->startExecution(
-            aggregateType: 'Ilan', aggregateId: $ilan->id,
-            capability: 'publish', triggerType: WorkforceExecution::TRIGGER_MANUAL,
-            tenantId: 1,
-        );
-        $t1 = $this->runtime->failExecution($transient['execution']->uuid, 'TIMEOUT', 'Timeout');
+        $transient = $this->repository->createRequested([
+            'tenant_id' => 1,
+            'aggregate_type' => 'Ilan',
+            'aggregate_id' => $ilan->id,
+            'capability' => 'publish',
+            'trigger_type' => WorkforceExecution::TRIGGER_MANUAL,
+        ]);
+        $t1 = $this->repository->markFailed($transient->uuid, 'TIMEOUT', 'Timeout');
         $this->recovery->annotateClassification($t1->uuid, RecoveryEngineService::CLASS_TRANSIENT);
 
-        $permanent = $this->runtime->startExecution(
-            aggregateType: 'Ilan', aggregateId: $ilan->id,
-            capability: 'publish', triggerType: WorkforceExecution::TRIGGER_MANUAL,
-            tenantId: 1,
-        );
-        $p1 = $this->runtime->failExecution($permanent['execution']->uuid, 'VALIDATION', 'Invalid');
+        $permanent = $this->repository->createRequested([
+            'tenant_id' => 1,
+            'aggregate_type' => 'Ilan',
+            'aggregate_id' => $ilan->id,
+            'capability' => 'publish',
+            'trigger_type' => WorkforceExecution::TRIGGER_MANUAL,
+        ]);
+        $p1 = $this->repository->markFailed($permanent->uuid, 'VALIDATION', 'Invalid');
         $this->recovery->annotateClassification($p1->uuid, RecoveryEngineService::CLASS_PERMANENT);
 
         // Transient should be retryable
@@ -435,20 +437,24 @@ class RecoveryEngineServiceTest extends TestCase
         $ilan1 = \App\Models\Ilan::factory()->create(['tenant_id' => 1]);
         $ilan2 = \App\Models\Ilan::factory()->create(['tenant_id' => 2]);
 
-        $exec1 = $this->runtime->startExecution(
-            aggregateType: 'Ilan', aggregateId: $ilan1->id,
-            capability: 'publish', triggerType: WorkforceExecution::TRIGGER_MANUAL,
-            tenantId: 1,
-        );
-        $f1 = $this->runtime->failExecution($exec1['execution']->uuid, 'TIMEOUT', '');
+        $exec1 = $this->repository->createRequested([
+            'tenant_id' => 1,
+            'aggregate_type' => 'Ilan',
+            'aggregate_id' => $ilan1->id,
+            'capability' => 'publish',
+            'trigger_type' => WorkforceExecution::TRIGGER_MANUAL,
+        ]);
+        $f1 = $this->repository->markFailed($exec1->uuid, 'TIMEOUT', '');
         $this->recovery->annotateClassification($f1->uuid, RecoveryEngineService::CLASS_TRANSIENT);
 
-        $exec2 = $this->runtime->startExecution(
-            aggregateType: 'Ilan', aggregateId: $ilan2->id,
-            capability: 'publish', triggerType: WorkforceExecution::TRIGGER_MANUAL,
-            tenantId: 2,
-        );
-        $f2 = $this->runtime->failExecution($exec2['execution']->uuid, 'TIMEOUT', '');
+        $exec2 = $this->repository->createRequested([
+            'tenant_id' => 2,
+            'aggregate_type' => 'Ilan',
+            'aggregate_id' => $ilan2->id,
+            'capability' => 'publish',
+            'trigger_type' => WorkforceExecution::TRIGGER_MANUAL,
+        ]);
+        $f2 = $this->repository->markFailed($exec2->uuid, 'TIMEOUT', '');
         $this->recovery->annotateClassification($f2->uuid, RecoveryEngineService::CLASS_TRANSIENT);
 
         // Tenant 1 only sees tenant 1's executions
@@ -467,13 +473,15 @@ class RecoveryEngineServiceTest extends TestCase
     {
         $ilan = \App\Models\Ilan::factory()->create(['tenant_id' => 1]);
 
-        $result = $this->runtime->startExecution(
-            aggregateType: 'Ilan', aggregateId: $ilan->id,
-            capability: 'publish', triggerType: WorkforceExecution::TRIGGER_MANUAL,
-            tenantId: 1,
-        );
-        $failed = $this->runtime->failExecution(
-            $result['execution']->uuid, 'UNKNOWN_ERROR', 'Something went wrong',
+        $requested = $this->repository->createRequested([
+            'tenant_id' => 1,
+            'aggregate_type' => 'Ilan',
+            'aggregate_id' => $ilan->id,
+            'capability' => 'publish',
+            'trigger_type' => WorkforceExecution::TRIGGER_MANUAL,
+        ]);
+        $failed = $this->repository->markFailed(
+            $requested->uuid, 'UNKNOWN_ERROR', 'Something went wrong',
         );
 
         $annotated = $this->recovery->annotateClassification(
@@ -491,12 +499,14 @@ class RecoveryEngineServiceTest extends TestCase
     {
         $ilan = \App\Models\Ilan::factory()->create(['tenant_id' => 1]);
 
-        $result = $this->runtime->startExecution(
-            aggregateType: 'Ilan', aggregateId: $ilan->id,
-            capability: 'publish', triggerType: WorkforceExecution::TRIGGER_MANUAL,
-            tenantId: 1,
-        );
-        $failed = $this->runtime->failExecution($result['execution']->uuid, 'ERR', '');
+        $requested = $this->repository->createRequested([
+            'tenant_id' => 1,
+            'aggregate_type' => 'Ilan',
+            'aggregate_id' => $ilan->id,
+            'capability' => 'publish',
+            'trigger_type' => WorkforceExecution::TRIGGER_MANUAL,
+        ]);
+        $failed = $this->repository->markFailed($requested->uuid, 'ERR', '');
 
         $this->expectException(\DomainException::class);
         $this->expectExceptionMessage('Invalid classification');

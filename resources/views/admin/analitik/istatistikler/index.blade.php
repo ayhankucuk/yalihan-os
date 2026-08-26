@@ -7,7 +7,7 @@
     {{-- Page Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white dark:text-slate-100">📊 Analitik İstatistikler</h1>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white dark:text-slate-100">Analitik İstatistikler</h1>
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                 2026'nın ilk verileri derleniyor... Cortex sisteminden canlı raporlar
             </p>

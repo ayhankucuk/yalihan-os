@@ -27,7 +27,7 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm text-blue-800">
-                        Bu özellik yakında status olacaktır.
+                        Bu özellik yakında aktif olacaktır.
                     </p>
                 </div>
             </div>

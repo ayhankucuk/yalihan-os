@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Exceptions\TemplateCategoryMismatchException;
 use App\Exceptions\TemplateNotFoundException;
 use App\Models\IlanKategori;
+use App\Models\YayinTipi;
 use App\Models\YayinTipiSablonu;
 use App\Rules\CoordinateRequiredRule;
 use App\Services\Category\CategoryTreeService;
@@ -370,27 +371,28 @@ class IlanWizardController extends Controller
         $curated = [
             [
                 'ana_slug' => 'konut', 'alt_slug' => 'daire', 'yayin_tipi_slug' => 'satilik',
-                'label' => 'Satılık Daire', 'icon' => 'fas fa-building', 'color' => 'blue',
+                'label' => 'Satılık Daire', 'icon' => 'bina', 'color' => 'blue',
             ],
             [
                 'ana_slug' => 'konut', 'alt_slug' => 'daire', 'yayin_tipi_slug' => 'kiralik',
-                'label' => 'Kiralık Daire', 'icon' => 'fas fa-key', 'color' => 'emerald',
+                'label' => 'Kiralık Daire', 'icon' => 'anahtar', 'color' => 'emerald',
             ],
             [
                 'ana_slug' => 'arsa-arazi', 'alt_slug' => 'arsa-konut-villa', 'yayin_tipi_slug' => 'satilik',
-                'label' => 'Satılık Arsa', 'icon' => 'fas fa-map-marked-alt', 'color' => 'orange',
+                'label' => 'Satılık Arsa', 'icon' => 'arsa', 'color' => 'orange',
             ],
             [
                 'ana_slug' => 'konut', 'alt_slug' => 'villa', 'yayin_tipi_slug' => 'satilik',
-                'label' => 'Satılık Villa', 'icon' => 'fas fa-home', 'color' => 'indigo',
+                'label' => 'Satılık Villa', 'icon' => 'villa', 'color' => 'indigo',
             ],
             [
-                'ana_slug' => 'yazlik-kiralama', 'alt_slug' => 'villa-tipi', 'yayin_tipi_slug' => 'gunluk-kiralama',
-                'label' => 'Günlük Villa', 'icon' => 'fas fa-swimming-pool', 'color' => 'rose',
+                // NOTE: YayinTipi.slug = 'gunluk-kiralik' NOT 'gunluk-kiralama'
+                'ana_slug' => 'yazlik-kiralama', 'alt_slug' => 'villa-tipi', 'yayin_tipi_slug' => 'gunluk-kiralik',
+                'label' => 'Günlük Villa', 'icon' => 'tatil', 'color' => 'rose',
             ],
             [
                 'ana_slug' => 'isyeri', 'alt_slug' => 'dukkan', 'yayin_tipi_slug' => 'satilik',
-                'label' => 'Satılık Dükkan', 'icon' => 'fas fa-store', 'color' => 'amber',
+                'label' => 'Satılık Dükkan', 'icon' => 'dukkan', 'color' => 'amber',
             ],
         ];
 
@@ -403,8 +405,27 @@ class IlanWizardController extends Controller
             $alt = IlanKategori::where('slug', $item['alt_slug'])
                 ->where('aktiflik_durumu', true)
                 ->first();
-            $yt = YayinTipiSablonu::where('slug', $item['yayin_tipi_slug'])
-                ->where('aktiflik_durumu', true)
+
+            // FIX: Query YayinTipiSablonu matching both yayin_tipi AND kategori
+            // (yayinTipi relationship is shadowed by getYayinTipiAttribute() accessor)
+            // YayinTipi.slug = 'satilik', 'kiralik', 'gunluk-kiralik' (NOT sablon slug)
+            // Priority: exact alt_kategori match → ana_kategori match
+            $yt = YayinTipiSablonu::where('aktiflik_durumu', true)
+                ->where('yayin_tipi_id', function ($q) use ($item) {
+                    $q->select('id')
+                        ->from('yayin_tipleri')
+                        ->where('slug', $item['yayin_tipi_slug'])
+                        ->limit(1);
+                })
+                ->where(function ($q) use ($alt, $ana) {
+                    // Exact match: sablon kategori_id = alt kategori
+                    $q->where('kategori_id', $alt?->id);
+                    // Fallback: sablon kategori_id = ana kategori (for yazlik family)
+                    if ($ana) {
+                        $q->orWhere('kategori_id', $ana->id);
+                    }
+                })
+                ->orderByRaw('CASE WHEN kategori_id = ? THEN 0 ELSE 1 END', [$alt?->id])
                 ->first();
 
             if (!$ana || !$alt || !$yt) {
@@ -424,7 +445,7 @@ class IlanWizardController extends Controller
                 'yayin_tipi_id' => $yt->id,
                 'ana_slug' => $ana->slug,
                 'alt_slug' => $alt->slug,
-                'yayin_tipi_slug' => $yt->slug,
+                'yayin_tipi_slug' => $item['yayin_tipi_slug'],
             ];
         }
 

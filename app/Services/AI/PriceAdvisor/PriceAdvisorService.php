@@ -47,6 +47,12 @@ class PriceAdvisorService
      */
     public function analyze(Ilan $ilan): array
     {
+        // Ghost model guard: id <= 0 → return degraded-but-valid response without calling
+        // downstream services that rely on a real DB row (DealPredictionLog, CompetitorMap cache, etc.)
+        if ($ilan->id <= 0) {
+            return $this->buildGhostModelResponse($ilan);
+        }
+
         try {
             // 1. Market Intelligence Data
             $locationData = [
@@ -73,7 +79,9 @@ class PriceAdvisorService
             $explanations = $this->buildExplanations($ilan, $marketData, $competitorData, $forecast);
 
             // 6. Calculate Recommended Price (Logic: Bias towards competitor median if market is generic)
-            $medianPrice = $competitorData['median_price'] ?? ($marketData['ortalama'] * ($ilan->alan_m2 ?: 1));
+            $medianPrice = ($competitorData['median_price'] ?? 0) > 0
+                ? (float) $competitorData['median_price']
+                : ($marketData['ortalama'] * ($ilan->alan_m2 ?: 1));
             $recommendedPrice = $this->competitorMap->calculateSuggestedPrice(
                 $ilan->fiyat,
                 $medianPrice,
@@ -142,6 +150,62 @@ class PriceAdvisorService
         if ($diff < -5) return 'below_market';
         if ($diff > 5) return 'above_market';
         return 'fair_market';
+    }
+
+    /**
+     * Return a valid degraded response for ghost/unpersisted models (Wizard draft).
+     * Avoids calling DealPredictionLog (requires real ilan_id) and competitor cache.
+     *
+     * @param Ilan $ilan
+     * @return array
+     */
+    protected function buildGhostModelResponse(Ilan $ilan): array
+    {
+        $locationData = [
+            'il_id' => $ilan->il_id,
+            'ilce_id' => $ilan->ilce_id,
+            'mahalle_id' => $ilan->mahalle_id,
+            'kategori_id' => $ilan->kategori_id,
+            'lat' => $ilan->lat,
+            'lng' => $ilan->lng,
+        ];
+
+        // P1 #4: Ghost koruması — kategori_id null ise marketData boş döner
+        $marketData = $ilan->kategori_id
+            ? $this->marketIntelligence->calculateMarketValue($locationData, $ilan->kategori_id)
+            : ['ortalama' => 0, 'min' => 0, 'max' => 0];
+        $alanM2 = $ilan->alan_m2 ?: 1;
+        $ourPrice = (float) ($ilan->fiyat ?? 0);
+        $marketAverage = (float) ($marketData['ortalama'] ?? 0);
+
+        $estimatedPrice = $marketAverage * $alanM2;
+        $priceRangeMin = ($marketData['min'] ?? 0) * $alanM2;
+        $priceRangeMax = ($marketData['max'] ?? 0) * $alanM2;
+
+        return [
+            'listing_id' => 0,
+            'price_estimate' => $estimatedPrice,
+            'recommended_price' => $ourPrice > 0 ? $ourPrice : $estimatedPrice,
+            'price_range' => [
+                'min' => $priceRangeMin,
+                'max' => $priceRangeMax,
+            ],
+            'market_position' => $this->determineMarketPosition($ourPrice, $estimatedPrice),
+            'predicted_sale_days' => 45,
+            'confidence' => 0.4,
+            'explanation' => [
+                '🟡 Bu bir taslak ilandır. Kaydettikten sonra detaylı fiyat analizi yapılacaktır.',
+                $marketAverage > 0
+                    ? "Bölge ortalama birim fiyatı: ₺" . number_format($marketAverage, 0, ',', '.') . "/m²"
+                    : "Piyasa verisi henüz mevcut değil.",
+            ],
+            'meta' => [
+                'competitor_count' => 0,
+                'price_gap_percent' => 0,
+                'forecast_signal' => 'NEUTRAL',
+                'is_draft' => true,
+            ],
+        ];
     }
 
     /**

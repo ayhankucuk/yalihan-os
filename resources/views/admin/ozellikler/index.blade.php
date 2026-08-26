@@ -19,8 +19,8 @@
             <div class="mb-8">
                 <div class="flex items-center justify-between flex-wrap gap-4">
                     <div>
-                        <h1 class="text-3xl font-bold text-gray-900 dark:text-white dark:text-slate-100">
-                            🏷️ İlan Özellikleri Yönetimi
+                        <h1 class="text-3xl font-bold text-gray-900 dark:text-slate-100">
+                            İlan Özellikleri Yönetimi
                         </h1>
                         <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
                             İlan formlarında kullanılacak özellikleri ve kategorilerini tek sayfada yönetin
@@ -29,7 +29,7 @@
                     <div class="flex gap-2">
                         @if (\Illuminate\Support\Facades\Route::has('admin.property_types.index'))
                             <a href="{{ route('admin.property_types.index') }}"
-                                class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-lg shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 transition-all duration-200 transform hover:scale-105 active:scale-95 text-sm">
+                                class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-sm hover:shadow transition-all duration-200 text-sm">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>

@@ -40,8 +40,8 @@ class CheckinCheckoutWave6Test extends TestCase
         // 1. Roles & Tenants
         $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
 
-        $this->tenantA = Tenant::firstOrCreate(['slug' => 'tenant-w6-a'], ['name' => 'Tenant W6 A']);
-        $this->tenantB = Tenant::firstOrCreate(['slug' => 'tenant-w6-b'], ['name' => 'Tenant W6 B']);
+        $this->tenantA = Tenant::firstOrCreate(['domain' => 'tenant-w6-a.local'], ['name' => 'Tenant W6 A']);
+        $this->tenantB = Tenant::firstOrCreate(['domain' => 'tenant-w6-b.local'], ['name' => 'Tenant W6 B']);
 
         $this->adminA = User::factory()->create([
             'tenant_id' => $this->tenantA->id,

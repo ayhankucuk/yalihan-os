@@ -55,12 +55,8 @@
                     <div class="flex items-start gap-3">
                         {{-- Icon --}}
                         <div class="flex-shrink-0 mt-0.5">
-                            <template x-if="notification.data?.type === 'matching_listing_found'">
-                                <i class="fas fa-bolt text-yellow-500 text-lg"></i>
-                            </template>
-                            <template x-if="notification.data?.type !== 'matching_listing_found'">
-                                <i class="fas fa-info-circle text-blue-500 text-lg"></i>
-                            </template>
+                            <i x-show="notification.data?.type === 'matching_listing_found'" class="fas fa-bolt text-yellow-500 text-lg"></i>
+                            <i x-show="notification.data?.type !== 'matching_listing_found'" class="fas fa-info-circle text-blue-500 text-lg"></i>
                         </div>
 
                         {{-- Content --}}

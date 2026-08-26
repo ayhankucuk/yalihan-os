@@ -25,6 +25,26 @@ class CompetitorMapService
      */
     public function analyzeCompetitors(Ilan $ilan, float $radiusKm = 2.0): array
     {
+        // Ghost model guard: id <= 0 → bypass competitor analysis, return empty result
+        if ($ilan->id <= 0) {
+            return [
+                'our_listing' => [
+                    'id' => 0,
+                    'title' => $ilan->baslik ?? null,
+                    'price' => (float) ($ilan->fiyat ?? 0),
+                    'location' => null,
+                    'category' => null,
+                ],
+                'top_competitors' => [],
+                'median_price' => 0,
+                'price_gap' => 0,
+                'price_gap_percent' => 0,
+                'recommendation' => '🟡 Rakip analizi: Henüz kayıtlı ilan yok (draft/modası).',
+                'confidence' => 0,
+                'total_competitors' => 0,
+            ];
+        }
+
         $cacheKey = "competitors:ilan:{$ilan->id}:radius:{$radiusKm}";
 
         return Cache::remember($cacheKey, 60 * 60 * 24, function () use ($ilan, $radiusKm) {
@@ -40,6 +60,7 @@ class CompetitorMapService
                         'category' => $ilan->anaKategori ? $ilan->anaKategori->adi : null,
                     ],
                     'top_competitors' => [],
+                    'median_price' => 0,   // FIX: was missing — PriceAdvisorService expects this key
                     'price_gap' => 0,
                     'price_gap_percent' => 0,
                     'recommendation' => '',

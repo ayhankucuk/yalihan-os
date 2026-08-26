@@ -82,9 +82,10 @@ class KisiController extends Controller
     public function search(Request $request): JsonResponse
     {
         try {
-            return ResponseService::success([
-                'kisiler' => $this->registrationService->search($request),
-            ]);
+            $filters = $request->only(['q', 'limit', 'kisi_tipi']);
+            $results = $this->registrationService->search($filters);
+
+            return ResponseService::success($results, 'Kişi araması başarılı');
         } catch (\Exception $e) {
             Log::error('Kişi arama hatası', ['query' => $request->get('q'), 'error' => $e->getMessage()]);
             return ResponseService::serverError('Kişi araması sırasında hata oluştu', $e);

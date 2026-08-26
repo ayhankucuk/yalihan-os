@@ -22,14 +22,14 @@ class TenantIsolationSafetyTest extends TestCase
         parent::setUp();
 
         // Create Tenant A and User A
-        $this->tenantA = Tenant::firstOrCreate(['slug' => 'tenant-a'], ['name' => 'Tenant A']);
+        $this->tenantA = Tenant::firstOrCreate(['domain' => 'tenant-a.local'], ['name' => 'Tenant A']);
         $this->userA = User::factory()->create([
             'tenant_id' => $this->tenantA->id,
             'aktiflik_durumu' => 1,
         ]);
 
         // Create Tenant B and User B
-        $this->tenantB = Tenant::firstOrCreate(['slug' => 'tenant-b'], ['name' => 'Tenant B']);
+        $this->tenantB = Tenant::firstOrCreate(['domain' => 'tenant-b.local'], ['name' => 'Tenant B']);
         $this->userB = User::factory()->create([
             'tenant_id' => $this->tenantB->id,
             'aktiflik_durumu' => 1,

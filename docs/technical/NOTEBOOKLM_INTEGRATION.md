@@ -293,37 +293,24 @@ ask_question({
 
 ## 📊 Mevcut Durum
 
-### Notebook Info
+### Notebook Kütüphanesi
 
+#### 1. Yalıhan AI OS — Core Architecture & Governance (Mühendislik)
 - **ID:** `yal-han-ai-os-project-knowledg`
 - **URL:** https://notebooklm.google.com/notebook/317f976e-6e6a-47e9-97c5-c4ca4f8ecae5
 - **Kaynak Sayısı:** 28
 - **Model:** Gemini 2.5
+- **Kapsam:** SAB Anayasası, Mimari Kararlar, API Sözleşmeleri, AST Kuralları, Learned Patterns
 - **Status:** ✅ Aktif
 
-### Kaynaklar
-
-1. **Markdown Dosyaları:**
-   - SAB.md
-   - API_CONTRACT.md
-   - DAP_CORE.md
-   - PROGRESS-TRACKER.md
-   - REFACTORING_LOG.md
-   - ai_learning_loop.md
-   - architecture-lite.md
-   - known-debt.md
-
-2. **Gemini Chat Logs:**
-   - Cortex Projesi Teknik Analizi
-   - Governance ve Yetki Odaklı Analiz
-   - Güvenlik İhlalleri Düzeltme
-   - Naming Parity Resolution
-   - Yalıhan Bekçi MCP Entegrasyon
-   - Yalıhan Yazılım Mühendisi
-
-3. **Google Drive Folders:**
-   - docs/
-   - governance/
+#### 2. Yalıhan OS — Bodrum & Milas İmar Planları ve Plan Notları (Gayrimenkul & İmar İstihbaratı)
+- **ID:** `yalihan-bodrum-milas-imar`
+- **URL:** https://notebooklm.google.com/notebook/0e3fac91-6321-47a5-9861-3fd4cf18e9f4
+- **Kaynak Sayısı:** 118
+- **Model:** Gemini 2.5
+- **Kapsam:** Bodrum & Milas 1/1000 ve 1/5000 Uygulama/Nazım İmar Planları, Plan Hükümleri & Plan Notları, Sit Dereceleri, Kıyı Kenar Kısıtlamaları, KAKS/TAKS/Gabari/Kot Muafiyetleri
+- **Kullanıcı/Tüketici:** Hermes `DescriptionAgent`, `PropertyValuationEngine`, Emlak Danışmanları
+- **Status:** ✅ Aktif / Bağlandı
 
 ---
 

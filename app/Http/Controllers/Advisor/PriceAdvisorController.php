@@ -75,7 +75,7 @@ class PriceAdvisorController extends Controller
                 'mahalle_id' => 'nullable|integer',
                 'kategori_id' => 'required|integer',
                 'fiyat' => 'required|numeric',
-                'alan_m2' => 'required|numeric',
+                'alan_m2' => 'nullable|numeric', // nullable: wizard draft'ta schema-driven gelmeyebilir
                 'lat' => 'nullable|numeric',
                 'lng' => 'nullable|numeric',
             ]);

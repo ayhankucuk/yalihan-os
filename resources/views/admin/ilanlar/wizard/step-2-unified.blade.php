@@ -7,7 +7,9 @@
         <div class="flex items-center gap-3 mb-4">
             <div
                 class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                <i class="fas fa-file-alt"></i>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
             </div>
             <div>
                 <h4 class="text-lg font-bold text-gray-900 dark:text-white dark:text-slate-100">Temel İlan Bilgileri</h4>
@@ -22,7 +24,7 @@
                     class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2 dark:text-slate-300">
                     İlan Başlığı <span class="text-red-500">*</span>
                 </label>
-                <input type="text" id="baslik" name="baslik" required maxlength="200"
+                <input type="text" id="baslik" name="baslik" maxlength="200"
                     placeholder="Örn: Deniz Manzaralı 3+1 Lüks Daire"
                     class="w-full px-4 py-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 dark:text-slate-100"
                     value="{{ old('baslik') }}">
@@ -35,7 +37,7 @@
                     class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2 dark:text-slate-300">
                     Fiyat <span class="text-red-500">*</span>
                 </label>
-                <input type="number" id="fiyat" name="fiyat" :required="(document.getElementById('fiyat_gosterim_modu')?.value || 'exact') === 'exact'" min="0" step="1"
+                <input type="number" id="fiyat" name="fiyat" min="0" step="1"
                     placeholder="Örn: 4500000"
                     class="w-full px-4 py-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 dark:text-slate-100"
                     value="{{ old('fiyat') }}">
@@ -77,7 +79,9 @@
                         :title="!isContextValid() ? 'AI kullanmak için Kategori, İl, İlçe ve m² girmelisiniz' :
                             'İlan açıklamasını yapay zeka ile oluştur'"
                         class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-gradient-to-r from-purple-600 to-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 dark:shadow-none">
-                        <i class="fas fa-magic mr-1.5" :class="{ 'animate-pulse': isContextValid() }"></i>
+                        <svg class="w-3.5 h-3.5 mr-1.5" :class="{ 'animate-pulse': isContextValid() }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
                         AI ile Oluştur
                     </button>
                 </div>
@@ -113,7 +117,9 @@
                             <div>
                                 <div
                                     class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 dark:bg-indigo-900">
-                                    <i class="fas fa-robot text-indigo-600 dark:text-indigo-400 text-xl"></i>
+                                    <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
                                 </div>
                                 <div class="mt-3 text-center sm:mt-5">
                                     <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white dark:text-slate-100"
@@ -163,13 +169,19 @@
                             <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
                                 <button type="button" @click="acceptDescription()"
                                     x-show="!aiLoading && generatedDescription"
-                                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm dark:shadow-none">
-                                    <i class="fas fa-check mr-2 mt-0.5"></i> Kullan
+                                    class="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm dark:shadow-none">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Kullan
                                 </button>
                                 <button type="button" @click="generateDescription()"
                                     x-show="!aiLoading && generatedDescription"
-                                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm dark:shadow-none dark:bg-slate-900 dark:text-slate-300">
-                                    <i class="fas fa-sync-alt mr-2 mt-0.5"></i> Yeniden Üret
+                                    class="mt-3 w-full inline-flex justify-center items-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm dark:shadow-none dark:bg-slate-900 dark:text-slate-300">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    </svg>
+                                    Yeniden Üret
                                 </button>
                                 <button type="button" @click="closeModal()"
                                     x-show="aiLoading || (!generatedDescription && !aiLoading)"

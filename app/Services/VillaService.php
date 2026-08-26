@@ -59,7 +59,7 @@ class VillaService
             $checkOut = $filters['check_out'];
 
             $query->whereDoesntHave('events', function ($q) use ($checkIn, $checkOut) {
-                $q->where('rezervasyon_durumu', 'Onaylandı')->betweenDates($checkIn, $checkOut);
+                $q->where('durum', 'Onaylandı')->betweenDates($checkIn, $checkOut);
             });
         }
 
@@ -129,7 +129,7 @@ class VillaService
             'mahalle',
             'features',
             'seasons' => fn ($q) => $q->where('aktiflik_durumu', 1),
-            'events' => fn ($q) => $q->where('rezervasyon_durumu', 'Onaylandı'),
+            'events' => fn ($q) => $q->where('durum', 'Onaylandı'),
         ])->where('yayin_durumu', 'yayinda')->findOrFail($id);
 
         $villa->increment('view_count');
@@ -143,19 +143,19 @@ class VillaService
         $endDate = Carbon::now()->addMonths($months)->endOfMonth();
 
         $events = Event::where('ilan_id', $villaId)
-            ->where('rezervasyon_durumu', 'Onaylandı')
+            ->where('durum', 'Onaylandı')
             ->betweenDates($startDate, $endDate)
-            ->get(['check_in', 'check_out', 'rezervasyon_durumu']);
+            ->get(['giris_tarihi', 'cikis_tarihi', 'durum']);
 
         $calendar = [];
         foreach ($events as $event) {
-            $current = Carbon::parse($event->check_in);
-            $end = Carbon::parse($event->check_out);
+            $current = Carbon::parse($event->giris_tarihi);
+            $end = Carbon::parse($event->cikis_tarihi);
 
             while ($current->lte($end)) {
                 $calendar[$current->format('Y-m-d')] = [
                     'available' => false,
-                    'yayin_durumu' => $event->rezervasyon_durumu,
+                    'durum' => $event->durum,
                 ];
                 $current->addDay();
             }
@@ -229,9 +229,9 @@ class VillaService
         return Ilan::where('ana_kategori_id', $kategoriId)
             ->where('yayin_durumu', 'yayinda')
             ->whereDoesntHave('events', function ($q) use ($today) {
-                $q->where('rezervasyon_durumu', 'Onaylandı')
-                    ->where('check_in', '<=', $today)
-                    ->where('check_out', '>', $today);
+                $q->where('durum', 'Onaylandı')
+                    ->where('giris_tarihi', '<=', $today)
+                    ->where('cikis_tarihi', '>', $today);
             })
             ->count();
     }

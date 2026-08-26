@@ -194,18 +194,23 @@ export class WizardHelper {
                 '#junction_id', // Yayın tipi dropdown
             ],
             2: [
-                'text=Temel İlan Bilgileri', // Step 2 başlık
-                'input[name="baslik"]', // Başlık input
-                'textarea[name="aciklama"]', // Açıklama textarea
+                '#baslik',               // Başlık input by ID — Step 2 (x-show visible after transition)
+                '#fiyat',                // Fiyat input — Step 2 (fallback)
+                'text=Temel İlan Bilgileri', // Step 2 section header (fallback)
             ],
             3: [
-                'text=Konum Bilgileri', // Step 3 başlık (genel)
+                '#fotograflar', // Fotoğraf upload input — Step 3 (primary proof)
+                'text=Fotoğraf',  // Step 3 başlık (fallback)
+                'text=Medya',     // Alternative header (fallback)
             ],
             4: [
-                'text=Fotoğraf', // Step 4 başlık (genel)
+                '#il_id',          // İl dropdown — Step 4 Adres
+                'text=Konum Bilgileri', // Step 4 başlık (fallback)
+                'text=Adres',     // Alternative header (fallback)
             ],
             5: [
-                'text=Özet', // Step 5 başlık (genel)
+                'text=Özet',     // Step 5 başlık
+                'text=Önizleme', // Alternative header (fallback)
             ],
         };
 
@@ -220,9 +225,11 @@ export class WizardHelper {
 
         try {
             // Use toPass for each proof with individual timeout
+            // Step 2 uses x-cloak which requires Alpine.js init — allow up to 15s
+            const proofTimeout = stepNumber === 2 ? 15000 : 8000;
             for (const [index, locator] of proofLocators.entries()) {
                 try {
-                    await expect(locator).toBeVisible({ timeout: 5000 });
+                    await expect(locator).toBeVisible({ timeout: proofTimeout });
                     console.log(
                         `✅ Step ${stepNumber} proof ${index + 1}/${proofs.length} found: ${proofs[index]}`
                     );

@@ -185,12 +185,12 @@ class YayinTipiSeeder extends Seeder
 
             // ── Yazlık Kiralama Family ──
             'yazlik-kiralama'        => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
-            'villa-tipi'            => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],
-            'rezidans-tipi'         => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],
-            'daire-tipi'            => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],
-            'tas-ev-tipi'           => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],
-            'malikane-tipi'         => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],
-            'minimal-tipi'           => ['satilik', 'gunluk', 'haftalik', 'aylik', 'sezonluk'],
+            'villa-tipi'            => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
+            'rezidans-tipi'         => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
+            'daire-tipi'            => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
+            'tas-ev-tipi'           => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
+            'malikane-tipi'         => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
+            'minimal-tipi'           => ['gunluk', 'haftalik', 'aylik', 'sezonluk'],
 
             // ── Turistik Tesisler Family ──
             'turistik-tesisler'      => ['satilik', 'kiralik'],

@@ -202,22 +202,19 @@ $hasError = !empty($error);
         <template x-for="(fileObj, index) in files" :key="index">
             <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 dark:border-slate-700">
                 {{-- Preview --}}
-                <template x-if="fileObj.preview">
-                    <img
-                        :src="fileObj.preview"
-                        :alt="fileObj.name"
-                        class="w-12 h-12 object-cover rounded-lg"
-                    />
-                </template>
+                <img
+                    x-show="fileObj.preview"
+                    :src="fileObj.preview"
+                    :alt="fileObj.name"
+                    class="w-12 h-12 object-cover rounded-lg"
+                />
 
-                <template x-if="!fileObj.preview">
-                    <div class="w-12 h-12 flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded-lg">
-                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                        </svg>
-                    </div>
-                </template>
+                <div x-show="!fileObj.preview" class="w-12 h-12 flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded-lg">
+                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                </div>
 
                 {{-- File Info --}}
                 <div class="flex-1 min-w-0">
@@ -245,8 +242,6 @@ $hasError = !empty($error);
     {{-- File Count --}}
     <div x-show="files.length > 0" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
         <span x-text="files.length"></span> dosya seçildi
-        <template x-if="multiple && maxFiles > 0">
-            <span> (max <span x-text="maxFiles"></span>)</span>
-        </template>
+        <span x-show="multiple && maxFiles > 0"> (max <span x-text="maxFiles"></span>)</span>
     </div>
 </div>

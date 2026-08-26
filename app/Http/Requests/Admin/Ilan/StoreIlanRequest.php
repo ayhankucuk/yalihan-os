@@ -61,7 +61,11 @@ class StoreIlanRequest extends FormRequest
 
             // Owner & Agent
             'ilan_sahibi_id' => 'required|exists:kisiler,id',
-            'danisman_id' => 'nullable|exists:users,id',
+            // İlgili Kişi: Step 2 wizard field — nullable, tenant-scoped via withValidator
+            'ilgili_kisi_id' => ['nullable', Rule::exists('kisiler', 'id')],
+            // SAAB Strict Brokerage Model: every listing must have a responsible advisor.
+            // Default: auth()->id() (set in prepareForValidation). Tenant scope enforced in withValidator.
+            'danisman_id' => ['required', Rule::exists('users', 'id')],
 
             // Location
             'il_id' => 'nullable|exists:iller,id',
@@ -254,6 +258,8 @@ class StoreIlanRequest extends FormRequest
             'yayin_tipi_id.required' => 'Yayın tipi seçimi zorunludur.',
             'yayin_tipi_id.integer' => 'Geçersiz yayın tipi.',
             'ilan_sahibi_id.required' => 'İlan sahibi seçimi zorunludur.',
+            'danisman_id.required' => 'Sorumlu danışman seçimi zorunludur.',
+            'danisman_id.exists' => 'Geçersiz danışman seçimi.',
         ];
     }
 
@@ -263,6 +269,61 @@ class StoreIlanRequest extends FormRequest
      */
     public function withValidator(Validator $validator): void
     {
+        // Tenant scope: ilgili_kisi_id must belong to same tenant as authenticated user (when provided).
+        $validator->after(function (Validator $validator) {
+            if ($validator->errors()->has('ilgili_kisi_id')) {
+                return;
+            }
+
+            $ilgiliKisiId = $this->integer('ilgili_kisi_id');
+            $authUser     = $this->user();
+
+            if ($ilgiliKisiId && $authUser && $authUser->tenant_id) {
+                $exists = \App\Models\Kisi::where('id', $ilgiliKisiId)
+                    ->where('tenant_id', $authUser->tenant_id)
+                    ->exists();
+
+                if (!$exists) {
+                    $validator->errors()->add(
+                        'ilgili_kisi_id',
+                        'Seçilen ilgili kişi bu organizasyona ait değil.'
+                    );
+                }
+            }
+        });
+
+        // SAAB Strict Brokerage Model: danisman_id must belong to same tenant as authenticated user
+        // and must be active (aktiflik_durumu = 1).
+        $validator->after(function (Validator $validator) {
+            if ($validator->errors()->has('danisman_id')) {
+                return; // already failed exists check
+            }
+
+            $danismanId = $this->integer('danisman_id');
+            $authUser = $this->user();
+
+            if ($danismanId && $authUser && $authUser->tenant_id) {
+                $danisman = \App\Modules\Auth\Models\User::where('id', $danismanId)
+                    ->where('tenant_id', $authUser->tenant_id)
+                    ->first();
+
+                if (!$danisman) {
+                    $validator->errors()->add(
+                        'danisman_id',
+                        'Seçilen danışman bu organizasyona ait değil.'
+                    );
+                    return;
+                }
+
+                if (!$danisman->aktiflik_durumu) {
+                    $validator->errors()->add(
+                        'danisman_id',
+                        'Seçilen danışman aktif değil.'
+                    );
+                }
+            }
+        });
+
         // UPS Policy Guard: validate category + yayın tipi combination
         $validator->after(function (Validator $validator) {
             if ($validator->errors()->isNotEmpty()) {
@@ -325,6 +386,12 @@ class StoreIlanRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
+        // SAAB Strict Brokerage Model: default danisman_id to authenticated user when key is absent.
+        // Only trigger on missing key — explicit null/'' should fail validation as required.
+        if (!$this->has('danisman_id') && $this->user()) {
+            $this->merge(['danisman_id' => $this->user()->id]);
+        }
+
         $this->merge([
             // ✅ FIX-1 (SAB Sprint 2026-04-04): junction_id → yayin_tipi_id bridge
             // Wizard step-1 form field adı 'junction_id', backend 'yayin_tipi_id' bekliyor.
@@ -356,6 +423,38 @@ class StoreIlanRequest extends FormRequest
         // Wizard step-4 sends 'adres_detay', backend expects 'adres'.
         if ($this->has('adres_detay') && !$this->filled('adres')) {
             $this->merge(['adres' => $this->input('adres_detay')]);
+        }
+
+        // ✅ FIX-4 (SAB Sprint 2026-08-24): Legacy enlem/boylam → canonical lat/lng bridge
+        // Some wizard clients send Turkish field names; bridge them before validation
+        // so the lat/lng rules in rules() actually validate the incoming values.
+        if ($this->has('enlem') && !$this->filled('lat')) {
+            $this->merge(['lat' => $this->input('enlem')]);
+        }
+        if ($this->has('boylam') && !$this->filled('lng')) {
+            $this->merge(['lng' => $this->input('boylam')]);
+        }
+
+        // ✅ FIX-5: Clean empty/invalid fotograflar file inputs (prevent UPLOAD_ERR_NO_FILE validation failures)
+        if ($this->hasFile('fotograflar')) {
+            $files = $this->file('fotograflar');
+            if (is_array($files)) {
+                $validFiles = array_filter($files, function ($f) {
+                    return $f instanceof \Illuminate\Http\UploadedFile && $f->isValid() && $f->getSize() > 0;
+                });
+                if (empty($validFiles)) {
+                    $this->files->remove('fotograflar');
+                    $this->request->remove('fotograflar');
+                } else {
+                    $this->files->set('fotograflar', array_values($validFiles));
+                }
+            }
+        } elseif ($this->has('fotograflar')) {
+            $raw = $this->input('fotograflar');
+            if (empty($raw) || $raw === [null] || (is_array($raw) && count(array_filter($raw)) === 0)) {
+                $this->request->remove('fotograflar');
+                $this->files->remove('fotograflar');
+            }
         }
 
         // Convert string booleans to actual booleans

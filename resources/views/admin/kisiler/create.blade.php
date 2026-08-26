@@ -2,25 +2,22 @@
 
 @section('title', 'Yeni Kişi Ekle')
 
-@section('content_header')
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white dark:text-slate-100">
-                👤 Yeni Kişi Ekle
-            </h1>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Sisteme yeni bir kişi veya müşteri kaydedin</p>
-        </div>
-        <div>
-            <a href="{{ route('admin.kisiler.index') }}"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 transition-all duration-200 dark:text-slate-100">
-                ← Geri Dön
-            </a>
-        </div>
-    </div>
-@endsection
-
 @section('content')
     <div class="space-y-6">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white dark:text-slate-100">
+                    Yeni Kişi Ekle
+                </h1>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Sisteme yeni bir kişi veya müşteri kaydedin</p>
+            </div>
+            <div>
+                <a href="{{ route('admin.kisiler.index') }}"
+                    class="inline-flex items-center px-4 py-2 text-sm font-medium bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-200">
+                    ← Geri Dön
+                </a>
+            </div>
+        </div>
 
         {{-- Error Messages --}}
         @if ($errors->any())
@@ -48,12 +45,9 @@
             <!-- Temel Bilgiler -->
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm dark:shadow-none dark:border-slate-700">
                 <div class="p-6">
-                    <h2 class="text-xl font-bold text-blue-800 mb-6 flex items-center">
-                        <svg class="w-6 h-6 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        👤 Temel Bilgiler
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-slate-100 mb-6 flex items-center">
+                        <span class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">1</span>
+                        Temel Bilgiler
                     </h2>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -137,12 +131,9 @@
             <!-- Danışman & Etiketler -->
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm dark:shadow-none dark:border-slate-700">
                 <div class="p-6">
-                    <h2 class="text-xl font-bold text-blue-800 mb-6 flex items-center">
-                        <svg class="w-6 h-6 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                        🤝 Atama ve Gruplandırma
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-slate-100 mb-6 flex items-center">
+                        <span class="bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">2</span>
+                        Atama ve Gruplandırma
                     </h2>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -182,61 +173,65 @@
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm mb-6 dark:shadow-none dark:border-slate-700"
                 x-data="locationWizard()" x-init="init()">
                 <div class="p-6">
-                    <h2 class="text-xl font-bold text-blue-800 mb-6 flex items-center">
-                        <svg class="w-6 h-6 mr-3 text-blue-600" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        </svg>
-                        📍 Adres Bilgileri
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-slate-100 mb-6 flex items-center">
+                        <span class="bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">3</span>
+                        Adres Bilgileri
                     </h2>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         {{-- İl --}}
                         <div>
-                            <label for="il_id" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">İl</label>
+                            <label for="il_id" class="block text-sm font-medium text-gray-900 dark:text-slate-100 mb-2">
+                                İl <span class="text-red-500">*</span>
+                            </label>
                             <select name="il_id" id="il_id" x-model="selectedCity"
                                 @change="fetchDistricts()"
-                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-colors">
+                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-colors">
                                 <option value="">İl Seçin</option>
                                 @foreach ($iller as $il)
-                                    <option value="{{ $il->id }}">{{ $il->il_adi }}</option>
+                                    <option value="{{ $il->id }}" {{ old('il_id') == $il->id ? 'selected' : '' }}>{{ $il->il_adi }}</option>
                                 @endforeach
                             </select>
                         </div>
 
                         {{-- İlçe --}}
                         <div>
-                            <label for="ilce_id" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">İlçe</label>
+                            <label for="ilce_id" class="block text-sm font-medium text-gray-900 dark:text-slate-100 mb-2">
+                                İlçe <span class="text-red-500">*</span>
+                            </label>
                             <select name="ilce_id" id="ilce_id" x-model="selectedDistrict"
                                 @change="fetchNeighborhoods()" :disabled="!selectedCity || loadingDistricts"
-                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50">
-                                <option value="">Önce İl Seçin</option>
+                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                <option value="" x-text="loadingDistricts ? 'İlçeler yükleniyor...' : 'Önce İl Seçin'"></option>
                                 <template x-for="district in districts" :key="district.id">
-                                    <option :value="district.id" x-text="district.name || district.ilce_adi"></option>
+                                    <option :value="district.id" x-text="district.name || district.ilce_adi"
+                                        :selected="district.id == '{{ old('ilce_id') }}'"></option>
                                 </template>
                             </select>
                         </div>
 
                         {{-- Mahalle --}}
                         <div>
-                            <label for="mahalle_id" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Mahalle</label>
+                            <label for="mahalle_id" class="block text-sm font-medium text-gray-900 dark:text-slate-100 mb-2">
+                                Mahalle <span class="text-red-500">*</span>
+                            </label>
                             <select name="mahalle_id" id="mahalle_id" x-model="selectedNeighborhood"
                                 :disabled="!selectedDistrict || loadingNeighborhoods"
-                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50">
-                                <option value="">Önce İlçe Seçin</option>
+                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                <option value="" x-text="loadingNeighborhoods ? 'Mahalleler yükleniyor...' : 'Önce İlçe Seçin'"></option>
                                 <template x-for="hood in neighborhoods" :key="hood.id">
-                                    <option :value="hood.id" x-text="hood.name || hood.mahalle_adi"></option>
+                                    <option :value="hood.id" x-text="hood.name || hood.mahalle_adi"
+                                        :selected="hood.id == '{{ old('mahalle_id') }}'"></option>
                                 </template>
                             </select>
                         </div>
                     </div>
 
-                    <div class="mb-6">
-                        <label for="adres_detay" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Adres Detayı</label>
+                    <div class="mb-2 mt-4">
+                        <label for="adres_detay" class="block text-sm font-medium text-gray-900 dark:text-slate-100 mb-2">Adres Detayı</label>
                         <textarea name="adres_detay" id="adres_detay" rows="3"
-                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-colors"
-                            placeholder="Sokak, bina no, kapı no..." x-model="formData.adres_detay"></textarea>
+                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 transition-colors text-sm"
+                            placeholder="Sokak, cadde, bina no, kapı no vb. detay bilgiler" x-model="formData.adres_detay"></textarea>
                     </div>
                 </div>
             </div>
@@ -244,9 +239,9 @@
             <!-- Notlar -->
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm mb-6 dark:shadow-none dark:border-slate-700">
                 <div class="p-6">
-                    <h2 class="text-xl font-bold text-yellow-600 mb-6 flex items-center">
-                        <span class="bg-yellow-100 text-yellow-600 rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold mr-2">4</span>
-                        📝 Notlar
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-slate-100 mb-6 flex items-center">
+                        <span class="bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">4</span>
+                        Notlar
                     </h2>
 
                     <div>
@@ -260,16 +255,16 @@
             <!-- Form Actions -->
             <div class="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-slate-800">
                 <button type="button" @click="resetForm()"
-                    class="inline-flex items-center px-6 py-3 text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200">
-                    🔄 Temizle
+                    class="inline-flex items-center px-5 py-2.5 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition-all duration-200">
+                    Temizle
                 </button>
 
                 <div class="flex space-x-3">
                     <button type="submit"
-                        class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-bold shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
+                        class="inline-flex items-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm shadow-sm transition-all duration-200"
                         :disabled="loading">
-                        <span x-show="!loading">✅ Kişiyi Kaydet</span>
-                        <span x-show="loading" x-cloak>⏳ Kaydediliyor...</span>
+                        <span x-show="!loading">Kişiyi Kaydet</span>
+                        <span x-show="loading" x-cloak>Kaydediliyor...</span>
                     </button>
                 </div>
             </div>
@@ -280,38 +275,54 @@
 @push('scripts')
     <x-csp-script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer />
     <script>
-        // Location Wizard Logic
         window.locationWizard = function() {
             return {
-                selectedCity: '',
-                selectedDistrict: '',
-                selectedNeighborhood: '',
+                selectedCity: '{{ old('il_id', '') }}',
+                selectedDistrict: '{{ old('ilce_id', '') }}',
+                selectedNeighborhood: '{{ old('mahalle_id', '') }}',
                 districts: [],
                 neighborhoods: [],
                 loadingDistricts: false,
                 loadingNeighborhoods: false,
 
-                init() {},
+                async init() {
+                    if (this.selectedCity) {
+                        await this.fetchDistricts();
+                        if (this.selectedDistrict) {
+                            await this.fetchNeighborhoods();
+                        }
+                    }
+                },
 
                 async fetchDistricts() {
-                    if (!this.selectedCity) return;
+                    if (!this.selectedCity) {
+                        this.districts = [];
+                        this.selectedDistrict = '';
+                        this.neighborhoods = [];
+                        this.selectedNeighborhood = '';
+                        return;
+                    }
                     this.loadingDistricts = true;
                     try {
                         const response = await fetch(`/api/v1/location/districts/${this.selectedCity}`);
                         const result = await response.json();
-                        if (result.success) this.districts = result.data;
-                    } catch (error) { console.error(error); }
+                        if (result.success && Array.isArray(result.data)) this.districts = result.data;
+                    } catch (error) { console.error('İlçeler yüklenemedi:', error); }
                     finally { this.loadingDistricts = false; }
                 },
 
                 async fetchNeighborhoods() {
-                    if (!this.selectedDistrict) return;
+                    if (!this.selectedDistrict) {
+                        this.neighborhoods = [];
+                        this.selectedNeighborhood = '';
+                        return;
+                    }
                     this.loadingNeighborhoods = true;
                     try {
                         const response = await fetch(`/api/v1/location/neighborhoods/${this.selectedDistrict}`);
                         const result = await response.json();
-                        if (result.success) this.neighborhoods = result.data;
-                    } catch (error) { console.error(error); }
+                        if (result.success && Array.isArray(result.data)) this.neighborhoods = result.data;
+                    } catch (error) { console.error('Mahalleler yüklenemedi:', error); }
                     finally { this.loadingNeighborhoods = false; }
                 }
             };

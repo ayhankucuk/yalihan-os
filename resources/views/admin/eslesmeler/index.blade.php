@@ -4,51 +4,57 @@
 
 @section('content')
     <!-- AI önerileri bannerı -->
-    <div class="rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 mb-6 p-6 bg-gradient-to-r from-green-50 to-blue-50 border-green-200 dark:shadow-none dark:border-slate-700">
+    <div class="rounded-xl border border-blue-200 dark:border-blue-900/30 bg-blue-50/50 dark:bg-blue-950/20 shadow-sm mb-6 p-6">
         <div class="flex items-center justify-between">
             <div class="flex items-center">
-                <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-lg flex items-center justify-center mr-4">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center mr-4">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
                 </div>
                 <div>
-                    <h3 class="text-lg font-bold text-green-800">🤖 AI Eşleştirme Analizi</h3>
-                    <p class="text-sm text-green-600">Akıllı eşleştirme ve öneriler</p>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-slate-100">AI Eşleştirme Analizi</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Akıllı eşleştirme ve müşteri portföy önerileri</p>
                 </div>
-                <div class="flex items-center gap-3">
-                    <a href="{{ route('admin.talep-portfolyo.index') }}"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-white text-green-600 font-medium rounded-lg shadow-sm hover:shadow transition-all duration-200 dark:bg-slate-900 dark:shadow-none">
-                        <i class="fas fa-brain"></i>
-                        AI Portföy Önerileri
-                    </a>
-                </div>
+            </div>
+            <div>
+                <a href="{{ route('admin.talep-portfolyo.index') }}"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-200 font-medium text-sm rounded-lg shadow-sm hover:shadow transition-all duration-200">
+                    <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    AI Portföy Önerileri
+                </a>
             </div>
         </div>
     </div>
 
     <!-- Sayfa başlığı -->
     <div class="content-header mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2 flex items-center dark:text-slate-100 dark:text-white">
-            <div
-                class="w-12 h-12 bg-gradient-to-r from-purple-500 to-violet-600 rounded-xl flex items-center justify-center mr-4">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
-                    </path>
-                </svg>
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-slate-100 mb-2 flex items-center">
+                    <div
+                        class="w-12 h-12 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
+                            </path>
+                        </svg>
+                    </div>
+                    Eşleştirme Yönetimi
+                </h1>
+                <p class="text-base text-gray-600 dark:text-gray-400">Müşteri talepleri ile ilanları eşleştirin ve akıllı öneriler alın</p>
             </div>
-            🔗 Eşleştirme Yönetimi
-        </h1>
-        <p class="text-lg text-gray-600 mt-2">Müşteri talepleri ile ilanları eşleştirin ve akıllı öneriler alın</p>
-        <div class="flex items-center space-x-3 mt-4">
-            <a href="{{ route('admin.eslesmeler.create') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 active:scale-95 focus:ring-blue-500 shadow-md hover:shadow-lg touch-target-optimized dark:shadow-none">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6">
-                    </path>
-                </svg>
-                Yeni Eşleştirme
-            </a>
+            <div>
+                <a href="{{ route('admin.eslesmeler.create') }}" class="inline-flex items-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg shadow-sm hover:shadow transition-all duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6">
+                        </path>
+                    </svg>
+                    Yeni Eşleştirme
+                </a>
+            </div>
         </div>
     </div>
 

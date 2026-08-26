@@ -30,15 +30,17 @@ Route::prefix('auth')->group(function () {
 });
 
 // 👥 User Management Routes
-Route::prefix('users')->group(function () {
+// Note: {id} routes are constrained to numeric IDs to prevent shadowing
+// named routes registered in common.php (e.g. /search, /danismanlar).
+Route::prefix('users')->where(['id' => '[0-9]+'])->group(function () {
     // Public endpoints (list & view)
     Route::get('/', [UserController::class, 'index'])->name('api.users.index');
-    Route::get('{id}', [UserController::class, 'show'])->name('api.users.show');
+    Route::get('{id}', [UserController::class, 'show'])->name('api.users.show')->where('id', '[0-9]+');
 
     // Protected endpoints (CRUD operations)
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [UserController::class, 'store'])->name('api.users.store');
-        Route::put('{id}', [UserController::class, 'update'])->name('api.users.update');
-        Route::delete('{id}', [UserController::class, 'destroy'])->name('api.users.destroy');
+        Route::put('{id}', [UserController::class, 'update'])->name('api.users.update')->where('id', '[0-9]+');
+        Route::delete('{id}', [UserController::class, 'destroy'])->name('api.users.destroy')->where('id', '[0-9]+');
     });
 });

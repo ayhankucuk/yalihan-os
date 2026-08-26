@@ -68,15 +68,15 @@
                 <div class="flex items-center gap-2">
                     @if (count($duplicateEmails) > 0)
                         <span
-                            class="rounded-full bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-800 dark:bg-red-900/30 dark:text-red-400">⚠️
+                            class="rounded-full bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-800 dark:bg-red-900/30 dark:text-red-400">
                             Mükerrer: {{ count($duplicateEmails) }}</span>
                     @else
                         <span
-                            class="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">✅
+                            class="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
                             Temiz</span>
                     @endif
                     <span
-                        class="rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">💤
+                        class="rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
                         Pasif: {{ $passiveCount }}</span>
                 </div>
             </div>

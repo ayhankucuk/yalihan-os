@@ -38,8 +38,9 @@ class KisiRegistrationService
      */
     public function search(array $filters): array
     {
-        // Future: Central search logic integration
-        return [];
+        $query = $filters['q'] ?? $filters['query'] ?? '';
+        $limit = min((int)($filters['limit'] ?? 10), 50);
+        return \App\Modules\Crm\Services\KisiService::search($query, $limit);
     }
 
     /**

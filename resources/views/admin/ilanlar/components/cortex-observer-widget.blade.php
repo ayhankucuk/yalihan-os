@@ -76,15 +76,13 @@
         </div>
 
         {{-- Loading State --}}
-        <template x-if="isLoading">
-            <div class="flex items-center gap-2 text-xs text-blue-500 mb-2">
-                <svg class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Analiz ediliyor...</span>
-            </div>
-        </template>
+        <div x-show="isLoading" class="flex items-center gap-2 text-xs text-blue-500 mb-2">
+            <svg class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Analiz ediliyor...</span>
+        </div>
 
         {{-- Issues List --}}
         <div class="space-y-3 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
@@ -106,13 +104,11 @@
                 </div>
             </template>
 
-            <template x-if="suggestions.length === 0 && score > 0">
-                <div class="text-center py-4 text-green-600 dark:text-green-400">
-                    <div class="text-2xl mb-1">🎉</div>
-                    <p class="text-xs font-bold">Harika İş!</p>
-                    <p class="text-[10px] opacity-75">İlanınız yayına hazır.</p>
-                </div>
-            </template>
+            <div x-show="suggestions.length === 0 && score > 0" class="text-center py-4 text-green-600 dark:text-green-400">
+                <div class="text-2xl mb-1">🎉</div>
+                <p class="text-xs font-bold">Harika İş!</p>
+                <p class="text-[10px] opacity-75">İlanınız yayına hazır.</p>
+            </div>
         </div>
 
         {{-- AI Tip Footer --}}

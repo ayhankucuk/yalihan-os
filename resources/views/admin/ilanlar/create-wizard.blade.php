@@ -3,7 +3,10 @@
 @section('title', 'Yeni İlan Oluştur | Yalıhan Emlak')
 
 @section('content')
-    @vite(['resources/js/components/CortexObserver.js', 'resources/js/wizard/components/price-formatter.js', 'resources/js/wizard/step2-category.js', 'resources/js/wizard/step2-features.js', 'resources/js/wizard/schema-field-renderer.js'])
+    {{-- P2-FIX: Duplicate Vite — consolidate to single entry at line 700.
+        Removed: price-formatter.js, step2-category.js, step2-features.js, schema-field-renderer.js
+        Retained: CortexObserver.js (separate early loading) --}}
+    @vite(['resources/js/components/CortexObserver.js'])
 
     <script>
         window.ilanId = {{ (int) ($ilanId ?? 0) }};
@@ -90,55 +93,53 @@
             <div class="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl"></div>
 
             <div class="relative z-10 flex items-center justify-between">
-                <template
-                    x-for="step in [
-                    {id: 1, label: '1. Kategori', icon: 'fas fa-map-marker-alt'},
-                    {id: 2, label: '2. Bilgiler', icon: 'fas fa-info-circle'},
-                    {id: 3, label: '3. Fotoğraf', icon: 'fas fa-images'},
-                    {id: 4, label: '4. Adres', icon: 'fas fa-map-pin'},
-                    {id: 5, label: '5. Önizleme', icon: 'fas fa-check-double'}
-                ]"
-                    :key="step.id">
+                @php
+                    $steps = [
+                        ['id' => 1, 'label' => '1. Kategori', 'icon' => 'fas fa-map-marker-alt'],
+                        ['id' => 2, 'label' => '2. Bilgiler', 'icon' => 'fas fa-info-circle'],
+                        ['id' => 3, 'label' => '3. Fotoğraf', 'icon' => 'fas fa-images'],
+                        ['id' => 4, 'label' => '4. Adres', 'icon' => 'fas fa-map-pin'],
+                        ['id' => 5, 'label' => '5. Önizleme', 'icon' => 'fas fa-check-double'],
+                    ];
+                @endphp
+                @foreach ($steps as $step)
                     <div class="flex flex-1 items-center last:flex-none">
                         <div class="group flex cursor-pointer flex-col items-center"
-                            @click="wizard?.completedSteps?.includes(step.id) || wizard?.currentStep === step.id || (step.id > 1 && wizard?.completedSteps?.includes(step.id - 1)) ? wizard?.goToStep(step.id) : null">
+                            @click="wizard?.completedSteps?.includes({{ $step['id'] }}) || wizard?.currentStep === {{ $step['id'] }} || ({{ $step['id'] }} > 1 && wizard?.completedSteps?.includes({{ $step['id'] - 1 }})) ? wizard?.goToStep({{ $step['id'] }}) : null">
 
                             <div class="wizard-step-indicator"
                                 :class="{
-                                    'completed': wizard?.completedSteps?.includes(step.id),
-                                    'current': wizard?.currentStep === step.id,
-                                    'pending': !wizard?.completedSteps?.includes(step.id) && wizard?.currentStep !==
-                                        step.id
+                                    'completed': wizard?.completedSteps?.includes({{ $step['id'] }}),
+                                    'current': wizard?.currentStep === {{ $step['id'] }},
+                                    'pending': !wizard?.completedSteps?.includes({{ $step['id'] }}) && wizard?.currentStep !== {{ $step['id'] }}
                                 }">
-                                <i :class="step.icon"></i>
+                                <i class="{{ $step['icon'] }}"></i>
 
                                 {{-- Checkmark for completed --}}
-                                <template
-                                    x-if="wizard?.completedSteps?.includes(step.id) && wizard?.currentStep !== step.id">
-                                    <div
-                                        class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-green-500 dark:border-slate-900">
-                                        <i class="fas fa-check text-[10px] text-white"></i>
-                                    </div>
-                                </template>
+                                <div x-show="wizard?.completedSteps?.includes({{ $step['id'] }}) && wizard?.currentStep !== {{ $step['id'] }}"
+                                    class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-green-500 dark:border-slate-900">
+                                    <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
                             </div>
                             <span class="wizard-step-label"
                                 :class="{
-                                    'current': wizard?.currentStep === step.id,
-                                    'completed': wizard?.completedSteps?.includes(step.id)
-                                }"
-                                x-text="step.label"></span>
+                                    'current': wizard?.currentStep === {{ $step['id'] }},
+                                    'completed': wizard?.completedSteps?.includes({{ $step['id'] }})
+                                }">{{ $step['label'] }}</span>
                         </div>
 
                         {{-- Connector Line --}}
-                        <template x-if="step.id < 5">
+                        @if ($step['id'] < 5)
                             <div class="mx-4 h-0.5 flex-1 transition-all duration-500"
-                                :class="wizard?.completedSteps?.includes(step.id) ?
+                                :class="wizard?.completedSteps?.includes({{ $step['id'] }}) ?
                                     'bg-gradient-to-r from-green-500 to-blue-500' :
                                     'bg-gray-200 dark:bg-slate-800'">
                             </div>
-                        </template>
+                        @endif
                     </div>
-                </template>
+                @endforeach
             </div>
         </div>
 
@@ -149,9 +150,7 @@
             x-transition:enter-end="opacity-100 transform translate-y-0 scale-100">
 
             {{-- Pulse Effect for low score --}}
-            <template x-if="score < 40">
-                <div class="pointer-events-none absolute inset-0 animate-pulse bg-red-500/5"></div>
-            </template>
+            <div x-show="score < 40" class="pointer-events-none absolute inset-0 animate-pulse bg-red-500/5"></div>
 
             <div class="relative z-10 mb-4 flex items-center justify-between">
                 <div class="flex items-center gap-4">
@@ -206,35 +205,31 @@
                     :style="`width: ${score}%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1)`"></div>
             </div>
 
-            <template x-if="suggestions.length > 0">
-                <div class="mt-4 border-t border-gray-100 pt-3 dark:border-slate-800">
-                    <div class="flex flex-wrap gap-2">
-                        <template x-for="suggestion in suggestions.slice(0, 4)" :key="suggestion.message">
-                            <div class="group relative">
-                                <span
-                                    class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all duration-200"
-                                    :class="{
-                                        'bg-red-50 dark:bg-red-900/10 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800': suggestion
-                                            .severity === 'high',
-                                        'bg-yellow-50 dark:bg-yellow-900/10 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800': suggestion
-                                            .severity !== 'high'
-                                    }">
-                                    <svg x-show="suggestion.severity === 'high'" class="h-3 w-3" fill="none"
-                                        stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                    </svg>
-                                    <span x-text="suggestion.message"></span>
-                                </span>
-                            </div>
-                        </template>
-                        <template x-if="suggestions.length > 4">
-                            <span class="flex items-center py-1.5 text-[10px] text-gray-500 dark:text-gray-400"
-                                x-text="`+${suggestions.length - 4} diğer öneri`"></span>
-                        </template>
-                    </div>
+            <div x-show="suggestions.length > 0" class="mt-4 border-t border-gray-100 pt-3 dark:border-slate-800">
+                <div class="flex flex-wrap gap-2">
+                    <template x-for="suggestion in suggestions.slice(0, 4)" :key="suggestion.message">
+                        <div class="group relative">
+                            <span
+                                class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all duration-200"
+                                :class="{
+                                    'bg-red-50 dark:bg-red-900/10 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800': suggestion
+                                        .severity === 'high',
+                                    'bg-yellow-50 dark:bg-yellow-900/10 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800': suggestion
+                                        .severity !== 'high'
+                                }">
+                                <svg x-show="suggestion.severity === 'high'" class="h-3 w-3" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <span x-text="suggestion.message"></span>
+                            </span>
+                        </div>
+                    </template>
+                    <span x-show="suggestions.length > 4" class="flex items-center py-1.5 text-[10px] text-gray-500 dark:text-gray-400"
+                        x-text="`+${suggestions.length - 4} diğer öneri`"></span>
                 </div>
-            </template>
+            </div>
         </div>
 
         {{-- Main Form --}}
@@ -359,8 +354,7 @@
     </div>
 
     @push('scripts')
-        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" integrity="sha384-OXVF05DQEe311p6ohU11NwlnX08FzMCsyoXzGOaL+83dKAb3qS17yZJxESl8YrJQ" crossorigin="anonymous" />
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" integrity="sha384-d3UHjPdzJkZuk5H3qKYMLRyWLAQBJbby2yr2Q58hXXtAGF8RSNO9jpLDlKKPv5v3" crossorigin="anonymous"></script>
+        {{-- P2-FIX: CDN Select2 kaldırıldı — proje Vite bundle kullanıyor, CDN gereksiz --}}
 
         <script>
             if (typeof window.aiTitleGenerator === 'undefined') {
@@ -630,13 +624,19 @@
 
                             this.loading = true;
                             const formData = new FormData(form);
+                            // P1-FIX: alan_m2 için fallback zinciri — schema-driven alan gelmezse alternatif alanları dene
+                            const alanM2 = formData.get('alan_m2')
+                                || formData.get('brut_m2')
+                                || formData.get('net_m2')
+                                || document.getElementById('field_alan_m2')?.value
+                                || null;
                             const payload = {
                                 il_id: formData.get('il_id'),
                                 ilce_id: formData.get('ilce_id'),
                                 mahalle_id: formData.get('mahalle_id'),
                                 kategori_id: formData.get('alt_kategori_id'),
                                 fiyat: formData.get('fiyat') || formData.get('fiyat_raw'),
-                                alan_m2: formData.get('alan_m2'),
+                                alan_m2: alanM2 ? parseFloat(alanM2) : null,
                                 lat: formData.get('lat'),
                                 lng: formData.get('lng'),
                             };
@@ -699,7 +699,7 @@
 
         @vite(['resources/js/wizard/components/price-formatter.js', 'resources/js/wizard/step1-cascade.js', 'resources/js/admin/ilan-wizard-page.js', 'resources/js/admin/location-wizard.js', 'resources/js/admin/listing-wizard/store.js', 'resources/js/wizard/components/ai-description.js', 'resources/js/components/MapPolygonManager.js'])
         <script type="module" src="{{ asset('js/leaflet-draw-loader.js') }}"></script>
-        <script src="{{ asset('js/context7-live-search.js') }}"></script>
+        <script src="{{ asset('js/context7-live-search.js') }}?v={{ file_exists(public_path('js/context7-live-search.js')) ? filemtime(public_path('js/context7-live-search.js')) : time() }}"></script>
         <script>
             (function() {
                 if (window.__wizardBootstrapStarted) return;
@@ -729,123 +729,6 @@
                     setTimeout(tryInit, 100);
                 }
             })();
-
-            // ✅ Optimized Live Search System
-            document.addEventListener('DOMContentLoaded', () => {
-                if (window.__optimizedLiveSearchInitialized) return;
-                window.__optimizedLiveSearchInitialized = true;
-
-                const searches = [{
-                        id: 'ilan_sahibi',
-                        endpoint: '/api/v1/admin/api/kisi/search',
-                        labelKey: 'ad',
-                        extraKey: 'soyad',
-                        subKey: 'telefon'
-                    },
-                    {
-                        id: 'ilgili_kisi',
-                        endpoint: '/api/v1/admin/api/kisi/search',
-                        labelKey: 'ad',
-                        extraKey: 'soyad',
-                        subKey: 'telefon'
-                    },
-                    {
-                        id: 'danisman',
-                        endpoint: '/api/v1/users?role=danisman',
-                        labelKey: 'name',
-                        extraKey: '',
-                        subKey: 'email'
-                    },
-                    {
-                        id: 'site',
-                        endpoint: '/api/v1/admin/api/sites/search',
-                        labelKey: 'name',
-                        subKey: 'adres'
-                    }
-                ];
-                searches.forEach(config => initSearch(config));
-            });
-
-            function initSearch({
-                id,
-                endpoint,
-                labelKey,
-                extraKey,
-                subKey
-            }) {
-                const searchInput = document.getElementById(id + '_search');
-                const hiddenInput = document.getElementById(id + '_id');
-                const resultsDiv = searchInput?.parentElement.nextElementSibling;
-
-                if (!searchInput || !hiddenInput || !resultsDiv) return;
-
-                let timer;
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(timer);
-                    const q = this.value.trim();
-
-                    if (q.length < 2) {
-                        resultsDiv.classList.add('hidden');
-                        return;
-                    }
-
-                    timer = setTimeout(() => {
-                        fetch(
-                                `${endpoint}${endpoint.includes('?') ? '&' : '?'}q=${encodeURIComponent(q)}&limit=10`, {
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-                                        'X-Requested-With': 'XMLHttpRequest'
-                                    },
-                                    credentials: 'same-origin'
-                                }
-                            )
-                            .then(r => r.json())
-                            .then(data => displayResults(data.data || data, resultsDiv, hiddenInput,
-                                searchInput, labelKey, extraKey, subKey))
-                            .catch(e => console.error('Search error:', e));
-                    }, 300);
-                });
-
-                searchInput.addEventListener('keyup', () => {
-                    if (!searchInput.value) hiddenInput.value = '';
-                });
-            }
-
-            function displayResults(items, resultsDiv, hiddenInput, searchInput, labelKey, extraKey, subKey) {
-                resultsDiv.innerHTML = '';
-
-                if (!items?.length) {
-                    resultsDiv.innerHTML = '<div class="p-3 text-sm text-gray-500 dark:text-gray-400">Sonuç bulunamadı</div>';
-                    resultsDiv.classList.remove('hidden');
-                    return;
-                }
-
-                items.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className =
-                        'p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0';
-                    const label = extraKey ? `${item[labelKey]} ${item[extraKey]}` : item[labelKey];
-                    div.innerHTML = `
-                        <div class="text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">${label}</div>
-                        ${item[subKey] ? `<div class="text-xs text-gray-500 dark:text-gray-400">${item[subKey]}</div>` : ''}
-                    `;
-                    div.onclick = () => {
-                        hiddenInput.value = item.id;
-                        searchInput.value = label;
-                        resultsDiv.classList.add('hidden');
-                    };
-                    resultsDiv.appendChild(div);
-                });
-                resultsDiv.classList.remove('hidden');
-            }
-
-            // Close all dropdowns on outside click
-            document.addEventListener('click', e => {
-                if (!e.target.closest('.context7-live-search')) {
-                    document.querySelectorAll('.context7-search-results').forEach(d => d.classList.add('hidden'));
-                }
-            });
         </script>
     @endpush
     @include('admin.ilanlar.components.quick-client-modal')

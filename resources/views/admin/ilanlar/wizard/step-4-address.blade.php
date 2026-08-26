@@ -45,13 +45,21 @@
                 console.log('✅ Step 4 harita başlatıldı');
             }
         }
-    }" x-init="// İlk yükleme
+    }" x-init="// İlk yükleme — haritayı başlat
     setTimeout(() => initStep4Map(), 500);
-    
-    // Wizard step değişikliğini dinle
+
+    // Wizard step değişikliğini dinle — Step 4'e geçildiğinde haritayı yeniden boyutlandır
     window.addEventListener('wizard-step-changed', (e) => {
-        if (e.detail.step === 4 && !mapInitialized) {
-            setTimeout(() => initStep4Map(), 300);
+        if (e.detail.step === 4) {
+            // mapInitialized global scope'da undefined — her zaman tetikle ama double-init korumalı
+            setTimeout(() => {
+                initStep4Map();
+                // invalidateSize: harita görünür olduktan sonra tiles yeniden hesapla
+                if (window.wizardMap) {
+                    window.wizardMap.invalidateSize();
+                    console.log('✅ Step 4 map invalidateSize() tetiklendi');
+                }
+            }, 400);
         }
     });" class="space-y-6">
 
@@ -131,8 +139,8 @@
 
                 {{-- Açık Adres --}}
                 <div>
-                    <label for="adres_detay" class="wizard-field-label">Açık Adres Detayları</label>
-                    <textarea name="adres_detay" id="adres_detay" rows="3" class="wizard-field"
+                    <label for="adres" class="wizard-field-label">Açık Adres Detayları</label>
+                    <textarea name="adres" id="adres" rows="3" class="wizard-field"
                         placeholder="Sokak, Bina No, Kat, Daire, Posta Kodu gibi detayları girin..."></textarea>
                 </div>
             </div>
