@@ -114,7 +114,7 @@ services:
             - "host.docker.internal:172.18.0.1"
         volumes:
             # Persistent storage — survive container restart
-            - yalihan-storage:/app/storage
+            - current_yalihan-storage:/app/storage
             - yalihan-cache:/app/bootstrap/cache
 
         healthcheck:
@@ -191,7 +191,7 @@ services:
             - "host.docker.internal:172.18.0.1"
         volumes:
             # Persistent storage — survive container restart
-            - yalihan-storage:/app/storage
+            - current_yalihan-storage:/app/storage
             - yalihan-cache:/app/bootstrap/cache
 
         healthcheck:
@@ -216,8 +216,10 @@ services:
         user: "1000:1000"
 
 volumes:
-    # Persistent storage survives container rebuild
-    yalihan-storage:
+    # Persistent storage — survives container rebuild
+    # Named explicitly to match the existing VPS bind mount /opt/yalihan-os-production/storage
+    current_yalihan-storage:
+        name: current_yalihan-storage
         driver: local
         driver_opts:
             type: none
