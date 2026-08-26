@@ -18,7 +18,12 @@
 
 ## Audit snapshot — 2026-08-26
 
-- `REPO_VERIFIED`: current branch is `integration/era-v-phase2a-e01` at `ea0549c`.
+- `PRODUCTION_VERIFIED`: `/admin/property-hub` HTTP 200 after migration `9723c2e` (Ayhan Küçük session, Property Hub dashboard fully rendered, all sections visible).
+
+- `PRODUCTION_VERIFIED`: `/admin/property-hub` returned HTTP 200 after targeted migration `9723c2e` (Ayhan Küçük authenticated session, full dashboard rendered including Özellik Sayısı, Yayın Tipi Yönetimi, Analytics, Template Manager). Browser evidence via Kilo chrome-devtools session 2026-08-26.
+- `PRODUCTION_VERIFIED`: Copilot modal buttons (İptal, Escape, backdrop click) verified closing modal correctly. `window.ilanWizard()` singleton confirmed reachable. No console errors. Deployed via `a0a52bf`.
+
+- `REPO_VERIFIED`: current branch is `integration/era-v-phase2a-e01` at `a0a52bf`.
 - `REPO_VERIFIED`: Property Hub dashboard route is defined in `routes/admin/property_hub.php` and points to `App\\Http\\Controllers\\Admin\\PropertyHub\\DashboardController`.
 - `REPO_VERIFIED`: listing wizard route is defined in `routes/admin.php` and points to `IlanCrudController@create`.
 - `PRODUCTION_VERIFIED`: browser reproduced Property Hub HTTP 500 and missing main stylesheet on listing creation page.
