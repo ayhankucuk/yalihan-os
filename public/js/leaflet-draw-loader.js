@@ -9,18 +9,47 @@
             document.head.appendChild(link);
         }
     }
-    function addJs(cb) {
-        if (window.L && window.L.Draw) {
-            cb && cb();
+    function waitForLeaflet(callback, maxAttempts) {
+        maxAttempts = maxAttempts || 50;
+        var attempts = 0;
+        if (typeof window.L !== 'undefined') {
+            callback();
             return;
         }
-        var src = 'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js';
-        var s = document.createElement('script');
-        s.src = src;
-        s.onload = function () {
-            cb && cb();
-        };
-        document.head.appendChild(s);
+        var interval = setInterval(function () {
+            attempts++;
+            if (typeof window.L !== 'undefined') {
+                clearInterval(interval);
+                callback();
+            } else if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                console.warn('[LeafletDrawLoader] Leaflet (window.L) not available after waiting');
+            }
+        }, 100);
+    }
+    function addJs(cb) {
+        waitForLeaflet(function () {
+            if (window.L && window.L.Draw) {
+                cb && cb();
+                return;
+            }
+            if (document.querySelector('script[src*="leaflet.draw.js"]')) {
+                var checkInterval = setInterval(function () {
+                    if (window.L && window.L.Draw) {
+                        clearInterval(checkInterval);
+                        cb && cb();
+                    }
+                }, 50);
+                return;
+            }
+            var src = 'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js';
+            var s = document.createElement('script');
+            s.src = src;
+            s.onload = function () {
+                cb && cb();
+            };
+            document.head.appendChild(s);
+        });
     }
     addCss();
     addJs(function () {

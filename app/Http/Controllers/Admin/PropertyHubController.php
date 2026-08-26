@@ -58,7 +58,7 @@ class PropertyHubController extends Controller
         // kategori_yayin_tipi_field_dependencies (42 kayıt) — field schema
         $catalogStats = [
             'ozellik_catalog' => Ozellik::where('aktiflik_durumu', 1)->count(),
-            'field_schema' => KategoriYayinTipiFieldDependency::active()->count(),
+            'field_schema' => KategoriYayinTipiFieldDependency::aktif()->count(),
             'combinations' => $this->propertyConfig->getAvailableCombinations(),
         ];
 

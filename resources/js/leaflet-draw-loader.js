@@ -10,18 +10,46 @@
             document.head.appendChild(link);
         }
     }
-    function addJs(cb) {
-        if (window.L && window.L.Draw) {
-            cb && cb();
+    function waitForLeaflet(callback, maxAttempts = 50) {
+        let attempts = 0;
+        if (typeof window.L !== 'undefined') {
+            callback();
             return;
         }
-        const src = 'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js';
-        const s = document.createElement('script');
-        s.src = src;
-        s.onload = function () {
-            cb && cb();
-        };
-        document.head.appendChild(s);
+        const interval = setInterval(() => {
+            attempts++;
+            if (typeof window.L !== 'undefined') {
+                clearInterval(interval);
+                callback();
+            } else if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                console.warn('[LeafletDrawLoader] Leaflet (window.L) not available after waiting');
+            }
+        }, 100);
+    }
+    function addJs(cb) {
+        waitForLeaflet(() => {
+            if (window.L && window.L.Draw) {
+                cb && cb();
+                return;
+            }
+            if (document.querySelector('script[src*="leaflet.draw.js"]')) {
+                const checkInterval = setInterval(() => {
+                    if (window.L && window.L.Draw) {
+                        clearInterval(checkInterval);
+                        cb && cb();
+                    }
+                }, 50);
+                return;
+            }
+            const src = 'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js';
+            const s = document.createElement('script');
+            s.src = src;
+            s.onload = function () {
+                cb && cb();
+            };
+            document.head.appendChild(s);
+        });
     }
     addCss();
     addJs(() => {
@@ -35,13 +63,6 @@
 })();
 
 console.log('✅ Leaflet.draw loaded from npm (Context7: Local)');
-
-// Global access check
-if (typeof L !== 'undefined' && typeof L.Control.Draw !== 'undefined') {
-    console.log('✅ L.Control.Draw available globally');
-} else {
-    console.warn('⚠️ Leaflet.draw loaded but L.Control.Draw not found');
-}
 
 // 🔧 CSP Fix & UI Optimization: Compact & Modern Draw Toolbar
 if (typeof document !== 'undefined') {

@@ -44,8 +44,8 @@ services:
         volumes:
             # SSL termination: handled by Cloudflare — no certs in container
             - /dev/null:/etc/nginx/ssl:ro
-            # Sync public assets with app container
-            - /opt/yalihan2026/current/public:/app/public:ro
+            # Persistent storage (for uploaded media / storage symlink)
+            - yalihan-storage:/app/storage:ro
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost/api/v1/health"]
             interval: 30s
