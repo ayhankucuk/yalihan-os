@@ -707,6 +707,7 @@
                 }));
 
                 this.copilotActions = [];
+                this.diffItems = [];
                 this.showDiffModal = false;
             },
 
