@@ -95,6 +95,8 @@ services:
             CACHE_STORE: "redis"
             QUEUE_CONNECTION: "redis"
             SESSION_DRIVER: "redis"
+            SESSION_DOMAIN: ".yalihanemlak.com.tr"
+            SANCTUM_STATEFUL_DOMAINS: "yalihanemlak.com.tr,api.yalihanemlak.com.tr"
 
             # Logging
             LOG_CHANNEL: "daily"
@@ -170,6 +172,8 @@ services:
             CACHE_STORE: "redis"
             QUEUE_CONNECTION: "redis"
             SESSION_DRIVER: "redis"
+            SESSION_DOMAIN: ".yalihanemlak.com.tr"
+            SANCTUM_STATEFUL_DOMAINS: "yalihanemlak.com.tr,api.yalihanemlak.com.tr"
 
             # Logging
             LOG_CHANNEL: "daily"
