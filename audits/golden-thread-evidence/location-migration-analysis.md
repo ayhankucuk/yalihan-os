@@ -137,7 +137,14 @@ if ($existing) {
 
 ---
 
-## 5. Golden Thread TC-05/06 İçin Öneri
+## 5. İleri Görüş Uyarısı
+
+> ⚠️ Aşağıdaki ifadeler KESİNLEŞTİRİLMEMİŞTİR ve operasyonel nottur:
+> - "TurkiyeLocationSeeder çalıştırmak gerekecek" — **kesin değil**
+> - Seeder, ancak plaka kodu bazlı reconciliation migration'ın veri modeliyle uyumu doğrulandıktan sonra kullanılmalıdır
+> - Token maliyeti not olarak kalmıştır, mimari kanıt sayılmaz
+
+## 6. Golden Thread TC-05/06 İçin Öneri
 
 Mevcut DB'de 0 ilan olduğundan, TC-05/06 için **lokal test DB** kullanılabilir:
 
@@ -153,7 +160,7 @@ Production DB'de **hiçbir veri migration çalıştırılmamalıdır** — expli
 
 ---
 
-## 6. Sonraki Adımlar
+## 7. Sonraki Adımlar
 
 - [ ] Local/test ortamında TurkiyeLocationSeeder doğrulaması
 - [ ] Idempotent migration script hazırlanması (plaka_kodu bazlı)

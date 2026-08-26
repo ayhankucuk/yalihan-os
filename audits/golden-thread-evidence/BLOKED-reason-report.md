@@ -103,21 +103,31 @@ Kurallar korundu:
 
 ## 5. Önerilen Sonraki Adımlar
 
-### Seçenek A — TurkiyeLocationSeeder (düşük risk, idempotent değil)
+### seçenek A — TurkiyeLocationSeeder (düşük risk, idempotent değil)
 
 Avantaj: TurkiyeLocationSeeder hâlâ hazır.  
 Risk: 3 yanlış kayıt overwrite, 78 yeni ekleme.  
 Komut: `php artisan db:seed --class=TurkiyeLocationSeeder`
 
-### Seçenek B — Plaka kodu bazlı idempotent migration (tercih edilen)
+### seçenek B — Plaka kodu bazlı idempotent migration (tercih edilen)
 
 Avantaj: Mevcut 3 yanlış kayıt korunur, sadece canonical ID güncellenir.  
 Risk: Çok düşük.  
 Komut: Açık onay sonrası custom artisan komutu çalıştırılır.
 
-### Seçenek C — Hiçbir şey yapma (şu an)
+### seçenek C — Hiçbir şey yapma (şu an)
 
 TC-05/06 BLOCKED kalır. Aktif veri değişikliği yapılmaz.
+
+---
+
+## 6. İleri Görüş Uyarısı
+
+> ⚠️ Aşağıdaki ifadeler KESİNLEŞTİRİLMEMİŞTİR ve operasyonel nottur:
+
+- "TurkiyeLocationSeeder çalıştırmak gerekecek" — **kesin değil**
+- Seeder ancak plaka kodu bazlı reconciliation migration'ın veri modeliyle uyumlu olduğu doğrulandıktan sonra kullanılmalıdır
+- Token maliyeti not olarak kalmıştır, mimari kanıt sayılmaz
 
 ---
 
