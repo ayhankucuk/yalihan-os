@@ -23,6 +23,11 @@
       "type": "local",
       "command": ["node", "/Users/macbookpro/repos/yalihan-os/.kilo/node_modules/@modelcontextprotocol/server-puppeteer/dist/index.js"],
       "enabled": true
+    },
+    "chrome-devtools": {
+      "type": "local",
+      "command": ["npx", "-y", "chrome-devtools-mcp@latest"],
+      "enabled": true
     }
   },
   "indexing": {
