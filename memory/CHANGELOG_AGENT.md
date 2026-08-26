@@ -6,6 +6,44 @@
 
 ---
 
+## 2026-08-26 | Oturum 67 | Production Wizard + Session + MCP Eklentileri ✅
+
+### Üç Kritik Sorun Çözüldü
+
+**1. HTTP 500 → Column not found: `rezervasyon_durumu`**
+- Kök neden: `yazlik_rezervasyonlar` migration'da `giris_tarihi/cikis_tarihi/durum` var ama Event modeli `check_in/check_out/rezervasyon_durumu` kullanıyordu
+- Çözüm: Event.php + VillaService kolon isimleri düzeltildi
+- Commit: `01f8b84`
+
+**2. HTTP 401 → Sanctum session cross-subdomain**
+- Kök neden: SESSION_DOMAIN boş, APP_URL api.yalihanemlak.com.tr ama frontend yalihanemlak.com.tr
+- Çözüm: docker-compose.production.yml → SESSION_DOMAIN=.yalihanemlak.com.tr + SANCTUM_STATEFUL_DOMAINS
+- Commit: `ea0549c`
+- Deploy: Container rebuild yapıldı
+
+**3. CSS/JS 404 → Volume mount eksikliği**
+- Kök neden: Nginx container'da /app/public bake edilmiş eski assets
+- Çözüm: Host build + docker cp + nginx volume mount
+- Commit: `f1d0165` + scripts/deploy.sh oluşturuldu
+
+### Özellik Atamaları
+- villa-tipi-gunluk (sablon ID:50) → 35 özellik eklendi
+- KategoriYayinTipiPivotSeeder + FeatureAssignmentSeeder çalıştırıldı
+
+### Yeni MCP Eklentileri
+- chrome-devtools-mcp
+- sequential-thinking  
+- fetch
+
+### Güvenlik Kapısı
+- APP_DEBUG: ✅ false
+- Container'lar: ✅ 3/3 healthy
+- Public route /yazliklar: ✅ 200 OK
+
+**Deploy script:** `scripts/deploy.sh` oluşturuldu (git pull + npm build + docker rebuild + cache clear)
+
+---
+
 ## 2026-08-25 | Oturum 144 | Step 2 Schema Kök Neden + FeatureAssignmentSeeder ✅
 
 ### Kök Neden Analizi: Wizard Step 2 "0 Kart" Sorunu

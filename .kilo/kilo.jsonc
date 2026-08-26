@@ -26,7 +26,7 @@
     },
     "chrome-devtools": {
       "type": "local",
-      "command": ["npx", "-y", "chrome-devtools-mcp@latest"],
+      "command": ["npx", "chrome-devtools-mcp@1.8.0"],
       "enabled": true
     }
   },

@@ -1,7 +1,7 @@
 # PROJECT BRAIN
 
 > Yalıhan Emlak AI OS — Merkezi Bilgi Kaynağı
-> Son güncelleme: 2026-06-25
+> Son güncelleme: 2026-08-26
 
 ---
 
