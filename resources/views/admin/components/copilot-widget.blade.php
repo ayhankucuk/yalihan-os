@@ -712,6 +712,7 @@
 
             rejectAllActions() {
                 this.copilotActions = [];
+                this.diffItems = [];
                 this.showDiffModal = false;
             },
 
@@ -766,11 +767,9 @@
             },
 
             _findWizardComponent() {
-                // Try to find wizard Alpine.js component
-                const wizardEl = document.querySelector(
-                    '[x-data]#wizard-form, [x-data*="wizardMain"], [x-data*="ilanWizard"]');
-                if (wizardEl) {
-                    return wizardEl._x_dataStack?.[0] || null;
+                // Use window.ilanWizard singleton directly — reliable, no DOM dependency
+                if (typeof window.ilanWizard === 'function') {
+                    return window.ilanWizard();
                 }
                 return null;
             },

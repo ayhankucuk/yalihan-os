@@ -1,10 +1,10 @@
 {{-- Copilot Diff Preview Modal --}}
 {{-- Shows before/after comparison for copilot-generated actions --}}
-<div x-show="showDiffModal" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
+<div x-show="showDiffModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
     x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150"
     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-    class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm transition-opacity" @click.self="showDiffModal = false"
-    @keydown.escape.window="showDiffModal = false">
+    class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm transition-opacity" @click.self="diffItems = []; showDiffModal = false"
+    @keydown.escape.window="diffItems = []; showDiffModal = false">
     <div class="w-full max-w-2xl scale-100 transform rounded-3xl border border-white/20 bg-white/90 shadow-2xl backdrop-blur-xl transition-all dark:border-slate-700/50 dark:bg-slate-900/90"
         @click.stop>
         {{-- Header --}}
@@ -20,7 +20,7 @@
                     class="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
                     x-text="diffItems.length + ' alan'"></span>
             </div>
-            <button @click="showDiffModal = false"
+            <button @click="diffItems = []; showDiffModal = false"
                 class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-700 dark:hover:text-white"
                 aria-label="Kapat">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -79,7 +79,7 @@
 
         {{-- Footer --}}
         <div class="flex items-center justify-between border-t border-gray-100 px-5 py-3 dark:border-slate-700">
-            <button @click="showDiffModal = false"
+            <button @click="diffItems = []; showDiffModal = false"
                 class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700">
                 İptal
             </button>
