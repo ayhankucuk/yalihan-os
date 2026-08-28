@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\Drive\DriveWorkspaceService;
+use App\Services\Drive\DriveWebhookService;
 use App\Domain\Hermes\Handlers\CommunicationEmailHandler;
 use App\Services\Hermes\Handlers\AnalyticsHandler;
 use App\Services\Hermes\Handlers\GovernanceNotificationHandler;
@@ -59,8 +60,10 @@ class HermesServiceProvider extends ServiceProvider
 
         // DriveWorkspace service + agent — Sprint 4.4
         $this->app->singleton(DriveWorkspaceService::class, fn () => new DriveWorkspaceService());
+        $this->app->singleton(DriveWebhookService::class, fn () => new DriveWebhookService());
         $this->app->singleton(DriveAgent::class, fn ($app) => new DriveAgent(
             $app->make(DriveWorkspaceService::class),
+            $app->make(DriveWebhookService::class),
             $app->make(HermesService::class),
         ));
 

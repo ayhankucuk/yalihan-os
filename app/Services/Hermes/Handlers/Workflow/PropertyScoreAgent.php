@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Hermes\Handlers\Workforce;
+namespace App\Services\Hermes\Handlers\Workflow;
 
 use App\Contracts\Hermes\HermesEventContract;
 use App\Contracts\Hermes\HermesHandlerContract;

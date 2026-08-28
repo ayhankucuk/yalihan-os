@@ -9,9 +9,9 @@ use App\Models\Hermes\WorkforceExecutionLog;
 use Illuminate\Support\Facades\Log;
 
 /**
- * NotificationAgent — AI Workforce Sprint 4.3
+ * NotificationAgent — AI Workforce Sprint 4.5
  *
- * Triggered by: workforce.notification_requested
+ * Triggered by: workforce.publishing.decision_ready
  * Role: Sends final notification when workforce chain completes
  *
  * No external API calls (vertical slice — stub implementation).
@@ -25,7 +25,7 @@ class NotificationAgent implements HermesHandlerContract
     public function subscribesTo(): array
     {
         return [
-            HermesWorkforceEventVocabulary::WORKFORCE_NOTIFICATION_REQUESTED->value,
+            HermesWorkforceEventVocabulary::WORKFORCE_PUBLISHING_DECISION_READY->value,
         ];
     }
 
