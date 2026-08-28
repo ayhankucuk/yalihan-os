@@ -1653,6 +1653,18 @@ Route::prefix('admin/ilanlar/{ilan}/calendar')->name('admin.ilanlar.calendar')->
     Route::post('/feed/revoke', [\App\Http\Controllers\Admin\IlanCalendarFeedAdminController::class, 'revoke'])->name('.feed.revoke');
 });
 
+// ✅ Checkout / Ödeme Akışı (CHECKOUT/ÖDEME AKIŞI — IMPLEMENTATION)
+// Ödeme sağlayıcı entegrasyonu YOK — mock / manuel onay akışı.
+// 🛡️ tenant.context: SetTenantContext middleware'i web grubunda DEĞİL, sadece api
+// grubunda çalışır. Checkout web route'ları için tenant bağlamını açıkça kurarız;
+// aksi halde TenantScope yanlış tenant ile filtreler (tenant izolasyon ihlali).
+Route::prefix('admin/ilanlar/{ilan}/checkout')->name('admin.ilanlar.checkout')->middleware(['web', 'auth', 'verified', 'tenant.context', 'throttle:120,1'])->group(function () {
+    Route::get('/{reservation}', [\App\Http\Controllers\Admin\CheckoutController::class, 'show'])->name('.show');
+    Route::post('/{reservation}', [\App\Http\Controllers\Admin\CheckoutController::class, 'store'])->name('.store');
+    Route::post('/{reservation}/payments/{payment}/approve', [\App\Http\Controllers\Admin\CheckoutController::class, 'approve'])->name('.approve');
+    Route::post('/{reservation}/payments/{payment}/fail', [\App\Http\Controllers\Admin\CheckoutController::class, 'fail'])->name('.fail');
+});
+
 // 🎯 PHASE 8 - SPRINT 3: Matching Feedback System (UI Learning Loop)
 Route::prefix('/matching/feedback')->name('matching.feedback.')->group(function () {
     Route::post('/', [\App\Http\Controllers\Admin\MatchingFeedbackController::class, 'store'])->name('store');
