@@ -52,8 +52,8 @@ class GovernanceCommandCenter extends Component
     {
         // 1. Drift Stats (Last 24h)
         $this->stats = [
-            'total_decisions' => DB::table('governance_decisions')->where('occurred_at', '>', now()->subDay())->count(),
-            'drift_count' => DB::table('governance_decisions')
+            'total_decisions' => DB::table('governance_decisions')->where('karar_tarihi', '>', now()->subDay())->count(),
+            'drift_count' => DB::table('governance_events')
                 ->where('occurred_at', '>', now()->subDay())
                 ->where('is_violation', true)
                 ->count(),
