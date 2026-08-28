@@ -329,11 +329,13 @@
                 async fetchData() {
                     this.loading = true;
                     try {
-                        const url = new URL('/advisor/command-center/fetch', window.location.origin);
+                        const url = new URL('/command-center/fetch', window.location.origin);
                         if (this.filters.priority_filter) {
                             url.searchParams.append('priority_filter', this.filters.priority_filter);
                         }
-                        const res = await fetch(url);
+                        const res = await fetch(url, {
+                            headers: { 'Accept': 'application/json' }
+                        });
                         const json = await res.json();
 
                         if (json.success) {

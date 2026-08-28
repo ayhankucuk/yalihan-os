@@ -113,4 +113,303 @@ class AdvisorCommandCenterTest extends TestCase
         $htmlResponse = $this->actingAs($user)->get(route('advisor.command-center'));
         $htmlResponse->assertSuccessful();
     }
+
+    /**
+     * @test
+     * @group contract
+     *
+     * Full JSON response contract for /command-center/fetch
+     * Validates every key, type, and enum value returned by the endpoint.
+     */
+    public function json_response_contract_matches_specification()
+    {
+        $user = User::factory()->create(['role_id' => 1]);
+
+        $response = $this->actingAs($user)->getJson(route('advisor.command-center.fetch'));
+        $response->assertSuccessful();
+
+        $json = $response->json();
+
+        // --- Envelope ---
+        $this->assertArrayHasKey('success', $json);
+        $this->assertArrayHasKey('data', $json);
+        $this->assertTrue($json['success']);
+        $this->assertIsArray($json['data']);
+
+        $data = $json['data'];
+
+        // --- Top-level keys ---
+        $expectedTopKeys = [
+            'kpis',
+            'hot_deals',
+            'opportunities',
+            'portfolio_health',
+            'buyer_matches',
+            'priority_actions',
+        ];
+        foreach ($expectedTopKeys as $key) {
+            $this->assertArrayHasKey($key, $data, "Missing top-level key: $key");
+        }
+
+        // =========================================================
+        // KPIs
+        // =========================================================
+        $kpis = $data['kpis'];
+        $this->assertIsArray($kpis);
+
+        foreach (['total_hot_deals', 'total_opportunities', 'critical_portfolio_issues', 'high_intent_buyers', 'today_priority_actions'] as $kpiKey) {
+            $this->assertArrayHasKey($kpiKey, $kpis, "Missing KPI key: $kpiKey");
+            $this->assertIsInt($kpis[$kpiKey], "KPI $kpiKey must be integer, got " . gettype($kpis[$kpiKey]));
+        }
+
+        // =========================================================
+        // hot_deals
+        // =========================================================
+        $this->assertIsArray($data['hot_deals']);
+        if (!empty($data['hot_deals'])) {
+            $deal = $data['hot_deals'][0];
+            $this->assertArrayHasKey('listing_id', $deal);
+            $this->assertArrayHasKey('listing_title', $deal);
+            $this->assertArrayHasKey('price', $deal);
+            $this->assertArrayHasKey('location', $deal);
+            $this->assertArrayHasKey('deal_score', $deal);
+            $this->assertArrayHasKey('deal_tier', $deal);
+            $this->assertArrayHasKey('primary_signal', $deal);
+            $this->assertArrayHasKey('signal_breakdown', $deal);
+            $this->assertArrayHasKey('suggested_action', $deal);
+
+            // deal_score: float 0.0–100.0, 1 decimal
+            $this->assertIsNumeric($deal['deal_score']);
+            $this->assertThat($deal['deal_score'], $this->logicalAnd(
+                $this->greaterThanOrEqual(0.0),
+                $this->lessThanOrEqual(100.0)
+            ));
+
+            // deal_tier: enum
+            $this->assertContains($deal['deal_tier'], ['HOT_DEAL', 'FAST_MOVING', 'WATCHLIST', 'LOW_SIGNAL']);
+
+            // signal_breakdown: all sub-keys present and integer 0–100
+            $sbKeys = [
+                'buyer_match_density',
+                'search_frequency',
+                'listing_view_velocity',
+                'price_advantage_score',
+                'market_demand_score',
+                'buyer_intent_overlap',
+                'revisit_signal',
+                'regional_velocity',
+            ];
+            foreach ($sbKeys as $sbKey) {
+                $this->assertArrayHasKey($sbKey, $deal['signal_breakdown'], "signal_breakdown missing: $sbKey");
+                $val = $deal['signal_breakdown'][$sbKey];
+                $this->assertIsInt($val, "signal_breakdown.$sbKey must be int, got " . gettype($val));
+                $this->assertThat($val, $this->logicalAnd(
+                    $this->greaterThanOrEqual(0),
+                    $this->lessThanOrEqual(100)
+                ), "signal_breakdown.$sbKey must be 0–100, got $val");
+            }
+        }
+
+        // =========================================================
+        // opportunities
+        // =========================================================
+        $this->assertIsArray($data['opportunities']);
+        if (!empty($data['opportunities'])) {
+            $opp = $data['opportunities'][0];
+            $this->assertArrayHasKey('id', $opp);
+            $this->assertArrayHasKey('listing_id', $opp);
+            $this->assertArrayHasKey('title', $opp);
+            $this->assertArrayHasKey('price', $opp);
+            $this->assertArrayHasKey('opportunity_score', $opp);
+            $this->assertArrayHasKey('opportunity_type', $opp);
+            $this->assertArrayHasKey('reason', $opp);
+            $this->assertArrayHasKey('suggested_action', $opp);
+
+            // opportunity_type: enum
+            $validOppTypes = [
+                'UNDERPRICED_LISTING',
+                'HIGH_BUYER_MATCH',
+                'SEO_OPTIMIZATION',
+                'LOW_QUALITY_HIGH_POTENTIAL',
+                'STALE_LISTING_RECOVERY',
+            ];
+            $this->assertContains($opp['opportunity_type'], $validOppTypes);
+
+            // opportunity_score: integer 0–100
+            $this->assertIsInt($opp['opportunity_score']);
+            $this->assertThat($opp['opportunity_score'], $this->logicalAnd(
+                $this->greaterThanOrEqual(0),
+                $this->lessThanOrEqual(100)
+            ));
+        }
+
+        // =========================================================
+        // portfolio_health
+        // =========================================================
+        $this->assertIsArray($data['portfolio_health']);
+        if (!empty($data['portfolio_health'])) {
+            $ph = $data['portfolio_health'][0];
+            $this->assertArrayHasKey('listing_id', $ph);
+            $this->assertArrayHasKey('listing_title', $ph);
+            $this->assertArrayHasKey('price', $ph);
+            $this->assertArrayHasKey('listing_health_score', $ph);
+            $this->assertArrayHasKey('primary_problem', $ph);
+            $this->assertArrayHasKey('problem_signals', $ph);
+            $this->assertArrayHasKey('suggested_actions', $ph);
+            $this->assertArrayHasKey('optimization_priority', $ph);
+
+            // listing_health_score: float 0.0–100.0
+            $this->assertIsNumeric($ph['listing_health_score']);
+            $this->assertThat($ph['listing_health_score'], $this->logicalAnd(
+                $this->greaterThanOrEqual(0.0),
+                $this->lessThanOrEqual(100.0)
+            ));
+
+            // primary_problem: enum
+            $validProblems = [
+                'HEALTHY',
+                'STALE_LISTING',
+                'OVERPRICED',
+                'HIGH_DEMAND_LOW_CONVERSION',
+                'NO_BUYER_MATCH',
+                'LOW_DEMAND_AREA',
+                'LOW_VISIBILITY',
+                'LOW_IMAGE_QUALITY',
+                'GENERAL_OPTIMIZATION_NEEDED',
+            ];
+            $this->assertContains($ph['primary_problem'], $validProblems);
+
+            // problem_signals sub-keys
+            $psKeys = [
+                'listing_view_velocity',
+                'buyer_match_density',
+                'inquiry_conversion_rate',
+                'price_position_index',
+                'seo_visibility_score',
+                'image_quality_score',
+                'listing_age_days',
+                'regional_demand_score',
+                'revisit_signal',
+            ];
+            foreach ($psKeys as $psKey) {
+                $this->assertArrayHasKey($psKey, $ph['problem_signals'], "problem_signals missing: $psKey");
+                $val = $ph['problem_signals'][$psKey];
+                $this->assertIsInt($val, "problem_signals.$psKey must be int, got " . gettype($val));
+            }
+
+            // suggested_actions: object with action_type, description, impact
+            $sa = $ph['suggested_actions'];
+            $this->assertArrayHasKey('action_type', $sa);
+            $this->assertArrayHasKey('description', $sa);
+            $this->assertArrayHasKey('impact', $sa);
+            $this->assertContains($sa['impact'], ['HIGH', 'MEDIUM', 'LOW', 'CRITICAL']);
+
+            // optimization_priority: float
+            $this->assertIsNumeric($ph['optimization_priority']);
+        }
+
+        // =========================================================
+        // buyer_matches
+        // =========================================================
+        $this->assertIsArray($data['buyer_matches']);
+        if (!empty($data['buyer_matches'])) {
+            $bm = $data['buyer_matches'][0];
+            $this->assertArrayHasKey('buyer_id', $bm);
+            $this->assertArrayHasKey('buyer_name', $bm);
+            $this->assertArrayHasKey('buyer_phone', $bm);
+            $this->assertArrayHasKey('match_score', $bm);
+            $this->assertArrayHasKey('match_tier', $bm);
+            $this->assertArrayHasKey('primary_reason', $bm);
+            $this->assertArrayHasKey('match_reasons', $bm);
+            $this->assertArrayHasKey('urgency_signal', $bm);
+            $this->assertArrayHasKey('suggested_action', $bm);
+            $this->assertArrayHasKey('contact_priority', $bm);
+            $this->assertArrayHasKey('listing_id', $bm);
+            $this->assertArrayHasKey('listing_title', $bm);
+
+            // match_score: float 0.0–100.0
+            $this->assertIsNumeric($bm['match_score']);
+            $this->assertThat($bm['match_score'], $this->logicalAnd(
+                $this->greaterThanOrEqual(0.0),
+                $this->lessThanOrEqual(100.0)
+            ));
+
+            // match_tier: enum
+            $this->assertContains($bm['match_tier'], ['HOT', 'WARM', 'WATCH', 'LOW']);
+
+            // urgency_signal: enum
+            $this->assertContains($bm['urgency_signal'], ['AT_RISK', 'HIGH_INTENT', 'ACTIVE_SEARCH', 'PASSIVE']);
+
+            // match_reasons: array of strings
+            $this->assertIsArray($bm['match_reasons']);
+
+            // contact_priority: integer 1–7
+            $this->assertIsInt($bm['contact_priority']);
+            $this->assertThat($bm['contact_priority'], $this->logicalAnd(
+                $this->greaterThanOrEqual(1),
+                $this->lessThanOrEqual(7)
+            ));
+        }
+
+        // =========================================================
+        // priority_actions
+        // =========================================================
+        $this->assertIsArray($data['priority_actions']);
+        if (!empty($data['priority_actions'])) {
+            $pa = $data['priority_actions'][0];
+            $this->assertArrayHasKey('action_source', $pa);
+            $this->assertArrayHasKey('listing_id', $pa);
+            $this->assertArrayHasKey('title', $pa);
+            $this->assertArrayHasKey('action_label', $pa);
+            $this->assertArrayHasKey('urgency_level', $pa);
+            $this->assertArrayHasKey('execution_priority', $pa);
+            $this->assertArrayHasKey('reason', $pa);
+
+            // urgency_level: integer 1–4
+            $this->assertIsInt($pa['urgency_level']);
+            $this->assertThat($pa['urgency_level'], $this->logicalAnd(
+                $this->greaterThanOrEqual(1),
+                $this->lessThanOrEqual(4)
+            ));
+
+            // execution_priority: enum
+            $this->assertContains($pa['execution_priority'], ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']);
+
+            // action_source: enum
+            $this->assertContains($pa['action_source'], [
+                'deal_radar',
+                'opportunity_engine',
+                'portfolio_doctor',
+                'buyer_match',
+            ]);
+        }
+    }
+
+    /**
+     * @test
+     * @group contract
+     *
+     * Validates priority_filter=today query parameter filters priority_actions
+     * to only CRITICAL and HIGH urgency levels.
+     */
+    public function priority_filter_today_returns_only_critical_and_high_actions()
+    {
+        $user = User::factory()->create(['role_id' => 1]);
+
+        $response = $this->actingAs($user)
+            ->getJson(route('advisor.command-center.fetch', ['priority_filter' => 'today']));
+        $response->assertSuccessful();
+
+        $data = $response->json()['data'];
+        $actions = $data['priority_actions'];
+
+        foreach ($actions as $action) {
+            $this->assertContains(
+                $action['execution_priority'],
+                ['CRITICAL', 'HIGH'],
+                "priority_filter=today returned a non-HIGH/CRITICAL action: "
+                    . json_encode($action)
+            );
+        }
+    }
 }
