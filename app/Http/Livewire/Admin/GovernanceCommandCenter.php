@@ -74,6 +74,7 @@ class GovernanceCommandCenter extends Component
     public function render()
     {
         return view('livewire.admin.governance-command-center')
-            ->layout('admin.layouts.app');
+            ->extends('admin.layouts.admin')
+            ->section('content');
     }
 }
