@@ -49,6 +49,8 @@ class PropertyScoreCalculated implements HermesEventContract
             'quality_tier' => $this->scoreResult['quality_tier'] ?? null,
             'recommendations' => $this->scoreResult['recommendations'] ?? [],
             'lifecycle_state' => $this->workspace->lifecycle_state?->value,
+            'chain_id' => $this->metadata['chain_id'] ?? null,
+            'ilan_baslik' => $this->metadata['ilan_baslik'] ?? null,
             'metadata' => $this->metadata,
         ];
     }

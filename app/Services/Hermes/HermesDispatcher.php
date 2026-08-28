@@ -107,57 +107,47 @@ class HermesDispatcher
 
     /**
      * Invoke a single synchronous handler.
+     *
+     * Note: WorkforceExecutionLog is created by the agent's handle() method.
+     * The dispatcher only handles timing, error catching, and result wrapping.
      */
     private function invokeHandler(
         HermesHandlerContract $handler,
         HermesEventContract $event,
-        ?int $hermesEventLogId = null,
+        ?int $hermesEventLogId,
     ): array {
         $handlerClass = get_class($handler);
         $startTime   = microtime(true);
 
-        // Record execution log
-        $execLog = $this->recordExecutionLog($handler, $event, $hermesEventLogId);
-
         try {
-            $execLog->markRunning();
-
             $result   = $handler->handle($event);
             $duration = round((microtime(true) - $startTime) * 1000, 2);
-
-            $execLog->markCompleted($result);
 
             Log::info('[HermesDispatcher] Handler executed', [
                 'handler'     => $handlerClass,
                 'event'       => $event->eventName(),
                 'duration_ms' => $duration,
-                'exec_log_id' => $execLog->id,
             ]);
 
             return [
                 'success'     => true,
                 'result'      => $result,
                 'duration_ms'  => $duration,
-                'exec_log_id'  => $execLog->id,
             ];
         } catch (\Throwable $e) {
             $duration = round((microtime(true) - $startTime) * 1000, 2);
-
-            $execLog->markFailed($e->getMessage());
 
             Log::error('[HermesDispatcher] Handler failed', [
                 'handler'     => $handlerClass,
                 'event'       => $event->eventName(),
                 'error'       => $e->getMessage(),
                 'duration_ms' => $duration,
-                'exec_log_id' => $execLog->id,
             ]);
 
             return [
                 'success'     => false,
                 'error'       => $e->getMessage(),
                 'duration_ms'  => $duration,
-                'exec_log_id'  => $execLog->id,
             ];
         }
     }
@@ -172,9 +162,9 @@ class HermesDispatcher
     ): WorkforceExecutionLog {
         return WorkforceExecutionLog::create([
             'hermes_event_log_id' => $hermesEventLogId,
-            'ilan_id'            => method_exists($event, 'ilanId') ? $event->ilanId() : null,
+            'ilan_id'            => method_exists($event, 'ilanId') ? $event->ilanId() : ($event->toPayload()['ilan_id'] ?? null),
             'tenant_id'          => $event->tenantId(),
-            'chain_id'           => method_exists($event, 'chainId') ? $event->chainId() : 0,
+            'chain_id'           => method_exists($event, 'chainId') ? $event->chainId() : ($event->toPayload()['chain_id'] ?? null),
             'agent_name'         => $this->inferAgentName(get_class($handler)),
             'agent_class'        => get_class($handler),
             'event_received'     => $event->eventName(),

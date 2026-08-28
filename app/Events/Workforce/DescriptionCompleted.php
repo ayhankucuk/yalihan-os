@@ -48,6 +48,8 @@ class DescriptionCompleted implements HermesEventContract
             'keywords' => $this->analysisResult['keywords'] ?? [],
             'suggestions' => $this->analysisResult['suggestions'] ?? [],
             'lifecycle_state' => $this->workspace->lifecycle_state?->value,
+            'chain_id' => $this->metadata['chain_id'] ?? null,
+            'ilan_baslik' => $this->metadata['ilan_baslik'] ?? null,
             'metadata' => $this->metadata,
         ];
     }

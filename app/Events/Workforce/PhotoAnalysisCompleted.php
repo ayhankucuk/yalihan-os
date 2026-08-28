@@ -48,6 +48,8 @@ class PhotoAnalysisCompleted implements HermesEventContract
             'recommendations' => $this->analysisResult['recommendations'] ?? [],
             'suggested_photo_count' => $this->analysisResult['suggested_photo_count'] ?? null,
             'lifecycle_state' => $this->workspace->lifecycle_state?->value,
+            'chain_id' => $this->metadata['chain_id'] ?? null,
+            'ilan_baslik' => $this->metadata['ilan_baslik'] ?? null,
             'metadata' => $this->metadata,
         ];
     }

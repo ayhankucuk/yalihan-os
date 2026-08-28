@@ -16,7 +16,6 @@ use App\Services\Hermes\Handlers\Workforce\DescriptionAgent;
 use App\Services\Hermes\Handlers\Workforce\DriveAgent;
 use App\Services\Hermes\Handlers\Workforce\NotificationAgent;
 use App\Services\Hermes\Handlers\Workforce\PhotoAgent;
-use App\Services\Hermes\Handlers\Workforce\PortfolioAgent;
 use Illuminate\Support\Facades\Log;
 
 /**

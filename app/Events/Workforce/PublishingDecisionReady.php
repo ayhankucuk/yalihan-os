@@ -49,6 +49,8 @@ class PublishingDecisionReady implements HermesEventContract
             'publish_targets' => $this->decision['publish_targets'] ?? [], // [airbnb, sahibinden, hepsiemlak]
             'blocking_issues' => $this->decision['blocking_issues'] ?? [],
             'lifecycle_state' => $this->workspace->lifecycle_state?->value,
+            'chain_id' => $this->metadata['chain_id'] ?? null,
+            'ilan_baslik' => $this->metadata['ilan_baslik'] ?? null,
             'metadata' => $this->metadata,
         ];
     }

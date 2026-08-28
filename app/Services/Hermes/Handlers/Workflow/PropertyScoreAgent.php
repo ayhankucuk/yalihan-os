@@ -111,6 +111,8 @@ class PropertyScoreAgent implements HermesHandlerContract
             $this->emitPropertyScoreCalculated($workspace, $scoreResult, [
                 'ilan_id' => $ilanId,
                 'workspace_id' => $workspaceId,
+                'ilan_baslik' => $workspace->root_folder_name,
+                'tier' => $scoreResult['quality_tier'],
                 'triggered_by' => $eventName,
             ]);
 

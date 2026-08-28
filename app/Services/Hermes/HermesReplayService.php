@@ -25,6 +25,24 @@ use Illuminate\Support\Facades\Log;
  */
 class HermesReplayService
 {
+    /**
+     * Factory map for reconstructing events by event name.
+     * Maps event_name → callable(HermesEventLog): HermesEventContract
+     * Each factory receives the log record and must return a properly constructed event.
+     *
+     * H-06 fix: workforce events require multi-parameter constructors, not just payload.
+     *
+     * @var array<string, callable(HermesEventLog): HermesEventContract>
+     */
+    private const EVENT_FACTORIES = [
+        'portfolio.created' => [self::class, 'reconstructPortfolioCreated'],
+        'workforce.workspace.created' => [self::class, 'reconstructWorkspaceCreated'],
+        'workforce.photo_analysis.completed' => [self::class, 'reconstructPhotoAnalysisCompleted'],
+        'workforce.description.completed' => [self::class, 'reconstructDescriptionCompleted'],
+        'workforce.property_score.calculated' => [self::class, 'reconstructPropertyScoreCalculated'],
+        'workforce.publishing.decision_ready' => [self::class, 'reconstructPublishingDecisionReady'],
+    ];
+
     public function __construct(
         private readonly HermesService $hermesService,
         private readonly HermesRegistry $registry,
@@ -335,6 +353,10 @@ class HermesReplayService
 
     /**
      * Reconstruct a HermesEventContract from a HermesEventLog record.
+     *
+     * H-06 fix: uses factory methods for workforce events that require
+     * multi-parameter constructors (workspace, result array, metadata).
+     * Falls back to generic payload-based reconstruction for unknown event types.
      */
     private function reconstructEvent(HermesEventLog $log): HermesEventContract
     {
@@ -344,9 +366,124 @@ class HermesReplayService
             throw new \RuntimeException("Event class {$eventClass} not found");
         }
 
+        // Use factory if registered
+        $factory = self::EVENT_FACTORIES[$log->event_name] ?? null;
+        if ($factory !== null) {
+            return ($factory[0])::$factory[1]($log);
+        }
+
+        // Generic fallback for unknown events (passes payload as single array argument)
+        // This may fail at runtime if the event constructor expects different parameters.
+        // Register the event in EVENT_FACTORIES to fix.
         $event = new $eventClass($log->payload);
 
         return $event;
+    }
+
+    // ─── Event Factory Methods ────────────────────────────────────────────
+
+    /**
+     * Factory: PortfolioCreated
+     */
+    private static function reconstructPortfolioCreated(HermesEventLog $log): \App\Contracts\Hermes\HermesEventContract
+    {
+        $payload = $log->payload;
+        $ilan = \App\Models\Ilan::find($payload['ilan_id'] ?? null);
+        if (!$ilan) {
+            throw new \RuntimeException("Ilan not found for replay: {$payload['ilan_id']}");
+        }
+        return new $log->event_class($ilan, $payload['metadata'] ?? []);
+    }
+
+    /**
+     * Factory: PropertyWorkspaceCreated
+     */
+    private static function reconstructWorkspaceCreated(HermesEventLog $log): \App\Contracts\Hermes\HermesEventContract
+    {
+        $payload = $log->payload;
+        $workspace = \App\Models\PortfolioDriveWorkspace::find($payload['workspace_id'] ?? null);
+        if (!$workspace) {
+            throw new \RuntimeException("Workspace not found for replay: {$payload['workspace_id']}");
+        }
+        return new $log->event_class($workspace, $payload['metadata'] ?? []);
+    }
+
+    /**
+     * Factory: PhotoAnalysisCompleted
+     */
+    private static function reconstructPhotoAnalysisCompleted(HermesEventLog $log): \App\Contracts\Hermes\HermesEventContract
+    {
+        $payload = $log->payload;
+        $workspace = \App\Models\PortfolioDriveWorkspace::find($payload['workspace_id'] ?? null);
+        if (!$workspace) {
+            throw new \RuntimeException("Workspace not found for replay: {$payload['workspace_id']}");
+        }
+        $analysisResult = [
+            'quality_score' => $payload['quality_score'] ?? null,
+            'recommendations' => $payload['recommendations'] ?? [],
+            'suggested_photo_count' => $payload['suggested_photo_count'] ?? null,
+        ];
+        return new $log->event_class($workspace, $analysisResult, $payload['metadata'] ?? []);
+    }
+
+    /**
+     * Factory: DescriptionCompleted
+     */
+    private static function reconstructDescriptionCompleted(HermesEventLog $log): \App\Contracts\Hermes\HermesEventContract
+    {
+        $payload = $log->payload;
+        $workspace = \App\Models\PortfolioDriveWorkspace::find($payload['workspace_id'] ?? null);
+        if (!$workspace) {
+            throw new \RuntimeException("Workspace not found for replay: {$payload['workspace_id']}");
+        }
+        $analysisResult = [
+            'title_score' => $payload['title_score'] ?? null,
+            'improved_title' => $payload['improved_title'] ?? null,
+            'keywords' => $payload['keywords'] ?? [],
+            'suggestions' => $payload['suggestions'] ?? [],
+        ];
+        return new $log->event_class($workspace, $analysisResult, $payload['metadata'] ?? []);
+    }
+
+    /**
+     * Factory: PropertyScoreCalculated
+     */
+    private static function reconstructPropertyScoreCalculated(HermesEventLog $log): \App\Contracts\Hermes\HermesEventContract
+    {
+        $payload = $log->payload;
+        $workspace = \App\Models\PortfolioDriveWorkspace::find($payload['workspace_id'] ?? null);
+        if (!$workspace) {
+            throw new \RuntimeException("Workspace not found for replay: {$payload['workspace_id']}");
+        }
+        $scoreResult = [
+            'overall_score' => $payload['overall_score'] ?? null,
+            'component_scores' => $payload['component_scores'] ?? [],
+            'market_positioning' => $payload['market_positioning'] ?? null,
+            'quality_tier' => $payload['quality_tier'] ?? null,
+            'recommendations' => $payload['recommendations'] ?? [],
+        ];
+        return new $log->event_class($workspace, $scoreResult, $payload['metadata'] ?? []);
+    }
+
+    /**
+     * Factory: PublishingDecisionReady
+     */
+    private static function reconstructPublishingDecisionReady(HermesEventLog $log): \App\Contracts\Hermes\HermesEventContract
+    {
+        $payload = $log->payload;
+        $workspace = \App\Models\PortfolioDriveWorkspace::find($payload['workspace_id'] ?? null);
+        if (!$workspace) {
+            throw new \RuntimeException("Workspace not found for replay: {$payload['workspace_id']}");
+        }
+        $decision = [
+            'decision' => $payload['decision'] ?? null,
+            'property_score' => $payload['property_score'] ?? null,
+            'confidence' => $payload['confidence'] ?? null,
+            'publish_targets' => $payload['publish_targets'] ?? [],
+            'blocking_issues' => $payload['blocking_issues'] ?? [],
+            'message' => $payload['message'] ?? null,
+        ];
+        return new $log->event_class($workspace, $decision, $payload['metadata'] ?? []);
     }
 
     /**

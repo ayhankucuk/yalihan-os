@@ -73,6 +73,8 @@ class PropertyWorkspaceCreated implements HermesEventContract
             'root_folder_name' => $this->workspace->root_folder_name,
             'portfolio_no' => $this->workspace->portfolio_no,
             'subfolders_count' => $this->workspace->getSubfolderCount(),
+            'chain_id' => $this->metadata['chain_id'] ?? null,
+            'ilan_baslik' => $this->metadata['ilan_baslik'] ?? null,
             'metadata' => $this->metadata,
         ];
     }
