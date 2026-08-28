@@ -1,6 +1,6 @@
 # YALIHAN OS — Project Brain State
 
-Updated: 2026-08-26
+Updated: 2026-08-27
 Authority: repository + explicit production evidence
 
 ## Operating capability added
@@ -39,7 +39,11 @@ YALIHAN OS is an AI-assisted real-estate and property-operations operating syste
 - Cross-subdomain session configuration was deployed.
 - `/yazliklar` was observed returning HTTP 500 during diagnosis; this remains a production verification item unless a later fresh HTTP 200 capture is recorded.
 
-## Known gaps
+## Known gaps & Local Progress
+
+9. Property Type Manager & Category Hub Modernization: Local Phase 1 completed (`REPO_VERIFIED / TEST_VERIFIED`). Category Configuration Hub (`/admin/ilan-kategorileri`) and Master Template Manager (`/admin/property-hub/templates`) upgraded with health traffic lights, template feature rollups, informational diagnosis drawer, and safe deletion guard.
+10. `UpsFeatureLifecycle::STABLE` backward-compatibility case added and unit-tested to support legacy feature records.
+11. Combined Property Hub review: Feature Pool, category tree, publication types, templates, and field dependencies are linked in the UI; polymorphic separation between `YayinTipiSablonu` (35 features) and `IlanKategori` (0 direct) clarified in architecture docs.
 
 1. Fresh production HTTP test of `/yazliklar` after the latest deployed commit.
 2. Exact Laravel exception for the current 500, captured immediately after a request.
@@ -80,3 +84,39 @@ YALIHAN OS is an AI-assisted real-estate and property-operations operating syste
 ## Operating rule
 
 Never mark a feature complete from code or an automated test alone. Require code evidence, relevant automated tests, and a real production/browser flow where applicable.
+
+---
+
+## Checkout/Payment Feature — 2026-08-28
+
+**Status:** `COMMITTED / DEPLOYED / PRODUCTION_PARTIALLY_VERIFIED`
+
+| Check | Result | Evidence |
+|-------|--------|---------|
+| Code ready | ✅ | `5198cbe feat(checkout): manual payment flow with tenant isolation` |
+| Origin pushed | ✅ | `ad025d7..5198cbe push — 2026-08-28 05:20 UTC` |
+| Backend tests | ✅ | 7 tests / 19 assertions — ALL PASS |
+| E2E tests | ✅ | 4 scenarios — ALL PASS |
+| Tenant isolation | ✅ | Cross-tenant 403, guardTenantAccess, guardReservationBelongsToIlan |
+| SAB compliance | ✅ | Thin controller, no env(), no empty catch |
+| Deployment | ✅ | `root@157.180.116.63` (oracle key) — docker build + compose |
+| Production HEAD | ✅ | `5198cbee5d8aaf477b05e43b8e16b81d4db0b7f1` |
+| Container health | ✅ | 3/3 healthy (nginx, app, queue) |
+| Checkout routes | ✅ | 4 routes active |
+| Checkout endpoint | ✅ | HTTP 302 → /login (auth protected) |
+| Browser flow | ⏸️ PENDING | Authenticated checkout ödeme akışı test edilmedi |
+| Migration drift | ⚠️ OPEN | 10 pending, checkout'ı bloke etmiyor |
+
+**Production Infrastructure (confirmed 2026-08-28):**
+- Host: `157.180.116.63` (root SSH — oracle key)
+- App: `/opt/yalihan2026/current`
+- Branch: `integration/era-v-phase2a-e01` ✅
+- Docker: yalihanai-nginx-v2, yalihanai-app-v2, yalihanai-queue-v2 — all healthy
+- Health: `{"success":true}` ✅
+- Checkout: 4 routes active (`GET/POST`, `POST/approve`, `POST/fail`)
+
+**Kalan iş:**
+1. Authenticated browser flow: checkout page → payment create → approve/fail
+2. Migration drift: 10 pending çözümü
+
+**Doküman:** `audits/CHECKOUT_PRODUCTION_CERTIFICATION.md`

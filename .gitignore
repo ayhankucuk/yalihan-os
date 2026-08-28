@@ -8,10 +8,13 @@
 /storage/pail
 /vendor
 .env
-.env.backup
-.env.production
-.env.testing
-.env.testsprite
+.env.*
+!.env.example
+/.playwright-mcp/
+/*.png
+!public/**/*.png
+!resources/**/*.png
+!audits/**/*.png
 .phpactor.json
 .phpunit.result.cache
 Homestead.json

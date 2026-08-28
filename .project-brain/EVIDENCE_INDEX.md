@@ -45,6 +45,12 @@
 
 ## Drift warnings
 
+## Session 2026-08-29 — Sprint 14 Governance Command Center
+
+- `REPO_VERIFIED`: `GovernanceCommandCenter` schema mismatch corrected locally: decisions use `governance_decisions.karar_tarihi`; violation telemetry uses `governance_events.occurred_at` and `is_violation`.
+- `REPO_VERIFIED`: `tests/Feature/Admin/GovernanceCommandCenterTest.php` passes — 1 test, 2 assertions. PHP syntax checks and `git diff --check` pass.
+- `UNKNOWN`: production deployment and live HTTP re-verification; explicitly not performed pending G-04 timing approval.
+
 - `chief-ai/sprint-backlog.md` is older than the ERA V roadmap and may describe historical priorities.
 - Chat/browser statements are evidence only when accompanied by a date, URL/command, result, and commit or environment context.
 - VPS state can drift from the local checkout; record the deployed commit separately.

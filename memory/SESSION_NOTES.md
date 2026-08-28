@@ -6,6 +6,51 @@
 
 ---
 
+## OTURUM 33.2 | 2026-08-28 | Sprint 14 Certification + SPA Fetch Bug Fix + Danışman P0 Fix — COMPLETE ✅
+
+### Sonuç
+
+| Kapı | Durum |
+|------|-------|
+| G-01 | ✅ RESOLVED |
+| G-02 | ✅ RESOLVED |
+| G-03 | ✅ RESOLVED |
+| G-04 Part 1 | ✅ Architecture automation gain verified |
+| G-04 Part 2 | ⏸️ PENDING — operator timing (production) |
+| **Overall** | **CONDITIONAL_CERTIFIED** |
+
+### Yapılan İşler
+
+1. **SPA fetch URL bug fix** — `command-center.blade.php:332`
+   - `/advisor/command-center/fetch` → `/command-center/fetch` + `Accept: application/json`
+   - Playwright: 4/5 PASS ✅
+
+2. **6 yeni contract test** — `tests/Feature/AI/AdvisorCommandCenterTest.php`
+   - 45 assertion, tüm enum/skor yapısı
+   - AI suite: 121 PASS / 8 pre-existing fail
+
+3. **Playwright E2E spec** — `tests/e2e/advisor-command-center.spec.ts` (yeni)
+   - 4/5 PASS, 1 skip (pre-existing)
+
+4. **Danışman P0 test onarımı** — `IntelligenceHubAuthorityBridgeTest.php:140`
+   - `generateIlanTitle` methodu yok → `suggestPrice` (gerçekten guardCostBudget çağırıyor)
+   - 42/42 Danışman test PASS
+
+5. **G-04 BAI Evidence** — `docs/ERA_V/Evidence/sprint-14/G-04-BAI-EVIDENCE.md`
+   - Part 1: Architecture automation gain ✅ — 71% step / 96% time reduction
+   - Part 2: Operator timing template ⏸️
+
+6. **Sprint 14 certification artifact** — güncellendi
+   - Charter deviation belgelendi
+   - CONDITIONAL_CERTIFIED
+
+### Kalan İş
+
+- **G-04 Part 2:** Operator timing measurement — authorized operator production ortamında yapmalı
+- Sprint 14, G-04 Part 2 kanıtı eklendiğinde CERTIFIED olabilir
+
+---
+
 ## OTURUM 144 | 2026-08-25 | Step 2 Schema Render Kök Neden Analizi — HOLD ✅
 
 ### Bulgu

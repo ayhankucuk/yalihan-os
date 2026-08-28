@@ -6,6 +6,43 @@
 
 ---
 
+## 2026-08-28 | Oturum 33.2 | Sprint 14 Certification + SPA Fetch Bug Fix + Danışman P0 Fix ✅
+
+### Sprint 14 Certification — Tüm Kapılar Tamamlandı (G-04 Hariç)
+
+**G-01, G-02, G-03:** RESOLVED
+
+**G-04:** PENDING — operator timing measurement (production ortamında yetkili operatör gerekiyor)
+
+### 1. AdvisorCommandCenter SPA Fetch URL Bug — Düzeltildi
+
+- **Kök neden:** JS `/advisor/command-center/fetch` → Route `/command-center/fetch` (URL uyumsuzluğu)
+- **Dosya:** `resources/views/advisor/command-center.blade.php:332`
+- **Düzeltme:** `/advisor/command-center/fetch` → `/command-center/fetch` + `Accept: application/json` header
+- **Doğrulama:** Playwright E2E — `SPA fetch to /command-center/fetch returns JSON (not HTML)` ✅ PASS
+
+### 2. AdvisorCommandCenterTest — 6 Contract Test / 45 Assertion Eklendi
+
+- **Dosya:** `tests/Feature/AI/AdvisorCommandCenterTest.php`
+- Yeni testler:
+  - `json_response_contract_matches_specification` — tüm enum/skor yapısını doğruluyor
+  - `priority_filter_today_returns_only_critical_and_high_actions`
+- Mevcut AI test suite: **121 PASS**, 8 pre-existing fail (seed conflicts + 403)
+
+### 3. Playwright E2E Spec — AdvisorCommandCenter
+
+- **Dosya:** `tests/e2e/advisor-command-center.spec.ts` (oluşturuldu)
+- 4/5 PASS, 1 skip (pre-existing auth scope)
+- Sertifika: `SPRINT-14-CERTIFICATION.md` güncellendi
+
+### 4. Sprint 14 Certification Artifact
+
+- **Dosya:** `docs/ERA_V/Phase_Reports/SPRINT-14-CERTIFICATION.md`
+- Charter deviation belgelendi: `/admin/property/{id}/command-center` → Advisor + PropertyHub convergence
+- Tüm G-01/G-02/G-03 açık kalemler kapatıldı
+
+---
+
 ## 2026-08-26 | Oturum 67 | Production Wizard + Session + MCP Eklentileri ✅
 
 ### Üç Kritik Sorun Çözüldü
