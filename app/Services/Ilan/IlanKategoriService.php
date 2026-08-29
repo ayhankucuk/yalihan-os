@@ -355,15 +355,19 @@ class IlanKategoriService
         }
 
         // 2. Parents Data
-        $parentsData = IlanKategori::whereNull('parent_id')
+        $parentsData = IlanKategori::with(['children.yayinTipleri', 'yayinTipleri'])
+            ->withCount('children')
+            ->whereNull('parent_id')
             ->orderBy('display_order') // context7-ignore
+            ->orderBy('id')
             ->get();
 
         // 3. Children Data
-        $childrenData = IlanKategori::with('parent')
+        $childrenData = IlanKategori::with(['parent', 'yayinTipleri'])
             ->whereNotNull('parent_id')
             ->where('seviye', 1)
             ->orderBy('display_order') // context7-ignore
+            ->orderBy('id')
             ->get();
 
         // 4. Counts (Ilanlar)
@@ -394,7 +398,30 @@ class IlanKategoriService
             ->pluck('total', 'yayin_tipi_id')
             ->toArray();
 
-        // 5. Statistics
+        // 5. Template & Feature Stats by Kategori ID
+        $templateStats = [];
+        $templateStatsError = false;
+        try {
+            $allTemplates = \App\Models\YayinTipiSablonu::withCount('featureAssignments')->get();
+            foreach ($allTemplates->groupBy('kategori_id') as $katId => $temps) {
+                $templateStats[$katId] = [
+                    'count' => $temps->count(),
+                    'total_features' => $temps->sum('feature_assignments_count'),
+                    'slugs' => $temps->pluck('slug')->toArray(),
+                    'names' => $temps->pluck('ad')->toArray(),
+                ];
+            }
+        } catch (\Throwable $e) {
+            $templateStatsError = true;
+            \App\Services\Logging\LogService::error('Kategori dashboard şablon istatistikleri alınırken hata oluştu.', [
+                'tenant_id' => auth()->user()?->tenant_id ?? null,
+                'user_id' => auth()->id(),
+                'context' => 'IlanKategoriService@getDashboardData',
+            ], $e, \App\Services\Logging\LogService::CHANNEL_DATABASE);
+            $templateStats = [];
+        }
+
+        // 6. Statistics
         $stats = [
             'toplam' => DB::table('ilan_kategorileri')->count(),
             'ana_kategoriler' => DB::table('ilan_kategorileri')->whereNull('parent_id')->count(),
@@ -404,7 +431,7 @@ class IlanKategoriService
             'bugun_eklenen' => DB::table('ilan_kategorileri')->whereDate('created_at', today())->count(),
         ];
 
-        // 6. Root Categories for Selects
+        // 7. Root Categories for Selects
         $ustKategoriler = DB::table('ilan_kategorileri')
             ->whereNull('parent_id')
             ->select('id', 'name')
@@ -419,6 +446,8 @@ class IlanKategoriService
             'alt_kategori_counts' => $altKategoriCounts,
             'yayin_tipi_counts' => $yayinTipiCounts,
             'ust_kategoriler' => $ustKategoriler,
+            'template_stats' => $templateStats,
+            'template_stats_error' => $templateStatsError,
         ];
     }
 

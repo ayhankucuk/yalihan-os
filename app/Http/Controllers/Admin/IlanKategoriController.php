@@ -77,8 +77,10 @@ class IlanKategoriController extends AdminController
 
         $healthService = new \App\Services\Admin\HealthScoreService();
         $healthScore = $healthService->calculate();
+        $templateStats = $data['template_stats'] ?? [];
+        $templateStatsError = $data['template_stats_error'] ?? false;
 
-        return view('admin.ilan-kategorileri.index', compact('kategoriler', 'istatistikler', 'ustKategoriler', 'healthScore'));
+        return view('admin.ilan-kategorileri.index', compact('kategoriler', 'istatistikler', 'ustKategoriler', 'healthScore', 'templateStats', 'templateStatsError'));
     }
 
     /**

@@ -71,10 +71,17 @@ class TemplateController extends Controller
     {
         $template->load(['featureAssignments.feature.category']);
 
-        // Fetch category for the view context (Legacy support)
-        $kategori = $kategoriId ? \App\Models\IlanKategori::find($kategoriId) : $template->kategori;
-        if (!$kategori) {
-            $kategori = \App\Models\IlanKategori::where('seviye', 0)->first(); // Fallback to first root category
+        // Fetch category for the view context with strict validation (no arbitrary fallback)
+        if ($kategoriId && $kategoriId > 0) {
+            $kategori = \App\Models\IlanKategori::find($kategoriId);
+            if (!$kategori) {
+                abort(404, 'Belirtilen kategori bulunamadı.');
+            }
+        } else {
+            $kategori = $template->kategori;
+            if (!$kategori) {
+                abort(404, 'Şablona bağlı geçerli bir kategori bulunamadı.');
+            }
         }
 
         // Group assigned features by category

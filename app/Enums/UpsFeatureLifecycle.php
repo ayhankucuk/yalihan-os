@@ -15,6 +15,7 @@ enum UpsFeatureLifecycle: string
 {
     case DRAFT = 'draft';
     case ACTIVE = 'active';
+    case STABLE = 'stable';
     case DEPRECATED = 'deprecated';
     case ARCHIVED = 'archived';
 
@@ -33,7 +34,7 @@ enum UpsFeatureLifecycle: string
     {
         return match ($this) {
             self::DRAFT => 'Taslak',
-            self::ACTIVE => IlanDurumu::YAYINDA->value,
+            self::ACTIVE, self::STABLE => IlanDurumu::YAYINDA->value,
             self::DEPRECATED => 'Kullanımdan Kaldırıldı',
             self::ARCHIVED => 'Arşivlendi',
         };
@@ -46,7 +47,7 @@ enum UpsFeatureLifecycle: string
     {
         return match ($this) {
             self::DRAFT => 'gray',
-            self::ACTIVE => 'green',
+            self::ACTIVE, self::STABLE => 'green',
             self::DEPRECATED => 'yellow',
             self::ARCHIVED => 'red',
         };
@@ -58,7 +59,7 @@ enum UpsFeatureLifecycle: string
     public function isAssignable(): bool
     {
         return match ($this) {
-            self::ACTIVE => true,
+            self::ACTIVE, self::STABLE => true,
             self::DEPRECATED => true, // Allowed with warning
             self::DRAFT => false,
             self::ARCHIVED => false,
@@ -71,9 +72,9 @@ enum UpsFeatureLifecycle: string
     public function allowedTransitions(): array
     {
         return match ($this) {
-            self::DRAFT => [self::ACTIVE],
-            self::ACTIVE => [self::DEPRECATED, self::ARCHIVED],
-            self::DEPRECATED => [self::ACTIVE, self::ARCHIVED],
+            self::DRAFT => [self::ACTIVE, self::STABLE],
+            self::ACTIVE, self::STABLE => [self::DEPRECATED, self::ARCHIVED],
+            self::DEPRECATED => [self::ACTIVE, self::STABLE, self::ARCHIVED],
             self::ARCHIVED => [], // One-way (intentional)
         };
     }

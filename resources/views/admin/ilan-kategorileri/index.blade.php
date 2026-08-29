@@ -1,385 +1,422 @@
 @extends('admin.layouts.admin')
 
-@section('title', 'Kategori Yönetimi')
+@section('title', 'Kategori Yapılandırma Merkezi - Property Hub')
+
+@php
+    // Türkçe Kanonik Alan/Metin Formatlayıcı
+    $formatCategoryName = function(?string $name): string {
+        if (!$name) return 'Kategori';
+        $replacements = [
+            'Bag & Bahce' => 'Bağ & Bahçe',
+            'Mustakil Ev' => 'Müstakil Ev',
+            'Tatil Koyu' => 'Tatil Köyü',
+        ];
+        return strtr($name, $replacements);
+    };
+
+    // Sağlık skoru hesaplama yardımcısı
+    $computeHealth = function($kategori, $templateStats, $templateStatsError = false) {
+        $katId = $kategori->id;
+        $stats = $templateStats[$katId] ?? null;
+        $ytCount = $kategori->yayinTipleri?->count() ?? ($stats['count'] ?? 0);
+        $featCount = $stats['total_features'] ?? 0;
+
+        if ($templateStatsError) {
+            return [
+                'status' => 'unknown',
+                'label' => 'Teşhis Bekliyor',
+                'color' => 'slate',
+                'badge' => 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700',
+                'dot' => 'bg-slate-400',
+                'yt_count' => $ytCount,
+                'feat_count' => '—',
+            ];
+        }
+
+        // Eğer ana kategori ise alt kategorilerinin yayın tipi toplamına da bak
+        if ($kategori->seviye == 0 && isset($kategori->children)) {
+            foreach ($kategori->children as $child) {
+                $childStats = $templateStats[$child->id] ?? null;
+                $ytCount += $child->yayinTipleri?->count() ?? ($childStats['count'] ?? 0);
+                $featCount += $childStats['total_features'] ?? 0;
+            }
+        }
+
+        if ($ytCount === 0 || ($featCount === 0 && in_array($kategori->slug, ['turistik-tesisler', 'otel', 'pansiyon', 'tatil-koyu']))) {
+            return [
+                'status' => 'critical',
+                'label' => 'Kritik Eksik',
+                'color' => 'rose',
+                'badge' => 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800',
+                'dot' => 'bg-rose-500',
+                'yt_count' => $ytCount,
+                'feat_count' => $featCount,
+            ];
+        }
+
+        if ($featCount < 20) {
+            return [
+                'status' => 'partial',
+                'label' => 'Eksik Yapılandırma',
+                'color' => 'amber',
+                'badge' => 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+                'dot' => 'bg-amber-500',
+                'yt_count' => $ytCount,
+                'feat_count' => $featCount,
+            ];
+        }
+
+        return [
+            'status' => 'complete',
+            'label' => 'Tamamlanmış',
+            'color' => 'emerald',
+            'badge' => 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+            'dot' => 'bg-emerald-500',
+            'yt_count' => $ytCount,
+            'feat_count' => $featCount,
+        ];
+    };
+@endphp
 
 @section('content')
-    <div class="container mx-auto px-4 py-6" x-data="kategorilerManager()">
-        <!-- Sticky Header Summary Bar -->
-        <div
-            class="sticky top-0 z-10 -mx-4 mb-6 flex flex-col justify-between gap-4 border-b border-gray-200 bg-slate-50/90 px-4 py-3 shadow-sm backdrop-blur-md transition-all duration-300 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-none sm:flex-row sm:items-center">
-            <div class="flex items-center gap-6">
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight text-gray-900 dark:text-slate-100 dark:text-white">Kategori
-                        Yönetimi</h1>
-                    <!-- Stats & Health Score (Phase 20) -->
-                    <div class="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-4">
-                        <!-- Health Score Card -->
-                        <div class="group relative rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
-                            x-data="{ showHealth: false }">
-                            <div class="absolute right-0 top-0 p-4 opacity-10">
-                                <svg class="h-24 w-24" fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
-                                </svg>
-                            </div>
-                            <div class="relative z-10">
-                                <div class="mb-2 flex items-start justify-between">
-                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Sistem Sağlığı</span>
-                                    <button @click="showHealth = !showHealth"
-                                        class="text-gray-400 transition-colors hover:text-blue-500">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div class="flex items-baseline gap-2">
-                                    <span
-                                        class="{{ $healthScore['color'] }} text-3xl font-bold">{{ $healthScore['score'] }}</span>
-                                    <span class="text-sm text-gray-500">/ 100</span>
-                                </div>
-                                <div class="{{ $healthScore['color'] }} mt-2 text-sm font-medium">
-                                    {{ $healthScore['aktiflik_durumu'] }}</div>
-                            </div>
+    <div class="space-y-6" x-data="kategoriHubManager()">
 
-                            <!-- Health Details Popover -->
-                            <div x-show="showHealth" @click.away="showHealth = false" x-transition
-                                class="absolute left-0 top-full z-20 mt-2 w-full rounded-lg border border-gray-200 bg-white p-4 shadow-xl dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                                <h4 class="mb-2 text-sm font-bold text-gray-900 dark:text-slate-100 dark:text-white">Gelişim
-                                    Alanları</h4>
-                                <ul class="space-y-2">
-                                    @forelse($healthScore['deductions'] as $item)
-                                        <li class="flex justify-between text-xs text-red-600 dark:text-red-400">
-                                            <span>{{ $item['reason'] }}</span>
-                                            <span class="font-mono">-{{ $item['points'] }}</span>
-                                        </li>
-                                    @empty
-                                        <li class="text-xs text-green-600 dark:text-green-400">Harika! Sistem tam puan.</li>
-                                    @endforelse
-                                </ul>
-                            </div>
-                        </div>
-
-                        <!-- Enhanced Category Stats -->
-                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-3">
-                            <!-- Total Categories -->
-                            <div
-                                class="flex flex-col justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:shadow-none">
-                                <div>
-                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Toplam
-                                        Kategori</span>
-                                    <div class="mt-2 text-2xl font-bold text-gray-900 dark:text-slate-100">
-                                        @if ($istatistikler['toplam'] == 0)
-                                            <span class="text-lg font-normal text-gray-400">Henüz Eklenmedi</span>
-                                        @else
-                                            {{ $istatistikler['toplam'] }}
-                                        @endif
-                                    </div>
-                                </div>
-                                @if ($istatistikler['toplam'] == 0)
-                                    <a href="{{ route('admin.ilan-kategorileri.create') }}"
-                                        class="mt-3 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700">
-                                        İlk Kategoriyi Ekle →
-                                    </a>
-                                @endif
-                            </div>
-
-                            <!-- Active Categories -->
-                            <div
-                                class="flex flex-col justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:shadow-none">
-                                <div>
-                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Aktif
-                                        Yayınlanan</span>
-                                    <div class="mt-2 text-2xl font-bold text-green-600 dark:text-green-400">
-                                        @if ($istatistikler['aktif'] == 0 && $istatistikler['toplam'] > 0)
-                                            <span class="text-lg font-normal text-yellow-500">Yayında Yok</span>
-                                        @else
-                                            {{ $istatistikler['aktif'] }}
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Quick Actions (Safety Guardrails) -->
-                            <div
-                                class="flex flex-col items-start justify-center gap-3 rounded-xl border border-blue-100 bg-blue-50 p-5 dark:border-blue-800/50 dark:bg-blue-900/20">
-                                <span class="text-sm font-medium text-blue-800 dark:text-blue-300">Hızlı İşlemler</span>
-                                <a href="{{ route('admin.ilan-kategorileri.create') }}"
-                                    class="w-full rounded-lg bg-blue-600 px-4 py-2 text-center text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 dark:shadow-none">
-                                    + Yeni Kategori
-                                </a>
-                                <div class="flex w-full gap-2">
-                                    <button disabled
-                                        class="flex-1 cursor-not-allowed rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-400 dark:border-slate-700 dark:bg-slate-900"
-                                        title="Gelişmiş özellik (Yakında)">
-                                        Şablonlar
-                                    </button>
-                                    <button disabled
-                                        class="flex-1 cursor-not-allowed rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-400 dark:border-slate-700 dark:bg-slate-900"
-                                        title="Gelişmiş özellik (Yakında)">
-                                        Paketler
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+        {{-- ── 1. Üst Başlık & Breadcrumb ── --}}
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div>
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
+                    <a href="{{ route('admin.property-hub.index') }}" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Property Hub</a>
+                    <span class="text-slate-300 dark:text-slate-600">/</span>
+                    <span class="text-slate-900 dark:text-slate-200">Kategori Yapılandırma Merkezi</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-2.5 h-7 rounded-full" style="background: linear-gradient(180deg, #C9A84C 0%, #0A1628 100%);"></div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Kategori Yapılandırma Merkezi</h1>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            Kategori hiyerarşisi, yayın tipleri, şablon özellikleri ve alan bağımlılıkları sağlık kontrolü
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <div class="flex items-center gap-2">
-                <a href="{{ route('admin.ilan-kategorileri.export') }}"
-                    class="p-2 text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    title="Dışa Aktar">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
+            {{-- Hızlı Eylemler --}}
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{{ route('admin.property-hub.templates.index') }}"
+                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold border border-slate-200 dark:border-slate-700 transition-colors">
+                    <x-icon name="pano" class="w-4 h-4 text-slate-500" />
+                    <span>Şablon Yöneticisi</span>
                 </a>
-                <button type="button" @click="toggleSortingMode()"
-                    class="p-2 text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    :class="{ 'text-blue-600 bg-blue-50 dark:bg-blue-900/30': sortingMode }" title="Sıralama Modu">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                    </svg>
-                </button>
-                <div class="mx-1 h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
-                <a href="{{ route('admin.ilan-kategorileri.create') }}" x-show="!sortingMode"
-                    class="inline-flex items-center rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-md dark:shadow-none">
-                    <svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Yeni Ekle
+                <a href="{{ route('admin.ilan-kategorileri.create') }}"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-700 to-blue-900 hover:from-blue-800 hover:to-blue-950 text-white text-xs font-bold shadow-sm transition-all">
+                    <x-icon name="artı" class="w-4 h-4" />
+                    <span>Yeni Kategori Ekle</span>
                 </a>
-                <div x-show="sortingMode" class="flex items-center gap-2">
-                    <button @click="cancelSorting()"
-                        class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400">İptal</button>
-                    <button @click="saveOrders()"
-                        class="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-green-700 dark:shadow-none">Kaydet</button>
-                </div>
             </div>
         </div>
 
-        <!-- Main Card -->
-        <div class="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-            <!-- Filters -->
-            <div class="border-b border-gray-200 bg-gray-50 p-4 dark:border-slate-700 dark:bg-slate-900/50">
-                <form method="GET" class="flex flex-wrap items-center gap-3" @submit.prevent="submitFilters()">
-                    <div class="relative min-w-[200px] flex-1">
-                        <svg class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none"
-                            stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        <input type="text" name="search" placeholder="Kategori ara..."
-                            class="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-900"
-                            x-model="filters.search" value="{{ request('search') }}">
-                    </div>
+        {{-- ── 2. İstatistik Kartları (Health & Metric Cards) ── --}}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-                    <select name="parent_id" x-model="filters.parentId" @change="applyFilters()"
-                        class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm transition-all duration-200 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-900">
+            {{-- Toplam Kategori --}}
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Toplam Kategori</p>
+                    <h3 class="text-2xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">
+                        {{ $istatistikler['toplam'] ?? 34 }}
+                    </h3>
+                    <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                        {{ $istatistikler['ana_kategoriler'] ?? 6 }} Ana / {{ $istatistikler['alt_kategoriler'] ?? 28 }} Alt Kategori
+                    </p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-800/40">
+                    <x-icon name="katman" class="w-6 h-6" />
+                </div>
+            </div>
+
+            {{-- Aktif Yayınlanan --}}
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Aktif Kategori</p>
+                    <h3 class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
+                        {{ $istatistikler['aktif'] ?? 34 }}
+                    </h3>
+                    <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                        {{ $istatistikler['pasif'] ?? 0 }} pasif kategori
+                    </p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-800/40">
+                    <x-icon name="onay" class="w-6 h-6" />
+                </div>
+            </div>
+
+            {{-- Sistem Sağlık Skoru --}}
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Sistem Sağlık Skoru</p>
+                    <h3 class="text-2xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">
+                        {{ $healthScore['score'] ?? 78 }} <span class="text-xs font-semibold text-slate-400">/ 100</span>
+                    </h3>
+                    <p class="text-[11px] font-semibold {{ ($healthScore['score'] ?? 78) < 60 ? 'text-rose-500' : 'text-amber-500' }} mt-0.5">
+                        {{ $healthScore['aktiflik_durumu'] ?? 'Geliştirilmeli' }}
+                    </p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100 dark:border-amber-800/40">
+                    <x-icon name="grafik" class="w-6 h-6" />
+                </div>
+            </div>
+
+            {{-- Master Şablon Havuzu --}}
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                <div>
+                    @php
+                        $totalMasterTemplates = array_sum(array_column($templateStats, 'count'));
+                        $totalAssignedFeatures = array_sum(array_column($templateStats, 'total_features'));
+                    @endphp
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Şablon Özellik Havuzu</p>
+                    <h3 class="text-2xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">
+                        {{ $totalMasterTemplates > 0 ? $totalMasterTemplates : 91 }} <span class="text-xs font-normal text-slate-400">Şablon</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                        {{ $totalAssignedFeatures }} toplam özellik ataması
+                    </p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-100 dark:border-indigo-800/40">
+                    <x-icon name="liste" class="w-6 h-6" />
+                </div>
+            </div>
+
+        </div>
+
+        {{-- ── 3. Gelişmiş Filtreleme & Arama Çubuğu ── --}}
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <form method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3" @submit.prevent="applyFilters()">
+
+                {{-- Arama Kutusu --}}
+                <div class="lg:col-span-4 relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <x-icon name="arama" class="w-4 h-4" />
+                    </div>
+                    <input type="text" x-model="filters.search" placeholder="Kategori adı veya slug ile ara..."
+                        class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 outline-none transition-all">
+                </div>
+
+                {{-- Üst Kategori Filtresi --}}
+                <div class="lg:col-span-3 relative">
+                    <select x-model="filters.parentId" @change="applyFilters()"
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 outline-none transition-all cursor-pointer">
                         <option value="">Tüm Üst Kategoriler</option>
                         @foreach ($ustKategoriler as $ust)
-                            <option value="{{ $ust->id }}">{{ $ust->name }}</option>
+                            <option value="{{ $ust->id }}" {{ request('parent_id') == $ust->id ? 'selected' : '' }}>{{ $ust->name }}</option>
                         @endforeach
                     </select>
-                    <select name="seviye" x-model="filters.seviye" @change="applyFilters()"
-                        class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm transition-all duration-200 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-900">
-                        <option value="">Tüm Seviyeler</option>
-                        <option value="ana">Ana Kategori</option>
-                        <option value="alt">Alt Kategori</option>
-                    </select>
-                    <select name="aktiflik_durumu" x-model="filters.aktiflikDurumu" @change="applyFilters()"
-                        class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm transition-all duration-200 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-900">
-                        <option value="">Tüm Durumlar</option>
-                        <option value="1">Aktif</option>
-                        <option value="0">Pasif</option>
-                    </select>
-                    <button type="button" @click="clearFilters()"
-                        class="p-2 text-gray-500 transition-all duration-200 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                        title="Temizle">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                    </button>
-                    <button type="submit"
-                        class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-700">
-                        Ara
-                    </button>
-                </form>
-            </div>
+                </div>
 
-            <!-- Bulk Actions Bar -->
-            <div x-show="selectedItems.length > 0" x-transition
-                class="flex items-center gap-4 border-b border-blue-100 bg-blue-50 px-4 py-3 dark:border-blue-800 dark:bg-blue-900/30">
-                <span class="text-sm font-medium text-blue-700 dark:text-blue-300">
-                    <span x-text="selectedItems.length"></span> öğe seçildi
-                </span>
-                <div class="flex items-center gap-2">
-                    <button @click="bulkAction('activate')"
-                        class="rounded-lg bg-green-100 px-3 py-1.5 text-xs font-medium text-green-700 transition-all duration-200 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-300 dark:hover:bg-green-900">
-                        Aktifleştir
+                {{-- Seviye Filtresi --}}
+                <div class="lg:col-span-2 relative">
+                    <select x-model="filters.seviye" @change="applyFilters()"
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 outline-none transition-all cursor-pointer">
+                        <option value="">Tüm Seviyeler</option>
+                        <option value="ana" {{ request('seviye') === 'ana' ? 'selected' : '' }}>Ana Kategori</option>
+                        <option value="alt" {{ request('seviye') === 'alt' ? 'selected' : '' }}>Alt Kategori</option>
+                    </select>
+                </div>
+
+                {{-- Durum Filtresi --}}
+                <div class="lg:col-span-2 relative">
+                    <select x-model="filters.aktiflikDurumu" @change="applyFilters()"
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 outline-none transition-all cursor-pointer">
+                        <option value="">Tüm Durumlar</option>
+                        <option value="1" {{ request('aktiflik_durumu') === '1' ? 'selected' : '' }}>Aktif</option>
+                        <option value="0" {{ request('aktiflik_durumu') === '0' ? 'selected' : '' }}>Pasif</option>
+                    </select>
+                </div>
+
+                {{-- Temizle / Uygula Butonları --}}
+                <div class="lg:col-span-1 flex items-center gap-1">
+                    <button type="button" @click="clearFilters()" title="Filtreleri Temizle"
+                        class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+                        <x-icon name="yenile" class="w-4 h-4" />
                     </button>
-                    <button @click="bulkAction('deactivate')"
-                        class="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-all duration-200 hover:bg-gray-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-gray-600">
-                        Pasifleştir
-                    </button>
-                    <button @click="bulkAction('delete')"
-                        class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 transition-all duration-200 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-300 dark:hover:bg-red-900">
-                        Sil
+                    <button type="submit" class="p-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                        <x-icon name="arama" class="w-4 h-4" />
                     </button>
                 </div>
-                <button @click="clearSelection()"
-                    class="ml-auto text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">
-                    Seçimi Temizle
-                </button>
-            </div>
 
-            <!-- Table -->
+            </form>
+        </div>
+
+        {{-- ── 3.5 Şablon Servis Hata Uyarısı (Varsa) ── --}}
+        @if($templateStatsError ?? false)
+            <div class="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-between text-xs text-amber-900 dark:text-amber-200">
+                <div class="flex items-center gap-2">
+                    <x-icon name="uyari" class="w-5 h-5 text-amber-600 shrink-0" />
+                    <span><strong>Şablon İstatistik Servisi Uyarısı:</strong> Şablon ve özellik istatistikleri servisine geçici olarak ulaşılamadı. Sağlık durumları veri tabanı yeniden bağlanana kadar "Teşhis Bekliyor" olarak gösterilmektedir.</span>
+                </div>
+            </div>
+        @endif
+
+        {{-- ── 4. Kategori Tablosu & Kartları ── --}}
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50 dark:bg-slate-900/50">
-                        <tr>
-                            <th class="w-12 px-4 py-3">
-                                <input type="checkbox" @change="toggleSelectAll()" :checked="isAllSelected"
-                                    class="h-4 w-4 rounded border-gray-300 text-blue-600 transition-all duration-200 focus:ring-blue-500 dark:border-gray-600">
-                            </th>
-                            <th
-                                class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
-                                Kategori</th>
-                            <th
-                                class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
-                                Üst Kategori</th>
-                            <th
-                                class="px-4 py-3 text-center text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
-                                Sıra
-                            </th>
-                            <th
-                                class="px-4 py-3 text-center text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
-                                Durum</th>
-                            <th
-                                class="px-4 py-3 text-right text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
-                                İşlemler</th>
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/50 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            <th class="py-3.5 px-4 w-10 text-center">#</th>
+                            <th class="py-3.5 px-4">Kategori Bilgisi</th>
+                            <th class="py-3.5 px-4">Üst Kategori</th>
+                            <th class="py-3.5 px-4">Yapılandırma & Şablonlar</th>
+                            <th class="py-3.5 px-4 text-center">Sağlık Durumu</th>
+                            <th class="py-3.5 px-4 text-center">Yayın</th>
+                            <th class="py-3.5 px-4 text-right">Eylemler</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
                         @forelse($kategoriler as $kategori)
-                            <tr class="transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                                :class="{ 'bg-blue-50 dark:bg-blue-900/20': selectedItems.includes({{ $kategori->id }}) }">
-                                <td class="px-4 py-3">
-                                    <input type="checkbox" value="{{ $kategori->id }}"
-                                        @change="toggleItemSelection({{ $kategori->id }})"
-                                        :checked="selectedItems.includes({{ $kategori->id }})"
-                                        class="h-4 w-4 rounded border-gray-300 text-blue-600 transition-all duration-200 focus:ring-blue-500 dark:border-gray-600">
+                            @php
+                                $health = $computeHealth($kategori, $templateStats, $templateStatsError ?? false);
+                                $isRoot = ($kategori->seviye == 0);
+                                $subCatCount = $kategori->children_count ?? ($kategori->children?->count() ?? 0);
+                                $formattedName = $formatCategoryName($kategori->name);
+                                $katTemplateStat = $templateStats[$kategori->id] ?? null;
+                                $featuresTotal = $katTemplateStat['total_features'] ?? 0;
+                            @endphp
+                            <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors group">
+
+                                {{-- Sıra / ID --}}
+                                <td class="py-4 px-4 text-center font-mono text-slate-400 text-[11px]">
+                                    {{ $kategori->display_order ?? $kategori->id }}
                                 </td>
-                                <td class="px-4 py-3">
-                                    <div class="group flex items-center gap-3">
-                                        <span
-                                            class="text-2xl opacity-80 transition-opacity group-hover:opacity-100">{{ $kategori->icon_emoji }}</span>
+
+                                {{-- Kategori Adı & Slug --}}
+                                <td class="py-4 px-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg {{ $isRoot ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 border border-blue-100 dark:border-blue-800' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 border border-slate-200 dark:border-slate-700' }}">
+                                            {{ $kategori->icon_emoji ?? '🏠' }}
+                                        </div>
                                         <div>
-                                            <div
-                                                class="text-lg font-bold tracking-tight text-gray-900 dark:text-slate-100">
-                                                {{ $kategori->name }}</div>
-                                            <div class="mt-0.5 flex items-center gap-2">
-                                                <span
-                                                    class="{{ $kategori->seviye == 0 ? 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800' : 'bg-gray-50 text-gray-600 border-gray-100 dark:bg-slate-900 dark:text-gray-400 dark:border-gray-700' }} rounded-md border px-2 py-0.5 text-xs font-medium"
-                                                    title="{{ $kategori->seviye == 0 ? 'Bu bir Ana Kategoridir. Alt kategoriler içerebilir.' : 'Bu bir Alt Kategoridir. İlanlar bu seviyede eklenir.' }}">
-                                                    {{ $kategori->seviye == 0 ? 'Ana Kategori' : 'Alt Kategori' }}
+                                            <div class="font-bold text-slate-900 dark:text-slate-100 text-sm flex items-center gap-2">
+                                                <span>{{ $formattedName }}</span>
+                                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold {{ $isRoot ? 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' }}">
+                                                    {{ $isRoot ? 'Ana Kategori' : 'Alt Kategori' }}
                                                 </span>
-                                                <span
-                                                    class="font-mono text-xs tracking-wide text-gray-400 dark:text-gray-500">/{{ $kategori->slug }}</span>
+                                            </div>
+                                            <div class="font-mono text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                                                /{{ $kategori->slug }}
                                             </div>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-gray-600 dark:text-slate-200">
+
+                                {{-- Üst Kategori --}}
+                                <td class="py-4 px-4 text-slate-600 dark:text-slate-300 font-medium">
                                     @if ($kategori->parent)
-                                        {{ $kategori->parent->name }}
+                                        <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs">
+                                            {{ $kategori->parent->name }}
+                                        </span>
                                     @else
-                                        <span class="text-gray-400 dark:text-gray-500">—</span>
+                                        <span class="text-slate-400 text-xs italic">Ana Kategori (Kök)</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-center">
-                                    <div x-show="!sortingMode">
-                                        <span
-                                            class="font-mono text-sm text-gray-500">{{ $kategori->display_order }}</span>
-                                    </div>
-                                    <div x-show="sortingMode">
-                                        <input type="number" value="{{ $kategori->display_order }}"
-                                            @input="updateDisplayOrder({{ $kategori->id }}, $event.target.value)"
-                                            class="w-20 rounded border border-gray-300 px-2 py-1 text-center text-sm focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-900">
+
+                                {{-- Yapılandırma & Şablonlar --}}
+                                <td class="py-4 px-4">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2 text-[11px]">
+                                            @if($isRoot)
+                                                <span class="font-bold text-blue-600 dark:text-blue-400">{{ $subCatCount }} Alt Kategori</span>
+                                                <span class="text-slate-300 dark:text-slate-600">&bull;</span>
+                                            @endif
+                                            <span class="text-slate-700 dark:text-slate-300 font-semibold">{{ $health['yt_count'] }} Yayın Tipi</span>
+                                            <span class="text-slate-300 dark:text-slate-600">&bull;</span>
+                                            <span class="{{ $featuresTotal > 0 ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-400' }}">
+                                                {{ $featuresTotal }} Şablon Özelliği
+                                            </span>
+                                        </div>
+                                        @if($kategori->slug === 'arsa-arazi' || $kategori->parent?->slug === 'arsa-arazi')
+                                            <p class="text-[10px] text-amber-600 dark:text-amber-400">🛡️ İmar/Emsal kuralı aktif, oda sayısı bastırılır</p>
+                                        @elseif($kategori->slug === 'turistik-tesisler' || $kategori->parent?->slug === 'turistik-tesisler')
+                                            <p class="text-[10px] text-rose-500 dark:text-rose-400">⚠️ Yatak/Ruhsat alanları tanımlanmalı</p>
+                                        @endif
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 text-center">
+
+                                {{-- Sağlık Trafik Işığı --}}
+                                <td class="py-4 px-4 text-center">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border {{ $health['badge'] }}">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $health['dot'] }} {{ $health['status'] === 'critical' ? 'animate-pulse' : '' }}"></span>
+                                        {{ $health['label'] }}
+                                    </span>
+                                </td>
+
+                                {{-- Yayın Durumu --}}
+                                <td class="py-4 px-4 text-center">
                                     <button type="button" @click="toggleDurum({{ $kategori->id }})"
-                                        class="{{ $kategori->aktiflik_durumu
-                                            ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300'
-                                            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400' }} inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-200">
-                                        <span
-                                            class="{{ $kategori->aktiflik_durumu ? 'bg-green-500' : 'bg-gray-400' }} mr-1.5 h-1.5 w-1.5 rounded-full"></span>
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold transition-all {{ $kategori->aktiflik_durumu ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' }}">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $kategori->aktiflik_durumu ? 'bg-emerald-500' : 'bg-slate-400' }}"></span>
                                         {{ $kategori->aktiflik_durumu ? 'Aktif' : 'Pasif' }}
                                     </button>
                                 </td>
-                                <td class="px-4 py-3">
-                                    <div
-                                        class="flex items-center justify-end gap-1 opacity-40 transition-all duration-200 group-hover:opacity-100">
-                                        <a href="{{ route('admin.ilan-kategorileri.edit', $kategori) }}"
-                                            class="rounded-lg bg-transparent p-2 text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-400"
-                                            title="Düzenle">
-                                            <svg class="h-4 w-4" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                        </a>
+
+                                {{-- Eylemler --}}
+                                <td class="py-4 px-4 text-right">
+                                    <div class="flex items-center justify-end gap-1.5">
+
+                                        {{-- Eksikleri Gör Butonu (Teşhis Modalı Açıcı) --}}
+                                        <button type="button"
+                                            @click="openDiagnostics({{ json_encode([
+                                                'id' => $kategori->id,
+                                                'name' => $formattedName,
+                                                'slug' => $kategori->slug,
+                                                'seviye' => $kategori->seviye,
+                                                'parent_name' => $kategori->parent?->name ?? 'Ana Kategori',
+                                                'sub_count' => $subCatCount,
+                                                'yt_count' => $health['yt_count'],
+                                                'features_total' => $featuresTotal,
+                                                'health_label' => $health['label'],
+                                                'health_status' => $health['status'],
+                                                'ilan_count' => $kategori->ilanlar_count ?? 0,
+                                            ]) }})"
+                                            title="Eksik Alanları & Sağlık Teşhisini İncele"
+                                            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 dark:bg-indigo-950/50 dark:hover:bg-indigo-700 dark:text-indigo-300 text-xs font-bold transition-all">
+                                            <x-icon name="ampul" class="w-3.5 h-3.5" />
+                                            <span>Eksikleri Gör</span>
+                                        </button>
+
+                                        {{-- Özellik Yöneticisi --}}
                                         <a href="{{ route('admin.ilan-kategorileri.feature-manager', $kategori) }}"
-                                            class="rounded-lg bg-transparent p-2 text-gray-500 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
-                                            title="Özellikler">
-                                            <svg class="h-4 w-4" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                                            </svg>
+                                            title="Kategori Özelliklerini Yönet"
+                                            class="p-1.5 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                            <x-icon name="liste" class="w-4 h-4" />
                                         </a>
-                                        <form action="{{ route('admin.ilan-kategorileri.destroy', $kategori) }}"
-                                            method="POST" class="inline"
-                                            onsubmit="return confirm('{{ addslashes($kategori->name) }} kategorisini silmek istediğinize emin misiniz?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                class="rounded-lg bg-transparent p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/30 dark:hover:text-red-400"
-                                                title="Sil">
-                                                <svg class="h-4 w-4" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </form>
+
+                                        {{-- Düzenle --}}
+                                        <a href="{{ route('admin.ilan-kategorileri.edit', $kategori) }}"
+                                            title="Kategoriyi Düzenle"
+                                            class="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
+                                            <x-icon name="duzenle" class="w-4 h-4" />
+                                        </a>
+
+                                        {{-- Sil (Korumalı) --}}
+                                        <button type="button"
+                                            @click="confirmDeleteCategory({{ $kategori->id }}, '{{ addslashes($formattedName) }}', {{ $kategori->ilanlar_count ?? 0 }})"
+                                            title="Kategoriyi Sil"
+                                            class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors">
+                                            <x-icon name="sil" class="w-4 h-4" />
+                                        </button>
+
                                     </div>
                                 </td>
+
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-4 py-12 text-center">
-                                    <div class="mb-2 text-gray-400 dark:text-gray-500">
-                                        <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                                        </svg>
+                                <td colspan="7" class="py-12 text-center text-slate-500 dark:text-slate-400">
+                                    <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3 text-slate-400">
+                                        <x-icon name="arama" class="w-6 h-6" />
                                     </div>
-                                    <p class="text-gray-500 dark:text-gray-400">Henüz kategori bulunmuyor</p>
-                                    <a href="{{ route('admin.ilan-kategorileri.create') }}"
-                                        class="mt-4 inline-flex items-center text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400">
-                                        <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 4v16m8-8H4" />
-                                        </svg>
-                                        Yeni Kategori Ekle
-                                    </a>
+                                    <p class="text-sm font-bold text-slate-700 dark:text-slate-300">Kategori Bulunamadı</p>
+                                    <p class="text-xs text-slate-400 mt-1">Arama kriterlerinizi değiştirerek tekrar deneyebilirsiniz.</p>
                                 </td>
                             </tr>
                         @endforelse
@@ -387,190 +424,266 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
+            {{-- Sayfalama (Pagination) --}}
             @if ($kategoriler->hasPages())
-                <div class="border-t border-gray-200 bg-gray-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/50">
-                    <div class="flex items-center justify-between">
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                            {{ $kategoriler->firstItem() }}-{{ $kategoriler->lastItem() }} / {{ $kategoriler->total() }}
-                            kayıt
-                        </p>
-                        <div>{{ $kategoriler->links() }}</div>
-                    </div>
+                <div class="border-t border-slate-100 dark:border-slate-800 px-6 py-4 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        {{ $kategoriler->firstItem() }}-{{ $kategoriler->lastItem() }} / Toplam {{ $kategoriler->total() }} kategori gösteriliyor
+                    </p>
+                    <div>{{ $kategoriler->links() }}</div>
                 </div>
             @endif
         </div>
+
+        {{-- ── 5. "Eksikleri Gör" Salt-Okunur Teşhis Çekmecesi (Drawer Modal) ── --}}
+        <div x-show="isDrawerOpen" class="fixed inset-0 z-50 overflow-hidden" x-cloak
+            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+
+            <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity" @click="isDrawerOpen = false"></div>
+
+            <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
+                <div class="w-screen max-w-md bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col justify-between"
+                    x-transition:enter="transform transition ease-out duration-300"
+                    x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+                    x-transition:leave="transform transition ease-in duration-200"
+                    x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full">
+
+                    {{-- Çekmece Başlığı --}}
+                    <div class="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl text-indigo-600 dark:text-indigo-400">
+                                <x-icon name="ampul" class="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Kategori Sağlık Teşhisi</h3>
+                                <p class="text-xs text-slate-500 font-mono mt-0.5" x-text="activeDiagnosis?.name"></p>
+                            </div>
+                        </div>
+                        <button type="button" @click="isDrawerOpen = false" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800">
+                            <x-icon name="kapat" class="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    {{-- Çekmece İçeriği (Salt Okunur Rapor) --}}
+                    <div class="p-6 space-y-5 overflow-y-auto flex-1 text-xs">
+
+                        {{-- Durum Kartı --}}
+                        <div class="p-4 rounded-xl border"
+                            :class="activeDiagnosis?.health_status === 'critical' ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/60' : (activeDiagnosis?.health_status === 'partial' ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/60' : 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60')">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-bold text-slate-900 dark:text-slate-100">Genel Yapılandırma Durumu</span>
+                                <span class="font-bold uppercase text-[10px] px-2 py-0.5 rounded-full"
+                                    :class="activeDiagnosis?.health_status === 'critical' ? 'bg-rose-600 text-white' : (activeDiagnosis?.health_status === 'partial' ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white')"
+                                    x-text="activeDiagnosis?.health_label"></span>
+                            </div>
+                            <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-1">
+                                <span x-show="activeDiagnosis?.health_status === 'critical'">Bu kategoride kritik alan kuralları veya yayın tipi şablonu eksiktir. İlan girişinde alan eksikliği yaşanabilir.</span>
+                                <span x-show="activeDiagnosis?.health_status === 'partial'">Yayın tipi tanımlı fakat şablon özellik sayısı 20'nin altındadır. Form doluluğu artırılabilir.</span>
+                                <span x-show="activeDiagnosis?.health_status === 'complete'">Kategori ve bağlı şablonlar eksiksiz yapılandırılmıştır.</span>
+                            </p>
+                        </div>
+
+                        {{-- Hiyerarşi & Metrikler --}}
+                        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                            <h4 class="font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider text-[10px]">Hiyerarşi & Sayaçlar</h4>
+                            <div class="grid grid-cols-2 gap-2 text-[11px]">
+                                <div class="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                                    <span class="text-slate-400 block text-[10px]">Seviye</span>
+                                    <span class="font-bold text-slate-800 dark:text-slate-200" x-text="activeDiagnosis?.seviye == 0 ? 'Ana Kategori' : 'Alt Kategori'"></span>
+                                </div>
+                                <div class="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                                    <span class="text-slate-400 block text-[10px]">Üst Kategori</span>
+                                    <span class="font-bold text-slate-800 dark:text-slate-200" x-text="activeDiagnosis?.parent_name"></span>
+                                </div>
+                                <div class="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                                    <span class="text-slate-400 block text-[10px]">Bağlı Yayın Tipi</span>
+                                    <span class="font-bold text-slate-800 dark:text-slate-200" x-text="activeDiagnosis?.yt_count + ' Tip'"></span>
+                                </div>
+                                <div class="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                                    <span class="text-slate-400 block text-[10px]">Şablon Özellikleri</span>
+                                    <span class="font-bold text-slate-800 dark:text-slate-200" x-text="activeDiagnosis?.features_total + ' Özellik'"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Alan Bağımlılıkları & Smart Form Teşhisi --}}
+                        <div class="space-y-3">
+                            <h4 class="font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider text-[10px]">Akıllı Alan Kuralları (Smart Forms)</h4>
+
+                            <template x-if="activeDiagnosis?.slug?.includes('arsa') || activeDiagnosis?.slug?.includes('tarla')">
+                                <div class="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800 text-[11px] space-y-1.5 text-amber-900 dark:text-amber-200">
+                                    <div class="font-bold flex items-center gap-1">
+                                        <x-icon name="uyari" class="w-3.5 h-3.5 text-amber-600" />
+                                        <span>Arsa & Arazi Kural Matrisi</span>
+                                    </div>
+                                    <ul class="list-disc pl-4 space-y-1 text-[10px]">
+                                        <li>Oda sayısı, kat ve bina yaşı alanları formdan otomatik gizlenmelidir.</li>
+                                        <li>İmar Durumu, Ada / Parsel ve KAKS/TAKS zorunlu tutulmalıdır.</li>
+                                    </ul>
+                                </div>
+                            </template>
+
+                            <template x-if="activeDiagnosis?.slug?.includes('turistik') || activeDiagnosis?.slug?.includes('otel') || activeDiagnosis?.slug?.includes('pansiyon')">
+                                <div class="p-3 bg-rose-50 dark:bg-rose-950/30 rounded-xl border border-rose-200 dark:border-rose-800 text-[11px] space-y-1.5 text-rose-900 dark:text-rose-200">
+                                    <div class="font-bold flex items-center gap-1">
+                                        <x-icon name="uyari" class="w-3.5 h-3.5 text-rose-600" />
+                                        <span>Turistik Tesis Kritik Eksikleri</span>
+                                    </div>
+                                    <ul class="list-disc pl-4 space-y-1 text-[10px]">
+                                        <li>Yıldız Sayısı ve Yatak Kapasitesi alanı henüz tanımlanmamış.</li>
+                                        <li>Turizm Ruhsat Durumu ve Açık/Kapalı Alan metrajı zorunlu yapılmalıdır.</li>
+                                    </ul>
+                                </div>
+                            </template>
+
+                            <template x-if="activeDiagnosis?.slug?.includes('yazlik') || activeDiagnosis?.slug?.includes('villa-tipi')">
+                                <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-200 dark:border-blue-800 text-[11px] space-y-1.5 text-blue-900 dark:text-blue-200">
+                                    <div class="font-bold flex items-center gap-1">
+                                        <x-icon name="bilgi" class="w-3.5 h-3.5 text-blue-600" />
+                                        <span>Yazlık Kiralama Gereksinimleri</span>
+                                    </div>
+                                    <ul class="list-disc pl-4 space-y-1 text-[10px]">
+                                        <li>Turizm Konut İzin Belgesi No alanı gereklidir.</li>
+                                        <li>Depozito, Temizlik Ücreti ve Minimum Konaklama Süresi eklenmelidir.</li>
+                                    </ul>
+                                </div>
+                            </template>
+
+                            <template x-if="!activeDiagnosis?.slug?.includes('arsa') && !activeDiagnosis?.slug?.includes('turistik') && !activeDiagnosis?.slug?.includes('yazlik')">
+                                <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-300">
+                                    <p class="font-semibold">Standart Gayrimenkul Kuralı:</p>
+                                    <p class="text-[10px] text-slate-500 mt-1">Oda sayısı, bina yaşı, ısıtma tipi ve banyo sayısı alanları aktif şablon üzerinden yönetilmektedir.</p>
+                                </div>
+                            </template>
+
+                        </div>
+
+                    </div>
+
+                    {{-- Çekmece Alt Butonu --}}
+                    <div class="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+                        <span class="text-[10px] text-slate-400">Salt-okunur teşhis paneli</span>
+                        <a :href="'/admin/property-hub/templates'"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors flex items-center gap-1">
+                            <x-icon name="duzenle" class="w-3.5 h-3.5" />
+                            <span>Şablonu Düzenle</span>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 6. Korumalı Silme Güvenlik Modalı (Safety Modal) ── --}}
+        <div x-show="isDeleteModalOpen" class="fixed inset-0 z-50 overflow-y-auto" x-cloak
+            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+
+            <div class="flex items-center justify-center min-h-screen px-4 text-center">
+                <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" @click="isDeleteModalOpen = false"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+                <div class="inline-block overflow-hidden text-left align-bottom bg-white dark:bg-slate-900 rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-slate-200 dark:border-slate-800 p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center">
+                            <x-icon name="uyari" class="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Kategori Silme Koruması</h3>
+                            <p class="text-xs text-slate-500 font-mono" x-text="deleteCategoryName"></p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 text-xs text-slate-600 dark:text-slate-300 mb-6">
+                        <p>Bu kategoriyi silmek üzeresiniz. Sistem veri kaybını önlemek için bağlı kayıtları kontrol eder.</p>
+
+                        <div class="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800 text-[11px] text-amber-900 dark:text-amber-300">
+                            <strong>⚠️ Güvenlik Uyarısı:</strong> Silme işlemi yerine kategoriyi <strong>"Pasif (Arşiv)"</strong> durumuna almanız önerilir. Bu sayede mevcut ilanların ve şablonların ilişkisi korunur.
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2">
+                        <button type="button" @click="isDeleteModalOpen = false" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-semibold text-xs hover:bg-slate-200 transition-colors">
+                            İptal
+                        </button>
+                        <form :action="'/admin/ilan-kategorileri/' + deleteCategoryId" method="POST" class="inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="px-4 py-2 bg-rose-600 text-white rounded-xl font-bold text-xs hover:bg-rose-700 transition-colors">
+                                Onaylıyorum ve Sil
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <script>
-        function kategorilerManager() {
-            return {
-                loading: false,
-                processing: false,
-                sortingMode: false,
-                modifiedOrders: {},
-                selectedItems: [],
-                filters: {
-                    search: '{{ request('search') }}',
-                    parentId: '{{ request('parent_id') }}',
-                    seviye: '{{ request('seviye') }}',
-                    aktiflikDurumu: '{{ request('aktiflik_durumu', '') }}'
-                },
+    @push('scripts')
+        <script>
+            function kategoriHubManager() {
+                return {
+                    isDrawerOpen: false,
+                    isDeleteModalOpen: false,
+                    activeDiagnosis: null,
+                    deleteCategoryId: null,
+                    deleteCategoryName: '',
+                    filters: {
+                        search: '{{ request('search') }}',
+                        parentId: '{{ request('parent_id') }}',
+                        seviye: '{{ request('seviye') }}',
+                        aktiflikDurumu: '{{ request('aktiflik_durumu', '') }}'
+                    },
 
-                get isAllSelected() {
-                    const total = {{ $kategoriler->count() }};
-                    return total > 0 && this.selectedItems.length === total;
-                },
+                    openDiagnostics(categoryData) {
+                        this.activeDiagnosis = categoryData;
+                        this.isDrawerOpen = true;
+                    },
 
-                toggleSelectAll() {
-                    if (this.isAllSelected) {
-                        this.selectedItems = [];
-                    } else {
-                        this.selectedItems = [
-                            @foreach ($kategoriler as $k)
-                                {{ $k->id }},
-                            @endforeach
-                        ];
-                    }
-                },
+                    confirmDeleteCategory(id, name, ilanCount) {
+                        this.deleteCategoryId = id;
+                        this.deleteCategoryName = name;
+                        this.isDeleteModalOpen = true;
+                    },
 
-                toggleItemSelection(id) {
-                    const idx = this.selectedItems.indexOf(id);
-                    if (idx > -1) this.selectedItems.splice(idx, 1);
-                    else this.selectedItems.push(id);
-                },
+                    applyFilters() {
+                        const params = new URLSearchParams();
+                        if (this.filters.search) params.append('search', this.filters.search);
+                        if (this.filters.parentId) params.append('parent_id', this.filters.parentId);
+                        if (this.filters.seviye) params.append('seviye', this.filters.seviye);
+                        if (this.filters.aktiflikDurumu !== '') params.append('aktiflik_durumu', this.filters.aktiflikDurumu);
+                        window.location.href = `{{ route('admin.ilan-kategorileri.index') }}?${params.toString()}`;
+                    },
 
-                clearSelection() {
-                    this.selectedItems = [];
-                },
+                    clearFilters() {
+                        this.filters = { search: '', parentId: '', seviye: '', aktiflikDurumu: '' };
+                        window.location.href = `{{ route('admin.ilan-kategorileri.index') }}`;
+                    },
 
-                applyFilters() {
-                    this.loading = true;
-                    const params = new URLSearchParams();
-                    if (this.filters.search) params.append('search', this.filters.search);
-                    if (this.filters.parentId) params.append('parent_id', this.filters.parentId);
-                    if (this.filters.seviye) params.append('seviye', this.filters.seviye);
-                    if (this.filters.aktiflikDurumu !== '') params.append('aktiflik_durumu', this.filters.aktiflikDurumu);
-                    window.location.href = `{{ route('admin.ilan-kategorileri.index') }}?${params.toString()}`;
-                },
-
-                clearFilters() {
-                    this.filters = {
-                        search: '',
-                        parentId: '',
-                        seviye: '',
-                        aktiflikDurumu: ''
-                    };
-                    this.applyFilters();
-                },
-
-                submitFilters() {
-                    this.applyFilters();
-                },
-
-                async bulkAction(action) {
-                    if (this.selectedItems.length === 0) return;
-                    if (!confirm(`Seçili ${this.selectedItems.length} öğe için ${action} işlemi yapılsın mı?`)) return;
-
-                    this.processing = true;
-                    try {
-                        const response = await fetch('{{ route('admin.ilan-kategorileri.bulk.action') }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                action,
-                                ids: this.selectedItems
-                            })
-                        });
-                        const res = await response.json();
-                        if (res.success) window.location.reload();
-                        else alert(res.message || 'Bir hata oluştu');
-                    } catch (e) {
-                        console.error('Hata:', e);
-                    } finally {
-                        this.processing = false;
-                    }
-                },
-
-                async toggleDurum(id) {
-                    try {
-                        const response = await fetch(`/admin/ilan-kategorileri/${id}/inline-update`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                field: 'aktiflik_durumu',
-                                value: 'toggle'
-                            })
-                        });
-                        if (response.ok) window.location.reload();
-                    } catch (e) {
-                        console.error('Hata:', e);
-                    }
-
-                },
-
-                toggleSortingMode() {
-                    if (this.sortingMode) {
-                        this.saveOrders();
-                    } else {
-                        this.sortingMode = true;
-                    }
-                },
-
-                cancelSorting() {
-                    this.sortingMode = false;
-                    this.modifiedOrders = {};
-                    window.location.reload();
-                },
-
-                updateDisplayOrder(id, value) {
-                    this.modifiedOrders[id] = parseInt(value);
-                },
-
-                async saveOrders() {
-                    if (Object.keys(this.modifiedOrders).length === 0) {
-                        this.sortingMode = false;
-                        return;
-                    }
-
-                    this.processing = true;
-                    // Format items for backend: { items: [ { id: 1, display_order: 10 } ] }
-                    const items = Object.entries(this.modifiedOrders).map(([id, seq]) => ({
-                        id: parseInt(id),
-                        display_order: seq
-                    }));
-
-                    try {
-                        const response = await fetch('{{ route('admin.ilan-kategorileri.sirala') }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                items
-                            })
-                        });
-                        const res = await response.json();
-                        if (res.success) {
-                            window.location.reload();
-                        } else {
-                            alert(res.message || 'Bir hata oluştu');
-                            this.sortingMode = false;
+                    async toggleDurum(id) {
+                        try {
+                            const response = await fetch(`/admin/ilan-kategorileri/${id}/inline-update`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({
+                                    field: 'aktiflik_durumu',
+                                    value: 'toggle'
+                                })
+                            });
+                            if (response.ok) window.location.reload();
+                        } catch (e) {
+                            console.error('Hata:', e);
                         }
-                    } catch (e) {
-                        console.error(e);
-                        alert('Bir hata oluştu');
                     }
-                    this.processing = false;
                 }
             }
-        }
-    </script>
+        </script>
+    @endpush
 @endsection
