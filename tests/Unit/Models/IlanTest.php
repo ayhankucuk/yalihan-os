@@ -5,9 +5,7 @@ namespace Tests\Unit\Models;
 use App\Enums\IlanDurumu;
 use App\Models\Ilan;
 use App\Models\IlanKategori;
-use App\Models\Kisi;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class IlanTest extends TestCase
@@ -18,18 +16,13 @@ class IlanTest extends TestCase
      */
     public function test_ilan_can_be_created(): void
     {
-        // Create test data using DB::table for simplicity
-        $ilanId = DB::table('ilanlar')->insertGetId([
+        $ilan = Ilan::factory()->create([
             'baslik' => 'Test İlan',
             'slug' => 'test-ilan',
             'fiyat' => 100000,
             'para_birimi' => 'TL',
             'yayin_durumu' => 'yayinda',
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
-
-        $ilan = Ilan::find($ilanId);
 
         $this->assertInstanceOf(Ilan::class, $ilan);
         $this->assertEquals('Test İlan', $ilan->baslik);
@@ -43,30 +36,19 @@ class IlanTest extends TestCase
      */
     public function test_ilan_belongs_to_danisman(): void
     {
-        // Create test data using DB::table
-        $danismanId = DB::table('users')->insertGetId([
-            'name' => 'Test Danışman',
-            'email' => 'danisman@example.com',
-            'password' => bcrypt('password'),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $danisman = User::factory()->create(['name' => 'Test Danışman']);
 
-        $ilanId = DB::table('ilanlar')->insertGetId([
+        $ilan = Ilan::factory()->create([
             'baslik' => 'Test İlan',
             'slug' => 'test-ilan-danisman',
             'fiyat' => 100000,
             'para_birimi' => 'TL',
             'yayin_durumu' => 'yayinda',
-            'danisman_id' => $danismanId,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'danisman_id' => $danisman->id,
         ]);
 
-        $ilan = Ilan::find($ilanId);
-
         $this->assertInstanceOf(User::class, $ilan->danisman);
-        $this->assertEquals($danismanId, $ilan->danisman->id);
+        $this->assertEquals($danisman->id, $ilan->danisman->id);
     }
 
     /**
@@ -74,32 +56,22 @@ class IlanTest extends TestCase
      */
     public function test_ilan_belongs_to_kategori(): void
     {
-        // Create test data using DB::table
-        $kategoriId = DB::table('ilan_kategorileri')->insertGetId([
+        $kategori = IlanKategori::factory()->create([
             'name' => 'Test Kategori',
             'slug' => 'test-kategori',
-            'seviye' => 0,
-            'aktiflik_durumu' => true,
-            'display_order' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
 
-        $ilanId = DB::table('ilanlar')->insertGetId([
+        $ilan = Ilan::factory()->create([
             'baslik' => 'Test İlan',
             'slug' => 'test-ilan-kategori',
             'fiyat' => 100000,
             'para_birimi' => 'TL',
             'yayin_durumu' => 'yayinda',
-            'alt_kategori_id' => $kategoriId,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'alt_kategori_id' => $kategori->id,
         ]);
 
-        $ilan = Ilan::find($ilanId);
-
         $this->assertInstanceOf(IlanKategori::class, $ilan->altKategori);
-        $this->assertEquals($kategoriId, $ilan->altKategori->id);
+        $this->assertEquals($kategori->id, $ilan->altKategori->id);
     }
 
     /**
@@ -107,15 +79,13 @@ class IlanTest extends TestCase
      */
     public function test_ilan_scope_active(): void
     {
-        // Create test data
-        DB::table('ilanlar')->insert([
-            ['baslik' => 'Aktif İlan', 'slug' => 'aktif-ilan', 'fiyat' => 100000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda', 'created_at' => now(), 'updated_at' => now()],
-            ['baslik' => 'Pasif İlan', 'slug' => 'pasif-ilan', 'fiyat' => 200000, 'para_birimi' => 'TL', 'yayin_durumu' => 'pasif', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        Ilan::factory()->create(['baslik' => 'Aktif İlan', 'slug' => 'aktif-ilan', 'fiyat' => 100000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda']);
+        Ilan::factory()->create(['baslik' => 'Pasif İlan', 'slug' => 'pasif-ilan', 'fiyat' => 200000, 'para_birimi' => 'TL', 'yayin_durumu' => 'pasif']);
 
         $activeIlans = Ilan::active()->get();
 
-        $this->assertGreaterThanOrEqual(1, $activeIlans->count());
+        $this->assertCount(1, $activeIlans);
+        $this->assertSame('aktif-ilan', $activeIlans->sole()->slug);
         $this->assertTrue($activeIlans->every(fn ($ilan) => $ilan->yayin_durumu === IlanDurumu::YAYINDA));
     }
 
@@ -124,15 +94,13 @@ class IlanTest extends TestCase
      */
     public function test_ilan_scope_pending(): void
     {
-        // Create test data
-        DB::table('ilanlar')->insert([
-            ['baslik' => 'Beklemede İlan', 'slug' => 'beklemede-ilan', 'fiyat' => 100000, 'para_birimi' => 'TL', 'yayin_durumu' => 'beklemede', 'created_at' => now(), 'updated_at' => now()],
-            ['baslik' => 'Aktif İlan', 'slug' => 'aktif-ilan-2', 'fiyat' => 200000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        Ilan::factory()->create(['baslik' => 'Beklemede İlan', 'slug' => 'beklemede-ilan', 'fiyat' => 100000, 'para_birimi' => 'TL', 'yayin_durumu' => 'beklemede']);
+        Ilan::factory()->create(['baslik' => 'Aktif İlan', 'slug' => 'aktif-ilan-2', 'fiyat' => 200000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda']);
 
         $pendingIlans = Ilan::pending()->get();
 
-        $this->assertGreaterThanOrEqual(1, $pendingIlans->count());
+        $this->assertCount(1, $pendingIlans);
+        $this->assertSame('beklemede-ilan', $pendingIlans->sole()->slug);
         $this->assertTrue($pendingIlans->every(fn ($ilan) => $ilan->yayin_durumu === IlanDurumu::BEKLEMEDE));
     }
 
@@ -141,18 +109,16 @@ class IlanTest extends TestCase
      */
     public function test_ilan_price_range_filter(): void
     {
-        // Create test data
-        DB::table('ilanlar')->insert([
-            ['baslik' => 'İlan 1', 'slug' => 'ilan-1', 'fiyat' => 100000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda', 'created_at' => now(), 'updated_at' => now()],
-            ['baslik' => 'İlan 2', 'slug' => 'ilan-2', 'fiyat' => 200000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda', 'created_at' => now(), 'updated_at' => now()],
-            ['baslik' => 'İlan 3', 'slug' => 'ilan-3', 'fiyat' => 300000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        Ilan::factory()->create(['baslik' => 'İlan 1', 'slug' => 'ilan-1', 'fiyat' => 100000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda']);
+        Ilan::factory()->create(['baslik' => 'İlan 2', 'slug' => 'ilan-2', 'fiyat' => 200000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda']);
+        Ilan::factory()->create(['baslik' => 'İlan 3', 'slug' => 'ilan-3', 'fiyat' => 300000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda']);
 
         $results = Ilan::query()
             ->priceRange(150000, 250000, 'fiyat')
             ->get();
 
-        $this->assertGreaterThanOrEqual(1, $results->count());
+        $this->assertCount(1, $results);
+        $this->assertSame('ilan-2', $results->sole()->slug);
         $this->assertTrue($results->every(fn ($ilan) => $ilan->fiyat >= 150000 && $ilan->fiyat <= 250000));
     }
 
@@ -161,18 +127,16 @@ class IlanTest extends TestCase
      */
     public function test_ilan_search_filter(): void
     {
-        // Create test data
-        DB::table('ilanlar')->insert([
-            ['baslik' => 'Lüks Villa', 'slug' => 'luks-villa', 'fiyat' => 100000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda', 'created_at' => now(), 'updated_at' => now()],
-            ['baslik' => 'Modern Daire', 'slug' => 'modern-daire', 'fiyat' => 200000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        Ilan::factory()->create(['baslik' => 'Lüks Villa', 'slug' => 'luks-villa', 'fiyat' => 100000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda']);
+        Ilan::factory()->create(['baslik' => 'Modern Daire', 'slug' => 'modern-daire', 'fiyat' => 200000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda']);
 
         $results = Ilan::query()
             ->search('Villa')
             ->get();
 
-        $this->assertGreaterThanOrEqual(1, $results->count());
-        $this->assertTrue($results->contains(fn ($ilan) => str_contains($ilan->baslik, 'Villa')));
+        $this->assertCount(1, $results);
+        $this->assertSame('luks-villa', $results->sole()->slug);
+        $this->assertStringContainsString('Villa', $results->sole()->baslik);
     }
 
     /**
@@ -180,17 +144,15 @@ class IlanTest extends TestCase
      */
     public function test_ilan_status_filter(): void
     {
-        // Create test data
-        DB::table('ilanlar')->insert([
-            ['baslik' => 'Aktif İlan', 'slug' => 'aktif-ilan-3', 'fiyat' => 100000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda', 'created_at' => now(), 'updated_at' => now()],
-            ['baslik' => 'Pasif İlan', 'slug' => 'pasif-ilan-2', 'fiyat' => 200000, 'para_birimi' => 'TL', 'yayin_durumu' => 'pasif', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        Ilan::factory()->create(['baslik' => 'Aktif İlan', 'slug' => 'aktif-ilan-3', 'fiyat' => 100000, 'para_birimi' => 'TL', 'yayin_durumu' => 'yayinda']);
+        Ilan::factory()->create(['baslik' => 'Pasif İlan', 'slug' => 'pasif-ilan-2', 'fiyat' => 200000, 'para_birimi' => 'TL', 'yayin_durumu' => 'pasif']);
 
         $results = Ilan::query()
             ->byYayinDurumu('yayinda')
             ->get();
 
-        $this->assertGreaterThanOrEqual(1, $results->count());
+        $this->assertCount(1, $results);
+        $this->assertSame('aktif-ilan-3', $results->sole()->slug);
         $this->assertTrue($results->every(fn ($ilan) => $ilan->yayin_durumu === IlanDurumu::YAYINDA));
     }
 
@@ -199,17 +161,15 @@ class IlanTest extends TestCase
      */
     public function test_ilan_soft_deletes(): void
     {
-        $ilanId = DB::table('ilanlar')->insertGetId([
+        $ilan = Ilan::factory()->create([
             'baslik' => 'Test İlan',
             'slug' => 'test-ilan-soft-delete',
             'fiyat' => 100000,
             'para_birimi' => 'TL',
             'yayin_durumu' => 'yayinda',
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
 
-        $ilan = Ilan::find($ilanId);
+        $ilanId = $ilan->id;
         $ilan->delete();
 
         $this->assertSoftDeleted('ilanlar', ['id' => $ilanId]);
