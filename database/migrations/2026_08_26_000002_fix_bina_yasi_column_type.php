@@ -33,6 +33,12 @@ return new class extends Migration
 
     public function up(): void
     {
+        // YEAR and the conversion SQL below are MySQL-specific. SQLite test
+        // schemas already represent bina_yasi as an integer-compatible value.
+        if (DB::connection()->getDriverName() !== 'mysql') {
+            return;
+        }
+
         $column = DB::selectOne("SHOW COLUMNS FROM ilanlar LIKE 'bina_yasi'");
         if (!$column || strtolower((string) $column->Type) !== 'year') {
             throw new RuntimeException('Expected ilanlar.bina_yasi to be YEAR before migration.');
@@ -90,6 +96,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::connection()->getDriverName() !== 'mysql') {
+            return;
+        }
+
         if (!Schema::hasTable(self::BACKUP_TABLE)) {
             throw new RuntimeException('Exact rollback requires the bina_yasi migration backup table.');
         }
