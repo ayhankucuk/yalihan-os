@@ -26,9 +26,9 @@ class IlanRepositoryAuthorizationTest extends TestCase
     /**
      * Create a mocked user with a specific role for testing without hitting DB roles
      */
-    protected function createUserWithRole(string $name, int $id, bool $isAdmin = false): User
+    protected function createUserWithRole(string $name, bool $isAdmin = false): User
     {
-        $user = User::factory()->create(['id' => $id, 'name' => $name]);
+        $user = User::factory()->create(['name' => $name]);
 
         if ($isAdmin) {
             $user = Mockery::mock($user)->makePartial();
@@ -63,8 +63,8 @@ class IlanRepositoryAuthorizationTest extends TestCase
     /** @test */
     public function danisman_sees_only_own_ilanlar()
     {
-        $danisman1 = $this->createUserWithRole('Danışman 1', 1, false);
-        $danisman2 = $this->createUserWithRole('Danışman 2', 2, false);
+        $danisman1 = $this->createUserWithRole('Danışman 1', false);
+        $danisman2 = $this->createUserWithRole('Danışman 2', false);
 
         // Danışman 1's listings
         Ilan::factory()->count(3)->create([
@@ -91,8 +91,8 @@ class IlanRepositoryAuthorizationTest extends TestCase
     /** @test */
     public function admin_sees_all_ilanlar()
     {
-        $admin = $this->createUserWithRole('Admin', 1, true);
-        $danisman = $this->createUserWithRole('Danışman', 2, false);
+        $admin = $this->createUserWithRole('Admin', true);
+        $danisman = $this->createUserWithRole('Danışman', false);
 
         Ilan::factory()->count(3)->create([
             'danisman_id' => $danisman->id,
@@ -113,10 +113,10 @@ class IlanRepositoryAuthorizationTest extends TestCase
     }
 
     /** @test */
-    public function danisman_cannot_update_cross_tenant_ilan_returns_404()
+    public function danisman_cannot_update_another_advisors_ilan_returns_404()
     {
-        $danisman1 = $this->createUserWithRole('Danışman 1', 1, false);
-        $danisman2 = $this->createUserWithRole('Danışman 2', 2, false);
+        $danisman1 = $this->createUserWithRole('Danışman 1', false);
+        $danisman2 = $this->createUserWithRole('Danışman 2', false);
 
         $ilan2 = Ilan::factory()->create([
             'danisman_id' => $danisman2->id,
@@ -134,8 +134,8 @@ class IlanRepositoryAuthorizationTest extends TestCase
     /** @test */
     public function aggregation_stats_reflect_only_owned_ilanlar()
     {
-        $danisman1 = $this->createUserWithRole('Danışman 1', 1, false);
-        $danisman2 = $this->createUserWithRole('Danışman 2', 2, false);
+        $danisman1 = $this->createUserWithRole('Danışman 1', false);
+        $danisman2 = $this->createUserWithRole('Danışman 2', false);
 
         // Danışman 1 has 1 active, 1 draft
         Ilan::factory()->create(['danisman_id' => $danisman1->id, 'yayin_durumu' => IlanDurumu::YAYINDA->value, 'fiyat' => 1000]);
@@ -164,8 +164,8 @@ class IlanRepositoryAuthorizationTest extends TestCase
     /** @test */
     public function admin_aggregation_stats_reflect_all_ilanlar()
     {
-        $admin = $this->createUserWithRole('Admin', 1, true);
-        $danisman = $this->createUserWithRole('Danışman 1', 2, false);
+        $admin = $this->createUserWithRole('Admin', true);
+        $danisman = $this->createUserWithRole('Danışman 1', false);
 
         // Danışman has 2 active
         Ilan::factory()->count(2)->create(['danisman_id' => $danisman->id, 'yayin_durumu' => IlanDurumu::YAYINDA->value]);

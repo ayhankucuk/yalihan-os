@@ -21,9 +21,9 @@ class TalepRepositoryAuthorizationTest extends TestCase
         $this->repository = $this->app->make(TalepRepository::class);
     }
 
-    protected function createUserWithRole(string $name, int $id, bool $isAdmin = false): User
+    protected function createUserWithRole(string $name, bool $isAdmin = false): User
     {
-        $user = User::factory()->create(['id' => $id, 'name' => $name]);
+        $user = User::factory()->create(['name' => $name]);
 
         if ($isAdmin) {
             $user = Mockery::mock($user)->makePartial();
@@ -54,8 +54,8 @@ class TalepRepositoryAuthorizationTest extends TestCase
     /** @test */
     public function danisman_sees_only_own_talepler()
     {
-        $danisman1 = $this->createUserWithRole('Danışman 1', 1, false);
-        $danisman2 = $this->createUserWithRole('Danışman 2', 2, false);
+        $danisman1 = $this->createUserWithRole('Danışman 1', false);
+        $danisman2 = $this->createUserWithRole('Danışman 2', false);
 
         Talep::factory()->count(3)->create([
             'danisman_id' => $danisman1->id,
@@ -79,8 +79,8 @@ class TalepRepositoryAuthorizationTest extends TestCase
     /** @test */
     public function admin_sees_all_talepler()
     {
-        $admin = $this->createUserWithRole('Admin', 1, true);
-        $danisman = $this->createUserWithRole('Danışman', 2, false);
+        $admin = $this->createUserWithRole('Admin', true);
+        $danisman = $this->createUserWithRole('Danışman', false);
 
         Talep::factory()->count(3)->create([
             'danisman_id' => $danisman->id,
@@ -99,10 +99,10 @@ class TalepRepositoryAuthorizationTest extends TestCase
     }
 
     /** @test */
-    public function danisman_cannot_update_cross_tenant_talep_returns_404()
+    public function danisman_cannot_update_another_advisors_talep_returns_404()
     {
-        $danisman1 = $this->createUserWithRole('Danışman 1', 1, false);
-        $danisman2 = $this->createUserWithRole('Danışman 2', 2, false);
+        $danisman1 = $this->createUserWithRole('Danışman 1', false);
+        $danisman2 = $this->createUserWithRole('Danışman 2', false);
 
         $talep2 = Talep::factory()->create([
             'danisman_id' => $danisman2->id,
@@ -119,8 +119,8 @@ class TalepRepositoryAuthorizationTest extends TestCase
     /** @test */
     public function aggregation_stats_reflect_only_owned_talepler()
     {
-        $danisman1 = $this->createUserWithRole('Danışman 1', 1, false);
-        $danisman2 = $this->createUserWithRole('Danışman 2', 2, false);
+        $danisman1 = $this->createUserWithRole('Danışman 1', false);
+        $danisman2 = $this->createUserWithRole('Danışman 2', false);
 
         Talep::factory()->create(['danisman_id' => $danisman1->id, 'talep_durumu' => TalepDurumu::AKTIF->value]);
         Talep::factory()->create(['danisman_id' => $danisman1->id, 'talep_durumu' => TalepDurumu::BEKLEMEDE->value]);
@@ -145,8 +145,8 @@ class TalepRepositoryAuthorizationTest extends TestCase
     /** @test */
     public function admin_aggregation_stats_reflect_all_talepler()
     {
-        $admin = $this->createUserWithRole('Admin', 1, true);
-        $danisman = $this->createUserWithRole('Danışman 1', 2, false);
+        $admin = $this->createUserWithRole('Admin', true);
+        $danisman = $this->createUserWithRole('Danışman 1', false);
 
         Talep::factory()->count(2)->create(['danisman_id' => $danisman->id, 'talep_durumu' => TalepDurumu::AKTIF->value]);
         Talep::factory()->create(['danisman_id' => $admin->id, 'talep_durumu' => TalepDurumu::AKTIF->value]);
