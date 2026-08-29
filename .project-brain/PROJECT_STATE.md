@@ -1,6 +1,13 @@
 # YALIHAN OS — Project Brain State
 
-Updated: 2026-08-27
+<!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
+- **Repository Commit:** `09862e8` (branch: `integration/era-v-phase2a-e01`)
+- **Working Tree:** `Dirty` (57 dosya)
+- **Evidence Date:** 2026-08-29T13:30:00Z (UTC) [TR: 2026-08-29 16:30:00 +03:00]
+- **Evidence Level:** `DOCUMENTED`
+- **Production Authorization:** `NONE (Read-Only Gate)`
+<!-- ───────────────────────────────────────────────────────────── -->
+
 Authority: repository + explicit production evidence
 
 ## Operating capability added
@@ -84,6 +91,24 @@ YALIHAN OS is an AI-assisted real-estate and property-operations operating syste
 ## Operating rule
 
 Never mark a feature complete from code or an automated test alone. Require code evidence, relevant automated tests, and a real production/browser flow where applicable.
+
+---
+
+## Production Reality Check — 2026-08-29
+
+> "Deployed", "resolved" veya "certified" yazması tek başına güncel production gerçeği değildir.
+> Güncel repo, test ve canlı kanıt ayrı kontrol edilmelidir.
+
+| Görev | Durum | Kanıt |
+|--------|--------|-------|
+| **Golden Thread TC-GT-06** | **BLOCKED** | 4/6 E2E FAILED, 2 SKIPPED. Kök neden: location seed eksik. Fixture değişikliği yapıldı; başarılı koşu doğrulanmadı. |
+| **Checkout/Manuel Ödeme** | **Kısmen tamamlandı** | Kod/test/deploy kayıtlı. Authenticated production browser kanıtı eksik. |
+| **Governance Command Center** | **Yerel düzeltme mevcut** | `7d402de` commit'li. Production doğrulaması ve G-04 Part 2 bekliyor. |
+| **`/yazliklar`** | **UNVERIFIED** | Güncel HTTP 200 kanıtı yok. En son HTTP 500 teşhis edildi. |
+| **Property Engine/Hub** | **Analiz tamamlandı** | Schema/assignment sebebi kesinleşmedi. Veri değişikliği yapılmadı. |
+| **Ollama/Cortex** | **Açık known issue** | `localhost:11434` bağlantı hatası. Servis topology doğrulanmadı. |
+
+**Bugün için en gerçek ve doğrudan geliştirilebilir görev: TC-GT-06'dır.**
 
 ---
 
