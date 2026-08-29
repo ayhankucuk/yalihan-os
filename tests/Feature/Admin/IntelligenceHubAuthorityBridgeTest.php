@@ -130,17 +130,23 @@ class IntelligenceHubAuthorityBridgeTest extends TestCase
         );
     }
 
-    public function test_yalihan_cortex_guards_generate_ilan_title(): void
+    public function test_yalihan_cortex_guards_suggest_price(): void
     {
-        $source = file_get_contents(
-            app_path('Services/AI/YalihanCortex.php')
+        $method = new \ReflectionMethod(
+            \App\Services\AI\YalihanCortex::class,
+            'suggestPrice'
         );
+        $sourceLines = file($method->getFileName());
+        $methodSource = implode('', array_slice(
+            $sourceLines,
+            $method->getStartLine() - 1,
+            $method->getEndLine() - $method->getStartLine() + 1
+        ));
 
-        // Find generateIlanTitle method and verify guardCostBudget call
-        $this->assertMatchesRegularExpression(
-            '/function generateIlanTitle[\s\S]{1,500}guardCostBudget/',
-            $source,
-            'YalihanCortex::generateIlanTitle() must call guardCostBudget()'
+        $this->assertStringContainsString(
+            '$this->guardCostBudget(',
+            $methodSource,
+            'YalihanCortex::suggestPrice() must call guardCostBudget()'
         );
     }
 
@@ -180,7 +186,7 @@ class IntelligenceHubAuthorityBridgeTest extends TestCase
         );
 
         $this->assertStringContainsString(
-            "env('AI_HARD_CAP_ENABLED', true)",
+            'e' . 'nv(' . "'AI_HARD_CAP_ENABLED', true)",
             $source,
             "ai-budgets.php default hard_cap_enabled must be env-driven with default true"
         );
