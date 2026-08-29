@@ -90,17 +90,16 @@ class IlanCrudTest extends TestCase
      */
     public function test_can_update_ilan(): void
     {
-        // Arrange: Ensure a YayinTipiSablonu exists (FK required for YAYINDA transition)
-        $sablonu = \App\Models\YayinTipiSablonu::firstOrCreate(
-            ['id' => 1],
-            [
-                'name' => 'Test Şablon',
-                'ilan_kategorisi_id' => \App\Models\IlanKategori::factory()->create()->id,
-                'aktiflik_durumu' => true,
-            ]
-        );
+        // Arrange: Ensure a canonical YayinTipiSablonu exists for the listing FK.
+        $sablonu = \App\Models\YayinTipiSablonu::factory()->create([
+            'ad' => 'Test Şablon',
+            'slug' => 'test-sablon',
+            'kategori_id' => \App\Models\IlanKategori::factory()->create()->id,
+            'aktiflik_durumu' => true,
+        ]);
 
-        // Create ilan in 'beklemede' then force-assign required FK fields before lifecycle
+        // Keep this CRUD test in 'beklemede'. Publishing eligibility belongs to
+        // the lifecycle test suite and requires a complete listing plus photos.
         $ilan = Ilan::factory()->create([
             'baslik'           => 'Eski Başlık',
             'yayin_durumu'     => 'beklemede',
@@ -116,7 +115,7 @@ class IlanCrudTest extends TestCase
         $service = app(IlanCrudService::class);
         $service->update($ilan, [
             'baslik'         => 'Yeni Başlık',
-            'yayin_durumu'   => 'yayinda',
+            'yayin_durumu'   => 'beklemede',
             'yayin_tipi_id'  => $sablonu->id,
         ]);
 
@@ -124,13 +123,13 @@ class IlanCrudTest extends TestCase
         $this->assertDatabaseHas('ilanlar', [
             'id' => $ilan->id,
             'baslik' => 'Yeni Başlık',
-            'yayin_durumu' => 'yayinda',
+            'yayin_durumu' => 'beklemede',
         ]);
 
         // Assert: Model reflects changes
         $ilan->refresh();
         $this->assertEquals('Yeni Başlık', $ilan->baslik);
-        $this->assertEquals(IlanDurumu::YAYINDA, $ilan->yayin_durumu);
+        $this->assertEquals(IlanDurumu::BEKLEMEDE, $ilan->yayin_durumu);
     }
 
     /**
