@@ -600,7 +600,7 @@ class IlanCrudService
 
         // =====================================================================
         // 1. SLUG → DIRECT COLUMN MAPPING (canonical)
-        // Schema-driven slugs that map to ilanlar table columns
+        // Schema-driven fields that map to ilanlar table columns
         // =====================================================================
         $slugToColumn = [
             'brut-metrekare'  => 'brut_m2',
@@ -609,9 +609,26 @@ class IlanCrudService
             'banyo-sayisi'    => 'banyo_sayisi',
             'bina-yasi'       => 'bina_yasi',
             'kat'             => 'kat',
-            'isitma'          => 'isinma_tipi',
+            'isitma'          => 'isitma',
             'esyali'          => 'esyali',
             'aidat'           => 'aidat',
+        ];
+
+        // Column → DB-native type map. Property Engine sends schema option values
+        // (select strings, multiselect arrays, boolean strings) which must be
+        // normalized before writing to ilanlar columns. Without this, MySQL
+        // strict mode raises 500 (e.g. 'Evet' → tinyint, '1-5 Yıl' → year,
+        // ['Doğalgaz'] → varchar).
+        $columnType = [
+            'brut_m2'      => 'float',
+            'net_m2'       => 'float',
+            'oda_sayisi'   => 'int',
+            'banyo_sayisi' => 'int',
+            'bina_yasi'    => 'year',
+            'kat'          => 'int',
+            'isitma'       => 'string',
+            'esyali'       => 'boolean',
+            'aidat'        => 'string',
         ];
 
         $directUpdates = [];
@@ -625,7 +642,12 @@ class IlanCrudService
 
             // Direct column mapping
             if (isset($slugToColumn[$slug])) {
-                $directUpdates[$slugToColumn[$slug]] = $value;
+                $column = $slugToColumn[$slug];
+                $directUpdates[$column] = $this->normalizeFeatureValue(
+                    $value,
+                    $columnType[$column] ?? 'string',
+                    $slug
+                );
                 continue;
             }
 
@@ -666,6 +688,208 @@ class IlanCrudService
                 'unmapped' => $unmappedSlugs,
             ]);
         }
+    }
+
+    /**
+     * Normalize a Property Engine feature value to a DB-native type before
+     * writing to an ilanlar column.
+     *
+     * Property Engine sends schema option values (select strings, multiselect
+     * arrays, boolean strings) which do not match the ilanlar column types.
+     * Without normalization MySQL strict mode raises 500:
+     *   - 'esyali'  → 'Evet'/'Hayır' (string)  → tinyint(1) boolean
+     *   - 'bina-yasi' → '1-5 Yıl' (range string) → year integer
+     *   - 'isitma'  → ['Doğalgaz','Klima'] (array) → varchar string
+     *
+     * @param  mixed  $value  Raw Property Engine value
+     * @param  string  $type  Target DB-native type: boolean|int|float|year|string
+     * @param  string  $slug  Feature slug used for actionable validation errors
+     * @return mixed
+     */
+    private function normalizeFeatureValue(mixed $value, string $type, string $slug): mixed
+    {
+        // Empty values are dropped upstream; guard defensively anyway.
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        $normalized = match ($type) {
+            'boolean' => $this->normalizeBoolean($value),
+            'int' => $this->normalizeInt($value),
+            'float' => $this->normalizeFloat($value),
+            'year' => $this->normalizeYear($value),
+            'string' => $this->normalizeString($value),
+            default => $this->normalizeString($value),
+        };
+
+        if ($normalized === null) {
+            throw new \InvalidArgumentException(
+                "Feature [{$slug}] has an invalid value for type [{$type}]."
+            );
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * Normalize a value to a boolean (tinyint(1)).
+     *
+     * Accepts: 'Evet'/'Hayır'/'Kısmen', '1'/'0', true/false, 1/0.
+     * 'Kısmen' (partially furnished) is treated as truthy — the property is
+     * not empty, so it is considered furnished for boolean purposes.
+     */
+    private function normalizeBoolean(mixed $value): ?bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_int($value) || is_float($value)) {
+            if ($value === 1 || $value === 1.0) {
+                return true;
+            }
+
+            if ($value === 0 || $value === 0.0) {
+                return false;
+            }
+
+            return null;
+        }
+
+        $str = mb_strtolower(trim((string) $value));
+
+        // Turkish select options
+        if (in_array($str, ['evet', 'kısmen', 'kismen', 'var', 'true', '1', 'yes'], true)) {
+            return true;
+        }
+
+        if (in_array($str, ['hayır', 'hayir', 'yok', 'false', '0', 'no'], true)) {
+            return false;
+        }
+
+        return null;
+    }
+
+    /**
+     * Normalize a value to an integer column.
+     */
+    private function normalizeInt(mixed $value): ?int
+    {
+        if (is_int($value)) {
+            return $value;
+        }
+
+        if (is_float($value)) {
+            return (int) $value;
+        }
+
+        if (is_array($value)) {
+            $value = reset($value);
+        }
+
+        $str = trim((string) $value);
+        if ($str === '' || !is_numeric($str)) {
+            return null;
+        }
+
+        return (int) $str;
+    }
+
+    /**
+     * Normalize a value to a float/decimal column.
+     */
+    private function normalizeFloat(mixed $value): ?float
+    {
+        if (is_float($value)) {
+            return $value;
+        }
+
+        if (is_int($value)) {
+            return (float) $value;
+        }
+
+        if (is_array($value)) {
+            $value = reset($value);
+        }
+
+        $str = trim((string) $value);
+        if ($str === '' || !is_numeric($str)) {
+            return null;
+        }
+
+        return (float) $str;
+    }
+
+    /**
+     * Normalize a value to a year column (integer).
+     *
+     * Property Engine sends bina-yasi as a select range string, e.g.
+     * '0 (Sıfır Bina)', '1-5 Yıl', '6-10 Yıl', '11-20 Yıl', '21+ Yıl'.
+     * We map the range to its upper bound (most recent building age) so the
+     * year column stores a meaningful integer. Plain numeric strings pass
+     * through unchanged.
+     */
+    private function normalizeYear(mixed $value): ?int
+    {
+        if (is_int($value)) {
+            return $value;
+        }
+
+        if (is_float($value)) {
+            return (int) $value;
+        }
+
+        if (is_array($value)) {
+            $value = reset($value);
+        }
+
+        $str = trim((string) $value);
+
+        // Plain numeric (e.g. '5', '12')
+        if (is_numeric($str)) {
+            return (int) $str;
+        }
+
+        // Range string: '1-5 Yıl' → 5, '6-10 Yıl' → 10, '11-20 Yıl' → 20
+        if (preg_match('/(\d+)\s*-\s*(\d+)/', $str, $m)) {
+            return (int) $m[2];
+        }
+
+        // '21+ Yıl' → 21
+        if (preg_match('/(\d+)\s*\+/', $str, $m)) {
+            return (int) $m[1];
+        }
+
+        // '0 (Sıfır Bina)' → 0
+        if (preg_match('/\b0\b/', $str)) {
+            return 0;
+        }
+
+        return null;
+    }
+
+    /**
+     * Normalize a value to a string column.
+     *
+     * Multiselect arrays (e.g. ['Doğalgaz','Klima']) are joined with a comma
+     * so they fit a varchar column. Scalars are cast to string.
+     */
+    private function normalizeString(mixed $value): ?string
+    {
+        if (is_array($value)) {
+            $parts = array_map(
+                fn ($v) => trim((string) $v),
+                array_values($value)
+            );
+            $parts = array_filter($parts, fn ($v) => $v !== '');
+            return $parts ? implode(', ', $parts) : null;
+        }
+
+        if (is_bool($value)) {
+            return $value ? '1' : '0';
+        }
+
+        return (string) $value;
     }
 
     /**
