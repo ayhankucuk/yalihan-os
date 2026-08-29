@@ -8,6 +8,7 @@ use App\Events\Workforce\PhotoAnalysisCompleted;
 use App\Events\Workforce\PropertyScoreCalculated;
 use App\Events\Workforce\PropertyWorkspaceCreated;
 use App\Events\Workforce\PublishingDecisionReady;
+use App\Models\Hermes\HermesEventLog;
 use App\Models\Hermes\WorkforceExecutionLog;
 use App\Models\Ilan;
 use App\Models\PortfolioDriveWorkspace;
@@ -303,6 +304,14 @@ class WorkforceAgentsTest extends TestCase
         $this->assertEquals('approved', $result['result']['decision']);
         $this->assertGreaterThanOrEqual(0.7, $result['result']['confidence']);
         $this->assertNotEmpty($result['result']['publish_targets']);
+
+        $emittedEvent = HermesEventLog::query()
+            ->where('event_name', 'workforce.publishing.decision_ready')
+            ->orderByDesc('id')
+            ->firstOrFail();
+
+        $this->assertSame('Test İlan', $emittedEvent->payload['ilan_baslik']);
+        $this->assertSame('premium', $emittedEvent->payload['tier']);
     }
 
     public function test_publish_decision_agent_rejects_critical_blocking_issues(): void
@@ -417,6 +426,7 @@ class WorkforceAgentsTest extends TestCase
         ], [
             'ilan_id' => $ilan->id,
             'ilan_baslik' => 'Satılık Lüks Villa Deniz Manzaralı',
+            'tier' => 'premium',
             'chain_id' => 'test-chain-14',
         ]);
 
@@ -432,6 +442,8 @@ class WorkforceAgentsTest extends TestCase
         $this->assertArrayHasKey('notification', $result['result']);
         $this->assertArrayHasKey('title', $result['result']['notification']);
         $this->assertArrayHasKey('body', $result['result']['notification']);
+        $this->assertSame('premium', $result['result']['notification']['tier']);
+        $this->assertSame('high', $result['result']['notification']['priority']);
     }
 
     public function test_notification_agent_records_execution_log(): void

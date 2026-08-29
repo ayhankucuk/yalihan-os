@@ -78,6 +78,8 @@ class PublishDecisionAgent implements HermesHandlerContract
             $this->emitPublishingDecisionReady($workspace, $decision, [
                 'ilan_id' => $ilanId,
                 'workspace_id' => $workspace->getKey(),
+                'ilan_baslik' => $workspace->root_folder_name,
+                'tier' => $decision['quality_tier'],
             ]);
 
             Log::info('[PublishDecisionAgent] Publishing decision made', [

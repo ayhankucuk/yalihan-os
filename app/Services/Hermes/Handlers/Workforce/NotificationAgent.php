@@ -58,7 +58,7 @@ class NotificationAgent implements HermesHandlerContract
 
         try {
             $ilanBaslik = $portfolioAnalysis['ilan_baslik'] ?? $payload['ilan_baslik'] ?? 'Bilinmeyen İlan';
-            $tier = $portfolioAnalysis['tier'] ?? 'standard';
+            $tier = $portfolioAnalysis['tier'] ?? $payload['tier'] ?? 'standard';
             $agentsTriggered = $payload['all_agents_triggered'] ?? false;
 
             // Build notification message
