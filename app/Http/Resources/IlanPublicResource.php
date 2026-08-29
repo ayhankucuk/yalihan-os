@@ -34,30 +34,52 @@ class IlanPublicResource extends JsonResource
 
             // Lokasyon Bilgileri (Public)
             'il' => $this->whenLoaded('il', function () {
+                // FIX (2026-08-27): `$this->il` string kolon (portfolio import) ile
+                // `il()` relation'ı çakışır. getRelation('il') eager-loaded relation'ı döndürür.
+                $rel = $this->getRelation('il');
+                if ($rel === null) {
+                    return null;
+                }
+
                 return [
-                    'id' => $this->il->id,
-                    'il_adi' => $this->il->il_adi,
+                    'id' => $rel->id,
+                    'il_adi' => $rel->il_adi,
                 ];
             }),
             'ilce' => $this->whenLoaded('ilce', function () {
+                $rel = $this->getRelation('ilce');
+                if ($rel === null) {
+                    return null;
+                }
+
                 return [
-                    'id' => $this->ilce->id,
-                    'ilce_adi' => $this->ilce->ilce_adi,
+                    'id' => $rel->id,
+                    'ilce_adi' => $rel->ilce_adi,
                 ];
             }),
             'mahalle' => $this->whenLoaded('mahalle', function () {
+                $rel = $this->getRelation('mahalle');
+                if ($rel === null) {
+                    return null;
+                }
+
                 return [
-                    'id' => $this->mahalle->id,
-                    'mahalle_adi' => $this->mahalle->mahalle_adi,
+                    'id' => $rel->id,
+                    'mahalle_adi' => $rel->mahalle_adi,
                 ];
             }),
             'adres' => $this->adres,
 
             // Kategori Bilgileri (Public)
             'kategori' => $this->whenLoaded('kategori', function () {
+                $rel = $this->getRelation('kategori');
+                if ($rel === null) {
+                    return null;
+                }
+
                 return [
-                    'id' => $this->kategori->id,
-                    'name' => $this->kategori->name,
+                    'id' => $rel->id,
+                    'name' => $rel->name,
                 ];
             }),
 
