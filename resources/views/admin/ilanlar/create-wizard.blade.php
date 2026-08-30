@@ -350,6 +350,9 @@
                 </div>
             </div>
 
+            {{-- 🔱 MOD-1: Dinamik özellikler + Hidden coords (Step 2 → form global scope) --}}
+            @include('admin.ilanlar.wizard.components.features-dynamic')
+
         </form>
     </div>
 

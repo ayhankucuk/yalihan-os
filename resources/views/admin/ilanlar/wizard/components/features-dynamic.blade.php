@@ -1,4 +1,5 @@
 {{-- 🔱 MOD-1: Dinamik Özellikler (UPS Features) --}}
+@php use App\Helpers\FormStandards; @endphp
 <div class="bg-white dark:bg-slate-900 rounded-xl border dark:border border-gray-200 dark:border-slate-800 shadow-lg overflow-hidden mt-6 dark:border-slate-700">
     <div class="p-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-gray-800/50 dark:bg-slate-900 dark:border-slate-700">
         <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 dark:text-slate-100">
