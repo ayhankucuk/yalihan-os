@@ -89,6 +89,7 @@ final class KisiDomainYonetici implements BoundedContextContract
                 'eposta' => $hamAdayVerisi['eposta_adresi'] ?? $hamAdayVerisi['eposta'] ?? null,
                 'kisi_tipi' => $hamAdayVerisi['kisi_tipi'] ?? 'lead',
                 'aktiflik_durumu' => 1,
+                'tenant_id' => $tenantId,
                 'created_at' => now(),
                 'updated_at' => now()
             ];
