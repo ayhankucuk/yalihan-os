@@ -94,22 +94,17 @@ class ListingLifecycleFinalSealTest extends TestCase
     /** @test */
     public function forbidden_transitions_are_blocked_by_state_machine()
     {
-        // Use createPublishableListing to ensure lat/lng/yayin_tipi_id are set,
-        // so the only failure is the state machine transition rule itself.
+        // Start from YAYINDA — a valid state with restricted transitions.
+        // YAYINDA → BEKLEMEDE is NOT in the allowed transitions matrix
+        // (YAYINDA only allows → ARSIV, PASIF) and auto-chain does not cover it.
         $ilan = $this->createPublishableListing(auth()->user(), [
-            'yayin_durumu' => IlanDurumu::TASLAK
+            'yayin_durumu' => IlanDurumu::YAYINDA
         ]);
 
-        // Mock score service with passing scores so completion/quality gates don't fire first
-        $mock = Mockery::mock(ListingScoreService::class);
-        $mock->shouldReceive('computeCompletionScore')->andReturn(100);
-        $mock->shouldReceive('computeQualityScore')->andReturn(85);
-        $this->app->instance(ListingScoreService::class, $mock);
-
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Geçersiz durum geçişi: Taslak → Yayında');
+        $this->expectExceptionMessage('Geçersiz durum geçişi: Yayında → Beklemede');
 
-        app(YalihanLifecycle::class)->transition($ilan, IlanDurumu::YAYINDA);
+        app(YalihanLifecycle::class)->transition($ilan, IlanDurumu::BEKLEMEDE);
     }
 
     /** @test */
