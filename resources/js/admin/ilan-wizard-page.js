@@ -673,8 +673,6 @@ if (typeof window.poiSelector === 'undefined') {
             },
 
             /**
-             * 🟡 Legacy matrix fallback (template yoksa)
-            /**
              * 🚨 Show Template Error State (No Fallback to Wrong Category)
              */
             showTemplateErrorState(kategoriSlug, yayinSlug) {
@@ -959,57 +957,12 @@ if (typeof window.poiSelector === 'undefined') {
                     }
                 }
 
-                // ✅ YENİ YAPI: Step 2 - Başlık, Fiyat, Açıklama
-                if (this.currentStep === 2) {
-                    const baslik = document.getElementById('baslik')?.value?.trim();
-                    const fiyat = document.getElementById('fiyat')?.value?.trim();
-                    const fiyatRequired = this.isPriceRequiredByMode();
+                // ✅ FIX: Step 2 validation delegated to validateStep(2) — no duplicate inline logic.
+                // validateStep(2) runs template-driven and base-step field checks uniformly.
 
-                    const errors = [];
-
-                    if (!baslik) {
-                        errors.push('Başlık');
-                        const baslikEl = document.getElementById('baslik');
-                        if (baslikEl) this.showFieldError(baslikEl, 'Başlık zorunludur');
-                    }
-
-                    if (fiyatRequired && (!fiyat || fiyat === '0')) {
-                        errors.push('Fiyat');
-                        const fiyatEl = document.getElementById('fiyat');
-                        if (fiyatEl) this.showFieldError(fiyatEl, 'Fiyat zorunludur');
-                    } else {
-                        const fiyatEl = document.getElementById('fiyat');
-                        if (fiyatEl) this.hideFieldError(fiyatEl);
-                    }
-
-                    // Backend contract parity: aciklama nullable (no runtime min-length gate)
-                    const aciklamaEl = document.getElementById('aciklama');
-                    if (aciklamaEl) this.hideFieldError(aciklamaEl);
-
-                    if (errors.length > 0) {
-                        this.showNotification(
-                            `Lütfen zorunlu alanları doldurun: ${errors.join(', ')}`,
-                            'error'
-                        );
-                        return false;
-                    }
-                }
-
-                // ✅ YENİ YAPI: Step 3 - Fotoğraf (ENGEL: minimum 1 fotoğraf zorunlu)
+                // ✅ FIX: Step 3 photo check now handled by validateStep(3) — uniform delegation.
                 if (this.currentStep === 3) {
-                    // P0-FIX: SSOT = native input.files (DataTransfer sync)
-                    // Alpine listener keeps both aligned; total = Math.max not sum
-                    const photoInput = document.getElementById('fotograflar');
-                    const nativeCount = photoInput?.files?.length || 0;
-                    const cacheCount = (nativeCount === 0 && Array.isArray(window.__wizardUploadedPhotos))
-                        ? window.__wizardUploadedPhotos.length : 0;
-                    const photoCount = Math.max(nativeCount, cacheCount);
-
-                    console.info(`[WIZARD] nextStep Step3: native=${nativeCount} cache=${cacheCount} total=${photoCount}`);
-
-                    if (photoCount === 0) {
-                        // ENGEL: Fotoğraf yoksa step geçişi engellenir
-                        this.showNotification('⚠️ En az 1 fotoğraf yüklemelisiniz.', 'error');
+                    if (!this.validateStep(3)) {
                         return false;
                     }
                 }
@@ -1211,6 +1164,20 @@ if (typeof window.poiSelector === 'undefined') {
 
             validateStep(step) {
                 const form = document.getElementById('ilan-wizard-form');
+
+                // ✅ FIX: Step 3 photo count check — enforce minimum 1 photo
+                if (step === 3) {
+                    const photoInput = document.getElementById('fotograflar');
+                    const nativeCount = photoInput?.files?.length || 0;
+                    const cacheCount = (nativeCount === 0 && Array.isArray(window.__wizardUploadedPhotos))
+                        ? window.__wizardUploadedPhotos.length : 0;
+                    const totalPhotos = Math.max(nativeCount, cacheCount);
+                    if (totalPhotos === 0) {
+                        this.showNotification('⚠️ En az 1 fotoğraf yüklemelisiniz.', 'error');
+                        return false;
+                    }
+                }
+
                 const stepFields = this.getStepFields(step);
 
                 let isValid = true;
@@ -1315,7 +1282,7 @@ if (typeof window.poiSelector === 'undefined') {
                     1: ['ana_kategori_id', 'alt_kategori_id', 'junction_id'],
                     2: ['baslik', 'fiyat', 'para_birimi', 'aciklama'],
                     3: ['fotograflar'],
-                    4: ['il_id', 'ilce_id', 'mahalle_id', 'adres_detay', 'lat', 'lng'],
+                    4: ['il_id', 'ilce_id', 'mahalle_id', 'adres', 'lat', 'lng'],
                     5: ['ilan_sahibi_id', 'yayin_durumu'],
                 };
 
@@ -1487,8 +1454,10 @@ if (typeof window.poiSelector === 'undefined') {
              * ✅ Phase H: Collect draft features from Step 2
              * Returns slug-based feature map for AI/quality/publish payloads
              */
-            collectDraftFeatures() {
+             collectDraftFeatures() {
                 const features = {};
+
+                // 🔱 Phase H: Primary path — data-feature-slug elements (legacy/pre-structured)
                 document.querySelectorAll('[data-feature-slug]').forEach((el) => {
                     const slug = el.dataset.featureSlug;
                     if (!slug) return;
@@ -1510,6 +1479,56 @@ if (typeof window.poiSelector === 'undefined') {
                         features[slug] = value;
                     }
                 });
+
+                // 🔱 FIX: Step2SchemaRenderer emits name="features[slug]" + data-field-slug.
+                // collectDraftFeatures must also read these, otherwise Step 5 preview / publish
+                // receives an empty features map and the backend rejects arsa-alani as required.
+                // Strategy: group multiselect checkboxes by field name (array values),
+                // pick single value for all other types (last-wins for radios, value for selects/text).
+                const featureFieldGroups = {};
+
+                document.querySelectorAll('[name^="features["]').forEach((el) => {
+                    // Extract slug: "features[manzara]" → "manzara"
+                    const match = el.name.match(/^features\[([^\]]+)\]/);
+                    if (!match) return;
+                    const slug = match[1];
+
+                    if (!featureFieldGroups[slug]) {
+                        featureFieldGroups[slug] = {
+                            isMultiCheckbox: el.type === 'checkbox' && el.name.includes('[]'),
+                            els: [],
+                        };
+                    }
+                    featureFieldGroups[slug].els.push(el);
+                });
+
+                Object.entries(featureFieldGroups).forEach(([slug, group]) => {
+                    if (group.isMultiCheckbox) {
+                        // Collect all checked values as array (multiselect)
+                        const checked = group.els
+                            .filter((el) => el.checked)
+                            .map((el) => el.value);
+                        if (checked.length > 0) {
+                            features[slug] = checked;
+                        }
+                    } else {
+                        // Single-value: radio/select/text/number — take last non-empty
+                        let value = null;
+                        for (const el of group.els) {
+                            if (el.type === 'checkbox') {
+                                if (el.checked) value = el.value === '1' ? true : el.value;
+                            } else if (el.type === 'radio') {
+                                if (el.checked) value = el.value;
+                            } else if (el.value?.trim()) {
+                                value = el.value.trim();
+                            }
+                        }
+                        if (value !== null && value !== '') {
+                            features[slug] = value;
+                        }
+                    }
+                });
+
                 return features;
             },
 
@@ -1991,25 +2010,15 @@ if (typeof window.poiSelector === 'undefined') {
                 }
                 this.__submitting = true;
 
-                // Validate step 3 first (includes photo check)
-                if (!this.validateStep(3)) {
-                    this.__submitting = false;
-                    return;
-                }
-
-                // P0-FIX: SSOT photo count — native input OR window cache (Math.max not sum)
-                const photoInput = document.getElementById('fotograflar');
-                const nativeCount = photoInput?.files?.length || 0;
-                const cacheCount = (nativeCount === 0 && Array.isArray(window.__wizardUploadedPhotos))
-                    ? window.__wizardUploadedPhotos.length : 0;
-                const totalPhotos = Math.max(nativeCount, cacheCount);
-
-                console.info(`[WIZARD] submitForm: native=${nativeCount} cache=${cacheCount} total=${totalPhotos}`);
-
-                if (totalPhotos === 0) {
-                    this.showNotification('⚠️ En az 1 fotoğraf yüklemelisiniz.', 'error');
-                    this.__submitting = false;
-                    return;
+                // ✅ FIX: Validate ALL steps before submit.
+                // Each step's validation is authoritative; catch errors early.
+                // Step 3 photo check is handled by validateStep(3) via nextStep() inline logic.
+                const stepOrder = [1, 2, 3, 4, 5];
+                for (const step of stepOrder) {
+                    if (!this.validateStep(step)) {
+                        this.__submitting = false;
+                        return;
+                    }
                 }
 
                 const form = document.getElementById('ilan-wizard-form');
