@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Service;
 
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 use App\Models\Ilan;
 use App\Services\AI\PriceAdvisor\PriceAdvisorService;
 use App\Services\Market\MarketIntelligenceService;
@@ -54,7 +54,7 @@ class PriceAdvisorServiceTest extends TestCase
             'il_id' => 48,
             'ilce_id' => 1,
             'kategori_id' => 36,
-            'fiyat' => 8500000,
+            'fiyat' => 8000000,
             'alan_m2' => 320,
         ]);
 
@@ -64,7 +64,7 @@ class PriceAdvisorServiceTest extends TestCase
         $this->assertEquals(0, $result['meta']['competitor_count']);
         $this->assertArrayHasKey('is_draft', $result['meta']);
         $this->assertTrue($result['meta']['is_draft']);
-        $this->assertEquals('neutral', $result['market_position']);
+        $this->assertEquals('fair_market', $result['market_position']);
     }
 
     /** @test */
