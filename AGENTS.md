@@ -38,6 +38,58 @@ Use `REPO_VERIFIED`, `DOCUMENTED`, `PRODUCTION_VERIFIED`, `INFERRED`, or `UNKNOW
 
 After material work, update `.project-brain/PROJECT_STATE.md`, `FEATURE_MATRIX.md`, `EVIDENCE_INDEX.md`, and `KNOWN_ISSUES.md` as applicable. Record important architectural choices in `DECISION_LOG.md`.
 
+## Multi-Agent Worktree Protocol
+
+### Problem
+Running multiple agents in the same Git repository simultaneously causes:
+- Working tree pollution: untracked/staged changes accumulate from concurrent work
+- Commit conflicts: different agents may stage changes for the same files
+- SQLite/test DB corruption: parallel test runs write to the same `database.sqlite` file
+- Unpredictable diffs: changes are interleaved without clear authorship
+
+### Solution: Worktree Isolation
+
+Every writing agent MUST operate in its own Git worktree on a dedicated branch. The main repository (`integration/era-v-phase2a-e01`) remains read-only for all agents except the designated writer.
+
+```
+integration/era-v-phase2a-e01  ← main worktree (read-only for agents)
+  ├── worktree-1/agent-alpha  ← writing agent A (own branch)
+  ├── worktree-2/agent-beta   ← writing agent B (own branch)
+  └── worktree-N/agent-n     ← reading agents (own branches)
+```
+
+### Rules
+
+**Before starting any work:**
+1. Run `git branch --show-current` — confirm you know which branch you're on
+2. Run `git status --short` — check for uncommitted work already present
+3. If you are in the main worktree with uncommitted changes from another session, **do not overwrite them**
+
+**Writing agents (mutating work):**
+1. Use a dedicated Git worktree for each writing session
+2. Keep changes focused: stage only files relevant to the current task
+3. Verify `git diff --staged` before committing
+4. Never commit migration + code in one batch without explicit production authorization
+
+**Read-only agents:**
+- May operate in the main worktree or a dedicated worktree
+- Must never run `git add`, `git commit`, `git push`, or destructive DB commands
+- Must check `git status` before starting to avoid overwriting others' work
+
+**Production operations:**
+- Migration, seed, and deploy commands require explicit user authorization
+- Never run `php artisan migrate` in production without user approval
+- `BLOCKED_PENDING_PRODUCTION_AUTH` label must be applied to any staged migration
+
+### Evidence Labels for Multi-Agent Work
+| Label | Meaning |
+|-------|---------|
+| `UNVERIFIED` | Not yet tested against production or fresh DB |
+| `REPO_VERIFIED` | Code review passed; correct for current schema |
+| `TEST_VERIFIED` | Automated tests pass |
+| `PRODUCTION_VERIFIED` | Live production evidence captured |
+| `BLOCKED_PENDING_PRODUCTION_AUTH` | Migration/deploy blocked until user approves |
+
 ## Verification gates
 
 - Backend: focused tests, migration status, error logs, and endpoint response.

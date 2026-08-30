@@ -2194,6 +2194,7 @@ if (typeof window.poiSelector === 'undefined') {
                         setTimeout(() => {
                             window.location.href = `/admin/ilanlar/${ilanId}/edit`;
                         }, 1500);
+                        this.__submitting = false; // P2-FIX: publish-fail path reset
                     }
                     this.__submitting = false; // P2-FIX: success path reset
                 } catch (error) {

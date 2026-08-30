@@ -102,8 +102,18 @@ class IlanPublishGateController extends AdminController
             $qualityScore    = $ilan->quality_score;
 
             // 2. Perform Cortex Analysis for Dashboard metrics (optional side effect)
-            $quality = $this->cortex->evaluateListingQualityForIlan($ilan, []);
-            $recommendation = $quality['data']['recommendation'] ?? 'ok';
+            // ✅ Phase C: AI evaluation is BEST-EFFORT — failures must NOT block publish.
+            // Context window exceeded (Ollama) or provider timeout = soft-fail, continue.
+            try {
+                $quality = $this->cortex->evaluateListingQualityForIlan($ilan, []);
+                $recommendation = $quality['data']['recommendation'] ?? 'ok';
+            } catch (\Exception $aiEx) {
+                LogService::warning('PublishGate: AI quality eval soft-failed', [
+                    'ilan_id' => $ilan->id,
+                    'error'   => $aiEx->getMessage(),
+                ]);
+                $recommendation = 'ok'; // Continue with default — AI analysis is non-blocking
+            }
 
             LogService::info('Publish request triggered via Gate', [
                 'ilan_id'          => $ilan->id,
