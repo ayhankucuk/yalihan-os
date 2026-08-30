@@ -84,7 +84,7 @@ class TKGMGeocodeJobTest extends TestCase
     public function test_geocode_failure_applies_default_fallbacks(): void
     {
         // 1. Setup location data for fallback
-        \Illuminate\Support\Facades\DB::table('iller')->insert([
+        \Illuminate\Support\Facades\DB::table('iller')->insertOrIgnore([
             'id'              => 48,
             'il_adi'          => 'Muğla',
             'plaka_kodu'      => '48',
@@ -93,7 +93,7 @@ class TKGMGeocodeJobTest extends TestCase
             'aktiflik_durumu' => 1,
         ]);
 
-        \Illuminate\Support\Facades\DB::table('ilceler')->insert([
+        \Illuminate\Support\Facades\DB::table('ilceler')->insertOrIgnore([
             'id'              => 1,
             'il_id'           => 48,
             'ilce_adi'        => 'Bodrum',

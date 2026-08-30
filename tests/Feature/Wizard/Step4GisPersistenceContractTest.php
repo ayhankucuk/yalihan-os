@@ -139,7 +139,8 @@ class Step4GisPersistenceContractTest extends TestCase
     public function test_il_ilce_mahalle_ids_persist(): void
     {
         // Seed location data inline (TurkiyeLocationSeeder may not run in tests)
-        $ilId = DB::table('iller')->insertGetId([
+        $existingIl = DB::table('iller')->where('plaka_kodu', '48')->first();
+        $ilId = $existingIl?->id ?? DB::table('iller')->insertGetId([
             'il_adi'    => 'Muğla',
             'plaka_kodu' => '48',
             'lat'       => 37.2154,

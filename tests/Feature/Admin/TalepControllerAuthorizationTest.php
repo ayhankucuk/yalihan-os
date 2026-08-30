@@ -70,6 +70,7 @@ class TalepControllerAuthorizationTest extends TestCase
         $kisiId = \Illuminate\Support\Facades\DB::table('kisiler')->insertGetId([
             'ad'         => 'Test',
             'soyad'      => 'Kisi',
+            'tenant_id'  => $owner->tenant_id ?? $this->getDefaultTenantId(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);

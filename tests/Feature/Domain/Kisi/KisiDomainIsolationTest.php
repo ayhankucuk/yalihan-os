@@ -107,6 +107,7 @@ class KisiDomainIsolationTest extends TestCase
             'eposta' => 'ahmet@yaliihan.com',
             'kisi_tipi' => 'lead',
             'aktiflik_durumu' => 1,
+            'tenant_id' => $this->getDefaultTenantId(),
             'created_at' => now(),
             'updated_at' => now()
         ]);
