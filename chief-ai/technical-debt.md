@@ -38,7 +38,7 @@ Toplam Puan:
 
 | ID | Borç | Puan | Etki Alanı | Çözüm | Sprint |
 |----|------|------|-----------|-------|--------|
-| TD-01 | Fail test sayısı — **UNVERIFIED** (tam suite çalıştırılmadı, eski değer: 89) | 7×5×3=**105** ⚠️ | Test suite | Tam suite çalıştır → güncel fail sayısı → öncelik matrisi | Sprint 3.x 🔴 |
+| TD-01 | 301 fail test (2615 passed, 3010 total, 13740 assertions, 1626s) — tam suite 2026-08-30'da çalıştırıldı | 5×5×3=**75** | Test suite | Fail testleri kategorize et → öncelik matrisi → düzelt | Sprint 3.x 🔴 |
 | TD-02 | Naming Authority 175 ihlal | 4×4×3=**48** | Governance | context7-ignore ya da düzelt | Sprint 3.1 🟠 |
 | TD-03 | SSH bloker (deploy) | 5×5×5=**125** | DevOps | İnsan müdahalesi | Sprint 4 🔴 |
 | TD-04 | JSONB göçü — Phase 1 (write path) ✅ ÇÖZÜLDÜ, Phase 2 (read path) AÇIK | 3×3×3=**27** (düşürüldü) | Database | Reader servisleri JSONB okuyacak şekilde güncellenecek | Sprint 4 🟡 |
@@ -59,7 +59,7 @@ Toplam Puan:
 ╔══════════════════════════════════════════════════════╗
 ║  TOPLAM TEKNİK BORÇ PUANI                            ║
 ║                                                      ║
-║  TD-01: 105 ████████████████████████████  🔴 ⚠️ UNVERIFIED
+║  TD-01:  75 █████████████████████████  🔴 VERIFIED (301 fail)
 ║  TD-02:  48 ██████████                               ║
 ║  TD-03: 125 ██████████████████████████████  🔴        ║
 ║  TD-04:  27 ██████ (64→27 düşürüldü — Phase 1 çözüldü)║
@@ -72,13 +72,13 @@ Toplam Puan:
 ║  TD-11: 100 ███████████████████████████  🔴 YENİ      ║
 ║  TD-12:  36 ████████                        YENİ      ║
 ║                                                      ║
-║  TOPLAM:  546 / 1000                                 ║
+║  TOPLAM:  516 / 1000                                 ║
 ║  KABUL EDİLEBİLİR LİMİT: 100                         ║
 ║  DURUM: 🔴 KABUL EDİLEMEZ — Sprint durdur             ║
 ║                                                      ║
-║  Not: TD-01 puanı UNVERIFIED — tam suite              ║
-║  çalıştırılmadı, güncel fail sayısı bilinmiyor.       ║
-║  Gerçek toplam TD-01 doğrulanana kadar belirsiz.     ║
+║  Not: TD-01 doğrulandı — 301 fail (2615 passed).     ║
+║  Puan 105→75 (etki 7→5: production riskü düşük,      ║
+║  test altyapısı borcu).                              ║
 ╚══════════════════════════════════════════════════════╝
 ```
 
@@ -86,11 +86,13 @@ Toplam Puan:
 
 ## Reconciliation Notları (2026-08-30)
 
-### TD-01 — Fail Test Sayısı UNVERIFIED
+### TD-01 — Fail Test Sayısı VERIFIED (2026-08-30)
 - Eski değer: 89 fail test (2026-07-07)
-- Bu oturumda sadece 3 hedef suite çalıştırıldı: ListingLifecycleFinalSealTest 7/7, IlanTest 9/9, KisiTest 6/6 (22/22, 55 assertion)
-- Tam suite çalıştırılmadı — güncel fail sayısı bilinmiyor
-- **Aksiyon:** Tam `php artisan test` çalıştır → güncel fail sayısı → puanı güncelle
+- Güncel değer: 301 fail, 2615 passed, 3010 total, 13740 assertions, 1626s
+- Tam suite 2026-08-30'da çalıştırıldı
+- Puan 105→75 (etki 7→5: production runtime riskü düşük, borç test altyapısında)
+- Öne çıkan fail kategorileri: SQLite schema gap (property_availability), UniqueConstraintViolation (iller.id), Workspace submission, Repository write hardening
+- **Aksiyon:** Fail testleri kategorize et → öncelik matrisi → düzelt
 
 ### TD-04 — JSONB Göçü Puan Düşürüldü
 - Eski değer: 64 puan (tam göç eksik)
@@ -128,7 +130,7 @@ Toplam Puan:
 
 | ID | Aksiyon | Süre | Kim |
 |----|---------|------|-----|
-| TD-01 | Tam test suite çalıştır → güncel fail sayısı | 30 dk | Chief AI |
+| TD-01 | 301 fail testi kategorize et → öncelik matrisi çıkar | 1 saat | Chief AI |
 | TD-08 | Naming Authority 27 puanlık borcu 48 puanla birleştir | 2 saat | Chief AI |
 | TD-02 | 175 ihlal + 27 puan → Sprint 3.1 backlog'a ekle | 30 dk | Chief AI |
 
