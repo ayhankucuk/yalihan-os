@@ -1,10 +1,11 @@
 # Test Failure Categorization — 2026-08-30
 
-> Repository Commit: 72872c7
-> Working Tree: integration/era-v-phase2a-e01 (25 commits ahead of remote)
+> Repository Commit: 166663c
+> Working Tree: integration/era-v-phase2a-e01 (26 commits ahead of remote)
 > Evidence Date: 2026-08-30
 > Evidence Level: VERIFIED — full `php artisan test` run
 > Production Authorization: NONE — read-only analysis
+> Analysis Level: P0 ROOT CAUSE — read-only code inspection
 
 ## Summary
 
@@ -172,3 +173,27 @@ Fail test cases (⨯): 305
 4. **Authorization setup** — Verify `SetTenantContext` middleware in test environment
 
 These 4 fixes would resolve an estimated ~84 failures (28% of total).
+
+---
+
+## P0 Root Cause Analysis (Read-Only Code Inspection)
+
+### P0-A: SQLite Schema Gap — property_availability & tenants
+
+Root cause: tests/TestCase.php line 156-163 — SQLite mode runs only `Artisan::call('migrate')`, does NOT load mysql-schema.sql dump. `property_availability` has NO migration (only in SQL dump). `tenants` migration exists but may fail due to prior migration halting the chain.
+
+Fix: Add SQLite migration for property_availability, OR load testing-schema.sql for SQLite, OR switch phpunit.xml to MySQL.
+
+### P0-B: iller.id UniqueConstraint
+
+Root cause: Test fixtures use `DB::table('iller')->insert()` with hardcoded IDs. Safe pattern exists: `insertOrIgnore` in TalepControllerAuthorizationTest.
+
+Fix: Replace `insert` with `insertOrIgnore` or `firstOrCreate` in iller fixtures.
+
+### P0-C: kisiler.tenant_id NOT NULL
+
+Root cause: Direct `DB::table('kisiler')->insertGetId()` in KisiTest.php and TalepTest.php bypasses BelongsToTenant trait. TestCase.php already provides `getDefaultTenantId()` method.
+
+Fix: Add `'tenant_id' => $this->getDefaultTenantId()` to direct kisiler inserts.
+
+### P0 Cascade: Fixing tenants table (P0-A) may auto-resolve tenant_id (P0-C) because injectDefaultTenantContext() would succeed.
