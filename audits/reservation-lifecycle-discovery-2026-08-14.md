@@ -1,6 +1,14 @@
 # RESERVATION-LIFECYCLE-DISCOVERY
 ## Yalıhan OS — Reservation Lifecycle Mapping
-**Date:** 2026-08-14
+
+<!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
+- **Repository Commit:** `UNKNOWN`
+- **Working Tree:** `UNKNOWN`
+- **Evidence Date:** 2026-08-14T00:00:00Z (UTC) [TR: 2026-08-14 03:00:00 +03:00]
+- **Evidence Level:** `DOCUMENTED / REPO_VERIFIED`
+- **Production Authorization:** `NONE (Discovery Only)`
+<!-- ───────────────────────────────────────────────────────────── -->
+
 **Session:** Discovery (No Implementation)
 **Model:** Claude Sonnet 4.6 (Execution Mode)
 

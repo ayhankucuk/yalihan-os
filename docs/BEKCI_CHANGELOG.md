@@ -1,5 +1,78 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 146 — 2026-08-28 | Danışman Modülü P0 Fixture Onarımı, Service Katmanı Refactor & Thin Controller 🛡️
+
+**Kapsam:** Danışman (Advisor) modülü yetkilendirme testlerindeki fixture çakışmaları çözüldü, `DanismanController` 645 satırdan 165 satıra düşürülerek `DanismanService` katmanına refactor edildi, tüm yetki testleri %100 yeşile çekildi.
+
+#### 1. Test Fixture & Yetkilendirme Onarımları
+- `IlanRepositoryAuthorizationTest`: Hardcoded `id => 1` kaldırıldı, dinamik user oluşturma ile 6/6 PASS.
+- `TalepRepositoryAuthorizationTest`: Hardcoded `id => 1` kaldırıldı, 6/6 PASS.
+- `KisiRepositoryAuthorizationTest`: Hardcoded user ID'leri dinamik `$user->id` bağlamına geçirildi, 22/22 PASS.
+- `IlanTest`: Raw `DB::table` çağrıları `Ilan::factory()->create()` ile güncellendi, `TenantScope` uyumu sağlanarak 9/9 PASS.
+- `AdvisorCommandCenterTest`: 6/6 PASS (45 assertions).
+
+#### 2. Danışman Mimari Refactor (SAB Thin Controller)
+- `App\Services\Danisman\DanismanService`: Danışman listeleme, filtreleme, dashboard istatistikleri ve detay agregasyonları için tekil servis oluşturuldu.
+- `App\Http\Controllers\Admin\DanismanController`: 645 satırdan 165 satıra düşürüldü, `@sab-ignore-*` etiketleri kaldırıldı.
+
+#### 3. Test & Kalite Kapıları
+- Toplam 67 test / 222 assertions %100 PASS.
+- Antigravity Full Gate (Preflight, Layout, Route Guard): 3/3 PASS.
+
+---
+
+## oturum 145 — 2026-08-28 | Checkout/Payment Production Certification
+
+### CHECKOUT_PAYMENT — COMMITTED / DEPLOYED / PRODUCTION_PARTIALLY_VERIFIED
+
+**Commit:** `5198cbe`
+**Baseline:** `ad025d7`
+**Status:** `COMMITTED / DEPLOY_BLOCKED / PRODUCTION_NOT_VERIFIED`
+
+#### Sertifikasyon Sonuçları
+
+| Gate | Sonuç | Kanıt |
+|------|--------|-------|
+| Kod hazır | ✅ | `CheckoutController`, `CheckoutService`, `Payment` model |
+| Testler | ✅ | 7 backend + 4 E2E testleri geçti |
+| Tenant izolasyonu | ✅ | `guardTenantAccess()`, `guardReservationBelongsToIlan()`, `guardPaymentBelongsTo()` |
+| SAB uyumu | ✅ | Thin controller, no env(), no empty catch |
+| Origin push | ✅ | `ad025d7..5198cbe` — 2026-08-28 05:20 UTC |
+
+#### Production Infrastructure (2026-08-28)
+
+- **Host:** `ubuntu@157.180.116.63`
+- **App:** `/opt/yalihan2026/current`
+- **Çalışan branch:** `migration/fix-kytfd-table` (`9723c2e`) ❌
+- **Integration refs:** `a0a52bf` (checkout `5198cbe` origin'de ✅)
+- **Docker:** mevcut, socket `root:docker`, ubuntu docker grubunda DEĞİL
+- **Command bridge:** `port 43210` — villa/musteri/gorev/rez (deploy yok)
+- **Health endpoint:** `{"ok":true}`
+
+#### Deploy Komutu (Yetkili Hesap Gerekli)
+
+```bash
+ssh ubuntu@157.180.116.63
+# → sudo/docker yetkisi olan hesapla:
+git checkout integration/era-v-phase2a-e01 && git pull
+docker compose up -d
+# → doğrulama:
+curl -sI https://yalihanemlak.com.tr/admin/ilanlar/1/checkout/1
+```
+
+#### Migration Drift
+
+- **304 ghost migration:** ❌ DOĞRULANMADI (`migrate:status = 0 ghost`)
+- **10 pending migration:** ⚠️ VAR — hiçbiri checkout/payment'ı bloke etmiyor
+
+#### Dokümanlar
+
+- `audits/CHECKOUT_PRODUCTION_CERTIFICATION.md`
+- `audits/GATE_BLOCKER_EVIDENCE.md`
+
+---
+
+
 ## Oturum 144 — 2026-08-25 | Admin UI/UX Standardizasyonu & Temiz Tasarım Mimarisi ✅
 
 ### Yapılan İyileştirmeler & Standardizasyon

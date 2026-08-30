@@ -260,3 +260,12 @@
 - **Durum:** ⏳ AÇIK — Sonraki sprint'te Airbnb/Channex adapter retry path'ı normalize edilmeli
 - **Çözüm:** Airbnb/Channex adapter'larında retryable 5xx → `AirbnbRetryableException` (veya `ChannexRetryableException`) fırlatmalı. `AvailabilitySynchronizationService::isRetryableException()` güncellenmeli.
 - **Not:** GAP-03 Booking retry recovery geçersiz kılmaz — Booking 5xx → Laravel retry ✅ garantili. Airbnb/Channex için aynı garantinin sağlanması gerekiyor.
+
+### 39. Hermes Workforce Runtime Wiring and Coverage — HERMES-AUDIT-2026-08-28 ⏳ AÇIK
+- **Kaynak:** `audits/HERMES_DEEP_AUDIT_REPORT.md` — satır satır repository audit, `REPO_VERIFIED`.
+- **Bulgular:** `PropertyScoreAgent` PSR-4 namespace/dizin uyuşmazlığı; `DriveAgent` constructor ile `HermesServiceProvider` dependency uyuşmazlığı; `NotificationAgent` subscription event’i ile publishing decision event’i uyumsuz; `PortfolioAgent` registry’de kullanılmayan dead code.
+- **Kapsam:** Workforce zinciri: `DriveAgent → PhotoAgent → DescriptionAgent → PropertyScoreAgent → PublishDecisionAgent → NotificationAgent`.
+- **Eksik kanıt:** Beş workforce ajanı için unit test ve zincirin tamamı için uçtan uca integration test bulunmuyor.
+- **Risk:** 🔴 CRITICAL — Runtime zinciri production-ready kabul edilemez; Sprint 14/15 certification için düzeltme veya açık waiver gerekir.
+- **Yapılacaklar:** Runtime wiring düzeltmeleri, beş unit test paketi, bir chain integration testi, 10 teknik borcun owner/severity/remediation ile kaydı.
+- **Durum:** ⏳ AÇIK — Kod değişikliği, deploy, migration veya seed yapılmadı.

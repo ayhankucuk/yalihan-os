@@ -25,3 +25,11 @@ Material architecture choices are recorded as individual ADRs under `docs/adrs/`
 Date: 2026-08-26
 
 Prioritize certification of the eight-step Golden Thread before speculative feature expansion: listing creation, Cortex enrichment, photo/location capture, draft save, management approval, publication, CRM matching, and advisor task generation. Freeze new feature scope during certification; prune duplicate paths only after impact analysis. Production deployment still requires explicit user authorization and evidence gates.
+
+## D007 — Worktree ve untracked migration yönetimi
+
+Date: 2026-08-30
+
+Dört aktif worktree (`main`, `.codex`, `.roo`, `.kilo`) farklı HEAD commit'lerinde çalışıyor. Hiçbir worktree force merge, reset veya checkout ile senkronize edilmemeli — kullanıcı değişikliklerini ezer. Worktree senkronizasyonu sadece her branch'in ownership, dirty durumu ve görev amacı belirlendikten sonra, kullanıcı onayı ile yapılmalı.
+
+Untracked migration dosyaları için sırasıyla: (1) schema-only vs data-manipulation riski değerlendir, (2) disposable clone ortamında up()/down() test et, (3) DATA_CONTRACT_CHECK + IMPACT_ANALYSIS çalıştır, (4) rollback kanıtı hazırla, (5) sadece bu adımlardan sonra commit kararı al. Primary key ID manipulation içeren migration'lar GATE_BLOCKED olarak kalır — explicit production authorization gerektirir.

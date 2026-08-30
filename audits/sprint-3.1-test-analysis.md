@@ -1,7 +1,14 @@
 # Sprint 3.1 Test Analysis
 
+<!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
+- **Repository Commit:** `UNKNOWN`
+- **Working Tree:** `UNKNOWN`
+- **Evidence Date:** 2026-06-25T00:00:00Z (UTC) [TR: 2026-06-25 03:00:00 +03:00]
+- **Evidence Level:** `DOCUMENTED`
+- **Production Authorization:** `NONE (Historical Test Analysis)`
+<!-- ───────────────────────────────────────────────────────────── -->
+
 > Sprint 3.1 — Test Durumu Analizi
-> Tarih: 2026-06-25
 > Agent: Kilo
 > Sprint: Sprint 3.1 (Gün 1)
 

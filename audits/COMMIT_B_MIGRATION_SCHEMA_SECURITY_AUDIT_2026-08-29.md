@@ -1,8 +1,13 @@
 # Commit B: Migration/Schema Güvenlik ve Rollback İncelemesi
 
-**Tarih:** 2026-08-29 01:30 UTC
-**Branch:** `integration/era-v-phase2a-e01`
-**Commit A:** `a502be4` (feat: stabilize advisor command center flow)
+<!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
+- **Repository Commit:** `a502be4` (branch: `integration/era-v-phase2a-e01`)
+- **Working Tree:** `Dirty`
+- **Evidence Date:** 2026-08-29T01:30:00Z (UTC) [TR: 2026-08-29 04:30:00 +03:00]
+- **Evidence Level:** `REPO_VERIFIED`
+- **Production Authorization:** `NONE (Pre-deployment Security Review)`
+<!-- ───────────────────────────────────────────────────────────── -->
+
 **Commit B Hedefi:** GovernanceCommandCenter `/occurred_at` kolon hatası
 
 ---

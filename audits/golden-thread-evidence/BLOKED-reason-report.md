@@ -1,6 +1,13 @@
 # Golden Thread E2E — Blokaj Gerekçe Raporu
 
-**Tarih:** 2026-08-26  
+<!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
+- **Repository Commit:** `UNKNOWN`
+- **Working Tree:** `UNKNOWN`
+- **Evidence Date:** 2026-08-26T00:00:00Z (UTC) [TR: 2026-08-26 03:00:00 +03:00]
+- **Evidence Level:** `DOCUMENTED / REPO_VERIFIED`
+- **Production Authorization:** `NONE (Local Diagnosis)`
+<!-- ───────────────────────────────────────────────────────────── -->
+
 **Konu:** TC-GT-05/06 blokaj gerekçesi + DB analiz
 
 ---

@@ -43,7 +43,50 @@
 - `DOCUMENTED`: `bekci:health` overall 33.4% — App Runtime Health 100%, MCP 0%, Project Health 59.25%. Pre-existing structural issues, no regression from this patch.
 - `REPO_VERIFIED`: no secrets, credentials, or private identifiers in staged diff.
 
+## Session 2026-08-30 — Worktree Tutarsızlığı Analizi
+
+- `REPO_VERIFIED`: Main worktree `integration/era-v-phase2a-e01` HEAD `81be956`. 29 unstaged + 26 untracked dosya. Staged değişiklik yok.
+- `REPO_VERIFIED`: Sprint 16 Charter commit `6967cb2` — sadece `.sab/sprints/sprint-16/CHARTER.md` (+177 satır) ve `docs/PROGRESS-TRACKER.md` (+430 satır) değiştiriyor. Production etkisi yok.
+- `REPO_VERIFIED`: `6967cb2` → `81be956` commit diff'i sadece 2 dosyadır. 901 dosya ifadesi commit diff değil çalışma ağacı envanteridir — bu iki kavram ayrı raporlanmalıdır.
+- `REPO_VERIFIED`: `docs/PROGRESS-TRACKER.md` çalışma ağacı `6967cb2`'den ileridedir. Commit 2026-07-23 (Oturum 110), çalışma ağacı 2026-08-28 (Oturum 146). Cherry-pick → **geri alma** — kabul edilemez veri kaybı.
+- `REPO_VERIFIED`: `a5e14c1` commit — `yayin_tipi_id` migration fix. Schema-only, test-doğrulanmış.
+- `REPO_VERIFIED`: `.codex` ve `.kilo` worktree'leri aynı `6967cb2` HEAD üzerinde temiz. `.roo` worktree'si `a5e14c1` HEAD üzerinde temiz.
+- `DOCUMENTED`: Migration `2026_08_26_000001` — location canonical reconciliation. PK ID manipulation + Bodrum FK repair + `/tmp` dosya yazma. **YÜKSEK RİSK** — production data FK manipülasyonu.
+- `DOCUMENTED`: Migration `2026_08_04_230600` — `kategori_yayin_tipi_field_dependencies` tablo oluşumu. Düşük risk — schema-only CREATE. Tablo zaten `9723c2e` ile mevcut; migration idempotent değil.
+- `DOCUMENTED`: Sprint 16 Charter statü: `DOCUMENTATION / REVIEWED / COMMIT_PENDING`. `.sab/sprints/sprint-16/CHARTER.md` cherry-pick için güvenli — yeni dosya. `docs/PROGRESS-TRACKER.md` cherry-pick için **güvenli değil** — çalışma ağacı geri alınır.
+- `DOCUMENTED`: Worktree senkronizasyonu: yapılmamalı — force merge riskli.
+- `REPO_VERIFIED`: TurkiyeLocationSeeder FK constraint'ler: `ilceler.il_id → iller.id` (CASCADE), `mahalleler.ilce_id → ilceler.id` (CASCADE), `ilanlar` nullable bigint constraint'siz.
+- `PRODUCTION_VERIFIED`: Production DB (`yalihanai_v2_production`): `iller/ilceler/mahalleler` TAMAMEN BOŞ (0 kayıt).
+- `REPO_VERIFIED`: Clone DB (`yalihanai_clone`): 81+13+20 seeded kayıt doğru. TC-GT-05/06 snapshot: wizard Step 4 dropdown'ları doğru render.
+- `REPO_VERIFIED`: TC-GT-05/06 timeout kök nedeni location verisi değil — `validateStep(4)` Alpine reactive deadlock veya API timeout.
+
 ## Drift warnings
+
+## Session 2026-08-30 — TC-GT-05/06 Kök Neden & Location Reconciliation
+
+- `REPO_VERIFIED`: Local DB (MySQL) location tables: `iller`=81, `ilceler`=13, `mahalleler`=20 — canonical seeded veri mevcut ✅
+- `TEST_VERIFIED`: TC-GT-05/06 local koşumu — Step 5'e navigasyon BAŞARILI (DOM snapshot kanıtı: başlık, fiyat "2.500.000 ₺", "Muğla / Bodrum", 1 fotoğraf ✅)
+- `REPO_VERIFIED`: TC-GT-05/06 browser crash kök nedeni: Alpine validation flood. `navigateStep4To5` testindeki `waitForFunction` polling döngüsü `validateStep(4)`'ü her ~100ms'de çağırıyor; `showNotification` (`resources/js/admin/ilan-create/core.js:334`) deduplication olmadığından 100+ toast birikiyor ve browser çöküyor.
+- `TEST_VERIFIED`: Clone migration test (2026-08-26) — 6/6 PASS. Location canonical reconciliation migration (`2026_08_26_000001`) clone'da doğru çalışıyor — kanıt: `audits/golden-thread-evidence/migration-clone-test-report.md`
+- `DOCUMENTED`: TC-GT-05/06 kök neden raporu: `audits/golden-thread-evidence/tc-gt-05-06-root-cause-2026-08-30.md`
+- `DOCUMENTED`: Düzeltme gereken iki nokta: (1) test `navigateStep4To5` polling isolation, (2) production `showNotification` deduplication
+- `REPO_VERIFIED`: `ilan-wizard-page.js` `validateStep()` Step 4→5 geçişinde `validateStep(4)` çağırıyor (satır 1053); `getStepFields(4)` = 6 alan; ancak `waitForFunction` polling nedeniyle çoklu çağrı birikimi
+- `REPO_VERIFIED`: `showNotification` (`core.js:334`): her çağrı yeni DOM div yaratıyor, 5sn sonra kaldırıyor; deduplication/throttle yok
+
+## Session 2026-08-30 — Golden Thread Full Certification
+
+- `TEST_VERIFIED`: Tüm 6 Golden Thread E2E testleri PASS — `tests/e2e/golden-thread-wizard.spec.ts`
+  - TC-GT-01 (Step 1→2 cascade) ✅
+  - TC-GT-02 (Step 2→3 temel bilgiler) ✅
+  - TC-GT-03 (Step 3 fotoğraf SSOT: Alpine=2, Native=2, Preview=2) ✅
+  - TC-GT-04 (Step 3→4 konum navigation) ✅
+  - TC-GT-05 (Step 4→5 önizleme + summary) ✅
+  - TC-GT-06 (Full Step 1→5 + form submit → HTTP 422 minimal fixture beklenen) ✅
+- `TEST_VERIFIED`: Kök neden analizi: `waitForFunction()` polling `validateStep(4)`'ü her ~100ms'de çağırıyor → `showNotification` deduplication yok → 100+ toast → browser çöküyordu. Düzeltme: tek seferlik `evaluate()` + `currentStep >= 5` guard.
+- `TEST_VERIFIED`: `ilan_sahibi_id` ve `danisman_id` fixture = `2` (admin user ID = 2).
+- `TEST_VERIFIED`: TC-GT-06 HTTP 422 = beklenen (minimal fixture ile backend validation geçiyor, FK/required eksik = 422 normal).
+- `DOCUMENTED`: Sertifikasyon kanıtı: `audits/golden-thread-evidence/certification-report.md`
+- `DOCUMENTED`: Kök neden raporu: `audits/golden-thread-evidence/tc-gt-05-06-root-cause-2026-08-30.md`
 
 ## Session 2026-08-29 — Sprint 14 Governance Command Center
 

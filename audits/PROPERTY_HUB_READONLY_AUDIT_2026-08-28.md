@@ -1,8 +1,14 @@
 # Property Hub Read-Only Verification Report
 
-**Tarih:** 2026-08-28 21:26 UTC
+<!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
+- **Repository Commit:** `UNKNOWN`
+- **Working Tree:** `UNKNOWN`
+- **Evidence Date:** 2026-08-28T21:26:00Z (UTC) [TR: 2026-08-29 00:26:00 +03:00]
+- **Evidence Level:** `REPO_VERIFIED / DOCUMENTED`
+- **Production Authorization:** `NONE (Read-Only Verification)`
+<!-- ───────────────────────────────────────────────────────────── -->
+
 **Auditor:** Kilo Agent (Read-Only Verification)
-**Kanıt Seviyesi:** `DOCUMENTED` + `REPO_VERIFIED`
 
 ---
 
