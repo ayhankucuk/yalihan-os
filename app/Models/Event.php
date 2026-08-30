@@ -19,22 +19,22 @@ class Event extends BaseModel
 
     protected $fillable = [
         'ilan_id',
-        'giris_tarihi',
-        'cikis_tarihi',
+        'check_in',
+        'check_out',
         'musteri_adi',
         'musteri_telefon',
         'musteri_email',
         'misafir_sayisi',
-        'toplam_tutar',
-        'durum',
+        'toplam_fiyat',
+        'rezervasyon_durumu',
         'ozel_istekler',
     ];
 
     protected $casts = [
-        'giris_tarihi' => 'date',
-        'cikis_tarihi' => 'date',
+        'check_in' => 'date',
+        'check_out' => 'date',
         'misafir_sayisi' => 'integer',
-        'toplam_tutar' => 'decimal:2',
+        'toplam_fiyat' => 'decimal:2',
     ];
 
     public function ilan(): BelongsTo
@@ -51,8 +51,8 @@ class Event extends BaseModel
         $endDate = $end instanceof Carbon ? $end->toDateString() : ($end ?? $startDate);
 
         return $query->where(function (Builder $q) use ($startDate, $endDate) {
-            $q->where('giris_tarihi', '<=', $endDate)
-              ->where('cikis_tarihi', '>=', $startDate);
+            $q->where('check_in', '<=', $endDate)
+              ->where('check_out', '>=', $startDate);
         });
     }
 
@@ -65,10 +65,10 @@ class Event extends BaseModel
         $endDate = Carbon::parse($end)->toDateString();
 
         return static::where('ilan_id', $ilanId)
-            ->where('durum', 'Onaylandı')
+            ->where('rezervasyon_durumu', 'onaylandi')
             ->where(function (Builder $q) use ($startDate, $endDate) {
-                $q->where('giris_tarihi', '<=', $endDate)
-                  ->where('cikis_tarihi', '>=', $startDate);
+                $q->where('check_in', '<=', $endDate)
+                  ->where('check_out', '>=', $startDate);
             })
             ->exists();
     }

@@ -833,7 +833,7 @@ class YazlikKiralamaController extends AdminController
     {
         try {
             // Context7: Eloquent relationship kullanımı
-            return YazlikRezervasyon::where('aktiflik_durumu', 'onaylandi')
+            return YazlikRezervasyon::where('rezervasyon_durumu', 'onaylandi')
 
                 ->whereMonth('check_in', date('m'))
                 ->whereYear('check_in', date('Y'))
@@ -852,23 +852,20 @@ class YazlikKiralamaController extends AdminController
             $ilan = Ilan::with(['yazlikRezervasyonlar', 'yazlikRezervasyonlar.ilan'])->findOrFail($ilanId);
             $rezervasyonlar = $ilan->yazlikRezervasyonlar;
 
-            $totalDays = $rezervasyonlar->where('aktiflik_durumu', 'onaylandi')->sum(function ($r) {
-                return $r->check_in->diffInDays($r->check_out);
-            });
-            $confirmedCount = $rezervasyonlar->where('aktiflik_durumu', 'onaylandi')->count();
+            $confirmedRezervasyonlar = $rezervasyonlar->where('rezervasyon_durumu', 'onaylandi');
+            $totalDays = $confirmedRezervasyonlar->sum(fn ($r) => $r->check_in->diffInDays($r->check_out));
+            $confirmedCount = $confirmedRezervasyonlar->count();
             $avgStayDuration = $confirmedCount > 0 ? round($totalDays / $confirmedCount, 1) : 0;
 
-            // Occupancy rate hesaplama (basit versiyon - geliştirilebilir)
+            // Occupancy rate hesaplama
             $yearDays = 365;
-            $bookedDays = $rezervasyonlar->where('aktiflik_durumu', 'onaylandi')->sum(function ($r) {
-                return $r->check_in->diffInDays($r->check_out);
-            });
+            $bookedDays = $confirmedRezervasyonlar->sum(fn ($r) => $r->check_in->diffInDays($r->check_out));
             $occupancyRate = $yearDays > 0 ? round(($bookedDays / $yearDays) * 100, 1) : 0;
 
             return [
                 'total_bookings' => $rezervasyonlar->count(),
                 'confirmed_bookings' => $confirmedCount,
-                'pending_bookings' => $rezervasyonlar->where('aktiflik_durumu', 'beklemede')->count(),
+                'pending_bookings' => $rezervasyonlar->where('rezervasyon_durumu', 'beklemede')->count(),
                 'occupancy_rate' => $occupancyRate,
                 'avg_stay_duration' => $avgStayDuration,
             ];
@@ -891,7 +888,7 @@ class YazlikKiralamaController extends AdminController
         try {
             // Context7: Eloquent relationship kullanımı (Eager Load ile N+1 düzeltmesi)
             $ilan = Ilan::with(['yazlikRezervasyonlar', 'yazlikRezervasyonlar.ilan'])->findOrFail($ilanId);
-            $onayliRezervasyonlar = $ilan->yazlikRezervasyonlar->where('aktiflik_durumu', 'onaylandi');
+            $onayliRezervasyonlar = $ilan->yazlikRezervasyonlar->where('rezervasyon_durumu', 'onaylandi');
 
 
             $monthlyRevenue = $onayliRezervasyonlar->filter(function ($r) {
