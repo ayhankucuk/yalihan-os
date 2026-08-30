@@ -98,15 +98,18 @@ class AvailabilitySynchronizationServiceTest extends TestCase
             ->count();
         $this->assertEquals(3, $blocked);
 
-        // Check each date
-        foreach (['2026-08-03', '2026-08-04', '2026-08-05'] as $date) {
+        // Check each date (dynamically computed from startDate/endDate)
+        $checkDate = Carbon::parse($startDate);
+        $endDateCarbon = Carbon::parse($endDate);
+        while ($checkDate <= $endDateCarbon) {
             $this->assertDatabaseHas('property_availabilities', [
                 'property_id' => $property->id,
-                'date' => $date,
+                'date' => $checkDate->format('Y-m-d'),
                 'is_available' => false,
                 'block_reason' => 'reservation',
                 'reservation_id' => 999,
             ]);
+            $checkDate->addDay();
         }
     }
 
