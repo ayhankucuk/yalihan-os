@@ -103,16 +103,32 @@ class IlanPublishGateController extends AdminController
 
             // 2. Perform Cortex Analysis for Dashboard metrics (optional side effect)
             // ✅ Phase C: AI evaluation is BEST-EFFORT — failures must NOT block publish.
-            // Context window exceeded (Ollama) or provider timeout = soft-fail, continue.
+            // Context window exceeded (Ollama), provider timeout, or service down = soft-fail.
             try {
                 $quality = $this->cortex->evaluateListingQualityForIlan($ilan, []);
                 $recommendation = $quality['data']['recommendation'] ?? 'ok';
-            } catch (\Exception $aiEx) {
-                LogService::warning('PublishGate: AI quality eval soft-failed', [
+            } catch (\Illuminate\Http\Client\ConnectionException $aiEx) {
+                // AI service unreachable (Ollama down, network timeout)
+                LogService::warning('PublishGate: AI service unreachable', [
                     'ilan_id' => $ilan->id,
                     'error'   => $aiEx->getMessage(),
                 ]);
-                $recommendation = 'ok'; // Continue with default — AI analysis is non-blocking
+                $recommendation = 'ok';
+            } catch (\RuntimeException $aiEx) {
+                // Known AI errors: context window exceeded, budget limit, provider error
+                LogService::warning('PublishGate: AI quality eval soft-failed (runtime)', [
+                    'ilan_id' => $ilan->id,
+                    'error'   => $aiEx->getMessage(),
+                ]);
+                $recommendation = 'ok';
+            } catch (\Exception $aiEx) {
+                // Unexpected AI error — log at ERROR level for observability, but do NOT block publish
+                LogService::error('PublishGate: AI quality eval unexpected error', [
+                    'ilan_id'     => $ilan->id,
+                    'error'       => $aiEx->getMessage(),
+                    'exception'   => get_class($aiEx),
+                ], $aiEx);
+                $recommendation = 'ok';
             }
 
             LogService::info('Publish request triggered via Gate', [

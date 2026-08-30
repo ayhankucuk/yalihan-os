@@ -45,9 +45,13 @@ class ListingLifecycleFinalSealTest extends TestCase
     /** @test */
     public function publishing_is_blocked_if_completion_score_is_below_100()
     {
-        $ilan = $this->createPublishableListing(auth()->user(), [
-            'completion_score' => 80
-        ]);
+        $ilan = $this->createPublishableListing(auth()->user());
+
+        // Mock score service: completion=80 (below 100 threshold)
+        $mock = Mockery::mock(ListingScoreService::class);
+        $mock->shouldReceive('computeCompletionScore')->andReturn(80);
+        $mock->shouldReceive('computeQualityScore')->andReturn(85);
+        $this->app->instance(ListingScoreService::class, $mock);
 
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('completion_score=80');
@@ -58,9 +62,13 @@ class ListingLifecycleFinalSealTest extends TestCase
     /** @test */
     public function publishing_is_blocked_if_quality_score_is_below_40()
     {
-        $ilan = $this->createPublishableListing(auth()->user(), [
-            'quality_score' => 35
-        ]);
+        $ilan = $this->createPublishableListing(auth()->user());
+
+        // Mock score service: completion=100 (passes), quality=35 (below 40 threshold)
+        $mock = Mockery::mock(ListingScoreService::class);
+        $mock->shouldReceive('computeCompletionScore')->andReturn(100);
+        $mock->shouldReceive('computeQualityScore')->andReturn(35);
+        $this->app->instance(ListingScoreService::class, $mock);
 
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('minimum kalite skoru %40 olmalıdır');
@@ -86,10 +94,17 @@ class ListingLifecycleFinalSealTest extends TestCase
     /** @test */
     public function forbidden_transitions_are_blocked_by_state_machine()
     {
-        $ilan = Ilan::factory()->create([
-            'yayin_durumu' => IlanDurumu::TASLAK,
-            'danisman_id' => auth()->id()
+        // Use createPublishableListing to ensure lat/lng/yayin_tipi_id are set,
+        // so the only failure is the state machine transition rule itself.
+        $ilan = $this->createPublishableListing(auth()->user(), [
+            'yayin_durumu' => IlanDurumu::TASLAK
         ]);
+
+        // Mock score service with passing scores so completion/quality gates don't fire first
+        $mock = Mockery::mock(ListingScoreService::class);
+        $mock->shouldReceive('computeCompletionScore')->andReturn(100);
+        $mock->shouldReceive('computeQualityScore')->andReturn(85);
+        $this->app->instance(ListingScoreService::class, $mock);
 
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Geçersiz durum geçişi: Taslak → Yayında');
@@ -106,6 +121,12 @@ class ListingLifecycleFinalSealTest extends TestCase
         $ilan = $this->createPublishableListing(auth()->user(), [
             'yayin_durumu' => IlanDurumu::TASLAK
         ]);
+
+        // Mock score service with passing scores
+        $mock = Mockery::mock(ListingScoreService::class);
+        $mock->shouldReceive('computeCompletionScore')->andReturn(100);
+        $mock->shouldReceive('computeQualityScore')->andReturn(85);
+        $this->app->instance(ListingScoreService::class, $mock);
 
         $lifecycle = app(YalihanLifecycle::class);
 
@@ -136,6 +157,8 @@ class ListingLifecycleFinalSealTest extends TestCase
         $mock = Mockery::mock(ListingScoreService::class);
         $mock->shouldReceive('refreshAndPersistScores')->andReturnNull();
         $mock->shouldReceive('computeBreakdown')->andReturn([]);
+        $mock->shouldReceive('computeCompletionScore')->andReturn(100);
+        $mock->shouldReceive('computeQualityScore')->andReturn(85);
         $this->app->instance(ListingScoreService::class, $mock);
 
         $response = $this->postJson(route('admin.ilanlar.publish', $ilan), [
