@@ -13,10 +13,10 @@ use App\Services\AI\Providers\DeepSeekCortexProvider;
 use App\Services\AI\Providers\OpenAICortexProvider;
 use App\Services\AI\Monetization\AiBudgetGuard;
 use App\Contracts\Resilience\CircuitBreakerInterface;
-use Tests\SimpleTestCase;
+use Tests\TestCase;
 use Mockery;
 
-class AIResilienceTest extends SimpleTestCase
+class AIResilienceTest extends TestCase
 {
 
     protected Tenant $tenant;

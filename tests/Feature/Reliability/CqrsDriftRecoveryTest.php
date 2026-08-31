@@ -14,8 +14,8 @@ class CqrsDriftRecoveryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // SQLite database lock fix: close any pending connections
-        DB::connection('sqlite')->reconnect();
+        // Note: DB::connection('sqlite')->reconnect() was removed because
+        // it destroys the in-memory SQLite database, causing "no such table" errors.
     }
 
     /** @test */

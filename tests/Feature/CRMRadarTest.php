@@ -169,14 +169,14 @@ class CRMRadarTest extends TestCase
             'ad' => 'Test',
             'soyad' => 'User',
             'telefon' => '5551234567',
-            'email' => 'test@example.com',
+            'eposta' => 'test@example.com',
         ]);
         
         // Assert: All required attributes exist
         $this->assertNotNull($kisi->ad);
         $this->assertNotNull($kisi->soyad);
         $this->assertNotNull($kisi->telefon);
-        $this->assertNotNull($kisi->email);
+        $this->assertNotNull($kisi->eposta);
         $this->assertEquals('Test', $kisi->ad);
         $this->assertEquals('User', $kisi->soyad);
     }
