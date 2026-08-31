@@ -325,7 +325,8 @@ class PropertyPublicationPolicy
 
         $allTemplates = YayinTipiSablonu::where('aktiflik_durumu', true)
             ->where(function ($query) use ($targetSearchIds) {
-                $query->whereIn('kategori_id', $targetSearchIds);
+                $query->whereIn('kategori_id', $targetSearchIds)
+                      ->orWhereNull('kategori_id');
             })
             ->get(['id', 'slug']);
 

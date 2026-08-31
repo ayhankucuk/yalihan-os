@@ -9,7 +9,9 @@ class TakimYonetimiSmokeTest extends TestCase
 {
     public function test_takimlar_endpoint_returns_json()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'tenant_id' => $this->getDefaultTenantId(),
+        ]);
         
         $response = $this->actingAs($user)->getJson('/api/takim-yonetimi/takimlar');
         

@@ -86,7 +86,7 @@ class CallbackQueryProcessorTest extends TestCase
 
         // Assert: Talep aktif edildi mi?
         $talep->refresh();
-        $this->assertEquals('Aktif', $talep->talep_durumu->value);
+        $this->assertEquals(\App\Enums\TalepDurumu::AKTIF->value, $talep->talep_durumu->value);
     }
 
     /**

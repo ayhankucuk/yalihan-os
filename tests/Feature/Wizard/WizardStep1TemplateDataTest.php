@@ -32,6 +32,7 @@ class WizardStep1TemplateDataTest extends TestCase
 
         $this->admin = User::factory()->create([
             'email' => 'test@yalihanai.com',
+            'tenant_id' => $this->getDefaultTenantId(),
             'role_id' => 1,
             'aktiflik_durumu' => true,
         ]);
