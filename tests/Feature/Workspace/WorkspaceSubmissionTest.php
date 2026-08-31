@@ -206,7 +206,6 @@ class WorkspaceSubmissionTest extends TestCase
             'data' => $postData
         ]);
 
-        $response->dump();
         $response->assertStatus(200);
         $response->assertJsonPath('readiness.readiness_status', 'ready');
         $response->assertJsonPath('lifecycle_state', PropertyWorkspaceAggregate::STATE_READY_FOR_REVIEW);
@@ -214,7 +213,7 @@ class WorkspaceSubmissionTest extends TestCase
         // Verify Event Sourcing DB events recorded
         $this->assertDatabaseHas('etki_alani_olaylari', [
             'tenant_id' => $this->tenant->id,
-            'aggregate_id' => PropertyWorkspace::where('ilan_id', $this->ilan->id)->first()->id,
+            'aggregate_id' => PropertyWorkspace::where('property_id', $this->ilan->id)->first()->id,
             'event_type' => 'StateChanged',
         ]);
     }

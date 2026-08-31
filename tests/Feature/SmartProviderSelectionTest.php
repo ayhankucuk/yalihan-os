@@ -27,6 +27,7 @@ class SmartProviderSelectionTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        \Illuminate\Support\Facades\Cache::flush();
         $this->aggregator = app(AiTelemetryAggregator::class);
         $this->policy = new ProviderSelectorPolicy();
     }

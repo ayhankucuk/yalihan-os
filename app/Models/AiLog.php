@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\BaseModel;
 use App\Traits\HasCountryScope;
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AiLog extends BaseModel
 {
     use HasCountryScope;
+    use BelongsToTenant;
 
     protected $table = 'ai_logs';
 
@@ -21,6 +23,7 @@ class AiLog extends BaseModel
     const UPDATED_AT = 'guncelleme_tarihi';
 
     protected $fillable = [
+        'tenant_id',
         'provider',
         'endpoint',
         'request_type',

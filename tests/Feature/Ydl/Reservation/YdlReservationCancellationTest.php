@@ -295,16 +295,17 @@ class YdlReservationCancellationTest extends TestCase
     {
         $start = now()->addDays(80)->format('Y-m-d');
         $end   = now()->addDays(82)->format('Y-m-d');
+        $externalDate = now()->addDays(83)->format('Y-m-d');
         $res = $this->makeConfirmedReservation($this->ilan, $start, $end);
 
         // Internal block from our reservation
         $this->blockAvailability($res->id, $start, $end);
 
-        // External block (e.g., Airbnb iCal) on same dates
+        // External block (e.g., Airbnb iCal) on external date
         PropertyAvailability::insert([
             [
                 'property_id' => $this->ilan->id,
-                'date' => $start,
+                'date' => $externalDate,
                 'is_available' => false,
                 'block_reason' => 'airbnb_busy',
                 'source_system' => 'airbnb_ical',
@@ -329,7 +330,7 @@ class YdlReservationCancellationTest extends TestCase
         // External block unchanged
         $externalAvail = PropertyAvailability::where('property_id', $this->ilan->id)
             ->where('source_system', 'airbnb_ical')
-            ->where('date', $start)
+            ->where('date', $externalDate)
             ->first();
         $this->assertFalse($externalAvail->is_available); // stays blocked
         $this->assertSame('airbnb_busy', $externalAvail->block_reason);

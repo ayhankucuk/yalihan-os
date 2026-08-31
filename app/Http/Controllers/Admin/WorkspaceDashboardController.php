@@ -189,7 +189,7 @@ class WorkspaceDashboardController extends Controller
 
         // Find or create PropertyWorkspace aggregate record linked to this Ilan
         $propertyWorkspaceService = app(\App\Services\PropertyWorkspace\PropertyWorkspaceService::class);
-        $propWorkspace = \App\Models\PropertyWorkspace::where('ilan_id', $ilan->id)->first();
+        $propWorkspace = \App\Models\PropertyWorkspace::where('property_id', $ilan->id)->first();
         if (!$propWorkspace) {
             $intent = $ilan->islem_tipi === 'kiralama' ? 'kiralik' : 'satilik';
             $propWorkspace = $propertyWorkspaceService->createWorkspace($ilan->id, $intent);
