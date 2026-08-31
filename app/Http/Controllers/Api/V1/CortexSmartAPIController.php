@@ -500,10 +500,23 @@ class CortexSmartAPIController extends Controller
         try {
             $cortex = app(\App\Services\AI\YalihanCortex::class);
 
-            // Eğer ID varsa direkt modeli kullan, yoksa array verisi
-            $ilan = $request->input('id')
-                ? \App\Models\Ilan::find($request->input('id'))
-                : $validated;
+            // Tenant-scoped Ilan resolve: sadece kullanıcının tenant'ındaki ilanlara erişim izni
+            $ilan = null;
+            if ($request->filled('id')) {
+                $user = $request->user();
+                if (!$user || !$user->tenant_id) {
+                    return $this->errorResponse('Erişim reddedildi', 403);
+                }
+
+                $ilan = \App\Models\Ilan::query()
+                    ->whereKey($request->integer('id'))
+                    ->where('tenant_id', (int) $user->tenant_id)
+                    ->first();
+
+                if (!$ilan) {
+                    return $this->errorResponse('İlan bulunamadı', 404);
+                }
+            }
 
             $options = [
                 'tone' => $request->input('tone', 'luks'),
