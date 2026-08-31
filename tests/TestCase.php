@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
 use Tests\Helpers\TestFixtureHelper;
+use App\Support\AgentContext;
 
 /**
  * TestCase
@@ -209,6 +210,9 @@ abstract class TestCase extends BaseTestCase
 
     protected function tearDown(): void
     {
+        // Reset static agent context to prevent cross-test pollution
+        AgentContext::reset();
+
         parent::tearDown();
     }
 }
