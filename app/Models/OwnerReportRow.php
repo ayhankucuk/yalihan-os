@@ -16,6 +16,7 @@ class OwnerReportRow extends BaseModel
     protected $table = 'owner_report_rows';
 
     protected $fillable = [
+        'tenant_id',
         'owner_id',
         'ilan_id',
         'kayit_tarihi',

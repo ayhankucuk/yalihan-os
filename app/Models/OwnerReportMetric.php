@@ -15,6 +15,7 @@ class OwnerReportMetric extends BaseModel
     protected $table = 'owner_report_metrics';
 
     protected $fillable = [
+        'tenant_id',
         'owner_id',
         'ilan_id',
         'periyot_tipi',

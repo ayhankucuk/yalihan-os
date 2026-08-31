@@ -180,11 +180,11 @@
                         </td>
                         <td class="py-4 px-6">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
-                                {{ $row->action_type ?? 'Genel' }}
+                                {{ $row->islem_tipi ?? $row->action_type ?? 'Genel' }}
                             </span>
                         </td>
                         <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-400">
-                            {{ $row->description ?? '—' }}
+                            {{ $row->aciklama ?? $row->description ?? '—' }}
                         </td>
                         <td class="py-4 px-6">
                             @php
