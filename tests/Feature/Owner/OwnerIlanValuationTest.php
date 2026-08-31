@@ -46,7 +46,8 @@ class OwnerIlanValuationTest extends TestCase
 
         // Basitleştirilmiş test ilanı (il/ilçe nullable)
         $this->ilan = Ilan::factory()->create([
-            'danisman_id' => $this->owner->id, // user_id yerine danisman_id kullan
+            'user_id' => $this->owner->id,
+            'danisman_id' => $this->owner->id,
             'ana_kategori_id' => $kategori->id,
             'il_id' => 1, // Dummy ID
             'ilce_id' => 1, // Dummy ID
@@ -108,6 +109,7 @@ class OwnerIlanValuationTest extends TestCase
     {
         // İlan konum bilgisi olmadan
         $ilanWithoutLocation = Ilan::factory()->create([
+            'user_id' => $this->owner->id,
             'danisman_id' => $this->owner->id,
             'il_id' => null,
             'ilce_id' => null,
@@ -127,6 +129,7 @@ class OwnerIlanValuationTest extends TestCase
     {
         // İlan m² bilgisi olmadan
         $ilanWithoutM2 = Ilan::factory()->create([
+            'user_id' => $this->owner->id,
             'danisman_id' => $this->owner->id,
             'il_id' => $this->ilan->il_id,
             'ilce_id' => $this->ilan->ilce_id,
@@ -294,11 +297,8 @@ class OwnerIlanValuationTest extends TestCase
         $response = $this->actingAs($otherOwner)
             ->get(route('owner.ilanlar.show', $this->ilan->id));
 
-        // NOT: Mevcut mimaride owner ve danisman aynı danisman_id alanını kullanıyor
-        // Policy'nin isDanismanOfListing() metodu sadece ID eşleşmesi kontrolü yapıyor
-        // Bu yüzden başka owner'ın ilanını görebiliyor (200)
-        // TODO: Gelecekte owner'lar için ayrı bir owner_id alanı eklenebilir
-        $response->assertStatus(200);
+        // SAB Task #15: Başka owner'ın ilanına erişim 404 dönmeli (varlık sızdırılmaz)
+        $response->assertNotFound();
     }
 
     /** @test */

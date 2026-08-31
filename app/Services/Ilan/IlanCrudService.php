@@ -202,6 +202,9 @@ class IlanCrudService
         $resolvedDanismanId = $data['danisman_id'] ?? Auth::id();
         $ilan->danisman_id = $this->resolveAndGuardDanismanId($resolvedDanismanId);
         $ilan->ilan_sahibi_id = $data['ilan_sahibi_id'] ?? null;
+        if (array_key_exists('user_id', $data)) {
+            $ilan->user_id = $data['user_id'] ?: null;
+        }
         // Step 2 wizard field — persist ilgili_kisi_id when provided
         if (array_key_exists('ilgili_kisi_id', $data)) {
             $ilan->ilgili_kisi_id = $data['ilgili_kisi_id'] ?: null;
