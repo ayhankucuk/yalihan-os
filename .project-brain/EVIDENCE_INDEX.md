@@ -97,4 +97,19 @@
 - `chief-ai/sprint-backlog.md` is older than the ERA V roadmap and may describe historical priorities.
 - Chat/browser statements are evidence only when accompanied by a date, URL/command, result, and commit or environment context.
 - VPS state can drift from the local checkout; record the deployed commit separately.
-- The current local HEAD is `f1cef01`, while the last supplied VPS audit reported `ea0549c`; these are separate environments and must not be conflated.
+
+## Session 2026-08-31 — Ilan Tenant Isolation Inventory
+
+- `REPO_VERIFIED`: `IlanPolicy` (app/Policies/IlanPolicy.php) — hiçbir method `tenant_id` kontrolü yapmıyor. `view()`, `update()`, `delete()`, `viewPrivateListingData()` sadece `danisman_id` veya `user_id` kontrol ediyor.
+- `REPO_VERIFIED`: `V2 IlanPolicy` (app/Policies/Api/V2/IlanPolicy.php) — `show()` method'unda explicit `tenant_id` kontrolü yok (sadece `view` return true — public endpoint). `update()` ve `delete()` sadece `danisman_id` kontrol ediyor.
+- `REPO_VERIFIED`: `V2/IlanController::show()` (satır 96) — `tenant_id !== $ilan->tenant_id` kontrolü YAPAN TEK endpoint.
+- `REPO_VERIFIED`: `Ilan` modelinde `TenantScope` global scope YOK. Sadece `visibility` global scope var (sıralama için).
+- `REPO_VERIFIED`: `Ilan::find()` / `findOrFail()` — ~92 kesin kullanım tespit edildi. Policy çağrısı olan: YOK.
+- `REPO_VERIFIED`: `withoutGlobalScopes()` — ~100 kullanım. İyi örnekler: `TenantResolver`, `IlanDomainYonetici`, `AvailabilitySynchronizationService`. Kötü örnekler: `ReservationService::findOrFail()` (tenant_id kontrolü yok).
+- `TEST_VERIFIED` (2026-08-31): `IlanCrossTenantIsolationTest` — 24 test | 23 geçen | 1 atlanan | 0 başarısız.
+- `TEST_VERIFIED` (2026-08-31): Tüm negatif cross-tenant testler 23/23 GEÇTİ. BookingRequestController 4/4, YazlikKiralamaController 4/4, ReferenceController 1/1, QRCodeController 2/2, NavigationController 1/1, SloganController 1/1, V2 IlanController 3/3, Cortex generateDescription 2/2 GEÇTİ. Mevcut tenant yalıtımı çalışıyor.
+- `REPO_VERIFIED` (P0 DÜZELTİLDİ): `CortexSmartAPIController::generateDescription` (satır 500-517) — tenant-scoped resolve eklendi: `Ilan::query()->whereKey($id)->where('tenant_id', $user->tenant_id)->first()`. Tenant A kullanıcısı Tenant B'nin ilanı için artık 404 alıyor. Açık kapatıldı.
+- `DOCUMENTED`: Envanter: `.project-brain/ILAN_INVENTORY.md` — Test sonuçları, açık detayları, kategori ayrımı (meşru vs riskli withoutGlobalScopes).
+- `DOCUMENTED`: Test dosyası: `tests/Feature/Security/IlanCrossTenantIsolationTest.php`
+- `DOCUMENTED`: V2 update positive test atlandı (skipped) — danisman_id authorization ayrı test olarak yazılacak.
+- **Production blocked**: Negatif testler 23/23 geçti. Merkezi guard/policy tasarımı bekleniyor.

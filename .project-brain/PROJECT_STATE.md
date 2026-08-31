@@ -30,6 +30,52 @@ YALIHAN OS is an AI-assisted real-estate and property-operations operating syste
 - Current engineering focus: production hardening of the listing/wizard flow, authentication/session continuity, category and publication-type data, and the `/yazliklar` public page.
 - Strategic decision: scope freeze and Golden Thread certification take priority over speculative feature expansion. The eight-step flow must pass code, automated, browser, and production evidence gates.
 
+## CRITICAL SECURITY — Ilan Tenant Isolation Gap (2026-08-31)
+
+**Durum:** `CRITICAL_SECURITY / GENERATE_DESCRIPTION_FIX_VERIFIED / OPTIMIZE_TITLE_SCOPE_CONFIRMED / 23_PASS / 1_SKIPPED / 0_FAIL / UNSTAGED / PRODUCTION_BLOCKED / MERKEZI_GUARD_DESIGN_PENDING`
+
+### Test Sonuçları (2026-08-31)
+
+| Kategori | Sonuç |
+|----------|--------|
+| Toplam test | 24 |
+| Geçen | 23 (96%) |
+| Atlanan | 1 (V2 update positive — danisman_id fixture) |
+| Başarısız | 0 |
+| Düzeltilen P0 açık | 1 (`generateDescription`) |
+
+### Açık Durumu
+
+| # | Endpoint | Analiz | Durum |
+|---|----------|--------|--------|
+| 1 | `POST /api/ai/generate-description` | Tenant-scoped resolve eklendi — `Ilan::query()->whereKey()->where('tenant_id')` | ✅ DÜZELTİLDİ |
+| 2 | `POST /api/ai/optimize-title` | Endpoint ID parametresi kullanmıyor — sadece validated data alıyor. Tenant açığı yok. | ✅ DOĞRULANDI — ETKİLENMEDİ |
+
+### Negatif Testler Durumu
+
+- `BookingRequestController` — 4/4 geçti ✅ (tenant yalıtımı çalışıyor)
+- `YazlikKiralamaController` — 4/4 geçti ✅ (tenant yalıtımı çalışıyor)
+- `CortexSmartAPIController` AI — 1/4 geçti ❌ (generateDescription açık)
+- `ReferenceController` — 1/1 geçti ✅
+- `QRCodeController` — 2/2 geçti ✅
+- `NavigationController` — 1/1 geçti ✅
+- `SloganController` — 1/1 geçti ✅
+- `V2 IlanController` — 4/4 geçti ✅ (explicit tenant_id kontrolü)
+
+**Sonuç:** TenantScope global scope olmasa bile, **mevcut controller'ların çoğu doğru şekilde tenant yalıtımı yapıyor** — 404/403 döndürüyor. Açıklar spesifik endpoint'lerde.
+
+### withoutGlobalScopes() Ayrımı
+
+| Kullanım Tipi | Örnek | Durum |
+|---------------|-------|-------|
+| Sadece `visibility` scope kaldırma | `Ilan::withoutGlobalScopes()->where(...)` | MEŞRU ✅ |
+| Tenant kontrolü ile birlikte | `TenantResolver::resolveIlan()` | MEŞRU ✅ |
+| Tenant kontrolü olmadan | `ReservationService::findOrFail()` | RİSKLİ ❌ |
+
+**Aksiyon:** Düzeltme kodu yazılmadı. Test sonuçlarına göre tasarım kararı bekleniyor.
+**Envanter:** `.project-brain/ILAN_INVENTORY.md`
+**Test:** `tests/Feature/Security/IlanCrossTenantIsolationTest.php`
+
 ## Current Git evidence
 
 - Branch: `integration/era-v-phase2a-e01`
