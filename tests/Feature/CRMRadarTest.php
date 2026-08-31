@@ -24,7 +24,7 @@ class CRMRadarTest extends TestCase
     public function test_crm_radar_page_loads_successfully(): void
     {
         // Arrange: Create admin user (middleware bypassed)
-        $admin = User::factory()->create();
+        $admin = User::factory()->admin()->create();
         
         // Act: Visit CRM Radar page as admin
         $response = $this->actingAs($admin)->get('/admin/kisiler');
@@ -77,7 +77,7 @@ class CRMRadarTest extends TestCase
     public function test_crm_radar_displays_active_contacts(): void
     {
         // Arrange: Create admin and active contact
-        $admin = User::factory()->create();
+        $admin = User::factory()->admin()->create();
         $aktifKisi = Kisi::factory()->create([
             'aktiflik_durumu' => true,
             'ad' => 'Test',
@@ -99,7 +99,7 @@ class CRMRadarTest extends TestCase
     public function test_crm_radar_hides_inactive_contacts_by_default(): void
     {
         // Arrange: Create admin and inactive contact
-        $admin = User::factory()->create();
+        $admin = User::factory()->admin()->create();
         $pasifKisi = Kisi::factory()->create([
             'aktiflik_durumu' => false,
             'ad' => 'Pasif',
@@ -121,7 +121,7 @@ class CRMRadarTest extends TestCase
     public function test_search_filters_contacts_correctly(): void
     {
         // Arrange: Create admin and contacts
-        $admin = User::factory()->create();
+        $admin = User::factory()->admin()->create();
         $kisi1 = Kisi::factory()->create([
             'ad' => 'Ahmet',
             'soyad' => 'Yılmaz',
@@ -148,7 +148,7 @@ class CRMRadarTest extends TestCase
     public function test_pagination_works_correctly(): void
     {
         // Arrange: Create admin and 25 contacts (assuming 20 per page)
-        $admin = User::factory()->create();
+        $admin = User::factory()->admin()->create();
         Kisi::factory()->count(25)->create(['aktiflik_durumu' => true]);
         
         // Act: Visit first page
