@@ -52,17 +52,8 @@ class DashboardControllerTest extends TestCase
      */
     public function test_dashboard_controller_stats(): void
     {
-        // Mock CacheService to avoid DB queries for missing tables
-        $this->mock(\App\Services\Cache\CacheService::class, function ($mock) {
-            $mock->shouldReceive('key')->andReturn('test_key');
-            $mock->shouldReceive('remember')
-                ->andReturn([
-                    'quickStats' => [],
-                    'recentIlanlar' => [],
-                    'recentUsers' => [],
-                ]);
-        });
-
+        // Note: getDashboardStats() uses CortexAnalyticsService and DashboardProjectionService
+        // No mock needed - let services return real empty results
         $response = $this->actingAs($this->admin)
             ->getJson('/admin/dashboard/stats');
 
