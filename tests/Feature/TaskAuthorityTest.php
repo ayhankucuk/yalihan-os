@@ -22,7 +22,7 @@ class TaskAuthorityTest extends TestCase
             'crm_durumu' => 0, // NEW
         ]);
 
-        $service = new FollowUpAutomationService();
+        $service = app(FollowUpAutomationService::class);
         $service->scheduleFollowUp($lead);
 
         // Verify that a Gorev was created, not a FollowUpTask
@@ -48,7 +48,7 @@ class TaskAuthorityTest extends TestCase
             'bitis_tarihi' => now()->addDay(),
         ]);
 
-        $service = new FollowUpAutomationService();
+        $service = app(FollowUpAutomationService::class);
         $service->completeTask($task, 'Task finished successfully');
 
         $this->assertEquals('tamamlandi', $task->fresh()->gorev_durumu);

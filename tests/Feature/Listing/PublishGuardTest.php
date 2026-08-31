@@ -178,6 +178,7 @@ class PublishGuardTest extends TestCase
         return new YalihanLifecycle(
             app(\App\Services\Listing\ListingStateMachine::class),
             $templateResolver,
+            app(\App\Services\Listing\ListingScoreService::class),
         );
     }
 
