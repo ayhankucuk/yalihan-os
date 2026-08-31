@@ -199,7 +199,7 @@ class AdvisorPhotoUploadTest extends TestCase
                 ['photo' => $photo1]
             );
 
-        $response1->assertStatus(200);
+        $response1->assertStatus(201);
         $this->assertNotNull($response1->json('data.photo.id'), 'Photo1 upload should return photo ID');
 
         $response2 = $this->actingAs($this->user)
@@ -208,7 +208,7 @@ class AdvisorPhotoUploadTest extends TestCase
                 ['photo' => $photo2]
             );
 
-        $response2->assertStatus(200);
+        $response2->assertStatus(201);
         $this->assertNotNull($response2->json('data.photo.id'), 'Photo2 upload should return photo ID');
 
         $photoId1 = $response1->json('data.photo.id');
