@@ -17,9 +17,10 @@ class TaskAuthorityTest extends TestCase
     public function it_creates_modular_gorev_records_when_scheduling_follow_up()
     {
         $agent = User::factory()->create();
+        $this->actingAs($agent);
         $lead = Lead::factory()->create([
             'assigned_agent_id' => $agent->id,
-            'crm_durumu' => 0, // NEW
+            'crm_durumu' => Lead::CRM_NEW,
         ]);
 
         $service = app(FollowUpAutomationService::class);
