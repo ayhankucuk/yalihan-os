@@ -53,18 +53,14 @@ class WorkspaceSubmissionTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $il = \App\Models\Il::forceCreate([
-            'id' => 48,
-            'plaka_kodu' => 48,
-            'il_adi' => 'Bodrum',
-            'aktiflik_durumu' => 1,
-        ]);
-        $ilce = \App\Models\Ilce::forceCreate([
-            'id' => 1,
-            'il_id' => 48,
-            'ilce_adi' => 'Merkez',
-            'aktiflik_durumu' => 1,
-        ]);
+        $il = \App\Models\Il::firstOrCreate(
+            ['id' => 48],
+            ['plaka_kodu' => 48, 'il_adi' => 'Bodrum', 'aktiflik_durumu' => 1]
+        );
+        $ilce = \App\Models\Ilce::firstOrCreate(
+            ['id' => 1, 'il_id' => 48],
+            ['ilce_adi' => 'Merkez', 'aktiflik_durumu' => 1]
+        );
 
         $this->ilan = Ilan::create([
             'tenant_id' => $this->tenant->id,

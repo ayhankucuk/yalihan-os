@@ -44,12 +44,10 @@ class DescriptionReviewModalTest extends TestCase
         Model::unguard();
 
         // 1. Seed necessary entities
-        $il = new Il;
-        $il->id = 1;
-        $il->il_adi = 'Muğla';
-        $il->plaka_kodu = '48';
-        $il->aktiflik_durumu = AktiflikDurumu::AKTIF;
-        $il->save();
+        $il = Il::firstOrCreate(
+            ['id' => 1],
+            ['il_adi' => 'Muğla', 'plaka_kodu' => '48', 'aktiflik_durumu' => AktiflikDurumu::AKTIF]
+        );
 
         $kategori = IlanKategori::factory()->create([
             'slug' => 'yazlik',

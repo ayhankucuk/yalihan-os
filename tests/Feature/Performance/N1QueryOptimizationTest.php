@@ -41,8 +41,11 @@ class N1QueryOptimizationTest extends TestCase
     protected function seedTestData(): void
     {
         // Create location data manually with required plaka_kodu
-        // ✅ Il model has incrementing=false, so we must use forceCreate() to set id
-        $il = Il::forceCreate(['id' => 34, 'il_adi' => 'İstanbul', 'plaka_kodu' => 34, 'aktiflik_durumu' => 1]);
+        // ✅ Use firstOrCreate to avoid UNIQUE constraint collision with TurkiyeLocationSeeder
+        $il = Il::firstOrCreate(
+            ['id' => 34],
+            ['il_adi' => 'İstanbul', 'plaka_kodu' => 34, 'aktiflik_durumu' => 1]
+        );
         $ilce = Ilce::create(['il_id' => $il->id, 'ilce_adi' => 'Kadıköy', 'aktiflik_durumu' => 1]);
 
         // Create category
