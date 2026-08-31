@@ -28,6 +28,7 @@ class AdvisorPhotoUploadTest extends TestCase
             'password' => bcrypt('password'),
             'role_id' => $role->id,
             'email_verified_at' => now(),
+            'tenant_id' => $this->getDefaultTenantId(),
         ]);
 
         // Create test advisor (Kişi)
@@ -38,6 +39,7 @@ class AdvisorPhotoUploadTest extends TestCase
             'telefon' => '05551234567',
             'kisi_tipi' => 'danisman',
             'aktiflik_durumu' => true,
+            'tenant_id' => $this->getDefaultTenantId(),
         ]);
 
         Storage::fake('public');
