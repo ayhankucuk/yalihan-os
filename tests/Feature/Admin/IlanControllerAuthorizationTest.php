@@ -66,6 +66,7 @@ class IlanControllerAuthorizationTest extends TestCase
         return Ilan::create([
             'baslik'        => 'Test İlan',
             'kisi_id'       => $kisiId,
+            'user_id'       => $owner->id, // Policy checks user_id for ownership
             'danisman_id'   => $owner->id,
             'yayin_durumu'  => IlanDurumu::YAYINDA->value,
             'fiyat'         => 1000000,

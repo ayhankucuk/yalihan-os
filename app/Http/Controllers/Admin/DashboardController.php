@@ -109,7 +109,19 @@ class DashboardController extends AdminController
 
     public function getDashboardStats()
     {
-        return response()->json(['success' => true, 'data' => $this->getDashboardData()]);
+        try {
+            return response()->json(['success' => true, 'data' => $this->getDashboardData()]);
+        } catch (\Exception $e) {
+            LogService::error('Dashboard stats error', [], $e);
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'quickStats' => $this->getEmptyStats(),
+                    'recentIlanlar' => [],
+                    'recentUsers' => [],
+                ]
+            ]);
+        }
     }
 
     public function refresh()

@@ -45,7 +45,12 @@ class OwnerReportController extends Controller
         $baslangicTar = $request->baslangic_tarihi ?? $request->input('start_date');
         $bitisTar     = $request->bitis_tarihi     ?? $request->input('end_date');
 
-        $rows = OwnerReportRow::where('tenant_id', $this->tenantResolver->resolve()->tenantId)
+        $tenantId = (int) $user->tenant_id;
+        if (! $tenantId) {
+            abort(403, 'Tenant context missing.');
+        }
+
+        $rows = OwnerReportRow::where('tenant_id', $tenantId)
             ->where('owner_id', $user->id)
             ->when($ilanId,       fn($q) => $q->where('ilan_id', $ilanId))
             ->when($baslangicTar, fn($q) => $q->where('kayit_tarihi', '>=', $baslangicTar))
@@ -53,7 +58,7 @@ class OwnerReportController extends Controller
             ->orderBy('kayit_tarihi', 'desc') // context7-ignore
             ->paginate(20);
 
-        $metrics = OwnerReportMetric::where('tenant_id', $this->tenantResolver->resolve()->tenantId)
+        $metrics = OwnerReportMetric::where('tenant_id', $tenantId)
             ->where('owner_id', $user->id)
             ->when($ilanId, fn($q) => $q->where('ilan_id', $ilanId))
             ->get();

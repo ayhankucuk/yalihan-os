@@ -78,6 +78,18 @@ class OwnerAuthController extends Controller
             );
         }
 
+        if (! $user->tenant_id) {
+            LogService::warning('OwnerAuth: Tenant context missing on owner user', [
+                'user_id' => $user->id,
+                'email'   => $user->email,
+            ]);
+
+            return back()->with(
+                'bilgi',
+                'Eğer bu email ile kayıtlı bir mülk sahibi hesabı varsa, giriş linki gönderildi.'
+            );
+        }
+
         // Eski kullanılmamış token'ları iptal et
         OwnerLoginToken::where('user_id', $user->id)
                         ->where('kullanildi', false)
@@ -88,7 +100,7 @@ class OwnerAuthController extends Controller
         $tokenHash  = hash('sha256', $plainToken);
 
         OwnerLoginToken::create([
-            'tenant_id'        => $this->tenantResolver->resolve()->tenantId,
+            'tenant_id'        => (int) $user->tenant_id,
             'user_id'          => $user->id,
             'token_hash'       => $tokenHash,
             'giris_kanali'     => 'email',
