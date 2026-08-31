@@ -261,6 +261,12 @@ class PricingSuggestionServiceTest extends TestCase
         $this->assertGreaterThanOrEqual($result['min_price'], $result['max_price']);
     }
 
+    protected function tearDown(): void
+    {
+        \Illuminate\Database\Eloquent\Model::reguard();
+        parent::tearDown();
+    }
+
     // ── HELPERS ──────────────────────────────────────────────────
 
     /**

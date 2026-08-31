@@ -280,4 +280,10 @@ class DescriptionReviewModalTest extends TestCase
         $drafts = $historyResponse->json('data.drafts');
         $this->assertCount(2, $drafts);
     }
+
+    protected function tearDown(): void
+    {
+        Model::reguard();
+        parent::tearDown();
+    }
 }

@@ -86,4 +86,10 @@ class AgentDashboardTest extends TestCase
         $response->assertSee('Cortex AI Önerileri');
         $response->assertSee('Fiyat güncellemesi fırsatı');
     }
+
+    protected function tearDown(): void
+    {
+        \Illuminate\Database\Eloquent\Model::reguard();
+        parent::tearDown();
+    }
 }

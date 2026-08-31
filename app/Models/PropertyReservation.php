@@ -73,7 +73,6 @@ class PropertyReservation extends BaseModel
 
     protected $casts = [
         'tenant_id'        => 'integer',
-        'ilan_id'          => 'integer',
         'cancelled_at'     => 'datetime',
         'confirmed_at'     => 'datetime',
         'islem_tutari'     => 'decimal:2',

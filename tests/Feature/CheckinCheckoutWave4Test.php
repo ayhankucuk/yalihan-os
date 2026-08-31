@@ -111,7 +111,6 @@ class CheckinCheckoutWave4Test extends TestCase
         /** @var PropertyReservation $reservation */
         $reservation = PropertyReservation::create([
             'property_id'             => $this->ilan->id,
-            'ilan_id'                 => $this->ilan->id,
             'tenant_id'               => 1,
             'start_date'              => $startDate,
             'end_date'                => $endDate,
@@ -360,7 +359,6 @@ class CheckinCheckoutWave4Test extends TestCase
 
         $reservation = PropertyReservation::create([
             'property_id'       => $this->ilan->id,
-            'ilan_id'           => $this->ilan->id,
             'tenant_id'         => 1,
             'start_date'        => $startDate,
             'end_date'          => $endDate,
@@ -391,7 +389,6 @@ class CheckinCheckoutWave4Test extends TestCase
 
         $reservation = PropertyReservation::create([
             'property_id'       => $this->ilan->id,
-            'ilan_id'           => $this->ilan->id,
             'tenant_id'         => 1,
             'start_date'        => $startDate,
             'end_date'          => $endDate,

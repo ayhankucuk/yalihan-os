@@ -66,7 +66,6 @@ class GuestConciergePilotReadinessTest extends TestCase
         ]);
         $this->reservation = PropertyReservation::create([
             'tenant_id' => $this->tenant->id,
-            'ilan_id' => $this->ilan->id,
             'property_id' => $this->ilan->id,
             'guest_name' => 'Pilot Guest',
             'guest_phone' => '+905551234567',

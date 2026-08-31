@@ -74,7 +74,6 @@ class GuestConciergePhase1Test extends TestCase
 
         $this->reservation = PropertyReservation::create([
             'tenant_id' => $this->tenant->id,
-            'ilan_id' => $this->ilan->id,
             'property_id' => $this->ilan->id,
             'guest_name' => 'Ayşe Yılmaz',
             'guest_phone' => '+905551234567',
@@ -493,7 +492,6 @@ class GuestConciergePhase1Test extends TestCase
         // Make reservation active (today)
         $activeReservation = PropertyReservation::create([
             'tenant_id' => $this->tenant->id,
-            'ilan_id' => $this->ilan->id,
             'property_id' => $this->ilan->id,
             'guest_name' => 'Test Guest',
             'guest_phone' => '+905551111111',
@@ -652,7 +650,6 @@ class GuestConciergePhase1Test extends TestCase
         ]);
         $ownReservation = PropertyReservation::create([
             'tenant_id' => $ownTenant->id,
-            'ilan_id' => $ownIlan->id,
             'property_id' => $ownIlan->id,
             'guest_name' => 'Audit Test Guest',
             'guest_phone' => '+905559998877',

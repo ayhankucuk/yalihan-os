@@ -105,7 +105,6 @@ class CheckinCheckoutWave3Test extends TestCase
 
         $reservation = PropertyReservation::create([
             'tenant_id' => 1,
-            'ilan_id' => $this->ilan->id,
             'property_id' => $this->ilan->id,
             'reservation_state' => ReservationState::CONFIRMED,
             'start_date' => $startDate,
@@ -144,7 +143,6 @@ class CheckinCheckoutWave3Test extends TestCase
 
         $reservation = PropertyReservation::create([
             'tenant_id' => 1,
-            'ilan_id' => $this->ilan->id,
             'property_id' => $this->ilan->id,
             'reservation_state' => ReservationState::CONFIRMED,
             'start_date' => $startDate,
@@ -273,7 +271,6 @@ class CheckinCheckoutWave3Test extends TestCase
 
         $reservation = PropertyReservation::create([
             'tenant_id' => 1,
-            'ilan_id' => $this->ilan->id,
             'property_id' => $this->ilan->id,
             'reservation_state' => ReservationState::CONFIRMED,
             'start_date' => $startDate,
@@ -323,7 +320,6 @@ class CheckinCheckoutWave3Test extends TestCase
         // Tenant 2 reservation
         $reservation = PropertyReservation::create([
             'tenant_id' => 2, // Different tenant
-            'ilan_id' => $this->otherTenantIlan->id,
             'property_id' => $this->otherTenantIlan->id,
             'reservation_state' => ReservationState::CONFIRMED,
             'start_date' => $startDate,
@@ -480,7 +476,6 @@ class CheckinCheckoutWave3Test extends TestCase
     {
         $reservation = PropertyReservation::create([
             'tenant_id' => 1,
-            'ilan_id' => $this->ilan->id,
             'property_id' => $this->ilan->id,
             'reservation_state' => ReservationState::CONFIRMED,
             'start_date' => now()->addDays(1)->format('Y-m-d'),
@@ -529,7 +524,6 @@ class CheckinCheckoutWave3Test extends TestCase
     {
         $reservation = PropertyReservation::create([
             'tenant_id' => 1,
-            'ilan_id' => $this->ilan->id,
             'property_id' => $this->ilan->id,
             'reservation_state' => ReservationState::CONFIRMED,
             'start_date' => now()->addDays(1)->format('Y-m-d'),
@@ -595,7 +589,6 @@ class CheckinCheckoutWave3Test extends TestCase
         // No phone, no email
         $reservation = PropertyReservation::create([
             'tenant_id' => 1,
-            'ilan_id' => $this->ilan->id,
             'property_id' => $this->ilan->id,
             'reservation_state' => ReservationState::CONFIRMED,
             'start_date' => $startDate,
@@ -623,7 +616,6 @@ class CheckinCheckoutWave3Test extends TestCase
 
         $reservation = PropertyReservation::create([
             'tenant_id' => 1,
-            'ilan_id' => $this->ilan->id,
             'property_id' => $this->ilan->id,
             'reservation_state' => ReservationState::CONFIRMED,
             'start_date' => $startDate,
@@ -651,7 +643,6 @@ class CheckinCheckoutWave3Test extends TestCase
 
         $reservation = PropertyReservation::create([
             'tenant_id' => 1,
-            'ilan_id' => $this->ilan->id,
             'property_id' => $this->ilan->id,
             'reservation_state' => ReservationState::CONFIRMED,
             'start_date' => $startDate,
@@ -768,7 +759,6 @@ class CheckinCheckoutWave3Test extends TestCase
     {
         $reservation = PropertyReservation::create([
             'tenant_id' => 1,
-            'ilan_id' => $this->ilan->id,
             'property_id' => $this->ilan->id,
             'reservation_state' => ReservationState::CONFIRMED,
             'start_date' => now()->addDays(1)->format('Y-m-d'),
@@ -831,7 +821,6 @@ class CheckinCheckoutWave3Test extends TestCase
 
         $reservation = PropertyReservation::create([
             'tenant_id' => 1,
-            'ilan_id' => $this->ilan->id,
             'property_id' => $this->ilan->id,
             'reservation_state' => ReservationState::CONFIRMED,
             'start_date' => $startDate,

@@ -142,4 +142,10 @@ class PriceSuggestionTest extends TestCase
         $response->assertStatus(200) // Controller returns 200 with success: false
             ->assertJsonPath('success', false);
     }
+
+    protected function tearDown(): void
+    {
+        \Illuminate\Database\Eloquent\Model::reguard();
+        parent::tearDown();
+    }
 }

@@ -90,7 +90,6 @@ class CheckinCheckoutWave5Test extends TestCase
 
         $reservation = PropertyReservation::create([
             'property_id'             => $targetIlan->id,
-            'ilan_id'                 => $targetIlan->id,
             'tenant_id'               => $tenantId,
             'start_date'              => now()->format('Y-m-d'),
             'end_date'                => now()->addDays(3)->format('Y-m-d'),
@@ -273,7 +272,6 @@ class CheckinCheckoutWave5Test extends TestCase
         // Reservation without readiness setup
         $reservation = PropertyReservation::create([
             'property_id'             => $this->ilan->id,
-            'ilan_id'                 => $this->ilan->id,
             'tenant_id'               => 1,
             'start_date'              => now()->format('Y-m-d'),
             'end_date'                => now()->addDays(3)->format('Y-m-d'),

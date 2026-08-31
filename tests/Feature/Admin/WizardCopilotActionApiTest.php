@@ -418,6 +418,7 @@ class WizardCopilotActionApiTest extends TestCase
 
     protected function tearDown(): void
     {
+        \Illuminate\Database\Eloquent\Model::reguard();
         Mockery::close();
         parent::tearDown();
     }
