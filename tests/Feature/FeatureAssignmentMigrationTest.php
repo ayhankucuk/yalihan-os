@@ -126,12 +126,12 @@ class FeatureAssignmentMigrationTest extends TestCase
     /**
      * Test 4: Feature assignments seeded correctly
      *
-     * Expected: 71 assignments (Villa only - G3/G4/G5)
+     * Expected: 106 assignments (Villa only - G3/G4/G5)
      * Breakdown:
      *   - Villa Satilik (1/8/1): 35
-     *   - Villa Kiralik (1/8/2): 1
+     *   - Villa Kiralik (1/8/2): 36  (G3 scope + aidat suggested + depozito required)
      *   - Villa Gunluk (1/8/5): 35
-     *   Total: 71
+     *   Total: 106
      *
      * NOTE: G1 (global) and G2 (Konut) require NULL kategori_id/yayin_tipi_id
      * in yayin_tipi_sablonlari. The migration's $resolve() function queries
@@ -143,7 +143,7 @@ class FeatureAssignmentMigrationTest extends TestCase
     public function feature_assignments_seeded_count(): void
     {
         $count = DB::table('feature_assignments')->count();
-        $this->assertEquals(71, $count, "Expected 71 feature assignments (Villa only), got {$count}");
+        $this->assertEquals(106, $count, "Expected 106 feature assignments (Villa G3/G4/G5), got {$count}");
     }
 
     /**
@@ -296,11 +296,11 @@ class FeatureAssignmentMigrationTest extends TestCase
             ->count();
 
         $this->assertEquals(35, $villaSatilik, "Expected 35 Villa Satilik assignments, got {$villaSatilik}");
-        $this->assertEquals(1, $villaKiralik, "Expected 1 Villa Kiralik assignment, got {$villaKiralik}");
+        $this->assertEquals(36, $villaKiralik, "Expected 36 Villa Kiralik assignments (G3 scope + aidat + depozito), got {$villaKiralik}");
         $this->assertEquals(35, $villaGunluk, "Expected 35 Villa Gunluk assignments, got {$villaGunluk}");
 
         $totalVilla = $villaSatilik + $villaKiralik + $villaGunluk;
-        $this->assertEquals(71, $totalVilla, "Expected 71 total Villa assignments, got {$totalVilla}");
+        $this->assertEquals(106, $totalVilla, "Expected 106 total Villa assignments, got {$totalVilla}");
     }
 
     /**
@@ -317,6 +317,6 @@ class FeatureAssignmentMigrationTest extends TestCase
             ->where('source_type', 'villa_migration_2026_08_25')
             ->count();
 
-        $this->assertEquals(71, $total, "Migration seeds 71 Villa assignments, got {$total}");
+        $this->assertEquals(106, $total, "Migration seeds 106 Villa assignments (G3/G4/G5), got {$total}");
     }
 }

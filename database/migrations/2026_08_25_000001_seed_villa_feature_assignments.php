@@ -8,18 +8,27 @@ use Illuminate\Support\Facades\Schema;
  * Seed villa-specific feature data into feature_categories, features,
  * and feature_assignments tables.
  *
- * Coverage:
- *   Villa Satilik  (main=1, sub=8, listing_type=1) = 34 fields
- *   Villa Kiralik  (main=1, sub=8, listing_type=2) =  1 field (depozito)
- *   Villa Gunluk   (main=1, sub=8, listing_type=5) = 34 fields (explicit, NOT inherited)
- *   Konut Global   (main=1, sub=null, lt=null)     =  8 fields @ main_category
- *   Global         (main=null, sub=null, lt=null)   =  5 fields @ global
+ * Provenance: source_type = 'villa_migration_2026_08_25'
+ * Rollback Safety: Deletes ONLY villa_migration_2026_08_25 records.
+ *   Does NOT affect seeder records (source_type = 'canonical_seed').
  *
- * Total: feature_categories=7, features=36, feature_assignments=82
+ * Coverage (this migration — Villa tiers only):
+ *   Villa Satilik   (main=1, sub=8, listing_type=1)   = 35 fields
+ *   Villa Kiralik   (main=1, sub=8, listing_type=2)   = 36 fields (G3 scope + aidat + depozito)
+ *   Villa Gunluk    (main=1, sub=8, listing_type=5)   = 35 fields
  *
- * IMPORTANT: Villa sub_category_id = 8 (NOT 36). Kategori 36 does not exist.
- *   Sub-category 8 = Villa in ilan_kategorileri table (parent=1, seviye=1).
- *   Main category = 1 (Konut), NOT 11 (Ofis).
+ * Total: feature_categories=7, features=36, feature_assignments=106
+ *
+ * NOTE: G1 (global) and G2 (Konut) are NOT seeded by this migration.
+ * They are handled by FeatureAssignmentSeeder or a separate repair migration.
+ *
+ * G4 canonical scope (2026-09-02 fix):
+ *   Villa Kiralik = G3 Villa özellikleri + aidat (suggested) + depozito (required) = 36 total
+ *   Aidat required=false: domain kararı bekleniyor — ayrı SAAB kararı gerekir.
+ *
+ * Provenance separation:
+ *   Migration seed:  source_type = 'villa_migration_2026_08_25'
+ *   Legacy repair:   assignable_id = 0 (source_type = 'canonical_seed' — NOT touched)
  *
  * Run: php artisan migrate
  * Rollback: php artisan migrate:rollback --step=1
@@ -194,8 +203,43 @@ return new class extends Migration
             [35, 1, 8, 1, 'Tapu ve İmar',    false,  true,   1],
             [36, 1, 8, 1, 'Tapu ve İmar',    false,  false,  2],
 
-            // Villa Kiralik (yayin_tipi=2) — 1 field (depozito)
-            [32, 1, 8, 2, 'Maliyet ve Aidat', true,   false,  2],
+            // Villa Kiralik (yayin_tipi=2) — 36 fields (G3 scope + aidat required + depozito required)
+            [1,  1, 8, 2, 'Temel Bilgiler',    true,   true,   1],
+            [2,  1, 8, 2, 'Temel Bilgiler',    false,  true,   2],
+            [3,  1, 8, 2, 'Temel Bilgiler',    true,   true,   3],
+            [4,  1, 8, 2, 'Temel Bilgiler',    false,  true,   4],
+            [5,  1, 8, 2, 'Temel Bilgiler',    false,  true,   5],
+            [6,  1, 8, 2, 'Temel Bilgiler',    false,  true,   6],
+            [7,  1, 8, 2, 'Temel Bilgiler',    false,  true,   7],
+            [8,  1, 8, 2, 'Konum ve Arsa',    false,  true,   1],
+            [9,  1, 8, 2, 'Konum ve Arsa',    false,  true,   2],
+            [10, 1, 8, 2, 'Konum ve Arsa',     false,  true,   3],
+            [11, 1, 8, 2, 'Konum ve Arsa',     false,  true,   4],
+            [12, 1, 8, 2, 'Konum ve Arsa',     false,  true,   5],
+            [13, 1, 8, 2, 'Yapı Özellikleri', false,  true,   1],
+            [14, 1, 8, 2, 'Yapı Özellikleri', false,  true,   2],
+            [15, 1, 8, 2, 'Yapı Özellikleri', false,  true,   3],
+            [16, 1, 8, 2, 'Yapı Özellikleri', false,  true,   4],
+            [17, 1, 8, 2, 'Yapı Özellikleri', false,  true,   5],
+            [18, 1, 8, 2, 'Yapı Özellikleri', false,  true,   6],
+            [19, 1, 8, 2, 'Yapı Özellikleri', false,  true,   7],
+            [20, 1, 8, 2, 'Yapı Özellikleri', false,  false, 8],
+            [21, 1, 8, 2, 'Dış Özellikler',   false,  true,   1],
+            [22, 1, 8, 2, 'Dış Özellikler',   false,  true,   2],
+            [23, 1, 8, 2, 'Dış Özellikler',   false,  true,   3],
+            [24, 1, 8, 2, 'Dış Özellikler',   false,  true,   4],
+            [25, 1, 8, 2, 'İç Özellikler',    false,  true,   1],
+            [26, 1, 8, 2, 'İç Özellikler',    false,  true,   2],
+            [27, 1, 8, 2, 'İç Özellikler',    false,  true,   3],
+            [28, 1, 8, 2, 'İç Özellikler',    false,  true,   4],
+            [29, 1, 8, 2, 'İç Özellikler',    false,  true,   5],
+            [30, 1, 8, 2, 'İç Özellikler',    false,  false, 6],
+            [31, 1, 8, 2, 'Maliyet ve Aidat', false,  false,  1], // aidat: G4-specific suggested (domain kararı bekleniyor)
+            [32, 1, 8, 2, 'Maliyet ve Aidat', true,   false,  2], // depozito: G4-specific required
+            [33, 1, 8, 2, 'Maliyet ve Aidat', false,  true,   3],
+            [34, 1, 8, 2, 'Maliyet ve Aidat', false,  true,   4],
+            [35, 1, 8, 2, 'Tapu ve İmar',     false,  true,   1],
+            [36, 1, 8, 2, 'Tapu ve İmar',     false,  false, 2],
 
             // Villa Gunluk (yayin_tipi=5) — 34 fields (explicit)
             [1,  1, 8, 5, 'Temel Bilgiler',    true,   true,   1],
