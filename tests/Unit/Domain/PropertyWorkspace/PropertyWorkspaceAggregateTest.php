@@ -33,14 +33,14 @@ class PropertyWorkspaceAggregateTest extends TestCase
     public function test_workspace_can_be_created(): void
     {
         $aggregate = PropertyWorkspaceAggregate::createWorkspace(
-            ilanId: 1,
+            propertyId: 1,
             intent: 'rental_listing',
             tenantId: 42,
             templateId: 'template_123'
         );
 
         // Note: workspace_id is set by initializeWorkspace() in service layer
-        $this->assertEquals(1, $aggregate->getState()['ilan_id']);
+        $this->assertEquals(1, $aggregate->getState()['property_id']);
         $this->assertEquals('rental_listing', $aggregate->getState()['intent']);
         $this->assertEquals('template_123', $aggregate->getState()['template_id']);
         $this->assertEquals(PropertyWorkspaceAggregate::STATE_WORKSPACE_CREATED, $aggregate->getWorkspaceState());

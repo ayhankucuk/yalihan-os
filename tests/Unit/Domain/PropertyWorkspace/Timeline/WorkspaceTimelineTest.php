@@ -569,8 +569,8 @@ class WorkspaceTimelineTest extends TestCase
         $this->assertIsArray($state);
         $this->assertEquals($this->workspace->workspace_uuid, $state['workspace_id']);
         $this->assertEquals($this->tenant->id, $state['tenant_id']);
-        $this->assertEquals($this->ilan->id, $state['ilan_id']);
-        // State comes from the workspace model directly when no events exist
+        // State comes from the workspace model directly when no events exist (property_id from DB, not legacy ilan_id)
+        $this->assertEquals($this->workspace->property_id, $state['property_id']);
         $this->assertEquals(PropertyWorkspaceAggregate::STATE_WORKSPACE_CREATED, $state['state']);
     }
 
