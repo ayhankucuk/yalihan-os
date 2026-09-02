@@ -31,6 +31,7 @@ class FeatureAssignmentObserver
     private const ALLOWED_ASSIGNABLE_TYPES = [
         \App\Models\YayinTipiSablonu::class,
         \App\Models\AltKategoriYayinTipi::class,
+        \App\Models\IlanKategori::class,
     ];
 
     public function __construct(private UpsCacheService $cacheService) {}

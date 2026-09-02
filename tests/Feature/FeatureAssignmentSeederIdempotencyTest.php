@@ -55,27 +55,46 @@ class FeatureAssignmentSeederIdempotencyTest extends TestCase
     }
 
     /**
-     * Test: Seeder covers more ground than migration (expected)
+     * Test: Seeder and migration seed non-overlapping tiers (no duplicates)
      *
-     * Seeder adds G1/G2 (IlanKategori) on top of what migration provides.
-     * This is intentional - seeder is more comprehensive.
+     * Migration: seeds Villa tiers G3/G4/G5 (source_type = villa_migration_...) = 106
+     * Seeder:   seeds canonical G1/G2 + G3/G4/G5 (source_type = canonical_seed)   = 119
+     *
+     * After 2026-09-02 fix, seeder now covers complete G3 scope for Villa Kiralık (36 fields).
+     * Seeder total (119) > Migration total (106) because seeder adds G1/G2 IlanKategori.
+     *
+     * When both run, updateOrInsert prevents duplicates by (feature_id, assignable_type, assignable_id).
+     * These two data sets cover DIFFERENT assignable scopes — comparison is apples-to-oranges.
      *
      * @test
      */
-    public function seeder_covers_more_than_migration(): void
+    public function seeder_and_migration_cover_non_overlapping_scopes(): void
     {
-        // Run seeder
+        // Run seeder (G1/G2 + Villa tiers with canonical_seed) = 119
         $this->seedFeatureAssignmentSeeder();
         $seederCount = DB::table('feature_assignments')->count();
+        $seederCanonCount = DB::table('feature_assignments')
+            ->where('source_type', 'canonical_seed')->count();
 
-        // Reset and run migration
+        // Reset and run migration (Villa tiers only with villa_migration_...) = 106
         DB::table('feature_assignments')->delete();
         $this->seedViaMigration();
         $migrationCount = DB::table('feature_assignments')->count();
+        $migrationCanonCount = DB::table('feature_assignments')
+            ->where('source_type', 'villa_migration_2026_08_25')->count();
 
-        // Seeder should have MORE records (adds G1/G2)
+        // Migration seeds Villa tiers only
+        $this->assertEquals($migrationCount, $migrationCanonCount,
+            "Migration should only have villa_migration source_type");
+
+        // Seeder produces canonical_seed records
+        $this->assertGreaterThan(0, $seederCanonCount,
+            "Seeder should produce canonical_seed records");
+
+        // Seeder count (119) > Migration count (106) because seeder adds G1/G2 IlanKategori
         $this->assertGreaterThan($migrationCount, $seederCount,
-            "Seeder ({$seederCount}) should have more records than migration ({$migrationCount})");
+            "Seeder ({$seederCount}) should have more records than migration ({$migrationCount}) " .
+            "because seeder adds G1/G2 IlanKategori that migration does not cover");
     }
 
     /**

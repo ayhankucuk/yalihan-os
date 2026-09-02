@@ -350,14 +350,15 @@ class FeatureAssignmentObserverTest extends TestCase
     }
 
     /**
-     * Rollback edge case: Records with source_type=NULL should NOT be deleted
-     * by migration rollback.
+     * Rollback edge case: Records with source_type=manual should NOT be deleted
+     * by canonical_seed rollback query.
      *
-     * Schema: source_type is NOT NULL DEFAULT 'manual', so NULL cannot exist.
-     * This test verifies the defensive check in the migration is sufficient.
+     * Seeder provenance: source_type='canonical_seed'
+     * Migration provenance: source_type='villa_migration_2026_08_25'
+     * This test verifies that non-canonical_seed records survive a seeder rollback.
      *
      * @test
-     * @see database/migrations/2026_08_25_000001_seed_villa_feature_assignments.php
+     * @see database/seeders/FeatureAssignmentSeeder.php
      */
     public function rollback_preserves_non_canonical_seed_records(): void
     {
@@ -409,11 +410,14 @@ class FeatureAssignmentObserverTest extends TestCase
     /**
      * Rollback: Only canonical_seed records should be affected.
      *
+     * NOTE: Seeder rollback deletes source_type=canonical_seed.
+     * Migration rollback deletes source_type=villa_migration_2026_08_25.
+     *
      * @test
+     * @see database/seeders/FeatureAssignmentSeeder.php
      */
     public function rollback_only_deletes_canonical_seed_records(): void
     {
-        // Create a feature
         $feature = Feature::create([
             'name'            => 'Canonical Rollback Test',
             'slug'            => 'canonical-rollback-' . uniqid(),
