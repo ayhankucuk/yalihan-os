@@ -21,9 +21,8 @@ class AuditSchemaAlignment extends Command
      * Tables to audit: table_name => model_class
      */
     private array $guardedTables = [
-        'property_features'            => \App\Models\PropertyHub\PropertyFeature::class,
-        'property_templates'           => \App\Models\PropertyHub\PropertyTemplate::class,
-        'template_feature_assignments' => \App\Models\TemplateFeatureAssignment::class,
+        // REMOVED (STALE_REFERENCE): property_features, property_templates, template_feature_assignments
+        // Legacy PropertyHub design — no model class, no migration, no active code usage
         'fx_rates'                     => \App\Models\ExchangeRate::class,
         'yayin_tipi_sablonlari'        => \App\Models\YayinTipiSablonu::class,
         'ilanlar'                      => \App\Models\Ilan::class,
