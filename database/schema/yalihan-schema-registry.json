@@ -1,0 +1,357 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-09-02T13:00:00+03:00",
+  "source": "sqlite://database/database.sqlite (local dev)",
+  "purpose": "Schema truth baseline for yalihan:drift-audit. All tables in DB must be registered here.",
+  "ghost_tables": {
+    "property_features": {
+      "status": "GHOST",
+      "reason": "Referenced in schema_guard.php but not found in database",
+      "referenced_in": ["config/schema_guard.php"],
+      "likely_replaced_by": "ozellikler",
+      "action": "BLOCKED_NEEDS_FIX — review schema_guard.php and update references to ozellikler"
+    },
+    "property_templates": {
+      "status": "GHOST",
+      "reason": "Referenced in schema_guard.php and GovernanceCore but not found in database",
+      "referenced_in": ["config/schema_guard.php", "app/Modules/GovernanceCore/Core/DriftDetectionService.php"],
+      "likely_replaced_by": "yayin_tipi_sablonlari",
+      "action": "BLOCKED_NEEDS_FIX — review GovernanceCore references and update"
+    },
+    "template_feature_assignments": {
+      "status": "GHOST",
+      "reason": "Referenced in schema_guard.php but not found in database",
+      "referenced_in": ["config/schema_guard.php"],
+      "likely_replaced_by": "feature_assignments",
+      "action": "BLOCKED_NEEDS_FIX — review schema_guard.php and update references to feature_assignments"
+    }
+  },
+  "domain_groups": {
+    "ilan": {
+      "tables": [
+        "ilanlar", "ilan_fotograflari", "ilan_ozellikleri", "ilan_notlari",
+        "ilan_resimleri", "ilan_videolari", "ilan_embeddings", "ilan_etiketler",
+        "ilan_favorileri", "ilan_goruntulenme_gunluk", "ilan_price_history",
+        "ilan_taslaklar", "ilan_arsa_details", "ilan_ticari_details",
+        "ilan_turizm_details", "ilan_takvim_sync", "ilan_demirbas",
+        "ilan_calendar_feeds", "ilan_no_sequences", "ilan_feature", "ilan_metinleri",
+        "ilanlar_read_model"
+      ],
+      "note": "Core listing domain"
+    },
+    "kategori_yayin": {
+      "tables": [
+        "ilan_kategorileri", "yayin_tipleri", "yayin_tipi_sablonlari",
+        "alt_kategori_yayin_tipi", "kategori_yayin_tipi_field_dependencies",
+        "yayin_tipi_pivot_atamalari", "eski_alt_kategori_yayin_tipi",
+        "eski_ilan_kategori_yayin_tipleri", "eski_yayin_tipleri"
+      ],
+      "note": "Category and publication type taxonomy"
+    },
+    "ozellik": {
+      "tables": [
+        "ozellikler", "ozellik_kategorileri", "feature_assignments",
+        "feature_categories", "feature_translations", "feature_category_translations",
+        "feature_values", "category_feature_whitelist", "features"
+      ],
+      "note": "Feature system"
+    },
+    "konum": {
+      "tables": [
+        "ulkeler", "iller", "ilceler", "mahalleler",
+        "point_of_interests", "settings"
+      ],
+      "note": "Geographic hierarchy and POI"
+    },
+    "kisi_crm": {
+      "tables": [
+        "kisiler", "leads", "lead_messages", "lead_embeddings",
+        "lead_activities", "eslesmeler", "opportunities", "teklifler",
+        "etiketler", "etiket_kisi", "follow_up_tasks", "owner_login_tokens",
+        "owner_acquisition_signals", "kisi_etkilesimler", "kisiler_read_model",
+        "leads_read_model"
+      ],
+      "note": "Person and CRM domain"
+    },
+    "finans": {
+      "tables": [
+        "komisyonlar", "fx_rates", "ledger_accounts", "ledger_balances",
+        "ledger_entries", "ledger_transactions", "financial_transactions",
+        "finansal_islemler", "billing_ledger_entries", "commissions",
+        "bonuses", "expense_items", "payments", "transactions",
+        "provider_settlements", "settlement_allocations", "outbound_notifications",
+        "country_financial_rules", "financial_settings"
+      ],
+      "note": "Financial and commission domain"
+    },
+    "ai_cortex": {
+      "tables": [
+        "ai_logs", "ai_prompt_logs", "ai_provider_profiles", "ai_provider_decisions",
+        "ai_transactions", "ai_telemetry", "ai_description_drafts", "ai_field_suggestions",
+        "ai_feature_usages", "ai_credit_balances", "ai_tenant_quotas",
+        "ai_threshold_overrides", "ai_optimization_runs", "ai_workspace_wallets",
+        "ai_saglayici_profilleri", "ai_query_logs", "ai_query_telemetry",
+        "ai_deneyler", "ai_security_logs", "ai_storages", "ai_suggestion_actions",
+        "ai_tenant_settings", "ai_abuse_signals", "ai_call_analyses",
+        "ai_category_analytics", "ai_esik_profilleri", "ai_feature_prices",
+        "ai_lead_scores", "ai_learning_sessions", "ai_logs_archive",
+        "ai_ogrenme_sinyalleri", "ai_opportunity_logs", "ai_pricing_plans",
+        "ai_translation_logs", "ai_telemetry_hourly", "ai_query_failures",
+        "ai_provider_decisions_archive", "ai_feature_usages_archive",
+        "cortex_neural_connections"
+      ],
+      "note": "AI/Cortex telemetry and provider management"
+    },
+    "hermes": {
+      "tables": [
+        "hermes_event_logs", "hermes_analytics", "governance_events",
+        "governance_incidents", "governance_audit_logs",
+        "governance_drift_telemetry", "governance_alerts",
+        "governance_tamper_incidents", "governance_suppressions",
+        "governance_rollbacks", "governance_decisions",
+        "context7_compliance_logs"
+      ],
+      "note": "Hermes event coordination and governance"
+    },
+    "auth": {
+      "tables": [
+        "users", "roles", "permissions", "model_has_permissions",
+        "model_has_roles", "personal_access_tokens", "oauth_tokens",
+        "admin_activity_events", "admin_notifications", "role_has_permissions",
+        "user_devices", "access_credentials"
+      ],
+      "note": "Authentication and authorization"
+    },
+    "owner_portal": {
+      "tables": [
+        "owner_report_rows", "owner_report_metrics", "owner_report_exports",
+        "owner_cluster_projections"
+      ],
+      "note": "Owner-facing portal and reporting"
+    },
+    "property": {
+      "tables": [
+        "properties", "property_reservations", "property_availabilities",
+        "property_seasonal_rates", "property_expenses", "property_config_versions",
+        "property_config_audit_logs", "property_calendar_feeds",
+        "property_key_custodies", "property_ownerships", "property_access_assets",
+        "property_documents", "property_engine_shadow_events",
+        "property_growth_projections", "property_readiness",
+        "property_representatives", "property_subscriptions", "property_workspaces"
+      ],
+      "note": "Property operational domain"
+    },
+    "analytics": {
+      "tables": [
+        "analytics_metrics", "analytics_reports", "analytics_dashboard_metrics",
+        "analytics_dashboard_filters", "listing_outcomes",
+        "listing_state_transitions", "listing_velocity_projections",
+        "listing_search_projection", "listing_translations", "market_trends",
+        "market_valuation_reports", "market_trend_projections",
+        "market_listing_owner_clusters", "buyer_intent_projection",
+        "buyer_interest_projections", "buyer_match_logs",
+        "buyer_match_snapshots", "prediction_snapshots",
+        "valuation_signal_logs", "deal_prediction_logs",
+        "deal_prediction_snapshots", "optimizer_suggestions",
+        "matching_feedbacks", "search_analytics", "saved_searches"
+      ],
+      "note": "Analytics and projections"
+    },
+    "ops": {
+      "tables": [
+        "jobs", "job_batches", "telescope_entries", "telescope_entries_tags",
+        "telescope_monitoring", "cache", "cache_locks", "error_memory",
+        "openclaw_audit_logs", "copilot_action_logs", "agent_memory",
+        "agent_runs", "config_options", "languages", "currencies",
+        "ref_sequences", "test_entities", "migrations", "tenants",
+        "activity_log", "iletim_kayitlari", "design_token_usage",
+        "development_velocity_metrics"
+      ],
+      "note": "Operational infrastructure"
+    },
+    "talepler": {
+      "tables": [
+        "talepler", "talep_match_projection"
+      ],
+      "note": "Property demand/inquiry management"
+    },
+    "yazlik": {
+      "tables": [
+        "yazlik_details", "yazlik_fiyatlandirma", "yazlik_rezervasyonlar"
+      ],
+      "note": "Summer villa domain"
+    },
+    "cms": {
+      "tables": [
+        "mesajlar", "communications", "danisman_chat_messages",
+        "danisman_chat_sessions", "danisman_yorumlar", "guest_messages",
+        "notifications", "notification_templates", "telegram_notifications",
+        "outbox_entries", "dashboard_widgets"
+      ],
+      "note": "Communication and CMS"
+    },
+    "turizm": {
+      "tables": [
+        "channel_sync_executions", "ilan_takvim_sync"
+      ],
+      "note": "Channel manager and calendar sync"
+    },
+    "team_project": {
+      "tables": [
+        "projeler", "proj_activity_stream", "proj_agent_performance",
+        "proj_dlq", "proj_event_offsets", "proj_kpi_snapshots",
+        "proj_listings", "project_health_snapshots",
+        "gorevler", "takim_uyeleri"
+      ],
+      "note": "Team and project management"
+    },
+    "rental": {
+      "tables": [
+        "rental_ev_kartlari", "rental_gelir_kalemleri", "rental_gider_kalemleri"
+      ],
+      "note": "Rental operations"
+    },
+    "content_templates": {
+      "tables": [
+        "master_templates", "template_audit_logs",
+        "template_change_logs", "template_design_audits"
+      ],
+      "note": "Template design and versioning"
+    },
+    "learning": {
+      "tables": [
+        "system_learning_transactions", "tkgm_learning_patterns",
+        "tkgm_queries", "feedback_results"
+      ],
+      "note": "AI learning and feedback"
+    },
+    "site_management": {
+      "tables": [
+        "sites", "site_apartmanlar", "site_ozellikleri"
+      ],
+      "note": "Site/apartment management"
+    },
+    "plans": {
+      "tables": [
+        "plans", "subscriptions", "feature_flags"
+      ],
+      "note": "Subscription plans"
+    },
+    "ups": {
+      "tables": [
+        "ups_templates", "ups_feature_packs", "ups_feature_pack_items"
+      ],
+      "note": "Universal Publication System templates"
+    },
+    "domain_events": {
+      "tables": [
+        "etki_alani_olaylari", "etki_alani_olaylari_hatali"
+      ],
+      "note": "Domain event log"
+    },
+    "pipeline": {
+      "tables": [
+        "pipeline_runs", "pipeline_steps"
+      ],
+      "note": "Workflow pipeline runs"
+    },
+    "rule_engine": {
+      "tables": [
+        "rule_definitions"
+      ],
+      "note": "Business rule engine"
+    },
+    "storage": {
+      "tables": [
+        "belgeler", "demirbaslar", "demirbas_kategorileri",
+        "advisor_photos"
+      ],
+      "note": "File storage and attachments"
+    },
+    "workspace": {
+      "tables": [
+        "workspace_executions", "workforce_execution_logs"
+      ],
+      "note": "Agent workspace execution"
+    },
+    "vip": {
+      "tables": [
+        "vip_tercih_matrisi"
+      ],
+      "note": "VIP preference matrix"
+    },
+    "portfolio": {
+      "tables": [
+        "portfolio_drive_workspaces"
+      ],
+      "note": "Portfolio Drive integration"
+    },
+    "anahtar": {
+      "tables": [
+        "anahtar_yonetimi"
+      ],
+      "note": "Key management"
+    }
+  },
+  "key_table_columns": {
+    "ilanlar": {
+      "total": 176,
+      "tenant_isolated": true,
+      "canonical_fields": [
+        "id", "tenant_id", "baslik", "aciklama", "fiyat", "para_birimi",
+        "yayin_durumu", "lat", "lng", "ilan_no", "created_at", "updated_at", "deleted_at"
+      ],
+      "legacy_renames": {
+        "ana_baslik": "baslik",
+        "latitude": "lat",
+        "longitude": "lng",
+        "featured": "one_cikan"
+      }
+    },
+    "ozellikler": {
+      "total": 17,
+      "tenant_isolated": false,
+      "canonical_fields": [
+        "id", "name", "slug", "kategori_id", "veri_tipi",
+        "veri_secenekleri", "birim", "aktiflik_durumu", "display_order", "zorunlu"
+      ]
+    },
+    "feature_assignments": {
+      "total": 37,
+      "tenant_isolated": true,
+      "canonical_fields": [
+        "id", "feature_id", "assignable_type", "assignable_id",
+        "tenant_id", "display_order", "group_name"
+      ]
+    },
+    "yayin_tipi_sablonlari": {
+      "total": 15,
+      "tenant_isolated": true,
+      "canonical_fields": [
+        "id", "tenant_id", "ad", "slug", "aciklama", "aktiflik_durumu",
+        "display_order", "kategori_id", "yayin_tipi_id"
+      ],
+      "legacy_renames": {
+        "name": "ad",
+        "description": "aciklama"
+      }
+    },
+    "fx_rates": {
+      "total": 8,
+      "canonical_fields": [
+        "id", "from_currency", "to_currency", "rate",
+        "aktiflik_durumu", "effective_at"
+      ],
+      "forbidden_aliases": [
+        "currency_code", "rate_date", "rate_to_try", "buying_rate", "selling_rate"
+      ]
+    },
+    "users": {
+      "total": 33,
+      "canonical_fields": [
+        "id", "tenant_id", "name", "email", "password",
+        "role_id", "ulke_id", "aktiflik_durumu"
+      ]
+    }
+  }
+}
