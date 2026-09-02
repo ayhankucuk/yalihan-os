@@ -253,7 +253,8 @@ class WorkspaceTimelineTest extends TestCase
         // Verify reconstructed state
         $this->assertEquals($this->workspace->workspace_uuid, $state['workspace_id']);
         $this->assertEquals($this->tenant->id, $state['tenant_id']);
-        $this->assertEquals($this->ilan->id, $state['ilan_id']);
+        // replay() now uses property_id (canonical schema, not legacy ilan_id)
+        $this->assertEquals($this->workspace->property_id, $state['property_id']);
         $this->assertEquals('enhance', $state['intent']);
         $this->assertEquals('template-456', $state['template_id']);
         $this->assertEquals(PropertyWorkspaceAggregate::STATE_DRAFT, $state['state']);

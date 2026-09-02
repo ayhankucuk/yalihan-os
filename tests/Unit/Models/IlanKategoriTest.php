@@ -122,6 +122,9 @@ class IlanKategoriTest extends TestCase
             'updated_at' => now(),
         ]);
 
+        // tenant_id required by Ilan BelongsToTenant scope
+        $tenantId = $this->getDefaultTenantId();
+
         // Create listings
         DB::table('ilanlar')->insert([
             [
@@ -131,6 +134,7 @@ class IlanKategoriTest extends TestCase
                 'para_birimi' => 'TL',
                 'yayin_durumu' => 'yayinda',
                 'kategori_id' => $kategoriId,
+                'tenant_id' => $tenantId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -141,6 +145,7 @@ class IlanKategoriTest extends TestCase
                 'para_birimi' => 'TL',
                 'yayin_durumu' => 'yayinda',
                 'kategori_id' => $kategoriId,
+                'tenant_id' => $tenantId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
