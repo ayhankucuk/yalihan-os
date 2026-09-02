@@ -35,6 +35,7 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Delete only canonical_seed source_type records (NOT NULL per schema, but defensive check added)
         DB::table('feature_assignments')
             ->where('source_type', 'canonical_seed')
             ->delete();
@@ -146,6 +147,13 @@ return new class extends Migration
 
     private function seedAssignments(): void
     {
+        // Resolve YayinTipiSablonu IDs from DB using kategori_id + yayin_tipi_id.
+        // Falls back to null (skip) if the template does not exist yet.
+        $resolve = fn(?int $kategoriId, ?int $yayinTipiId): ?int => DB::table('yayin_tipi_sablonlari')
+            ->where('kategori_id', $kategoriId)
+            ->where('yayin_tipi_id', $yayinTipiId)
+            ->value('id');
+
         // [feature_id, main_cat, sub_cat, listing_type, group_name, required, visible, order, scope_type]
         $rows = [
             // Villa Satilik (kategori_id=8, yayin_tipi=1) — 34 fields
@@ -262,6 +270,13 @@ return new class extends Migration
                 continue;
             }
 
+            // Resolve YayinTipiSablonu ID from DB; skip if template doesn't exist yet.
+            // This prevents orphan assignable_type=Ilan / assignable_id=0 records.
+            $sablonId = $resolve($sc, $lt);
+            if ($sablonId === null) {
+                continue;
+            }
+
             $match = [
                     'feature_id'        => $fi,
                     'main_category_id'  => $mc,
@@ -269,8 +284,8 @@ return new class extends Migration
                     'listing_type_id'   => $lt,
             ];
             $values = [
-                    'assignable_type'   => 'App\\Models\\Ilan',
-                    'assignable_id'     => 0,
+                    'assignable_type'   => 'App\\Models\\YayinTipiSablonu',
+                    'assignable_id'     => $sablonId,
                     'scope_type'        => $scope,
                     'source_type'       => 'canonical_seed',
                     'group_name'        => $gn,

@@ -90,7 +90,10 @@ class FeatureTemplateResolver
     /**
      * Get feature assignments for a publication type (Master Template)
      *
-     * @param int $kategoriId Category ID (Unused for fetching in V2, kept for compatibility)
+     * G1 Cascade Fix: Walks the category inheritance chain to also resolve
+     * IlanKategori::class assignments from root → leaf. SAAB 1B decision.
+     *
+     * @param int $kategoriId Category ID (used to walk inheritance chain for G1)
      * @param int|null $yayinTipiId Publication Type Template ID
      * @return Collection Collection of FeatureAssignment
      */
@@ -100,14 +103,54 @@ class FeatureTemplateResolver
             return collect();
         }
 
-        // V2: Query YayinTipiSablonu directly
-        return FeatureAssignment::where('assignable_type', 'App\Models\YayinTipiSablonu')
+        // V1: Template-level assignments (YayinTipiSablonu)
+        $templateAssignments = FeatureAssignment::where('assignable_type', 'App\Models\YayinTipiSablonu')
             ->where('assignable_id', $yayinTipiId)
             ->with(['feature', 'feature.category'])
             ->where('is_visible', true)
-            ->orderBy('display_order') // context7-ignore
-            ->orderBy('feature_id') // context7-ignore
+            ->orderBy('display_order')
+            ->orderBy('feature_id')
             ->get();
+
+        // G1 Cascade Fix: Walk category inheritance chain for IlanKategori::class assignments
+        // SAAB 1B: Global features should be visible on all root categories
+        // Walk from root → leaf so child assignments override parent
+        $chain = $this->getInheritanceChain($kategoriId); // [root, ..., $kategoriId]
+        $categoryAssignments = collect();
+        foreach ($chain as $katId) {
+            $katAssignments = FeatureAssignment::where('assignable_type', IlanKategori::class)
+                ->where('assignable_id', $katId)
+                ->with(['feature', 'feature.category'])
+                ->where('is_visible', true)
+                ->orderBy('display_order')
+                ->get();
+            $categoryAssignments = $this->mergeCategoryAssignments($categoryAssignments, $katAssignments);
+        }
+
+        // Merge: template-level overrides category-level
+        return $this->mergeTemplateOverCategory($categoryAssignments, $templateAssignments);
+    }
+
+    /**
+     * Merge child category assignments into base (child overrides parent)
+     */
+    private function mergeCategoryAssignments(Collection $base, Collection $override): Collection
+    {
+        $overrideIds = $override->pluck('feature_id')->flip();
+        return $base->reject(fn($a) => $overrideIds->has($a->feature_id))
+            ->merge($override);
+    }
+
+    /**
+     * Template-level assignments override category-level
+     */
+    private function mergeTemplateOverCategory(Collection $category, Collection $template): Collection
+    {
+        $templateIds = $template->pluck('feature_id')->flip();
+        return $category->reject(fn($a) => $templateIds->has($a->feature_id))
+            ->merge($template)
+            ->sortBy('display_order')
+            ->values();
     }
 
     /**
