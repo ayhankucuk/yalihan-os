@@ -35,9 +35,10 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Delete only canonical_seed source_type records (NOT NULL per schema, but defensive check added)
+        // Delete ONLY villa migration records (provenance separation from seeder)
+        // Seeder uses source_type='canonical_seed', migration uses source_type='villa_migration_2026_08_25'
         DB::table('feature_assignments')
-            ->where('source_type', 'canonical_seed')
+            ->where('source_type', 'villa_migration_2026_08_25')
             ->delete();
         DB::table('features')
             ->where('id', '>=', 1)
@@ -287,7 +288,7 @@ return new class extends Migration
                     'assignable_type'   => 'App\\Models\\YayinTipiSablonu',
                     'assignable_id'     => $sablonId,
                     'scope_type'        => $scope,
-                    'source_type'       => 'canonical_seed',
+                    'source_type'       => 'villa_migration_2026_08_25',
                     'group_name'        => $gn,
                     'field_slug'        => DB::table('features')->where('id', $fi)->value('slug'),
                     'is_required'      => $req,

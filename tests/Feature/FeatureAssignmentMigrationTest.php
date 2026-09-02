@@ -147,17 +147,19 @@ class FeatureAssignmentMigrationTest extends TestCase
     }
 
     /**
-     * Test 5: All assignments have source_type = 'canonical_seed'
+     * Test 5: All migration assignments have source_type = 'villa_migration_2026_08_25'
+     *
+     * Provenance separation: migration uses 'villa_migration_2026_08_25', seeder uses 'canonical_seed'
      *
      * @test
      */
-    public function all_assignments_have_canonical_seed_source_type(): void
+    public function migration_assignments_have_migration_source_type(): void
     {
-        $nonCanonical = DB::table('feature_assignments')
-            ->where('source_type', '!=', 'canonical_seed')
+        $nonMigration = DB::table('feature_assignments')
+            ->where('source_type', '!=', 'villa_migration_2026_08_25')
             ->count();
 
-        $this->assertEquals(0, $nonCanonical, "Found {$nonCanonical} assignments with non-canonical source_type");
+        $this->assertEquals(0, $nonMigration, "Found {$nonMigration} non-migration assignments");
     }
 
     /**
@@ -220,62 +222,53 @@ class FeatureAssignmentMigrationTest extends TestCase
     /**
      * Test 8: Verify G1 (Global) tier assignments count
      *
-     * Global: 5 features with null main_category_id, null sub_category_id, null listing_type_id
-     *
-     * KNOWN LIMITATION: G1 requires yayin_tipi_sablonlari record with NULL values.
-     * The migration's $resolve() function may not match NULL values in SQLite.
+     * KNOWN LIMITATION: G1 (global) requires yayin_tipi_sablonlari record with NULL values.
+     * Migration's $resolve() function may not match NULL values in SQLite.
      * This test documents the expected behavior in production MySQL vs SQLite.
      *
      * @test
      */
     public function g1_global_tier_requires_separate_seeding(): void
     {
-        // In SQLite test, G1 may not be seeded due to NULL matching limitation
-        // In production MySQL, this should work if NULL templates exist
+        // Migration does not seed G1 (global tier) - requires seeder or repair migration
         $g1Count = DB::table('feature_assignments')
             ->whereNull('main_category_id')
             ->whereNull('sub_category_id')
             ->whereNull('listing_type_id')
-            ->where('source_type', 'canonical_seed')
+            ->where('source_type', 'villa_migration_2026_08_25')
             ->count();
 
-        // Document: In this isolated test, G1 count depends on NULL template resolution
-        $this->assertIsInt($g1Count, "G1 count should be an integer, got: " . gettype($g1Count));
+        // Document: Migration does NOT seed G1
+        $this->assertEquals(0, $g1Count, "Migration should NOT seed G1 (global tier)");
     }
 
     /**
      * Test 9: Verify G2 (Konut Main Category) tier assignments count
      *
-     * Konut Global: 8 features with main_category_id=1, null sub_category_id, null listing_type_id
-     *
      * KNOWN LIMITATION: G2 requires yayin_tipi_sablonlari record with NULL values.
-     * The migration's $resolve() function may not match NULL values in SQLite.
-     * This test documents the expected behavior in production MySQL vs SQLite.
+     * Migration's $resolve() function may not match NULL values in SQLite.
      *
      * @test
      */
     public function g2_konut_main_category_requires_separate_seeding(): void
     {
-        // In SQLite test, G2 may not be seeded due to NULL matching limitation
-        // In production MySQL, this should work if NULL templates exist
+        // Migration does NOT seed G2 (Konut tier) - requires seeder or repair migration
         $g2Count = DB::table('feature_assignments')
             ->where('main_category_id', 1)
             ->whereNull('sub_category_id')
             ->whereNull('listing_type_id')
-            ->where('source_type', 'canonical_seed')
+            ->where('source_type', 'villa_migration_2026_08_25')
             ->count();
 
-        // Document: In this isolated test, G2 count depends on NULL template resolution
-        $this->assertIsInt($g2Count, "G2 count should be an integer, got: " . gettype($g2Count));
+        // Document: Migration does NOT seed G2
+        $this->assertEquals(0, $g2Count, "Migration should NOT seed G2 (Konut tier)");
     }
 
     /**
      * Test 10: Verify G3/G4/G5 (Villa) tier assignments count
      *
      * Villa Satilik (35) + Villa Kiralik (1) + Villa Gunluk (35) = 71
-     *
-     * Note: The migration seeds 35 for both Satilik and Gunluk (1 extra each vs original 34)
-     * due to the explicit assignment in the seed data.
+     * Migration uses source_type='villa_migration_2026_08_25' (provenance separation)
      *
      * @test
      */
@@ -285,21 +278,21 @@ class FeatureAssignmentMigrationTest extends TestCase
             ->where('main_category_id', 1)
             ->where('sub_category_id', 8)
             ->where('listing_type_id', 1)
-            ->where('source_type', 'canonical_seed')
+            ->where('source_type', 'villa_migration_2026_08_25')
             ->count();
 
         $villaKiralik = DB::table('feature_assignments')
             ->where('main_category_id', 1)
             ->where('sub_category_id', 8)
             ->where('listing_type_id', 2)
-            ->where('source_type', 'canonical_seed')
+            ->where('source_type', 'villa_migration_2026_08_25')
             ->count();
 
         $villaGunluk = DB::table('feature_assignments')
             ->where('main_category_id', 1)
             ->where('sub_category_id', 8)
             ->where('listing_type_id', 5)
-            ->where('source_type', 'canonical_seed')
+            ->where('source_type', 'villa_migration_2026_08_25')
             ->count();
 
         $this->assertEquals(35, $villaSatilik, "Expected 35 Villa Satilik assignments, got {$villaSatilik}");
@@ -313,17 +306,17 @@ class FeatureAssignmentMigrationTest extends TestCase
     /**
      * Test 11: Total tier breakdown verification
      *
-     * Villa only (G3/G4/G5) = 71
-     * G1 and G2 require separate seeding due to NULL template limitation
+     * Migration seeds only Villa tier (G3/G4/G5) = 71
+     * G1 and G2 require seeder or separate repair migration
      *
      * @test
      */
     public function total_tier_breakdown(): void
     {
         $total = DB::table('feature_assignments')
-            ->where('source_type', 'canonical_seed')
+            ->where('source_type', 'villa_migration_2026_08_25')
             ->count();
 
-        $this->assertEquals(71, $total, "Expected total 71 assignments (Villa only), got {$total}");
+        $this->assertEquals(71, $total, "Migration seeds 71 Villa assignments, got {$total}");
     }
 }

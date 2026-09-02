@@ -191,6 +191,68 @@ class FeatureAssignmentSeederIdempotencyTest extends TestCase
         $this->assertGreaterThan(0, $g2Count, "G2 (Konut) should be seeded");
     }
 
+    /**
+     * Test: Migration rollback preserves seeder records
+     *
+     * Migration uses source_type='villa_migration_2026_08_25'
+     * Seeder uses source_type='canonical_seed'
+     * Rollback of migration should NOT delete seeder records.
+     *
+     * @test
+     */
+    public function migration_rollback_preserves_seeder_records(): void
+    {
+        // Seed via seeder first (creates canonical_seed records)
+        $this->seedFeatureAssignmentSeeder();
+        $seederCount = DB::table('feature_assignments')
+            ->where('source_type', 'canonical_seed')
+            ->count();
+        $this->assertGreaterThan(0, $seederCount, "Seeder should create records");
+
+        // Add migration records on top
+        $this->seedViaMigration();
+        $totalWithMigration = DB::table('feature_assignments')->count();
+
+        // Simulate migration rollback: delete ONLY villa_migration_2026_08_25
+        DB::table('feature_assignments')
+            ->where('source_type', 'villa_migration_2026_08_25')
+            ->delete();
+
+        $afterRollback = DB::table('feature_assignments')->count();
+        $seederAfterRollback = DB::table('feature_assignments')
+            ->where('source_type', 'canonical_seed')
+            ->count();
+
+        // Seeder records should be PRESERVED after migration rollback
+        $this->assertEquals($seederCount, $seederAfterRollback,
+            "Seeder records should be preserved after migration rollback");
+        $this->assertLessThan($totalWithMigration, $afterRollback,
+            "Migration records should be deleted, total should decrease");
+    }
+
+    /**
+     * Test: Migration-only rollback does not affect canonical_seed records
+     *
+     * @test
+     */
+    public function migration_rollback_only_affects_migration_records(): void
+    {
+        // Only seed migration
+        $this->seedViaMigration();
+        $migrationOnly = DB::table('feature_assignments')->count();
+
+        // Simulate migration rollback
+        DB::table('feature_assignments')
+            ->where('source_type', 'villa_migration_2026_08_25')
+            ->delete();
+
+        $afterRollback = DB::table('feature_assignments')->count();
+
+        // All migration records should be deleted
+        $this->assertEquals(0, $afterRollback,
+            "Migration records should be completely deleted by rollback");
+    }
+
     private function seedFeatureAssignmentSeeder(): void
     {
         $seeder = new \Database\Seeders\FeatureAssignmentSeeder();
