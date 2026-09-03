@@ -29,9 +29,12 @@ use Illuminate\Support\Facades\DB;
  * Context7 Complaint.
  *
  * Sprint 6.8: Feature metrics now source from canonical tables:
- *   - ozellikler (master catalog, 22 aktif)
- *   - kategori_yayin_tipi_field_dependencies (field assignments, 42 kayıt)
- *   - feature_assignments tablosu BOŞ — bu sistem KULLANMIYOR (legacy)
+ *   - ozellikler (master catalog)
+ *   - kategori_yayin_tipi_field_dependencies (field assignments)
+ *   - feature_assignments (canonical per-assignment table, 84+ kayıt — AKTIF)
+ *     used by: PropertyHubOrchestrator::syncAssignments(),
+ *     FeatureAssignmentService, WizardContextService, EffectiveWizardSchemaResolver
+ *   - yayin_tipi_sablonlari (publication type templates, tenant-scoped)
  */
 class PropertyHubOrchestrator
 {
