@@ -64,17 +64,15 @@ class PropertyHubOrchestrator
     {
         $stats = \Illuminate\Support\Facades\Cache::remember('property_hub:stats', now()->addMinutes(5), function () {
             return [
-                // Sprint 6.8: Canonical tables — ozellikler (22 aktif) + kategori_yayin_tipi_field_dependencies (42 kayıt)
-                // NOT: feature_assignments tablosu BOŞ — legacy sistem kullanılmıyor
+                // Sprint 6.8: Canonical tables — ozellikler + kategori_yayin_tipi_field_dependencies
                 'total_features' => Ozellik::count(),
                 'active_features' => Ozellik::where('aktiflik_durumu', 1)->count(),
                 'total_categories' => IlanKategori::where('seviye', 0)->count(),
-                // kategori_yayin_tipi_field_dependencies = gerçek field assignment tablosu (42 kayıt)
+                // kategori_yayin_tipi_field_dependencies = canonical field assignment tablosu
                 'total_assignments' => KategoriYayinTipiFieldDependency::count(),
                 'total_packs' => FeaturePack::where('aktiflik_durumu', true)->count(),
-                // feature_assignments boş → orphaned_features = total_features (tümü orphaned değil ama izleme için)
+                // feature_assignments: 84+ records (canonical, AKTIF)
                 'orphaned_features' => 0,
-                // Sprint 6.8: Ek bilgi — katalog + şema durumu
                 'ozellik_catalog_count' => Ozellik::where('aktiflik_durumu', 1)->count(),
                 'field_schema_count' => KategoriYayinTipiFieldDependency::aktif()->count(),
                 'available_combinations' => count($this->getAvailableCombinations()),
