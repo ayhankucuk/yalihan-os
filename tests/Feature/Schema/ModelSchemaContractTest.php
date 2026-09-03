@@ -199,7 +199,7 @@ class ModelSchemaContractTest extends TestCase
                 continue;
             }
 
-            if ($entry['status'] ?? '' === 'STALE_REFERENCE') {
+            if (($entry['status'] ?? '') === 'STALE_REFERENCE') {
                 $this->assertNull(
                     $entry['model'],
                     "STALE_REFERENCE entry '{$key}' should have null model"
