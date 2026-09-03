@@ -553,9 +553,8 @@ class PropertyHubOrchestrator
      */
     protected function getOrphanedFeaturesCount(): int
     {
-        // Sprint 6.8: feature_assignments boş olduğundan orphaned kavramı
-        // kategori_yayin_tipi_field_dependencies üzerinden hesaplanır.
-        // Bir ozellik, hiçbir kategori/yayın-tipinde kullanılmıyorsa orphaned'dir.
+        // Sprint 6.8: feature_assignments canonical table üzerinden hesaplanır (84+ records).
+        // Bir ozellik, hiçbir template/assignment'da kullanılmıyorsa orphaned'dir.
         // Mevcut sistemde tüm 22 ozellik en az bir kombinasyonda atanmış görünüyor.
         // Basitlik için 0 döndürüyoruz — daha ileri orphaned-analiz Sprint 6.9'da.
         return 0;
