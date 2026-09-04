@@ -302,4 +302,7 @@ Protected Hot-spots:
   - .sab/authority.json
   - config/*.php
   - app/Services/IlanCrudService.php
+
+Active Locks:
+  - HOTSPOT_LOCK:database/migrations/2026_09_04_*:Kilo:2026-09-04T20:15:00+03:00:7200
 -->

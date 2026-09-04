@@ -281,11 +281,17 @@
 
 **Etki Alanı:** `app/Services/Ilan/IlanPhotoService.php`
 
-**Status:** `IMPLEMENTED` ✅ (2026-09-04, Commit: 7c52660)
+**Status:** `IMPLEMENTED` ✅ (2026-09-04, commits: `7c52660`, `5d8f81b`, `2a0c1c2`)
 **Blocked By:** None
 **Exit Criterion:** Concurrent fotoğraf yüklemede çakışma olmaz; her fotoğraf farklı `display_order` alır.
-**Implementation:** `DB::beginTransaction()` + `max('display_order') + 1` + index-based increment. 5/5 test PASS (17 assertions).
-**Test:** `tests/Feature/Ilan/PhotoDisplayOrderRaceConditionTest.php`
+**Implementation:**
+- `DB::beginTransaction()` + `lockForUpdate()` + `max('display_order') + 1` + retry loop
+- `ilan_fotograflari` unique index `(ilan_id, display_order)` migration (`2026_09_04_173133`)
+- Retry loop: MySQL 23000 duplicate key hatasını yakalar, orphan dosyaları temizler, 5 deneme yapar
+- Migration: cross-DB compatible (`Schema::hasIndex()` — MySQL + SQLite), idempotent, preflight duplicate check
+**Test:** `tests/Feature/Ilan/PhotoDisplayOrderRaceConditionTest.php` — 5/5 PASS (30 assertions)
+
+**Migration Production Notu:** `BLOCKED_PENDING_PRODUCTION_AUTH` — MySQL production'da çalıştırmadan önce backup alın. `php artisan migrate` ile uygula.
 
 ---
 
@@ -322,6 +328,33 @@
 **Sonraki Araştırma:** Kilo (Cross-tenant ve concurrent webhook testleri) + Codex (Son mimari karar).
 
 ---
+
+## RELEASE BLOCKERS — CONDITIONAL ACCEPT Durumu
+
+**Karar:** `CONDITIONAL ACCEPT — BACKLOG_IMPLEMENTED / RC1_STALE / RELEASE_BLOCKED`
+
+### Release öncesi tamamlanması gereken maddeler
+
+| # | Bulgu | Sahip | Durum |
+|---|-------|-------|-------|
+| RC-B1 | RC1 (`249cfc1`) güncel kodları içermiyor — `fix/p0-test-failures` branch'indeki son BACKLOG-8 commitleri (`5d8f81b`, `2a0c1c2`) RC1'e merge edilmeli | Wenox | OPEN |
+| RC-B2 | `PhotoDisplayOrderRaceConditionTest`: MySQL unique-index doğrulaması yok — SQLite CI'da test atlanıyor | Wenox | OPEN |
+| RC-B3 | V2IlanAuthorizationBoundaryTest: S1/S4/S5/S6 başarısız (auth scope — mevcut kodla ilgili, yeni kod değil) | Wenox | OPEN |
+| RC-B4 | BACKLOG-1 final audit: dokümanda hâlâ "Antigravity final re-audit required" yazıyor | Antigravity | OPEN |
+| RC-B5 | TD-13, TD-14: Teknik karar / kapatma kararı yok | Codex | OPEN |
+| RC-B6 | Production migration: `BLOCKED_PENDING_PRODUCTION_AUTH` — `ilan_fotograflari` unique index migration'ı için MySQL backup + deploy onayı gerekli | Kilo | BLOCKED |
+
+### RC1 ile ilgili not
+
+`fix/p0-test-failures` branch'i `origin/fix/p0-test-failures`'ten 17 commit ileride. RC1 (`249cfc1`) eski kod tabanını temsil ediyor. Release için yeni bir RC2 branch'i oluşturulmalı ve `fix/p0-test-failures`'deki tüm implementasyonlar merge edilmeli.
+
+### BACKLOG-8 Migration Notu (BLOCKED_PENDING_PRODUCTION_AUTH)
+
+Migration `2026_09_04_173133` SQLite ve MySQL uyumlu. Production'a deploy etmeden önce:
+1. MySQL production DB'de backup al
+2. `php artisan migrate` ile uygula
+3. `ilan_fotograflari` tablosunda mevcut duplicate kayıtları temizle (varsa migration preflight hatası verecektir)
+
 
 ## Backlog Summary
 
