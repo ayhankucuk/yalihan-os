@@ -1,5 +1,61 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 151 — 2026-09-04 | BACKLOG-4/3 Tamamlama (Kilo) + Codex Doğrulama
+
+**Kapsam:** Kilo BACKLOG-4 Auth Boundary CI Gate ve BACKLOG-3 Automatic Backend Guard Selection görevlerini tamamladı (commit `aea6d1e`). Bonus security fix: OwnerAuthController token enumeration kaldırıldı. Codex doğrulama yaptı.
+
+#### 1. BACKLOG-4 — Auth Boundary CI Gate (Kilo) ✅ IMPLEMENTED
+
+**Commit:** `aea6d1e`
+**Test:** AuthorizationBoundaryTest 15/15 PASS (38 assertions)
+
+| # | Test | Coverage |
+| |------|----------|
+| 1 | logout unauthenticated → redirect login | Auth gate |
+| 2 | dashboard unauthenticated → redirect login | Auth gate |
+| 3 | reports index unauthenticated → redirect login | Auth gate |
+| 4 | owner without tenant_id → 403 | Tenant isolation |
+| 5 | owner with wrong tenant → cannot see other tenant reports | Cross-tenant block |
+| 6 | send login link route has rate limit middleware | Rate limit verification |
+| 7 | send login link → same message for unknown email | Email enumeration prevention |
+| 8 | send login link → validation error for missing email | Input validation |
+| 9 | send login link → validation error for invalid email | Input validation |
+| 10 | verify token invalid → generic error | Token enumeration prevention |
+| 11 | verify token expired → generic error | Token enumeration prevention |
+| 12 | verify token without token → redirect login | Auth gate |
+| 13 | send login link → no token for user without tenant | Tenant guard |
+| 14 | send login link → token contains correct tenant_id | Tenant assignment |
+| 15 | send login link → cancels unused tokens for same user | Token cleanup |
+
+**Bonus Security Fix:** `OwnerAuthController::verifyToken()` — `süresi dolmuş` enumeration kaldırıldı
+- Eski: `Giriş linki geçersiz veya süresi dolmuş` (invalid vs expired ayrıştırılabiliyordu)
+- Yeni: `Giriş linki geçersiz` (generic — state enumeration closed)
+
+#### 2. BACKLOG-3 — Automatic Backend Guard Selection (Kilo) ✅ IMPLEMENTED
+
+**Commit:** `aea6d1e`
+**Artifact:** `.agents/skills/SKILL_INDEX.md`
+
+- 30+ file pattern → skill mapping table
+- 10 skill kategorisi tanımlandı
+- Agent file-open → auto-skill-load konvansiyonu
+- Skill'ler: authorization-boundary-auditor, schema-contract-guardian, cortex-orchestration-evaluator, hermes-event-sync, location-data-reconciliation, saab, laravel-enterprise-reviewer, api-contract-regression-guard, security-secret-boundary-guard, ponytail
+
+#### 3. Codex Doğrulama
+
+- AuthorizationBoundaryTest 15/15 PASS doğrulandı (38 assertions)
+- OwnerAuthController diff inceledi — token enumeration fix doğru
+- SKILL_INDEX.md inceledi — 30+ pattern, 10 skill, auto-load konvansiyonu
+
+#### 4. Kalan Görevler
+
+| Görev | Owner | Durum |
+|-------|-------|-------|
+| BACKLOG-2 Pre-mutation conflict guard | Antigravity | Bekliyor |
+| V2IlanAuthorizationBoundaryTest düzeltmeleri | — | Auth scope'lar (mevcut kodla ilgili) |
+
+---
+
 ## Oturum 150 — 2026-09-04 | BACKLOG-5/6/7/8 Tamamlama + Derin Proje Analizi
 
 **Kapsam:** Cline (Security Agent) BACKLOG-5 Lead Tenant Boundary görevini tamamladı (7 commit, 10/10 test PASS). Codex BACKLOG-6 Rate-Limit Race Condition fix'ini tamamladı (5/5 PASS). Codex BACKLOG-7 Security Log Secret Leakage fix'ini tamamladı (5/5 PASS). Codex BACKLOG-8 Photo display_order Race Condition fix'ini tamamladı (5/5 PASS). Derin proje analizi yapıldı.
