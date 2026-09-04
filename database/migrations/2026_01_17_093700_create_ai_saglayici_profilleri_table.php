@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('ai_saglayici_profilleri')) {
+            return;
+        }
+
         Schema::create('ai_saglayici_profilleri', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('kategori_id')->nullable();
