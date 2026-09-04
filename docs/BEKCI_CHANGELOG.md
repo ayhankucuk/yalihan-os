@@ -1,5 +1,53 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 152 — 2026-09-04 | Kilo RC1 + BACKLOG-8 Hardening + Codex Araştırma
+
+**Kapsam:** Kilo RC1 release candidate branch oluşturdu (73 tests ALL GREEN). Kilo BACKLOG-8'i güçlendirdi (lockForUpdate + retry + unique index). Codex 5 araştırma alanını tamamladı, 3 bug fix yaptı.
+
+#### 1. Kilo RC1 — Release Candidate
+
+**Branch:** `release/era-v-phase2a-rc1`
+**Commits:** `862b8b4`, `8a95adc`, `249cfc1`
+**Test:** 73 tests, 207 assertions — ALL GREEN
+
+| Test Suite | Sonuç |
+|-----------|-------|
+| LeadTenantBoundaryTest | 10 tests, 29 assertions — OK |
+| Governance (full) | 54 tests, 142 assertions, 1 skipped — OK |
+| OptionARepairTest | 9 tests, 36 assertions — OK |
+
+#### 2. BACKLOG-8 Kilo Hardening
+
+**Commit:** `5d8f81b`
+**Test:** 7/7 PASS (27 assertions)
+
+- `IlanPhotoService`: `lockForUpdate()` on parent ilan row
+- Retry loop (5 attempts, 50ms backoff) for MySQL 23000 duplicate key
+- Unique composite index `(ilan_id, display_order)` migration (BLOCKED — production onayı bekleniyor)
+- 2 yeni test: `concurrent_uploads_produce_no_duplicate_display_order`, `unique_index_prevents_duplicate_display_order_on_same_ilan`
+
+#### 3. Codex Araştırma — 5 Alan
+
+| # | Alan | Sonuç | Commit |
+|---|------|-------|--------|
+| 1 | Test Coverage Gap | ⏳ Beklemede | — |
+| 2 | Secret Exposure | ✅ TEMİZ | — |
+| 3 | Migration Drift | ⚠️ KRİTİK (TD-13, TD-14) | — |
+| 4 | Naming Drift | ✅ FIX'LENDİ (3 dosya) | `a3d53d4`, `1d360dd` |
+| 5 | updatePhotoSequence | ✅ FIX'LENDİ | `a3d53d4` |
+
+**Yeni TD Kayıtları:**
+- TD-13: `ai_saglayici_profilleri` split-brain tablo (P1)
+- TD-14: `kapak_mi` → `kapak_fotografi` migration drift (P2)
+
+**Araştırma raporu:** `docs/architecture/research-report-2026-09-04.md` (commit `bc67b42`)
+
+#### 4. Conflict Guard Doğrulaması
+
+BACKLOG-2 conflict guard çalışıyor — migration commit sırasında protocol lock gerektirdi. Lock acquire → commit → release döngüsü başarıyla test edildi.
+
+---
+
 ## Oturum 153 — 2026-09-04 | BACKLOG-2 Mechanical Pre-Mutation Conflict Guard (Antigravity) ✅
 
 **Kapsam:** Antigravity son kalan görev olan BACKLOG-2 (Mechanical Pre-Mutation Conflict Guard)'yi tamamladı. Böylece **9/9 Backlog görevi (%100) tamamlandı**.
