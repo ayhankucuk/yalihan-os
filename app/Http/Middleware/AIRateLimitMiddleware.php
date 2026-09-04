@@ -5,13 +5,16 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\RateLimiter;
 use Symfony\Component\HttpFoundation\Response;
 
 class AIRateLimitMiddleware
 {
     /**
      * AI istekleri için özel rate limiting
+     *
+     * Atomic increment via Laravel RateLimiter facade.
+     * Fixes TOCTOU race condition (BACKLOG-6).
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
@@ -32,25 +35,30 @@ class AIRateLimitMiddleware
         // Cache anahtarı oluştur
         $key = $this->resolveRequestSignature($request, $user->id);
 
-        // Mevcut istek sayısını al
-        $attempts = Cache::get($key, 0);
+        // Atomik rate limit kontrolü — RateLimiter::attempt() atomic increment garantisi verir
+        $executed = RateLimiter::attempt(
+            $key,
+            $limits['max_attempts'],
+            function () {},
+            $limits['decay_minutes'] * 60
+        );
 
-        if ($attempts >= $limits['max_attempts']) {
+        if (! $executed) {
+            $retryAfter = RateLimiter::availableIn($key);
+
             return response()->json([
                 'success' => false,
                 'error' => 'Çok fazla istek. Lütfen '.$limits['decay_minutes'].' dakika sonra tekrar deneyin.',
-                'retry_after' => $limits['decay_minutes'] * 60,
+                'retry_after' => $retryAfter,
             ], 429);
         }
-
-        // İstek sayısını artır
-        Cache::put($key, $attempts + 1, now()->addMinutes($limits['decay_minutes']));
 
         $response = $next($request);
 
         // Response header'larına rate limit bilgilerini ekle
+        $remaining = RateLimiter::remaining($key, $limits['max_attempts']);
         $response->headers->set('X-RateLimit-Limit', $limits['max_attempts']);
-        $response->headers->set('X-RateLimit-Remaining', max(0, $limits['max_attempts'] - $attempts - 1));
+        $response->headers->set('X-RateLimit-Remaining', max(0, $remaining));
         $response->headers->set('X-RateLimit-Reset', now()->addMinutes($limits['decay_minutes'])->timestamp);
 
         return $response;
