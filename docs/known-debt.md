@@ -325,7 +325,6 @@
 - **#35** Deploy Görevleri (#21-25) — Sunucu kurulum
 - **#37** Availability Sync SQLite Test Schema Gap
 - **#38** DTO-based Retryable Channel Failures (GAP-03)
-- **#39** Hermes Workforce Runtime Wiring — CRITICAL
 - **#40** TD-13 `ai_saglayici_profilleri` vs `ai_provider_profiles` — P2
 
 ### Pre-existing Test Failures (RC2 Dışı)
