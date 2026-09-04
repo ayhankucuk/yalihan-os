@@ -1,5 +1,40 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 155 — 2026-09-04 | RC2 RELEASE_GATE_OPEN & TD-14 Fix & #39 Hermes Wiring ✅
+
+**Kapsam:** Codex (Proje Mühendisi), Kilo'nun RC1 CONDITIONAL ACCEPT bulgularını ve RC2 release blokajlarını (RC-B1..RC-B5) tek tek ele alarak tüm engelleri kaldırdı. Canlı veritabanı migration'ı uygulandı ve Release Gate AÇIK (`RELEASE_GATE_OPEN`) ilan edildi.
+
+#### 1. RC2 Release Blockers Çözüm Durumu (5/5 TAMAMLANDI)
+
+| # | Blokaj | Sorumlu | Çözüm / Kanıt | Durum |
+|---|--------|---------|---------------|-------|
+| RC-B1 | Wenox: RC2 branch & MySQL test | Wenox | Security 67/67 PASS, Governance 197/197 PASS | ✅ DONE |
+| RC-B2 | V2IlanAuthorizationBoundaryTest | Wenox | 7/7 PASS (commit `ed53649`) | ✅ DONE |
+| RC-B3 | BACKLOG-1 Secret Scanner re-audit | Antigravity | 25/25 regression PASS, CLOSED | ✅ DONE |
+| RC-B4 | Production migration: `ilan_fotograflari` unique index | Kilo | Canlı VPS'e deploy edildi, index doğrulandı (`0161747`) | ✅ DONE |
+| RC-B5 | TD-13 & TD-14 mimari kararları | Codex | Dokümante edildi, TD-14 fixlendi | ✅ DONE |
+
+#### 2. TD-13 & TD-14 Kararları ve Düzeltmeler
+
+- **TD-14 (kapak_mi → kapak_fotografi Migration Drift):** Baseline migration `2024_01_01_000000` satır 766'daki `kapak_mi` alanı, kod tabanındaki 41 dosya ile uyumlu hale getirilerek `kapak_fotografi` yapıldı (commit `4564040`). Fresh install kırılması önlendi.
+- **TD-13 (ai_saglayici_profilleri vs ai_provider_profiles):** Servislerin farklı amaçlara hizmet ettiği (`ProviderSelectorService` vs `ProviderOptimizationService`) teyit edilerek riskli bir şema birleştirmesi yapılmadı; borç P2'ye düşürülüp `known-debt.md`'ye mühürlendi.
+
+#### 3. Hermes Workforce Wiring (#39)
+
+- Hermes Workforce Runtime entegrasyonu tamamlandı (commit `462adde7`, 106/106 tests PASS).
+- Kalan açık borçlar listesinden çıkarıldı.
+
+#### 4. Test ve Kalite Kapıları
+
+- `V2IlanAuthorizationBoundaryTest`: 7/7 PASS
+- `AuthorizationBoundaryTest`: 15/15 PASS
+- `PhotoDisplayOrderRaceConditionTest`: 7/7 PASS (1 skipped MySQL-only)
+- `antigravity-full-gate.sh --quick`: 4/4 GATES PASSED
+
+**Nihai Karar:** 🟢 **RELEASE_GATE_OPEN** — Tüm RC2 blokajları kaldırıldı.
+
+---
+
 ## Oturum 154 — 2026-09-04 | Kilo CONDITIONAL ACCEPT Değerlendirmesi
 
 **Kapsam:** Kilo, RC1 + BACKLOG-8 hardening sonrası bağımsız sertifikasyon değerlendirmesi yayınladı. Codex değerlendirmeyi kabul etti.
