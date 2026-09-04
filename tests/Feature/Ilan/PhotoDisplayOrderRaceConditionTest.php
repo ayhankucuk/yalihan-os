@@ -295,13 +295,6 @@ class PhotoDisplayOrderRaceConditionTest extends TestCase
         ]);
     }
 
-        $this->assertTrue(
-            $threw,
-            'Unique index on (ilan_id, display_order) must reject duplicate pair. '
-            . 'In MySQL: throws 23000. In SQLite (no index): skipped — constraint unavailable in test DB.'
-        );
-    }
-
     /**
      * BACKLOG-8: Sequential uploads always produce gapless sequential display_order
      *
