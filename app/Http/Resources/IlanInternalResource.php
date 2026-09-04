@@ -121,12 +121,12 @@ class IlanInternalResource extends JsonResource
                     return [
                         'id' => $foto->id,
                         'url' => $foto->url ?? asset('storage/'.$foto->dosya_yolu),
-                        'sira' => $foto->sira,
+                        'display_order' => $foto->display_order,
                         'kapak_fotografi' => $foto->kapak_fotografi ?? false,
                         'dosya_yolu' => $foto->dosya_yolu, // INTERNAL
                         'alt_text' => $foto->alt_text ?? null, // INTERNAL
                     ];
-                })->sortBy('sira')->values();
+                })->sortBy('display_order')->values();
             }),
 
             // Tarihler

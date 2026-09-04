@@ -1,5 +1,7 @@
 # YALIHAN Drift Audit Report
 
+> **HISTORICAL / SUPERSEDED:** This report was generated on 2026-09-02 before the Phase 2 repair and seeder execution. Do not use its feature-assignment counts or ghost-field findings as current production truth. See `SUPERSEDED.md` and `../EVIDENCE_INDEX.md` for the current evidence chain.
+
 | Field | Value |
 |-------|-------|
 | **Generated** | 2026-09-02T13:47:20+00:00 |

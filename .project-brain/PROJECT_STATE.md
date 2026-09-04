@@ -289,3 +289,21 @@ Cherry-pick veya restore ile `6967cb2` versiyonu uygulanırsa çalışma ağacı
 2. Migration drift: 10 pending çözümü
 
 **Doküman:** `audits/CHECKOUT_PRODUCTION_CERTIFICATION.md`
+
+## Active Protocol Locks
+
+<!--
+Format: HOTSPOT_LOCK:<file_pattern>:<agent>:<timestamp_iso>:<ttl_seconds>
+Managed by: ./scripts/tools/conflict-guard.sh (--acquire / --release / --list-locks)
+Protected Hot-spots:
+  - database/schema/mysql-schema.sql
+  - database/migrations/*
+  - routes/web.php, routes/api.php, routes/admin.php
+  - .sab/authority.json
+  - config/*.php
+  - app/Services/IlanCrudService.php
+
+Active Locks:
+  - HOTSPOT_LOCK:database/migrations/2026_09_04_*:Kilo:2026-09-04T22:00:00+03:00:7200
+-->
+HOTSPOT_LOCK:database/migrations/2026_09_01_000000_add_ulke_tenant_to_ilanlar_for_v2_api.php:wenox-rc2:2026-09-04T19:39:36Z:3600

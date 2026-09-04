@@ -113,3 +113,17 @@
 - `DOCUMENTED`: Test dosyası: `tests/Feature/Security/IlanCrossTenantIsolationTest.php`
 - `DOCUMENTED`: V2 update positive test atlandı (skipped) — danisman_id authorization ayrı test olarak yazılacak.
 - **Production blocked**: Negatif testler 23/23 geçti. Merkezi guard/policy tasarımı bekleniyor.
+
+## Session 2026-09-03 — Villa Feature Assignment Repair (Codex)
+
+- `PRODUCTION_VERIFIED`: Production commit `17aba4b` sonrası template feature assignment counts:
+  - Template 22 (Villa Satılık): 35 özellik
+  - Template 23 (Villa Kiralık): 36 özellik
+  - Template 24 (Villa Günlük): 35 özellik
+  - Toplam template ataması: **106**
+- `PRODUCTION_VERIFIED`: Seeder sonrası canonical kayıt: **144**
+- `PRODUCTION_VERIFIED`: Legacy arşiv kayıtları: **84**
+- `DOCUMENTED`: G4 `aidat` — `required=false` — SAAB/Codex tarafından onaylandı
+- `DOCUMENTED`: G4 `depozito` — `required=true` — kira sözleşmesi zorunlu
+- `DOCUMENTED`: Yeni migration veya repair çalıştırılmayacak. Mevcut state esas alınır.
+- **Sahip**: Codex

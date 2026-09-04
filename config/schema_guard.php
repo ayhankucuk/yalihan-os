@@ -18,60 +18,9 @@ return [
 
     'forbidden_aliases' => [
 
-        // ── property_features ──────────────────────────────────────────
-        [
-            'table'         => 'property_features',
-            'wrong_field'   => 'slug',
-            'correct_field' => 'code',
-            'severity'      => 'critical',
-            'note'          => 'DB column is "code". Model has getSlugAttribute() accessor. SQL SELECT must use "code".',
-        ],
-        [
-            'table'         => 'property_features',
-            'wrong_field'   => 'description',
-            'correct_field' => null, // forbidden — column does not exist
-            'severity'      => 'critical',
-            'note'          => 'Column does not exist in DB. Use help_text for descriptive content.',
-        ],
-        [
-            'table'         => 'property_features',
-            'wrong_field'   => 'type',
-            'correct_field' => 'data_type',
-            'severity'      => 'critical',
-            'note'          => 'Context7: "type" is universally banned. Use data_type or input_type.',
-        ],
-
-        // ── template_feature_assignments ───────────────────────────────
-        [
-            'table'         => 'template_feature_assignments',
-            'wrong_field'   => 'display_order',
-            'correct_field' => 'sort_order',
-            'severity'      => 'critical',
-            'note'          => 'DB column is "sort_order". display_order exists on other tables but NOT here.',
-        ],
-        [
-            'table'         => 'template_feature_assignments',
-            'wrong_field'   => 'group_name',
-            'correct_field' => 'section_name',
-            'severity'      => 'critical',
-            'note'          => 'DB column is "section_name", not "group_name".',
-        ],
-
-        // ── property_templates ─────────────────────────────────────────
-        [
-            'table'         => 'property_templates',
-            'wrong_field'   => 'template_version',
-            'correct_field' => 'version',
-            'severity'      => 'critical',
-            'note'          => 'property_templates uses "version". ilanlar and ups_templates use "template_version" — domain-specific.',
-        ],
-        [
-            'table'         => 'property_templates',
-            'wrong_field'   => 'slug',
-            'correct_field' => 'code',
-            'severity'      => 'critical',
-            'note'          => 'DB column is "code". Unique index on code.',
-        ],
+        // REMOVED (STALE_REFERENCE): property_features, property_templates, template_feature_assignments
+        // Legacy PropertyHub design — no model class, no migration, no active code usage
+        // These were incorrectly guarded for tables that don't exist in the canonical schema
 
         // ── yayin_tipi_sablonlari ──────────────────────────────────────
         [

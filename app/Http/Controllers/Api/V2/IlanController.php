@@ -155,10 +155,7 @@ class IlanController extends Controller
 
         $action->handle($ilan);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'İlan başarıyla silindi',
-        ]);
+        return response()->json(null, 204);
     }
 
     /**
