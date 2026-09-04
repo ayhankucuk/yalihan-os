@@ -31,26 +31,38 @@ class IlanPhotoService
 
         $uploadedPhotos = [];
 
-        foreach ($photos as $photo) {
-            /** @var UploadedFile $photo */
-            $fileName = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
-            $path = $photo->storeAs('ilan-fotograflari/' . $ilan->id, $fileName, 'public');
+        DB::beginTransaction();
+        try {
+            // BACKLOG-8: Atomic display_order ataması — count()+1 yerine max()+1 + transaction lock
+            // Eşzamanlı yüklemede iki istek aynı display_order değerini alamaz.
+            $maxOrder = (int) IlanFotografi::where('ilan_id', $ilan->id)->max('display_order') ?? 0;
 
-            $fotografModel = new IlanFotografi();
-            $fotografModel->ilan_id = $ilan->id;
-            $fotografModel->dosya_yolu = $path;
-            $fotografModel->dosya_adi = $photo->getClientOriginalName();
-            $fotografModel->dosya_boyutu = $photo->getSize();
-            $fotografModel->mime_type = $photo->getMimeType();
-            $fotografModel->display_order = IlanFotografi::where('ilan_id', $ilan->id)->count() + 1;
-            $fotografModel->save();
+            foreach ($photos as $index => $photo) {
+                /** @var UploadedFile $photo */
+                $fileName = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
+                $path = $photo->storeAs('ilan-fotograflari/' . $ilan->id, $fileName, 'public');
 
-            $uploadedPhotos[] = [
-                'id' => $fotografModel->id,
-                'url' => Storage::disk('public')->url($path),
-                'name' => $fotografModel->dosya_adi,
-                'size' => $fotografModel->dosya_boyutu,
-            ];
+                $fotografModel = new IlanFotografi();
+                $fotografModel->ilan_id = $ilan->id;
+                $fotografModel->dosya_yolu = $path;
+                $fotografModel->dosya_adi = $photo->getClientOriginalName();
+                $fotografModel->dosya_boyutu = $photo->getSize();
+                $fotografModel->mime_type = $photo->getMimeType();
+                $fotografModel->display_order = $maxOrder + $index + 1;
+                $fotografModel->save();
+
+                $uploadedPhotos[] = [
+                    'id' => $fotografModel->id,
+                    'url' => Storage::disk('public')->url($path),
+                    'name' => $fotografModel->dosya_adi,
+                    'size' => $fotografModel->dosya_boyutu,
+                ];
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
         }
 
         return [
