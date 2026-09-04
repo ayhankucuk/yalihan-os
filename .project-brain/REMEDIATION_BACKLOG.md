@@ -76,9 +76,21 @@
 - Error message: "Hot-spot file `<file>` is modified without active protocol lock. Acquire lock in PROJECT_STATE.md first."
 - Heartbeat mechanism: agent must update timestamp in lock entry; hook checks staleness
 
-**Status:** `OPEN`
-**Blocked By:** BACKLOG-1 (hook infrastructure)
+**Status:** `IMPLEMENTED` ✅ (2026-09-04)
+**Blocked By:** None
 **Related Gate:** G2 (Conflict Guard)
+**SSOT Architecture:**
+- `scripts/tools/conflict-guard.sh` — canonical conflict guard engine (hot-spot lock enforcement, --staged, --check, --acquire, --release, --test)
+- `.husky/_/pre-commit` — thin delegator: `secret-scan.sh --staged` && `conflict-guard.sh --staged`
+- `.git/hooks/pre-commit` — thin delegator: `secret-scan.sh --staged` && `conflict-guard.sh --staged`
+- `scripts/tools/antigravity-full-gate.sh` — Gate 0: `conflict-guard.sh --staged`
+- `.project-brain/PROJECT_STATE.md` — Active Protocol Locks ledger
+**Shell Compatibility:** GNU bash 3.2+ (macOS /bin/bash / Linux)
+**Regression Tests:** 17/17 PASS ✅
+- Test 1-9: Hot-spot file matching (schema, migrations, routes, authority, config, IlanCrudService, positive/negative cases)
+- Test 10-13: Lock acquisition, verification, multi-file globs, and TTL expiration detection
+- Test 14: Lock release verification
+- Test 15-17: Multi-agent concurrent lock isolation and non-hotspot passthrough
 
 ---
 
@@ -316,7 +328,7 @@
 | ID | Gate | Priority | Owner | Status |
 |----|------|----------|-------|--------|
 | BACKLOG-1 | G7 | HIGHEST | Antigravity / Kilo | `IMPLEMENTED` ✅ |
-| BACKLOG-2 | G2 | HIGH | Antigravity | `OPEN` |
+| BACKLOG-2 | G2 | HIGH | Antigravity | `IMPLEMENTED` ✅ (17/17 PASS) |
 | BACKLOG-3 | G3 | MEDIUM | Kilo / Antigravity | `IMPLEMENTED` ✅ (SKILL_INDEX.md) |
 | BACKLOG-4 | G4 | MEDIUM | Kilo | `IMPLEMENTED` ✅ (15/15 PASS) |
 | BACKLOG-5 | — | P0 (CRITICAL) | Cline (Security Agent) | `IMPLEMENTED` ✅ (7 commit, 10/10 PASS) |
@@ -325,7 +337,7 @@
 | BACKLOG-8 | — | P2 (MEDIUM) | Codex | `IMPLEMENTED` ✅ (5/5 PASS, commit 7c52660) |
 | BACKLOG-9 | — | P2 (MEDIUM) | Cline (BACKLOG-5 içinde çözüldü) | `CLOSED` ✅ |
 
-**Dependencies:** BACKLOG-2 blocked by BACKLOG-1. BACKLOG-3 and BACKLOG-4 independent. BACKLOG-9 closed (BACKLOG-5 içinde çözüldü). BACKLOG-8 IMPLEMENTED.
+**Dependencies:** ALL 9 BACKLOG ITEMS ARE IMPLEMENTED/CLOSED! (9/9 Complete) ✅
 
 **Güncelleme 2026-09-04 (Oturum 148):** `client-schema-migration-recovery` worktree stabilize edildi. AiCostGuardTest 5/5 PASS (14 assertions). Migration idempotency guard eklendi (commit `6096b4a`). Worktree clean, storage clean. Client Agent migration kurtarma ön koşulu kısmen karşılandı — BACKLOG-5 için engel kaldırıldı.
 
