@@ -329,24 +329,31 @@
 
 ---
 
-## RELEASE BLOCKERS — CONDITIONAL ACCEPT Durumu
+## RELEASE BLOCKERS — RC2 DURUMU
 
-**Karar:** `CONDITIONAL ACCEPT — BACKLOG_IMPLEMENTED / RC1_STALE / RELEASE_BLOCKED`
+**Karar:** `CONDITIONAL ACCEPT — BACKLOG_IMPLEMENTED / RC2_CREATED / RELEASE_GATE_PENDING`
+
+**RC2 Branch:** `release-candidate/RC2` — `fix/p0-test-failures` üzerinde oluşturuldu (2026-09-04).
 
 ### Release öncesi tamamlanması gereken maddeler
 
 | # | Bulgu | Sahip | Durum |
 |---|-------|-------|-------|
-| RC-B1 | RC1 (`249cfc1`) güncel kodları içermiyor — `fix/p0-test-failures` branch'indeki son BACKLOG-8 commitleri (`5d8f81b`, `2a0c1c2`) RC1'e merge edilmeli | Wenox | OPEN |
-| RC-B2 | `PhotoDisplayOrderRaceConditionTest`: MySQL unique-index doğrulaması yok — SQLite CI'da test atlanıyor | Wenox | OPEN |
-| RC-B3 | V2IlanAuthorizationBoundaryTest: S1/S4/S5/S6 başarısız (auth scope — mevcut kodla ilgili, yeni kod değil) | Wenox | OPEN |
-| RC-B4 | BACKLOG-1 final audit: dokümanda hâlâ "Antigravity final re-audit required" yazıyor | Antigravity | OPEN |
-| RC-B5 | TD-13, TD-14: Teknik karar verildi — `docs/architecture/td-13-td-14-decision-2026-09-04.md` | Codex | ✅ DONE |
-| RC-B6 | Production migration: `BLOCKED_PENDING_PRODUCTION_AUTH` — `ilan_fotograflari` unique index migration'ı için MySQL backup + deploy onayı gerekli | Kilo | BLOCKED |
+| RC-B1 | Wenox: RC2 branch doğrulaması + MySQL unique-index test | Wenox | OPEN |
+| RC-B2 | V2IlanAuthorizationBoundaryTest: S1/S4/S5/S6 başarısız (auth scope — mevcut kodla ilgili, yeni kod değil) | Wenox | OPEN |
+| RC-B3 | BACKLOG-1 final audit: "Antigravity final re-audit required" | Antigravity | OPEN |
+| RC-B4 | Production migration: `ilan_fotograflari` unique index — MySQL backup + deploy onayı gerekli | Kilo | BLOCKED |
+| RC-B5 | TD-13, TD-14: Teknik karar — `docs/architecture/td-13-td-14-decision-2026-09-04.md` | Codex | ✅ DONE |
 
-### RC1 ile ilgili not
+### RC2 Kapsamı
 
-`fix/p0-test-failures` branch'i `origin/fix/p0-test-failures`'ten 17 commit ileride. RC1 (`249cfc1`) eski kod tabanını temsil ediyor. Release için yeni bir RC2 branch'i oluşturulmalı ve `fix/p0-test-failures`'deki tüm implementasyonlar merge edilmeli.
+`release-candidate/RC2` — `fix/p0-test-failures` üzerinde, tüm Oturum 148-154 implementasyonları:
+- BACKLOG-5/6/7/8 ✅ (security triyaj + remediation)
+- BACKLOG-4 ✅ (AuthorizationBoundaryTest 15/15 PASS)
+- BACKLOG-3 ✅ (SKILL_INDEX.md)
+- TD-14 fix ✅ (kapak_mi → kapak_fotografi)
+- Token enumeration fix ✅ (OwnerAuthController)
+- Migration cross-DB fix ✅ (SHOW INDEX → Schema::hasIndex)
 
 ### BACKLOG-8 Migration Notu (BLOCKED_PENDING_PRODUCTION_AUTH)
 
