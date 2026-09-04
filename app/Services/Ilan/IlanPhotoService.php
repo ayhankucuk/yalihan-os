@@ -116,7 +116,7 @@ class IlanPhotoService
             foreach ($photoSequences as $photoId => $sequence) {
                 IlanFotografi::where('id', $photoId)
                     ->where('ilan_id', $ilan->id)
-                    ->update(['sira' => (int) $sequence]);
+                    ->update(['display_order' => (int) $sequence]);
             }
             DB::commit();
 
