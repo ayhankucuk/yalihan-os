@@ -309,13 +309,13 @@
 | BACKLOG-2 | G2 | HIGH | Antigravity | `OPEN` |
 | BACKLOG-3 | G3 | MEDIUM | Kilo / Antigravity | `OPEN` |
 | BACKLOG-4 | G4 | MEDIUM | Kilo | `OPEN` |
-| BACKLOG-5 | — | P0 (CRITICAL) | Security Agent | `OPEN — WORKTREE_ASSIGNED` |
-| BACKLOG-6 | — | P1 (HIGH) | Codex | `IMPLEMENTED` ✅ |
-| BACKLOG-7 | — | P1 (HIGH) | Antigravity / Kilo | `OPEN` |
-| BACKLOG-8 | — | P2 (MEDIUM) | Antigravity / Kilo | `OPEN` |
-| BACKLOG-9 | — | P2 (MEDIUM) | Security Agent | `OPEN` (BLOCKED by BACKLOG-5) |
+| BACKLOG-5 | — | P0 (CRITICAL) | Cline (Security Agent) | `IMPLEMENTED` ✅ (7 commit, 10/10 PASS) |
+| BACKLOG-6 | — | P1 (HIGH) | Codex | `IMPLEMENTED` ✅ (5/5 PASS) |
+| BACKLOG-7 | — | P1 (HIGH) | Codex | `IMPLEMENTED` ✅ (5/5 PASS) |
+| BACKLOG-8 | — | P2 (MEDIUM) | Codex (sıradaki) | `OPEN` |
+| BACKLOG-9 | — | P2 (MEDIUM) | Cline (BACKLOG-5 içinde çözüldü) | `CLOSED` ✅ |
 
-**Dependencies:** BACKLOG-2 blocked by BACKLOG-1. BACKLOG-3 and BACKLOG-4 independent. BACKLOG-9 blocked by BACKLOG-5. Client Agent migration kurtarma ön koşul: BACKLOG-5 açılmadan önce tamamlanmalı.
+**Dependencies:** BACKLOG-2 blocked by BACKLOG-1. BACKLOG-3 and BACKLOG-4 independent. BACKLOG-9 closed (BACKLOG-5 içinde çözüldü). BACKLOG-8 sıradaki — Codex üstleniyor.
 
 **Güncelleme 2026-09-04 (Oturum 148):** `client-schema-migration-recovery` worktree stabilize edildi. AiCostGuardTest 5/5 PASS (14 assertions). Migration idempotency guard eklendi (commit `6096b4a`). Worktree clean, storage clean. Client Agent migration kurtarma ön koşulu kısmen karşılandı — BACKLOG-5 için engel kaldırıldı.
 
