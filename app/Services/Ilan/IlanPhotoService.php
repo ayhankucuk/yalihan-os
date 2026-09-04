@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Validator;
 class IlanPhotoService
 {
     use GuardsAgentWrites;
-
     public function uploadPhotos(Ilan $ilan, array $photos): array
     {
         $this->blockAgentWrite('uploadPhotos');
@@ -29,34 +28,93 @@ class IlanPhotoService
             ];
         }
 
-        $uploadedPhotos = [];
+        // BACKLOG-8: Atomic display_order with lockForUpdate + retry + orphan cleanup
+        // Each retry attempt starts fresh: reset state, clean orphaned files on failure.
+        $maxAttempts = 5;
+        $attempt = 0;
 
-        foreach ($photos as $photo) {
-            /** @var UploadedFile $photo */
-            $fileName = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
-            $path = $photo->storeAs('ilan-fotograflari/' . $ilan->id, $fileName, 'public');
+        do {
+            if ($attempt > 0) {
+                usleep(50_000); // 50ms backoff before retry
+            }
+            $attempt++;
 
-            $fotografModel = new IlanFotografi();
-            $fotografModel->ilan_id = $ilan->id;
-            $fotografModel->dosya_yolu = $path;
-            $fotografModel->dosya_adi = $photo->getClientOriginalName();
-            $fotografModel->dosya_boyutu = $photo->getSize();
-            $fotografModel->mime_type = $photo->getMimeType();
-            $fotografModel->display_order = IlanFotografi::where('ilan_id', $ilan->id)->count() + 1;
-            $fotografModel->save();
+            // Fresh state per attempt — prevents $uploadedPhotos accumulation across retries
+            $attemptPhotos = [];
+            $attemptSavedPaths = [];
+            $currentIndex = 0;
 
-            $uploadedPhotos[] = [
-                'id' => $fotografModel->id,
-                'url' => Storage::disk('public')->url($path),
-                'name' => $fotografModel->dosya_adi,
-                'size' => $fotografModel->dosya_boyutu,
-            ];
-        }
+            try {
+                DB::beginTransaction();
 
+                // Lock the parent ilan row so concurrent transactions block here
+                Ilan::where('id', $ilan->id)->lockForUpdate()->exists();
+
+                $maxOrder = (int) IlanFotografi::where('ilan_id', $ilan->id)->max('display_order') ?? 0;
+
+                foreach ($photos as $photo) {
+                    /** @var UploadedFile $photo */
+                    $fileName = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
+                    $path = $photo->storeAs('ilan-fotograflari/' . $ilan->id, $fileName, 'public');
+                    $attemptSavedPaths[] = $path; // Track so we can clean up on failure
+
+                    $fotografModel = new IlanFotografi();
+                    $fotografModel->ilan_id = $ilan->id;
+                    $fotografModel->dosya_yolu = $path;
+                    $fotografModel->dosya_adi = $photo->getClientOriginalName();
+                    $fotografModel->dosya_boyutu = $photo->getSize();
+                    $fotografModel->mime_type = $photo->getMimeType();
+                    $fotografModel->display_order = $maxOrder + $currentIndex + 1;
+                    $fotografModel->save();
+                    $currentIndex++;
+
+                    $attemptPhotos[] = [
+                        'id' => $fotografModel->id,
+                        'url' => Storage::disk('public')->url($path),
+                        'name' => $fotografModel->dosya_adi,
+                        'size' => $fotografModel->dosya_boyutu,
+                    ];
+                }
+
+                DB::commit();
+                // Success — return attempt photos (not accumulated from previous failed attempts)
+                return [
+                    'success' => true,
+                    'message' => count($attemptPhotos) . ' fotoğraf başarıyla yüklendi.',
+                    'photos' => $attemptPhotos,
+                ];
+            } catch (\Illuminate\Database\QueryException $e) {
+                DB::rollBack();
+
+                // MySQL duplicate key: retry up to $maxAttempts
+                if ($e->getCode() === '23000' && $attempt < $maxAttempts) {
+                    // Clean up storage files from the failed attempt before retrying
+                    foreach ($attemptSavedPaths as $savedPath) {
+                        Storage::disk('public')->delete($savedPath);
+                    }
+                    continue;
+                }
+
+                // Non-retryable DB error — clean up files before re-throwing
+                foreach ($attemptSavedPaths as $savedPath) {
+                    Storage::disk('public')->delete($savedPath);
+                }
+                throw $e;
+            } catch (\Exception $e) {
+                DB::rollBack();
+
+                // Clean up any files saved in this failed attempt
+                foreach ($attemptSavedPaths as $savedPath) {
+                    Storage::disk('public')->delete($savedPath);
+                }
+                throw $e;
+            }
+        } while ($attempt < $maxAttempts);
+
+        // All retries exhausted
         return [
-            'success' => true,
-            'message' => count($uploadedPhotos) . ' fotoğraf başarıyla yüklendi.',
-            'photos' => $uploadedPhotos,
+            'success' => false,
+            'errors' => 'Fotoğraf yüklemesi eşzamanlılık nedeniyle başarısız oldu. Lütfen tekrar deneyin.',
         ];
     }
 
@@ -104,7 +162,7 @@ class IlanPhotoService
             foreach ($photoSequences as $photoId => $sequence) {
                 IlanFotografi::where('id', $photoId)
                     ->where('ilan_id', $ilan->id)
-                    ->update(['sira' => (int) $sequence]);
+                    ->update(['display_order' => (int) $sequence]);
             }
             DB::commit();
 

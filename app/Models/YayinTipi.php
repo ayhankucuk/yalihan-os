@@ -21,7 +21,6 @@ class YayinTipi extends BaseModel
 
     protected $fillable = [
         'name',
-        'adi', // context7: alias for 'name' (blade compatibility)
         'slug',
         'aktiflik_durumu',
     ];

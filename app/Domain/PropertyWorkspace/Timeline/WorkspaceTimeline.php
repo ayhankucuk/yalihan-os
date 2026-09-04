@@ -112,7 +112,7 @@ class WorkspaceTimeline
         $state = [
             'workspace_id' => $workspace->workspace_uuid,
             'tenant_id' => $workspace->tenant_id,
-            'ilan_id' => $workspace->ilan_id,
+            'property_id' => $workspace->property_id,
             'intent' => $workspace->intent,
             'template_id' => $workspace->template_id,
             'state' => $workspace->state,

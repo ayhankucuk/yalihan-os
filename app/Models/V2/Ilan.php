@@ -32,6 +32,8 @@ class Ilan extends BaseModel
         'fiyat',
         'user_id',
         'danisman_id',
+        'tenant_id',
+        'ulke_id',
         'ana_kategori_id',
         'alt_kategori_id',
         'yayin_tipi_id',

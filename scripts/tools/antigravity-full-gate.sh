@@ -60,6 +60,9 @@ echo -e "${NC}"
 
 START_TIME=$(date +%s)
 
+# Gate 0: Pre-Mutation Conflict Guard (BACKLOG-2)
+run_gate "Conflict Guard (BACKLOG-2)" "${SCRIPT_DIR}/conflict-guard.sh --staged"
+
 # Gate 1: Antigravity Preflight (10 Golden Rules on modified files)
 run_gate "Preflight Guard (10 Golden Rules)" "${SCRIPT_DIR}/antigravity-preflight.sh"
 

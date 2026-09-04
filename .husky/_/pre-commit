@@ -1,0 +1,13 @@
+#!/bin/bash
+# ============================================================
+# YALIHAN OS — Husky Pre-Commit Hook (Thin Delegator)
+# File: .husky/_/pre-commit
+# Active hook (core.hooksPath = .husky/_)
+# Delegation targets:
+#   1. scripts/tools/secret-scan.sh --staged (BACKLOG-1)
+#   2. scripts/tools/conflict-guard.sh --staged (BACKLOG-2)
+# ============================================================
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo '.')"
+
+"$REPO_ROOT/scripts/tools/secret-scan.sh" --staged || exit 1
+"$REPO_ROOT/scripts/tools/conflict-guard.sh" --staged || exit 1

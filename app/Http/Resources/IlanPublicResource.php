@@ -95,10 +95,10 @@ class IlanPublicResource extends JsonResource
                     return [
                         'id' => $foto->id,
                         'url' => $foto->url ?? asset('storage/'.$foto->dosya_yolu),
-                        'sira' => $foto->sira,
+                        'display_order' => $foto->display_order,
                         'kapak_fotografi' => $foto->kapak_fotografi ?? false,
                     ];
-                })->sortBy('sira')->values();
+                })->sortBy('display_order')->values();
             }),
 
             // Tarihler (Public)
