@@ -197,9 +197,9 @@
 
 **Etki Alanı:** `app/Http/Middleware/AIRateLimitMiddleware.php`, `app/Http/Middleware/ApiRateLimitMiddleware.php`
 
-**Status:** `OPEN`
+**Status:** `IMPLEMENTED` ✅ (2026-09-04, commit `3d16f4e`)
 **Blocked By:** None
-**Exit Criterion:** `RateLimiter::tooManyAttempts()` ile değiştirildi; concurrent isteklerde limit aşılmaz.
+**Exit Criterion:** `RateLimiter::attempt()` ile değiştirildi; concurrent isteklerde limit aşılmaz. Test: 5/5 PASS.
 
 ---
 
@@ -282,7 +282,7 @@
 | BACKLOG-3 | G3 | MEDIUM | Kilo / Antigravity | `OPEN` |
 | BACKLOG-4 | G4 | MEDIUM | Kilo | `OPEN` |
 | BACKLOG-5 | — | P0 (CRITICAL) | Security Agent | `OPEN — WORKTREE_ASSIGNED` |
-| BACKLOG-6 | — | P1 (HIGH) | Antigravity / Kilo | `OPEN` |
+| BACKLOG-6 | — | P1 (HIGH) | Codex | `IMPLEMENTED` ✅ |
 | BACKLOG-7 | — | P1 (HIGH) | Antigravity / Kilo | `OPEN` |
 | BACKLOG-8 | — | P2 (MEDIUM) | Antigravity / Kilo | `OPEN` |
 | BACKLOG-9 | — | P2 (MEDIUM) | Security Agent | `OPEN` (BLOCKED by BACKLOG-5) |

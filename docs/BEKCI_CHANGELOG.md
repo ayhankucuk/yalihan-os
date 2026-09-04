@@ -4724,5 +4724,62 @@ OK (5 tests, 14 assertions)
 - 14 pending migration production deploy authorization
 - 94 test files in `@group skip-until-migration-complete` (AiCostGuardTest artık PASS, diğerleri bekliyor)
 - BACKLOG-5: Lead Tenant Boundary (P0 CRITICAL) — sonraki öncelik
-- BACKLOG-6: Rate-Limit Race Condition (P1)
+- ~~BACKLOG-6: Rate-Limit Race Condition (P1)~~ → ✅ IMPLEMENTED (commit `3d16f4e`)
 - BACKLOG-7: Security Log Secret Leakage (P1)
+
+---
+
+## Oturum 149 — 2026-09-04 | BACKLOG-6: Rate-Limit Race Condition Fix 🛡️
+
+### Özet
+
+`AIRateLimitMiddleware` ve `ApiRateLimitMiddleware` içindeki non-atomic `Cache::get/put` pattern'i `RateLimiter::attempt()` ile değiştirildi. TOCTOU race condition giderildi.
+
+### Kök Neden
+
+```php
+// VULNERABLE — Cache::get/put arası race window
+$attempts = Cache::get($key, 0);        // ← Time-of-Check
+if ($attempts >= $maxAttempts) { ... }
+Cache::put($key, $attempts + 1, ...);   // ← Time-of-Use
+```
+
+İki eşzamanlı istek aynı `$attempts` değerini okuyabilir, ikisi de limit kontrolünden geçebilir, ikisi de increment yapabilir → limit aşıldı.
+
+### Fix
+
+```php
+// ATOMIC — RateLimiter::attempt() tek atomik işlem
+$executed = RateLimiter::attempt(
+    $key,
+    $maxAttempts,
+    function () {},
+    $decaySeconds
+);
+```
+
+### Değiştirilen Dosyalar
+
+| Dosya | Değişiklik |
+|-------|-----------|
+| `app/Http/Middleware/AIRateLimitMiddleware.php` | `Cache` → `RateLimiter` facade |
+| `app/Http/Middleware/ApiRateLimitMiddleware.php` | `Cache` → `RateLimiter` facade |
+| `tests/Feature/Security/RateLimitRaceConditionTest.php` | 5 yeni test |
+
+### Test Sonuçları
+
+```
+OK (5 tests, 11 assertions)
+```
+
+| Test | Durum |
+|------|-------|
+| test_ai_rate_limit_middleware_uses_atomic_ratelimiter | ✅ |
+| test_ai_rate_limit_blocks_after_max_attempts | ✅ |
+| test_ai_rate_limit_headers_show_remaining | ✅ |
+| test_concurrent_attempts_do_not_exceed_limit | ✅ |
+| test_ratelimiter_attempt_is_atomic_no_toctou | ✅ |
+
+### Commit
+
+`3d16f4e` — `fix(security): BACKLOG-6 — atomic rate limiting via RateLimiter facade`
