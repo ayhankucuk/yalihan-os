@@ -24,7 +24,7 @@
 - Token fingerprints to block: `ghp_`, `sk-proj-`, `sk-`, `xoxb-`, `xoxp-`, `Bearer ` (with space)
 - Scan session output separately if session replay logging is active
 
-**Status:** `IMPLEMENTED` ✅ (2026-09-01)
+**Status:** `CLOSED` ✅ (2026-09-01 implemented, 2026-09-04 final audit CLOSED)
 **Blocked By:** None
 **Related Gate:** G7 (Secret Boundary Guard)
 **SSOT Architecture (REM-SECRET-SCAN-REMEDIATE-01):**
@@ -48,7 +48,15 @@
 - R9 CI git-range sk-proj → exit 1
 - B2 ghp_ no bypass → exit 1
 **Pattern Count:** 10 patterns covering ghp_, github_pat_, sk-proj-, sk-, sk-ant-, xoxb-/xoxp-/xoxr-/xoxa-, AKIA (exact 16-char), Bearer (with space)
-**Audit:** Antigravity audit (2026-09-01) → PARTIAL. SSOT refactor addresses policy drift. Final re-audit by Antigravity required for BACKLOG-1 CLOSE.
+**Audit:** Antigravity final re-audit (2026-09-04) → **CLOSED** ✅
+- SSOT file verified: 18 active patterns (11 token + 7 private key markers)
+- Scanner engine reads from SSOT file only — no hardcoded detection patterns
+- All 4 delegator files verified thin (husky, git hook, CI workflow, full gate)
+- core.hooksPath = `.husky/_` confirmed active
+- ENFORCEMENT_PATTERN_DUPLICATION = 0 verified (setup.sh echo is informational, sanitise() is redaction-only)
+- Regression tests: 15/15 PASS (backlog1-r15.sh) + 10/10 PASS (backlog1-test.sh) = 25/25 total
+- Shell compatibility: bash 3.2.57 (macOS) + BSD grep confirmed
+- All executable bits verified: secret-scan.sh (755), husky pre-commit (755), git pre-commit (755)
 
 ---
 
@@ -339,10 +347,10 @@
 
 | # | Bulgu | Sahip | Durum |
 |---|-------|-------|-------|
-| RC-B1 | Wenox: RC2 branch doğrulaması + MySQL unique-index test | Wenox | OPEN |
-| RC-B2 | V2IlanAuthorizationBoundaryTest: S1/S4/S5/S6 başarısız (auth scope — mevcut kodla ilgili, yeni kod değil) | Wenox | OPEN |
-| RC-B3 | BACKLOG-1 final audit: "Antigravity final re-audit required" | Antigravity | OPEN |
-| RC-B4 | Production migration: `ilan_fotograflari` unique index — MySQL backup + deploy onayı gerekli | Kilo | BLOCKED |
+| RC-B1 | Wenox: RC2 branch doğrulaması + MySQL unique-index test | Wenox | ✅ DONE (Security 67/67 PASS, Governance 197/197 PASS) |
+| RC-B2 | V2IlanAuthorizationBoundaryTest: S1/S4/S5/S6 başarısız (auth scope — mevcut kodla ilgili, yeni kod değil) | Wenox | ✅ DONE (route binding + CountryScope + fillable fix, commit ed53649) |
+| RC-B3 | BACKLOG-1 final audit: "Antigravity final re-audit required" | Antigravity | ✅ DONE (2026-09-04, 25/25 regression PASS, SSOT verified) |
+| RC-B4 | Production migration: `ilan_fotograflari` unique index — MySQL backup + deploy onayı gerekli | Kilo | AUTHORIZED — runbook ready (`docs/deployment/RC-B4-production-migration-auth.md`) |
 | RC-B5 | TD-13, TD-14: Teknik karar — `docs/architecture/td-13-td-14-decision-2026-09-04.md` | Codex | ✅ DONE |
 
 ### RC2 Kapsamı
@@ -367,7 +375,7 @@ Migration `2026_09_04_173133` SQLite ve MySQL uyumlu. Production'a deploy etmede
 
 | ID | Gate | Priority | Owner | Status |
 |----|------|----------|-------|--------|
-| BACKLOG-1 | G7 | HIGHEST | Antigravity / Kilo | `IMPLEMENTED` ✅ |
+| BACKLOG-1 | G7 | HIGHEST | Antigravity / Kilo | `CLOSED` ✅ (2026-09-04 final audit) |
 | BACKLOG-2 | G2 | HIGH | Antigravity | `IMPLEMENTED` ✅ (17/17 PASS) |
 | BACKLOG-3 | G3 | MEDIUM | Kilo / Antigravity | `IMPLEMENTED` ✅ (SKILL_INDEX.md) |
 | BACKLOG-4 | G4 | MEDIUM | Kilo | `IMPLEMENTED` ✅ (15/15 PASS) |

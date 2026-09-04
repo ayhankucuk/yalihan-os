@@ -1,6 +1,6 @@
 # Known Technical Debt
 
-> Son güncelleme: 2026-06-16 (Oturum 59 — MD Audit & Yeni Borçlar eklendi)
+> Son güncelleme: 2026-09-04 (RC2 Release Status eklendi — Oturum 155)
 > Risk: LOW-MEDIUM — hiçbiri release blocker değil
 
 ## Active Debt Items
@@ -286,3 +286,46 @@
 - **Karar:** Baseline migration fix — `kapak_mi` → `kapak_fotografi`
 - **Fix:** Commit `4564040` — baseline migration `2024_01_01_000000` line 766 düzeltildi
 - **Durum:** ✅ ÇÖZÜLDÜ — Production etkisi yok (prod'da kolon zaten `kapak_fotografi`)
+
+---
+
+## RC2 Release Status — 2026-09-04
+
+**Branch:** `release-candidate/RC2`
+**Karar:** `CONDITIONAL ACCEPT — RC2_READY / PRODUCTION_DEPLOY_PENDING`
+
+### RC2 Release Blockers Durumu
+
+| # | Bulgu | Sahip | Durum |
+|---|-------|-------|-------|
+| RC-B1 | Wenox: RC2 branch doğrulaması + MySQL unique-index test | Wenox | ✅ DONE (Security 67/67, Governance 197/197) |
+| RC-B2 | V2IlanAuthorizationBoundaryTest: S1/S4/S5/S6 başarısız | Wenox | ✅ DONE (commit `ed53649`) |
+| RC-B3 | BACKLOG-1 final audit | Antigravity | ✅ DONE (25/25 regression PASS, CLOSED) |
+| RC-B4 | Production migration: `ilan_fotograflari` unique index | Kilo | AUTHORIZED — runbook: `docs/deployment/RC-B4-production-migration-auth.md` |
+| RC-B5 | TD-13, TD-14 teknik karar | Codex | ✅ DONE |
+
+### RC2 Kapsamı — Tamamlanan Çalışmalar
+
+- **BACKLOG-1** (Secret Scanner): CLOSED ✅ — 25/25 regression PASS, SSOT verified
+- **BACKLOG-2** (Conflict Guard): IMPLEMENTED ✅ — 17/17 PASS
+- **BACKLOG-3** (Backend Guard Selection): IMPLEMENTED ✅ — SKILL_INDEX.md
+- **BACKLOG-4** (Auth Boundary CI Gate): IMPLEMENTED ✅ — 15/15 PASS
+- **BACKLOG-5/6/7** (Security Triyaj): IMPLEMENTED ✅
+- **BACKLOG-8** (Fotoğraf display_order Race): IMPLEMENTED ✅ — cross-DB migration, deploy pending
+- **TD-14 fix**: ✅ `kapak_mi` → `kapak_fotografi` baseline migration
+- **Token enumeration fix**: ✅ OwnerAuthController
+- **Migration cross-DB fix**: ✅ `SHOW INDEX` → `Schema::hasIndex`
+- **V2 Ilan route binding fix**: ✅ Route params, CountryScope, fillable, destroy return type (commit `ed53649`)
+
+### Kalan Açık Borç (RC2 Dışı)
+
+- **#27 / #34** Dikey İlan JSONB Tam Göçü (Read Path)
+- **#35** Deploy Görevleri (#21-25) — Sunucu kurulum
+- **#37** Availability Sync SQLite Test Schema Gap
+- **#38** DTO-based Retryable Channel Failures (GAP-03)
+- **#39** Hermes Workforce Runtime Wiring — CRITICAL
+- **#40** TD-13 `ai_saglayici_profilleri` vs `ai_provider_profiles` — P2
+
+### Pre-existing Test Failures (RC2 Dışı)
+
+- `FeatureAssignmentObserverTest` — 3 errors (RC2 öncesi var, `git stash` ile doğrulandı)
