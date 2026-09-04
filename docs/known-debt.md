@@ -327,6 +327,10 @@
 - **#38** DTO-based Retryable Channel Failures (GAP-03)
 - **#40** TD-13 `ai_saglayici_profilleri` vs `ai_provider_profiles` — P2
 
-### Pre-existing Test Failures (RC2 Dışı)
+### Pre-existing Test Failures (RC2 Dışı / Unit Test Borçları)
 
-- `FeatureAssignmentObserverTest` — 3 errors (RC2 öncesi var, `git stash` ile doğrulandı)
+- `FeatureAssignmentObserverTest` — ✅ ÇÖZÜLDÜ (9/9 PASS — 2026-09-04 Oturum 155 doğrulaması)
+- `UserTest` — 1 error (`user has ilanlar`, danisman_id vs user_id beklentisi)
+- `CiGuardRawDbWriteTest` — 1 error (`guard passes on clean codebase`, script whitelist drift)
+- `DemandMatchingEngineTest` — 3 errors (SQL filtreleme draft ilan durumu beklentisi)
+> Detaylar ve teşhisler için bkz: [docs/architecture/codex-handoff-2026-09-04.md](file:///Users/macbookpro/repos/yalihan-os/docs/architecture/codex-handoff-2026-09-04.md)

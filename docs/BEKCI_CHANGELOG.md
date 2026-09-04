@@ -2,6 +2,8 @@
 
 ## Oturum 155 — 2026-09-04 | RC2 RELEASE_GATE_OPEN & TD-14 Fix & #39 Hermes Wiring ✅
 
+> 📌 **Codex Devir-Teslim Brifingi (Project Engineer Handover):** Yeni oturuma başlarken lütfen [docs/architecture/codex-handoff-2026-09-04.md](file:///Users/macbookpro/repos/yalihan-os/docs/architecture/codex-handoff-2026-09-04.md) dokümanını oku (TD-13 analizi ve kalan 5 birim testi teşhisi içerir).
+
 **Kapsam:** Codex (Proje Mühendisi), Kilo'nun RC1 CONDITIONAL ACCEPT bulgularını ve RC2 release blokajlarını (RC-B1..RC-B5) tek tek ele alarak tüm engelleri kaldırdı. Canlı veritabanı migration'ı uygulandı ve Release Gate AÇIK (`RELEASE_GATE_OPEN`) ilan edildi.
 
 #### 1. RC2 Release Blockers Çözüm Durumu (5/5 TAMAMLANDI)
