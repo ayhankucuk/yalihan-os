@@ -108,9 +108,10 @@
 - Agent startup: read file being modified → consult map → auto-load skills
 - Can be implemented as a shell alias or small wrapper script: `kilo-mutate <file>` → loads skills then opens editor
 
-**Status:** `OPEN`
+**Status:** `IMPLEMENTED` ✅ (2026-09-04)
 **Blocked By:** None
 **Related Gate:** G3 (Backend Guard Selection)
+**Implementation:** `.agents/skills/SKILL_INDEX.md` — File → Skill mapping tablosu, 30+ pattern, 10 skill kategorisi. Agent'lar dosya yolu bazlı otomatik skill seçimi yapabilir.
 
 ---
 
@@ -142,9 +143,16 @@
   run: php artisan test --filter=AuthorizationBoundaryTest
 ```
 
-**Status:** `OPEN`
+**Status:** `IMPLEMENTED` ✅ (2026-09-04, commit `5b2f1a8`)
 **Blocked By:** None (can be implemented independently)
 **Related Gate:** G4 (Authorization Boundary)
+
+**Implementation Summary:**
+- `tests/Feature/Security/AuthorizationBoundaryTest.php` — 15 test case
+- Covers: unauthenticated redirect, tenant isolation, generic error messages, rate limit middleware presence, token enumeration protection
+- Security fix: `OwnerAuthController::verifyToken()` → `süresi dolmuş` enumeration removed (`b7e2f91`) — generic `Giriş linki geçersiz` message
+
+**Test Results:** 15/15 PASS ✅
 
 ---
 
@@ -309,8 +317,8 @@
 |----|------|----------|-------|--------|
 | BACKLOG-1 | G7 | HIGHEST | Antigravity / Kilo | `IMPLEMENTED` ✅ |
 | BACKLOG-2 | G2 | HIGH | Antigravity | `OPEN` |
-| BACKLOG-3 | G3 | MEDIUM | Kilo / Antigravity | `OPEN` |
-| BACKLOG-4 | G4 | MEDIUM | Kilo | `OPEN` |
+| BACKLOG-3 | G3 | MEDIUM | Kilo / Antigravity | `IMPLEMENTED` ✅ (SKILL_INDEX.md) |
+| BACKLOG-4 | G4 | MEDIUM | Kilo | `IMPLEMENTED` ✅ (15/15 PASS) |
 | BACKLOG-5 | — | P0 (CRITICAL) | Cline (Security Agent) | `IMPLEMENTED` ✅ (7 commit, 10/10 PASS) |
 | BACKLOG-6 | — | P1 (HIGH) | Codex | `IMPLEMENTED` ✅ (5/5 PASS) |
 | BACKLOG-7 | — | P1 (HIGH) | Codex | `IMPLEMENTED` ✅ (5/5 PASS) |
@@ -341,6 +349,14 @@
 | **Codex** | BACKLOG-6: AI Rate-Limit Race Condition | P1 HIGH | Ana repo `fix/p0-test-failures` | Yok |
 | **Kilo** | BACKLOG-4: Auth Boundary CI Gate | MEDIUM | Yeni worktree `kilo/auth-boundary-ci` | Yok |
 | **Antigravity** | BACKLOG-2: Pre-Mutation Conflict Guard | HIGH | Yeni worktree | Yok (BACKLOG-1 ✅) |
+
+### Tamamlanan Görevler (2026-09-04, Oturum 151)
+
+| Agent | Görev | Commit | Durum |
+|-------|-------|--------|-------|
+| Kilo | BACKLOG-4: AuthorizationBoundaryTest CI gate | `5b2f1a8` | ✅ 15/15 PASS |
+| Kilo | BACKLOG-3: SKILL_INDEX.md (Auto Guard Selection) | `3a9c4d2` | ✅ |
+| Kilo | OwnerAuthController: token enumeration fix (`süresi dolmuş` → generic) | `b7e2f91` | ✅ Security bulgu fix |
 
 ### Sıra Dışı (Tamamlanan)
 
