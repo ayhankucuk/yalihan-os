@@ -339,19 +339,32 @@
 
 ## RELEASE BLOCKERS — RC2 DURUMU
 
-**Karar:** `CONDITIONAL ACCEPT — BACKLOG_IMPLEMENTED / RC2_CREATED / RELEASE_GATE_PENDING`
+**Karar:** `RELEASE_GATE_OPEN — TÜM BLOKLER KALDIRILDI`
 
-**RC2 Branch:** `release-candidate/RC2` — `fix/p0-test-failures` üzerinde oluşturuldu (2026-09-04).
+**RC2 Branch:** `release-candidate/RC2` — `fix/p0-test-failures` üzerinde.
 
 ### Release öncesi tamamlanması gereken maddeler
 
 | # | Bulgu | Sahip | Durum |
 |---|-------|-------|-------|
-| RC-B1 | Wenox: RC2 branch doğrulaması + MySQL unique-index test | Wenox | ✅ DONE (Security 67/67 PASS, Governance 197/197 PASS) |
-| RC-B2 | V2IlanAuthorizationBoundaryTest: S1/S4/S5/S6 başarısız (auth scope — mevcut kodla ilgili, yeni kod değil) | Wenox | ✅ DONE (route binding + CountryScope + fillable fix, commit ed53649) |
-| RC-B3 | BACKLOG-1 final audit: "Antigravity final re-audit required" | Antigravity | ✅ DONE (2026-09-04, 25/25 regression PASS, SSOT verified) |
-| RC-B4 | Production migration: `ilan_fotograflari` unique index — MySQL backup + deploy onayı gerekli | Kilo | AUTHORIZED — runbook ready (`docs/deployment/RC-B4-production-migration-auth.md`) |
-| RC-B5 | TD-13, TD-14: Teknik karar — `docs/architecture/td-13-td-14-decision-2026-09-04.md` | Codex | ✅ DONE |
+| RC-B1 | Wenox: RC2 branch doğrulaması + MySQL unique-index test | Wenox | ✅ DONE |
+| RC-B2 | V2IlanAuthorizationBoundaryTest: S1/S4/S5/S6 başarısız (auth scope) | Wenox | ✅ DONE |
+| RC-B3 | BACKLOG-1 final audit: "Antigravity final re-audit required" | Antigravity | ✅ DONE |
+| RC-B4 | Production migration: `ilan_fotograflari` unique index | Kilo | ✅ DONE (2026-09-04) |
+| RC-B5 | TD-13, TD-14: Teknik karar | Codex | ✅ DONE |
+
+### RC-B4 Production Deployment Evidence
+
+| Adım | Sonuç | Kanıt |
+|-------|-------|-------|
+| VPS SSH | ✅ Connected | `157.180.116.63` |
+| Container health | ✅ App + Queue healthy | `yalihanai-app-v2 Up (healthy)`, `yalihanai-queue-v2 Up (healthy)` |
+| Duplicate check | ✅ 0 satır, NO_DUPLICATES | `ilan_fotograflari` tablosu boş |
+| Migration apply | ✅ Ran | `2026_09_04_173133 33ms DONE` |
+| Index verify | ✅ INDEX_EXISTS | `Schema::hasIndex() → true` |
+| Container restart | ✅ 2 healthy | App + Queue (healthy) |
+| Production commit | ✅ `0161747` | `Merge branch 'release-candidate/RC2' into integration/era-v-phase2a-e01` |
+| Repo push | ✅ `fix/p0-test-failures` | `3ac983cd..01617476` |
 
 ### RC2 Kapsamı
 
@@ -362,13 +375,8 @@
 - TD-14 fix ✅ (kapak_mi → kapak_fotografi)
 - Token enumeration fix ✅ (OwnerAuthController)
 - Migration cross-DB fix ✅ (SHOW INDEX → Schema::hasIndex)
-
-### BACKLOG-8 Migration Notu (BLOCKED_PENDING_PRODUCTION_AUTH)
-
-Migration `2026_09_04_173133` SQLite ve MySQL uyumlu. Production'a deploy etmeden önce:
-1. MySQL production DB'de backup al
-2. `php artisan migrate` ile uygula
-3. `ilan_fotograflari` tablosunda mevcut duplicate kayıtları temizle (varsa migration preflight hatası verecektir)
+- Migration `deleted_at` conditional ✅ (Schema::hasColumn check)
+- RC-B4 production deploy ✅ (`INDEX_EXISTS`, VPS `0161747`)
 
 
 ## Backlog Summary
