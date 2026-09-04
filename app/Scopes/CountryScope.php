@@ -20,12 +20,12 @@ class CountryScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        if (Auth::check()) {
-            $user = Auth::user();
+        $user = Auth::user() ?? Auth::guard('sanctum')->user();
 
+        if ($user) {
             // ✅ Multi-Country Isolation: Kullanıcı sadece kendi ülkesine ait verileri görür.
             // Super-admin veya merkez ofis kullanıcıları için istisna eklenebilir.
-            if ($user->ulke_id && !app()->runningInConsole()) {
+            if ($user->ulke_id && (!app()->runningInConsole() || app()->runningUnitTests())) {
                 $table = $model->getTable();
 
                 // Skip tables that don't have ulke_id column
