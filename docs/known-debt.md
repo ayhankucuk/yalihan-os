@@ -269,3 +269,20 @@
 - **Risk:** 🔴 CRITICAL — Runtime zinciri production-ready kabul edilemez; Sprint 14/15 certification için düzeltme veya açık waiver gerekir.
 - **Yapılacaklar:** Runtime wiring düzeltmeleri, beş unit test paketi, bir chain integration testi, 10 teknik borcun owner/severity/remediation ile kaydı.
 - **Durum:** ⏳ AÇIK — Kod değişikliği, deploy, migration veya seed yapılmadı.
+
+### 40. TD-13 — `ai_saglayici_profilleri` vs `ai_provider_profiles` İki Tablo ⏳ AÇIK (P2)
+- **Kaynak:** Codex ARAŞTIRMA-3 (2026-09-04), `docs/architecture/td-13-td-14-decision-2026-09-04.md`
+- **Teşhis:** İki ayrı tablo, iki ayrı model, iki ayrı service — **farklı özellikler** (aynı değil)
+  - `ai_saglayici_profilleri` (TR): `ProviderSelectorService` + `AiSaglayiciProfili` — yayin_tipi bazlı
+  - `ai_provider_profiles` (EN): `ProviderOptimizationService` + `AiProviderProfile` — window (7d/30d) bazlı
+- **Karar:** Birleştirme YAPMA — farklı amaçlar serve ediyorlar. P1 → P2'ye düşürüldü.
+- **Aksiyon:** Gelecek sprint'te architectural review gerekli (RC2 scope dışı)
+- **Durum:** ⏳ AÇIK — Dokümante edildi, kod değişikliği gerekmiyor
+
+### 41. TD-14 — `kapak_mi` → `kapak_fotografi` Migration Drift ⏳ AÇIK (P1)
+- **Kaynak:** Codex ARAŞTIRMA-3 (2026-09-04), `docs/architecture/td-13-td-14-decision-2026-09-04.md`
+- **Teşhis:** Baseline migration `kapak_mi` yaratır, tüm uygulama kodu (41 referans) `kapak_fotografi` kullanır. Rename migration YOK.
+- **Risk:** 🔴 Fresh install BREAK — yeni DB kurulumunda kod kolonu bulamaz
+- **Karar:** Baseline migration fix — `kapak_mi` → `kapak_fotografi` (RC2'ye dahil)
+- **Sahip:** Kilo (RC2)
+- **Durum:** ⏳ AÇIK — Kilo RC2'de baseline migration'ı düzeltecek
