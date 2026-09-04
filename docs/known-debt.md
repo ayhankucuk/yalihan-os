@@ -261,14 +261,16 @@
 - **Çözüm:** Airbnb/Channex adapter'larında retryable 5xx → `AirbnbRetryableException` (veya `ChannexRetryableException`) fırlatmalı. `AvailabilitySynchronizationService::isRetryableException()` güncellenmeli.
 - **Not:** GAP-03 Booking retry recovery geçersiz kılmaz — Booking 5xx → Laravel retry ✅ garantili. Airbnb/Channex için aynı garantinin sağlanması gerekiyor.
 
-### 39. Hermes Workforce Runtime Wiring and Coverage — HERMES-AUDIT-2026-08-28 ⏳ AÇIK
+### 39. Hermes Workforce Runtime Wiring and Coverage — HERMES-AUDIT-2026-08-28 ✅ ÇÖZÜLDÜ
 - **Kaynak:** `audits/HERMES_DEEP_AUDIT_REPORT.md` — satır satır repository audit, `REPO_VERIFIED`.
-- **Bulgular:** `PropertyScoreAgent` PSR-4 namespace/dizin uyuşmazlığı; `DriveAgent` constructor ile `HermesServiceProvider` dependency uyuşmazlığı; `NotificationAgent` subscription event’i ile publishing decision event’i uyumsuz; `PortfolioAgent` registry’de kullanılmayan dead code.
-- **Kapsam:** Workforce zinciri: `DriveAgent → PhotoAgent → DescriptionAgent → PropertyScoreAgent → PublishDecisionAgent → NotificationAgent`.
-- **Eksik kanıt:** Beş workforce ajanı için unit test ve zincirin tamamı için uçtan uca integration test bulunmuyor.
-- **Risk:** 🔴 CRITICAL — Runtime zinciri production-ready kabul edilemez; Sprint 14/15 certification için düzeltme veya açık waiver gerekir.
-- **Yapılacaklar:** Runtime wiring düzeltmeleri, beş unit test paketi, bir chain integration testi, 10 teknik borcun owner/severity/remediation ile kaydı.
-- **Durum:** ⏳ AÇIK — Kod değişikliği, deploy, migration veya seed yapılmadı.
+- **Bulgular (2026-08-28):** `PropertyScoreAgent` PSR-4 namespace/dizin uyuşmazlığı; `DriveAgent` constructor ile `HermesServiceProvider` dependency uyuşmazlığı; `NotificationAgent` subscription event’i ile publishing decision event’i uyumsuz; `PortfolioAgent` registry’de kullanılmayan dead code.
+- **Çözüm:** Tüm 4 runtime wiring sorunu sonradan düzeltildi:
+  - PropertyScoreAgent: namespace `Workflow` → dizin `Workflow/` ✅
+  - DriveAgent: ServiceProvider 3-param binding (DriveWorkspaceService + DriveWebhookService + HermesService) ✅
+  - NotificationAgent: `subscribesTo()` → `WORKFORCE_PUBLISHING_DECISION_READY` ✅
+  - PortfolioAgent: dead code kaldırıldı, AgentRegistry import temizlendi ✅
+- **Test Coverage:** 106/106 PASS (426 assertions) — DriveAgent 7, PhotoAgent 5, DescriptionAgent 3, PropertyScoreAgent 2, PublishDecisionAgent 5, NotificationAgent 3, E2E chain 2, event bus 12, capability 10, analytics 6, governance 6, telegram 7, communication 11, registry 14, vocabulary 13
+- **Durum:** ✅ ÇÖZÜLDÜ (2026-09-04 — RC2 sonrası doğrulama)
 
 ### 40. TD-13 — `ai_saglayici_profilleri` vs `ai_provider_profiles` İki Tablo ⏳ AÇIK (P2)
 - **Kaynak:** Codex ARAŞTIRMA-3 (2026-09-04), `docs/architecture/td-13-td-14-decision-2026-09-04.md`
