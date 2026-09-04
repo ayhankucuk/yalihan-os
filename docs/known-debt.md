@@ -279,10 +279,10 @@
 - **Aksiyon:** Gelecek sprint'te architectural review gerekli (RC2 scope dışı)
 - **Durum:** ⏳ AÇIK — Dokümante edildi, kod değişikliği gerekmiyor
 
-### 41. TD-14 — `kapak_mi` → `kapak_fotografi` Migration Drift ⏳ AÇIK (P1)
+### 41. TD-14 — `kapak_mi` → `kapak_fotografi` Migration Drift ✅ ÇÖZÜLDÜ (P1)
 - **Kaynak:** Codex ARAŞTIRMA-3 (2026-09-04), `docs/architecture/td-13-td-14-decision-2026-09-04.md`
 - **Teşhis:** Baseline migration `kapak_mi` yaratır, tüm uygulama kodu (41 referans) `kapak_fotografi` kullanır. Rename migration YOK.
 - **Risk:** 🔴 Fresh install BREAK — yeni DB kurulumunda kod kolonu bulamaz
-- **Karar:** Baseline migration fix — `kapak_mi` → `kapak_fotografi` (RC2'ye dahil)
-- **Sahip:** Kilo (RC2)
-- **Durum:** ⏳ AÇIK — Kilo RC2'de baseline migration'ı düzeltecek
+- **Karar:** Baseline migration fix — `kapak_mi` → `kapak_fotografi`
+- **Fix:** Commit `4564040` — baseline migration `2024_01_01_000000` line 766 düzeltildi
+- **Durum:** ✅ ÇÖZÜLDÜ — Production etkisi yok (prod'da kolon zaten `kapak_fotografi`)
