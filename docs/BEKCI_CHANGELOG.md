@@ -1,5 +1,39 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 147 — 2026-09-04 | Codex Güvenlik Triyajı Doğrulama & Teknik Borç Kuyruğu Güncelleme
+
+**Kapsam:** Codex güvenlik tarama raporunun repo doğrulaması yapıldı. H-numaraları düzeltildi, yanlış "kritik açık" hükümleri ayıklandı. Doğrulanan borçlar `.project-brain/REMEDIATION_BACKLOG.md`'ye BACKLOG-5/6/7/8/9 olarak kaydedildi. Kanıtlanmamış bulgular araştırma bulgusu olarak ayrı tutuldu.
+
+#### 1. Repo Doğrulama Sonuçları
+
+| Bulgu | Öncelik | Kod/Şema Kanıtı | Karar |
+|-------|----------|-----------------|-------|
+| Lead tenant boundary | P0 | `Lead.php` `BelongsToTenant` yok; `LeadAuthorityService:119` tenant-siz query | `REPO_VERIFIED` → BACKLOG-5 |
+| AI/API rate-limit race | P1 | `AIRateLimitMiddleware:36-47` + `ApiRateLimitMiddleware:38-48` non-atomic `Cache::get/put` | `REPO_VERIFIED` → BACKLOG-6 |
+| Security log ham input | P1 | `SecurityMiddleware:153-161` `$request->all()` + `$request->headers->all()` plaintext | `REPO_VERIFIED` → BACKLOG-7 |
+| Fotoğraf display_order race | P2 | `IlanPhotoService:45` `count()+1` race, no tx/lock | `REPO_VERIFIED` → BACKLOG-8 |
+| Lead unique key cross-tenant | P2 | `2026_05_19_080616` — `tenant_id` unique key'de değil | `REPO_VERIFIED` → BACKLOG-9 |
+| BulkManagementController | — | `Ilan` BelongsToTenant scope var; açık bypass kanıtı yok | `INFERRED` → Araştırma bulgusu |
+| ReferenceController | — | Route dosyalarında bağlı değil | `UNKNOWN` → Araştırma bulgusu |
+| AILeadScoreObserver döngü | — | Queue job dispatch; sonsuz döngü kanıtı yok | `INFERRED` → Araştırma bulgusu |
+| ReconcileLocationsCommand | — | SQL DB ID'lerden geliyor; injection kanıtı yok | `INFERRED` → Araştırma bulgusu |
+| canonical_tables.php eksik | — | `codex/schema-contract-final` branch'inde mevcut | `BRANCH_INTEGRATION` |
+| MCP sunucuları aktif | — | Repo içinde doğrulanamadı | `UNKNOWN` |
+
+#### 2. BACKLOG-5 Ön Koşul Notu
+`ai_provider_profiles` tablosu `database/schema/mysql-schema.sql`'de mevcut (satır 571) ancak Laravel migration'ı yok. Client Agent'ın mevcut görevi — tamamlanmadan BACKLOG-5 (Lead tenant boundary) açılmamalı.
+
+#### 3. Dosya Değişiklikleri
+- `.project-brain/REMEDIATION_BACKLOG.md` — BACKLOG-5/6/7/8/9 + Araştırma bulguları + güncellenmiş özet tablosu
+
+#### 4. Sonraki Adımlar
+- Kilo: Cross-tenant ve concurrent webhook testleri
+- Codex: Son mimari karar ve kabul
+- Rate-limit paketi: Laravel `RateLimiter` facade standardına geçiş
+- Client Agent: `ai_provider_profiles` migration kurtarma
+
+---
+
 ## Oturum 146 — 2026-08-28 | Danışman Modülü P0 Fixture Onarımı, Service Katmanı Refactor & Thin Controller 🛡️
 
 **Kapsam:** Danışman (Advisor) modülü yetkilendirme testlerindeki fixture çakışmaları çözüldü, `DanismanController` 645 satırdan 165 satıra düşürülerek `DanismanService` katmanına refactor edildi, tüm yetki testleri %100 yeşile çekildi.
@@ -4593,3 +4627,88 @@ DOWNSTREAM SLOT (sonraki sprintlerde bağlanacak):
 2. **Availability Sync Wave**: ReservationCreatedEvent → AvailabilitySynchronizationService.synchronize()
 3. **Airbnb Inbound Wave**: SyncPropertyCalendarFeedJob → PropertyReservation INSERT
 4. **Financial Closure Wave**: Checkout → FinancialTransaction + owner payout
+
+---
+
+## Oturum 148 — 2026-09-04 | Codex Recovery: AiCostGuardTest Stabilization & Migration Idempotency 🛡️
+
+### Özet
+
+`client-schema-migration-recovery` worktree'inde AiCostGuardTest 5/5 failure → 5/5 PASS recovery tamamlandı. Kök neden: stale `testing.sqlite` dosyasının `ai_provider_profiles` tablosunu içermesi → migration "table already exists" hatası. Fix: `Schema::hasTable()` guard + clean SQLite rebuild.
+
+### Yapılan İşler
+
+#### 1. AiCostGuardTest Kök Neden Analizi
+
+- **Worktree:** `client-schema-migration-recovery`
+- **Önceki Durum:** 5/5 FAILURE (403 SetTenantContext → tenant_id eksik)
+- **Codex Fix (cd798d1):** `setUp()` içine `'tenant_id' => $this->getDefaultTenantId()` eklendi → 403 çözüldü
+- **Yeni Hata:** "table ai_provider_profiles already exists" → stale testing.sqlite
+- **Kök Neden:** `database/testing.sqlite` file-based (phpunit.xml line 71), `:memory:` değil. Önceki test run'undan tablo kalıntısı.
+
+#### 2. Migration Idempotency Guard
+
+**Dosya:** `database/migrations/2026_01_17_093641_create_ai_provider_profiles_table.php`
+
+```php
+public function up(): void
+{
+    if (Schema::hasTable('ai_provider_profiles')) {
+        return;
+    }
+
+    Schema::create('ai_provider_profiles', function (Blueprint $table) {
+        // ...
+    });
+}
+```
+
+**Commit:** `6096b4a` — `fix(migration): add idempotency guard to ai_provider_profiles table creation`
+
+#### 3. Test Sonuçları
+
+```
+PHPUnit 10.5.64 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.7
+Configuration: phpunit.xml
+
+.....                                                               5 / 5 (100%)
+
+Time: 00:01.522, Memory: 111.50 MB
+
+OK (5 tests, 14 assertions)
+```
+
+**AiCostGuardTest: 5/5 PASS ✅**
+
+| Test | Durum |
+|------|-------|
+| it_allows_requests_when_within_budget | ✅ |
+| it_downgrades_provider_when_near_limit | ✅ |
+| it_blocks_requests_when_budget_is_exhausted | ✅ |
+| it_uses_cache_fallback_when_budget_is_exhausted_but_cache_exists | ✅ |
+| it_successfully_logs_latency_and_cache_hit_in_telemetry | ✅ |
+
+### Commit Zinciri
+
+| Commit | Açıklama | Agent |
+|--------|----------|-------|
+| `cd798d1` | test(ai): align cost guard fixtures with tenant context | Codex |
+| `d7f69fa` | migration: add missing create_ai_provider_profiles_table | Codex |
+| `6096b4a` | fix(migration): add idempotency guard | Codex (recovery) |
+
+### Worktree Durumu
+
+- **Branch:** `client/schema-migration-recovery`
+- **Working tree:** Clean
+- **storage/:** Clean (0 modified)
+- **AiCostGuardTest:** 5/5 PASS (14 assertions)
+
+### Kalan Borç
+
+- 14 pending migration production deploy authorization
+- 94 test files in `@group skip-until-migration-complete` (AiCostGuardTest artık PASS, diğerleri bekliyor)
+- BACKLOG-5: Lead Tenant Boundary (P0 CRITICAL) — sonraki öncelik
+- BACKLOG-6: Rate-Limit Race Condition (P1)
+- BACKLOG-7: Security Log Secret Leakage (P1)
