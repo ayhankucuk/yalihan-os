@@ -31,38 +31,73 @@ class IlanPhotoService
 
         $uploadedPhotos = [];
 
-        DB::beginTransaction();
-        try {
-            // BACKLOG-8: Atomic display_order ataması — count()+1 yerine max()+1 + transaction lock
-            // Eşzamanlı yüklemede iki istek aynı display_order değerini alamaz.
-            $maxOrder = (int) IlanFotografi::where('ilan_id', $ilan->id)->max('display_order') ?? 0;
+        // BACKLOG-8: Atomic display_order with lockForUpdate + retry
+        // lockForUpdate prevents concurrent transactions from reading stale max(display_order).
+        // Unique constraint on (ilan_id, display_order) catches any remaining race.
+        // Retry loop handles unique constraint violations safely.
+        $maxAttempts = 5;
+        $attempt = 0;
 
-            foreach ($photos as $index => $photo) {
-                /** @var UploadedFile $photo */
-                $fileName = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
-                $path = $photo->storeAs('ilan-fotograflari/' . $ilan->id, $fileName, 'public');
-
-                $fotografModel = new IlanFotografi();
-                $fotografModel->ilan_id = $ilan->id;
-                $fotografModel->dosya_yolu = $path;
-                $fotografModel->dosya_adi = $photo->getClientOriginalName();
-                $fotografModel->dosya_boyutu = $photo->getSize();
-                $fotografModel->mime_type = $photo->getMimeType();
-                $fotografModel->display_order = $maxOrder + $index + 1;
-                $fotografModel->save();
-
-                $uploadedPhotos[] = [
-                    'id' => $fotografModel->id,
-                    'url' => Storage::disk('public')->url($path),
-                    'name' => $fotografModel->dosya_adi,
-                    'size' => $fotografModel->dosya_boyutu,
-                ];
+        do {
+            if ($attempt > 0) {
+                usleep(50_000); // 50ms backoff
             }
+            $attempt++;
 
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
+            try {
+                DB::beginTransaction();
+
+                // Lock the parent ilan row to prevent concurrent reads of max(display_order)
+                Ilan::where('id', $ilan->id)->lockForUpdate()->exists();
+
+                $maxOrder = (int) IlanFotografi::where('ilan_id', $ilan->id)->max('display_order') ?? 0;
+
+                $currentIndex = 0;
+                foreach ($photos as $photo) {
+                    /** @var UploadedFile $photo */
+                    $fileName = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
+                    $path = $photo->storeAs('ilan-fotograflari/' . $ilan->id, $fileName, 'public');
+
+                    $fotografModel = new IlanFotografi();
+                    $fotografModel->ilan_id = $ilan->id;
+                    $fotografModel->dosya_yolu = $path;
+                    $fotografModel->dosya_adi = $photo->getClientOriginalName();
+                    $fotografModel->dosya_boyutu = $photo->getSize();
+                    $fotografModel->mime_type = $photo->getMimeType();
+                    $fotografModel->display_order = $maxOrder + $currentIndex + 1;
+                    $fotografModel->save();
+                    $currentIndex++;
+
+                    $uploadedPhotos[] = [
+                        'id' => $fotografModel->id,
+                        'url' => Storage::disk('public')->url($path),
+                        'name' => $fotografModel->dosya_adi,
+                        'size' => $fotografModel->dosya_boyutu,
+                    ];
+                }
+
+                DB::commit();
+                $uploaded = true;
+            } catch (\Illuminate\Database\QueryException $e) {
+                DB::rollBack();
+                $uploaded = false;
+
+                // MySQL duplicate key error code
+                if ($e->getCode() === '23000' && $attempt < $maxAttempts) {
+                    continue; // Retry with fresh lock
+                }
+                throw $e;
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+        } while (!$uploaded && $attempt < $maxAttempts);
+
+        if (!$uploaded) {
+            return [
+                'success' => false,
+                'errors' => 'Fotoğraf yüklemesi eşzamanlılık nedeniyle başarısız oldu. Lütfen tekrar deneyin.',
+            ];
         }
 
         return [
