@@ -763,7 +763,7 @@ return new class extends Migration
                 $table->string('dosya_boyutu')->nullable();
                 $table->string('mime_type')->nullable();
                 $table->integer('display_order')->default(0);
-                $table->boolean('kapak_mi')->default(false);
+                $table->boolean('kapak_fotografi')->default(false);
                 $table->timestamps();
             });
         }

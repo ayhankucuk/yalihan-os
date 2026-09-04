@@ -341,7 +341,7 @@
 | RC-B2 | `PhotoDisplayOrderRaceConditionTest`: MySQL unique-index doğrulaması yok — SQLite CI'da test atlanıyor | Wenox | OPEN |
 | RC-B3 | V2IlanAuthorizationBoundaryTest: S1/S4/S5/S6 başarısız (auth scope — mevcut kodla ilgili, yeni kod değil) | Wenox | OPEN |
 | RC-B4 | BACKLOG-1 final audit: dokümanda hâlâ "Antigravity final re-audit required" yazıyor | Antigravity | OPEN |
-| RC-B5 | TD-13, TD-14: Teknik karar / kapatma kararı yok | Codex | OPEN |
+| RC-B5 | TD-13, TD-14: Teknik karar verildi — `docs/architecture/td-13-td-14-decision-2026-09-04.md` | Codex | ✅ DONE |
 | RC-B6 | Production migration: `BLOCKED_PENDING_PRODUCTION_AUTH` — `ilan_fotograflari` unique index migration'ı için MySQL backup + deploy onayı gerekli | Kilo | BLOCKED |
 
 ### RC1 ile ilgili not
