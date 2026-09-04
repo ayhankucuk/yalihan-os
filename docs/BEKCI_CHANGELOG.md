@@ -1,8 +1,8 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
-## Oturum 150 — 2026-09-04 | BACKLOG-5/6/7 Tamamlama + Derin Proje Analizi
+## Oturum 150 — 2026-09-04 | BACKLOG-5/6/7/8 Tamamlama + Derin Proje Analizi
 
-**Kapsam:** Cline (Security Agent) BACKLOG-5 Lead Tenant Boundary görevini tamamladı (7 commit, 10/10 test PASS). Codex BACKLOG-6 Rate-Limit Race Condition fix'ini tamamladı (5/5 PASS). Codex BACKLOG-7 Security Log Secret Leakage fix'ini tamamladı (5/5 PASS). Derin proje analizi yapıldı.
+**Kapsam:** Cline (Security Agent) BACKLOG-5 Lead Tenant Boundary görevini tamamladı (7 commit, 10/10 test PASS). Codex BACKLOG-6 Rate-Limit Race Condition fix'ini tamamladı (5/5 PASS). Codex BACKLOG-7 Security Log Secret Leakage fix'ini tamamladı (5/5 PASS). Codex BACKLOG-8 Photo display_order Race Condition fix'ini tamamladı (5/5 PASS). Derin proje analizi yapıldı.
 
 #### 1. BACKLOG-5 — Lead Tenant Boundary (Cline) ✅ IMPLEMENTED
 
@@ -45,14 +45,23 @@
 - **Kritik:** TD-03 (125🔴 SSH), TD-11 (100🔴 Secret), TD-01 (75🔴 301 fail test)
 - **Öneri:** "Borç Sprinti" — feature geliştirmeyi durdur, borcu temizle
 
-#### 4. Kalan Görevler
+#### 4. BACKLOG-8 — Photo display_order Race Condition (Codex) ✅ IMPLEMENTED
+
+**Commit:** `7c52660`
+**Test:** PhotoDisplayOrderRaceConditionTest 5/5 PASS (17 assertions)
+
+- `IlanPhotoService::uploadPhotos()`: `count()+1` → `max('display_order')+1` + `DB::beginTransaction()`
+- Eşzamanlı yüklemede duplicate display_order engellendi
+- Batch upload'da index-based sequential increment
+- Transaction rollback on failure
+
+#### 5. Kalan Görevler
 
 | Görev | Owner | Durum |
 |-------|-------|-------|
-| BACKLOG-7 Security log secret leakage | Codex | ✅ IMPLEMENTED (commit 97e7778, 5/5 PASS) |
 | BACKLOG-4 Auth boundary CI gate | Kilo | Bekliyor |
 | BACKLOG-2 Pre-mutation conflict guard | Antigravity | Bekliyor |
-| BACKLOG-8 Photo display_order race | — | Backlog |
+| BACKLOG-3 Automatic backend guard selection | Kilo/Antigravity | Bekliyor |
 | BACKLOG-9 Lead unique key cross-tenant | Cline (BACKLOG-5 içinde çözüldü) | ✅ CLOSED |
 
 ---

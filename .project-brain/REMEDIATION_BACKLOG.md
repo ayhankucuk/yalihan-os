@@ -261,9 +261,11 @@
 
 **Etki Alanı:** `app/Services/Ilan/IlanPhotoService.php`
 
-**Status:** `OPEN`
+**Status:** `IMPLEMENTED` ✅ (2026-09-04, Commit: 7c52660)
 **Blocked By:** None
 **Exit Criterion:** Concurrent fotoğraf yüklemede çakışma olmaz; her fotoğraf farklı `display_order` alır.
+**Implementation:** `DB::beginTransaction()` + `max('display_order') + 1` + index-based increment. 5/5 test PASS (17 assertions).
+**Test:** `tests/Feature/Ilan/PhotoDisplayOrderRaceConditionTest.php`
 
 ---
 
@@ -312,10 +314,10 @@
 | BACKLOG-5 | — | P0 (CRITICAL) | Cline (Security Agent) | `IMPLEMENTED` ✅ (7 commit, 10/10 PASS) |
 | BACKLOG-6 | — | P1 (HIGH) | Codex | `IMPLEMENTED` ✅ (5/5 PASS) |
 | BACKLOG-7 | — | P1 (HIGH) | Codex | `IMPLEMENTED` ✅ (5/5 PASS) |
-| BACKLOG-8 | — | P2 (MEDIUM) | Codex (sıradaki) | `OPEN` |
+| BACKLOG-8 | — | P2 (MEDIUM) | Codex | `IMPLEMENTED` ✅ (5/5 PASS, commit 7c52660) |
 | BACKLOG-9 | — | P2 (MEDIUM) | Cline (BACKLOG-5 içinde çözüldü) | `CLOSED` ✅ |
 
-**Dependencies:** BACKLOG-2 blocked by BACKLOG-1. BACKLOG-3 and BACKLOG-4 independent. BACKLOG-9 closed (BACKLOG-5 içinde çözüldü). BACKLOG-8 sıradaki — Codex üstleniyor.
+**Dependencies:** BACKLOG-2 blocked by BACKLOG-1. BACKLOG-3 and BACKLOG-4 independent. BACKLOG-9 closed (BACKLOG-5 içinde çözüldü). BACKLOG-8 IMPLEMENTED.
 
 **Güncelleme 2026-09-04 (Oturum 148):** `client-schema-migration-recovery` worktree stabilize edildi. AiCostGuardTest 5/5 PASS (14 assertions). Migration idempotency guard eklendi (commit `6096b4a`). Worktree clean, storage clean. Client Agent migration kurtarma ön koşulu kısmen karşılandı — BACKLOG-5 için engel kaldırıldı.
 
@@ -340,12 +342,12 @@
 | **Kilo** | BACKLOG-4: Auth Boundary CI Gate | MEDIUM | Yeni worktree `kilo/auth-boundary-ci` | Yok |
 | **Antigravity** | BACKLOG-2: Pre-Mutation Conflict Guard | HIGH | Yeni worktree | Yok (BACKLOG-1 ✅) |
 
-### Sıra Dışı (Codex BACKLOG-6'dan sonra)
+### Sıra Dışı (Tamamlanan)
 
-1. **Codex** → BACKLOG-7: Security Log Secret Leakage (P1)
+1. ~~**Codex** → BACKLOG-7: Security Log Secret Leakage (P1)~~ ✅ IMPLEMENTED (5/5 PASS)
 2. **Kilo** → BACKLOG-3: Automatic Backend Guard Selection (MEDIUM)
-3. **Antigravity/Kilo** → BACKLOG-8: Fotoğraf display_order Race (P2)
-4. **Cline** → BACKLOG-9: Lead Unique Key Cross-Tenant (P2, BLOCKED by BACKLOG-5)
+3. ~~**Codex** → BACKLOG-8: Fotoğraf display_order Race (P2)~~ ✅ IMPLEMENTED (5/5 PASS, commit 7c52660)
+4. ~~**Cline** → BACKLOG-9: Lead Unique Key Cross-Tenant (P2, BLOCKED by BACKLOG-5)~~ ✅ CLOSED
 
 ### Dağıtım Mantığı
 
