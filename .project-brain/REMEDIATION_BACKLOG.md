@@ -239,9 +239,14 @@
 
 **Etki Alanı:** `app/Http/Middleware/SecurityMiddleware.php`
 
-**Status:** `OPEN`
+**Status:** `IMPLEMENTED` ✅ (2026-09-04, commit `97e7778`)
 **Blocked By:** None
-**Exit Criterion:** Security log'da Authorization header değeri `***REDACTED***`. `password`, `token`, `secret`, `key` içeren input alanları maskelenir.
+**Exit Criterion:** ✅ Security log'da Authorization header değeri `[REDACTED]`. ✅ `password`, `token`, `secret`, `key` içeren input alanları maskelenir. Test: SecurityLogSecretLeakageTest 5/5 PASS (40 assertions).
+
+**Implementation:**
+- `maskSensitiveHeaders()`: authorization, cookie, x-api-key, x-auth-token, x-csrf-token, api-key, x-goog-channel-token → `[REDACTED]`
+- `maskSensitiveInput()`: password, token, api_key, secret, credit_card, cvv, iban, vs. → `[REDACTED]` (recursive for nested arrays)
+- Test: 5 test — header masking (Authorization, Cookie, API key), input masking (password, tokens), nested array recursion
 
 ---
 
