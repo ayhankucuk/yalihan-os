@@ -1,5 +1,62 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 150 — 2026-09-04 | BACKLOG-5 Cline Tamamlama Doğrulama & BACKLOG-6 Rate-Limit Fix
+
+**Kapsam:** Cline (Security Agent) BACKLOG-5 Lead Tenant Boundary görevini tamamladı. 7 commit, 10/10 test PASS. Codex (ben) BACKLOG-6 Rate-Limit Race Condition fix'ini tamamladı. Derin proje analizi yapıldı (yol haritası, mimari harita, hata desenleri, borç sıcak noktaları).
+
+#### 1. BACKLOG-5 — Lead Tenant Boundary (Cline) ✅ IMPLEMENTED
+
+**Worktree:** `client-lead-tenant-boundary`
+**Commits:** 7 (6c5819d → 0468759)
+
+| # | Commit | Değişiklik |
+|---|--------|-----------|
+| 1 | `6c5819d` | Lead model → BelongsToTenant trait, tenant_id fillable + cast |
+| 2 | `101a559` | Migration → leads composite unique index (tenant_id, platform, platform_user_id) |
+| 3 | `f76b45c` | LeadAuthorityService → firstOrCreate explicit tenant_id + wasRecentlyCreated block |
+| 4 | `b6e7b01` | LeadFactory → tenant_id definition + forTenant(int) state; LeadTenantBoundaryTest |
+| 5 | `416bb42` | LeadTenantBoundaryTest → schema bootstrap + 10/10 PASS |
+| 6 | `0468759` | Tenant model → HasFactory trait (test factory support) |
+| — | `cd798d1` | Base commit (ai cost guard fixtures alignment) |
+
+**Test:** LeadTenantBoundaryTest 10/10 PASS ✅
+- Cross-tenant access blocked (ModelNotFoundException)
+- Auto-assign tenant_id from context (BelongsToTenant creating event)
+- Same platform_user_id in different tenants (composite unique index)
+- firstOrCreate tenant-scoped (webhook lead creation)
+- withoutTenant escape hatch
+
+**Codex Audit:** ACCEPT ✅ — SAAB prompt'a tam uyum, tenant isolation tam kapsamı.
+
+#### 2. BACKLOG-6 — Rate-Limit Race Condition (Codex) ✅ IMPLEMENTED
+
+**Commits:** `3d16f4e` (fix), `e09a78e` (docs)
+
+- `AIRateLimitMiddleware`: Cache::get/put → RateLimiter::attempt() (atomic)
+- `ApiRateLimitMiddleware`: Same fix
+- `RateLimitRaceConditionTest`: 5/5 PASS (11 assertions)
+
+#### 3. Derin Proje Analizi
+
+- **Yol Haritası:** ROADMAP.md Sprint 4.2'de donmuş, proje Sprint 4.15'te (13 sprint ileride)
+- **Mimari:** Modular Monolith, 193 model, 568 servis, SAB Anayasa
+- **Hata Desenleri:** %35 tenant isolation, %25 factory eksikleri, %15 migration idempotency
+- **Borç:** 516/1000 (limit 100) — KABUL EDİLEMEZ
+- **Kritik:** TD-03 (125🔴 SSH), TD-11 (100🔴 Secret), TD-01 (75🔴 301 fail test)
+- **Öneri:** "Borç Sprinti" — feature geliştirmeyi durdur, borcu temizle
+
+#### 4. Kalan Görevler
+
+| Görev | Owner | Durum |
+|-------|-------|-------|
+| BACKLOG-7 Security log secret leakage | Codex | Sıradaki |
+| BACKLOG-4 Auth boundary CI gate | Kilo | Bekliyor |
+| BACKLOG-2 Pre-mutation conflict guard | Antigravity | Bekliyor |
+| BACKLOG-8 Photo display_order race | — | Backlog |
+| BACKLOG-9 Lead unique key cross-tenant | Cline (BACKLOG-5 içinde çözüldü) | ✅ CLOSED |
+
+---
+
 ## Oturum 147 — 2026-09-04 | Codex Güvenlik Triyajı Doğrulama & Teknik Borç Kuyruğu Güncelleme
 
 **Kapsam:** Codex güvenlik tarama raporunun repo doğrulaması yapıldı. H-numaraları düzeltildi, yanlış "kritik açık" hükümleri ayıklandı. Doğrulanan borçlar `.project-brain/REMEDIATION_BACKLOG.md`'ye BACKLOG-5/6/7/8/9 olarak kaydedildi. Kanıtlanmamış bulgular araştırma bulgusu olarak ayrı tutuldu.
