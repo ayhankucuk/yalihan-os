@@ -292,7 +292,7 @@
 ## RC2 Release Status — 2026-09-04
 
 **Branch:** `release-candidate/RC2`
-**Karar:** `CONDITIONAL ACCEPT — RC2_READY / PRODUCTION_DEPLOY_PENDING`
+**Karar:** `RELEASE_GATE_OPEN — TÜM BLOKLER KALDIRILDI`
 
 ### RC2 Release Blockers Durumu
 
@@ -301,7 +301,7 @@
 | RC-B1 | Wenox: RC2 branch doğrulaması + MySQL unique-index test | Wenox | ✅ DONE (Security 67/67, Governance 197/197) |
 | RC-B2 | V2IlanAuthorizationBoundaryTest: S1/S4/S5/S6 başarısız | Wenox | ✅ DONE (commit `ed53649`) |
 | RC-B3 | BACKLOG-1 final audit | Antigravity | ✅ DONE (25/25 regression PASS, CLOSED) |
-| RC-B4 | Production migration: `ilan_fotograflari` unique index | Kilo | AUTHORIZED — runbook: `docs/deployment/RC-B4-production-migration-auth.md` |
+| RC-B4 | Production migration: `ilan_fotograflari` unique index | Kilo | ✅ DONE (VPS deploy, migration applied, index verified, commit `0161747`) |
 | RC-B5 | TD-13, TD-14 teknik karar | Codex | ✅ DONE |
 
 ### RC2 Kapsamı — Tamamlanan Çalışmalar
@@ -311,7 +311,7 @@
 - **BACKLOG-3** (Backend Guard Selection): IMPLEMENTED ✅ — SKILL_INDEX.md
 - **BACKLOG-4** (Auth Boundary CI Gate): IMPLEMENTED ✅ — 15/15 PASS
 - **BACKLOG-5/6/7** (Security Triyaj): IMPLEMENTED ✅
-- **BACKLOG-8** (Fotoğraf display_order Race): IMPLEMENTED ✅ — cross-DB migration, deploy pending
+- **BACKLOG-8** (Fotoğraf display_order Race): DEPLOYED ✅ — production migration applied, index verified on VPS
 - **TD-14 fix**: ✅ `kapak_mi` → `kapak_fotografi` baseline migration
 - **Token enumeration fix**: ✅ OwnerAuthController
 - **Migration cross-DB fix**: ✅ `SHOW INDEX` → `Schema::hasIndex`
