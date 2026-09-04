@@ -290,3 +290,38 @@
 **Dependencies:** BACKLOG-2 blocked by BACKLOG-1. BACKLOG-3 and BACKLOG-4 independent. BACKLOG-9 blocked by BACKLOG-5. Client Agent migration kurtarma ön koşul: BACKLOG-5 açılmadan önce tamamlanmalı.
 
 **Güncelleme 2026-09-04 (Oturum 148):** `client-schema-migration-recovery` worktree stabilize edildi. AiCostGuardTest 5/5 PASS (14 assertions). Migration idempotency guard eklendi (commit `6096b4a`). Worktree clean, storage clean. Client Agent migration kurtarma ön koşulu kısmen karşılandı — BACKLOG-5 için engel kaldırıldı.
+
+---
+
+## AGENT GÖREV DAĞILIMI — 2026-09-04 (Oturum 148)
+
+### Tamamlanan Görevler
+
+| Agent | Görev | Commit | Durum |
+|-------|-------|--------|-------|
+| Codex | AiCostGuardTest stabilization + migration idempotency | `6096b4a`, `0ba4303` | ✅ 5/5 PASS |
+| Kilo | YayinTipi ghost fillable fix | `a29a5c5` | ✅ ACCEPT |
+| Cline | Security backlog dokümantasyon | `01b645f` | ✅ |
+
+### Sıradaki Görevler — Paralel Çalışma Planı
+
+| Agent | Görev | Priority | Worktree/Branch | Engeller |
+|-------|-------|----------|-----------------|---------|
+| **Cline** | BACKLOG-5: Lead Tenant Boundary | P0 CRITICAL | `client/lead-tenant-boundary` (base: `cd798d1`) | ✅ Engeller kalktı (migration kurtarma tamam) |
+| **Codex** | BACKLOG-6: AI Rate-Limit Race Condition | P1 HIGH | Ana repo `fix/p0-test-failures` | Yok |
+| **Kilo** | BACKLOG-4: Auth Boundary CI Gate | MEDIUM | Yeni worktree `kilo/auth-boundary-ci` | Yok |
+| **Antigravity** | BACKLOG-2: Pre-Mutation Conflict Guard | HIGH | Yeni worktree | Yok (BACKLOG-1 ✅) |
+
+### Sıra Dışı (Codex BACKLOG-6'dan sonra)
+
+1. **Codex** → BACKLOG-7: Security Log Secret Leakage (P1)
+2. **Kilo** → BACKLOG-3: Automatic Backend Guard Selection (MEDIUM)
+3. **Antigravity/Kilo** → BACKLOG-8: Fotoğraf display_order Race (P2)
+4. **Cline** → BACKLOG-9: Lead Unique Key Cross-Tenant (P2, BLOCKED by BACKLOG-5)
+
+### Dağıtım Mantığı
+
+- **Cline → BACKLOG-5:** Security Agent olarak işaretli, `WORKTREE_ASSIGNED`, önkoşul tamamlandı. P0 CRITICAL — en yüksek öncelik.
+- **Codex → BACKLOG-6:** Codex migration kurtarmayı tamamladı. BACKLOG-6'nın engeli yok, P1 HIGH, middleware dosyalarında küçük değişiklik — hızlı döngü.
+- **Kilo → BACKLOG-4:** Kilo'ya atanmış, bağımsız, CI gate test yazımı — Kilo'nun uzmanlık alanı.
+- **Antigravity → BACKLOG-2:** Antigravity'ye atanmış, BACKLOG-1 tamamlandı (engeli kalktı), pre-commit hook mekanizması.
