@@ -4696,7 +4696,21 @@ OK (5 tests, 14 assertions)
 |--------|----------|-------|
 | `cd798d1` | test(ai): align cost guard fixtures with tenant context | Codex |
 | `d7f69fa` | migration: add missing create_ai_provider_profiles_table | Codex |
-| `6096b4a` | fix(migration): add idempotency guard | Codex (recovery) |
+| `6096b4a` | fix(migration): add idempotency guard (worktree) | Codex (recovery) |
+| `c6432d3` | fix(factory): add tenant_id to UserFactory + recover migration | Codex (main repo) |
+| `eec46f7` | fix(migration): add missing ai_saglayici_profilleri table | Codex (main repo) |
+| `0ba4303` | fix(migration): add idempotency guards to both AI tables (main repo) | Codex (recovery) |
+
+### Ana Repo Doğrulaması
+
+Ana repo'da (`fix/p0-test-failures` branch) de AiCostGuardTest 5/5 PASS doğrulandı:
+```
+OK (5 tests, 14 assertions)
+```
+
+İki migration'a da idempotency guard uygulandı:
+- `2026_01_17_093641_create_ai_provider_profiles_table.php` — `Schema::hasTable()` guard
+- `2026_01_17_093700_create_ai_saglayici_profilleri_table.php` — `Schema::hasTable()` guard
 
 ### Worktree Durumu
 
