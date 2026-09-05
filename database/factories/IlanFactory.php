@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\Ilan;
+use App\Models\Kisi;
 use App\Models\Property;
 use App\Models\User;
 use App\Models\IlanKategori;
@@ -38,7 +39,7 @@ class IlanFactory extends Factory
             'referans_no' => 'REF-' . uniqid(),
             'yayin_durumu' => 'yayinda',
             'danisman_id' => User::factory(),
-            'ilan_sahibi_id' => User::factory(),
+            'ilan_sahibi_id' => Kisi::factory(),
             'ana_kategori_id' => IlanKategori::factory(),
             'alt_kategori_id' => null,
             'il_id' => 1,
