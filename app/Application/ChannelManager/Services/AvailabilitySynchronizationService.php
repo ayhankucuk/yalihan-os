@@ -659,6 +659,18 @@ class AvailabilitySynchronizationService
                 );
 
                 if (!$response->success) {
+                    // GAP-03: If the response is retryable (Airbnb/Channex 5xx, rate-limit),
+                    // throw an exception so Laravel's queue retry mechanism is triggered.
+                    // Non-retryable failures (4xx, auth errors) return graceful failure.
+                    if (property_exists($response, 'retryable') && $response->retryable) {
+                        throw new \App\Application\ChannelManager\Exceptions\ChannelSynchronizationException(
+                            tenantId: $command->tenantId,
+                            propertyId: $command->propertyId,
+                            channelId: $command->channel ?? 'unknown',
+                            errorMessage: $response->errorMessage ?? 'Retryable channel sync failure',
+                            retryable: true,
+                        );
+                    }
                     return SyncResult::failure($response->errorMessage ?? 'Unknown error');
                 }
 
@@ -706,6 +718,10 @@ class AvailabilitySynchronizationService
             return $e->isRetryable();
         }
         if ($e instanceof \App\Infrastructure\ChannelManager\Booking\BookingRatesException) {
+            return $e->isRetryable();
+        }
+        // ChannelSynchronizationException (Airbnb/Channex retryable response path)
+        if ($e instanceof \App\Application\ChannelManager\Exceptions\ChannelSynchronizationException) {
             return $e->isRetryable();
         }
 
