@@ -240,7 +240,7 @@
 - **Risk:** 🟢 LOW — Admin UI tamamlandı
 - **Durum:** ✅ KAPALI (Sprint 4.1 — 2026-07-03)
 
-### 37. Availability Sync — SQLite Test Schema Gap (CERT-DEBT) ⏳ AÇIK
+### 37. Availability Sync — SQLite Test Schema Gap (CERT-DEBT) ✅ ÇÖZÜLDÜ
 - **Kaynak:** `b98bb10` — Single Materializer Cutover certification run
 - **Etkilenen testler:**
   - `AvailabilitySynchronizationServiceTest::test_it_blocks_availability_for_confirmed_reservation`
@@ -248,9 +248,11 @@
   - `ReservationServiceTest::test_fails_if_dates_overlap_with_airbnb`
 - **Sorun:** `SQLSTATE[HY000]: General error: 1 no such table: property_availability` — `phpunit.xml` SQLite kullanıyor (`DB_CONNECTION=sqlite`) ama `php artisan migrate` SQLite'e `property_availability` tablosunu oluşturmuyor. `migrate` yerine MySQL schema dump kullanılıyor; SQLite migration path'ı çalışmıyor.
 - **Risk:** 🟡 MEDIUM — Test suite'enviro test hatası; production runtime etkilenmiyor
-- **Durum:** ⏳ AÇIK — Test altyapısı düzeltmesi gerekiyor (Availability Sync mimarisinden bağımsız)
-- **Çözüm:** Ya `phpunit.xml`'i MySQL'e yönlendir ya da SQLite migration path'ını `property_availability` create statement ile tamamla
-- **Not:** Certification için bu 3 test atlanabilir; asıl doğrulama `ChannexCanonicalMutationTest` (4/4 PASS) ve `ReservationEventBackboneTest` (7/7 PASS) üzerinden yapıldı.
+- **Durum:** ✅ ÇÖZÜLDÜ (2026-09-05) — `restore_missing_ci_schema.php` migration'ı SQLite'ta `property_availabilities` tablosunu doğru oluşturuyor. Tüm 3 test artık PASS:
+  - `AvailabilitySynchronizationServiceTest` — 11/11 PASS (47 assertions)
+  - `ReservationServiceTest` — 4/4 PASS (22 assertions) (`test_fails_if_dates_overlap_with_airbnb` dahil)
+- **Çözüm:** SQLite migration path'ı zaten çalışıyor — `restore_missing_ci_schema.php` içindeki `if (!Schema::hasTable('property_availabilities'))` kontrolü SQLite `:memory:`'da doğru çalışıyor.
+- **Not:** Certification için asıl doğrulama `ChannexCanonicalMutationTest` (4/4 PASS) ve `ReservationEventBackboneTest` (7/7 PASS) üzerinden yapıldı.
 
 ### 38. DTO-based Retryable Channel Failures — GAP-03 Debt ✅ ÇÖZÜLDÜ
 - **Kaynak:** `471dff1` — GAP-03 Retry Boundary Fix (2026-08-15)
