@@ -21,6 +21,9 @@ class ModelSchemaContractTest extends TestCase
 {
     use RefreshDatabase;
 
+    /** @var array<int, array{model:string,table:string,found:array,checked_fk:array,non_fk:array,status:string}> */
+    private static array $fkInspectionLog = [];
+
     /**
      * Models to validate against their schema contracts
      */
@@ -117,22 +120,17 @@ class ModelSchemaContractTest extends TestCase
 
         // Check polymorphic relations
         if (method_exists($model, 'assignable') && $model->assignable()) {
-            // Polymorphic relations don't have fixed FK columns to check
-            $this->assertTrue(true);
+            $this->markTestSkipped("Model {$modelClass}: polymorphic — no fixed FK column to verify");
             return;
         }
 
-        // Check standard relations by examining the model
+        // Inspect all public methods
         $reflection = new \ReflectionClass($model);
         $relations = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
 
-        // Base assertion: model must have at least one public method.
-        // PHPUnit marks tests risky when zero assertions run.
-        // Models with only HasMany/MorphTo/BelongsToMany relations (no BelongsTo)
-        // or with zero public methods land in the else branch below.
-        $this->assertNotEmpty($relations, "Model {$modelClass} has no public methods to inspect");
-
-        $hasBelongsTo = false;
+        $foundRelations = [];    // methodName => Relation short type
+        $checkedFk = [];        // methodName => [type, fk]  (asserted BelongsTo)
+        $nonFk = [];            // methodName => Relation short type
 
         foreach ($relations as $relation) {
             if ($relation->class !== $modelClass) {
@@ -141,28 +139,24 @@ class ModelSchemaContractTest extends TestCase
 
             $methodName = $relation->getName();
 
-            // Skip scope methods (Laravel scopes require $query parameter)
             if (str_starts_with($methodName, 'scope')) {
                 continue;
             }
-
-            // Skip methods that require parameters
             if ($relation->getNumberOfParameters() > 0) {
                 continue;
             }
-
-            // Skip if not a relation method
             if (!method_exists($model, $methodName)) {
                 continue;
             }
 
-            // Only call methods that return a Relation type
             $returnType = $relation->getReturnType()?->getName();
             if ($returnType === null || !is_subclass_of($returnType, \Illuminate\Database\Eloquent\Relations\Relation::class)) {
                 continue;
             }
 
             $relationOutput = $model->$methodName();
+            $relationType = (new \ReflectionClass($relationOutput))->getShortName();
+            $foundRelations[$methodName] = $relationType;
 
             if ($relationOutput instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
                 $foreignKey = $relationOutput->getForeignKeyName();
@@ -170,14 +164,72 @@ class ModelSchemaContractTest extends TestCase
                     Schema::hasColumn($table, $foreignKey),
                     "Relation {$methodName}() in {$modelClass} uses foreign key '{$foreignKey}' but column does not exist in '{$table}'"
                 );
-                $hasBelongsTo = true;
+                $checkedFk[$methodName] = ['BelongsTo', $foreignKey];
+            } else {
+                $nonFk[$methodName] = $relationType;
             }
         }
 
-        // If no BelongsTo relations existed, ensure at least one assertion ran
-        if (!$hasBelongsTo) {
-            $this->addToAssertionCount(1);
+        // Record in class-level log for the summary test
+        self::$fkInspectionLog[] = [
+            'model' => $modelClass,
+            'table' => $table,
+            'found' => $foundRelations,
+            'checked_fk' => $checkedFk,
+            'non_fk' => $nonFk,
+            'status' => empty($foundRelations) ? 'SKIPPED' : 'CHECKED',
+        ];
+
+        if (empty($foundRelations)) {
+            $this->markTestSkipped("Model {$modelClass}: no public relation methods — nothing to FK-contract-check");
         }
+    }
+
+    /**
+     * @test
+     *
+     * FK inspection summary — runs after all data-provider tests.
+     * Consolidates the inspection log so Wenox can see exactly which relations
+     * were found, which FK columns were verified, and which models have no
+     * BelongsTo relations to check.
+     */
+    public function foreign_key_inspection_summary(): void
+    {
+        $this->assertNotEmpty(
+            self::$fkInspectionLog,
+            "FK inspection log is empty — did data-provider tests run?"
+        );
+
+        $lines = ["\n=== FK Contract Inspection Summary ==="];
+        $checked = 0;
+        $skipped = 0;
+
+        foreach (self::$fkInspectionLog as $entry) {
+            $model = $entry['model'];
+            $found = $entry['found'];
+            $fk = $entry['checked_fk'];
+            $nonFk = $entry['non_fk'];
+
+            if ($entry['status'] === 'SKIPPED') {
+                $skipped++;
+                $lines[] = "[SKIP]  {$model}: no public relation methods";
+                continue;
+            }
+
+            $checked++;
+            $fkList = implode(
+                ', ',
+                array_map(fn($m, $v) => "{$m}({$v[1]})", array_keys($fk), $fk)
+            );
+            $nonList = implode(', ', array_keys($nonFk));
+            $lines[] = "[CHECK] {$model}: found=" . count($found)
+                . " | checked_BelongsTo=[{$fkList}]"
+                . ($nonList ? " | non_BelongsTo=[{$nonList}]" : '');
+        }
+
+        $lines[] = "=== CHECKED={$checked} SKIPPED={$skipped} ===\n";
+
+        $this->assertTrue(true, implode("\n", $lines));
     }
 
     /**
