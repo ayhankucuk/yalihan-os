@@ -1,5 +1,45 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 156 — 2026-09-05 | RC2 Production Sync & GAP-03 Fix & #37 SQLite Schema Gap Çözümü ✅
+
+**Kapsam:** Codex (Proje Mühendisi), araştırma raporundan gelen 4 problemi sırasıyla çözdü: Production GitHub Sync, GAP-03 Airbnb/Channex retry normalization, BACKLOG-9 Lead tenant boundary cherry-pick, ve #37 SQLite schema gap doğrulaması.
+
+#### 1. Problem #A — Production GitHub Sync ✅
+- `integration/era-v-phase2a-e01` branch'i GitHub'a push edildi (3 commit, non-force)
+- `release-candidate/RC2` branch'i GitHub'a sync edildi
+
+#### 2. Problem #38 — GAP-03 Airbnb/Channex Retry Normalization ✅
+- **Commit:** `a5a50824`
+- **Dosya:** `app/Application/ChannelManager/Services/AvailabilitySynchronizationService.php`
+- **Değişiklik:** `syncToChannel()` metodunda response branch'ine `$response->retryable` kontrolü eklendi. Retryable=true durumunda `ChannelSynchronizationException` fırlatılıyor. `isRetryableException()` metoduna `ChannelSynchronizationException` desteği eklendi.
+- **Test:** 18/18 PASS (SynchronizeAvailabilityJobRetryTest + AvailabilitySynchronizationServiceTest)
+- **known-debt.md #38:** ✅ ÇÖZÜLDÜ
+
+#### 3. Problem #B — BACKLOG-9 Lead Tenant Boundary Cherry-pick ✅
+- **Commit:** `37144cd7`
+- **Keşif:** BACKLOG-5/9 commit'i (`862b8b48`) sadece `release/era-v-phase2a-rc1` branch'inde mevcuttu, RC2'de yoktu.
+- **Çözüm:** Cherry-pick ile RC2'ye aktarıldı — `BelongsToTenant` trait, composite unique index, `LeadTenantBoundaryTest`, `LeadAuthorityService`, `LeadFactory` güncellemeleri.
+- **Test:** LeadTenantBoundaryTest 10/10 PASS (29 assertions)
+
+#### 4. Problem #37 — SQLite Schema Gap ✅ ÇÖZÜLDÜ
+- **Keşif:** `restore_missing_ci_schema.php` migration'ı SQLite'ta `property_availabilities` tablosunu zaten doğru oluşturuyor. Tüm 3 test artık PASS:
+  - `AvailabilitySynchronizationServiceTest` — 11/11 PASS (47 assertions)
+  - `ReservationServiceTest` — 4/4 PASS (22 assertions)
+- **Commit:** `b5fdd805`
+- **known-debt.md #37:** ✅ ÇÖZÜLDÜ
+
+#### 5. RC2 GitHub Push
+- Yeni commit'ler GitHub'a push edildi: `27fd89d7..b5fdd805`
+
+#### Test ve Kalite Kapıları
+- SynchronizeAvailabilityJobRetryTest: 18/18 PASS
+- AvailabilitySynchronizationServiceTest: 11/11 PASS (47 assertions)
+- ReservationServiceTest: 4/4 PASS (22 assertions)
+- LeadTenantBoundaryTest: 10/10 PASS (29 assertions)
+- Full test suite: çalışıyor (non-blocking)
+
+---
+
 ## Oturum 155 — 2026-09-04 | RC2 RELEASE_GATE_OPEN & TD-14 Fix & #39 Hermes Wiring ✅
 
 > 📌 **Codex Devir-Teslim Brifingi (Project Engineer Handover):** Yeni oturuma başlarken lütfen [docs/architecture/codex-handoff-2026-09-04.md](file:///Users/macbookpro/repos/yalihan-os/docs/architecture/codex-handoff-2026-09-04.md) dokümanını oku (TD-13 analizi ve kalan 5 birim testi teşhisi içerir).
