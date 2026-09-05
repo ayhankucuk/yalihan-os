@@ -196,3 +196,18 @@ bootstrap/cache/*.php
 memory/ydl/state/
 memory/ydl/snapshots/
 /yalihanai_v2_production
+
+# Worktree directories (local only, not tracked)
+/worktrees/
+/yalihan-os.worktrees/
+/kilo-release-merge/
+/kilo-stale-ref-cleanup/
+/kilo-yayintipi-fillable-fix/
+/yalihanai_clone
+
+# Stray empty files from failed migrations/tests
+/assignable_type
+/source_type
+
+# Storage temp
+/storage/tmp/
