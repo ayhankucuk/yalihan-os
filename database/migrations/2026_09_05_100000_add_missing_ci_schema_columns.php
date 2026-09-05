@@ -14,6 +14,12 @@ use Illuminate\Support\Facades\Schema;
  * - Ozellik: aciklama, veri_secenekleri
  * - FeaturePack (ups_feature_packs): display_order
  * - Feature: deprecated_at
+ *
+ * ⚠️ ROLLBACK NOT: down() yalnızca 3 ilanlar kolonu düşürür
+ * (display_order, kategori, imar_durumu). up() 70+ kolon eklediğinden
+ * tam rollback mümkün değildir. Bu migrationı tek başına geri almak
+ * tabloyu tutarsız bırakır. Rollback gerekirse tüm eklenen kolonlar
+ * down()'a eklenmeli veya migration fitch/reset ile ele alınmalı.
  */
 return new class extends Migration
 {
