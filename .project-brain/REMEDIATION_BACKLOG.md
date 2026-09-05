@@ -378,6 +378,13 @@
 - Migration `deleted_at` conditional ✅ (Schema::hasColumn check)
 - RC-B4 production deploy ✅ (`INDEX_EXISTS`, VPS `0161747`)
 
+### Oturum 156 Eklemeleri (2026-09-05)
+
+- GAP-03 fix ✅ — Airbnb/Channex retryable response path (commit `a5a50824`, 18/18 PASS)
+- BACKLOG-5/9 cherry-pick ✅ — Lead tenant boundary RC1→RC2 (commit `37144cd7`, 10/10 PASS)
+- #37 SQLite schema gap ✅ ÇÖZÜLDÜ — AvailabilitySynchronizationServiceTest 11/11, ReservationServiceTest 4/4
+- RC2 GitHub sync ✅ — `27fd89d7..f1ae1219` push edildi
+
 
 ## Backlog Summary
 
