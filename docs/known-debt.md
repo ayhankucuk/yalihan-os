@@ -324,9 +324,14 @@
 
 - **#27 / #34** Dikey İlan JSONB Tam Göçü (Read Path)
 - **#35** Deploy Görevleri (#21-25) — Sunucu kurulum
-- **#37** Availability Sync SQLite Test Schema Gap
-- **#38** DTO-based Retryable Channel Failures (GAP-03)
 - **#40** TD-13 `ai_saglayici_profilleri` vs `ai_provider_profiles` — P2
+
+### Oturum 156 Güncellemesi (2026-09-05)
+
+- **#37** ✅ ÇÖZÜLDÜ — SQLite schema gap zaten çalışıyor (AvailabilitySynchronizationServiceTest 11/11, ReservationServiceTest 4/4 PASS)
+- **#38** ✅ ÇÖZÜLDÜ — GAP-03 Airbnb/Channex retryable response path fix (commit `a5a50824`, 18/18 PASS)
+- **BACKLOG-5/9** ✅ Cherry-pick — Lead tenant boundary RC1→RC2 (commit `37144cd7`, LeadTenantBoundaryTest 10/10 PASS)
+- **RC2 GitHub sync** ✅ — Tüm yeni commit'ler push edildi (`27fd89d7..9f95dfca`)
 
 ### Pre-existing Test Failures (RC2 Dışı / Unit Test Borçları)
 
