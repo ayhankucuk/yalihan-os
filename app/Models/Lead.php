@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use App\Traits\HasCountryScope;
 use App\Models\BaseModel;
 use App\Modules\TakimYonetimi\Models\Gorev;
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Lead extends BaseModel
 {
-    use HasFactory, HasCountryScope;
+    use HasFactory, HasCountryScope, BelongsToTenant;
     protected $table = 'leads';
 
     /**
@@ -92,6 +93,9 @@ class Lead extends BaseModel
         // AI Scoring (Context7: CRM Intelligence)
         'quality_score',
         'temperature',
+
+        // Tenant Boundary (BelongsToTenant trait)
+        'tenant_id',
     ];
 
     protected $casts = [
@@ -107,6 +111,7 @@ class Lead extends BaseModel
         'follow_up_date' => 'datetime',
         'ulke_id' => 'integer',
         'sesli_onay_verildi' => 'boolean',
+        'tenant_id' => 'integer', // Sprint 12D: BelongsToTenant global scope + auto-assign
     ];
 
     // ========== RELATIONSHIPS ==========

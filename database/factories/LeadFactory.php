@@ -74,6 +74,9 @@ class LeadFactory extends Factory
             'tags' => [],
             'ulke_id' => 1, // Default Turkey, tests can override
             'sesli_onay_verildi' => false,
+
+            // Sprint 12D: Tenant Boundary
+            'tenant_id' => 1,
         ];
     }
 
@@ -219,6 +222,17 @@ class LeadFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'sesli_onay_verildi' => true,
+        ]);
+    }
+
+    /**
+     * Sprint 12D: Lead bound to a specific tenant.
+     * Overrides the default tenant_id = 1 from definition().
+     */
+    public function forTenant(int $tenantId): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tenant_id' => $tenantId,
         ]);
     }
 }
