@@ -307,3 +307,4 @@ Active Locks:
   - HOTSPOT_LOCK:database/migrations/2026_09_04_*:Kilo:2026-09-04T22:00:00+03:00:7200
 -->
 HOTSPOT_LOCK:database/migrations/2026_09_01_000000_add_ulke_tenant_to_ilanlar_for_v2_api.php:wenox-rc2:2026-09-04T19:39:36Z:3600
+  - HOTSPOT_LOCK:config/canonical_tables.php:Kilo:2026-09-05T09:46:00+03:00:7200
