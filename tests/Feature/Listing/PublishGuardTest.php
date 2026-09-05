@@ -44,11 +44,11 @@ class PublishGuardTest extends TestCase
 
         $service = $this->buildService($mockTemplate);
 
-        // Completion score < 100
-        $ilan = $this->beklemedeliIlan(['yayin_tipi_id' => 1, 'completion_score' => 99]);
+        // No photograph → completion_score < 100 (8/9 = 89)
+        $ilan = $this->beklemedeliIlan(['yayin_tipi_id' => 1]);
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessageMatches('/completion_score=99/');
+        $this->expectExceptionMessageMatches('/completion_score=/');
 
         $service->transition($ilan, IlanDurumu::YAYINDA);
     }
@@ -62,11 +62,11 @@ class PublishGuardTest extends TestCase
 
         $service = $this->buildService($mockTemplate);
 
-        // Completion score < 100
-        $ilan = $this->beklemedeliIlan(['yayin_tipi_id' => 1, 'completion_score' => 99]);
+        // No photograph → completion_score < 100 (8/9 = 89)
+        $ilan = $this->beklemedeliIlan(['yayin_tipi_id' => 1]);
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessageMatches('/completion_score=99/');
+        $this->expectExceptionMessageMatches('/completion_score=/');
 
         $service->transition($ilan, IlanDurumu::YAYINDA);
     }
@@ -80,7 +80,14 @@ class PublishGuardTest extends TestCase
             ->willThrowException(new TemplateNotFoundException('Template bulunamadı', 0));
 
         $service = $this->buildService($mockTemplate);
-        $ilan    = $this->beklemedeliIlan(['yayin_tipi_id' => 999, 'completion_score' => 100, 'quality_score' => 41]);
+
+        // All ZORUNLU filled + photograph + valid coords → completion_score = 100 → reaches template guard
+        $ilan = $this->beklemedeliIlanWithPhoto([
+            'yayin_tipi_id' => 999,
+            'quality_score' => 41,
+            'lat' => 37.10,
+            'lng' => 27.26,
+        ]);
 
         $this->expectException(DomainException::class);
         $this->expectExceptionMessageMatches('/Template mapping bulunamad/');
@@ -95,11 +102,16 @@ class PublishGuardTest extends TestCase
 
         $service = $this->buildService($mockTemplate);
 
-        // Completion Score >= 100
-        $ilan = $this->beklemedeliIlan(['yayin_tipi_id' => null, 'completion_score' => 100, 'quality_score' => 41]);
+        // yayin_tipi_id is a ZORUNLU field → completion guard fires before template guard
+        $ilan = $this->beklemedeliIlanWithPhoto([
+            'yayin_tipi_id' => null,
+            'quality_score' => 41,
+            'lat' => 37.10,
+            'lng' => 27.26,
+        ]);
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessageMatches('/yayin_tipi_id.*seçilmemiş/');
+        $this->expectExceptionMessageMatches('/completion_score=/');
 
         $service->transition($ilan, IlanDurumu::YAYINDA);
     }
@@ -113,7 +125,14 @@ class PublishGuardTest extends TestCase
             ->willReturn(new \App\Models\YayinTipiSablonu(['id' => 1, 'ad' => 'Test Şablon']));
 
         $service = $this->buildService($mockTemplate);
-        $ilan    = $this->beklemedeliIlan(['yayin_tipi_id' => 1, 'completion_score' => 100, 'quality_score' => 41]);
+
+        // All ZORUNLU filled + photograph + valid Muğla coords → completion_score = 100
+        $ilan = $this->beklemedeliIlanWithPhoto([
+            'yayin_tipi_id' => 1,
+            'quality_score' => 41,
+            'lat' => 37.10,
+            'lng' => 27.26,
+        ]);
 
         // DomainException FIRLATILMAMALI
         $ilan = $service->transition($ilan, IlanDurumu::YAYINDA);
@@ -189,6 +208,19 @@ class PublishGuardTest extends TestCase
 
         $ilan = \Illuminate\Support\Facades\Schema::withoutForeignKeyConstraints(function () use ($extra) {
             return Ilan::factory()->create(array_merge(['yayin_durumu' => 'beklemede'], $extra));
+        });
+
+        Ilan::setEventDispatcher($dispatcher);
+        return $ilan;
+    }
+
+    private function beklemedeliIlanWithPhoto(array $extra = []): Ilan
+    {
+        $dispatcher = Ilan::getEventDispatcher();
+        Ilan::unsetEventDispatcher();
+
+        $ilan = \Illuminate\Support\Facades\Schema::withoutForeignKeyConstraints(function () use ($extra) {
+            return Ilan::factory()->withPhoto()->create(array_merge(['yayin_durumu' => 'beklemede'], $extra));
         });
 
         Ilan::setEventDispatcher($dispatcher);

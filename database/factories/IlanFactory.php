@@ -32,11 +32,13 @@ class IlanFactory extends Factory
         return [
             'baslik' => $baslik,
             'slug' => Str::slug($baslik . '-' . uniqid()),
+            'aciklama' => $this->faker->paragraph(5),
             'fiyat' => $this->faker->randomFloat(2, 100000, 10000000),
             'para_birimi' => 'TL',
             'referans_no' => 'REF-' . uniqid(),
             'yayin_durumu' => 'yayinda',
             'danisman_id' => User::factory(),
+            'ilan_sahibi_id' => User::factory(),
             'ana_kategori_id' => IlanKategori::factory(),
             'alt_kategori_id' => null,
             'il_id' => 1,
@@ -48,5 +50,23 @@ class IlanFactory extends Factory
             'created_at' => now(),
             'updated_at' => now(),
         ];
+    }
+
+    /**
+     * Factory state: Ilan with at least 1 photograph (for completion_score = 100).
+     */
+    public function withPhoto(): static
+    {
+        return $this->afterCreating(function (Ilan $ilan) {
+            \Illuminate\Support\Facades\DB::table('ilan_fotograflari')->insert([
+                'ilan_id'         => $ilan->id,
+                'dosya_yolu'      => 'test/photo-' . uniqid() . '.jpg',
+                'dosya_adi'       => 'photo-' . uniqid() . '.jpg',
+                'display_order'   => 1,
+                'kapak_fotografi' => true,
+                'created_at'      => now(),
+                'updated_at'      => now(),
+            ]);
+        });
     }
 }
