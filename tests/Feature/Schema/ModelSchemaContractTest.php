@@ -148,9 +148,10 @@ class ModelSchemaContractTest extends TestCase
                         "Relation {$methodName}() in {$modelClass} uses foreign key '{$foreignKey}' but column does not exist in '{$table}'"
                     );
                 }
-            } catch (\Throwable $e) {
-                // Relation couldn't be resolved (e.g., missing parent record)
-                // Skip in contract test
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+                // Model not found — skip in contract test
+            } catch (\Illuminate\Database\QueryException $e) {
+                // FK constraint violation (e.g., missing table) — skip in contract test
             }
         }
     }

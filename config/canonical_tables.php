@@ -196,16 +196,14 @@ return [
     | Configuration Accessors
     |--------------------------------------------------------------------------
     */
-    'getByStatus' => function(string $status): array {
-        return array_filter($this, fn($entry) => is_array($entry) && ($entry['status'] ?? '') === $status);
-    },
+    // Accessors: stateless helpers. Call: config('canonical_tables')['getCanonical'](config('canonical_tables'))
+    'getByStatus' => fn (array $tables, string $status): array =>
+        array_filter($tables, fn($entry) => is_array($entry) && ($entry['status'] ?? '') === $status),
 
-    'getCanonical' => function(): array {
-        return array_filter($this, fn($entry) => is_array($entry) && ($entry['status'] ?? '') === 'CANONICAL');
-    },
+    'getCanonical' => fn (array $tables): array =>
+        array_filter($tables, fn($entry) => is_array($entry) && ($entry['status'] ?? '') === 'CANONICAL'),
 
-    'getStaleReferences' => function(): array {
-        return array_filter($this, fn($entry) => is_array($entry) && ($entry['status'] ?? '') === 'STALE_REFERENCE');
-    },
+    'getStaleReferences' => fn (array $tables): array =>
+        array_filter($tables, fn($entry) => is_array($entry) && ($entry['status'] ?? '') === 'STALE_REFERENCE'),
 
 ];
