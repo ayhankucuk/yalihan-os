@@ -133,25 +133,35 @@ class ModelSchemaContractTest extends TestCase
 
             $methodName = $relation->getName();
 
+            // Skip scope methods (Laravel scopes require $query parameter)
+            if (str_starts_with($methodName, 'scope')) {
+                continue;
+            }
+
+            // Skip methods that require parameters
+            if ($relation->getNumberOfParameters() > 0) {
+                continue;
+            }
+
             // Skip if not a relation method
             if (!method_exists($model, $methodName)) {
                 continue;
             }
 
-            try {
-                $relationOutput = $model->$methodName();
+            // Only call methods that return a Relation type
+            $returnType = $relation->getReturnType()?->getName();
+            if ($returnType === null || !is_subclass_of($returnType, \Illuminate\Database\Eloquent\Relations\Relation::class)) {
+                continue;
+            }
 
-                if ($relationOutput instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
-                    $foreignKey = $relationOutput->getForeignKeyName();
-                    $this->assertTrue(
-                        Schema::hasColumn($table, $foreignKey),
-                        "Relation {$methodName}() in {$modelClass} uses foreign key '{$foreignKey}' but column does not exist in '{$table}'"
-                    );
-                }
-            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-                // Model not found — skip in contract test
-            } catch (\Illuminate\Database\QueryException $e) {
-                // FK constraint violation (e.g., missing table) — skip in contract test
+            $relationOutput = $model->$methodName();
+
+            if ($relationOutput instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
+                $foreignKey = $relationOutput->getForeignKeyName();
+                $this->assertTrue(
+                    Schema::hasColumn($table, $foreignKey),
+                    "Relation {$methodName}() in {$modelClass} uses foreign key '{$foreignKey}' but column does not exist in '{$table}'"
+                );
             }
         }
     }

@@ -50,9 +50,12 @@ class YayinTipi extends BaseModel
 
     /**
      * Bu tipe bağlı şablonlar
+     * @deprecated IlanTemplate system removed (2026-01-11). Use FeatureTemplateResolver + UPS instead.
      */
+    /*
     public function templates(): HasMany
     {
         return $this->hasMany(Deprecated\IlanTemplate::class, 'yayin_tipi_id');
     }
+    */
 }

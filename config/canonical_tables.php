@@ -191,19 +191,4 @@ return [
         'notes'            => 'Removed from AuditSchemaAlignment. No model, no migration, no code usage.',
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Configuration Accessors
-    |--------------------------------------------------------------------------
-    */
-    // Accessors: stateless helpers. Call: config('canonical_tables')['getCanonical'](config('canonical_tables'))
-    'getByStatus' => fn (array $tables, string $status): array =>
-        array_filter($tables, fn($entry) => is_array($entry) && ($entry['status'] ?? '') === $status),
-
-    'getCanonical' => fn (array $tables): array =>
-        array_filter($tables, fn($entry) => is_array($entry) && ($entry['status'] ?? '') === 'CANONICAL'),
-
-    'getStaleReferences' => fn (array $tables): array =>
-        array_filter($tables, fn($entry) => is_array($entry) && ($entry['status'] ?? '') === 'STALE_REFERENCE'),
-
 ];

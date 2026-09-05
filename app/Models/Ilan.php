@@ -336,7 +336,6 @@ class Ilan extends BaseModel
         'yayin_tipi_id',            // ✅ REQUIRED: Yayın tipi (bigint unsigned, NULL allowed)
 
         // ✅ CONTEXT7: Canonical portfolio fields
-        'is_active',           // ✅ SAB: Canonical active/inactive
         'one_cikan',                 // ✅ SAB: Canonical featured
         'display_order',             // ✅ SAB: Canonical display_ordering
         'kategori',                  // Portfolio import: category string
@@ -562,7 +561,6 @@ class Ilan extends BaseModel
         'aciklama' => 'string',                      // ✅ REQUIRED: text → string
 
         // ✅ CONTEXT7: Canonical portfolio fields
-        'is_active' => \App\Casts\CanonicalBooleanCast::class,
         'one_cikan' => 'boolean',                    // Context7: featured
         'display_order' => 'integer',                // Context7: display_ordering
         'metadata' => 'array',                       // JSON metadata (auto encode/decode)
