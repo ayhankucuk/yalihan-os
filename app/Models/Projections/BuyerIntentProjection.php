@@ -8,8 +8,9 @@ use App\Traits\HasCountryScope;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
+ * ️ SAB SEALED
  * 🔎 READ MODEL
- * Buyer Intent Projection — Alıcı niyetini ve tercihlerini tutar.
+ * Buyer Intent Projection — Alıcı niyetini ve tercihlerini tutar (CQRS).
  */
 class BuyerIntentProjection extends BaseModel
 {

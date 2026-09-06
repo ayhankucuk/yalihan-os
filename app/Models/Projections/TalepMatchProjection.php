@@ -9,8 +9,9 @@ use App\Traits\HasCountryScope;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
+ * ️ SAB SEALED
  * 🔎 READ MODEL
- * Talep Match Projection — Talep bazlı eşleşme özelliklerini tutar.
+ * Talep Match Projection — Talep bazlı eşleşme özelliklerini tutar (CQRS).
  */
 class TalepMatchProjection extends BaseModel
 {

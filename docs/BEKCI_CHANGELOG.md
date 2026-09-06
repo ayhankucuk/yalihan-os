@@ -1,5 +1,197 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 161 — 2026-09-06 | BEKCI Fix + Sözleşme Doğrulama + P4 FK Migration ✅
+
+**Kapsam:** Kodex P5 Phase 1 sonrası tespit edilen BEKCI violation'ların düzeltilmesi
+
+#### 1. ActionCenterService.php — 9 Violation Düzeltildi ✅
+
+`app/Services/ActionCenter/ActionCenterService.php` dosyasında `sab:integrity-scan` tarafından tespit edilen:
+- 5 × `CONTEXT7_GUARD_V3` (LOW) — forbidden field `type`, `status`
+- 3 × `NamingAuthorityAST` (LOW) — English field `type`, `status` → Turkish canonical
+- 1 × `ForbiddenFieldAST` (MEDIUM) — forbidden field `priority`
+
+**Düzeltmeler:**
+- `$evidence['type']` → `$evidence['kanit_tipi']` (line 444, 464)
+- `$filters['status']` → `$filters['durum']` (line 472, 481, 482)
+- `$filters['priority']` → `$filters['oncelik']` (line 485)
+- Log key `'priority'` → `'oncelik_seviyesi'` (line 635)
+
+**Sonuç:** `sab:integrity-scan` — `Services/ActionCenter/` için 0 violation ✅
+
+#### 2. CQRS Projection Models — SAB SEALED Docblock Eklendi ✅
+
+3 projection modelinde eksik `SAB SEALED` docblock annotation eklendi:
+- `app/Models/Projections/ListingSearchProjection.php` — SAB SEALED + @context7-ignore-file
+- `app/Models/Projections/TalepMatchProjection.php` — SAB SEALED eklendi
+- `app/Models/Projections/BuyerIntentProjection.php` — SAB SEALED eklendi
+
+**Mevcut durum:** Tüm 6 projection model artık `SAB SEALED` docblock'a sahip ✅
+
+#### 3. Test Doğrulama ✅
+
+Tüm etkilenen test suite'ler çalıştırıldı:
+- `ActionCenterEventMappingTest`: 6/6 PASS (58 assertions)
+- `UserTest`: 7/7 PASS
+- `DemandMatchingEngineTest`: 4/4 PASS
+- `CiGuardRawDbWriteTest`: 7/7 PASS
+- **Toplam: 24 test, 86 assertion — ALL PASS** ✅
+
+#### 3.1 Sözleşme Doğrulaması — Anahtar Tüketici Analizi ✅
+
+Değiştirilen 3 anahtarın (`type`, `status`, `priority`) tüm tüketicileri sistematik olarak araştırıldı:
+
+**ActionCenterService public API tüketicileri:**
+
+| Metod | Controller | Job | Frontend | Test | JSON tüketici |
+|-------|-----------|-----|----------|------|---------------|
+| `generateActionsFromEvent()` | Yok | 10 listener | Yok | Yok | Yok |
+| `prioritizeActions()` | Yok | Yok | Yok | 1 test (filtersız) | Yok |
+| `assignAction()` | Yok | Yok | Yok | Yok | Yok |
+| `trackActionEvidence()` | Yok | Yok | Yok | Yok | Yok |
+| `getActionQueue()` | Yok | Yok | Yok | 1 test (filtersız) | Yok |
+| `escalateAction()` | Yok | Yok | Yok | Yok | Yok |
+| `getOverdueActions()` | Yok | Yok | Yok | Yok | Yok |
+
+**Sonuç:** Değiştirilen anahtarlar sadece `getActionQueue()` ve `trackActionEvidence()` internal parametreleridir.
+- `getActionQueue()` test'te filtersız çağrılıyor → etkilenmez
+- `trackActionEvidence()` hiç çağrılmıyor → etkilenmez
+- `gorevler` tablosunda 0 kayıt (P5 Phase 1 yeni) → eski JSON veri yok
+- Hiçbir controller, job, frontend veya harici tüketici bu anahtarları kullanmıyor
+- **Karar:** Anahtar değişikliği hiçbir tüketiciyi kırmaz ✅
+
+#### 4. Kalan Known Violation
+
+`ListingSearchProjection.php` line 22 — `NamingAuthorityAST` (LOW): `'title'` in `$fillable`
+- CQRS projection tablosu İngilizce kolon adları kullanır (by design)
+- `OpportunityEngineService.php` bu alanı referans alır (`->select(['listing_id', 'title', ...])`)
+- 0 kayıt mevcut (ARAŞTIRMA-2 doğruladı)
+- **Karar:** Phase 2 CQRS rebuild sırasında `title → baslik` rename yapılacak
+
+#### 5. P4 FK Migration — `ilceler → iller` Foreign Key ✅ TEST/REPO_VERIFIED
+
+**Kapsam:** `docs/architecture/location-migration-risk-2026-09-06.md` §4.2'de önerilen FK constraint'in uygulanması
+
+**Ön koşullar doğrulandı:**
+- `ilceler` tablosunda 0 orphan kayıt (tüm `il_id` değerleri `iller.id` ile eşleşiyor)
+- `il_id` kolonu `bigint unsigned` — `iller.id` ile tip uyumlu
+- Mevcut FK constraint yok (INFORMATION_SCHEMA doğruladı)
+
+**Migration dosyası:** `database/migrations/2026_09_06_000001_add_ilceler_iller_fk_constraint.php`
+- FK: `ilceler.il_id → iller.id` — `onDelete('restrict')`
+- Idempotent: INFORMATION_SCHEMA ile mevcut FK kontrolü, varsa skip
+- SQLite uyumlu: try/catch ile unsupported driver'da Schema Builder'a fallback
+
+**Doğrulama kapsamı — LOCAL MySQL clone (yalihanai_clone):**
+- `php artisan migrate` — FK başarıyla eklendi: `ilceler_il_id_foreign`
+- Tekrar çalıştırma: "Nothing to migrate" — idempotent ✅
+- Test: 5 test, 6 assertion — ALL PASS ✅
+  - `V2IlanAuthResearchTest`: 3/3 PASS
+  - `V2RouteBindingCountryScopeTest`: 2/2 PASS
+
+**Doğrulanmayan kapsamlar:**
+- ❌ Production MySQL — canlı veritabanında migration çalıştırılmadı
+- ❌ Production FK doğrulaması — yetkili operatör tarafından yapılmalı
+- ❌ Commit — dosya untracked (`??`), henüz commit edilmedi
+
+**Sonraki adım:** CQRS tenant + rebuild mimari araştırması (Kodex architect görevi)
+
+---
+
+## Oturum 160 — 2026-09-06 | P3 Resolution + P4 Location Research ✅
+
+**Kapsam:** PHASE2-ROADMAP.md Priority 3 kapatma + Priority 4 location/migration risk research
+
+#### 1. P3 — AI Suite Pre-Existing Failures ✅ RESOLVED
+
+Oturum 158'de çözülen 3 test ailesinin roadmap'e dokümantasyonu:
+- `UserTest`: 7/7 PASS — `tenant_id` eksik ekleme
+- `DemandMatchingEngineTest`: 4/4 PASS — `withoutTenant()` cross-tenant query
+- `CiGuardRawDbWriteTest`: 7/7 PASS — whitelist pattern exclusions
+- `FeatureFeedbackContractTest`: 2 SKIPPED — Sanctum middleware not bootstrapped (known limitation, approved skip)
+
+**Değişiklik:** `docs/ERA_V/PHASE2-ROADMAP.md` line 160 — P3 ✅ RESOLVED olarak güncellendi
+
+#### 2. P4 — Location and Migration Risk Research ✅ RESEARCH COMPLETE
+
+**Üretilen belge:** `docs/architecture/location-migration-risk-2026-09-06.md`
+
+**Kritik bulgular:**
+- `ilceler→iller` FK: MYSQL schema'da TANIMSIZ (MEDIUM risk)
+- Tüm location-referencing tablolar: 0 kayıt (LOW mevcut impact)
+- `bina_yasi` migration: GÜVENLİ — backup table + exact rollback + SQLite early return
+- TKGM polygon persistence: önce `ilceler→iller` FK eklenmeli
+
+**Değişiklikler:**
+- `docs/architecture/location-migration-risk-2026-09-06.md` — yeni oluşturuldu
+- `docs/ERA_V/PHASE2-ROADMAP.md` — P4 ✅ RESEARCH COMPLETE
+- `.project-brain/EVIDENCE_INDEX.md` — oturum kaydı eklendi
+- `.project-brain/PROJECT_STATE.md` — Priority durum tablosu eklendi
+- `.project-brain/DECISION_LOG.md` — Karar #003 (ilceler→iller FK eksikliği) eklendi
+
+#### 3. Sprint 15 Durumu
+
+P1 CONDITIONAL + P2 RESOLVED + P3 RESOLVED + P4 RESEARCH COMPLETE
+
+→ Sprint 15 (`Action Center`) başlamak için gereken önkoşullar büyük ölçüde hazır.
+Sprint 15: P5 (Architecture Prerequisites) çözümü bekleniyor.
+
+---
+
+## Oturum 159 — 2026-09-06 | Property Type Manager & Field Dependencies UI/UX Overhaul & Modern Mediterranean Refactoring ✅
+
+**Kapsam:** `/admin/property-type-manager/4` (`show.blade.php`) ve `/admin/property-type-manager/4/field-dependencies` (`field-dependencies.blade.php`) arayüzlerinin Akdeniz Lüks Tasarım Sistemi (Navy `#0A1628` / Gold `#C9A84C`) ile yeniden tasarlanması, Font Awesome ikonlarının sıfırlanıp `<x-icon>` SVG sistemine taşınması, Alpine.js reaktif akışlarının ve layout kaçaklarının giderilmesi.
+
+#### 1. Bileşen ve İkon Genişletmeleri ✅
+- **Dosya:** `resources/views/components/icon.blade.php`
+- **Eklenen İkonlar:** `'ayar'` (cog/settings), `'surukle'` (drag-handle) — Blade SVG kütüphanesine eklendi.
+
+#### 2. Property Type Manager Show Ekranı (`/admin/property-type-manager/4`) ✅
+- **Dosya:** `resources/views/admin/property-type-manager/show.blade.php`
+- **Tasarım:** Tab bar içine sıkışmış "Yeni Özellik Ekle" butonu sağ üst araç çubuğuna taşındı. Tab bar Navy/Gold pill ve rozetlerle modernize edildi.
+- **Kart Yapısı:** 1 satıra sıkışan ve taşan yayın tipi kartları 2 satırlı ferah kartlara dönüştürüldü (Başlık, sürükleme kolu, aktiflik rozeti, aktif ilan sayısı ve alt işlem butonları).
+- **Layout İzolasyonu:** Sekme 1'de kapanmamış `<div>` nedeniyle "Alt Türler" sekmesine sızan Alan İlişkileri ve Özellik Havuzu blokları doğru scope içine alındı.
+
+#### 3. Field Dependencies Ekranı (`/admin/property-type-manager/4/field-dependencies`) ✅
+- **Dosya:** `resources/views/admin/property-type-manager/field-dependencies.blade.php`
+- **Breadcrumb & Header:** Çift breadcrumb kaldırıldı; tek Neo breadcrumb kullanıldı. Sayfa başlığı ve buton grubu duyarlı (responsive) flex-wrap yapısına kavuşturuldu.
+- **Özet Kartı:** Hantal mavi blok yerine kompakt, Gold aksanlı "Kategori & Yayın Tipi Özeti" kartı entegre edildi. Alpine `init()` metodundaki seçim senkronizasyonu düzeltilerek seçili yayın tipi anında gösterildi.
+- **Smart Logic & Özellik Atamaları:** Yayın tipi sekme şeridi ve alt sekmeler (Özellik Atamaları / Akıllı Koşullar BETA) modernize edildi. Boş durumlar (empty-state) ve modal diyalogları (Mantıksal Koşul Oluştur & Havuzdan Özellik Ekle) sıfırdan lüks tasarıma dönüştürüldü.
+- **Doğrulama:** Puppeteer E2E screenshotları ile tüm sekmeler ve modallar test edildi; `./scripts/tools/antigravity-full-gate.sh --quick` 4/4 PASS.
+
+---
+
+## Oturum 158 — 2026-09-06 | HermesServiceProvider Namespace Fix + Context Cache Manager ✅
+
+**Kapsam:** HermesServiceProvider `Workflow/` → `Workforce/` namespace düzeltmesi, Context Cache Manager skill oluşturulması, P0+P1 görevlerin bağımsız doğrulaması.
+
+#### 1. HermesServiceProvider Namespace Fix ✅
+- **Dosya:** `app/Providers/HermesServiceProvider.php` satır 11-12
+- **Sorun:** `PropertyScoreAgent` ve `PublishDecisionAgent` yanlış `Workflow\` namespace kullanıyordu — dosyalar `Workforce/` dizininde
+- **Düzeltme:** `use App\Services\Hermes\Handlers\Workflow\...` → `use App\Services\Hermes\Handlers\Workforce\...`
+- **Test:** `WorkforceAgentsTest` 20/20 PASS · `DriveAgentTest` 7/7 PASS · **27/27 TOPLAM**
+
+#### 2. Context Cache Manager Skill ✅
+- **Dosya:** `.clinerules` §10
+- **Eklenen:** Write Cache (EVIDENCE_INDEX, PROJECT_STATE, DECISION_LOG) + Read Cache protokolü
+- **Token hedefi:** cache hit < 100 token, miss ~1,000-2,000 token
+- **Karar kaydı:** `.project-brain/DECISION_LOG.md` oluşturuldu
+
+#### 3. Bağımsız Doğrulama Sonuçları ✅
+| Görev | Test | Sonuç |
+|---|---|---|
+| BACKLOG-5 Lead Tenant Boundary | `LeadTenantBoundaryTest` | 10/10 PASS · 29 assertion |
+| Hermes Workforce | `WorkforceAgentsTest` + `DriveAgentTest` | 27/27 PASS · 89 assertion |
+| Sprint 14 PropertyHub | `PropertyHubDashboardHardeningTest` | PASS |
+| Sprint 14 AdvisorCommandCenter | `AdvisorCommandCenterTest` | 6/6 PASS · 45 assertion |
+| Sprint 14 G-04 | Part 1 VERIFIED, Part 2 ⏸️ | OPERATOR AWAITING |
+
+#### Durum
+- **Sprint 14:** `CONDITIONAL_CERTIFIED` — G-04 Part 2 operator timing bekliyor
+- **Diğer P0+P1:** `TEST_VERIFIED`
+
+---
+
 ## Oturum 157 — 2026-09-06 | YALIHAN ARCHITECTURE CONSTITUTION v1.0 & Architecture Registry Oluşturuldu ✅
 
 **Kapsam:** Yalıhan OS için 20 omurga mimari maddesini içeren bağlayıcı anayasa ve sistem haritasını sunan Architecture Registry dokümanları kanonik standart olarak oluşturuldu.

@@ -5,6 +5,12 @@ namespace App\Models\Projections;
 use App\Models\BaseModel;
 use App\Traits\HasCountryScope;
 
+/**
+ * ️ SAB SEALED
+ * Listing Search Projection — İlan arama ve filtreleme için read model (CQRS).
+ *
+ * @context7-ignore-file — CQRS projection table uses English column names by design.
+ */
 class ListingSearchProjection extends BaseModel
 {
     use HasCountryScope;
