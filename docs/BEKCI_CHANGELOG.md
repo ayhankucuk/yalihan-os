@@ -1,5 +1,38 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 157 — 2026-09-06 | YALIHAN ARCHITECTURE CONSTITUTION v1.0 & Architecture Registry Oluşturuldu ✅
+
+**Kapsam:** Yalıhan OS için 20 omurga mimari maddesini içeren bağlayıcı anayasa ve sistem haritasını sunan Architecture Registry dokümanları kanonik standart olarak oluşturuldu.
+
+#### 1. Yalıhan Architecture Constitution v1.0 ✅
+- **Dosya:** `docs/architecture/YALIHAN_ARCHITECTURE_CONSTITUTION_v1.0.md`
+- **İçerik:** 20 değişmez mimari ilke, her biri için Tanım/Kapsam, Zorunlu Kurallar (MUST), Kesin Yasaklar (FORBIDDEN), İstisnalar ve Otomasyon/Kontrol Yöntemi ile eksiksiz yazıldı.
+- **Kapsanan Alanlar:**
+  1. Vision, Scope & Non-Goals
+  2. Architecture Principles (Loose coupling, Reversibility, Ponytail/YAGNI)
+  3. Domain Map & Bounded Contexts (10 çekirdek domain)
+  4. Ubiquitous Language & Naming Constitution (Context7 uyumu)
+  5. Modular Monolith Strategy
+  6. Module Dependency Rules (Write Authority Chain)
+  7. Data Architecture Constitution (ULID, strict types, soft-deletes)
+  8. Single Source of Truth (SSOT Rules)
+  9. Storage & Media Source Abstraction (`StorageProviderInterface`)
+  10. YALIHAN Media Domain (Ingest, Dedup, Variant pipeline)
+  11. AI Provider Abstraction (`CortexProviderInterface`, JSON structured output)
+  12. Hermes Orchestration Layer (Pure orchestrator, no business logic)
+  13. Event & Workflow Architecture (Domain Events, Queueable Listeners)
+  14. API & Integration Contracts (OpenAPI, Idempotency, Envelope)
+  15. Security, Identity & Authorization (Tenant Isolation, Secret Zero-Trust, AI Least Privilege)
+  16. Engineering Standards (Thin Controller, Pint, `<x-icon />`)
+  17. Testing & Quality Gates (Pest/PHPUnit Architecture, Feature, Gate)
+  18. Audit, Provenance & Traceability (Actor identity, Append-Only)
+  19. Observability, Health & Dead-Code Control
+  20. Governance, ADR & Challenger Protocol (Red-Team, SAAB)
+
+#### 2. YALIHAN Architecture Registry ✅
+- **Dosya:** `docs/architecture/REGISTRY.md`
+- **İçerik:** Canlı domain & capability kataloğu, tablo yazma/okuma sahiplik matrisi (SSOT), domain event kataloğu, soyutlama ve kontrat kataloğu, AI ajan rolleri & yetki sınırları ve ADR indeksi tek yerde toplandı.
+
 ## Oturum 156 — 2026-09-05 | RC2 Production Sync & GAP-03 Fix & #37 SQLite Schema Gap Çözümü ✅
 
 **Kapsam:** Codex (Proje Mühendisi), araştırma raporundan gelen 4 problemi sırasıyla çözdü: Production GitHub Sync, GAP-03 Airbnb/Channex retry normalization, BACKLOG-9 Lead tenant boundary cherry-pick, ve #37 SQLite schema gap doğrulaması.
@@ -5114,3 +5147,52 @@ OK (5 tests, 11 assertions)
 ### Commit
 
 `3d16f4e` — `fix(security): BACKLOG-6 — atomic rate limiting via RateLimiter facade`
+
+---
+
+## Oturum 21 — 2026-09-06 | Mimari Bekçi: `IlanAgentAccessTest` + `IlanApiContractTest` Kör Nokta Düzeltmesi 🛡️
+
+### Kapsam
+
+`IlanAgentAccessTest` ve `IlanApiContractTest` sözleşme düzeltmesinin Mimari Bekçi incelemesi — Skill Adım 2–4.
+
+### Düzeltilen Üç Kör Nokta
+
+**1. `danisman` içinde hassas alan denetimi eksikti**
+Public path `danisman` döndürüyor; testler yalnız top-level `agent` yokluğunu kontrol ediyordu.
+Telefon/email/whatsapp/title `danisman` içinde sızabilirdi — bu denetlenmiyordu.
+
+**2. Koordinat assertion'ı ayrıştırıcı değere sabitlenmemişti**
+`floor(37.123456 * 100) / 100` kullanılıyordu. `37.126` gibi ayrıştırıcı değerde `floor`=37.12, `round`=37.13
+farkı yakalanamaz. Assertion sabit `37.12`/`28.65`'e sabitlendi.
+
+**3. `test_path_b` yalnız `'agent'` yokluğu kontrol ediyordu**
+Path B `IlanPublicDetailResource` → `'danisman'` kullanır. `'agent'` key yokluğu gizli bilgi sızdırmaz —
+ama `danisman` içindeki alanlar denetlenmeli.
+
+### Değişiklikler
+
+| Dosya | Değişiklik |
+|-------|-----------|
+| `tests/Feature/Security/IlanAgentAccessTest.php` | S1 + S2'ye `danisman` içinde phone/email/whatsapp/title kontrolü; S7 koordinat assertion'ı sabit değere sabitlendi |
+| `tests/Feature/Security/IlanApiContractTest.php` | Path B `hides_sensitive_fields`'e `danisman` içinde phone/email/whatsapp/title kontrolü; `contract_violation` koordinat assertion'ı sabit `37.12`/`28.65`'e sabitlendi |
+
+### Test Sonuçları
+
+```
+OK (20 tests, 109 assertions) — 12.27s
+```
+
+| Test | Durum |
+|------|-------|
+| Tüm `IlanAgentAccessTest` (7 senaryo S1–S7) | ✅ |
+| Tüm `IlanApiContractTest` (13 path + kontrat ihlali) | ✅ |
+
+### Durum
+
+**`TEST_VERIFIED_PENDING_INDEPENDENT_REVIEW`**
+
+- Commit: `a8a012d9` (temiz, secret scan geçti)
+- Testler: 20/20 PASS, 109 assertion
+- Bağımsız doğrulama: ⏳ Bekliyor
+- Production deploy: ⛔ Yapılmamalı
