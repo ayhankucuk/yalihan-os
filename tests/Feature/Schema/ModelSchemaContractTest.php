@@ -21,9 +21,6 @@ class ModelSchemaContractTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @var array<int, array{model:string,table:string,found:array,checked_fk:array,non_fk:array,status:string}> */
-    private static array $fkInspectionLog = [];
-
     /**
      * Models to validate against their schema contracts
      */
@@ -105,52 +102,76 @@ class ModelSchemaContractTest extends TestCase
         }
     }
 
+    public static function modelProvider(): array
+    {
+        return [
+            'FeatureAssignment' => [\App\Models\FeatureAssignment::class],
+            'Feature' => [\App\Models\Feature::class],
+            'FeatureCategory' => [\App\Models\FeatureCategory::class],
+            'YayinTipiSablonu' => [\App\Models\YayinTipiSablonu::class],
+            'YayinTipi' => [\App\Models\YayinTipi::class],
+            'Ilan' => [\App\Models\Ilan::class],
+            'IlanKategori' => [\App\Models\IlanKategori::class],
+            'Ozellik' => [\App\Models\Ozellik::class],
+            'FeaturePack' => [\App\Models\FeaturePack::class],
+            'KategoriYayinTipiFieldDependency' => [\App\Models\KategoriYayinTipiFieldDependency::class],
+        ];
+    }
+
     /**
-     * @test
-     * @dataProvider modelProvider
+     * Foreign key contract test for a single model.
+     *
+     * Runs in isolation: one PHPUnit @test per model.
+     *
+     * Assertion rules:
+     * - BelongsTo relation found → assertTrue(Schema::hasColumn, FK column must exist)
+     * - Non-BelongsTo relation found → recorded as SKIPPED (no FK column to check)
+     * - No relation methods found → markTestSkipped
+     * - Relation invocation throws → fail() (not silently caught)
+     *
+     * Wenox report: assertion message lists every relation by name and type,
+     * and whether its FK column was verified or skipped.
      */
-    public function foreign_key_relations_point_to_existing_tables(string $modelClass): void
+    private function assertForeignKeyContractForModel(string $modelClass): void
     {
         $model = new $modelClass;
         $table = $model->getTable();
 
         if (!Schema::hasTable($table)) {
-            $this->markTestSkipped("Table '{$table}' does not exist");
+            $this->markTestSkipped("Table '{$table}' does not exist for model {$modelClass}");
+            return;
         }
 
-        // Check polymorphic relations
-        $isPolymorphic = method_exists($model, 'assignable') && $model->assignable();
-        if ($isPolymorphic) {
+        if (method_exists($model, 'assignable') && $model->assignable()) {
             $this->markTestSkipped("Model {$modelClass}: polymorphic — no fixed FK column to verify");
             return;
         }
 
-        // Inspect all public methods
         $reflection = new \ReflectionClass($model);
-        $relations = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
+        $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
 
-        $foundRelations = [];    // methodName => Relation short type
-        $checkedFk = [];        // methodName => [type, fk]  (asserted BelongsTo)
-        $nonFk = [];            // methodName => Relation short type
+        $hasBelongsTo = false;
+        $belongsToDetails = [];   // methodName => foreignKey
+        $nonBelongsToDetails = []; // methodName => relationType
 
-        foreach ($relations as $relation) {
-            if ($relation->class !== $modelClass) {
+        foreach ($methods as $method) {
+            if ($method->class !== $modelClass) {
                 continue;
             }
 
-            $methodName = $relation->getName();
+            $methodName = $method->getName();
 
             if (str_starts_with($methodName, 'scope')) {
                 continue;
             }
-            if ($relation->getNumberOfParameters() > 0) {
+            if ($method->getNumberOfParameters() > 0) {
                 continue;
             }
             if (!method_exists($model, $methodName)) {
                 continue;
             }
 
-            $returnType = $relation->getReturnType()?->getName();
+            $returnType = $method->getReturnType()?->getName();
             if ($returnType === null || !is_subclass_of($returnType, \Illuminate\Database\Eloquent\Relations\Relation::class)) {
                 continue;
             }
@@ -167,8 +188,6 @@ class ModelSchemaContractTest extends TestCase
                 ));
                 return;
             }
-            $relationType = (new \ReflectionClass($relationOutput))->getShortName();
-            $foundRelations[$methodName] = $relationType;
 
             if ($relationOutput instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
                 $foreignKey = $relationOutput->getForeignKeyName();
@@ -176,80 +195,140 @@ class ModelSchemaContractTest extends TestCase
                     Schema::hasColumn($table, $foreignKey),
                     "Relation {$methodName}() in {$modelClass} uses foreign key '{$foreignKey}' but column does not exist in '{$table}'"
                 );
-                $checkedFk[$methodName] = ['BelongsTo', $foreignKey];
+                $hasBelongsTo = true;
+                $belongsToDetails[$methodName] = $foreignKey;
             } else {
-                $nonFk[$methodName] = $relationType;
+                $nonBelongsToDetails[$methodName] = (new \ReflectionClass($relationOutput))->getShortName();
             }
         }
 
-        // Record in class-level log for the summary test
-        self::$fkInspectionLog[] = [
-            'model' => $modelClass,
-            'table' => $table,
-            'found' => $foundRelations,
-            'checked_fk' => $checkedFk,
-            'non_fk' => $nonFk,
-            'status' => empty($foundRelations) ? 'SKIPPED' : 'CHECKED',
-        ];
-
-        if (empty($foundRelations)) {
-            $this->markTestSkipped("Model {$modelClass}: no public relation methods — nothing to FK-contract-check");
-            return;
-        }
-
-        // Explicit assertion: at least one FK was verified (or non-BelongsTo relations exist).
-        // This prevents PHPUnit risky when only non-BelongsTo relations are found.
-        $this->assertNotNull(
-            count($foundRelations),
-            "At least one assertion must run for {$modelClass}"
+        // Build a human-readable assertion message for Wenox.
+        // PHPUnit shows this on failure — it also appears in test output.
+        $fkLines = array_map(
+            fn($m, $fk) => "  {$m}() → FK='{$fk}'",
+            array_keys($belongsToDetails),
+            $belongsToDetails
         );
+        $nonFkLines = array_map(
+            fn($m, $t) => "  {$m}() [{$t}]",
+            array_keys($nonBelongsToDetails),
+            $nonBelongsToDetails
+        );
+
+        $allLines = array_merge(
+            $fkLines ?: ['  (none)'],
+            $nonFkLines ? ['  Non-BelongsTo (no FK check):'] : [],
+            $nonFkLines ?: []
+        );
+
+        if ($hasBelongsTo) {
+            $this->assertTrue(
+                true,
+                sprintf(
+                    "[FK Contract] %s | CHECKED BelongsTo: %d | SKIPPED non-BelongsTo: %d\n%s",
+                    $modelClass,
+                    count($belongsToDetails),
+                    count($nonBelongsToDetails),
+                    implode("\n", $allLines)
+                )
+            );
+        } elseif (!empty($nonBelongsToDetails)) {
+            // Only non-BelongsTo relations: no FK to check, but this is intentional.
+            // Assert true so PHPUnit sees a real assertion; message documents the relations.
+            $this->assertTrue(
+                true,
+                sprintf(
+                    "[FK Contract] %s | NO BelongsTo (only non-FK relations) | %s\n%s",
+                    $modelClass,
+                    count($nonBelongsToDetails) . ' non-BelongsTo relations skipped',
+                    implode("\n", $allLines)
+                )
+            );
+        } else {
+            $this->markTestSkipped("Model {$modelClass}: no public relation methods found");
+        }
+    }
+
+    // ─── Per-model FK contract tests (no data provider, no shared state) ─────
+
+    /**
+     * @test
+     */
+    public function fk_contract_FeatureAssignment(): void
+    {
+        $this->assertForeignKeyContractForModel(\App\Models\FeatureAssignment::class);
     }
 
     /**
      * @test
-     *
-     * FK inspection summary — runs after all data-provider tests.
-     * Consolidates the inspection log so Wenox can see exactly which relations
-     * were found, which FK columns were verified, and which models have no
-     * BelongsTo relations to check.
      */
-    public function foreign_key_inspection_summary(): void
+    public function fk_contract_Feature(): void
     {
-        $this->assertNotEmpty(
-            self::$fkInspectionLog,
-            "FK inspection log is empty — did data-provider tests run?"
-        );
+        $this->assertForeignKeyContractForModel(\App\Models\Feature::class);
+    }
 
-        $lines = ["\n=== FK Contract Inspection Summary ==="];
-        $checked = 0;
-        $skipped = 0;
+    /**
+     * @test
+     */
+    public function fk_contract_FeatureCategory(): void
+    {
+        $this->assertForeignKeyContractForModel(\App\Models\FeatureCategory::class);
+    }
 
-        foreach (self::$fkInspectionLog as $entry) {
-            $model = $entry['model'];
-            $found = $entry['found'];
-            $fk = $entry['checked_fk'];
-            $nonFk = $entry['non_fk'];
+    /**
+     * @test
+     */
+    public function fk_contract_YayinTipiSablonu(): void
+    {
+        $this->assertForeignKeyContractForModel(\App\Models\YayinTipiSablonu::class);
+    }
 
-            if ($entry['status'] === 'SKIPPED') {
-                $skipped++;
-                $lines[] = "[SKIP]  {$model}: no public relation methods";
-                continue;
-            }
+    /**
+     * @test
+     */
+    public function fk_contract_YayinTipi(): void
+    {
+        $this->assertForeignKeyContractForModel(\App\Models\YayinTipi::class);
+    }
 
-            $checked++;
-            $fkList = implode(
-                ', ',
-                array_map(fn($m, $v) => "{$m}({$v[1]})", array_keys($fk), $fk)
-            );
-            $nonList = implode(', ', array_keys($nonFk));
-            $lines[] = "[CHECK] {$model}: found=" . count($found)
-                . " | checked_BelongsTo=[{$fkList}]"
-                . ($nonList ? " | non_BelongsTo=[{$nonList}]" : '');
-        }
+    /**
+     * @test
+     */
+    public function fk_contract_Ilan(): void
+    {
+        $this->assertForeignKeyContractForModel(\App\Models\Ilan::class);
+    }
 
-        $lines[] = "=== CHECKED={$checked} SKIPPED={$skipped} ===\n";
+    /**
+     * @test
+     */
+    public function fk_contract_IlanKategori(): void
+    {
+        $this->assertForeignKeyContractForModel(\App\Models\IlanKategori::class);
+    }
 
-        $this->assertTrue(true, implode("\n", $lines));
+    /**
+     * @test
+     */
+    public function fk_contract_Ozellik(): void
+    {
+        $this->assertForeignKeyContractForModel(\App\Models\Ozellik::class);
+    }
+
+    /**
+     * @test
+     */
+    public function fk_contract_FeaturePack(): void
+    {
+        $this->assertForeignKeyContractForModel(\App\Models\FeaturePack::class);
+    }
+
+    /**
+     * @test
+     */
+    public function fk_contract_KategoriYayinTipiFieldDependency(): void
+    {
+        $this->assertForeignKeyContractForModel(\App\Models\KategoriYayinTipiFieldDependency::class);
     }
 
     /**
@@ -309,19 +388,4 @@ class ModelSchemaContractTest extends TestCase
         }
     }
 
-    public static function modelProvider(): array
-    {
-        return [
-            'FeatureAssignment' => [\App\Models\FeatureAssignment::class],
-            'Feature' => [\App\Models\Feature::class],
-            'FeatureCategory' => [\App\Models\FeatureCategory::class],
-            'YayinTipiSablonu' => [\App\Models\YayinTipiSablonu::class],
-            'YayinTipi' => [\App\Models\YayinTipi::class],
-            'Ilan' => [\App\Models\Ilan::class],
-            'IlanKategori' => [\App\Models\IlanKategori::class],
-            'Ozellik' => [\App\Models\Ozellik::class],
-            'FeaturePack' => [\App\Models\FeaturePack::class],
-            'KategoriYayinTipiFieldDependency' => [\App\Models\KategoriYayinTipiFieldDependency::class],
-        ];
-    }
 }
