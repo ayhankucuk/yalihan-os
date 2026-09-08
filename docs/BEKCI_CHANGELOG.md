@@ -1,5 +1,21 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 162 — 2026-09-07 | Codex Kredi Darboğazı Mühendislik Devri + Multi-Agent Becerileri ✅
+
+**Kapsam:** `codex-engineering-bridge` ve `computer-software-architect-engineer` yeteneklerinin oluşturulması ve skill indeksi entegrasyonu.
+
+#### 1. Yeni Skill: codex-engineering-bridge ✅
+- `.agents/skills/codex-engineering-bridge/SKILL.md` oluşturuldu.
+- `.agents/skills/SKILL_INDEX.md` güncellendi ve kayıt altına alındı.
+- Codex'in 0 kredi ile dosya sistemi üzerinden mühendislik adımlarını takip edebileceği köprü kuruldu.
+
+#### 2. Yeni Skill: computer-software-architect-engineer ✅
+- `.agents/skills/computer-software-architect-engineer/SKILL.md` oluşturuldu.
+- `.agents/skills/SKILL_INDEX.md` taxonomy rehberine kaydedildi.
+- Bilgisayar mühendisliği (OS, concurrency, autoloader), yazılım mühendisliği disiplini, SAB anayasası ve sıfır varsayım ilkeleri tanımlandı.
+
+---
+
 ## Oturum 161 — 2026-09-06 | BEKCI Fix + Sözleşme Doğrulama + P4 FK Migration ✅
 
 **Kapsam:** Kodex P5 Phase 1 sonrası tespit edilen BEKCI violation'ların düzeltilmesi
