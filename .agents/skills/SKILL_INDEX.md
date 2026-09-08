@@ -38,6 +38,8 @@ Agent, bir dosyayı açtığında veya değiştireceği zaman bu tabloya bakarak
 | `tests/Unit/*Cost*` | `cortex-orchestration-evaluator` | AI maliyet hesaplama |
 | `app/Services/Ilan/IlanPhotoService.php` | `schema-contract-guardian` | Fotoğraf schema, display_order |
 | `app/Http/Controllers/Api/V2/*Photo*` | `schema-contract-guardian` + `authorization-boundary-auditor` | Photo upload + yetki |
+| `/Users/macbookpro/Documents/Codex/*` | `codex-engineering-bridge` | Codex ortak çalışma alanı senkronizasyonu |
+| `.agents/skills/*` | `codex-engineering-bridge` | Multi-agent görev koordinasyonu |
 
 ---
 
@@ -45,6 +47,8 @@ Agent, bir dosyayı açtığında veya değiştireceği zaman bu tabloya bakarak
 
 | Skill | Amaç | Anahtar Dosyalar |
 |---|---|---|
+| `computer-software-architect-engineer` | Bilgisayar & Yazılım Mühendisi disiplini, SAB Anayasası, sıfır varsayım (kanıt-temelli), tüm MCP yönetimi, Codex çift yönlü senkronizasyonu | Core mimari, tüm controller/service/testler, `/Documents/Codex/` |
+| `codex-engineering-bridge` | Codex kredi darboğazında lider mühendisliği devralma, Codex workspace senkronizasyonu ve multi-agent görev dağıtımı | `/Users/macbookpro/Documents/Codex/`, `.agents/skills/` |
 | `authorization-boundary-auditor` | 401/403/404 sınırları, tenant/country scope, enumeration koruması | `OwnerAuthController`, V2 API controllers |
 | `schema-contract-guardian` | Eloquent $fillable drift, DB kolon kontratı, migration uyumu | Modeller, migrations |
 | `cortex-orchestration-evaluator` | AI orkestrasyon, DeepSeek/Ollama/OpenAI routing, token maliyet | `YalihanCortex.php`, AI service'leri |

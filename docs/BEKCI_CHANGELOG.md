@@ -1,8 +1,8 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
-## Oturum 162 — 2026-09-07 | Dokümantasyon Yaşam Döngüsü, Advisory Pilotu & Bekçi Tenant İzolasyonu ✅
+## Oturum 162 — 2026-09-07 | Dokümantasyon Yaşam Döngüsü, Advisory Pilotu, Bekçi Tenant İzolasyonu & Codex Mühendislik Köprüsü ✅
 
-**Kapsam:** Dokümantasyon yaşam döngüsü sözleşmesi (GOV-DOC-001), advisory denetçi pilot uygulaması ve `bekci:tenant-audit` statik denetim motoru entegrasyonu.
+**Kapsam:** Dokümantasyon yaşam döngüsü sözleşmesi (GOV-DOC-001), advisory denetçi pilot uygulaması, `bekci:tenant-audit` statik denetim motoru ve Codex mühendislik köprüsü becerileri entegrasyonu.
 
 
 
@@ -28,6 +28,17 @@
 - **Test ve Denetim Sonuçları:**
   - `TenantIsolationAuditCommandTest`: 2/2 PASS (4 assertions)
   - `php artisan bekci:tenant-audit`: 220 model, 196 tablo tarandı. `V2\Ilan` sıfır ihlalle tam uyumlu doğrulandı.
+
+
+#### 1. Yeni Skill: codex-engineering-bridge ✅
+- `.agents/skills/codex-engineering-bridge/SKILL.md` oluşturuldu.
+- `.agents/skills/SKILL_INDEX.md` güncellendi ve kayıt altına alındı.
+- Codex'in 0 kredi ile dosya sistemi üzerinden mühendislik adımlarını takip edebileceği köprü kuruldu.
+
+#### 2. Yeni Skill: computer-software-architect-engineer ✅
+- `.agents/skills/computer-software-architect-engineer/SKILL.md` oluşturuldu.
+- `.agents/skills/SKILL_INDEX.md` taxonomy rehberine kaydedildi.
+- Bilgisayar mühendisliği (OS, concurrency, autoloader), yazılım mühendisliği disiplini, SAB anayasası ve sıfır varsayım ilkeleri tanımlandı.
 
 ---
 
