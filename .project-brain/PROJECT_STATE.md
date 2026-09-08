@@ -359,5 +359,5 @@ if ($tenantService->hasTenant()) {
 - TenantScope fail-closed: **AUTHORIZED**
 - Kilo backfill worktree: `kilo/tenant-backfill` (c669bcad, fe17dd5c)
 
-HOTSPOT_LOCK:database/migrations/2026_08_24_000001_create_workforce_executions_table.php:antigravity:2026-09-08T18:01:48Z:3600
-HOTSPOT_LOCK:database/migrations/2026_08_24_000002_create_ilan_metinleri_table.php:antigravity:2026-09-08T18:01:48Z:3600
+HOTSPOT_LOCK:database/migrations/2026_08_30_120000_align_yazlik_rezervasyonlar_canonical_columns.php:antigravity:2026-09-08T18:06:21Z:3600
+HOTSPOT_LOCK:database/migrations/2026_09_08_000001_add_tenant_id_to_cqrs_projection_tables.php:antigravity:2026-09-08T18:06:21Z:3600

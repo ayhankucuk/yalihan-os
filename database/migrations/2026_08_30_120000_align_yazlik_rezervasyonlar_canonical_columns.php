@@ -31,7 +31,7 @@ return new class extends Migration
         // 1. Add rezervasyon_durumu (canonical replacement for durum)
         if (!Schema::hasColumn('yazlik_rezervasyonlar', 'rezervasyon_durumu')) {
             Schema::table('yazlik_rezervasyonlar', function (Blueprint $table) {
-                $table->string('rezervasyon_durumu')->default('Beklemede')->after('toplam_fiyat');
+                $table->string('rezervasyon_durumu')->default('Beklemede');
             });
             // Copy existing data from durum → rezervasyon_durumu
             DB::statement("
@@ -44,7 +44,7 @@ return new class extends Migration
         // 2. Add check_in (canonical replacement for giris_tarihi)
         if (!Schema::hasColumn('yazlik_rezervasyonlar', 'check_in')) {
             Schema::table('yazlik_rezervasyonlar', function (Blueprint $table) {
-                $table->date('check_in')->nullable()->after('musteri_email');
+                $table->date('check_in')->nullable();
             });
             // Copy existing data from giris_tarihi → check_in
             DB::statement("
@@ -57,7 +57,7 @@ return new class extends Migration
         // 3. Add check_out (canonical replacement for cikis_tarihi)
         if (!Schema::hasColumn('yazlik_rezervasyonlar', 'check_out')) {
             Schema::table('yazlik_rezervasyonlar', function (Blueprint $table) {
-                $table->date('check_out')->nullable()->after('check_in');
+                $table->date('check_out')->nullable();
             });
             // Copy existing data from cikis_tarihi → check_out
             DB::statement("
@@ -70,13 +70,13 @@ return new class extends Migration
         // 4. Add toplam_fiyat (canonical replacement for toplam_tutar)
         if (!Schema::hasColumn('yazlik_rezervasyonlar', 'toplam_fiyat')) {
             Schema::table('yazlik_rezervasyonlar', function (Blueprint $table) {
-                $table->decimal('toplam_fiyat', 12, 2)->nullable()->after('ozel_istekler');
+                $table->decimal('toplam_fiyat', 12, 2)->nullable();
             });
             // Copy existing data from toplam_tutar → toplam_fiyat
             DB::statement("
                 UPDATE yazlik_rezervasyonlar
                 SET toplam_fiyat = toplam_tutar
-                WHERE (toplam_fiyat IS NULL OR toplam_fiyat = 0 OR toplam_fiyat = '')
+                WHERE (toplam_fiyat IS NULL OR toplam_fiyat = 0)
                 AND toplam_tutar IS NOT NULL AND toplam_tutar > 0
             ");
         }
@@ -84,14 +84,14 @@ return new class extends Migration
         // 5. Add kapora_tutari if missing (added to YazlikRezervasyon model but never migrated)
         if (!Schema::hasColumn('yazlik_rezervasyonlar', 'kapora_tutari')) {
             Schema::table('yazlik_rezervasyonlar', function (Blueprint $table) {
-                $table->decimal('kapora_tutari', 12, 2)->nullable()->after('toplam_fiyat');
+                $table->decimal('kapora_tutari', 12, 2)->nullable();
             });
         }
 
         // 6. Add onay_tarihi if missing (added to YazlikRezervasyon model but never migrated)
         if (!Schema::hasColumn('yazlik_rezervasyonlar', 'onay_tarihi')) {
             Schema::table('yazlik_rezervasyonlar', function (Blueprint $table) {
-                $table->timestamp('onay_tarihi')->nullable()->after('iptal_nedeni');
+                $table->timestamp('onay_tarihi')->nullable();
             });
         }
     }
