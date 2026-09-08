@@ -1,4 +1,20 @@
+---
+document_id: ADR-042
+document_owner: architecture
+decision_owner: saab
+status: proposed
+canonical: true
+evidence_level: REPO_VERIFIED
+as_of_commit: 587e7020
+last_reviewed: 2026-09-07
+review_after: 2026-10-07
+supersedes: null
+---
+
 # ADR-042: Architecture Backbone Audit — 15 Mimari Karar
+
+> [!IMPORTANT]
+> **Sınır ve Kapsam:** Bu ADR belgesi production onay veya deployment yetkisi vermez. Tüm maddeler `ACTION_PROPOSED` ve `SAAB_REVIEW_PENDING` statüsündedir.
 
 **Tarih:** 2026-09-07
 **Durum:** PROPOSED — SAAB ONAYI BEKLENİYOR

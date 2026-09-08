@@ -1,5 +1,19 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 162 — 2026-09-07 | Dokümantasyon Yaşam Döngüsü & Advisory Pilotu ✅
+
+**Kapsam:** Dokümantasyon yaşam döngüsü sözleşmesi (GOV-DOC-001) ve advisory denetçi pilot uygulaması.
+
+#### 1. Dokümantasyon Yaşam Döngüsü & Advisory Pilotu (Daima EXIT 0) ✅
+- `.project-brain/DOCUMENTATION_LIFECYCLE_CONTRACT.md` (GOV-DOC-001) tanımlandı.
+- `scripts/tools/advisory-doc-audit.sh` oluşturuldu. 10/10 tam şema frontmatter denetimi ve kesin GitHub markdown slug eşleşmesi sağlandı.
+- Pilot belgeler (`GOV-DOC-001`, `BRAIN-STATE-001`, `ADR-042`, `ARCH-REP-20260906-TENANT`) tekil Git HEAD commit `587e7020` ile hizalandı.
+- Taramalarda ve aktif doküman sayımında dahili worktree dizinleri (`kilo-*`, `worktrees/*`, `.kilo`) budandı (`-prune`); izole aktif doküman sayısı 563 olarak netleştirildi.
+- **Kesin Slug Eşleşmesi ve İzole Negatif Test:** Gevşek tek-tire toleransı kaldırıldı. Gerçek `advisory-doc-audit.sh` scripti izole `/tmp` kopyasında çalıştırılarak negatif testler doğrulandı; orijinal `#3-tenant_idye-sahip-tablolar--tam-envanter` geçerken, tek tireli sahte varyant `#3-tenant_idye-sahip-tablolar-tam-envanter` ve uydurma başlık 2 adet bozuk bağlantı olarak yakalandı; exit code 0 korundu.
+- 6 advisory uyarısı (5 serbest md dosyası + worktree tespiti) ve Rule 5 determinizm uyarıları açık teknik borç olarak korundu; pilotun tamamlanmasıyla kapatılmadı.
+
+---
+
 ## Oturum 161 — 2026-09-06 | BEKCI Fix + Sözleşme Doğrulama + P4 FK Migration ✅
 
 **Kapsam:** Kodex P5 Phase 1 sonrası tespit edilen BEKCI violation'ların düzeltilmesi

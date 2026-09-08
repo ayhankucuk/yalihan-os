@@ -1,10 +1,23 @@
+---
+document_id: BRAIN-STATE-001
+document_owner: engineering-lead
+decision_owner: product-owner
+status: active
+canonical: true
+evidence_level: REPO_VERIFIED
+as_of_commit: 587e7020
+last_reviewed: 2026-09-08
+review_after: 2026-09-22
+supersedes: null
+---
+
 # YALIHAN OS — Project Brain State
 
 <!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
-- **Repository Commit:** `81be956` (branch: `integration/era-v-phase2a-e01`)
-- **Working Tree:** `Dirty` (unstaged + 2 staged: ilan-wizard-page.js + YazlikKiralamaController.php)
-- **Evidence Date:** 2026-08-30T10:07:00Z (UTC) [TR: 2026-08-30 13:07:00 +03:00]
-- **Evidence Level:** `DOCUMENTED`
+- **Repository Commit:** `587e7020` (branch: `antigravity/pkg1-doc-lifecycle-pilot`)
+- **Working Tree:** `Staged (6 files for documentation governance pilot in isolated worktree)`
+- **Evidence Date:** 2026-09-08T10:30:00+03:00
+- **Evidence Level:** `REPO_VERIFIED` (Pilot link/metadata kontrolü dar kapsamda `TEST_VERIFIED`; genel sistem seviyesini yükseltmez)
 - **Production Authorization:** `NONE (Read-Only Gate)`
 <!-- ───────────────────────────────────────────────────────────── -->
 
