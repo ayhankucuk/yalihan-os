@@ -364,6 +364,30 @@ HOTSPOT_LOCK:database/migrations/2026_09_08_000001_add_tenant_id_to_cqrs_project
 
 ---
 
+## 2026-09-08 RC2+1 — Sprint 15 Phase 2 İcra (Kilo)
+
+**Commit:** `114802bd` — Action Center Phase 2 auto-assignment + API
+**Production:** HTTP 200 ✅ (Hetzner VPS `157.180.116.63`)
+**Quality Gates:** 4/4 PASS
+
+### Action Center Phase 2 — Tamamlanan
+
+| Komponent | Dosya | Açıklama |
+|-----------|-------|-----------|
+| `ActionAssignmentService` | `app/Services/ActionCenter/` | 3 strategy: owner, round-robin, workload-balanced |
+| `ActionCenterController` | `app/Http/Controllers/Api/V1/` | 7 REST endpoint |
+| API Routes | `routes/api/v1/action-center.php` | `auth:sanctum`, tenant-isolated |
+
+### Sprint 15 Durumu
+
+| Phase | Durum | Kanıt |
+|-------|-------|-------|
+| Phase 1 (Event→Gorev listeners) | ✅ Tamam | 11 listener wired in EventServiceProvider |
+| Phase 2 (Auto-assignment + API) | ✅ Tamam | `114802bd` |
+| Phase 3 (action_evidence table) | ⏳ Bekliyor | Migration yazılacak |
+
+---
+
 ## 2026-09-08 — Sprint 15/RC2 Mühürleme & Açık Madde Durumu
 
 **Commit:** `911e4e3c` (P2-DS-01) + `331fd10a` (BACKLOG-02) + `8b1ca956` (E2E)
