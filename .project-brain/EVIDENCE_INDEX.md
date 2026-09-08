@@ -470,3 +470,19 @@ Strateji: `ilanlar.tenant_id = ilan_sahibi.user.tenant_id` + `users.tenant_id` (
 - Sahip: Cline (salt-okunur dogrulama)
 
 ---
+## Session 2026-09-08 — TC-GT-06 Fix: Notification Deduplication
+
+### TC-GT-06 — showNotification Flood Fix (REPO_VERIFIED)
+
+**Kök Neden (DOCUMENTED):** `showNotification()` hiçbir deduplication mekanizması yoktu. Her çağrı yeni DOM elementi yaratıyordu. `waitForFunction` polling döngüleri veya hızlı kullanıcı etkileşimi 100+ toast biriktirebiliyor → browser crash.
+
+**Düzeltme (REPO_VERIFIED):**
+- `resources/js/admin/ilan-wizard-page.js:1535-1625` — `showNotification()` deduplication eklendi
+  - `data-type` + `data-message` dataset attribute'ları ile eşleşen toast'i buluyor
+  - Mevcut toast zaten varsa: yeniden gösterme, sadece auto-remove timer'ı resetle
+  - Yeni `_removeToast()` helper: animasyon + DOM cleanup tek bir yerde
+  - `requestAnimationFrame` ile animate-in (daha verimli)
+  - `aria-label` ile erişilebilirlik
+- Commit: `ee1725a8` (branch `cline/wizard-tc-gt-06-fix`)
+
+**Test Dosyası Notu (REPO_VERIFIED):** `tests/e2e/golden-thread-wizard.spec.ts:navigateStep4To5()` zaten düzeltilmiş durumda (tek seferlik evaluate çağrısı, `currentStep >= 5` guard).
