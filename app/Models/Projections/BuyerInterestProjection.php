@@ -4,19 +4,25 @@ namespace App\Models\Projections;
 
 use App\Models\BaseModel;
 use App\Models\Ilan;
+use App\Traits\BelongsToTenant;
 use App\Traits\HasCountryScope;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * ️ SAB SEALED
  * Buyer Interest Projection — Alıcı eşleşme ve sorgu yoğunluğu (CQRS).
+ *
+ * @deprecated Bu projection tablosu hiçbir yazıcı tarafından doldurulmuyor (cqrs-projection-research §6).
+ *            Tenant izolasyonu için trait eklenmiştir ancak tablo kullanımdan kaldırılabilir.
  */
 class BuyerInterestProjection extends BaseModel
 {
+    use BelongsToTenant;
     use HasCountryScope;
     protected $table = 'buyer_interest_projections';
 
     protected $fillable = [
+        'tenant_id',
         'listing_id',
         'candidate_count',
         'avg_match_score',

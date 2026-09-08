@@ -3,18 +3,24 @@
 namespace App\Models\Projections;
 
 use App\Models\BaseModel;
+use App\Traits\BelongsToTenant;
 use App\Traits\HasCountryScope;
 
 /**
  * ️ SAB SEALED
  * Market Trend Projection — Lokasyon ve özellik bazlı pazar trendleri (CQRS).
+ *
+ * @deprecated Bu projection tablosu hiçbir yazıcı tarafından doldurulmuyor (cqrs-projection-research §5).
+ *            Tenant izolasyonu için trait eklenmiştir ancak tablo kullanımdan kaldırılabilir.
  */
 class MarketTrendProjection extends BaseModel
 {
+    use BelongsToTenant;
     use HasCountryScope;
     protected $table = 'market_trend_projections';
 
     protected $fillable = [
+        'tenant_id',
         'city',
         'district',
         'property_type',

@@ -5,6 +5,7 @@ namespace App\Models\Projections;
 use App\Models\BaseModel;
 use App\Models\Talep;
 use App\Models\Kisi;
+use App\Traits\BelongsToTenant;
 use App\Traits\HasCountryScope;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -15,10 +16,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class TalepMatchProjection extends BaseModel
 {
+    use BelongsToTenant;
     use HasCountryScope;
     protected $table = 'talep_match_projection';
 
     protected $fillable = [
+        'tenant_id',
         'talep_id',
         'buyer_id',
         'city',

@@ -4,6 +4,7 @@ namespace App\Models\Projections;
 
 use App\Models\BaseModel;
 use App\Models\Ilan;
+use App\Traits\BelongsToTenant;
 use App\Traits\HasCountryScope;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -13,10 +14,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ListingVelocityProjection extends BaseModel
 {
+    use BelongsToTenant;
     use HasCountryScope;
     protected $table = 'listing_velocity_projections';
 
     protected $fillable = [
+        'tenant_id',
         'listing_id',
         'view_count',
         'favorite_count',
