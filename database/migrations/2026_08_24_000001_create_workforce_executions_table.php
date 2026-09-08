@@ -14,6 +14,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('workforce_executions')) {
+            return;
+        }
+
         Schema::create('workforce_executions', function (Blueprint $table) {
             $table->id();
             $table->string('uuid', 36)->unique();
