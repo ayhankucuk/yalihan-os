@@ -65,6 +65,7 @@ Route::prefix('v1')->middleware([ThrottleApiRequests::class])->group(function ()
     require __DIR__ . '/api/v1/ilan-wizard.php'; // 🧙 PRE-LAUNCH: 5-Aşamalı İlan Sihirbazı (Context7)
     require __DIR__ . '/api/v1/field-mcp.php'; // 🔌 PRE-LAUNCH: FieldMCP Receiver (Bosch GLM, FLIR ONE)
     require __DIR__ . '/api/v1/location-wizard.php'; // 🧙 Location Wizard APIs
+    require __DIR__ . '/api/v1/action-center.php'; // 🎯 Sprint 15 Phase 2: Action Center API
 
     // 🌐 Social Media Webhooks (No auth required - signed by platform)
     Route::post('/webhook/whatsapp', [WhatsAppWebhookController::class, 'handleWebhook']);
