@@ -37,7 +37,7 @@ class SetTenantContext
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
+        $user = $request->user() ?? $request->user('sanctum');
 
         // Kimlik doğrulaması yapılmamışsa (guest route) bağlam kurulmaz
         if (!$user) {

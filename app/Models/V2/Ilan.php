@@ -4,6 +4,7 @@ namespace App\Models\V2;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
+use App\Traits\BelongsToTenant;
 use App\Traits\HasCountryScope;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Ilan extends BaseModel
 {
+    use BelongsToTenant;
     use HasFactory;
     use SoftDeletes;
     use HasCountryScope;
