@@ -13,6 +13,7 @@ use App\Events\Reservation\ReservationPayoutReadyEvent;
 use App\Events\TalepReceived;
 use App\Events\Workforce\PhotoAnalysisCompleted;
 use App\Events\Workforce\PublishingDecisionReady;
+use App\Models\ActionEvidence;
 use App\Models\Ilan;
 use App\Models\Lead;
 use App\Models\PropertyReservation;
@@ -435,34 +436,49 @@ class ActionCenterService
     }
 
     /**
-     * Track evidence for a Gorev (completion proof, notes, system logs).
+     * Store evidence for a Gorev in the action_evidence table.
      *
-     * Stores evidence in the gorev notlar field as JSON for Phase 1.
-     * Phase 3 will add a dedicated action_evidence table.
+     * Phase 3: replaces JSON notlar field storage with a dedicated table.
+     * Backward compatible: creates ActionEvidence record and appends
+     * a reference to gorev.notlar JSON for any legacy consumers.
      *
      * @param Gorev $gorev
-     * @param array $evidence ['kanit_tipi' => 'photo|note|system_log', 'data' => ...]
-     * @return void
+     * @param array $evidence ['type' => 'note|photo|system_log|screenshot', 'data' => ...]
+     * @param int|null $recordedBy User ID who recorded this evidence
+     * @return ActionEvidence
      */
-    public function trackActionEvidence(Gorev $gorev, array $evidence): void
+    public function trackActionEvidence(Gorev $gorev, array $evidence, ?int $recordedBy = null): ActionEvidence
     {
-        $existing = $gorev->notlar ? json_decode($gorev->notlar, true) : [];
-        if (!is_array($existing)) {
-            $existing = [];
+        $type = $evidence['type'] ?? 'system_log';
+        $data = $evidence['data'] ?? $evidence;
+
+        $record = ActionEvidence::create([
+            'gorev_id' => $gorev->id,
+            'evidence_type' => $type,
+            'evidence_data' => $data,
+            'recorded_by' => $recordedBy,
+        ]);
+
+        // Backward-compat: also append ref to gorev.notlar JSON
+        $legacy = $gorev->notlar ? json_decode($gorev->notlar, true) : [];
+        if (!is_array($legacy)) {
+            $legacy = [];
         }
-
-        $existing[] = array_merge($evidence, [
+        $legacy[] = [
+            'type' => $type,
+            'data' => $data,
             'recorded_at' => now()->toIso8601String(),
-        ]);
-
-        $gorev->update([
-            'notlar' => json_encode($existing, JSON_UNESCAPED_UNICODE),
-        ]);
+            'evidence_id' => $record->id,
+        ];
+        $gorev->updateQuietly(['notlar' => json_encode($legacy, JSON_UNESCAPED_UNICODE)]);
 
         Log::info('ActionCenterService: evidence tracked', [
             'gorev_id' => $gorev->id,
-            'evidence_type' => $evidence['kanit_tipi'] ?? 'unknown',
+            'evidence_id' => $record->id,
+            'evidence_type' => $type,
         ]);
+
+        return $record;
     }
 
     /**
