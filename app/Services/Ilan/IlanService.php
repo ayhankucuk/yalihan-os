@@ -145,8 +145,11 @@ class IlanService
 
         $ilanlar = $query->paginate(20);
 
-        // Tab counts — bypass model global scopes for aggregate queries
-        $statusCounts = Ilan::withoutGlobalScopes()
+        // Tab counts — bypass VisibilitySorting scope only (not tenant scoping).
+        // TenantScope MUST remain active for tenant isolation (SAB Kural #1).
+        // Fix: withoutGlobalScope('visibility') instead of withoutGlobalScopes()
+        // — prevents cross-tenant count leakage + preserves ORDER BY for paginated list.
+        $statusCounts = Ilan::withoutGlobalScope('visibility')
             ->whereNull('deleted_at')
             ->selectRaw("yayin_durumu, count(*) as cnt")
             ->groupBy('yayin_durumu')
@@ -158,13 +161,13 @@ class IlanService
             'drafts'  => $statusCounts->get('taslak', 0), // context7-ignore
             'expired' => $statusCounts->get('arsiv', 0), // context7-ignore
             'office'  => $statusCounts->get('beklemede', 0), // context7-ignore
-            'deleted' => Ilan::withoutGlobalScopes()->whereNotNull('deleted_at')->count(),
+            'deleted' => Ilan::withoutGlobalScope('visibility')->whereNotNull('deleted_at')->count(),
         ];
 
         $stats = [
-            'total'     => Ilan::withoutGlobalScopes()->whereNull('deleted_at')->count(),
+            'total'     => Ilan::withoutGlobalScope('visibility')->whereNull('deleted_at')->count(),
             'active'    => $statusCounts->get('yayinda', 0), // context7-ignore
-            'this_month' => Ilan::withoutGlobalScopes()
+            'this_month' => Ilan::withoutGlobalScope('visibility')
                 ->whereNull('deleted_at')
                 ->where('created_at', '>=', now()->startOfMonth())
                 ->count(),
