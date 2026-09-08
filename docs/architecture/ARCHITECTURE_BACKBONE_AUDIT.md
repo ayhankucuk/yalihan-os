@@ -1,9 +1,22 @@
+---
+document_id: ARCH-REP-20260907-BACKBONE
+document_owner: architecture
+decision_owner: saab
+status: proposed
+canonical: true
+evidence_level: REPO_VERIFIED
+as_of_commit: 587e7020
+last_reviewed: 2026-09-08
+review_after: 2026-10-08
+supersedes: null
+---
+
 # YALIHAN OS — ARCHITECTURE BACKBONE AUDIT
 
-**Tarih:** 2026-09-07
+**Tarih:** 2026-09-07 (Revize: 2026-09-08)
 **Durum:** DOCUMENTED / VALIDATION_PENDING / IMPLEMENTATION-BLOCKED-PENDING-AUTH
 **Branch:** release-candidate/RC2
-**HEAD:** ef37389a3f619b73d8e3e2a37c830f67b89ab52f
+**HEAD:** 587e702069c356155ed39d1ce4eb64747b84b01f (Base Snapshot: 587e7020)
 **Kapsam:** SSOT authority, tenant isolation, domain boundaries, data ownership, CQRS/events, authorization, service layers, AI/Hermes boundaries, async/queue, frontend/API, production/deployment, documentation/Bekçi compliance
 
 ---
@@ -102,7 +115,7 @@ Sistemde birden fazla "anayasa" ve "SSOT" iddiası bulunmaktadır:
 | Constitution | Madde 15.2.1 | "Hiçbir kiracı başka kiracının verisini göremez. Her DB sorgusu tenant scope içermeli" | REPO_VERIFIED |
 | SAB.md | Rule 16 | "Finansal query'lerde tenant_id zorunlu" | REPO_VERIFIED |
 | SAB.md | §Mali Suçlar | "tenant_id filtresi olmayan finansal veri erişimi = Mimari Suç" | REPO_VERIFIED |
-| authority.json | context_isolation | ADR-041, P0_IMPLEMENTED | REPO_VERIFIED |
+| authority.json | context_isolation | ADR-041: AI session context window / token bütçesi (DB tenant isolation ile karıştırılmamalıdır) | REPO_VERIFIED |
 
 ### 2.2 Kod Mekanizması
 
@@ -111,7 +124,7 @@ Sistemde birden fazla "anayasa" ve "SSOT" iddiası bulunmaktadır:
 | Model Scope | `TenantScope` (BelongsToTenant trait) | Fail-open — tenant_id null ise scope uygulanmaz | REPO_VERIFIED (tenant-isolation-audit §21.1) |
 | Model Scope | `CountryScope` | Fail-open — ulke_id null ise scope uygulanmaz | REPO_VERIFIED (tenant-isolation-audit §21.2) |
 | Middleware | `SetTenantContext` | Web grubunda eksik — sadece API ve admin gruplarında | REPO_VERIFIED (tenant-isolation-audit §22) |
-| Queue/Job | TenantAwareJobInterface | 0 adoption — hiçbir job kullanmıyor | REPO_VERIFIED (SECURITY_EVIDENCE §4) |
+| Queue/Job | TenantAwareJobInterface | Kısmi adoption — 14 job kullanıyor (DailySnapshotsJob, OwnerReportExportJob vb.), kalan işlerde eksik | REPO_VERIFIED (commit f2ae0181) |
 | CLI/Artisan | Tenant context | Set edilmiyor — scope'lar uygulanmıyor | REPO_VERIFIED (tenant-isolation-audit §23.4) |
 
 ### 2.3 Gerçek Uygulama Gap'leri
@@ -122,7 +135,7 @@ Sistemde birden fazla "anayasa" ve "SSOT" iddiası bulunmaktadır:
 | 6 CQRS projection tablosunda tenant_id yok | Cross-tenant read model sızıntısı | REPO_VERIFIED (cqrs-projection-research §3) |
 | TenantScope fail-open | tenant_id=null ise tüm veriler görünür | REPO_VERIFIED (tenant-isolation-audit §21.1) |
 | Admin panel SetTenantContext yok | Admin üzerinden tüm tenant verisi görünür | REPO_VERIFIED (tenant-isolation-audit §22.3) |
-| Queue job'larında tenant context yok | Job tenant boundary'yi aşabilir | REPO_VERIFIED (tenant-isolation-audit §16) |
+| Kalan queue job'larında tenant context eksikliği | Interface uygulamayan işler tenant boundary'yi aşabilir | REPO_VERIFIED |
 | `bekci:tenant-audit` komutu model/migration denetler, Markdown değil | Bekçi kodu denetler ama runtime'da scope çalışmasını doğrulamaz | REPO_VERIFIED |
 
 ### 2.4 Önerilen Karar (ACTION_PROPOSED)
@@ -132,7 +145,7 @@ Sistemde birden fazla "anayasa" ve "SSOT" iddiası bulunmaktadır:
 ```
 1. TenantScope fail-closed olmalı: tenant_id=null ise bo sonuç dönmeli, tüm verileri değil
 2. SetTenantContext middleware tüm route gruplarına uygulanmalı (web, api, admin)
-3. Queue job'ları TenantAwareJobInterface implemente etmeli, tenant context restore etmeli
+3. Kalan queue job'ları TenantAwareJobInterface implemente etmeli, tenant context restore etmeli (14 job mevcut)
 4. CLI/Artisan komutları tenant context parametresi almalı
 5. CQRS projection tablolarına tenant_id eklenmeli
 6. bekci:tenant-audit komutu runtime scope doğrulaması da yapmalı (test ile)

@@ -35,7 +35,7 @@ Bu ADR, aşağıdaki 15 mimari kararın her biri için owner onayı bekleyen ACT
 2. **TenantScope fail-open** — tenant_id=null ise tüm veriler görünür
 3. **40+ tabloda tenant_id eksik** — veri sızıntısı riski
 4. **6 CQRS projection tablosunda tenant_id yok** — cross-tenant read model sızıntısı
-5. **Queue job'larında tenant context yok** — 0 adoption TenantAwareJobInterface
+5. **Queue job'larında tenant context standardizasyonu** — 14 kritik job'da TenantAwareJobInterface benimsendi, kalan kuyruk işlerinde yaygınlaştırılmalı
 6. **Admin panel SetTenantContext yok** — admin tüm tenant verisini görür
 7. **Hermes event log tenant_id leakage** — bazı event'lerde tenant_id yok
 8. **REGISTRY.md güncel değil** — 5 ADR listeliyor, gerçekte 23
@@ -53,7 +53,7 @@ Bu ADR, aşağıdaki 15 mimari kararın her biri için owner onayı bekleyen ACT
 | 3 | Domain ownership matrix: tüm 94 tablo sahiplik ile | Architecture | REPO_VERIFIED |
 | 4 | CQRS projection lifecycle: tenant_id, tenant-aware rebuild/replay | Architecture | REPO_VERIFIED |
 | 5 | Event naming (past tense), versioning, idempotency_key zorunlu | Architecture | DOCUMENTED |
-| 6 | Queue tenant context: TenantAwareJobInterface tüm job'larda | Backend | REPO_VERIFIED |
+| 6 | Queue tenant context: TenantAwareJobInterface yaygınlaştırma (14 job mevcut) | Backend | REPO_VERIFIED |
 | 7 | Admin/Super-Admin: tenant-aware, AI ajan SuperAdmin yasağı | Security | REPO_VERIFIED |
 | 8 | API versioning: v1/v2, OpenAPI, Idempotency-Key | Backend | DOCUMENTED |
 | 9 | AI-Hermes separation: Hermes pure orchestrator, iş mantığı yok | AI | REPO_VERIFIED |

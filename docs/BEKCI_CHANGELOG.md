@@ -11,6 +11,10 @@
 - Taramalarda ve aktif doküman sayımında dahili worktree dizinleri (`kilo-*`, `worktrees/*`, `.kilo`) budandı (`-prune`); izole aktif doküman sayısı 563 olarak netleştirildi.
 - **Kesin Slug Eşleşmesi ve İzole Negatif Test:** Gevşek tek-tire toleransı kaldırıldı. Gerçek `advisory-doc-audit.sh` scripti izole `/tmp` kopyasında çalıştırılarak negatif testler doğrulandı; orijinal `#3-tenant_idye-sahip-tablolar--tam-envanter` geçerken, tek tireli sahte varyant `#3-tenant_idye-sahip-tablolar-tam-envanter` ve uydurma başlık 2 adet bozuk bağlantı olarak yakalandı; exit code 0 korundu.
 - 6 advisory uyarısı (5 serbest md dosyası + worktree tespiti) ve Rule 5 determinizm uyarıları açık teknik borç olarak korundu; pilotun tamamlanmasıyla kapatılmadı.
+- **ADR-042 & Mimari Omurga Belgeleri 3 Maddi Hata Düzeltmesi (H1, H2, H3):**
+  - H1 (Kuyruk Durumu): 14 aktif job'ın `TenantAwareJobInterface` kullandığı teyit edildi (`DailySnapshotsJob`, `OwnerReportExportJob`, `TalepTopluAnalizJob` vb.), belgedeki "0 adoption" iddiası düzeltildi.
+  - H2 (Kavram Ayrımı): `.sab/authority.json` altındaki ADR-041 (LLM token context bütçesi) ile DB multi-tenant veri izolasyonu arasındaki kavram karışıklığı giderildi.
+  - H3 (Snapshot Hizalaması): `ARCHITECTURE_BACKBONE_AUDIT.md` ve `TENANT_ISOLATION_CONTRACT.md` HEAD commit değeri `587e7020` ile eşitlendi; 10/10 şema YAML frontmatter'ı eklendi.
 
 ---
 

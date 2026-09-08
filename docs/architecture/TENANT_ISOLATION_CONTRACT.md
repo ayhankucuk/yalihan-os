@@ -1,6 +1,19 @@
+---
+document_id: GOV-CONTRACT-TENANT-001
+document_owner: architecture
+decision_owner: saab
+status: proposed
+canonical: true
+evidence_level: REPO_VERIFIED
+as_of_commit: 587e7020
+last_reviewed: 2026-09-08
+review_after: 2026-10-08
+supersedes: null
+---
+
 # YALIHAN OS — TENANT ISOLATION CONTRACT
 
-**Tarih:** 2026-09-07
+**Tarih:** 2026-09-07 (Revize: 2026-09-08)
 **Durum:** DOCUMENTED / VALIDATION_PENDING / IMPLEMENTATION-BLOCKED-PENDING-AUTH
 **Kaynak:** ARCHITECTURE_BACKBONE_AUDIT.md §2, tenant-isolation-audit-2026-09-06.md, SECURITY_EVIDENCE_DRIVE_TENANT_AUDIT.md
 
@@ -32,9 +45,9 @@ tek bir sözleşme halinde tanımlar.
 
 > "Authority Leakage (Yetki Sızıntısı): tenant_id filtresi olmayan her türlü finansal veri erişimi."
 
-### 2.4 authority.json context_isolation
+### 2.4 authority.json context_isolation (Kavram Ayrımı Notu)
 
-> ADR-041, P0_IMPLEMENTED, budget tiers: normal 0-80K, warning 80-120K, freeze 120-150K, archive >150K
+> **DİKKAT (Kavram Ayrımı):** `.sab/authority.json` altındaki `context_isolation` (ADR-041), yapay zeka oturum bağlamı / token bütçesini (0-80K, 80-120K) tanımlar. Veritabanı çoklu-kiracı (multi-tenant) veri izolasyonu Kural 1 ve SAB Rule 16 kapsamında değerlendirilir; token bütçesi kuralı veritabanı tenant izolasyonu yerine ikame edilemez.
 
 ---
 
@@ -76,12 +89,13 @@ TenantScope::apply():
 
 | Mekanizma | Adoption | Kanıt |
 |-----------|----------|-------|
-| `TenantAwareJobInterface` | 0/∞ job | REPO_VERIFIED |
-| `RestoreTenantContext` | 0/∞ job | REPO_VERIFIED |
-| `DailySnapshotsJob` | Yok | REPO_VERIFIED |
-| `OwnerReportExportJob` | Yok | REPO_VERIFIED |
-| `NotifyN8nAboutIlanPriceChange` | Yok | REPO_VERIFIED |
-| `TalepTopluAnalizJob` | Yok | REPO_VERIFIED |
+| `TenantAwareJobInterface` | 14 job (aktif) | REPO_VERIFIED (commit f2ae0181) |
+| `RestoreTenantContext` | 14 job (aktif) | REPO_VERIFIED (commit f2ae0181) |
+| `DailySnapshotsJob` | ✅ Var (`TenantAwareJobInterface` + `RestoreTenantContext`) | REPO_VERIFIED |
+| `OwnerReportExportJob` | ✅ Var (`TenantAwareJobInterface` + `RestoreTenantContext`) | REPO_VERIFIED |
+| `NotifyN8nAboutIlanPriceChange` | ✅ Var (`TenantAwareJobInterface` + `RestoreTenantContext`) | REPO_VERIFIED |
+| `TalepTopluAnalizJob` | ✅ Var (`TenantAwareJobInterface` + `RestoreTenantContext`) | REPO_VERIFIED |
+| Diğer Kalan Job'lar | 🟡 Taranmalı / Eksikler tamamlanmalı | DOCUMENTED |
 
 **Gereken değişiklik:**
 ```
@@ -89,6 +103,7 @@ interface TenantAwareJobInterface {
     public function getTenantId(): ?int;
     public function setTenantId(int $tenantId): void;
 }
+
 
 // Job dispatch:
 $job = new SomeJob($data);
