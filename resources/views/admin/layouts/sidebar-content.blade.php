@@ -56,8 +56,8 @@
                         <span>Yeni İlan</span>
                         <span class="ml-auto text-xs bg-green-500/20 text-green-600 dark:text-green-200 px-1.5 py-0.5 rounded">AI</span>
                     </a>
-                    <a href="{{ route('admin.listing-features.index') ?? '/admin/listing-features' }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.listing-features.*') ? 'bg-blue-500 text-white' : '' }}">
+                    <a href="{{ route('admin.ups.features.index') }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.ups.features.*') ? 'bg-blue-500 text-white' : '' }}">
                         <span>İlan Özellikleri</span>
                         <span class="ml-auto text-xs bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded">UPS</span>
                     </a>
@@ -108,7 +108,7 @@
                     <a href="{{ route('admin.ups.governance.index') }}" class="flex items-center gap-2 h-8 px-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-xs {{ request()->routeIs('admin.ups.governance.*') ? 'text-blue-400' : '' }}">
                         <span>LifeCycle & Governance</span>
                     </a>
-                    <a href="{{ route('admin.yayin-tipi-sablonlari.index') }}" class="flex items-center gap-2 h-8 px-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-xs {{ request()->routeIs('admin.yayin-tipi-sablonlari.*') ? 'text-blue-400' : '' }}">
+                    <a href="{{ route('admin.property-hub.yayin-tipi-sablonlari.index') }}" class="flex items-center gap-2 h-8 px-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-xs {{ request()->routeIs('admin.property-hub.yayin-tipi-sablonlari.*') ? 'text-blue-400' : '' }}">
                         <span>Template Manager</span>
                     </a>
                     <a href="{{ route('admin.ups.packs.index') }}" class="flex items-center gap-2 h-8 px-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-xs {{ request()->routeIs('admin.ups.packs.*') ? 'text-blue-400' : '' }}">
@@ -447,8 +447,8 @@
                         role="menuitem">
                         <span>Görevler</span>
                     </a>
-                    <a href="{{ route('admin.takim-yonetimi.takim.performans') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.takim-yonetimi.takim.performans') ? 'bg-blue-500 text-white' : '' }}"
+                    <a href="{{ route('admin.takim.performans') }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.takim.performans') ? 'bg-blue-500 text-white' : '' }}"
                         role="menuitem">
                         <span>Performans</span>
                     </a>
@@ -481,18 +481,18 @@
                         role="menuitem">
                         <span>Genel Analytics</span>
                     </a>
-                    @if (\Illuminate\Support\Facades\Route::has('admin.analytics.dashboard'))
-                        <a href="{{ route('admin.analytics.dashboard') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.analytics.dashboard') ? 'bg-blue-500 text-white' : '' }}"
+                    @if (\Illuminate\Support\Facades\Route::has('admin.analytics.governance.dashboard'))
+                        <a href="{{ route('admin.analytics.governance.dashboard') }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.analytics.governance.dashboard') ? 'bg-blue-500 text-white' : '' }}"
                             role="menuitem">
                             <svg class="w-4 h-4 text-blue-500 dark:text-blue-300" fill="none"
-                                stroke="CurrentColor" viewBox="0 0 24 24">
+                                stroke="currentColor" viewBox="0 0 24 24">
                                 <rect x="3" y="3" width="7" height="9" />
                                 <rect x="14" y="3" width="7" height="5" />
                                 <rect x="14" y="12" width="7" height="9" />
                                 <rect x="3" y="16" width="7" height="5" />
                             </svg>
-                            <span>Analytics Dashboard</span>
+                            <span>Governance Dashboard</span>
                         </a>
                     @endif
                     <a href="{{ route('admin.reports.index') }}"
@@ -622,12 +622,7 @@
                     <a href="{{ route('admin.telegram-bot.index') }}"
                         class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.telegram-bot.index') ? 'bg-blue-500 text-white' : '' }}"
                         role="menuitem">
-                        <span>Genel</span>
-                    </a>
-                    <a href="{{ route('admin.telegram-bot.durum') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.telegram-bot.durum') ? 'bg-blue-500 text-white' : '' }}"
-                        role="menuitem">
-                        <span>Durum</span>
+                        <span>Genel & Durum</span>
                     </a>
                     <a href="{{ route('admin.telegram-bot.webhook-info') }}"
                         class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.telegram-bot.webhook-info') ? 'bg-blue-500 text-white' : '' }}"
@@ -819,20 +814,7 @@
                     @endif
                 </div>
             </li>
-            <!-- Smart Calculator -->
-            @if (\Illuminate\Support\Facades\Route::has('admin.smart-calculator'))
-                <li x-show="!query || ($el.innerText||'').toLowerCase().includes(query.toLowerCase())">
-                    <a href="{{ route('admin.smart-calculator') }}"
-                        class="flex items-center gap-3 h-11 px-3 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 {{ request()->routeIs('admin.smart-calculator') ? 'bg-blue-600 text-white hover:bg-blue-700' : '' }}"
-                        role="menuitem">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                        <span>Akıllı Hesaplayıcı</span>
-                    </a>
-                </li>
-            @endif
+
             <!-- System Tools / Developer Tools -->
             <li x-show="!query || ($el.innerText||'').toLowerCase().includes(query.toLowerCase())"
                 x-data="{ open: false }">
@@ -860,11 +842,11 @@
                     class="ml-6 mt-1 space-y-1">
 
                     <!-- Laravel Horizon (Queue Monitoring) -->
-                    <a href="/horizon" target="_blank" rel="noopener noreferrer"
+                    <a href="{{ url('/horizon') }}" target="_blank" rel="noopener noreferrer"
                         class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm group transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                         role="menuitem">
                         <svg class="w-4 h-4 text-purple-500 dark:text-purple-300" fill="none"
-                            stroke="CurrentColor" viewBox="0 0 24 24">
+                            stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
@@ -875,7 +857,7 @@
 
                     <!-- Laravel Telescope (Dev Debug) -->
                     @if (config('app.debug'))
-                        <a href="/telescope" target="_blank" rel="noopener noreferrer"
+                        <a href="{{ url('/telescope') }}" target="_blank" rel="noopener noreferrer"
                             class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm group transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                             role="menuitem">
                             <svg class="w-4 h-4 text-blue-500 dark:text-blue-300" fill="none"
