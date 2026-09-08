@@ -384,7 +384,7 @@ HOTSPOT_LOCK:database/migrations/2026_09_08_000001_add_tenant_id_to_cqrs_project
 |-------|-------|-------|
 | Phase 1 (Event→Gorev listeners) | ✅ Tamam | 11 listener wired in EventServiceProvider |
 | Phase 2 (Auto-assignment + API) | ✅ Tamam | `114802bd` |
-| Phase 3 (action_evidence table) | ⏳ Bekliyor | Migration yazılacak |
+| Phase 3 (action_evidence + trackEvidence + lifecycle) | ✅ Tamam | `d121b3da` |
 
 ---
 
