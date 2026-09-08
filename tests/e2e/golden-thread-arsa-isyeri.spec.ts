@@ -7,8 +7,11 @@
  *
  * Prerequisite: ArsaIsyeriFeatureAssignmentSeeder must have been run.
  *
- * TC-GT-07 — Arsa Satılık: Step 1→2, assert ada_no, parsel_no, imar_durumu, kaks, taks in DOM
+ * TC-GT-07 — Arsa Satılık:  Step 1→2, assert ada_no, parsel_no, imar_durumu, kaks, taks in DOM
  * TC-GT-08 — İşyeri Satılık: Step 1→2, assert isyeri_tipi, net_m2, personel_kapasitesi in DOM
+ * TC-GT-09 — Arsa Kiralık:   Step 1→2, assert depozito_arsa, imar_durumu, kaks, taks, yola_cephe in DOM
+ * TC-GT-10 — İşyeri Devren:  Step 1→2, assert devir_bedeli_isyeri, mevcut_ciro, ruhsat_durumu_isyeri,
+ *                              demirbas_listesi, isyeri_tipi in DOM
  */
 
 import { test, expect, Page } from '@playwright/test';
@@ -181,5 +184,47 @@ test.describe('Golden Thread — Arsa & İşyeri Dynamic Fields', () => {
             return inst?.fields?.length ?? -1;
         });
         expect(fieldCount, 'Step 2 should have > 0 fields for İşyeri Satılık').toBeGreaterThan(0);
+    });
+
+    test('TC-GT-09 — Arsa Kiralık: Step 1→2 with depozito_arsa, imar_durumu, kaks, taks, yola_cephe fields', async ({ page }) => {
+        await navigateStep1To2BySlug(page, 'arsa', 'arsa', 'kiralik');
+        await waitForStep2Fields(page);
+
+        // Assert Arsa Kiralık-specific dynamic fields are rendered in DOM
+        // Seeder: Arsa Kiralık has 14 fields: ada_no, parsel_no, pafta_no, imar_durumu, kaks, taks,
+        //         gabari, yola_cephe, altyapi_*, +depozito_arsa (Kiralık'a özel, -tapu_durumu_arsa)
+        await assertFieldExists(page, 'depozito_arsa');
+        await assertFieldExists(page, 'imar_durumu');
+        await assertFieldExists(page, 'kaks');
+        await assertFieldExists(page, 'taks');
+        await assertFieldExists(page, 'yola_cephe');
+
+        // Verify field count > 0 via Alpine state
+        const fieldCount = await page.evaluate(() => {
+            const inst = (window as any).__step2ActiveInstance;
+            return inst?.fields?.length ?? -1;
+        });
+        expect(fieldCount, 'Step 2 should have > 0 fields for Arsa Kiralık').toBeGreaterThan(0);
+    });
+
+    test('TC-GT-10 — İşyeri Devren: Step 1→2 with devir_bedeli_isyeri, mevcut_ciro, ruhsat_durumu_isyeri, demirbas_listesi, isyeri_tipi fields', async ({ page }) => {
+        await navigateStep1To2BySlug(page, 'isyeri', 'ofis', 'devren');
+        await waitForStep2Fields(page);
+
+        // Assert İşyeri Devren-specific dynamic fields are rendered in DOM
+        // Seeder: İşyeri Devren has 8 fields: isyeri_tipi, net_m2, depozito_isyeri,
+        //         devir_bedeli_isyeri (required), aidat_isyeri, mevcut_ciro, ruhsat_durumu_isyeri, demirbas_listesi
+        await assertFieldExists(page, 'devir_bedeli_isyeri');
+        await assertFieldExists(page, 'mevcut_ciro');
+        await assertFieldExists(page, 'ruhsat_durumu_isyeri');
+        await assertFieldExists(page, 'demirbas_listesi');
+        await assertFieldExists(page, 'isyeri_tipi');
+
+        // Verify field count > 0 via Alpine state
+        const fieldCount = await page.evaluate(() => {
+            const inst = (window as any).__step2ActiveInstance;
+            return inst?.fields?.length ?? -1;
+        });
+        expect(fieldCount, 'Step 2 should have > 0 fields for İşyeri Devren').toBeGreaterThan(0);
     });
 });
