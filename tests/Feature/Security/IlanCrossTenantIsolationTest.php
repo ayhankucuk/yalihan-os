@@ -366,14 +366,16 @@ class IlanCrossTenantIsolationTest extends TestCase
     // ─────────────────────────────────────────────────────────────────────────
 
     /** @test */
-    public function v2_controller_tenant_a_cannot_view_tenant_b_listing(): void
+    public function v2_controller_tenant_a_cannot_view_tenant_b_draft_listing(): void
     {
+        \Illuminate\Support\Facades\DB::table('ilanlar')->where('id', $this->ilanB->id)->update(['yayin_durumu' => IlanDurumu::TASLAK->value]);
+
         $response = $this->actingAs($this->userA, 'sanctum')
             ->getJson("/api/v1/ilanlar/{$this->ilanB->id}");
 
-        // V2 controller has explicit tenant_id check at line 96
-        $this->assertEquals(403, $response->status(),
-            "V2 controller must block cross-tenant access. Got: {$response->status()}");
+        // ADR-Ilan-Erisim-Politikasi: Taslak ilan cross-tenant erişimde 404 döner
+        $this->assertEquals(404, $response->status(),
+            "V2 controller must return 404 for cross-tenant draft listing. Got: {$response->status()}");
     }
 
     /** @test */
@@ -384,8 +386,9 @@ class IlanCrossTenantIsolationTest extends TestCase
                 'baslik' => 'Hacked Title',
             ]);
 
-        $this->assertEquals(403, $response->status(),
-            "V2 controller must block cross-tenant update. Got: {$response->status()}");
+        // ADR-Ilan-Erisim-Politikasi: Cross-tenant yazma 404 döner (ID enumeration engeli)
+        $this->assertEquals(404, $response->status(),
+            "V2 controller must return 404 for cross-tenant update. Got: {$response->status()}");
     }
 
     /** @test */
@@ -394,8 +397,9 @@ class IlanCrossTenantIsolationTest extends TestCase
         $response = $this->actingAs($this->userA, 'sanctum')
             ->deleteJson("/api/v1/ilanlar/{$this->ilanB->id}");
 
-        $this->assertEquals(403, $response->status(),
-            "V2 controller must block cross-tenant delete. Got: {$response->status()}");
+        // ADR-Ilan-Erisim-Politikasi: Cross-tenant silme 404 döner (ID enumeration engeli)
+        $this->assertEquals(404, $response->status(),
+            "V2 controller must return 404 for cross-tenant delete. Got: {$response->status()}");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
