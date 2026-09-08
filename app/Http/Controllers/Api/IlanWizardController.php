@@ -459,6 +459,11 @@ class IlanWizardController extends Controller
      *
      * Returns schema contract for dynamic Step 2 rendering.
      * SSOT: KategoriYayinTipiFieldDependency table.
+     *
+     * @deprecated 2026-09-08 — P2-DS-01: Bu endpoint Sistem A'da (Wizard Engine V2)
+     *   aktif değildir. Güncel SSOT: FeatureTemplateResolver + feature_assignments tablosu.
+     *   Kaldırılacak: IlanWizardController ve fieldResolver dependency Injection.
+     *   Consumer yok — frontend Wizard mod1-orchestrator.js Step 2 için bu endpointi kullanmıyor.
      */
     public function fieldSchema(Request $request): JsonResponse
     {
