@@ -1,8 +1,10 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
-## Oturum 162 — 2026-09-07 | Dokümantasyon Yaşam Döngüsü & Advisory Pilotu ✅
+## Oturum 162 — 2026-09-07 | Dokümantasyon Yaşam Döngüsü, Advisory Pilotu & Bekçi Tenant İzolasyonu ✅
 
-**Kapsam:** Dokümantasyon yaşam döngüsü sözleşmesi (GOV-DOC-001) ve advisory denetçi pilot uygulaması.
+**Kapsam:** Dokümantasyon yaşam döngüsü sözleşmesi (GOV-DOC-001), advisory denetçi pilot uygulaması ve `bekci:tenant-audit` statik denetim motoru entegrasyonu.
+
+
 
 #### 1. Dokümantasyon Yaşam Döngüsü & Advisory Pilotu (Daima EXIT 0) ✅
 - `.project-brain/DOCUMENTATION_LIFECYCLE_CONTRACT.md` (GOV-DOC-001) tanımlandı.
@@ -11,6 +13,21 @@
 - Taramalarda ve aktif doküman sayımında dahili worktree dizinleri (`kilo-*`, `worktrees/*`, `.kilo`) budandı (`-prune`); izole aktif doküman sayısı 563 olarak netleştirildi.
 - **Kesin Slug Eşleşmesi ve İzole Negatif Test:** Gevşek tek-tire toleransı kaldırıldı. Gerçek `advisory-doc-audit.sh` scripti izole `/tmp` kopyasında çalıştırılarak negatif testler doğrulandı; orijinal `#3-tenant_idye-sahip-tablolar--tam-envanter` geçerken, tek tireli sahte varyant `#3-tenant_idye-sahip-tablolar-tam-envanter` ve uydurma başlık 2 adet bozuk bağlantı olarak yakalandı; exit code 0 korundu.
 - 6 advisory uyarısı (5 serbest md dosyası + worktree tespiti) ve Rule 5 determinizm uyarıları açık teknik borç olarak korundu; pilotun tamamlanmasıyla kapatılmadı.
+
+
+
+#### 1. Bekçi Tenant İzolasyonu Statik Denetim Entegrasyonu (bekci:tenant-audit) ✅
+- `/Users/macbookpro/repos/yalihan-os.worktrees/tenant-isolation-bekci` worktree'sindeki yarım kalan çalışma incelendi.
+- **Kök Neden:** Symlinked `vendor` nedeniyle Composer autoloader sınıfları bulamıyordu; `TenantIsolationAuditCommand` ve `TenantIsolationAuditService` entegre edildi.
+- **Eklenen Bileşenler:**
+  - `app/Console/Commands/Bekci/TenantIsolationAuditCommand.php` (`bekci:tenant-audit`)
+  - `app/Services/Governance/TenantIsolationAuditService.php`
+  - `config/tenant-isolation.php`
+  - `docs/architecture/tenant-isolation-bekci.md`
+  - `tests/Feature/Governance/TenantIsolationAuditCommandTest.php`
+- **Test ve Denetim Sonuçları:**
+  - `TenantIsolationAuditCommandTest`: 2/2 PASS (4 assertions)
+  - `php artisan bekci:tenant-audit`: 220 model, 196 tablo tarandı. `V2\Ilan` sıfır ihlalle tam uyumlu doğrulandı.
 
 ---
 
