@@ -4,8 +4,8 @@ document_owner: engineering-lead
 decision_owner: product-owner
 status: active
 canonical: true
-evidence_level: REPO_VERIFIED
-as_of_commit: 587e7020
+evidence_level: TEST_VERIFIED
+as_of_commit: fe17dd5c
 last_reviewed: 2026-09-08
 review_after: 2026-09-22
 supersedes: null
@@ -14,10 +14,12 @@ supersedes: null
 # YALIHAN OS — Project Brain State
 
 <!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
-- **Repository Commit:** `587e7020` (branch: `antigravity/pkg1-doc-lifecycle-pilot`)
-- **Working Tree:** `Staged (6 files for documentation governance pilot in isolated worktree)`
-- **Evidence Date:** 2026-09-08T10:30:00+03:00
-- **Evidence Level:** `REPO_VERIFIED` (Pilot link/metadata kontrolü dar kapsamda `TEST_VERIFIED`; genel sistem seviyesini yükseltmez)
+- **Repository Commit:** `fe17dd5c` (HEAD) — fail-closed TenantScope + orphan ilan/user/ilan backfill
+- **Branch:** `integration/antigravity-kilo-takeover`
+- **Working Tree:** `Stash dirty (wip-pre-cherry-pick stashed)`
+- **Evidence Date:** 2026-09-08T14:57:00+03:00
+- **Evidence Level:** `TEST_VERIFIED` — TenantScope fail-closed + V2 isolation tests 30/30 PASS
+- **Production Authorization:** BACKFILL + FAIL_CLOSED AUTHORIZED (OPERATOR/Saab 2026-09-08)
 - **Production Authorization:** `NONE (Read-Only Gate)`
 <!-- ───────────────────────────────────────────────────────────── -->
 
@@ -322,3 +324,38 @@ Active Locks:
 HOTSPOT_LOCK:database/migrations/2026_09_01_000000_add_ulke_tenant_to_ilanlar_for_v2_api.php:wenox-rc2:2026-09-04T19:39:36Z:3600
   - HOTSPOT_LOCK:config/canonical_tables.php:Kilo:2026-09-05T12:35:00+03:00:7200
 HOTSPOT_LOCK:database/migrations/2026_09_05_100000_add_missing_ci_schema_columns.php:kilo:2026-09-05T23:34:00+03:00:7200
+
+---
+
+## TenantScope Fail-Closed & Backfill — 2026-09-08
+
+**Commit:** `fe17dd5c` (cherry-pick from `kilo/tenant-backfill:098affe9`)
+**Evidence:** TEST_VERIFIED — 30/30 PASS
+
+### Fail-Closed TenantScope (Kural 1)
+
+`app/Scopes/TenantScope.php` — `else { $builder->whereRaw('1 = 0'); }`:
+
+```php
+if ($tenantService->hasTenant()) {
+    $builder->where($model->getTable() . '.tenant_id', $tenantService->getTenant()->id);
+} else {
+    // Fail-closed koruması: Tenant context yoksa hiçbir veriyi döndürme (Kural 1)
+    $builder->whereRaw('1 = 0');
+}
+```
+
+### Backfill Migration
+
+`database/migrations/2026_09_08_000002_backfill_tenant_id_null_records.php`:
+- ilanlar: `9 kayıt` backfill (kisiler.tenant_id üzerinden)
+- users: `6 kayıt` backfill (kisiler.tenant_id üzerinden)
+- Orphan kayıtlar (ilanlar: 8, users: 40): NULL kalır — fail-closed zaten korur
+- **BLOCKED_PENDING_PRODUCTION_AUTH** — Operator 2026-09-08 onayladı
+
+### Operator/SAAB Onayı (2026-09-08)
+
+- Backfill migration production: **AUTHORIZED**
+- TenantScope fail-closed: **AUTHORIZED**
+- Kilo backfill worktree: `kilo/tenant-backfill` (c669bcad, fe17dd5c)
+
