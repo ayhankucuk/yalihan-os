@@ -20,14 +20,27 @@ use Illuminate\Support\Facades\DB;
  *   - Arsa Satılık (main=arsa-arazi): 14 fields (ada_no, parsel_no, pafta_no,
  *     imar_durumu, kaks, taks, gabari, yola_cephe, altyapi_su/elektrik/dogalgaz/
  *     kanalizasyon/yol, tapu_durumu)
+ *   - Arsa Kiralık (main=arsa-arazi): 14 fields (+depozito_arsa, -tapu_durumu_arsa)
  *   - İşyeri Satılık (main=isyeri): 6 fields (isyeri_tipi, net_m2, bulundugu_kat,
  *     cephe, personel_kapasitesi, aidat)
  *   - İşyeri Kiralık (main=isyeri): 4 fields (isyeri_tipi, net_m2, depozito, aidat)
+ *   - İşyeri Devren (main=isyeri): 8 fields (isyeri_tipi, net_m2, depozito, devir_bedeli, ciro, ruhsat, demirbaş)
  *
  * Idempotent: Uses updateOrInsert — safe to run multiple times.
  * Rollback: Deletes only source_type='backlog_01_seed' records.
  *
  * Verifies: php artisan db:seed --class=ArsaIsyeriFeatureAssignmentSeeder
+ *
+ * Gap bridged by this seeder (BACKLOG-01):
+ *   ┌─────────────────────┬──────────┬──────────────────┐
+ *   │ Kategori            │ Yayın   │ Assignment Count │
+ *   ├─────────────────────┼──────────┼──────────────────┤
+ *   │ Arsa Satılık        │ satilik  │ 14 fields       │
+ *   │ Arsa Kiralık        │ kiralik  │ 14 fields       │
+ *   │ İşyeri Satılık      │ satilik  │ 6 fields        │
+ *   │ İşyeri Kiralık      │ kiralik  │ 4 fields        │
+ *   │ İşyeri Devren       │ devren   │ 8 fields        │
+ *   └─────────────────────┴──────────┴──────────────────┘
  */
 class ArsaIsyeriFeatureAssignmentSeeder extends Seeder
 {
@@ -36,22 +49,44 @@ class ArsaIsyeriFeatureAssignmentSeeder extends Seeder
         $this->seedFeatureCategories();
         $this->seedFeatures();
         $this->seedArsaSatilikAssignments();
+        $this->seedArsaKiralikAssignments();
         $this->seedIsyeriSatilikAssignments();
         $this->seedIsyeriKiralikAssignments();
+        $this->seedIsyeriDevrenAssignments();
 
-        $arsaCount = DB::table('feature_assignments')
+        $arsaSatilikCount = DB::table('feature_assignments')
             ->where('source_type', 'backlog_01_seed')
             ->where('main_category_id', $this->getKategoriId('arsa-arazi'))
+            ->where('listing_type_id', $this->getYayinTipiId('satilik'))
             ->count();
-        $isyeriCount = DB::table('feature_assignments')
+        $arsaKiralikCount = DB::table('feature_assignments')
+            ->where('source_type', 'backlog_01_seed')
+            ->where('main_category_id', $this->getKategoriId('arsa-arazi'))
+            ->where('listing_type_id', $this->getYayinTipiId('kiralik'))
+            ->count();
+        $isyeriSatilikCount = DB::table('feature_assignments')
             ->where('source_type', 'backlog_01_seed')
             ->where('main_category_id', $this->getKategoriId('isyeri'))
+            ->where('listing_type_id', $this->getYayinTipiId('satilik'))
+            ->count();
+        $isyeriKiralikCount = DB::table('feature_assignments')
+            ->where('source_type', 'backlog_01_seed')
+            ->where('main_category_id', $this->getKategoriId('isyeri'))
+            ->where('listing_type_id', $this->getYayinTipiId('kiralik'))
+            ->count();
+        $isyeriDevrenCount = DB::table('feature_assignments')
+            ->where('source_type', 'backlog_01_seed')
+            ->where('main_category_id', $this->getKategoriId('isyeri'))
+            ->where('listing_type_id', $this->getYayinTipiId('devren'))
             ->count();
 
         if ($this->command) {
             $this->command->info("✅ ArsaIsyeriFeatureAssignmentSeeder:");
-            $this->command->info("   Arsa assignments: {$arsaCount}");
-            $this->command->info("   İşyeri assignments: {$isyeriCount}");
+            $this->command->info("   Arsa Satılık: {$arsaSatilikCount} assignments");
+            $this->command->info("   Arsa Kiralık: {$arsaKiralikCount} assignments");
+            $this->command->info("   İşyeri Satılık: {$isyeriSatilikCount} assignments");
+            $this->command->info("   İşyeri Kiralık: {$isyeriKiralikCount} assignments");
+            $this->command->info("   İşyeri Devren: {$isyeriDevrenCount} assignments");
         }
     }
 
@@ -68,6 +103,7 @@ class ArsaIsyeriFeatureAssignmentSeeder extends Seeder
             ['name' => 'İşyeri Fiziksel', 'slug' => 'isyeri-fiziksel', 'description' => 'Net m², kat, cephe', 'applies_to' => 'isyeri', 'icon' => 'briefcase', 'display_order' => 6],
             ['name' => 'İşyeri Detay', 'slug' => 'isyeri-detay', 'description' => 'Personel kapasitesi', 'applies_to' => 'isyeri', 'icon' => 'users', 'display_order' => 7],
             ['name' => 'Finansal', 'slug' => 'finansal', 'description' => 'Aidat, depozito', 'applies_to' => 'isyeri', 'icon' => 'credit-card', 'display_order' => 8],
+            ['name' => 'İşyeri Devir Detay', 'slug' => 'isyeri-devir-detay', 'description' => 'Mevcut ciro, ruhsat durumu, demirbaş', 'applies_to' => 'isyeri', 'icon' => 'clipboard', 'display_order' => 9],
         ];
 
         foreach ($categories as $cat) {
@@ -106,6 +142,7 @@ class ArsaIsyeriFeatureAssignmentSeeder extends Seeder
 
             // Arsa Finansal
             ['name' => 'Tapu Durumu', 'slug' => 'tapu_durumu_arsa', 'type' => 'select', 'unit' => null, 'feature_category_id' => $cat('arsa-finansal'), 'is_required' => false, 'is_filterable' => true, 'is_searchable' => false, 'display_order' => 1, 'options' => json_encode(['Müstakil Tapu', 'Hisseli Tapu', 'Zilliyet', 'Tahsisli'])],
+            ['name' => 'Depozito', 'slug' => 'depozito_arsa', 'type' => 'number', 'unit' => 'TL', 'feature_category_id' => $cat('arsa-finansal'), 'is_required' => false, 'is_filterable' => false, 'is_searchable' => false, 'display_order' => 2],
 
             // İşyeri Temel
             ['name' => 'İşyeri Tipi', 'slug' => 'isyeri_tipi', 'type' => 'select', 'unit' => null, 'feature_category_id' => $cat('isyeri-temel'), 'is_required' => true, 'is_filterable' => true, 'is_searchable' => true, 'display_order' => 1, 'options' => json_encode(['Dükkan', 'Mağaza', 'Ofis', 'Büro', 'Depo', 'Fabrika', 'Atölye', 'Showroom', 'Plaza Katı'])],
@@ -121,6 +158,12 @@ class ArsaIsyeriFeatureAssignmentSeeder extends Seeder
             // Finansal (İşyeri)
             ['name' => 'Aidat', 'slug' => 'aidat_isyeri', 'type' => 'number', 'unit' => 'TL/ay', 'feature_category_id' => $cat('finansal'), 'is_required' => false, 'is_filterable' => true, 'is_searchable' => false, 'display_order' => 1],
             ['name' => 'Depozito', 'slug' => 'depozito_isyeri', 'type' => 'number', 'unit' => 'TL', 'feature_category_id' => $cat('finansal'), 'is_required' => false, 'is_filterable' => false, 'is_searchable' => false, 'display_order' => 2],
+            ['name' => 'Devir Bedeli', 'slug' => 'devir_bedeli_isyeri', 'type' => 'number', 'unit' => 'TL', 'feature_category_id' => $cat('finansal'), 'is_required' => true, 'is_filterable' => false, 'is_searchable' => false, 'display_order' => 3],
+
+            // İşyeri Devir Detay (Devren'e özel)
+            ['name' => 'Mevcut Ciro (Aylık)', 'slug' => 'mevcut_ciro', 'type' => 'number', 'unit' => 'TL/ay', 'feature_category_id' => $cat('isyeri-devir-detay'), 'is_required' => false, 'is_filterable' => false, 'is_searchable' => false, 'display_order' => 1],
+            ['name' => 'Ruhsat Durumu', 'slug' => 'ruhsat_durumu_isyeri', 'type' => 'select', 'unit' => null, 'feature_category_id' => $cat('isyeri-devir-detay'), 'is_required' => false, 'is_filterable' => false, 'is_searchable' => false, 'display_order' => 2, 'options' => json_encode(['Faal / Aktif', 'Bekleyen / Başvurusu Yapıldı', 'Alınmadı / Yok', 'İptal'])],
+            ['name' => 'Demirbaş Listesi', 'slug' => 'demirbas_listesi', 'type' => 'textarea', 'unit' => null, 'feature_category_id' => $cat('isyeri-devir-detay'), 'is_required' => false, 'is_filterable' => false, 'is_searchable' => false, 'display_order' => 3],
         ];
 
         foreach ($features as $f) {
@@ -213,6 +256,42 @@ class ArsaIsyeriFeatureAssignmentSeeder extends Seeder
     }
 
     /**
+     * Arsa Kiralık — 14 fields (+depozito_arsa, -tapu_durumu_arsa)
+     */
+    private function seedArsaKiralikAssignments(): void
+    {
+        $arsaId = $this->getKategoriId('arsa-arazi');
+        $kiralikId = $this->getYayinTipiId('kiralik');
+
+        if (!$arsaId || !$kiralikId) {
+            if ($this->command) $this->command->warn('Arsa or Kiralık kategori/yayin_tipi not found, skipping Arsa Kiralık assignments.');
+            return;
+        }
+
+        $fields = [
+            ['ada_no', 'Arsa Temel', false, true, 1],
+            ['parsel_no', 'Arsa Temel', false, true, 2],
+            ['pafta_no', 'Arsa Temel', false, true, 3],
+            ['imar_durumu', 'Arsa Temel', true, true, 4],
+            ['kaks', 'Arsa Fiziksel', false, true, 1],
+            ['taks', 'Arsa Fiziksel', false, true, 2],
+            ['gabari', 'Arsa Fiziksel', false, true, 3],
+            ['yola_cephe', 'Arsa Fiziksel', false, true, 4],
+            ['altyapi_su', 'Altyapı', false, true, 1],
+            ['altyapi_elektrik', 'Altyapı', false, true, 2],
+            ['altyapi_dogalgaz', 'Altyapı', false, true, 3],
+            ['altyapi_kanalizasyon', 'Altyapı', false, true, 4],
+            ['altyapi_yol', 'Altyapı', false, true, 5],
+            ['depozito_arsa', 'Arsa Finansal', false, true, 1],
+        ];
+
+        foreach ($fields as [$slug, $group, $required, $visible, $order]) {
+            $fid = $this->getFeatureId($slug);
+            $this->assignFeature($fid, $arsaId, $kiralikId, $group, $required, $visible, $order);
+        }
+    }
+
+    /**
      * Arsa Satılık — 14 fields
      */
     private function seedArsaSatilikAssignments(): void
@@ -299,6 +378,39 @@ class ArsaIsyeriFeatureAssignmentSeeder extends Seeder
         foreach ($fields as [$slug, $group, $required, $visible, $order]) {
             $fid = $this->getFeatureId($slug);
             $this->assignFeature($fid, $isyeriId, $kiralikId, $group, $required, $visible, $order);
+        }
+    }
+
+    /**
+     * İşyeri Devren — 8 fields
+     *
+     * Devren = işyeri devir + devir bedeli gerektiren kiralık mod.
+     * Kiralık'tan farkı: devir_bedeli zorunlu + devir detay field'ları (ciro, ruhsat, demirbaş).
+     */
+    private function seedIsyeriDevrenAssignments(): void
+    {
+        $isyeriId = $this->getKategoriId('isyeri');
+        $devrenId = $this->getYayinTipiId('devren');
+
+        if (!$isyeriId || !$devrenId) {
+            if ($this->command) $this->command->warn('İşyeri or Devren kategori/yayin_tipi not found, skipping İşyeri Devren assignments.');
+            return;
+        }
+
+        $fields = [
+            ['isyeri_tipi', 'İşyeri Temel', true, true, 1],
+            ['net_m2', 'İşyeri Fiziksel', true, true, 1],
+            ['depozito_isyeri', 'Finansal', false, true, 1],
+            ['devir_bedeli_isyeri', 'Finansal', true, true, 2],
+            ['aidat_isyeri', 'Finansal', false, true, 3],
+            ['mevcut_ciro', 'İşyeri Devir Detay', false, true, 1],
+            ['ruhsat_durumu_isyeri', 'İşyeri Devir Detay', false, true, 2],
+            ['demirbas_listesi', 'İşyeri Devir Detay', false, true, 3],
+        ];
+
+        foreach ($fields as [$slug, $group, $required, $visible, $order]) {
+            $fid = $this->getFeatureId($slug);
+            $this->assignFeature($fid, $isyeriId, $devrenId, $group, $required, $visible, $order);
         }
     }
 }
