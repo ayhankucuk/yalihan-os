@@ -138,7 +138,7 @@ class IlanService
             'office'  => 'beklemede', // context7-ignore
         ];
 
-        $activeTab = $filters['tab'] ?? '';
+        $activeTab = $filters['tab'] ?? (empty($filters['yayin_durumu']) ? 'active' : '');
         if ($activeTab && isset($tabMapping[$activeTab])) {
             $query->where('yayin_durumu', $tabMapping[$activeTab]);
         }

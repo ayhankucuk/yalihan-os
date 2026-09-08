@@ -114,6 +114,20 @@ class IlanRepository
             }
         }
 
+        // Tab mapping — Context7 standardized UI contract
+        $tabMapping = [
+            'active'  => 'yayinda', // context7-ignore
+            'passive' => 'pasif', // context7-ignore
+            'drafts'  => 'taslak', // context7-ignore
+            'expired' => 'arsiv', // context7-ignore
+            'office'  => 'beklemede', // context7-ignore
+        ];
+
+        $activeTab = $filters['tab'] ?? (empty($filters['yayin_durumu']) ? 'active' : '');
+        if ($activeTab && isset($tabMapping[$activeTab])) {
+            $query->where('yayin_durumu', $tabMapping[$activeTab]);
+        }
+
         // danisman_id filtresi YALNIZCA admin kullanıcılara açıktır.
         // Danışman kullanıcılar bu filtreyi bypass olarak kullanamaz —
         // applyOwnershipScope zaten tenant izolasyonunu garantiler.
