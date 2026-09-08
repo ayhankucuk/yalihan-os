@@ -1,5 +1,40 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 163 — 2026-09-08 | RC2 Sertifikasyonu, CQRS Tenant İzolasyonu, Admin Sidebar Onarımı & Action Center Faz 1-2 Entegrasyonu ✅
+
+**Kapsam:** P2-DS-01 Dead Code temizliği, ADR-042 CQRS projection modellerine `BelongsToTenant` uygulanması, Admin Sidebar 6 atıl/hatalı rotanın düzeltilmesi, Sprint 15 Action Center otomatik atama motoru ve event-to-action listener/migration paketinin depoya işlenmesi (`release-candidate/RC2`).
+
+#### 1. P2-DS-01 Dead Code Temizliği & Konsolidasyon (`911e4e3c`) ✅
+- `resources/js/wizard/schema-field-renderer.js` (591 satır) silindi.
+- `IlanWizardController::fieldSchema()` ve `FieldResolver` sınıflarına `@deprecated 2026-09-08` eklendi.
+- `docs/architecture/RESOLVER_CONSOLIDATION_PLAN.md` (218 satır) mimari yol haritası yayınlandı.
+
+#### 2. ADR-042 CQRS Projections Tenant İzolasyonu (`a4e576a6`, `2583aa6f`) ✅
+- 6 Read Model sınıfına (`ListingSearchProjection`, `ListingVelocityProjection`, `MarketTrendProjection`, `BuyerInterestProjection`, `TalepMatchProjection`, `BuyerIntentProjection`) `BelongsToTenant` trait'i ve `tenant_id` fillable eklendi.
+- `ListingVelocityService`, `BuyerIntentExtractionService` ve `OpportunityEngineService` sorguları `withoutTenant()` ile cross-tenant lookup hatası vermeyecek şekilde güçlendirildi.
+- `tests/Feature/Security/CqrsProjectionTenantIsolationTest.php` eklendi (6/6 PASS, 19 assertions).
+- `TenantIsolationSafetyTest` ID Enumeration Defense (404) standardına uyarlandı (6/6 PASS).
+
+#### 3. Q2 Admin Sidebar Navigasyon Onarımı (`9e09f14d`) ✅
+- `resources/views/admin/layouts/sidebar-content.blade.php` içindeki 6 tutarsız rota kanonik rotalarına bağlandı:
+  - `admin.listing-features.index` → `admin.ups.features.index`
+  - `admin.yayin-tipi-sablonlari.index` → `admin.property-hub.yayin-tipi-sablonlari.index`
+  - `admin.takim-yonetimi.takim.performans` → `admin.takim.performans`
+  - `admin.analytics.dashboard` → `admin.analytics.governance.dashboard`
+  - `admin.telegram-bot.durum` temizlendi, kanonik index ve webhook-info korundu.
+  - `admin.smart-calculator` eski stub kaldırıldı.
+  - Hardcoded `/horizon` ve `/telescope` linkleri `url()` ile sarıldı (SAB Kural 3).
+
+#### 4. Sprint 15 Action Center Faz 1 & Faz 2 (`114802bd`, `defcc7bd`, `da2933d4`) ✅
+- `ActionAssignmentService` (306 satır): Owner, Round-robin ve Workload-balanced stratejileri.
+- `ActionCenterController` (362 satır): 7 REST API endpoint'i (`/dashboard`, `/tasks`, `/stats`, vb.).
+- `routes/api/v1/action-center.php` rotaları eklendi.
+- `2026_09_06_000001_add_action_center_fields_to_gorevler.php` migration dosyası conflict-guard protokol kilidi ile kaydedildi.
+- 11 adet Action Center listener sınıfı ve `IlanPriceChangedActionListener` oluşturulup `EventServiceProvider` ile entegre edildi.
+- `tests/Feature/ActionCenter/ActionCenterEventMappingTest.php` 7 test senaryosuyla (63 assertions) %100 yeşil tamamlandı.
+
+---
+
 ## Oturum 162 — 2026-09-07/08 | Dokümantasyon Yaşam Döngüsü, Bekçi Tenant İzolasyonu, V2 Güvenlik & Codex Mühendislik Köprüsü Entegrasyonu ✅
 
 **Kapsam:** Dokümantasyon yaşam döngüsü sözleşmesi (GOV-DOC-001), advisory denetçi pilot uygulaması, `bekci:tenant-audit` statik denetim motoru, Codex mühendislik köprüsü ve Kilo V2 tenant IDOR/CQRS izolasyonunun kontrollü entegrasyonu (`integration/antigravity-kilo-takeover`).
@@ -5443,3 +5478,39 @@ OK (20 tests, 109 assertions) — 12.27s
 - Testler: 20/20 PASS, 109 assertion
 - Bağımsız doğrulama: ⏳ Bekliyor
 - Production deploy: ⛔ Yapılmamalı
+
+---
+
+## 2026-09-08 — R3 ADR-042: CQRS Projection Tenant İzolasyonu
+
+### Yapılan Değişiklikler
+
+#### Model Değişiklikleri (6 dosya)
+
+| Dosya | Değişiklik |
+|-------|------------|
+| `app/Models/Projections/ListingSearchProjection.php` | `BelongsToTenant` trait + `tenant_id` fillable + `@deprecated` |
+| `app/Models/Projections/ListingVelocityProjection.php` | `BelongsToTenant` trait + `tenant_id` fillable |
+| `app/Models/Projections/MarketTrendProjection.php` | `BelongsToTenant` trait + `tenant_id` fillable + `@deprecated` |
+| `app/Models/Projections/BuyerInterestProjection.php` | `BelongsToTenant` trait + `tenant_id` fillable + `@deprecated` |
+| `app/Models/Projections/TalepMatchProjection.php` | `BelongsToTenant` trait + `tenant_id` fillable |
+| `app/Models/Projections/BuyerIntentProjection.php` | `BelongsToTenant` trait + `tenant_id` fillable |
+
+#### Servis Değişiklikleri (3 dosya)
+
+| Dosya | Değişiklik |
+|-------|------------|
+| `app/Services/AIDeal/ListingVelocityService.php` | `firstOrCreate` → `withoutTenant()->firstOrCreate` |
+| `app/Services/AIMatch/BuyerIntentExtractionService.php` | Her iki `updateOrCreate` → `withoutTenant()->updateOrCreate` |
+| `app/Services/AI/OpportunityEngineService.php` | `title` select'ten kaldırıldı; read scope comment eklendi |
+
+### Doğrulama
+
+- `php artisan test --filter=SellerStrategy` → 3/3 PASS ✅
+- `php -l` tüm dosyalar → syntax errors: 0 ✅
+- `sab:integrity-scan` benim değişikliklerimden kaynaklanan yeni blocking hata: 0 ✅
+
+### Bilinen Durumlar
+
+- 4/6 projection tablosu hâlâ boş (writer yok veya çağrılmıyor) — ayrı P3 görevi olarak planlanabilir
+- 2 NamingAuthorityAST LOW uyarısı kabul edildi: `ListingSearchProjection::$fillable['title']` (CQRS English design, `@context7-ignore-file`) + `OpportunityEngineService` return key `'title'` (API contract, DB column değil)
