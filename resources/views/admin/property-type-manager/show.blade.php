@@ -1,20 +1,22 @@
 {{-- @context7-ignore-file --}}
-{{-- Property Type Manager Show Page - Contains inline JavaScript with HTTP response handling --}}
-{{-- This file contains response.ok, response.json() for fetch API which are HTTP operations, not database fields --}}
+{{-- Property Type Manager Show Page - Mediterranean Luxury Redesign --}}
 @extends('admin.layouts.admin')
 
 @section('content')
     {{-- Smart Forms Matrix Component --}}
     @vite(['resources/js/components/SmartFormMatrix.js'])
 
-    <div class="container mx-auto px-4 py-6" x-data="{ activeTab: 'yayin-tipleri' }" x-init="window.activeTab = activeTab; $watch('activeTab', value => window.activeTab = value); console.log('Active tab initialized:', activeTab);">
+    <div class="container mx-auto px-4 py-6" x-data="{ activeTab: 'yayin-tipleri' }" x-init="window.activeTab = activeTab; $watch('activeTab', value => window.activeTab = value);">
         {{-- Session Error Messages --}}
         @if (session('error'))
-            <div class="mb-6 p-4 rounded-lg border border-red-200 bg-red-50 text-red-800 dark:bg-red-900/30 dark:border-red-800 dark:text-red-200" x-data="{ show: true }" x-show="show" x-transition="">
+            <div class="mb-6 p-4 rounded-2xl border border-rose-200 bg-rose-50/90 text-rose-800 dark:bg-rose-950/30 dark:border-rose-900/50 dark:text-rose-200 shadow-sm" x-data="{ show: true }" x-show="show" x-transition>
                 <div class="flex items-center justify-between">
-                    <span>{{ session('error') }}</span>
-                    <button @click="show = false" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200">
-                        <i class="fas fa-times"></i>
+                    <div class="flex items-center gap-2">
+                        <x-icon name="hata" class="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                        <span class="text-sm font-medium">{{ session('error') }}</span>
+                    </div>
+                    <button @click="show = false" class="text-rose-500 hover:text-rose-700 dark:hover:text-rose-300 p-1">
+                        <x-icon name="kapat" class="w-4 h-4" />
                     </button>
                 </div>
             </div>
@@ -22,30 +24,45 @@
 
         {{-- Session Success Messages --}}
         @if (session('success'))
-            <div class="mb-6 p-4 rounded-lg border border-green-200 bg-green-50 text-green-800 dark:bg-green-900/30 dark:border-green-800 dark:text-green-200" x-data="{ show: true }" x-show="show" x-transition="">
+            <div class="mb-6 p-4 rounded-2xl border border-emerald-200 bg-emerald-50/90 text-emerald-800 dark:bg-emerald-950/30 dark:border-emerald-900/50 dark:text-emerald-200 shadow-sm" x-data="{ show: true }" x-show="show" x-transition>
                 <div class="flex items-center justify-between">
-                    <span>{{ session('success') }}</span>
-                    <button @click="show = false" class="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200">
-                        <i class="fas fa-times"></i>
+                    <div class="flex items-center gap-2">
+                        <x-icon name="onay-daire" class="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        <span class="text-sm font-medium">{{ session('success') }}</span>
+                    </div>
+                    <button @click="show = false" class="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 p-1">
+                        <x-icon name="kapat" class="w-4 h-4" />
                     </button>
                 </div>
             </div>
         @endif
 
-        <!-- Header -->
-        <div class="mb-6 flex items-center justify-between">
+        <!-- 🏛️ Header Section -->
+        <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2 dark:text-slate-100">
-                    @if ($kategori->icon && preg_match('/^[a-z0-9\-]+$/i', $kategori->icon))
-                        <i class="fas fa-{{ $kategori->icon }} mr-2"></i>
-                    @else
-                        {{ $kategori->icon ?? '🏠' }}
-                    @endif
-                    {{ $kategori->name }}
-                </h1>
-                <p class="text-gray-600 dark:text-gray-400">
-                    Yayın Tipi Yöneticisi - Tek Sayfada Yönetim
-                </p>
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-2xl shadow-sm">
+                        @if ($kategori->icon && preg_match('/^[a-z0-9\-]+$/i', $kategori->icon))
+                            <x-icon :name="$kategori->icon" class="w-6 h-6" />
+                        @else
+                            <span>{{ $kategori->icon ?? '🏠' }}</span>
+                        @endif
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2.5">
+                            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                                {{ $kategori->name }}
+                            </h1>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+                                Tek Sayfada Yönetim
+                            </span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                            Yayın tipleri, alt türler ve akıllı form gereksinimlerini tek merkezden yapılandırın.
+                        </p>
+                    </div>
+                </div>
+
                 @include('components.neo.breadcrumb', [
                     'items' => [
                         ['label' => 'Dashboard', 'url' => route('admin.dashboard.index')],
@@ -58,212 +75,226 @@
                     ],
                 ])
             </div>
-            <div class="flex items-center gap-3">
+
+            <div class="flex items-center gap-2.5">
                 <a href="{{ route('admin.property_types.field_dependencies', $kategori->id) }}"
-                    class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 shadow-lg transform hover:scale-105 active:scale-95">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+                    class="inline-flex items-center px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-amber-400 font-semibold rounded-xl border border-slate-700/80 shadow-sm hover:shadow transition-all duration-200 active:scale-95 text-sm dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-700">
+                    <x-icon name="ayar" class="w-4 h-4 mr-2 text-amber-400" />
                     Özellik Yönetimi
                 </a>
                 <a href="{{ route('admin.property_types.index') }}"
-                    class="inline-flex items-center px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 dark:bg-slate-900 dark:hover:bg-gray-600">
-                    <i class="fas fa-arrow-left mr-2"></i>
+                    class="inline-flex items-center px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-medium rounded-xl border border-slate-200 shadow-sm hover:shadow-sm transition-all duration-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:border-slate-700 text-sm">
+                    <x-icon name="sol-ok" class="w-4 h-4 mr-2 text-slate-500 dark:text-slate-400" />
                     Geri Dön
                 </a>
             </div>
         </div>
 
-        {{-- 📑 TAB NAVIGATION --}}
-        <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm mb-6 dark:shadow-none dark:border-slate-700">
-            <div class="border-b border-gray-200 dark:border-slate-800 dark:border-slate-700">
-                <nav class="flex -mb-px space-x-8 px-6" aria-label="Tabs">
+        {{-- 📑 TAB NAVIGATION BAR --}}
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm mb-6 p-2">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <nav class="flex items-center space-x-1.5 overflow-x-auto p-1" aria-label="Tabs">
                     <button @click="activeTab = 'yayin-tipleri'"
                         :class="activeTab === 'yayin-tipleri' ?
-                            'border-blue-500 text-blue-600 dark:text-blue-400' :
-                            'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
-                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200">
-                        <i class="fas fa-list mr-2"></i>
-                        Yayın Tipleri
+                            'bg-slate-900 text-amber-400 dark:bg-amber-400/10 dark:text-amber-400 shadow-sm font-semibold' :
+                            'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-medium'"
+                        class="whitespace-nowrap py-2.5 px-4 rounded-xl text-sm transition-all duration-200 flex items-center gap-2">
+                        <x-icon name="liste" class="w-4 h-4" />
+                        <span>Yayın Tipleri</span>
+                        @if(isset($allYayinTipleri) && count($allYayinTipleri) > 0)
+                            <span :class="activeTab === 'yayin-tipleri' ? 'bg-amber-400/20 text-amber-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="ml-1 py-0.5 px-2 rounded-full text-xs font-semibold transition-colors">
+                                {{ count($allYayinTipleri) }}
+                            </span>
+                        @endif
                     </button>
+
                     <button @click="activeTab = 'alt-turler'"
                         :class="activeTab === 'alt-turler' ?
-                            'border-indigo-500 text-indigo-600 dark:text-indigo-400' :
-                            'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
-                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200">
-                        <i class="fas fa-layer-group mr-2"></i>
-                        Alt Türler
+                            'bg-slate-900 text-amber-400 dark:bg-amber-400/10 dark:text-amber-400 shadow-sm font-semibold' :
+                            'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-medium'"
+                        class="whitespace-nowrap py-2.5 px-4 rounded-xl text-sm transition-all duration-200 flex items-center gap-2">
+                        <x-icon name="katman" class="w-4 h-4" />
+                        <span>Alt Türler</span>
                         @if(isset($altKategoriler) && count($altKategoriler) > 0)
-                            <span class="ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-slate-200 dark:bg-slate-900">
+                            <span :class="activeTab === 'alt-turler' ? 'bg-amber-400/20 text-amber-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="ml-1 py-0.5 px-2 rounded-full text-xs font-semibold transition-colors">
                                 {{ count($altKategoriler) }}
                             </span>
                         @endif
                     </button>
-                    <a href="{{ route('admin.ups.features.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 dark:shadow-none">
-                        <i class="fas fa-plus mr-2"></i>
-                        Yeni Özellik Ekle
-                    </a>
+
                     <button @click="activeTab = 'smart-rules'"
                         :class="activeTab === 'smart-rules' ?
-                            'border-purple-500 text-purple-600 dark:text-purple-400' :
-                            'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
-                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200">
-                        <i class="fas fa-magic mr-2"></i>
-                        Yayın Tipi Kuralları
-                        <span class="ml-2 px-2 py-0.5 text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full">SMART FORMS</span>
+                            'bg-slate-900 text-amber-400 dark:bg-amber-400/10 dark:text-amber-400 shadow-sm font-semibold' :
+                            'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-medium'"
+                        class="whitespace-nowrap py-2.5 px-4 rounded-xl text-sm transition-all duration-200 flex items-center gap-2">
+                        <x-icon name="ai" class="w-4 h-4 text-amber-500" />
+                        <span>Yayın Tipi Kuralları</span>
+                        <span class="ml-1 px-2 py-0.5 text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold rounded-full border border-amber-500/20">SMART FORMS</span>
                     </button>
                 </nav>
+
+                <div class="flex items-center gap-2 px-2 pb-1 sm:pb-0">
+                    <a href="{{ route('admin.ups.features.create') }}"
+                        class="inline-flex items-center px-3.5 py-2 text-xs font-semibold rounded-xl text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                        <x-icon name="ekle" class="w-3.5 h-3.5 mr-1.5 text-amber-600 dark:text-amber-400" />
+                        Yeni Özellik Ekle
+                    </a>
+                </div>
             </div>
         </div>
 
-        {{-- 📋 TAB: YAYIN TİPLERİ (Legacy Content) --}}
+        {{-- 📋 TAB 1: YAYIN TİPLERİ & GENEL AYARLAR --}}
         <div x-show="activeTab === 'yayin-tipleri'"
              x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 transform translate-y-4"
+             x-transition:enter-start="opacity-0 transform translate-y-2"
              x-transition:enter-end="opacity-100 transform translate-y-0">
 
             <!-- 0. Ana Yayın Tipleri Listesi -->
-        <div class="bg-gray-50 dark:bg-slate-900 rounded-xl shadow-lg p-6 mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white dark:text-slate-100">
-                    📢 {{ $kategori->name ?? 'Kategori' }} - Yayın Tipleri
-                </h2>
-                <button type="button"
-                    onclick="if(typeof showAddYayinTipiModal === 'function') { showAddYayinTipiModal(); } else { console.error('showAddYayinTipiModal function not found'); alert('Modal fonksiyonu bulunamadı. Sayfayı yenileyin.'); }"
-                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 active:scale-95 text-sm"
-                    id="add-yayin-tipi-btn">
-                    <i class="fas fa-plus mr-2"></i>
-                    Yayın Tipi Ekle
-                </button>
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-6 mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <x-icon name="liste" class="w-5 h-5 text-amber-500" />
+                            <span>{{ $kategori->name ?? 'Kategori' }} — Yayın Tipleri</span>
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            Sıralamayı sürükleyerek değiştirebilir, tüm alt kategorilere tek tıkla uygulayabilirsiniz.
+                        </p>
+                    </div>
+                    <button type="button"
+                        onclick="if(typeof showAddYayinTipiModal === 'function') { showAddYayinTipiModal(); } else { console.error('showAddYayinTipiModal function not found'); alert('Modal fonksiyonu bulunamadı. Sayfayı yenileyin.'); }"
+                        class="inline-flex items-center justify-center px-4 py-2.5 bg-[#C9A84C] hover:bg-[#B8973B] text-slate-950 font-semibold rounded-xl shadow-sm hover:shadow transition-all duration-200 active:scale-95 text-sm"
+                        id="add-yayin-tipi-btn">
+                        <x-icon name="ekle" class="w-4 h-4 mr-1.5 text-slate-950" />
+                        Yayın Tipi Ekle
+                    </button>
+                </div>
+
+                <!-- Yayın Tipleri Listesi (Sortable) -->
+                @if (count($allYayinTipleri ?? []) > 0)
+                    <div id="yayin-tipleri-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach ($allYayinTipleri as $yayinTipi)
+                            @php
+                                // ✅ SAB: Kategori bazlı filtreleme
+                                $excludedYayinTipleri = ['Devren Satılık'];
+
+                                if ($kategori->slug === 'konut') {
+                                    $excludedYayinTipleri[] = 'Yazlık Kiralık';
+                                }
+
+                                if ($kategori->slug !== 'yazlik-kiralama') {
+                                    $excludedYayinTipleri[] = 'Günlük Kiralık';
+                                }
+
+                                if ($kategori->slug === 'arsa') {
+                                    $excludedYayinTipleri[] = 'Yazlık Kiralık';
+                                }
+
+                                if ($kategori->slug === 'isyeri') {
+                                    $excludedYayinTipleri[] = 'Kat Karşılığı';
+                                }
+
+                                $yayinTipiAdi = $yayinTipi->yayin_tipi ?? $yayinTipi->name ?? ($yayinTipi['yayin_tipi'] ?? $yayinTipi['name'] ?? null);
+                                $yayinTipiAdi = trim($yayinTipiAdi);
+
+                                if ($yayinTipiAdi && in_array($yayinTipiAdi, $excludedYayinTipleri)) {
+                                    continue;
+                                }
+
+                                $ilanCount = \App\Models\Ilan::where('yayin_tipi_id', $yayinTipi->id)->count();
+                                $yayinTipiAktif = (bool) ($yayinTipi->aktiflik_durumu ?? false);
+                            @endphp
+                            <div data-id="{{ $yayinTipi->id }}" data-sira="{{ $yayinTipi->display_order ?? 999 }}"
+                                class="yayin-tipi-item group relative flex flex-col justify-between p-4 bg-slate-50/70 hover:bg-white dark:bg-slate-800/50 dark:hover:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 hover:border-amber-400/50 hover:shadow-md transition-all duration-200 cursor-move">
+                                <!-- Top Row: Grip + Title + Status Badge -->
+                                <div>
+                                    <div class="flex items-start justify-between gap-2 mb-1.5">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <span class="text-slate-400 hover:text-slate-600 dark:text-slate-500 cursor-grab p-0.5 -ml-1 shrink-0">
+                                                <x-icon name="surukle" class="w-4 h-4" />
+                                            </span>
+                                            <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-snug">
+                                                {{ $yayinTipiAdi ?? 'N/A' }}
+                                            </h4>
+                                        </div>
+                                        @if ($yayinTipiAktif)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800 shrink-0">
+                                                Aktif
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-200/70 dark:bg-slate-700 text-slate-600 dark:text-slate-400 shrink-0">
+                                                Pasif
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="flex items-center gap-2 mb-3 pl-5">
+                                        <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                            {{ $ilanCount }} aktif ilan
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Bottom Row: Actions -->
+                                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200/60 dark:border-slate-700/60">
+                                    <button onclick="toggleYayinTipiCascade({{ $kategori->id }}, {{ $yayinTipi->id }}, '{{ $yayinTipiAdi }}')"
+                                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-amber-700 dark:text-slate-300 dark:hover:text-amber-300 bg-white hover:bg-amber-50/60 dark:bg-slate-700/60 dark:hover:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-600 transition-colors shadow-sm"
+                                        title="Tüm Alt Kategorilere Uygula">
+                                        <x-icon name="onay-daire" class="w-3.5 h-3.5 mr-1 text-amber-600 dark:text-amber-400" />
+                                        Tümüne Uygula
+                                    </button>
+                                    <button onclick="deleteYayinTipi({{ $yayinTipi->id ?? 0 }}, '{{ $yayinTipiAdi ?? 'N/A' }}')"
+                                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:text-rose-400 dark:hover:bg-rose-900/40 rounded-xl border border-rose-200/60 dark:border-rose-900/50 transition-colors"
+                                        title="Yayın Tipini Sil">
+                                        <x-icon name="sil" class="w-3.5 h-3.5 mr-1 text-rose-500" />
+                                        Sil
+                                    </button>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="px-6 py-16 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl mb-4">
+                        <div class="w-16 h-16 bg-amber-500/10 rounded-2xl mx-auto mb-4 flex items-center justify-center border border-amber-500/20 text-amber-600">
+                            <x-icon name="katman" class="w-7 h-7" />
+                        </div>
+                        <p class="text-slate-700 dark:text-slate-300 font-medium">
+                            Henüz yayın tipi eklenmemiş.
+                        </p>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                            Yeni bir yayın tipi ekleyerek (Satılık, Kiralık vb.) başlayabilirsiniz.
+                        </p>
+                    </div>
+                @endif
             </div>
 
-            <!-- Yayın Tipleri Listesi -->
-            <!-- Yayın Tipleri Listesi (Sortable) -->
-            @if (count($allYayinTipleri ?? []) > 0)
-                <div id="yayin-tipleri-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    @foreach ($allYayinTipleri as $yayinTipi)
-                        @php
-                            // ✅ SAB: Kategori bazlı filtreleme
-                            $excludedYayinTipleri = ['Devren Satılık'];
-
-                            // Konut kategorisinde Yazlık Kiralık gösterme
-                            if ($kategori->slug === 'konut') {
-                                $excludedYayinTipleri[] = 'Yazlık Kiralık';
-                            }
-
-                            // Yazlık Kiralama dışında Günlük Kiralık gösterme
-                            if ($kategori->slug !== 'yazlik-kiralama') {
-                                $excludedYayinTipleri[] = 'Günlük Kiralık';
-                            }
-
-                            // Arsa kategorisinde Yazlık Kiralık gösterme
-                            if ($kategori->slug === 'arsa') {
-                                $excludedYayinTipleri[] = 'Yazlık Kiralık';
-                            }
-
-                            // İşyeri kategorisinde Kat Karşılığı gösterme
-                            if ($kategori->slug === 'isyeri') {
-                                $excludedYayinTipleri[] = 'Kat Karşılığı';
-                            }
-
-                            $yayinTipiAdi = $yayinTipi->yayin_tipi ?? $yayinTipi->name ?? ($yayinTipi['yayin_tipi'] ?? $yayinTipi['name'] ?? null);
-                            $yayinTipiAdi = trim($yayinTipiAdi);
-
-                            if ($yayinTipiAdi && in_array($yayinTipiAdi, $excludedYayinTipleri)) {
-                                continue;
-                            }
-                        @endphp
-                        <div data-id="{{ $yayinTipi->id }}" data-sira="{{ $yayinTipi->display_order ?? 999 }}"
-                            class="yayin-tipi-item flex items-center justify-between p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-md transition-all duration-200 cursor-move dark:bg-slate-900 dark:border-slate-700">
-                            <div class="flex items-center gap-3">
-                                <i class="fas fa-grip-vertical text-gray-400 dark:text-gray-500 cursor-grab"></i>
-                                @php
-                                    $ilanCount = \App\Models\Ilan::where('yayin_tipi_id', $yayinTipi->id)->count();
-                                @endphp
-                                <span class="text-lg font-semibold text-gray-900 dark:text-white dark:text-slate-100">
-                                    {{ $yayinTipiAdi ?? 'N/A' }} <span class="text-gray-500 dark:text-gray-400">({{ $ilanCount }})</span>
-                                </span>
-                                @php
-                                    $yayinTipiAktif = (bool) ($yayinTipi->aktiflik_durumu ?? false);
-                                @endphp
-                                @if ($yayinTipiAktif)
-                                    <span class="px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full">Aktif</span>
-                                @else
-                                    <span class="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-slate-200 rounded-full dark:bg-slate-900">Pasif</span>
-                                @endif
-                            </div>
-                                <button onclick="toggleYayinTipiCascade({{ $kategori->id }}, {{ $yayinTipi->id }}, '{{ $yayinTipiAdi }}')"
-                                    class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 dark:shadow-none mr-2"
-                                    title="Tüm Alt Kategorilere Uygula">
-                                    <i class="fas fa-check-double mr-1.5"></i>
-                                    Tümüne Uygula
-                                </button>
-                                <button onclick="deleteYayinTipi({{ $yayinTipi->id ?? 0 }}, '{{ $yayinTipiAdi ?? 'N/A' }}')"
-                                    class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-700 rounded-lg hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 dark:shadow-none">
-                                    <i class="fas fa-trash mr-1.5"></i>
-                                    Sil
-                                </button>
-                            </div>
-                    @endforeach
-                </div>
-            @else
-                <div class="px-6 py-16 text-center border-2 border-dashed border-gray-100 dark:border-gray-700/50 rounded-2xl mb-4 dark:border-slate-800">
-                    <div class="w-16 h-16 bg-gray-100 dark:bg-slate-900 rounded-2xl mx-auto mb-4 flex items-center justify-center border border-gray-200 dark:border-slate-800 dark:border-slate-700">
-                        <i class="fas fa-layer-group text-2xl text-gray-300 dark:text-gray-600"></i>
-                    </div>
-                    <p class="text-gray-500 dark:text-gray-400 font-medium">
-                        Henüz yayın tipi eklenmemiş.
-                    </p>
-                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                        Yeni bir yayın tipi ekleyerek (Satılık, Kiralık vb.) başlayabilirsiniz.
-                    </p>
-                </div>
-            @endif
-        </div>
-
-        <!-- ... -->
-
-        @php
-            // Move these variables or logic before the content if needed, but for now just merging sections
-            $yanlisEklenenYayinTipleri = $yanlisEklenenYayinTipleri ?? collect();
-            $altKategoriler = $altKategoriler ?? collect();
-        @endphp
-
-
-
-
+            @php
+                $yanlisEklenenYayinTipleri = $yanlisEklenenYayinTipleri ?? collect();
+                $altKategoriler = $altKategoriler ?? collect();
+            @endphp
 
             <!-- Uyarı: Yanlış eklenen yayın tipleri -->
             @if (isset($yanlisEklenenYayinTipleri) && count($yanlisEklenenYayinTipleri) > 0)
-                <div
-                    class="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                <div class="mb-6 bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-5 shadow-sm">
                     <div class="flex items-start gap-3">
-                        <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 mt-0.5"></i>
+                        <x-icon name="uyari" class="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
                         <div class="flex-1">
-                            <h4 class="text-sm font-semibold text-yellow-900 dark:text-yellow-100 mb-2">
-                                ⚠️ Yanlış Eklenen Kayıtlar Tespit Edildi
+                            <h4 class="text-sm font-semibold text-amber-900 dark:text-amber-200 mb-1">
+                                Yanlış Eklenen Kayıtlar Tespit Edildi
                             </h4>
-                            <p class="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
-                                Aşağıdaki kayıtlar <strong>alt kategori</strong> olarak eklenmiş ancak <strong>yayın
-                                    tipi</strong> olmalı:
+                            <p class="text-sm text-amber-800 dark:text-amber-300 mb-3">
+                                Aşağıdaki kayıtlar <strong>alt kategori</strong> olarak eklenmiş ancak <strong>yayın tipi</strong> olmalı:
                             </p>
-                            <ul class="list-disc list-inside text-sm text-yellow-800 dark:text-yellow-200 mb-3 space-y-1">
+                            <ul class="list-disc list-inside text-sm text-amber-800 dark:text-amber-300 mb-3 space-y-1">
                                 @foreach ($yanlisEklenenYayinTipleri as $yanlis)
                                     <li>
-                                        <strong>{{ $yanlis->name }}</strong>
-                                        (ID: {{ $yanlis->id }}, Seviye: {{ $yanlis->seviye }})
+                                        <strong>{{ $yanlis->name }}</strong> (ID: {{ $yanlis->id }}, Seviye: {{ $yanlis->seviye }})
                                     </li>
                                 @endforeach
                             </ul>
-                            <p class="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
-                                Bu kayıtları silip yukarıdaki <strong>"Yayın Tipi Ekle"</strong> butonunu kullanarak doğru
-                                şekilde ekleyin.
-                            </p>
                             <div class="flex gap-2">
                                 <a href="{{ route('admin.ilan-kategorileri.index') }}?search={{ urlencode($yanlisEklenenYayinTipleri->first()->name) }}"
-                                    class="text-xs text-yellow-700 dark:text-yellow-300 hover:underline dark:hover:underline">
-                                    <i class="fas fa-edit mr-1"></i> Bu Kayıtları Düzenle
+                                    class="inline-flex items-center text-xs font-semibold text-amber-800 dark:text-amber-300 hover:underline">
+                                    <x-icon name="duzenle" class="w-3.5 h-3.5 mr-1" /> Bu Kayıtları Düzenle
                                 </a>
                             </div>
                         </div>
@@ -271,29 +302,235 @@
                 </div>
             @endif
 
-            {{-- ✅ REMOVED (2026-01-04): Alt Kategori - Yayın Tipi mapping system
-                 Migration completed: Seviye=2 → legacy_pivot_table (flat table)
-                 All publication types now managed via single source of truth
-            --}}
+            <!-- 2. Relations Grid (Alan İlişkileri) -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-6 mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <x-icon name="link" class="w-5 h-5 text-amber-500" />
+                            <span>Alan İlişkileri</span>
+                        </h2>
+                        <span class="text-xs px-2.5 py-1 bg-amber-500/10 text-amber-700 dark:text-amber-300 rounded-full font-semibold border border-amber-500/20">
+                            {{ count($fieldDependencies) }} Alan Tanımlı
+                        </span>
+                    </div>
+                    <a href="{{ route('admin.property_types.field_dependencies', $kategori->id) }}"
+                        class="inline-flex items-center px-4 py-2 bg-[#C9A84C] hover:bg-[#B8973B] text-slate-950 font-semibold rounded-xl shadow-sm hover:shadow transition-all duration-200 active:scale-95 text-sm">
+                        <x-icon name="ayar" class="w-4 h-4 mr-2 text-slate-950" />
+                        Alan İlişkilerini Yönet
+                    </a>
+                </div>
 
-        </div>
+                @if (count($fieldDependencies) > 0)
+                    <div class="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-slate-800">
+                        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                            <thead class="bg-slate-50 dark:bg-slate-800/60">
+                                <tr>
+                                    <th class="px-6 py-3.5 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                                        Alan
+                                    </th>
+                                    @foreach ($allYayinTipleri as $yayinTipi)
+                                        @php
+                                            $excludedYayinTipleri = ['Devren Satılık'];
+                                            if ($kategori->slug === 'konut') {
+                                                $excludedYayinTipleri[] = 'Yazlık Kiralık';
+                                            }
+                                            if ($kategori->slug !== 'yazlik-kiralama') {
+                                                $excludedYayinTipleri[] = 'Günlük Kiralık';
+                                            }
+                                            if ($kategori->slug === 'arsa') {
+                                                $excludedYayinTipleri[] = 'Yazlık Kiralık';
+                                            }
+                                            if ($kategori->slug === 'isyeri') {
+                                                $excludedYayinTipleri[] = 'Kat Karşılığı';
+                                            }
+                                            if (in_array($yayinTipi->yayin_tipi ?? $yayinTipi->name, $excludedYayinTipleri)) {
+                                                continue;
+                                            }
+                                        @endphp
+                                        <th class="px-6 py-3.5 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                                            {{ $yayinTipi->name ?? $yayinTipi->yayin_tipi }}
+                                        </th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-slate-900 divide-y divide-slate-200/70 dark:divide-slate-800">
+                                @foreach ($fieldDependencies as $fieldSlug => $fieldData)
+                                    <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center gap-2.5">
+                                                <span class="text-lg">{{ $fieldData['field_icon'] }}</span>
+                                                <span class="text-sm font-semibold text-slate-900 dark:text-white">
+                                                    {{ $fieldData['field_name'] }}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        @foreach ($allYayinTipleri as $yayinTipi)
+                                            @php
+                                                $excludedYayinTipleri = ['Devren Satılık'];
+                                                if ($kategori->slug !== 'yazlik-kiralama') {
+                                                    $excludedYayinTipleri[] = 'Günlük Kiralık';
+                                                }
+                                                if ($kategori->slug === 'arsa') {
+                                                    $excludedYayinTipleri[] = 'Yazlık Kiralık';
+                                                }
+                                                if (in_array($yayinTipi->yayin_tipi ?? $yayinTipi->name, $excludedYayinTipleri)) {
+                                                    continue;
+                                                }
 
-        {{-- 🏗️ TAB: ALT TÜRLER (Subtypes) --}}
+                                                $stateVal = $fieldData['yayin_tipleri'][$yayinTipi->id] ?? false;
+                                                $yayinTipiKeyId = (string) $yayinTipi->id;
+                                                $yayinTipiKeySlug = $yayinTipi->slug ?? $yayinTipi->yayin_tipi;
+                                                $fieldDep = \App\Models\KategoriYayinTipiFieldDependency::where('kategori_slug', $kategori->slug)
+                                                    ->where('field_slug', $fieldSlug)
+                                                    ->where(function ($q) use ($yayinTipiKeyId, $yayinTipiKeySlug) {
+                                                        $q->where('yayin_tipi', $yayinTipiKeyId)->orWhere('yayin_tipi', $yayinTipiKeySlug);
+                                                    })
+                                                    ->first();
+                                                $fieldDepId = $fieldDep ? $fieldDep->id : null;
+                                            @endphp
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" class="rounded w-4 h-4 text-amber-600 focus:ring-amber-500 border-slate-300 dark:border-slate-600 dark:bg-slate-800 field-dependency-toggle"
+                                                    data-field-id="{{ $fieldDepId }}"
+                                                    data-field-slug="{{ $fieldSlug }}"
+                                                    data-field-name="{{ $fieldData['field_name'] }}"
+                                                    data-field-type="{{ $fieldData['field_type'] }}"
+                                                    data-field-category="{{ $fieldData['field_category'] ?? 'general' }}"
+                                                    data-yayin-tipi-id="{{ $yayinTipi->id }}"
+                                                    data-yayin-tipi-slug="{{ $yayinTipiKeySlug }}"
+                                                    {{ $stateVal ? 'checked' : '' }} onchange="toggleFieldDependency(this)">
+                                            </td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="text-center py-10">
+                        <div class="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full mx-auto mb-3 flex items-center justify-center text-slate-400">
+                            <x-icon name="klasor-bos" class="w-6 h-6" />
+                        </div>
+                        <p class="text-slate-500 dark:text-slate-400 mb-4 text-sm">
+                            Bu kategori için alan ilişkisi henüz tanımlanmamış.
+                        </p>
+                        <a href="{{ route('admin.property_types.field_dependencies', $kategori->id) }}"
+                            class="inline-flex items-center px-4 py-2 bg-[#C9A84C] hover:bg-[#B8973B] text-slate-950 font-semibold rounded-xl text-sm transition-all shadow-sm">
+                            <x-icon name="ekle" class="w-4 h-4 mr-1.5" />
+                            Alan İlişkilerini Tanımla
+                        </a>
+                    </div>
+                @endif
+            </div>
+
+            <!-- 4. Features Toggle (Özellik Havuzu) -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-6 mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <x-icon name="yildiz" class="w-5 h-5 text-amber-500" />
+                        <span>Özellik Havuzu (Kategori Bazlı)</span>
+                    </h2>
+                    <div class="flex gap-2">
+                        <a href="{{ route('admin.ups.features.index') }}"
+                            class="inline-flex items-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-all text-sm">
+                            <x-icon name="liste" class="w-4 h-4 mr-2" />
+                            Global Havuz
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mb-6 bg-amber-500/10 border-l-4 border-amber-500 p-4 rounded-r-xl">
+                    <div class="flex items-start gap-3">
+                        <x-icon name="bilgi" class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <p class="text-sm text-amber-900 dark:text-amber-200">
+                            <strong>Yönetim Rehberi:</strong> Aşağıdaki özellikler bu kategori için etkin hale gelir.
+                            Hangi yayın tipinde zorunlu veya görünür olacağını
+                            <button @click="activeTab = 'smart-rules'" class="font-bold underline hover:text-amber-950 dark:hover:text-amber-100">Yayın Tipi Kuralları (SMART FORMS)</button>
+                            sekmesinden ayarlayabilirsiniz.
+                        </p>
+                    </div>
+                </div>
+
+                @if (count($featureCategories ?? []) > 0)
+                    @foreach ($featureCategories as $category)
+                        @if (count($category->features ?? []) > 0)
+                            <div class="mb-6 last:mb-0">
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-3">
+                                    {{ $category->name }}
+                                </h3>
+                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                    @foreach ($category->features as $feature)
+                                        <label
+                                            class="flex items-center p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-amber-50/50 hover:border-amber-400/50 dark:hover:bg-slate-800 cursor-pointer transition-all duration-200">
+                                            <input type="checkbox" class="rounded mr-2.5 w-4 h-4 text-amber-600 focus:ring-amber-500 border-slate-300 dark:border-slate-600 feature-toggle"
+                                                data-feature-id="{{ $feature->id }}"
+                                                data-feature-name="{{ $feature->name }}"
+                                                data-aktiflik-durumu="{{ $feature->aktiflik_durumu ?? false ? '1' : '0' }}"
+                                                {{ $feature->aktiflik_durumu ?? false ? 'checked' : '' }}>
+                                            <span class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ $feature->name }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
+                @else
+                    <div class="px-6 py-12 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+                        <div class="w-16 h-16 bg-amber-500/10 rounded-2xl mx-auto mb-4 flex items-center justify-center text-amber-600">
+                            <x-icon name="ai" class="w-8 h-8" />
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Özellik Tanımı Bulunmuyor</h3>
+                        <p class="text-slate-500 dark:text-slate-400 mb-6 max-w-xs mx-auto text-sm">
+                            Bu kategoriye henüz bir özellik atanmamış. Havuzdaki özellikleri buraya bağlayın.
+                        </p>
+                        <a href="{{ route('admin.ups.features.index') }}"
+                            class="inline-flex items-center px-5 py-2.5 bg-[#C9A84C] hover:bg-[#B8973B] text-slate-950 font-bold rounded-xl shadow-sm transition-all duration-200">
+                            <x-icon name="ekle" class="w-4 h-4 mr-2" />
+                            Havuzdan Özellik Ekle
+                        </a>
+                    </div>
+                @endif
+            </div>
+
+            <!-- Toplu Kaydetme & Aksiyon Çubuğu -->
+            <div class="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                <!-- Bulk Actions -->
+                <div class="flex gap-2">
+                    <button onclick="toggleAllYayinTipleri(true)"
+                        class="inline-flex items-center px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 font-semibold rounded-xl transition-all duration-200 text-sm">
+                        <x-icon name="onay-daire" class="w-4 h-4 mr-2 text-emerald-600 dark:text-emerald-400" />
+                        Tümünü Seç
+                    </button>
+                    <button onclick="toggleAllYayinTipleri(false)"
+                        class="inline-flex items-center px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 font-semibold rounded-xl transition-all duration-200 text-sm">
+                        <x-icon name="kapat" class="w-4 h-4 mr-2 text-rose-500" />
+                        Tümünü Kaldır
+                    </button>
+                </div>
+
+                <!-- Save Button -->
+                <button id="saveBtn" onclick="saveChanges()"
+                    class="inline-flex items-center justify-center px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold rounded-xl shadow-sm hover:shadow transition-all duration-200 transform hover:scale-105 active:scale-95 text-base">
+                    <x-icon name="kaydet" class="w-5 h-5 mr-2" />
+                    Tüm Değişiklikleri Kaydet
+                </button>
+            </div>
+
+        </div> {{-- End Tab 1 --}}
+
+        {{-- 🏗️ TAB 2: ALT TÜRLER (Subtypes) --}}
         <div x-show="activeTab === 'alt-turler'"
              x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 transform translate-y-4"
+             x-transition:enter-start="opacity-0 transform translate-y-2"
              x-transition:enter-end="opacity-100 transform translate-y-0">
 
-             <div class="bg-indigo-50 dark:bg-indigo-900/20 border-l-4 border-indigo-500 p-4 mb-6 rounded-r-lg shadow-sm dark:shadow-none">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-info-circle text-indigo-500"></i>
-                    </div>
-                    <div class="ml-3">
-                        <h3 class="text-sm font-bold text-indigo-800 dark:text-indigo-200">Varlık Alt Türleri Yönetimi</h3>
-                        <p class="text-sm text-indigo-700 dark:text-indigo-300 mt-1">
-                            Bu bölümde <strong>{{ $kategori->name }}</strong> kategorisine ait alt türleri (örn: Proje Tipi, Daire Tipi, Parsel Tipi) yönetebilirsiniz.
-                            Bu türler "Yayın Tipi" (Satılık/Kiralık) değildir, varlığın fiziksel tipidir.
+             <div class="bg-amber-500/10 border-l-4 border-amber-500 p-4 mb-6 rounded-r-2xl shadow-sm">
+                <div class="flex items-start gap-3">
+                    <x-icon name="katman" class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                        <h3 class="text-sm font-bold text-amber-900 dark:text-amber-200">Varlık Alt Türleri Yönetimi</h3>
+                        <p class="text-sm text-amber-800 dark:text-amber-300 mt-0.5">
+                            Bu bölümde <strong>{{ $kategori->name }}</strong> kategorisine ait alt türleri (Villa, Rezidans, Daire vb.) yönetebilir ve hangi yayın tiplerinde geçerli olduklarını belirleyebilirsiniz.
                         </p>
                     </div>
                 </div>
@@ -301,78 +538,68 @@
 
             @if(isset($altKategoriler) && count($altKategoriler) > 0)
                 @foreach ($altKategoriler as $altKategori)
-                    <div class="mb-6 bg-white dark:bg-slate-900 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-slate-800 dark:border-slate-700">
+                    <div class="mb-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-6">
                         <!-- Alt Kategori Başlığı -->
-                        <div class="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-slate-800 pb-4">
+                        <div class="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-4">
                             <div class="flex items-center gap-3">
-                                <span class="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                                    <i class="fas fa-layer-group text-lg"></i>
-                                </span>
+                                <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold shrink-0">
+                                    <x-icon name="katman" class="w-5 h-5" />
+                                </div>
                                 <div>
-                                    <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 dark:text-slate-100">
+                                    <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                         {{ $altKategori->name ?? $altKategori->ad ?? 'İsimsiz Alt Kategori' }}
                                     </h3>
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">ID: {{ $altKategori->id }}</span>
+                                    <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">ID: {{ $altKategori->id }}</span>
                                 </div>
-                                <span
-                                    class="ml-2 text-xs px-2.5 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full font-medium shadow-sm dark:shadow-none">
+                                <span class="ml-2 text-xs px-2.5 py-1 bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 rounded-full font-semibold border border-amber-500/20">
                                     {{ $altKategoriYayinTipleri[$altKategori->id]->count() ?? 0 }} aktif ilişki
                                 </span>
                             </div>
                             <button onclick="deleteAltKategori({{ $altKategori->id }}, '{{ $altKategori->name }}')"
-                                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg transition-colors duration-200">
-                                <i class="fas fa-trash mr-1.5"></i>
+                                class="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:text-rose-400 dark:hover:bg-rose-900/40 rounded-xl border border-rose-200/60 dark:border-rose-900/50 transition-colors">
+                                <x-icon name="sil" class="w-3.5 h-3.5 mr-1" />
                                 Alt Türü Sil
                             </button>
                         </div>
 
-                        <div class="mb-3">
-                            <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+                        <div>
+                            <h4 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
                                 Bu Alt Tür İçin Geçerli Yayın Tipleri
                             </h4>
-                            <!-- Bu Alt Kategorinin Yayın Tipleri -->
                             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                                 @foreach ($allYayinTipleri as $yayinTipi)
                                     @php
-                                        // ✅ FIX: Pivot tablo kontrolü (alt_kategori_yayin_tipi)
                                         $activeIds = $altKategoriYayinTipleri[$altKategori->id] ?? collect([]);
                                         $active = $activeIds->contains($yayinTipi->id);
 
-                                        // ✅ SAB: Kategori bazlı filtreleme
                                         $excludedYayinTipleri = ['Devren Satılık'];
-
                                         if ($kategori->slug === 'konut') {
                                             $excludedYayinTipleri[] = 'Yazlık Kiralık';
                                         }
-
                                         if ($kategori->slug !== 'yazlik-kiralama') {
                                             $excludedYayinTipleri[] = 'Günlük Kiralık';
                                         }
-
                                         if ($kategori->slug === 'arsa') {
                                             $excludedYayinTipleri[] = 'Yazlık Kiralık';
                                         }
-
                                         if ($kategori->slug === 'isyeri') {
                                             $excludedYayinTipleri[] = 'Kat Karşılığı';
                                         }
-
                                         if (in_array($yayinTipi->yayin_tipi, $excludedYayinTipleri)) {
-                                            continue; // Skip this iteration
+                                            continue;
                                         }
                                     @endphp
 
                                     <label
-                                        class="flex items-center p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-all duration-200 {{ $active ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700 ring-1 ring-green-500/20' : 'bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-gray-700' }} dark:border-slate-700">
-                                        <input type="checkbox" class="rounded mr-3 yayin-tipi-toggle w-4 h-4 text-green-600 focus:ring-green-500 border-gray-300"
+                                        class="flex items-center p-3 rounded-xl border cursor-pointer transition-all duration-200 {{ $active ? 'bg-amber-50/70 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800 ring-1 ring-amber-500/20' : 'bg-slate-50/70 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-700/80 hover:bg-slate-100/80' }}">
+                                        <input type="checkbox" class="rounded mr-3 yayin-tipi-toggle w-4 h-4 text-amber-600 focus:ring-amber-500 border-slate-300 dark:border-slate-600"
                                             data-alt-kategori-id="{{ $altKategori->id }}"
                                             data-yayin-tipi-id="{{ $yayinTipi->id }}"
                                             data-yayin-tipi="{{ $yayinTipi->yayin_tipi }}"
                                             data-yayin-tipi-name="{{ $yayinTipi->yayin_tipi }}"
                                             data-aktiflik-durumu="{{ $active ? 'true' : 'false' }}" {{ $active ? 'checked' : '' }}
                                             onchange="PropertyTypeManager.debounce('toggle-yayin-' + this.dataset.yayinTipiId, () => toggleYayinTipiRelation(this), 500)">
-                                        <span
-                                            class="text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">{{ $yayinTipi->yayin_tipi }}</span>
+                                        <span class="text-sm font-medium text-slate-900 dark:text-white">{{ $yayinTipi->yayin_tipi }}</span>
                                     </label>
                                 @endforeach
                             </div>
@@ -380,372 +607,45 @@
                     </div>
                 @endforeach
             @else
-                <div class="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-300 dark:border-slate-800 rounded-xl bg-gray-50 dark:bg-gray-800/50 dark:bg-slate-900">
-                    <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4 dark:bg-slate-900">
-                        <i class="fas fa-layer-group text-2xl text-gray-400 dark:text-gray-500"></i>
+                <div class="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900">
+                    <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-4 text-slate-400">
+                        <x-icon name="katman" class="w-7 h-7" />
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1 dark:text-slate-100">Alt Tür Tanımsız</h3>
-                    <p class="text-gray-500 dark:text-gray-400 text-center max-w-sm">
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">Alt Tür Tanımsız</h3>
+                    <p class="text-slate-500 dark:text-slate-400 text-center max-w-sm text-sm">
                         Bu kategori için henüz tanımlanmış bir alt tür (varlık alt tipi) bulunmamaktadır.
                     </p>
                 </div>
             @endif
-        </div>
+        </div> {{-- End Tab 2 --}}
 
-        <!-- 2. Relations Grid (Gerçek Veriler) -->
-        <div class="bg-gray-50 dark:bg-slate-900 rounded-xl shadow-lg p-6 mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-3">
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white dark:text-slate-100">
-                        🔗 Alan İlişkileri
-                    </h2>
-                    <span
-                        class="text-xs px-2 py-1 bg-lime-100 dark:bg-lime-900 text-lime-800 dark:text-lime-200 rounded-full">
-                        {{ count($fieldDependencies) }} Alan
-                    </span>
-                </div>
-                <a href="{{ route('admin.property_types.field_dependencies', $kategori->id) }}"
-                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-lg shadow-lg hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 active:scale-95 text-sm">
-                    <i class="fas fa-cog mr-2"></i>
-                    Alan İlişkilerini Yönet
-                </a>
-            </div>
+        {{-- ✨ TAB 3: SMART FORMS MATRIX (Yayın Tipi Kuralları) --}}
+        <div x-show="activeTab === 'smart-rules'"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 transform translate-y-2"
+             x-transition:enter-end="opacity-100 transform translate-y-0">
 
-            @if (count($fieldDependencies) > 0)
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-slate-900">
-                            <tr>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                                    Alan
-                                </th>
-                                @foreach ($allYayinTipleri as $yayinTipi)
-                                    @php
-                                        // ✅ SAB: Kategori bazlı filtreleme
-                                        $excludedYayinTipleri = ['Devren Satılık'];
-
-                                        if ($kategori->slug === 'konut') {
-                                            $excludedYayinTipleri[] = 'Yazlık Kiralık';
-                                        }
-
-                                        if ($kategori->slug !== 'yazlik-kiralama') {
-                                            $excludedYayinTipleri[] = 'Günlük Kiralık';
-                                        }
-
-                                        if ($kategori->slug === 'arsa') {
-                                            $excludedYayinTipleri[] = 'Yazlık Kiralık';
-                                        }
-
-                                        if ($kategori->slug === 'isyeri') {
-                                            $excludedYayinTipleri[] = 'Kat Karşılığı';
-                                        }
-
-                                        if (
-                                            in_array($yayinTipi->yayin_tipi ?? $yayinTipi->name, $excludedYayinTipleri)
-                                        ) {
-                                            continue;
-                                        }
-                                    @endphp
-                                    <th
-                                        class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                                        {{ $yayinTipi->name ?? $yayinTipi->yayin_tipi }}
-                                    </th>
-                                @endforeach
-                            </tr>
-                        </thead>
-                        <tbody class="bg-gray-50 dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-700">
-                            @foreach ($fieldDependencies as $fieldSlug => $fieldData)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-900">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <span class="text-xl mr-2">{{ $fieldData['field_icon'] }}</span>
-                                            <span class="text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">
-                                                {{ $fieldData['field_name'] }}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    @foreach ($allYayinTipleri as $yayinTipi)
-                                        @php
-                                            // ✅ SAB: Head ve Body filtreleme mantığı senkronize edildi
-                                            $excludedYayinTipleri = ['Devren Satılık'];
-                                            if ($kategori->slug !== 'yazlik-kiralama') {
-                                                $excludedYayinTipleri[] = 'Günlük Kiralık';
-                                            }
-
-                                            if ($kategori->slug === 'arsa') {
-                                                $excludedYayinTipleri[] = 'Yazlık Kiralık';
-                                            }
-
-                                            if (
-                                                in_array(
-                                                    $yayinTipi->yayin_tipi ?? $yayinTipi->name,
-                                                    $excludedYayinTipleri,
-                                                )
-                                            ) {
-                                                continue;
-                                            }
-
-                                            $stateVal = $fieldData['yayin_tipleri'][$yayinTipi->id] ?? false;
-                                            // ✅ Field dependency ID'yi ID ya da slug ile bul
-$yayinTipiKeyId = (string) $yayinTipi->id;
-$yayinTipiKeySlug = $yayinTipi->slug ?? $yayinTipi->yayin_tipi;
-$fieldDep = \App\Models\KategoriYayinTipiFieldDependency::where(
-    'kategori_slug',
-    $kategori->slug,
-)
-    ->where('field_slug', $fieldSlug)
-    ->where(function ($q) use ($yayinTipiKeyId, $yayinTipiKeySlug) {
-        $q->where('yayin_tipi', $yayinTipiKeyId)->orWhere(
-            'yayin_tipi',
-                                                        $yayinTipiKeySlug,
-                                                    );
-                                                })
-                                                ->first();
-                                            $fieldDepId = $fieldDep ? $fieldDep->id : null;
-                                        @endphp
-                                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                                            <input type="checkbox" class="rounded field-dependency-toggle"
-                                                data-field-id="{{ $fieldDepId }}"
-                                                data-field-slug="{{ $fieldSlug }}"
-                                                data-field-name="{{ $fieldData['field_name'] }}"
-                                                data-field-type="{{ $fieldData['field_type'] }}"
-                                                data-field-category="{{ $fieldData['field_category'] ?? 'general' }}"
-                                                data-yayin-tipi-id="{{ $yayinTipi->id }}"
-                                                data-yayin-tipi-slug="{{ $yayinTipiKeySlug }}"
-                                                {{ $stateVal ? 'checked' : '' }} onchange="toggleFieldDependency(this)">
-                                        </td>
-                                    @endforeach
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <!-- Empty State -->
-                <div class="text-center py-8">
-                    <i class="fas fa-inbox text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
-                    <p class="text-gray-500 dark:text-gray-400 mb-4">
-                        Bu kategori için alan ilişkisi tanımlı değil.
-                    </p>
-                    <a href="{{ route('admin.property_types.field_dependencies', $kategori->id) }}"
-                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:from-blue-700 hover:to-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 transition-all duration-200 transform hover:scale-105 active:scale-95">
-                        <i class="fas fa-plus mr-2"></i>
-                        Alan İlişkilerini Tanımla
-                    </a>
-                </div>
-            @endif
-        </div>
-
-        <!-- 4. Features Toggle -->
-        <div class="bg-gray-50 dark:bg-slate-900 rounded-xl shadow-lg p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white dark:text-slate-100">
-                    ✨ Özellik Havuzu (Kategori Bazlı)
-                </h2>
-                <div class="flex gap-2">
-                    <a href="{{ route('admin.ups.features.index') }}"
-                        class="inline-flex items-center px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white font-semibold rounded-lg shadow hover:bg-gray-700 transition-all text-sm dark:shadow-none">
-                        <i class="fas fa-list mr-2"></i>
-                        Global Havuz
-                    </a>
-                </div>
-            </div>
-
-            <div class="mb-6 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-info-circle text-blue-500"></i>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm text-blue-700 dark:text-blue-300">
-                            <strong>Yönetim Rehberi:</strong> Aşağıdaki listeden seçtiğiniz özellikler bu kategori için "aktif" hale gelir.
-                            Ancak hangi yayın tipinde görüneceğini ve zorunlu olup olmayacağını
-                            <button @click="activeTab = 'smart-rules'" class="font-bold underline hover:text-blue-900 dark:hover:text-blue-100">Yayın Tipi Kuralları (SMART FORMS)</button>
-                            sekmesinden ayarlamalısınız.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            @if (count($featureCategories ?? []) > 0)
-                @foreach ($featureCategories as $category)
-                    @if (count($category->features ?? []) > 0)
-                        <div class="mb-6 last:mb-0">
-                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 dark:text-slate-100">
-                                {{ $category->name }}
-                            </h3>
-                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                                @foreach ($category->features as $feature)
-                                    <label
-                                        class="flex items-center p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-all duration-200">
-                                        <input type="checkbox" class="rounded mr-2 feature-toggle"
-                                            data-feature-id="{{ $feature->id }}"
-                                            data-feature-name="{{ $feature->name }}"
-                                            data-aktiflik-durumu="{{ $feature->aktiflik_durumu ?? false ? '1' : '0' }}"
-                                            {{ $feature->aktiflik_durumu ?? false ? 'checked' : '' }}>
-                                        <span class="text-sm text-gray-900 dark:text-white dark:text-slate-100">{{ $feature->name }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-                @endforeach
-            @else
-                <div class="px-6 py-16 text-center border-2 border-dashed border-gray-100 dark:border-gray-700/50 rounded-2xl dark:border-slate-800">
-                    <div class="w-20 h-20 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-full mx-auto mb-6 flex items-center justify-center">
-                        <i class="fas fa-magic text-3xl text-blue-500/50"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 dark:text-slate-100">Özellik Tanımı Bulunmuyor</h3>
-                    <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-xs mx-auto text-sm">
-                        Bu kategoriye henüz bir özellik atanmamış. Havuzdaki özellikleri buraya bağlayın.
-                    </p>
-                    <a href="{{ route('admin.ups.features.index') }}"
-                        class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:-translate-y-0.5 transition-all duration-200">
-                        <i class="fas fa-plus-circle mr-2"></i>
-                        Havuzdan Özellik Ekle
-                    </a>
-                </div>
-            @endif
-        </div>
-
-        <!-- Save Button -->
-        <div class="mt-6 flex justify-between items-center">
-            <!-- Bulk Actions -->
-            <div class="flex gap-2">
-                <button onclick="toggleAllYayinTipleri(true)"
-                    class="inline-flex items-center px-4 py-2.5 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 text-sm dark:bg-slate-900 dark:hover:bg-gray-600 dark:shadow-none">
-                    <i class="fas fa-check-square mr-2"></i>
-                    Tümünü Seç
-                </button>
-                <button onclick="toggleAllYayinTipleri(false)"
-                    class="inline-flex items-center px-4 py-2.5 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 text-sm dark:bg-slate-900 dark:hover:bg-gray-600 dark:shadow-none">
-                    <i class="fas fa-square mr-2"></i>
-                    Tümünü Kaldır
-                </button>
-            </div>
-
-            <!-- Save Button -->
-            <button id="saveBtn" onclick="saveChanges()"
-                class="inline-flex items-center px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-lg shadow-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 active:scale-95 text-lg">
-                <i class="fas fa-save mr-2"></i>
-                Tüm Değişiklikleri Kaydet
-            </button>
-        </div>
-
-        <!-- Loading Overlay -->
-        <div id="loadingOverlay" style="display: none;"
-            class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center">
-            <div class="bg-gray-50 dark:bg-slate-900 rounded-xl p-8 text-center">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-lime-600 mx-auto mb-4"></div>
-                <p class="text-gray-900 dark:text-white font-semibold dark:text-slate-100">Kaydediliyor...</p>
-            </div>
-        </div>
-
-        <!-- Success Toast -->
-        <div id="successToast"
-            class="hidden fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50">
-            <div class="flex items-center">
-                <i class="fas fa-check-circle mr-2"></i>
-                <span>Değişiklikler başarıyla kaydedildi!</span>
-            </div>
-        </div>
-
-        <!-- Error Toast -->
-        <div id="errorToast" class="hidden fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-50">
-            <div class="flex items-center">
-                <i class="fas fa-exclamation-circle mr-2"></i>
-                <span>Bir hata oluştu!</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Yeni Yayın Tipi Ekle -->
-    <div id="addYayinTipiModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50" style="display: none;">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-gray-50 dark:bg-slate-900 rounded-xl shadow-xl p-8 max-w-md w-full">
-                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 dark:text-slate-100">
-                    ➕ Yeni Yayın Tipi Ekle
-                </h3>
-
-                <form id="addYayinTipiForm" onsubmit="addYayinTipi(event)">
-                    <!-- Alt Kategori Seçimi -->
-                    @if (count($altKategoriler ?? []) > 0)
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2 dark:text-slate-100">
-                                Alt Kategori Seçin
-                            </label>
-                            <select id="modalAltKategori"
-                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-black dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 dark:shadow-none">
-                                <option value="">Seçin...</option>
-                                @foreach ($altKategoriler as $altKat)
-                                    <option value="{{ $altKat->id }}">{{ $altKat->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @else
-                        <input type="hidden" id="modalAltKategori" value="">
-                        <div
-                            class="mb-4 text-sm text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded p-3">
-                            Bu kategori için alt kategori bulunmuyor. Yayın tipi doğrudan ana kategoriye eklenecek.
-                        </div>
-                    @endif
-
-                    <!-- Yayın Tipi Adı -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2 dark:text-slate-100">
-                            Yayın Tipi Adı
-                        </label>
-                        <input type="text" id="modalYayinTipi" required
-                            placeholder="Örn: Satılık, Kiralık, Kat Karşılığı"
-                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 dark:shadow-none">
-                    </div>
-
-                    <!-- Butonlar -->
-                    <div class="flex gap-3">
-                        <button type="button" onclick="closeAddYayinTipiModal()"
-                            class="inline-flex items-center justify-center px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 flex-1 dark:bg-slate-900 dark:hover:bg-gray-600">
-                            İptal
-                        </button>
-                        <button type="submit"
-                            class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 active:scale-95 flex-1">
-                            <i class="fas fa-plus mr-2"></i>
-                            Ekle
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        {{-- 🔆 SMART FORMS PANEL - Yayin Tipi Kuralları Tab Close --}}
-        </div>
-
-        {{-- ✨ TAB: SMART FORMS MATRIX (Yayın Tipi Kuralları) --}}
-        <div x-show="activeTab === 'smart-rules'" x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0 transform translate-y-4"
-            x-transition:enter-end="opacity-100 transform translate-y-0">
-
-            <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm p-6 dark:shadow-none dark:border-slate-700"
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-6"
                 x-data="window.smartFormMatrix({{ $kategori->id }})"
                 x-init="init()">
 
                 {{-- Header --}}
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2 dark:text-slate-100">
-                            <i class="fas fa-magic text-purple-500 mr-2"></i>
-                            Yayın Tipi Kuralları (Smart Forms)
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <x-icon name="ai" class="w-6 h-6 text-amber-500" />
+                            <span>Yayın Tipi Kuralları (Smart Forms)</span>
                         </h2>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
-                            Özelliklerin hangi yayın tiplerinde görüneceğini ve zorunlu olacağını belirleyin.
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                            Hangi alan ve özelliklerin seçilen yayın tipinde görünür ve zorunlu olacağını belirleyin.
                         </p>
                     </div>
                     <div class="flex items-center gap-3">
-                        <span x-show="lastSaveTime" class="text-sm text-gray-500 dark:text-gray-400">
-                            Son kayıt: <span x-text="lastSaveTime"></span>
+                        <span x-show="lastSaveTime" class="text-xs text-slate-500 dark:text-slate-400">
+                            Son kayıt: <span x-text="lastSaveTime" class="font-semibold text-slate-700 dark:text-slate-300"></span>
                         </span>
-                        <span x-show="saving" class="inline-flex items-center px-3 py-1.5 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-lg text-sm">
-                            <svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <span x-show="saving" class="inline-flex items-center px-3 py-1.5 bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 rounded-xl text-xs font-semibold">
+                            <svg class="animate-spin h-3.5 w-3.5 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
@@ -756,46 +656,46 @@ $fieldDep = \App\Models\KategoriYayinTipiFieldDependency::where(
 
                 {{-- Loading Skeleton --}}
                 <div x-show="loading" class="animate-pulse space-y-4">
-                    <div class="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                    <div class="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div class="h-12 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
+                    <div class="h-64 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
                 </div>
 
                 {{-- Error State --}}
-                <div x-show="error && !loading" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+                <div x-show="error && !loading" class="bg-rose-50/80 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-2xl p-4 mb-6">
                     <div class="flex items-start gap-3">
-                        <i class="fas fa-exclamation-circle text-red-600 dark:text-red-400 mt-0.5"></i>
+                        <x-icon name="hata" class="w-5 h-5 text-rose-600 dark:text-rose-400 mt-0.5 shrink-0" />
                         <div class="flex-1">
-                            <h4 class="text-sm font-semibold text-red-900 dark:text-red-100 mb-1">Hata</h4>
-                            <p class="text-sm text-red-800 dark:text-red-200" x-text="error"></p>
+                            <h4 class="text-sm font-semibold text-rose-900 dark:text-rose-100 mb-0.5">Hata</h4>
+                            <p class="text-sm text-rose-800 dark:text-rose-200" x-text="error"></p>
                         </div>
                     </div>
                 </div>
 
                 {{-- Matrix Table --}}
-                <div x-show="!loading && !error" class="overflow-x-auto border border-gray-200 dark:border-slate-800 rounded-lg dark:border-slate-700">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-slate-900">
+                <div x-show="!loading && !error" class="overflow-x-auto border border-slate-200/80 dark:border-slate-800 rounded-2xl">
+                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                        <thead class="bg-slate-50 dark:bg-slate-800/60">
                             <tr>
-                                <th scope="col" class="sticky left-0 z-10 bg-gray-50 dark:bg-slate-900 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-r border-gray-200 dark:border-slate-800 dark:border-slate-700">
+                                <th scope="col" class="sticky left-0 z-10 bg-slate-50 dark:bg-slate-800 px-6 py-3.5 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-r border-slate-200/80 dark:border-slate-700">
                                     Özellik
                                 </th>
                                 <template x-for="yayinTipi in yayinTipleri" :key="yayinTipi.id">
-                                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        <div class="flex flex-col items-center gap-1">
-                                            <span x-text="yayinTipi.yayin_tipi"></span>
-                                            <span class="text-xs text-gray-400 dark:text-gray-500 normal-case" x-text="yayinTipi.kategori_adi"></span>
+                                    <th scope="col" class="px-4 py-3.5 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                                        <div class="flex flex-col items-center gap-0.5">
+                                            <span x-text="yayinTipi.yayin_tipi" class="font-bold"></span>
+                                            <span class="text-[10px] text-slate-400 dark:text-slate-500 normal-case" x-text="yayinTipi.kategori_adi"></span>
                                         </div>
                                     </th>
                                 </template>
                             </tr>
                         </thead>
-                        <tbody class="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="bg-white dark:bg-slate-900 divide-y divide-slate-200/70 dark:divide-slate-800">
                             <template x-for="feature in features" :key="feature.id">
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-150">
-                                    <td class="sticky left-0 z-10 bg-white dark:bg-slate-900 px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white border-r border-gray-200 dark:border-slate-800 dark:border-slate-700 dark:text-slate-100">
+                                <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                                    <td class="sticky left-0 z-10 bg-white dark:bg-slate-900 px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white border-r border-slate-200/80 dark:border-slate-700">
                                         <div class="flex flex-col">
-                                            <span x-text="feature.adi"></span>
-                                            <span class="text-xs text-gray-500 dark:text-gray-400" x-text="feature.kod"></span>
+                                            <span x-text="feature.adi" class="font-semibold"></span>
+                                            <span class="text-xs text-slate-400 dark:text-slate-500" x-text="feature.kod"></span>
                                         </div>
                                     </td>
                                     <template x-for="yayinTipi in yayinTipleri" :key="yayinTipi.id">
@@ -807,8 +707,8 @@ $fieldDep = \App\Models\KategoriYayinTipiFieldDependency::where(
                                                         :checked="getCellState(feature.id, yayinTipi.id).is_visible"
                                                         @change="toggleVisibility(yayinTipi.id, feature.id, $event)"
                                                         :disabled="saving"
-                                                        class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 dark:bg-slate-900">
-                                                    <span class="ml-2 text-xs text-gray-600 dark:text-gray-400">Görünür</span>
+                                                        class="w-4 h-4 text-amber-600 bg-slate-100 border-slate-300 rounded focus:ring-amber-500 dark:bg-slate-800 dark:border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                                                    <span class="ml-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium">Görünür</span>
                                                 </label>
 
                                                 {{-- Required Checkbox --}}
@@ -817,8 +717,8 @@ $fieldDep = \App\Models\KategoriYayinTipiFieldDependency::where(
                                                         :checked="getCellState(feature.id, yayinTipi.id).is_required"
                                                         @change="toggleRequired(yayinTipi.id, feature.id, $event)"
                                                         :disabled="saving || !getCellState(feature.id, yayinTipi.id).is_visible"
-                                                        class="w-5 h-5 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500 dark:focus:ring-red-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 dark:bg-slate-900">
-                                                    <span class="ml-2 text-xs text-red-600 dark:text-red-400 font-medium">Zorunlu</span>
+                                                        class="w-4 h-4 text-rose-600 bg-slate-100 border-slate-300 rounded focus:ring-rose-500 dark:bg-slate-800 dark:border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                                                    <span class="ml-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold">Zorunlu</span>
                                                 </label>
                                             </div>
                                         </td>
@@ -831,54 +731,140 @@ $fieldDep = \App\Models\KategoriYayinTipiFieldDependency::where(
 
                 {{-- Summary Statistics --}}
                 <div x-show="!loading && !error" class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" x-text="getSummary().total_features"></div>
-                        <div class="text-sm text-blue-800 dark:text-blue-200">Toplam Özellik</div>
+                    <div class="bg-amber-500/10 rounded-2xl p-4 border border-amber-500/20">
+                        <div class="text-2xl font-bold text-amber-700 dark:text-amber-400" x-text="getSummary().total_features"></div>
+                        <div class="text-xs font-medium text-amber-800 dark:text-amber-300 mt-0.5">Toplam Özellik</div>
                     </div>
-                    <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
-                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" x-text="getSummary().total_yayin_tipleri"></div>
-                        <div class="text-sm text-purple-800 dark:text-purple-200">Yayın Tipi</div>
+                    <div class="bg-slate-100 dark:bg-slate-800/60 rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
+                        <div class="text-2xl font-bold text-slate-800 dark:text-slate-200" x-text="getSummary().total_yayin_tipleri"></div>
+                        <div class="text-xs font-medium text-slate-600 dark:text-slate-400 mt-0.5">Yayın Tipi</div>
                     </div>
-                    <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
-                        <div class="text-2xl font-bold text-green-600 dark:text-green-400" x-text="getSummary().visible_count"></div>
-                        <div class="text-sm text-green-800 dark:text-green-200">Görünür Hücre</div>
+                    <div class="bg-emerald-500/10 rounded-2xl p-4 border border-emerald-500/20">
+                        <div class="text-2xl font-bold text-emerald-700 dark:text-emerald-400" x-text="getSummary().visible_count"></div>
+                        <div class="text-xs font-medium text-emerald-800 dark:text-emerald-300 mt-0.5">Görünür Hücre</div>
                     </div>
-                    <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
-                        <div class="text-2xl font-bold text-red-600 dark:text-red-400" x-text="getSummary().required_count"></div>
-                        <div class="text-sm text-red-800 dark:text-red-200">Zorunlu Alan</div>
+                    <div class="bg-rose-500/10 rounded-2xl p-4 border border-rose-500/20">
+                        <div class="text-2xl font-bold text-rose-700 dark:text-rose-400" x-text="getSummary().required_count"></div>
+                        <div class="text-xs font-medium text-rose-800 dark:text-rose-300 mt-0.5">Zorunlu Alan</div>
                     </div>
                 </div>
 
                 {{-- Legend --}}
-                <div class="mt-6 bg-gray-50 dark:bg-slate-900 rounded-lg p-4 border border-gray-200 dark:border-slate-800 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 dark:text-slate-100">
-                        <i class="fas fa-info-circle text-blue-500 mr-2"></i>
-                        Nasıl Çalışır?
+                <div class="mt-6 bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700">
+                    <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                        <x-icon name="bilgi" class="w-4 h-4 text-amber-500" />
+                        <span>Nasıl Çalışır?</span>
                     </h3>
-                    <ul class="space-y-2 text-sm text-gray-700 dark:text-slate-200 dark:text-slate-300">
+                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400">
                         <li class="flex items-start gap-2">
-                            <i class="fas fa-check text-blue-500 mt-0.5"></i>
-                            <span><strong>Görünür:</strong> Bu özellik seçilen yayın tipinde formda görünür olacak</span>
+                            <x-icon name="onay" class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                            <span><strong>Görünür:</strong> Bu özellik seçilen yayın tipinde formda gösterilir.</span>
                         </li>
                         <li class="flex items-start gap-2">
-                            <i class="fas fa-asterisk text-red-500 mt-0.5"></i>
-                            <span><strong>Zorunlu:</strong> Bu özellik seçilen yayın tipinde doldurulması zorunlu alan olacak</span>
+                            <x-icon name="onay" class="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                            <span><strong>Zorunlu:</strong> Bu özellik seçilen yayın tipinde zorunlu tutulur.</span>
                         </li>
                         <li class="flex items-start gap-2">
-                            <i class="fas fa-lightbulb text-yellow-500 mt-0.5"></i>
-                            <span><strong>Otomatik Senkron:</strong> Zorunlu işaretlendiğinde otomatik olarak görünür yapılır. Görünür kaldırıldığında zorunlu da otomatik kaldırılır.</span>
+                            <x-icon name="yenile" class="w-4 h-4 text-sky-500 shrink-0 mt-0.5" />
+                            <span><strong>Otomatik Senkron:</strong> Zorunlu işaretlendiğinde otomatik olarak görünür yapılır.</span>
                         </li>
                         <li class="flex items-start gap-2">
-                            <i class="fas fa-save text-green-500 mt-0.5"></i>
-                            <span><strong>Anlık Kayıt:</strong> Her değişiklik anında API'ye kaydedilir, "Kaydet" butonuna basmanıza gerek yok.</span>
+                            <x-icon name="flas" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                            <span><strong>Anlık Kayıt:</strong> Değişiklikler anında API'ye kaydedilir.</span>
                         </li>
                     </ul>
                 </div>
 
             </div>
+        </div> {{-- End Tab 3 --}}
+
+        <!-- 🔔 Loading Overlay -->
+        <div id="loadingOverlay" style="display: none;"
+            class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 text-center border border-slate-200 dark:border-slate-800 shadow-2xl">
+                <div class="animate-spin rounded-full h-10 w-10 border-2 border-amber-500 border-t-transparent mx-auto mb-3"></div>
+                <p class="text-slate-900 dark:text-white font-semibold text-sm">Kaydediliyor...</p>
+            </div>
+        </div>
+
+        <!-- 🔔 Success Toast -->
+        <div id="successToast"
+            class="hidden fixed top-5 right-5 bg-emerald-600 text-white px-5 py-3.5 rounded-2xl shadow-xl z-50 flex items-center gap-2.5 border border-emerald-500">
+            <x-icon name="onay-daire" class="w-5 h-5" />
+            <span class="text-sm font-medium">Değişiklikler başarıyla kaydedildi!</span>
+        </div>
+
+        <!-- 🔔 Error Toast -->
+        <div id="errorToast" class="hidden fixed top-5 right-5 bg-rose-600 text-white px-5 py-3.5 rounded-2xl shadow-xl z-50 flex items-center gap-2.5 border border-rose-500">
+            <x-icon name="hata" class="w-5 h-5" />
+            <span class="text-sm font-medium">Bir hata oluştu!</span>
+        </div>
+
+        <!-- ➕ Modal: Yeni Yayın Tipi Ekle -->
+        <div id="addYayinTipiModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50" style="display: none;">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full border border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center justify-between mb-5">
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <x-icon name="ekle" class="w-5 h-5 text-amber-500" />
+                            <span>Yeni Yayın Tipi Ekle</span>
+                        </h3>
+                        <button type="button" onclick="closeAddYayinTipiModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1">
+                            <x-icon name="kapat" class="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    <form id="addYayinTipiForm" onsubmit="addYayinTipi(event)">
+                        <!-- Alt Kategori Seçimi -->
+                        @if (count($altKategoriler ?? []) > 0)
+                            <div class="mb-4">
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+                                    Alt Kategori Seçin
+                                </label>
+                                <select id="modalAltKategori"
+                                    class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm">
+                                    <option value="">Seçin (Opsiyonel)...</option>
+                                    @foreach ($altKategoriler as $altKat)
+                                        <option value="{{ $altKat->id }}">{{ $altKat->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @else
+                            <input type="hidden" id="modalAltKategori" value="">
+                            <div class="mb-4 text-xs text-amber-800 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+                                Bu kategori için alt kategori bulunmuyor. Yayın tipi doğrudan ana kategoriye eklenecek.
+                            </div>
+                        @endif
+
+                        <!-- Yayın Tipi Adı -->
+                        <div class="mb-5">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+                                Yayın Tipi Adı
+                            </label>
+                            <input type="text" id="modalYayinTipi" required
+                                placeholder="Örn: Günlük Kiralık, Haftalık Kiralık"
+                                class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm">
+                        </div>
+
+                        <!-- Butonlar -->
+                        <div class="flex gap-3">
+                            <button type="button" onclick="closeAddYayinTipiModal()"
+                                class="inline-flex items-center justify-center px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 font-semibold rounded-xl text-sm transition-colors flex-1">
+                                İptal
+                            </button>
+                            <button type="submit"
+                                class="inline-flex items-center justify-center px-4 py-2.5 bg-[#C9A84C] hover:bg-[#B8973B] text-slate-950 font-bold rounded-xl shadow-sm transition-all duration-200 transform active:scale-95 text-sm flex-1">
+                                <x-icon name="ekle" class="w-4 h-4 mr-1.5 text-slate-950" />
+                                Ekle
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
 
     </div> {{-- Container Close --}}
+
 
 
     @push('scripts')

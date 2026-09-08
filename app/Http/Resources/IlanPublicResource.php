@@ -68,7 +68,8 @@ class IlanPublicResource extends JsonResource
                     'mahalle_adi' => $rel->mahalle_adi,
                 ];
             }),
-            'adres' => $this->adres,
+            // KORUNAN: adres — tam adres bilgisi yetki gerektirir
+            // 'adres' => $this->adres,
 
             // Kategori Bilgileri (Public)
             'kategori' => $this->whenLoaded('kategori', function () {
@@ -89,16 +90,19 @@ class IlanPublicResource extends JsonResource
             'banyo_sayisi' => $this->banyo_sayisi,
             'balkon_sayisi' => $this->balkon_sayisi,
 
-            // Fotoğraflar (Public)
-            'fotograflar' => $this->whenLoaded('fotograflar', function () {
-                return $this->fotograflar->map(function ($foto) {
-                    return [
-                        'id' => $foto->id,
-                        'url' => $foto->url ?? asset('storage/'.$foto->dosya_yolu),
-                        'display_order' => $foto->display_order,
-                        'kapak_fotografi' => $foto->kapak_fotografi ?? false,
-                    ];
-                })->sortBy('display_order')->values();
+            // Fotoğraflar (Public) — yalnızca kapak fotoğrafı
+            'kapak_fotografi' => $this->whenLoaded('fotograflar', function () {
+                $cover = $this->fotograflar->where('kapak_fotografi', true)->first()
+                    ?? $this->fotograflar->sortBy('display_order')->first();
+
+                if (!$cover) {
+                    return null;
+                }
+
+                return [
+                    'id' => $cover->id,
+                    'url' => $cover->url ?? asset('storage/'.$cover->dosya_yolu),
+                ];
             }),
 
             // Tarihler (Public)

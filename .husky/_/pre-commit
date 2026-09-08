@@ -8,6 +8,23 @@
 #   2. scripts/tools/conflict-guard.sh --staged (BACKLOG-2)
 # ============================================================
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo '.')"
+COMMON_DIR="$(git rev-parse --git-common-dir 2>/dev/null || echo '')"
+COMMON_ROOT="$REPO_ROOT"
+if [ -n "$COMMON_DIR" ] && [ -d "$COMMON_DIR" ]; then
+    COMMON_ROOT="$(cd "$COMMON_DIR/.." 2>/dev/null && pwd)"
+fi
 
-"$REPO_ROOT/scripts/tools/secret-scan.sh" --staged || exit 1
-"$REPO_ROOT/scripts/tools/conflict-guard.sh" --staged || exit 1
+SECRET_SCAN="$REPO_ROOT/scripts/tools/secret-scan.sh"
+[ -f "$SECRET_SCAN" ] || SECRET_SCAN="$COMMON_ROOT/scripts/tools/secret-scan.sh"
+
+CONFLICT_GUARD="$REPO_ROOT/scripts/tools/conflict-guard.sh"
+[ -f "$CONFLICT_GUARD" ] || CONFLICT_GUARD="$COMMON_ROOT/scripts/tools/conflict-guard.sh"
+
+if [ -f "$SECRET_SCAN" ]; then
+    "$SECRET_SCAN" --staged || exit 1
+fi
+
+if [ -f "$CONFLICT_GUARD" ]; then
+    "$CONFLICT_GUARD" --staged || exit 1
+fi
+

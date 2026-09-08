@@ -333,10 +333,10 @@
 - **BACKLOG-5/9** ✅ Cherry-pick — Lead tenant boundary RC1→RC2 (commit `37144cd7`, LeadTenantBoundaryTest 10/10 PASS)
 - **RC2 GitHub sync** ✅ — Tüm yeni commit'ler push edildi (`27fd89d7..9f95dfca`)
 
-### Pre-existing Test Failures (RC2 Dışı / Unit Test Borçları)
+### Pre-existing Test Failures (RC2 Dışı / Unit Test Borçları) — ✅ TAMAMEN ÇÖZÜLDÜ
 
 - `FeatureAssignmentObserverTest` — ✅ ÇÖZÜLDÜ (9/9 PASS — 2026-09-04 Oturum 155 doğrulaması)
-- `UserTest` — 1 error (`user has ilanlar`, danisman_id vs user_id beklentisi)
-- `CiGuardRawDbWriteTest` — 1 error (`guard passes on clean codebase`, script whitelist drift)
-- `DemandMatchingEngineTest` — 3 errors (SQL filtreleme draft ilan durumu beklentisi)
+- `UserTest` — ✅ ÇÖZÜLDÜ (7/7 PASS — 2026-09-06 Oturum 157 — TenantScope: raw DB insert'e `tenant_id` eklendi)
+- `CiGuardRawDbWriteTest` — ✅ ÇÖZÜLDÜ (7/7 PASS — 2026-09-06 Oturum 157 — guard whitelist: OptionARepairCommand + SeedFeatureAssignmentsCommand eklendi)
+- `DemandMatchingEngineTest` — ✅ ÇÖZÜLDÜ (4/4 PASS — 2026-09-06 Oturum 157 — INTENTIONAL_CROSS_TENANT: `Ilan::withoutTenant()` bypass eklendi)
 > Detaylar ve teşhisler için bkz: [docs/architecture/codex-handoff-2026-09-04.md](file:///Users/macbookpro/repos/yalihan-os/docs/architecture/codex-handoff-2026-09-04.md)

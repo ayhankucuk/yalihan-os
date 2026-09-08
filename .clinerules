@@ -181,4 +181,66 @@ Her görev sonunda:
 3. `docs/PROGRESS-TRACKER.md`'yi güncelle
 
 ---
-*Sürüm: Oturum 19 (2026-05-20) | Kaynak: .cursorrules + Cline otonom davranış genişletmeleri*
+
+## 10. 🧠 CONTEXT CACHE MANAGER (Zorunlu — Her Material Görev Sonunda)
+
+Cline oturumları arasında token tasarrufu için `.project-brain/` dosyalarını cache olarak kullan.
+Her material görev (test ekleme, API değişikliği, migration, feature ekleme) sonunda otomatik çalışır.
+
+### Write Cache (Görev Sonunda — Otomatik)
+
+Her material işlem tamamlandığında:
+
+```bash
+# 1. Evidence kaydı — .project-brain/EVIDENCE_INDEX.md
+→ Commit hash, test sonucu, risk durumu, dosya satır referansları
+
+# 2. Project state — .project-brain/PROJECT_STATE.md
+→ Değişen dosyalar, yeni yetenekler, mevcut branch durumu
+
+# 3. Karar kaydı — .project-brain/DECISION_LOG.md
+→ Mimari kararlar, bypass理由, kapsam değişiklikleri
+```
+
+### Read Cache (Sohbet Başında — Otomatik)
+
+Her yeni oturumda veya kullanıcı geçmiş sorduğunda:
+
+```bash
+# Oturum başında (zaten otomatik okunuyor sayılır)
+→ tail -20 .project-brain/EVIDENCE_INDEX.md   # Son doğrulamalar
+→ head -20 .project-brain/PROJECT_STATE.md      # Mevcut durum
+
+# Kullanıcı "önceki oturum neydi" sorunca
+→ grep -A5 "7f467b8a" .project-brain/EVIDENCE_INDEX.md
+```
+
+### Token Hedefi
+
+| Durum | Maliyet |
+|---|---|
+| Cache MISS (yeni bilgi) | ~1,000-2,000 token/görev |
+| Cache HIT (geçmiş bilgi) | < 100 token/oturum başı |
+| Hedef tasarruf | %90+ |
+
+### Dosya Hiyerarşisi
+
+```
+.project-brain/
+├── EVIDENCE_INDEX.md      ← Test/doğrulama kanıtları (cache write)
+├── PROJECT_STATE.md        ← Mevcut sistem durumu (cache write)
+├── DECISION_LOG.md        ← Mimari kararlar ve理由 (cache write)
+├── KNOWN_ISSUES.md        ← Bilinen hatalar (cache write)
+└── *.md                   ← Diğer proje dokümanları
+```
+
+### Kural
+
+- Cache dosyalarına **sadece kesin doğrulanan bilgi** yazılır — inferans yazılmaz
+- Her kayıt **commit hash** ve **tarih** içerir
+- Evidence level: `REPO_VERIFIED | TEST_VERIFIED | PRODUCTION_VERIFIED | DOCUMENTED | INFERRED | UNKNOWN`
+- Kullanıcı geçmiş sorduğunda önce cache okunur, sonra gerekirse tekrar doğrulanır
+
+---
+*Sürüm: Oturum 20 (2026-09-06) | Kaynak: .cursorrules + Cline otonom davranış genişletmeleri*
+*Yeni: §10 Context Cache Manager — token tasarrufu için zorunlu cache protokolü*

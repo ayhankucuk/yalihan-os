@@ -147,7 +147,7 @@
                 @include('admin.partials.ai-status-bar')
 
                 <main id="main" class="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-900">
-                    <div class="w-full px-4 py-6 sm:px-6 lg:px-8">
+                    <div class="w-full px-4 py-6 pb-28 sm:px-6 lg:px-8">
                         {{-- Flash Messages --}}
                         {{-- Flash Messages --}}
                         @if (session('success'))

@@ -2,6 +2,7 @@
 
 namespace App\Modules\TakimYonetimi\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Gorev extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, BelongsToTenant;
 
     protected $table = 'gorevler';
 
@@ -33,6 +34,19 @@ class Gorev extends Model
         // CHECKOUT-D2: Operational task linkage
         'ilan_id',
         'reservation_id',
+        // Sprint 15: Action Center — tenant isolation
+        'tenant_id',
+        // Sprint 15: Action Center — AI provenance
+        'source_event',
+        'source_module',
+        'ai_confidence_score',
+        'ai_reasoning',
+        'ai_model_version',
+        // Sprint 15: Action Center — lifecycle tracking
+        'assigned_at',
+        'started_at',
+        'completed_at',
+        'cancel_reason',
     ];
 
     protected $casts = [
@@ -41,6 +55,11 @@ class Gorev extends Model
         'tamamlanma_yuzdesi' => 'integer',
         'ilan_id' => 'integer',
         'reservation_id' => 'integer',
+        'tenant_id' => 'integer',
+        'ai_confidence_score' => 'float',
+        'assigned_at' => 'datetime',
+        'started_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
 
     /**

@@ -344,8 +344,9 @@
                     </div>
 
                     @if(isset($queueStatus['error']))
-                        <div class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg">
-                            <p class="text-xs text-red-600 dark:text-red-400">{{ $queueStatus['error'] }}</p>
+                        <div class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg flex items-center gap-2">
+                            <x-icon name="uyari" class="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
+                            <p class="text-xs text-red-600 dark:text-red-400">Kuyruk durumu alınırken bir servis hatası oluştu.</p>
                         </div>
                     @endif
 

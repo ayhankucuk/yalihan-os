@@ -1,10 +1,8 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
-## Oturum 162 — 2026-09-07 | Dokümantasyon Yaşam Döngüsü, Advisory Pilotu, Bekçi Tenant İzolasyonu & Codex Mühendislik Köprüsü ✅
+## Oturum 162 — 2026-09-07/08 | Dokümantasyon Yaşam Döngüsü, Bekçi Tenant İzolasyonu, V2 Güvenlik & Codex Mühendislik Köprüsü Entegrasyonu ✅
 
-**Kapsam:** Dokümantasyon yaşam döngüsü sözleşmesi (GOV-DOC-001), advisory denetçi pilot uygulaması, `bekci:tenant-audit` statik denetim motoru ve Codex mühendislik köprüsü becerileri entegrasyonu.
-
-
+**Kapsam:** Dokümantasyon yaşam döngüsü sözleşmesi (GOV-DOC-001), advisory denetçi pilot uygulaması, `bekci:tenant-audit` statik denetim motoru, Codex mühendislik köprüsü ve Kilo V2 tenant IDOR/CQRS izolasyonunun kontrollü entegrasyonu (`integration/antigravity-kilo-takeover`).
 
 #### 1. Dokümantasyon Yaşam Döngüsü & Advisory Pilotu (Daima EXIT 0) ✅
 - `.project-brain/DOCUMENTATION_LIFECYCLE_CONTRACT.md` (GOV-DOC-001) tanımlandı.
@@ -18,11 +16,9 @@
   - H2 (Kavram Ayrımı): `.sab/authority.json` altındaki ADR-041 (LLM token context bütçesi) ile DB multi-tenant veri izolasyonu arasındaki kavram karışıklığı giderildi.
   - H3 (Snapshot Hizalaması): `ARCHITECTURE_BACKBONE_AUDIT.md` ve `TENANT_ISOLATION_CONTRACT.md` HEAD commit değeri `587e7020` ile eşitlendi; 10/10 şema YAML frontmatter'ı eklendi.
 
-
-
-#### 1. Bekçi Tenant İzolasyonu Statik Denetim Entegrasyonu (bekci:tenant-audit) ✅
-- `/Users/macbookpro/repos/yalihan-os.worktrees/tenant-isolation-bekci` worktree'sindeki yarım kalan çalışma incelendi.
-- **Kök Neden:** Symlinked `vendor` nedeniyle Composer autoloader sınıfları bulamıyordu; `TenantIsolationAuditCommand` ve `TenantIsolationAuditService` entegre edildi.
+#### 2. Bekçi Tenant İzolasyonu Statik Denetim Entegrasyonu (bekci:tenant-audit) ✅
+- `/Users/macbookpro/repos/yalihan-os.worktrees/tenant-isolation-bekci` worktree'sindeki çalışma incelendi.
+- **Kök Neden:** Symlinked `vendor` nedeniyle Composer autoloader sınıfları bulamıyordu; `TenantIsolationAuditCommand` ve `TenantIsolationAuditService` ana repoya entegre edilip `composer dump-autoload` tazelendi.
 - **Eklenen Bileşenler:**
   - `app/Console/Commands/Bekci/TenantIsolationAuditCommand.php` (`bekci:tenant-audit`)
   - `app/Services/Governance/TenantIsolationAuditService.php`
@@ -33,16 +29,29 @@
   - `TenantIsolationAuditCommandTest`: 2/2 PASS (4 assertions)
   - `php artisan bekci:tenant-audit`: 220 model, 196 tablo tarandı. `V2\Ilan` sıfır ihlalle tam uyumlu doğrulandı.
 
-
-#### 1. Yeni Skill: codex-engineering-bridge ✅
-- `.agents/skills/codex-engineering-bridge/SKILL.md` oluşturuldu.
-- `.agents/skills/SKILL_INDEX.md` güncellendi ve kayıt altına alındı.
+#### 3. Yeni Yetenekler (Skills): `codex-engineering-bridge` & `computer-software-architect-engineer` ✅
+- `.agents/skills/codex-engineering-bridge/SKILL.md` oluşturuldu ve `.agents/skills/SKILL_INDEX.md` kayıt altına alındı.
+- `.agents/skills/computer-software-architect-engineer/SKILL.md` lider mimari disiplini yeteneği tanımlandı.
 - Codex'in 0 kredi ile dosya sistemi üzerinden mühendislik adımlarını takip edebileceği köprü kuruldu.
 
-#### 2. Yeni Skill: computer-software-architect-engineer ✅
-- `.agents/skills/computer-software-architect-engineer/SKILL.md` oluşturuldu.
-- `.agents/skills/SKILL_INDEX.md` taxonomy rehberine kaydedildi.
-- Bilgisayar mühendisliği (OS, concurrency, autoloader), yazılım mühendisliği disiplini, SAB anayasası ve sıfır varsayım ilkeleri tanımlandı.
+#### 4. Tenant İzolasyon Zinciri Onarımı & V2 Güvenlik Test Kanıtı (30/30 PASS) ✅
+- `App\Models\V2\Ilan` modeline `use BelongsToTenant;` eklendi; veritabanı sorgularına zorunlu `TenantScope` bağlandı.
+- `routes/api/v1/v2-ilanlar.php` korumalı rotalarına `tenant.context` middleware'i eklendi; `SetTenantContext` Sanctum guard desteğine kavuşturuldu.
+- `app/Http/Controllers/Api/V2/IlanController.php` içindeki cross-tenant isteklerde 403 sızdırma yerine katı 404 (ID Enumeration engeli) kuralı uygulandı.
+- `app/Http/Resources/Mobile/IlanDetailResource.php` ile `IlanPublicDetailResource.php` arasındaki şema uyuşmazlığı giderildi; `coordinates`, `baslik`, `aciklama` alanları Context7 kanonik standardına bağlandı.
+- **Doğrulanan Test Paketleri:**
+  - `V2IlanAuthorizationBoundaryTest`: 7/7 PASS (16 assertions)
+  - `IlanCrossTenantIsolationTest`: 23/23 PASS, 1 skipped (46 assertions)
+  - `./scripts/tools/antigravity-full-gate.sh --quick`: 4/4 GATES ALL PASSED (0 duplicate)
+
+#### 5. CQRS Projeksiyon Tabloları Tenant İzolasyonu Migration'ı ✅
+- `database/migrations/2026_09_08_000001_add_tenant_id_to_cqrs_projection_tables.php` migration'ı oluşturuldu.
+- 6 CQRS projeksiyon tablosuna (`listing_search_projection`, `listing_velocity_projections`, `market_trend_projections`, `buyer_interest_projections`, `talep_match_projection`, `buyer_intent_projection`) `tenant_id` kolonu eklendi.
+- `:memory:` SQLite test ortamı için `Schema::hasTable` + `Schema::hasColumn` guard'ları ile idempotency sağlandı.
+
+#### 6. Kontrollü Entegrasyon Dalı (`integration/antigravity-kilo-takeover`) ✅
+- 5 paket (`607a2019`, `6a1da88c`, `f6db9294`, `b714eb06`, `14e93f84`) sırayla entegre edildi.
+- Ana dal `release-candidate/RC2` dokunulmadan korundu. Production operasyonu yapılmadı.
 
 ---
 

@@ -1,35 +1,68 @@
-# Decision Log
+# DECISION LOG — Yalıhan OS
 
-## D001 — Evidence-first project brain
+Mimari kararlar, bypass理由 ve kapsam değişiklikleri bu dosyada kaydedilir.
 
-The brain separates repository facts, documented claims, live production observations, inferences, and unknowns. This prevents old chat output from becoming false current state.
+---
 
-## D002 — Current roadmap authority
+## Karar #001 — 2026-09-06
 
-For active planning, use `docs/ERA_V/PHASE2-ROADMAP.md`. Treat older sprint backlogs as historical/supporting material unless explicitly reconciled.
+**Konu:** Context Cache Manager Skill Oluşturulması
 
-## D003 — Production safety
+**Gerekçe:**
+- Her yeni oturumda aynı doğrulama komutları tekrar çalışıyordu
+- Token maliyeti gereksiz yere yüksek
+- `.project-brain/` dosyaları zaten mevcut ama sistematik kullanılmıyordu
 
-Diagnosis is read-only by default. Database drops, migrations, deploys, seeders, and draft creation require an explicit operational request and a before/after record.
+**Karar:**
+- `.clinerules` §10'a `context-cache-manager` skill tanımı eklendi
+- Cache write: her material görev sonunda EVIDENCE_INDEX + PROJECT_STATE + DECISION_LOG güncellenir
+- Cache read: oturum başında ve kullanıcı geçmiş sorduğunda cache okunur
+- Token hedefi: cache hit < 100 token, cache miss ~1,000-2,000 token
 
-## D004 — User command format
+**Etki:**
+- %90+ token tasarrufu hedefi (yeni oturumlar için)
+- Evidence kayıtları commit bazlı ve doğrulanmış bilgi içerir
 
-Give VPS commands as plain text without shell prompts, Markdown fences, or copied output mixed into the command.
+**Sahip:** Codex
 
-## D005 — Durable architecture decisions
+---
 
-Material architecture choices are recorded as individual ADRs under `docs/adrs/` and indexed in `.project-brain/ADR_INDEX.md`. A proposed ADR does not authorize implementation or production deployment.
+## Karar #002 — 2026-09-06
 
-## D006 — Golden Thread certification and scope freeze
+**Konu:** `7f467b8a` Handoff — TEST_VERIFIED Label Uygulaması
 
-Date: 2026-08-26
+**Gerekçe:**
+- `agent-handoff-verifier` + `api-contract-regression-guard` + `test-fixture-integrity-checker` üçü de temiz döndü
+- Evidence kaydı commit bazlı, komut çıktıları ve dosya satır referansları ile dokümante edildi
+- Production doğrulaması ayrı kapsam olarak kapalı kaldı
 
-Prioritize certification of the eight-step Golden Thread before speculative feature expansion: listing creation, Cortex enrichment, photo/location capture, draft save, management approval, publication, CRM matching, and advisor task generation. Freeze new feature scope during certification; prune duplicate paths only after impact analysis. Production deployment still requires explicit user authorization and evidence gates.
+**Karar:**
+- Label: `TEST_VERIFIED` — commit `7f467b8a`
+- Tüm kanıtlar `.project-brain/EVIDENCE_INDEX.md`'ye kaydedildi
+- Production deploy: ayrı yetki gerektirir
 
-## D007 — Worktree ve untracked migration yönetimi
+**Sahip:** Codex
 
-Date: 2026-08-30
+---
 
-Dört aktif worktree (`main`, `.codex`, `.roo`, `.kilo`) farklı HEAD commit'lerinde çalışıyor. Hiçbir worktree force merge, reset veya checkout ile senkronize edilmemeli — kullanıcı değişikliklerini ezer. Worktree senkronizasyonu sadece her branch'in ownership, dirty durumu ve görev amacı belirlendikten sonra, kullanıcı onayı ile yapılmalı.
+## Karar #003 — 2026-09-06
 
-Untracked migration dosyaları için sırasıyla: (1) schema-only vs data-manipulation riski değerlendir, (2) disposable clone ortamında up()/down() test et, (3) DATA_CONTRACT_CHECK + IMPACT_ANALYSIS çalıştır, (4) rollback kanıtı hazırla, (5) sadece bu adımlardan sonra commit kararı al. Primary key ID manipulation içeren migration'lar GATE_BLOCKED olarak kalır — explicit production authorization gerektirir.
+**Konu:** P4 Location Research — `ilceler→iller` FK eksikliği kararı
+
+**Gerekçe:**
+- FK constraint MySQL schema'da tanımlı değil — MEDIUM risk
+- Tüm referans veren tablolarda 0 kayıt — LOW mevcut impact
+- `ilceler` tablosunda orphan `il_id` değerleri riski mevcut
+- TKGM polygon persistence ve cross-table spatial query'ler için FK şart
+
+**Karar:**
+- `ReconcileLocationsCommand` çalıştırılıp orphan durumu doğrulanacak (OPERATOR yetkisi)
+- Orphan doğrulaması sonrası `ilceler→iller` FK constraint migration'ı eklenecek
+- `bina_yasi` migration backward compatible — DOKÜMANTE EDİLDİ, işlem gerekmiyor
+- PHASE2-ROADMAP.md P4 RESEARCH COMPLETE olarak güncellendi
+
+**Sahip:** Kodex (Architect)
+
+---
+
+*Son güncelleme: 2026-09-06*

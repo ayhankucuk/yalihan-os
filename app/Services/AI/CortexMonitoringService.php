@@ -5,6 +5,7 @@ namespace App\Services\AI;
 use App\Models\AiLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * ��️ SAB SEALED
@@ -143,17 +144,20 @@ class CortexMonitoringService
     {
 
         try {
-            $pending = DB::table('jobs')->where('queue', $queue)->count();
-            $processed = DB::table('jobs')
+            $hasJobs = Schema::hasTable('jobs');
+            $hasFailedJobs = Schema::hasTable('failed_jobs');
+
+            $pending = $hasJobs ? DB::table('jobs')->where('queue', $queue)->count() : 0;
+            $processed = $hasJobs ? DB::table('jobs')
                 ->where('queue', $queue)
                 ->whereNotNull('reserved_at')
                 ->where('reserved_at', '>=', now()->subMinutes(5))
-                ->count();
+                ->count() : 0;
 
-            $failed = DB::table('failed_jobs')
+            $failed = $hasFailedJobs ? DB::table('failed_jobs')
                 ->where('queue', $queue)
                 ->where('failed_at', '>=', now()->subHours(24))
-                ->count();
+                ->count() : 0;
 
             return [
                 'servis_durumu' => ($processed > 0 || $pending === 0) ? 'running' : 'stopped',

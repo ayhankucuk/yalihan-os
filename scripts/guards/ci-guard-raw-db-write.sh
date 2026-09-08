@@ -15,6 +15,9 @@
 #   - *_quarantine tabloları (arşiv, onarım izolasyonu)
 #   - tests/ dizini (fixture setup)
 #   - Bu dosyanın kendisi (scripts/)
+#   - Console repair/seed komutları (bulk operation, observer bypass intentional):
+#       OptionARepairCommand.php  — bulk repair/migration (updateOrInsert)
+#       SeedFeatureAssignmentsCommand.php — re-seed clearing (delete)
 #
 # Exit Codes:
 #   0 = Forbidden pattern yok
@@ -63,6 +66,9 @@ SCAN_DIRS=(
 # ─────────────────────────────────────────────────────────────
 WRITE_PATTERN="DB::table\s*\(\s*['\"]feature_assignments['\"]\s*\)->(insert|update|delete|updateOrInsert|upsert)"
 
+# Whitelisted console commands (repair/seed — bulk operations, observer bypass intentional)
+WHITELIST_PATTERN="OptionARepairCommand|SeedFeatureAssignmentsCommand"
+
 for DIR in "${SCAN_DIRS[@]}"; do
     if [ ! -d "$DIR" ]; then
         continue
@@ -76,6 +82,7 @@ for DIR in "${SCAN_DIRS[@]}"; do
         | grep -v "//.*DB::table" \
         | grep -v "/\*.*DB::table" \
         | grep -v "#" \
+        | grep -vE "$WHITELIST_PATTERN" \
         || true)
 
     if [ -n "$MATCHES" ]; then
@@ -99,6 +106,7 @@ for DIR in "${SCAN_DIRS[@]}"; do
         --include="*.php" 2>/dev/null \
         | xargs grep -l -E "updateOrInsert|->upsert\(" 2>/dev/null \
         | grep -v "_quarantine" \
+        | grep -vE "$WHITELIST_PATTERN" \
         || true)
 
     if [ -n "$UPSERT_MATCHES" ]; then

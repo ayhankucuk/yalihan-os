@@ -22,17 +22,17 @@
         <!-- Header Area -->
         <div class="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
-                <h1
-                    class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-3xl font-bold text-transparent dark:from-blue-400 dark:to-indigo-400">
-                    <span class="material-symbols-outlined mr-2 text-blue-500">stethoscope</span> AI Portfolio Doctor
+                <h1 class="flex items-center text-3xl font-extrabold text-slate-900 dark:text-slate-100">
+                    <x-icon name="stetoskop" class="mr-3 h-8 w-8 text-[#C9A84C]" />
+                    <span>AI Portfolio Doctor</span>
                 </h1>
                 <p class="mt-2 text-sm font-medium text-slate-500 dark:text-slate-400">Bu ilan neden satılmıyor ve ne
                     yapmalıyım?</p>
             </div>
             <div>
                 <button @click="fetchPortfolio()"
-                    class="flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700">
-                    <span class="material-symbols-outlined">sync</span>
+                    class="flex items-center gap-2 rounded-xl bg-[#0A1628] hover:bg-[#12223c] border border-[#C9A84C]/40 px-5 py-2.5 text-sm font-semibold text-[#C9A84C] shadow-md transition-all hover:scale-[1.02] active:scale-95">
+                    <x-icon name="yenile" class="w-4 h-4" />
                     <span x-text="loading ? 'Analiz Ediliyor...' : 'Yeniden Analiz Et'"></span>
                 </button>
             </div>
@@ -77,7 +77,7 @@
             <!-- Empty State / Loading -->
             <div x-show="loading"
                 class="doctor-glass rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-900/30">
-                <span class="material-symbols-outlined mb-4 animate-pulse text-indigo-400" style="font-size:3rem">stethoscope</span>
+                <x-icon name="stetoskop" class="mx-auto mb-4 h-14 w-14 animate-pulse text-indigo-400" />
                 <h3 class="text-xl font-medium text-slate-700 dark:text-slate-300">Portföyünüz Teşhis Ediliyor...</h3>
                 <p class="mt-2 text-sm text-slate-500 dark:text-slate-500">Yapay zeka tüm piyasa sinyallerini taramaktadır.
                 </p>
@@ -86,7 +86,7 @@
             <div x-show="!loading && listings.length === 0"
                 class="doctor-glass rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-900/30"
                 x-cloak>
-                <span class="material-symbols-outlined mb-4 text-emerald-500 opacity-80" style="font-size:3rem">check_circle</span>
+                <x-icon name="onay-daire" class="mx-auto mb-4 h-14 w-14 text-emerald-500 opacity-80" />
                 <h3 class="text-xl font-medium text-slate-700 dark:text-slate-300">Harika Haber!</h3>
                 <p class="mt-2 text-sm text-slate-500 dark:text-slate-500">Portföyünüzde majör problem tespit edilen
                     herhangi bir ilan yok. (Veya filtrenize uyan bir ilan bulunamadı.)</p>
@@ -107,7 +107,7 @@
                             <span class="rounded-md px-2.5 py-1 text-xs font-bold"
                                 :class="getBadgeColors(item.primary_problem)"
                                 x-text="item.primary_problem.replace(/_/g, ' ')"></span>
-                            <span class="text-xs font-medium text-slate-400 dark:text-slate-500"><span class="material-symbols-outlined">tag</span> <span x-text="item.listing_id"></span></span>
+                            <span class="inline-flex items-center gap-1 text-xs font-medium text-slate-400 dark:text-slate-500"><x-icon name="etiket" class="w-3.5 h-3.5 inline-block" /> <span x-text="item.listing_id"></span></span>
                         </div>
                         <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100" x-text="item.listing_title"></h3>
                         <p class="mt-1 font-bold text-indigo-600 dark:text-indigo-400"
@@ -131,7 +131,7 @@
                             class="flex h-full flex-col justify-between rounded-lg border border-indigo-100 bg-indigo-50 p-4 dark:border-indigo-800/50 dark:bg-indigo-900/20">
                             <div>
                                 <div class="mb-2 flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-indigo-500">bolt</span>
+                                    <x-icon name="flas" class="w-4 h-4 text-indigo-500" />
                                     <span
                                         class="text-xs font-bold uppercase tracking-widest text-indigo-800 dark:text-indigo-300">Önerilen
                                         Aksiyon</span>
@@ -141,8 +141,8 @@
                             </div>
                             <div class="mt-4 flex items-center justify-between">
                                 <a :href="'/admin/ilanlar/' + item.listing_id + '/edit'"
-                                    class="text-xs font-bold uppercase text-indigo-600 underline decoration-2 underline-offset-4 transition-colors hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
-                                    Optimizasyonu Uygula <span class="material-symbols-outlined ml-1">arrow_forward</span>
+                                    class="inline-flex items-center text-xs font-bold uppercase text-indigo-600 underline decoration-2 underline-offset-4 transition-colors hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                    Optimizasyonu Uygula <x-icon name="sag-ok" class="ml-1 w-3.5 h-3.5 inline-block" />
                                 </a>
                             </div>
                         </div>

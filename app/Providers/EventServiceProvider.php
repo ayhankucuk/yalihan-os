@@ -28,6 +28,7 @@ class EventServiceProvider extends ServiceProvider
             \App\Listeners\InvalidateIlanCache::class,               // Cache invalidation
             \App\Listeners\SendEmailOnIlanCreated::class,            // Email notification
             \App\Listeners\UpdateAnalyticsProjections::class,          // [Phase 16] Analytics CQRS-lite Sync
+            \App\Listeners\ActionCenter\IlanCreatedActionListener::class, // [Sprint 15] Action Center: 3 Gorev (foto, açıklama, fiyatlandırma)
         ],
         \App\Events\IlanUpdated::class => [
             \App\Listeners\InvalidateIlanCache::class, // Cache invalidation
@@ -46,25 +47,30 @@ class EventServiceProvider extends ServiceProvider
         ],
         \App\Events\IlanYayinlandiEvent::class => [
             \App\Listeners\NotifyLeadsOnNewListing::class,
+            \App\Listeners\ActionCenter\IlanPublishedActionListener::class, // [Sprint 15] Action Center: lead matching check
         ],
         \App\Events\LeadOlusturuldu::class => [
             \App\Listeners\AutoReplyToLeadCreation::class,
             \App\Listeners\ProcessNewLeadForCRM::class,
             \App\Listeners\NotifyAdminsOnNewLead::class,
             \App\Listeners\EvaluateLeadWithCortex::class,
+            \App\Listeners\ActionCenter\LeadCreatedActionListener::class, // [Sprint 15] Action Center: contact lead SLA
         ],
         \App\Events\LeadDurumDegisti::class => [
             // Analytics, History log vb. dinleyiciler eklenecek
         ],
         \App\Events\LeadAgentAtandi::class => [
             \App\Listeners\NotifyAgentOnLeadAssignment::class,
+            \App\Listeners\ActionCenter\LeadAssignedActionListener::class, // [Sprint 15] Action Center: contact assigned lead
         ],
         \App\Events\TalepReceived::class => [
             \App\Jobs\AnalyzeAndPrioritizeDemand::class, // Context7: Otonom Fırsat Sentezi ve Bildirim Sistemi
+            \App\Listeners\ActionCenter\TalepReceivedActionListener::class, // [Sprint 15] Action Center: match demand to listings
         ],
         \App\Events\IlanPriceChanged::class => [
             // Fiyat değişim takibi ve n8n entegrasyonu
             \App\Listeners\NotifyN8nOnIlanPriceChanged::class,
+            \App\Listeners\ActionCenter\IlanPriceChangedActionListener::class, // [Sprint 15] Action Center: re-evaluate matching
         ],
         // Context7: Takım Yönetimi Otomasyonu - Temel Event Sistemi
         \App\Events\GorevCreated::class => [
@@ -137,6 +143,8 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\Reservation\ReservationCreatedEvent::class => [
             \App\Listeners\Reservation\ListenReservationCreated::class,
             \App\Listeners\Reservation\ListenReservationCreatedReadiness::class, // Wave 2
+            // [Sprint 15] Action Center: ReservationCreatedEvent is intentionally NOT handled here.
+            // It's already processed by CreateOperationalTasksJob — no duplicate Gorev creation.
         ],
         \App\Events\Reservation\ReservationModifiedEvent::class => [
             \App\Listeners\Reservation\ListenReservationModified::class,          // Wave 1
@@ -148,15 +156,18 @@ class EventServiceProvider extends ServiceProvider
             \App\Listeners\Reservation\ListenReadinessOnCancellation::class,                                  // Wave 2
             \App\Listeners\Reservation\CancelPendingCredentialNotifications::class . '@handleCancellation',       // Wave 3
             \App\Listeners\Reservation\ListenCancellationCommunication::class,                                   // A2: Cancellation Communication
+            \App\Listeners\ActionCenter\ReservationCancelledActionListener::class, // [Sprint 15] Action Center: cancel readiness
         ],
         // CHECKOUT-D1: ReservationCompletedEvent — now wired
         \App\Events\Reservation\ReservationCompletedEvent::class => [
             \App\Listeners\Reservation\ListenReservationCompleted::class,
+            \App\Listeners\ActionCenter\ReservationCompletedActionListener::class, // [Sprint 15] Action Center: post-stay inspection
         ],
 
         // C3.3: ReservationPayoutReadyEvent — payout readiness surface for admin/operator
         \App\Events\Reservation\ReservationPayoutReadyEvent::class => [
             \App\Listeners\Reservation\ListenPayoutReady::class,
+            \App\Listeners\ActionCenter\PayoutReadyActionListener::class, // [Sprint 15] Action Center: process payout
         ],
 
         // CHECKIN_CHECKOUT Wave 2: Guest Arrival Readiness
@@ -178,6 +189,14 @@ class EventServiceProvider extends ServiceProvider
         // Downstream handlers will be added here when a real business need exists.
         \App\Events\Reservation\ReservationCheckedInEvent::class  => [],
         \App\Events\Reservation\ReservationCheckedOutEvent::class => [],
+
+        // ── Sprint 15: Action Center — Hermes Workforce Events ────────────
+        \App\Events\Workforce\PhotoAnalysisCompleted::class => [
+            \App\Listeners\ActionCenter\PhotoAnalysisActionListener::class, // review AI description (+48h)
+        ],
+        \App\Events\Workforce\PublishingDecisionReady::class => [
+            \App\Listeners\ActionCenter\PublishingDecisionActionListener::class, // review publication decision (+24h)
+        ],
     ];
 
     /**

@@ -251,6 +251,20 @@
     "version_freshness": {
       "age_days": 0
     },
+    "product_policies": {
+      "ADR-Ilan-Erisim-Politikasi": {
+        "status": "APPROVED",
+        "file": "docs/SAB/ADR-Ilan-Erisim-Politikasi.md",
+        "summary": "İlan erişim politikası: yayınlanmış=public, taslak=404, cross-tenant yazma=404, koordinat yaklaşık (0.01°), agent bilgisi tenant-scoped",
+        "access_rules": {
+          "published_listing": "herkes 200 alır; TIKLANABİLİR alanlar",
+          "unpublished_listing": "herkes için 404 (kayıt yokmuş gibi)",
+          "cross_tenant_write": "404 (kayıt yokmuş gibi — 403 değil)",
+          "coordinates": "anonim/cross-tenant: yaklaşık (0.01°); owner/auth same-tenant: tam koordinat",
+          "agent_contact": "anonim/cross-tenant: name+avatar; auth same-tenant: name+avatar+phone+email+whatsapp"
+        }
+      }
+    },
     "ci_pipeline": {
       "active_workflow": ".github/workflows/core-ci.yml",
       "pipeline_name": "Unified Core CI Pipeline",

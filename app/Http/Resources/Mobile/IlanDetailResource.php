@@ -46,6 +46,12 @@ class IlanDetailResource extends JsonResource
                     'lng' => (float) ($this->longitude ?? $this->lng),
                 ],
             ],
+            'coordinates' => [
+                'lat' => (float) ($this->latitude ?? $this->lat),
+                'lng' => (float) ($this->longitude ?? $this->lng),
+            ],
+            'baslik' => $this->baslik,
+            'aciklama' => $this->aciklama,
             'attributes' => [
                 'rooms' => $this->oda_sayisi,
                 'bathrooms' => $this->banyo_sayisi,

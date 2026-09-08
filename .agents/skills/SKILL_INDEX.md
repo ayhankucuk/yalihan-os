@@ -36,6 +36,7 @@ Agent, bir dosyayı açtığında veya değiştireceği zaman bu tabloya bakarak
 | `app/Http/Controllers/Api/V2/*Webhook*` | `hermes-event-sync` + `authorization-boundary-auditor` | Webhook + event koordinasyonu |
 | `tests/Feature/*Webhook*` | `hermes-event-sync` | Webhook idempotency testi |
 | `tests/Unit/*Cost*` | `cortex-orchestration-evaluator` | AI maliyet hesaplama |
+| `docs/architecture/*` | `yalihan-constitution-review` + `saab` | Mimari anayasa uyumu ve kararları |
 | `app/Services/Ilan/IlanPhotoService.php` | `schema-contract-guardian` | Fotoğraf schema, display_order |
 | `app/Http/Controllers/Api/V2/*Photo*` | `schema-contract-guardian` + `authorization-boundary-auditor` | Photo upload + yetki |
 | `/Users/macbookpro/Documents/Codex/*` | `codex-engineering-bridge` | Codex ortak çalışma alanı senkronizasyonu |
@@ -55,6 +56,7 @@ Agent, bir dosyayı açtığında veya değiştireceği zaman bu tabloya bakarak
 | `hermes-event-sync` | n8n webhook, event idempotency, kuyruk akışları | Event/Listener sınıfları |
 | `location-data-reconciliation` | Location hiyerarşi, orphan FK, migration planı | Location model ve migrations |
 | `saab` | Mimari karar, ERA roadmap, ADRS | `docs/ERA_V/`, `.project-brain/SAAB*` |
+| `yalihan-constitution-review` | Anayasa uyumluluk, normatif madde eşleme, sahte başarı/yanlış alarm koruması | `docs/architecture/`, mimari PR'lar |
 | `laravel-enterprise-reviewer` | Thin controller, N+1, DDD sınırları, detektör | Tüm service/controller dosyaları |
 | `api-contract-regression-guard` | JSON schema, pagination, V1/V2 geriye dönük uyumluluk | API controller return'ları |
 | `security-secret-boundary-guard` | .env, PAT, API key sızıntısı, log maskeleme | Secret içeren dosyalar |
