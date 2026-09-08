@@ -4,8 +4,8 @@ document_owner: engineering-lead
 decision_owner: product-owner
 status: active
 canonical: true
-evidence_level: TEST_VERIFIED
-as_of_commit: fe17dd5c
+  evidence_level: TEST_VERIFIED
+  as_of_commit: 911e4e3c
 last_reviewed: 2026-09-08
 review_after: 2026-09-22
 supersedes: null
@@ -361,3 +361,34 @@ if ($tenantService->hasTenant()) {
 
 HOTSPOT_LOCK:database/migrations/2026_08_30_120000_align_yazlik_rezervasyonlar_canonical_columns.php:antigravity:2026-09-08T18:06:21Z:3600
 HOTSPOT_LOCK:database/migrations/2026_09_08_000001_add_tenant_id_to_cqrs_projection_tables.php:antigravity:2026-09-08T18:06:21Z:3600
+
+---
+
+## 2026-09-08 — Sprint 15/RC2 Mühürleme & Açık Madde Durumu
+
+**Commit:** `911e4e3c` (P2-DS-01) + `331fd10a` (BACKLOG-02) + `8b1ca956` (E2E)
+**Lead Architect Review:** Antigravity — 2026-09-08T18:43
+**Production:** HTTP 200 ✅ (Hetzner VPS `157.180.116.63`)
+
+### Madde Durumları — REPO_VERIFIED
+
+| # | Madde | Gerçek Durum | Kanıt |
+|---|-------|-------------|-------|
+| A | `category_field_schema` tablosu drop migration | ❌ **YOK — TABLO HİÇ OLUŞMADI** | `kategori_yayin_tipi_field_dependencies` gerçek tablo; 4 Admin controller aktif kullanıyor. Drop = Admin çökmesi. |
+| B | TC-GT-09/10 (Arsa Kiralık + İşyeri Devren E2E) | ✅ **TAMAMLANDI** | `8b1ca956` — Playwright 4/4 PASS (14.3s) |
+| C | FeatureTemplateResolver birleştirme planı | 📋 **Planlandı (Sonraki Sprint)** | `docs/architecture/RESOLVER_CONSOLIDATION_PLAN.md` — 218 satır, `911e4e3c` mühürlü |
+| D | `config/arsa-dictionaries.php` deprecation | ✅ **ZATEN DEPRECATED** | `@deprecated` docblock mevcut; kod tabanında 0 aktif tüketici; SSOT: `config/yali_options.php` |
+
+### RC2 Kalite Güvenceleri
+
+- Quality Gates: **4/4 PASS** — Conflict Guard, Preflight Guard, Layout Validator, Route Duplication
+- Golden Thread E2E: **8/8 PASS** — TC-GT-01..10
+- TenantScope: **30/30 PASS** — fail-closed + V2 isolation
+- Secrets: **0 tespit** — Secret Scan tüm staged dosyalarda temiz
+
+### Teknik Borç Durumu — Net
+
+Mevcut sprint'te icra edilen tüm teknik borç maddeleri ya tamamlanmış ya da doğru şekilde konumlandırılmıştır. Önümüzdeki sprint öncelikleri:
+1. VPS'e son 2 commit sync'i (`git pull`) — rutin operasyonel
+2. `kategori_yayin_tipi_field_dependencies` → aktif admin kullanım analizi (Sistem B miras)
+3. FeatureTemplateResolver Faz 1 (shared trait)
