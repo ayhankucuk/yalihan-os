@@ -162,9 +162,9 @@ scan_staged() {
   local path_status=$?
   total_violations=$((total_violations + path_status))
 
-  # 2. Content diff scan (exclude the pattern definitions file itself)
+  # 2. Content diff scan (exclude pattern and test fixture files)
   local _diff
-  _diff=$(git diff --staged --no-color -U0 -- . ':(exclude)scripts/tools/secret-scan-patterns.txt' 2>/dev/null || true)
+  _diff=$(git diff --staged --no-color -U0 -- . ':(exclude)scripts/tools/secret-scan-patterns.txt' ':(exclude)scripts/tools/backlog1-*' 2>/dev/null || true)
   do_scan "$_diff" "staged diff"
   local content_status=$?
   total_violations=$((total_violations + content_status))
