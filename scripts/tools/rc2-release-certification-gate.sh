@@ -60,7 +60,7 @@ run_gate() {
 }
 
 if command -v php >/dev/null 2>&1 && [[ -f artisan ]]; then
-    run_gate "sab_integrity" php artisan sab:integrity-scan
+    run_gate "sab_integrity" php artisan sab:integrity-scan --diff
     run_gate "feature_tests" php artisan test --testsuite=Feature
 else
     record "php_gates" "BLOCKED_TOOLING"

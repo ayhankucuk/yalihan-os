@@ -5694,8 +5694,9 @@ Artık ajanlar bu dosyaları her açtığında otomatik olarak ilgili skill yük
 
 ### Bilinen Durumlar
 
-- Storage fotoğraf riski (DEBT-01): ⚠️ kısmen çözüldü — `.gitignore` + `git rm --cached` yapıldı, yeni commit riski engellendi; tarihte `01f8b84a` var (BFG-repo-cleaner ayrı onayla) — **ORTA**
+- Storage fotoğraf riski (DEBT-01): ⚠️ kısmen çözüldü — `.gitignore` + `git rm --cached` yapıldı; tarihte `01f8b84a` (BFG-repo-cleaner) — **ORTA**
 - DEBT-02 & DEBT-03 (Harita köprüsü + TC-GT-11): ✅ **ÇÖZÜLDÜ** — `BROWSER_VERIFIED` — 2026-09-09
-- Kirli RC2: ⏳ çözülmedi — sahiplik belirsiz — **ACİL**
+- DEBT-04 (Kirli RC2): ✅ **ÇÖZÜLDÜ** — 83 dosya 5 commit'e ayrıldı; `worktree: PASS` (ilk kez) — 2026-09-09
 - Skill/Gate commit'i yok: ⏳ çözülmedi — sahiplik belirsiz — **ORTA**
-- Gate (yeni yetenekler dahil): ✅ tamamlandı
+- Gate: ✅ çalışır, ✅ kirli worktree PASS, ⚠️ sab_integrity hâlâ 169 ihlalle FAIL
+- **ACİL KALAN**: sab_integrity 169 ihlal (169 LOW, blocking yok — ama gate FAIL veriyor)

@@ -10,12 +10,11 @@
   - Kapsam: tüm dizinler (`1,3,4,55-92`) — 25 tenant klasörü
   - Öncelik: **ORTA** (ACİL'den düştü — yeni commit riski engellendi)
 
-- **[GÜVENLİK] Ana RC2 kirli — sahiplik belirsiz**
-  - ~35 modified + ~29 untracked (kod/doküman) — storage dizini artık `git status`'ta görünmüyor
-  - Değişiklikler: Controller, model, route, Blade, E2E test, evidence PNG, project-brain
-  - Kim yaptı: bilinmiyor — bu oturum, başka Codex oturumu, Klio, veya yerel geliştirici?
-  - Müdahale şart: sahiplik belirlenmeli, temizlik planı yapılmalı
-  - Öncelik: **ACİL**
+- **DEBT-04 — Ana RC2 Kirli ✅ TEMİZLENDİ**
+  - ✅ 83 dosya 5 commit'e ayrıldı ve push'landı
+  - ✅ Worktree artık clean — `rc2-release-certification-gate.sh` → `worktree: PASS` (ilk kez!)
+  - Commit'ler: `a742724a` (frontend), `38e16c4a` (governance), `c223e1a1` (docs), `36b3b296` (audit), `1349bcb6` (security tests)
+  - Öncelik: ~~ACİL~~ **ÇÖZÜLDÜ**
 
 ## Orta — 2026-09-09
 
