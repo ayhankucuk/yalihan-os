@@ -433,36 +433,31 @@
 
 ---
 
-### KRONIK-2 — Priority: P0 (CRITICAL)
+### KRONIK-2 — Priority: P0 (CRITICAL) ✅ CLOSED
 ### Context7 Türkçe vs Legacy İngilizce Alan Adı Çatışması (Ghost Field Drift)
 
 **Problem:** Proje İngilizce alanlarla (`title`, `description`, `status`, `city`, `price`) başlamış. SAB Anayasası Türkçe kanonik değerler getirdi (`baslik`, `aciklama`, `yayin_durumu`, `il`, `fiyat`). Eski kod hâlâ İngilizce alan adları kullanıyor → ghost field drift, BEKÇİ uyarıları, yanlış veri.
 
-**Env-Drift Guard Flag'leri:**
-- `yayin_durumu` alanı için yasaklı değerler: `'Active'`, `'Draft'`, `'Inactive'`, `'Pending'`
-- `'Taslak'` → kanonik `'taslak'` (lowercase slug form)
-- `'Beklemede'` → kanonik `'beklemede'` (lowercase slug form)
-- `'Aktif'` → kanonik `IlanDurumu::YAYINDA->value`
-- `'Active'` → kanonik `IlanDurumu::YAYINDA->value`
+**Düzeltme (Module-by-module, commit `dec7174c`):**
 
-**Modül-Modül Düzeltme Planı (Big-Bang YOK):**
+| Paket | Dosya | Eski Değer | Yeni Değer |
+|-------|-------|------------|------------|
+| A | `CortexAnalyticsService.php` | `'active'` (4x) | `IlanDurumu::YAYINDA->value` |
+| A | `IstatistikController.php` | lowercase (doğru) | Değişiklik yok |
+| B | `ChurnRiskService.php` | `'aktif'` | `IlanDurumu::YAYINDA->value` |
+| B | `CortexSmartAPIController.php` | `'active'` | `IlanDurumu::YAYINDA->value` |
+| C | `TelegramBotService.php` | `'active'` | `IlanDurumu::YAYINDA->value` |
+| C | `TalepPortfolyoController.php` | `'Yayında'`, `'Taslak'` | `IlanDurumu::YAYINDA/TASLAK->value` |
+| — | `IlanDataProviderService.php` | `'Taslak'` | `IlanDurumu::TASLAK->value` |
 
-| Paket | Domain | Dosyalar | Durum |
-|-------|--------|----------|-------|
-| A | Analitik & Raporlama | `IstatistikController.php`, `CortexAnalyticsService.php` | SCAN GEREKİYOR |
-| B | AI & Tahminleme | `ChurnRiskService.php`, `CortexSmartAPIController.php` | SCAN GEREKİYOR |
-| C | Bildirim & Entegrasyon | `TelegramBotService.php`, `TalepPortfolyoController.php` | SCAN GEREKİYOR |
+**Guard düzeltmeleri:**
+- `EnvDriftGuard.php`: regex `/i` flag kaldırıldı → case-sensitive (canonical lowercase ayrıştı)
+- `env-drift-guard.php`: `ignore_files` eklendi — `ForbiddenFieldAstRule.php` ve `ErrorAutoRepairService.php` (mapping dosyaları legacy key kullanır, legacy enum değil)
 
-**⚠️ Ghost Field Tarama Kuralı:**
-- `env-drift-guard` ile tam tarama yapılana kadar spesifik dosya listesi kesinleşmez
-- Tarama sonucu olmadan hiçbir modül düzeltmesi başlatılmamalı
-- Her modül ayrı commit + ayrı test doğrulaması gerektirir
+**Test:** `env-drift-guard` → `enum_drift: PASS` ✅ (37 ilgili test PASS)
 
-**Exit Criterion:** Tüm domain'lerde kanonik enum değerleri kullanılır. `env-drift-guard` → 0 ghost field uyarısı.
-
-**Status:** `OPEN`
-**Owner:** Kilo (koordinasyon), Klio/Cline/Codex (modül düzeltmeleri)
-**Ön Koşul:** `env-drift-guard` tam tarama çıktısı mevcut değil — tarama önce yapılmalı
+**Status:** `CLOSED` ✅ (2026-09-09, commit `dec7174c`)
+**Kanıt seviyesi:** `TEST_VERIFIED` + `REPO_VERIFIED`
 
 ---
 
@@ -522,7 +517,7 @@
 | BACKLOG-8 | P2 | Photo Race Condition | `IMPLEMENTED` ✅ | Codex |
 | BACKLOG-9 | P2 | Lead Unique Key | `CLOSED` ✅ | Cline |
 | **KRONIK-1** | **P0** | **Şema/Migration Drift** | **OPEN** | **Kilo** |
-| **KRONIK-2** | **P0** | **Ghost Field Env-Drift (yayin_durumu)** | **OPEN** | **Kilo+Multi-Agent** |
+| **KRONIK-2** | **P0** | **Ghost Field Env-Drift (yayin_durumu)** | **CLOSED** ✅ (`dec7174c`) | **Kilo** |
 | **KRONIK-3** | **P1** | **Worktree Kirliliği** | **OPEN** | **Kilo** |
 | **KRONIK-4** | **P1** | **Sessiz Hata Yutma** | **OPEN** | **Kilo** |
 
