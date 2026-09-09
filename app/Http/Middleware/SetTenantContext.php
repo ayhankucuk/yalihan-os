@@ -52,10 +52,13 @@ class SetTenantContext
                 'ip'      => $request->ip(),
             ]);
 
-            return response()->json([
-                'hata'       => 'Kiracı bağlamı kurulamadı.',
-                'hata_kodu'  => 'TENANT_CONTEXT_MISSING',
-            ], 403);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'hata'       => 'Kiracı bağlamı kurulamadı.',
+                    'hata_kodu'  => 'TENANT_CONTEXT_MISSING',
+                ], 403);
+            }
+            abort(403, 'Kiracı bağlamı kurulamadı.');
         }
 
         // Tenant modelini yükle — Redis cache ile (Fix #68: N+1 önlendi)
@@ -72,10 +75,13 @@ class SetTenantContext
                 'uri'       => $request->getRequestUri(),
             ]);
 
-            return response()->json([
-                'hata'      => 'Geçersiz kiracı bağlamı.',
-                'hata_kodu' => 'TENANT_NOT_FOUND',
-            ], 403);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'hata'      => 'Geçersiz kiracı bağlamı.',
+                    'hata_kodu' => 'TENANT_NOT_FOUND',
+                ], 403);
+            }
+            abort(403, 'Geçersiz kiracı bağlamı.');
         }
 
         // Kiracı bağlamını global olarak kur

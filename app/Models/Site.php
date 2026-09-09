@@ -18,7 +18,7 @@ class Site extends BaseModel
         'name',
         'blok_adi',
         'adres',
-        'is_active',
+        'aktiflik_durumu',
         'il_id',
         'ilce_id',
         'mahalle_id',
@@ -27,7 +27,7 @@ class Site extends BaseModel
 
     // ✅ SAB uyumlu casts
     protected $casts = [
-        'is_active' => \App\Enums\AktiflikDurumu::class,
+        'aktiflik_durumu' => \App\Enums\AktiflikDurumu::class,
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -52,12 +52,12 @@ class Site extends BaseModel
     // ✅ SAB uyumlu scopes
     public function scopeActive($query)
     {
-        return $query->where('is_active', \App\Enums\AktiflikDurumu::AKTIF->value);
+        return $query->where('aktiflik_durumu', \App\Enums\AktiflikDurumu::AKTIF->value);
     }
 
     public function scopePasif($query)
     {
-        return $query->where('is_active', false);
+        return $query->where('aktiflik_durumu', false);
     }
 
     public function scopeByIl($query, $ilId)

@@ -486,3 +486,154 @@ Strateji: `ilanlar.tenant_id = ilan_sahibi.user.tenant_id` + `users.tenant_id` (
 - Commit: `ee1725a8` (branch `cline/wizard-tc-gt-06-fix`)
 
 **Test Dosyası Notu (REPO_VERIFIED):** `tests/e2e/golden-thread-wizard.spec.ts:navigateStep4To5()` zaten düzeltilmiş durumda (tek seferlik evaluate çağrısı, `currentStep >= 5` guard).
+
+---
+
+## Session 2026-09-08 — TC-GT-09 & TC-GT-10: E2E Test Genişletmesi
+
+### TC-GT-09 — Arsa Kiralık Dynamic Fields (TEST_VERIFIED)
+
+**Tarih:** 2026-09-08
+**Branch:** `integration/era-v-phase2a-e01`
+**Commit:** `331fd10a` (ArsaIsyeriFeatureAssignmentSeeder + canlı VPS deploy)
+**Test Dosyası:** `tests/e2e/golden-thread-arsa-isyeri.spec.ts`
+
+**Traversal Seneryoo:**
+- Step 1 → 2: Ana Kategori `Arsa & Arazi` → Alt Kategori `Arsa` → Yayın Tipi `Kiralık`
+- Assert: `depozito_arsa`, `imar_durumu`, `kaks`, `taks`, `yola_cephe` alanları DOM'da mevcut
+
+**Seeder Kanıt (REPO_VERIFIED):**
+- `database/seeders/ArsaIsyeriFeatureAssignmentSeeder.php` — `seedArsaKiralikAssignments()` → 14 field assignment
+- `depozito_arsa` slug: line 285 (finansal grup)
+- `yola_cephe` slug: line 279 (fiziksel grup)
+
+**Test Sonucu:** `✓ TC-GT-09 — Arsa Kiralık: Step 1→2 with depozito_arsa, imar_durumu, kaks, taks, yola_cephe fields — PASSED`
+
+---
+
+### TC-GT-10 — İşyeri Devren Dynamic Fields (TEST_VERIFIED)
+
+**Tarih:** 2026-09-08
+**Branch:** `integration/era-v-phase2a-e01`
+**Commit:** `331fd10a`
+**Test Dosyası:** `tests/e2e/golden-thread-arsa-isyeri.spec.ts`
+
+**Traversal Seneryoo:**
+- Step 1 → 2: Ana Kategori `İşyeri` → Alt Kategori `Ofis` → Yayın Tipi `Devren`
+- Assert: `devir_bedeli_isyeri`, `mevcut_ciro`, `ruhsat_durumu_isyeri`, `demirbas_listesi`, `isyeri_tipi` alanları DOM'da mevcut
+
+**Seeder Kanıt (REPO_VERIFIED):**
+- `database/seeders/ArsaIsyeriFeatureAssignmentSeeder.php` — `seedIsyeriDevrenAssignments()` → 8 field assignment
+- `devir_bedeli_isyeri` slug: line 404 (required=true, finansal grup)
+- `mevcut_ciro` slug: line 406
+- `ruhsat_durumu_isyeri` slug: line 407
+- `demirbas_listesi` slug: line 408
+- YayinTipi `devren` slug: `database/seeders/YayinTipiSeeder.php` line 43
+- `isyeri` kategorisi devren'e izin veriyor: `YayinTipiSeeder.php` line 180
+
+**Test Sonucu:** `✓ TC-GT-10 — İşyeri Devren: Step 1→2 with devir_bedeli_isyeri, mevcut_ciro, ruhsat_durumu_isyeri, demirbas_listesi, isyeri_tipi fields — PASSED`
+
+---
+
+### Full Suite Sonucu: 4/4 PASS
+
+```
+npx playwright test tests/e2e/golden-thread-arsa-isyeri.spec.ts --reporter=dot
+
+Running 4 tests using 1 worker
+……
+  4 passed (14.3s)
+
+Exit code: 0
+```
+
+**Test Durumları:**
+| Test | Başlık | Durum |
+|------|--------|-------|
+| TC-GT-07 | Arsa Satılık: ada_no, parsel_no, imar_durumu, kaks, taks | ✅ PASSED |
+| TC-GT-08 | İşyeri Satılık: isyeri_tipi, net_m2, personel_kapasitesi | ✅ PASSED |
+| TC-GT-09 | Arsa Kiralık: depozito_arsa, imar_durumu, kaks, taks, yola_cephe | ✅ PASSED |
+| TC-GT-10 | İşyeri Devren: devir_bedeli_isyeri, mevcut_ciro, ruhsat_durumu_isyeri, demirbas_listesi, isyeri_tipi | ✅ PASSED |
+
+**Sonraki Adım (P2-DS-01):** `category_field_schema` dead table temizliği + `P2-DS-01` Resolver birleştirme mimari refactoring.
+
+---
+
+## Session 2026-09-08 — R3: CQRS Projection Tenant İzolasyonu (ADR-042)
+
+### R3 — ADR-042 CQRS Projection `BelongsToTenant` Uygulaması (REPO_VERIFIED + TEST_VERIFIED)
+
+**Tarih:** 2026-09-08
+**Branch:** `integration/era-v-phase2a-e01`
+**Migrasyon Kanıtı (PRODUCTION_VERIFIED):** `2026_09_08_000001_add_tenant_id_to_cqrs_projection_tables` Batch [21] başarıyla koştu; NULL tenant_id kaydı: 0.
+
+**Yapılan Değişiklikler:**
+
+#### 1. 6 Projection Model — `BelongsToTenant` trait + `tenant_id` fillable
+
+| Model | Değişiklik | Writer Durumu |
+|-------|-----------|---------------|
+| `ListingSearchProjection` | `use BelongsToTenant` + `$fillable` + `@deprecated` | ❌ Yok (READ-ONLY,boş) |
+| `ListingVelocityProjection` | `use BelongsToTenant` + `$fillable` | ✅ `ListingVelocityService` |
+| `MarketTrendProjection` | `use BelongsToTenant` + `$fillable` + `@deprecated` | ❌ Yok (READ-ONLY,boş) |
+| `BuyerInterestProjection` | `use BelongsToTenant` + `$fillable` + `@deprecated` | ❌ Yok (READ-ONLY,boş) |
+| `TalepMatchProjection` | `use BelongsToTenant` + `$fillable` | ✅ `BuyerIntentExtractionService` |
+| `BuyerIntentProjection` | `use BelongsToTenant` + `$fillable` | ✅ `BuyerIntentExtractionService` |
+
+#### 2. Writer Servisleri — `withoutTenant()` Eklentisi
+
+- `ListingVelocityService::syncVelocity()` — `firstOrCreate` → `withoutTenant()->firstOrCreate` (cross-tenant lookup önleme)
+- `BuyerIntentExtractionService::syncBuyerIntent()` — `updateOrCreate` → `withoutTenant()->updateOrCreate`
+- `BuyerIntentExtractionService::syncTalepMatch()` — `updateOrCreate` → `withoutTenant()->updateOrCreate`
+- `OpportunityEngineService::getOpportunities()` — `BelongsToTenant` global scope otomatik devreye giriyor (read tarafı)
+
+#### 3. `OpportunityEngineService` İyileştirmesi
+
+- `$select` listesinden `title` kaldırıldı (NamingAuthorityAST LOW uyarısı + gereksiz veri transferi)
+- `generateReason()` fallback `'İlan #' . $listing->listing_id` olarak sadeleştirildi
+
+**Test Sonucu:**
+```
+php artisan test --filter=SellerStrategy
+✓ calculate price strategy score correctly
+✓ determines strategy classification boundaries
+✓ thin controller contract is valid
+Tests: 3 passed (23 assertions)
+```
+
+**Kalan NamingAuthorityAST LOW Uyarıları (kabul edildi):**
+- `ListingSearchProjection::$fillable` → `'title'` (CQRS English column design, `@context7-ignore-file` ile işaretli)
+- `OpportunityEngineService` return array → `'title'` key (API response key, veritabanı kolonu değil)
+
+**Sonraki Adım:** Projection write path'lerin gerçek event-driven tetikleyicilerle bağlanması (mevcut 4/6 boş tablo için).
+
+---
+
+## Session 2026-09-09 — TC-GT-06 Full PASS: 6/6 Browser Verified
+
+**Tarih:** 2026-09-09
+**Branch:** `release-candidate/RC2`
+**Commit:** `4f195599` (HEAD)
+**Working Tree:** Dirty (`tests/e2e/golden-thread-wizard.spec.ts` — 1 değişiklik)
+
+### TC-GT-06 — Final Fix: `cephe` Schema Whitelist
+
+**Kök Neden:** Fixture'da `'cephe': 'guney'` kullanılıyordu. Ancak schema-driven validation'da `cephe` field'ının whitelist'i: `cadde-cepheli`, `sokak-cepheli`, `avm-ici`, `ic-cephe`. `guney` değeri whitelist dışında — `in:` validation kuralı fail ediyordu → HTTP 422.
+
+**Düzeltme:** `'cephe': 'cadde-cepheli'` (whitelist'den geçerli bir değer).
+
+**Düzeltme Dosyası:** `tests/e2e/golden-thread-wizard.spec.ts:425`
+
+**Test Sonucu:**
+```
+HTTP 422 → HTTP 200
+Redirect → /admin/ilanlar/75/edit ✅
+ilan ID: 75 ✅
+6/6 PASS — 39.8 saniye
+```
+
+**Kanıt:** `audits/golden-thread-evidence/tc-gt-06-results.json`
+**Rapor:** `audits/golden-thread-evidence/RC2-CERTIFICATION-2026-09-08.md`
+
+**Sertifikasyon:** `BROWSER_VERIFIED` — 6/6 PASS
+

@@ -260,14 +260,14 @@ Cherry-pick veya restore ile `6967cb2` versiyonu uygulanırsa çalışma ağacı
 
 | Görev | Durum | Kanıt |
 |--------|--------|-------|
-| **Golden Thread TC-GT-06** | **⏳ Alpine Validation Flood — Düzeltme Gerekiyor** | TC-GT-01/02/03/04 PASS. TC-GT-05/06 browser crash — location veri doğru (81/13/20). Kök neden: `navigateStep4To5` polling döngüsü `validateStep(4)` çağırıyor; `showNotification` deduplication yok → 100+ toast → crash. Rapor: `audits/golden-thread-evidence/tc-gt-05-06-root-cause-2026-08-30.md` |
+| **Golden Thread TC-GT-06** | **✅ FULL PASS — 6/6 Browser Verified** | 2026-09-09: `tests/e2e/golden-thread-wizard.spec.ts:425` — `'cephe': 'guney'` → `'cephe': 'cadde-cepheli'` (schema whitelist fix). HTTP 422 → HTTP 200, redirect `/admin/ilanlar/75/edit`. 6/6 PASS — 39.8s. Rapor: `audits/golden-thread-evidence/RC2-CERTIFICATION-2026-09-08.md` |
 | **Checkout/Manuel Ödeme** | **Kısmen tamamlandı** | Kod/test/deploy kayıtlı. Authenticated production browser kanıtı eksik. |
 | **Governance Command Center** | **Yerel düzeltme mevcut** | `7d402de` commit'li. Production doğrulaması ve G-04 Part 2 bekliyor. |
 | **`/yazliklar`** | **UNVERIFIED** | Güncel HTTP 200 kanıtı yok. En son HTTP 500 teşhis edildi. |
 | **Property Engine/Hub** | **Analiz tamamlandı** | Schema/assignment sebebi kesinleşmedi. Veri değişikliği yapılmadı. |
 | **Ollama/Cortex** | **Açık known issue** | `localhost:11434` bağlantı hatası. Servis topology doğrulanmadı. |
 
-**Bugün için en gerçek ve doğrudan geliştirilebilir görev: TC-GT-06'dır.**
+**Bugün için en gerçek ve doğrudan geliştirilebilir görev: `/yazliklar` HTTP 500 doğrulama + çözüm.**
 
 ---
 
@@ -416,3 +416,5 @@ Mevcut sprint'te icra edilen tüm teknik borç maddeleri ya tamamlanmış ya da 
 1. VPS'e son 2 commit sync'i (`git pull`) — rutin operasyonel
 2. `kategori_yayin_tipi_field_dependencies` → aktif admin kullanım analizi (Sistem B miras)
 3. FeatureTemplateResolver Faz 1 (shared trait)
+HOTSPOT_LOCK:database/migrations/2026_09_09_000001_add_tenant_id_to_proj_listings_table.php:antigravity:2026-09-09T11:09:25Z:3600
+HOTSPOT_LOCK:routes/admin.php:antigravity:2026-09-09T11:09:25Z:3600

@@ -614,7 +614,7 @@ class IlanService
             ->get();
 
         $kisiler = Kisi::active()
-            ->select(['id', 'ad', 'soyad', 'telefon', 'email'])
+            ->select(['id', 'ad', 'soyad', 'telefon', 'eposta'])
             ->orderBy('ad') // context7-ignore
             ->orderBy('soyad') // context7-ignore
             ->get();
@@ -627,17 +627,19 @@ class IlanService
         $autoSaveData = $this->getAutoSaveData();
 
         return [
+            'anaKategoriler' => $kategoriler,
             'kategoriler' => $kategoriler,
             'danismanlar' => $danismanlar,
             'iller' => $iller,
-            'durumSecenekleri' => $durumSecenekleri,
+            'durumSecenekleri' => IlanDurumu::options(),
             'taslak' => false,
-            'etiketler' => $etiketler,
+            'etiketler' => [],
             'ulkeler' => $ulkeler,
             'kisiler' => $kisiler,
             'sites' => $sites,
             'autoSaveData' => $autoSaveData,
-            'ilanId' => null,
+            'ilanId' => $ilan->id,
+            'ilan' => $ilan,
         ];
     }
 

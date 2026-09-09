@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use App\Services\SaaS\TenantContextService;
 
 /**
  * Ilan Crud Service
@@ -210,6 +211,15 @@ class IlanCrudService
             $ilan->ilgili_kisi_id = $data['ilgili_kisi_id'] ?: null;
         }
         $ilan->crm_only = $data['crm_only'] ?? false;
+
+        // SAB Kural 1: Multi-tenant isolation — persist tenant_id explicitly
+        if (empty($ilan->tenant_id)) {
+            $tenantService = app(TenantContextService::class);
+            $resolvedTenantId = $tenantService->hasTenant()
+                ? $tenantService->getTenant()->id
+                : (Auth::user()?->tenant_id ?? 1);
+            $ilan->tenant_id = $resolvedTenantId;
+        }
 
         // ======================================================================
         // RENTAL ENGINE FIELDS — guarded by schema check to prevent column-not-found

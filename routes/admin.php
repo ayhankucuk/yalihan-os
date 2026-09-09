@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 
 // (Legacy) Wizard test routes kaldırıldı
 
-Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', 'tenant.context'])->prefix('admin')->name('admin.')->group(function () {
     // AI Command Center Dashboard routes moved to routes/ai-advanced.php
     // (Keeping admin.ai prefix group for backward compatibility if needed)
 
