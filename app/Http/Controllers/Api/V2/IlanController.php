@@ -124,9 +124,20 @@ class IlanController extends Controller
     /**
      * Update the specified listing
      * PUT /api/v1/ilanlar/{id}
+     *
+     * ⚠️ Implicit route model binding KULLANILMAZ — TenantScope fail-closed davranışı
+     * nedeniyle controller method'undan ÖNCE patlar ve 404 döner.
+     * Bu yüzden explicit query + withoutGlobalScope(TenantScope::class) kullanılır.
+     * @see IlanController::show() — aynı pattern orada zaten mevcut
      */
-    public function update(Request $request, Ilan $ilan, UpdateIlanAction $action): JsonResponse
+    public function update(Request $request, $id, UpdateIlanAction $action): JsonResponse
     {
+        $ilan = Ilan::withoutGlobalScope(TenantScope::class)->find($id);
+
+        if (!$ilan) {
+            return response()->json(['message' => 'İlan bulunamadı'], 404);
+        }
+
         if ($authError = $this->authorizeIlanAccess($ilan)) {
             return $authError;
         }
@@ -156,9 +167,18 @@ class IlanController extends Controller
     /**
      * Delete the specified listing
      * DELETE /api/v1/ilanlar/{id}
+     *
+     * ⚠️ Implicit route model binding KULLANILMAZ — TenantScope fail-closed.
+     * @see IlanController::update() açıklama bloğu
      */
-    public function destroy(Ilan $ilan, DestroyIlanAction $action): JsonResponse
+    public function destroy($id, DestroyIlanAction $action): JsonResponse
     {
+        $ilan = Ilan::withoutGlobalScope(TenantScope::class)->find($id);
+
+        if (!$ilan) {
+            return response()->json(['message' => 'İlan bulunamadı'], 404);
+        }
+
         if ($authError = $this->authorizeIlanAccess($ilan)) {
             return $authError;
         }
@@ -171,9 +191,18 @@ class IlanController extends Controller
     /**
      * Publish listing
      * PATCH /api/v1/ilanlar/{id}/publish
+     *
+     * ⚠️ Implicit route model binding KULLANILMAZ — TenantScope fail-closed.
+     * @see IlanController::update() açıklama bloğu
      */
-    public function publish(Ilan $ilan, PublishIlanAction $action): JsonResponse
+    public function publish($id, PublishIlanAction $action): JsonResponse
     {
+        $ilan = Ilan::withoutGlobalScope(TenantScope::class)->find($id);
+
+        if (!$ilan) {
+            return response()->json(['message' => 'İlan bulunamadı'], 404);
+        }
+
         if ($authError = $this->authorizeIlanAccess($ilan)) {
             return $authError;
         }
@@ -190,9 +219,18 @@ class IlanController extends Controller
     /**
      * Unpublish listing
      * PATCH /api/v1/ilanlar/{id}/unpublish
+     *
+     * ⚠️ Implicit route model binding KULLANILMAZ — TenantScope fail-closed.
+     * @see IlanController::update() açıklama bloğu
      */
-    public function unpublish(Ilan $ilan, UnpublishIlanAction $action): JsonResponse
+    public function unpublish($id, UnpublishIlanAction $action): JsonResponse
     {
+        $ilan = Ilan::withoutGlobalScope(TenantScope::class)->find($id);
+
+        if (!$ilan) {
+            return response()->json(['message' => 'İlan bulunamadı'], 404);
+        }
+
         if ($authError = $this->authorizeIlanAccess($ilan)) {
             return $authError;
         }
