@@ -88,6 +88,20 @@ return [
         'max_tokens' => (int) env('DEEPSEEK_MAX_TOKENS', 2048),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Claude-N-Codex (Custom OpenAI-compatible API)
+    | https://claude-n-codex.com:8443/
+    |--------------------------------------------------------------------------
+    */
+    'claude_n_codex' => [
+        'enabled'   => env('CLAUDE_N_CODEX_ENABLED', false),
+        'api_key'   => env('CLAUDE_N_CODEX_API_KEY', ''),
+        'base_url'  => rtrim(env('CLAUDE_N_CODEX_BASE_URL', 'https://claude-n-codex.com:8443/v1'), '/'),
+        'model'     => env('CLAUDE_N_CODEX_MODEL', 'gpt-5.5'),
+        'timeout'   => (int) env('CLAUDE_N_CODEX_TIMEOUT', 30),
+    ],
+
     'gemini' => [
         'api_key' => env('GOOGLE_API_KEY', ''),
         'model' => env('GOOGLE_MODEL', 'gemini-2.5-flash'),

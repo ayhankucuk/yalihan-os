@@ -1,6 +1,6 @@
 {
     "governance_version": "1.7",
-    "generated_at": "2026-09-09T15:16:46+00:00",
+    "generated_at": "2026-09-09T17:24:14+00:00",
     "ignored_violations": {
         "Services/AI/CodeReviewService.php": [
             {
@@ -3824,6 +3824,20 @@
                 "type": "ForbiddenFieldAST",
                 "message": "Forbidden field 'active' detected. Suggested canonical: aktiflik_durumu.",
                 "fingerprint": "8d5274b900f60c88933709b044a5c6c3"
+            }
+        ],
+        "Services/Integrations/ClaudeNCodexService.php": [
+            {
+                "line": 62,
+                "type": "",
+                "message": "Forbidden field 'status' usage detected in code.",
+                "fingerprint": "40f924a38f03af0ee919bed6e8d37381"
+            },
+            {
+                "line": 103,
+                "type": "",
+                "message": "Forbidden field 'status' usage detected in code.",
+                "fingerprint": "40f924a38f03af0ee919bed6e8d37381"
             }
         ],
         "Services/Intelligence/ActionFeedbackService.php": [
@@ -8568,13 +8582,13 @@
                 "fingerprint": "07a91b77eabfd72f3b656ec58624f214"
             },
             {
-                "line": 1094,
+                "line": 1102,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "07a91b77eabfd72f3b656ec58624f214"
             },
             {
-                "line": 1232,
+                "line": 1240,
                 "type": "SilentCatchAST",
                 "message": "AST Detected: Catch block has no throw, Log::*, LogService::*, report() or return \u2014 exception may be swallowed.",
                 "fingerprint": "07a91b77eabfd72f3b656ec58624f214"
@@ -15830,37 +15844,37 @@
         ],
         "Http/Controllers/Api/V1/CortexSmartAPIController.php": [
             {
-                "line": 332,
+                "line": 333,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'turizmDetail' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "807db8403438a985385ac0493c3a4430"
             },
             {
-                "line": 332,
+                "line": 333,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'arsaDetail' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "1fc65f0d4b2e2e8a15cf99a7c6c437a9"
             },
             {
-                "line": 332,
+                "line": 333,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'anaKategori' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "713818799444a1c2cb83b2b3c6f9bef4"
             },
             {
-                "line": 359,
+                "line": 360,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'anaKategori' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "713818799444a1c2cb83b2b3c6f9bef4"
             },
             {
-                "line": 375,
+                "line": 376,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'title'. Use Turkish 'baslik' for domain concepts.",
                 "fingerprint": "e859fd523b1d541a8af7c10514656b30"
             },
             {
-                "line": 379,
+                "line": 380,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Found forbidden English field 'category'. Use Turkish 'kategori' for domain concepts.",
                 "fingerprint": "eb2337ef0c3eccd6bbaed3cc53247535"
@@ -21164,7 +21178,7 @@
         ],
         "Services/AI/ChurnRiskService.php": [
             {
-                "line": 96,
+                "line": 97,
                 "type": "NamingAuthorityAST",
                 "message": "Naming Authority Violation: Field 'ilanSahibi' uses camelCase. Database columns must use snake_case.",
                 "fingerprint": "ce7b0e810f790708850c5d3699f47c63"
