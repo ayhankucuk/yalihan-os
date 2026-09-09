@@ -215,3 +215,9 @@ memory/ydl/snapshots/
 
 # Tenant photo uploads — NEVER commit user data
 /storage/app/public/ilan-fotograflari/
+
+# Agent/LSP/IDE generated memory and test state (local pipeline artifacts)
+/storage/testing/
+
+# MCP audit log (auto-generated per session)
+.laravel-mcp-audit.jsonl

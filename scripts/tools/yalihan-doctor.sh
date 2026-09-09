@@ -289,12 +289,9 @@ check_layer3_drift() {
         fi
     fi
 
-    if [[ "$drift_cmd_rc" -ne 0 ]]; then
-        # Komut hata döndü
-        record_check "FAIL" "drift" "Env Drift Guard Komut" "Komut hata kodu ($drift_cmd_rc) döndürdü — çıktı: ${drift_json:0:120}"
-    elif [[ "$valid_json" == false ]]; then
-        # Komut başarılı ama JSON geçersiz
-        record_check "FAIL" "drift" "Env Drift Guard JSON" "Çıktı geçerli JSON değil (env-drift-guard --json çalışıyor mu?)"
+    if [[ "$valid_json" == false ]]; then
+        # JSON geçersiz veya boş — bu gerçek bir hata
+        record_check "FAIL" "drift" "Env Drift Guard JSON" "Çıktı geçerli JSON değil (rc=$drift_cmd_rc) — env-drift-guard --json çalışıyor mu?"
     else
         # JSON geçerli — her check'i ayrı ayrı kaydet
         # enum_drift
@@ -563,7 +560,13 @@ print_summary() {
         fi
         echo "  \"overall_health\": \"$health\""
         echo "}"
-        return
+        # JSON mode is machine-readable, but its exit status still reflects
+        # diagnostic failures. Warnings are intentionally non-fatal so callers
+        # can parse the report and decide how to surface them.
+        if [[ "$FAILED_CHECKS" -gt 0 ]]; then
+            exit 1
+        fi
+        exit 0
     fi
 
     echo -e "\n${BLUE}${BOLD}  ╔══════════════════════════════════════════════════════════════════════╗"
