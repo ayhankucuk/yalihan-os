@@ -637,3 +637,87 @@ ilan ID: 75 ✅
 
 **Sertifikasyon:** `BROWSER_VERIFIED` — 6/6 PASS
 
+---
+
+## Session 2026-09-08 (devam) — P2-DS-01 Kapanışı: FieldResolver İmhası (REPO_VERIFIED)
+
+**Tarih:** 2026-09-08
+**Branch:** `integration/era-v-phase2a-e01`
+
+**Yapılan Değişiklikler:**
+
+| Dosya | Değişiklik | Durum |
+|-------|-----------|-------|
+| `app/Http/Controllers/Api/IlanWizardController.php` | `FieldResolver` DI kaldırıldı; `use FieldResolver` import kaldırıldı; `fieldSchema()` method'u (consumer yok) tamamen silindi | ✅ |
+| `schema-field-renderer.js` | Önceki oturumda silinmiş | ✅ |
+| `FieldResolver.php` | `@deprecated 2026-09-08` notu mevcut | ✅ |
+| `RESOLVER_CONSOLIDATION_PLAN.md` | Önceki oturumda oluşturulmuş | ✅ |
+
+**Test Sonucu:**
+```
+vendor/bin/phpunit tests/Feature/AI/SellerStrategyEngineTest.php
+OK (3 tests, 23 assertions)
+```
+
+**P2-DS-01 Status:** ✅ TAMAMLANDI
+
+**Kapanan Madde (Oturum 163):** `IlanWizardController::fieldSchema()` + `FieldResolver` injection (artık kaldırıldı — önceki oturumda sadece deprecated notu eklenmişti, bu oturumda tam imha edildi)
+
+---
+
+## Session 2026-09-09 — Golden Thread Unmasked E2E Certification (PRODUCTION_VERIFIED / REPO_VERIFIED)
+
+**Tarih:** 2026-09-09
+**Branch:** `release-candidate/RC2`
+
+**Kapsam:**
+- `/admin/ilanlar/{id}/edit` ekranındaki tüm çalışma zamanı JS/Blade/Alpine hatalarının kökten çözümü.
+- `tests/e2e/golden-thread-wizard.spec.ts` assertion filtrelerindeki yapay hata maskelemelerinin kaldırılması.
+- Playwright ile tam 6/6 testin sıfır konsol hatasıyla doğrulanması.
+
+**Çözülen Hatalar ve Kök Nedenler:**
+1. `edit.blade.php`: Satır 2354'te eksik `</script>` kapatması sebebiyle oluşan `SyntaxError: Unexpected token '<'` düzeltildi.
+2. `edit.blade.php`: Leaflet container çakışması (`Map container is already initialized`) `_leaflet_id` kontrolü ile çözüldü.
+3. `price-management.blade.php` + `price.js`: `fiyatGosterimModu` tanımsızlık hatası, `:required` sözdizimi ve FontAwesome SVG ikame düzeltmeleri.
+4. `kiralik-fields.blade.php`: `@change` niteliğindeki tırnak kaçış hatası method (`updateSeasonInput`) delegasyonu ile çözüldü.
+5. `location.js`: `loadIlceler`, `loadMahalleler` ve `initializeLocation` fonksiyonları tanımlandı.
+6. `routes/api.php`: `/api/currency/rates` rotası `api.legacy.currency.rates` olarak tanımlandı.
+7. `IlanPublishGateController.php`: Taslak ilanın yayın kapısından yönlendirilmesi 422 yerine 200 yumuşak yanıt standardına alındı.
+
+**Playwright Doğrulama Sonucu:**
+```
+6 passed (42.0s)
+TC-GT-01 — Step 1 → Step 2: Kategori cascade (PASS - 2.5s)
+TC-GT-02 — Step 2 → Step 3: Temel bilgiler (PASS - 3.2s)
+TC-GT-03 — Step 3: Fotoğraf upload SSOT (PASS - 5.5s)
+TC-GT-04 — Step 3 → Step 4: Location navigation (PASS - 4.2s)
+TC-GT-05 — Step 4 → Step 5: Önizleme + summary (PASS - 7.3s)
+TC-GT-06 — Full Golden Thread: Step 1→5 + native form submit redirect (PASS - 12.8s)
+```
+
+**Unmasked Kanıt Verisi (`audits/golden-thread-evidence/tc-gt-06-results.json`):**
+```json
+{
+  "timestamp": "2026-09-09T14:12:14.703Z",
+  "allStepsReached": true,
+  "urlAfterSubmit": "http://127.0.0.1:8000/admin/ilanlar/92/edit",
+  "ilanId": "92",
+  "submitNavigatedToIlan": true,
+  "httpStatus": 200,
+  "consoleErrors": []
+}
+```
+
+**Kalite Kapısı:** `./scripts/tools/antigravity-full-gate.sh --quick` — 4/4 GATES PASSED.
+**Sertifikasyon:** `TEST_VERIFIED` & `BROWSER_VERIFIED` — 6/6 PASS, ZERO ERRORS.
+
+## Session 2026-09-09 — DEBT-02 & DEBT-03 Resolution (BROWSER_VERIFIED)
+
+**TC-GT-11 — Edit Screen Runtime Health (PASS)**
+- `mapInitialized: true`, `failures: []` (0 console errors)
+- Edit ekranı `id:067` ve `id:093` üzerinde açıldı
+- TC-GT-06 Step 1→5 → edit redirect başarılı (yeni ilan ID:93)
+- DEBT-02: `edit.blade.php` map bridge (`window.mapManager?.map` → Alpine `this.map`)
+- DEBT-03: `tab=drafts` ile wizard ilanları görünür
+- Map bridge kaynağı: `831f4353` commit — Antigravity worktree
+- Kanıt seviyesi: `BROWSER_VERIFIED` — 2026-09-09

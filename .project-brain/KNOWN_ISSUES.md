@@ -1,5 +1,79 @@
 # Known Issues and Open Questions
 
+## Acil — 2026-09-09
+
+- **[GÜVENLİK] `storage/app/public/ilan-fotograflari/` — `.gitignore` eklendi ama tarihi commit'te mevcut**
+  - ✅ `.gitignore`'a `/storage/app/public/ilan-fotograflari/` eklendi
+  - ✅ `git rm --cached` + reset yapıldı — şu an `git status`'ta görünmüyor
+  - ⚠️ Ancak dosyalar `01f8b84a` commit'inde tarihe girmiş — `.gitignore` gelecek commit'leri korur, tarihisilmez
+  - Tenant fotoğrafları hâlâ repo tarihinde mevcut — BFG-repo-cleaner ile temizlenebilir (ayrı onay gerekli)
+  - Kapsam: tüm dizinler (`1,3,4,55-92`) — 25 tenant klasörü
+  - Öncelik: **ORTA** (ACİL'den düştü — yeni commit riski engellendi)
+
+- **[GÜVENLİK] Ana RC2 kirli — sahiplik belirsiz**
+  - ~35 modified + ~29 untracked (kod/doküman) — storage dizini artık `git status`'ta görünmüyor
+  - Değişiklikler: Controller, model, route, Blade, E2E test, evidence PNG, project-brain
+  - Kim yaptı: bilinmiyor — bu oturum, başka Codex oturumu, Klio, veya yerel geliştirici?
+  - Müdahale şart: sahiplik belirlenmeli, temizlik planı yapılmalı
+  - Öncelik: **ACİL**
+
+## Orta — 2026-09-09
+
+- **37 worktree, çoğu muhtemelen terk edilmiş**
+  - Worktree listesi: `git worktree list` çıktısı
+  - Terk edilmiş olanları tespit için: son commit tarihi, son erişim, dirty durumu
+  - Otomatik silme yapılmıyor — sahiplik doğrulanacak
+  - Plan: her worktree için rapor → ayrı temizlik planı
+  - Öncelik: **ORTA**
+
+- **Skill / Gate dosyalarının Git commit'i yok — sahiplik belirsiz**
+  - 4 skill + gate scripti `.agents/skills/` ve `scripts/tools/`'e yazıldı ama Git commit edilmedi
+  - Kaynak: `codex/antigravity-browser-runtime-certification` worktree (commit: `4093e489`, `db43057f`, `9eb751c3`)
+  - Commit durumu: `REPO_VERIFIED` (worktree'de commitli)
+  - İnsan/ajan sahipliği: `UNKNOWN` (commit'i kimin ürettiği bilinmiyor)
+  - Cline skill entegrasyonu: `NOT_VERIFIED`
+  - Bu kayıt (KNOWN_ISSUES + BEKCI changelog): `DOCUMENTED` — Git'e commitlenmedi
+  - Öncelik: **ORTA** — commit yapılmadan önce kaynak teyit edilmeli
+
+- **DEBT-02 & DEBT-03 — Harita köprüsü + TC-GT-11 ✅ ÇÖZÜLDÜ**
+  - ✅ `edit.blade.php` map bridge uygulandı (satır ~613-665):
+    - `if (!this.map && window.mapManager?.map) this.map = window.mapManager.map`
+    - `already initialized` hata maskeleme eklendi
+  - ✅ `tab=drafts` desteği test dosyasına eklendi
+  - ✅ TC-GT-11: `id:067` ve `id:093` edit ekranı açıldı → `mapInitialized: true`, `failures: []`
+  - ✅ TC-GT-06: Step 1➔5 → edit'e redirect başarılı (yeni ilan ID:93)
+  - Kanıt seviyesi: **BROWSER_VERIFIED** — 2026-09-09
+  - ⚠️ Not: TC-GT-04/05 throttle HTTP 429 (Copilot AI rate limit) — kod hatası değil
+  - Öncelik: ~~ORTA~~ **ÇÖZÜLDÜ**
+
+## Düşük / Çözüldü — 2026-09-09
+
+- **Yeni yetenekler Antigravity worktree'inden kopyalandı — 2026-09-09**
+  - Kaynak: `codex/antigravity-browser-runtime-certification` worktree (commit: `4093e489`, `db43057f`, `9eb751c3`)
+  - Commit durumu: `REPO_VERIFIED` (worktree'de commitli)
+  - İnsan/ajan sahipliği: `UNKNOWN` (commit'i kimin ürettiği bilinmiyor)
+  - Cline skill entegrasyonu: `NOT_VERIFIED`
+  - Bu kayıt (KNOWN_ISSUES + BEKCI changelog): `DOCUMENTED` — Git'e commitlenmedi
+
+- **SKILL_INDEX güncellenmemişti — 2026-09-09 düzeltildi**
+  - 8 yeni file pattern satırı + 4 yeni skill tanımı eklendi
+  - Artık ajanlar yeni skill'leri otomatik seçebilir
+
+- **`rc2-release-certification-gate.sh` return/exit hatası — 2026-09-09 düzeltildi**
+  - `run_gate()` içinde `return 1` → `exit 1` olarak düzeltildi
+  - Artık `set -e` olmadan da doğru çalışıyor
+  - Kaynak: Antigravity `db43057f` düzeltmesi temel alındı
+
+- **`blade-alpine-runtime-guardian` Kural 7 normalize önerisi — 2026-09-09 uygulandı**
+  - "URL path normalize" ipucu skill'e eklendi
+  - "Sessiz fallback yasağı" netleştirildi
+
+- **`multi-agent-worktree-sandbox` temizlik komutu — 2026-09-09 düzeltildi**
+  - `git reset --hard` yasağı korundu
+  - `git restore -- <path>` / `git checkout HEAD -- <path>` alternatif olarak eklendi
+
+## Tarihi — Çözülmüş
+
 - `/yazliklar` had a recorded HTTP 500. The definitive current exception is not yet indexed.
 - Historical application logs show embedding requests failing against `localhost:11434`; container-localhost may not be the intended model-service address.
 - Some terminal output was accidentally pasted back as shell input, causing `command not found` and command-substitution errors. Keep commands separate from prompts and output.

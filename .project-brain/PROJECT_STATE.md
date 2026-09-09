@@ -416,5 +416,3 @@ Mevcut sprint'te icra edilen tüm teknik borç maddeleri ya tamamlanmış ya da 
 1. VPS'e son 2 commit sync'i (`git pull`) — rutin operasyonel
 2. `kategori_yayin_tipi_field_dependencies` → aktif admin kullanım analizi (Sistem B miras)
 3. FeatureTemplateResolver Faz 1 (shared trait)
-HOTSPOT_LOCK:routes/admin.php:antigravity:2026-09-09T15:06:48Z:3600
-HOTSPOT_LOCK:routes/api.php:antigravity:2026-09-09T15:06:48Z:3600
