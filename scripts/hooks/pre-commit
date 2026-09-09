@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# ============================================================
+# YALIHAN OS — Pre-Commit Hook (Mechanical Secret Guard)
+# BACKLOG-1: Staged Diff Secret Scanner
+# Delegates directly to the tracked SSOT scanner script.
+# ============================================================
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+SCANNER="${REPO_ROOT}/scripts/tools/secret-scan.sh"
+
+if [ -f "$SCANNER" ]; then
+  exec bash "$SCANNER" --staged
+else
+  echo "⚠️  YALIHAN OS: Scanner script not found at ${SCANNER}. Skipping staged secret scan."
+  exit 0
+fi
