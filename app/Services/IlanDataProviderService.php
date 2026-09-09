@@ -193,7 +193,7 @@ class IlanDataProviderService
         return [
             'toplam' => $query->count(),
             'aktif' => $query->where('yayin_durumu', IlanDurumu::YAYINDA->value)->count(),
-            'taslak' => $query->where('yayin_durumu', 'Taslak')->count(),
+            'taslak' => $query->where('yayin_durumu', IlanDurumu::TASLAK->value)->count(),
             'satildi' => $query->where('yayin_durumu', 'Satıldı')->count(),
         ];
     }

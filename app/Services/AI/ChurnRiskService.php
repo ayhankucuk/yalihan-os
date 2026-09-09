@@ -2,6 +2,7 @@
 
 namespace App\Services\AI;
 
+use App\Enums\IlanDurumu;
 use App\Models\Ilan;
 use Carbon\Carbon;
 
@@ -87,7 +88,7 @@ class ChurnRiskService
      */
     public function getHighRiskListings(?int $userId = null, int $minRisk = 70)
     {
-        $query = Ilan::where('yayin_durumu', 'aktif');
+        $query = Ilan::where('yayin_durumu', IlanDurumu::YAYINDA->value);
 
         if ($userId) {
             $query->where('danisman_id', $userId);

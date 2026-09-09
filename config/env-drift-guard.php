@@ -213,13 +213,24 @@ return [
             'enum' => \App\Enums\IlanDurumu::class,
             'field' => 'yayin_durumu',
             'scan_dirs' => ['app/Http/Controllers', 'app/Services', 'app/Modules'],
+            // Legacy enum values (Türkçe uppercase / İngilizce) — context7-ignore değil, gerçek forbidden
             'forbidden_values' => ['Aktif', 'Taslak', 'Pasif', 'Beklemede', 'Active', 'Draft', 'Inactive'],
+            // Mapping dosyaları legacy field-name'ları key olarak kullanır — bunlar meşru, ignore et
+            'ignore_files' => [
+                'app/Services/Governance/Ast/Rules/ForbiddenFieldAstRule.php',
+                'app/Services/ErrorAutoRepairService.php',
+            ],
         ],
         [
             'enum' => \App\Enums\AktiflikDurumu::class,
             'field' => 'aktiflik_durumu',
             'scan_dirs' => ['app/Http/Controllers', 'app/Services', 'app/Modules'],
+            // Legacy enum değerleri (metin tabanlı) — aktiflik_durumu int olduğundan bunlar zaten yaygın değil
             'forbidden_values' => ['active', 'inactive', 'enabled', 'disabled'],
+            'ignore_files' => [
+                'app/Services/Governance/Ast/Rules/ForbiddenFieldAstRule.php',
+                'app/Services/ErrorAutoRepairService.php',
+            ],
         ],
     ],
 

@@ -960,17 +960,25 @@ class EnvDriftGuard extends Command
                 }
 
                 $files = File::allFiles($dirPath);
+                $ignoredFiles = $check['ignore_files'] ?? [];
                 foreach ($files as $file) {
                     if ($file->getExtension() !== 'php') {
                         continue;
                     }
 
-                    $content = File::get($file->getPathname());
-                    $relativePath = str_replace(base_path() . '/', '', $file->getPathname());
+                    $absolutePath = $file->getPathname();
+                    $relativePath = str_replace(base_path() . '/', '', $absolutePath);
+
+                    // Skip files in ignore list (mapping files that use legacy keys, not legacy values)
+                    if (in_array($relativePath, $ignoredFiles) || in_array($absolutePath, $ignoredFiles)) {
+                        continue;
+                    }
+
+                    $content = File::get($absolutePath);
 
                     foreach ($check['forbidden_values'] as $forbidden) {
                         // Match field => value or ->where(field, value) patterns in source
-                        $pattern = "/['\"]" . preg_quote($check['field'], '/') . "['\"]\s*[=>,]+\s*['\"]" . preg_quote($forbidden, '/') . "['\"]/i";
+                        $pattern = "/['\"]" . preg_quote($check['field'], '/') . "['\"]\s*[=>,]+\s*['\"]" . preg_quote($forbidden, '/') . "['\"]/";
                         if (preg_match($pattern, $content)) {
                             $drifts[] = "{$relativePath}: uses legacy value '{$forbidden}' for {$check['field']} (canonical: " . implode('|', $canonicalValues) . ")";
                         }
