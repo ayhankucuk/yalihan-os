@@ -1,5 +1,30 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 164 — 2026-09-09 | Golden Thread Browser E2E Wizard & Admin Edit Sertifikasyonu, Web Tenant Bağlamı ve Schema Düzeltmeleri (`244ddf7c`) ✅
+
+**Kapsam:** Playwright ile Golden Thread Step 1-5 uçtan uca tarama (TC-GT-01 - TC-GT-06), Web route grubu için `tenant.context` middleware aktivasyonu, `IlanCrudService` tenant ataması, `Kisi` (email -> eposta) ve `Site` (is_active -> aktiflik_durumu) Context7 kanonik kolon düzeltmeleri.
+
+#### 1. Web Admin Tenant Bağlamı & SAB Kural 1 Korunumu (`244ddf7c`) ✅
+- `routes/admin.php` ana middleware grubuna `tenant.context` eklendi.
+- `app/Http/Middleware/SetTenantContext.php`: Web HTML isteklerinde JSON yanıt yerine `abort(403)` entegre edildi.
+- `app/Services/Ilan/IlanCrudService.php` (`mapCoreData()`): `tenant_id` alanı oluşturma anında `Auth::user()->tenant_id` veya `TenantContextService` üzerinden mühürlendi.
+
+#### 2. Context7 Kanonik Alan & Edit View Düzeltmeleri (`244ddf7c`) ✅
+- `app/Services/Ilan/IlanService.php`: `Kisi` modelinde olmayan `email` kolonu `eposta` olarak düzeltildi.
+- `app/Models/Site.php`: `is_active` alanı `aktiflik_durumu` olarak şema ile eşitlendi.
+- `IlanService::getEditFormData()`: `anaKategoriler` ve `ilan` değişkenleri edit view dizisine eklendi.
+
+#### 3. Golden Thread Browser E2E Doğrulama Sonuçları (6/6 PASS - 37.6s) ✅
+- `TC-GT-01`: Step 1 → 2 Kategori cascade (PASS - 2.4s)
+- `TC-GT-02`: Step 2 → 3 Temel bilgiler (PASS - 3.1s)
+- `TC-GT-03`: Step 3 Fotoğraf upload SSOT (PASS - 5.4s)
+- `TC-GT-04`: Step 3 → 4 Konum cascade + harita (PASS - 4.2s)
+- `TC-GT-05`: Step 4 → 5 Önizleme + CRM özeti (PASS - 7.6s)
+- `TC-GT-06`: Full Golden Thread Step 1→5 + Native FormData Submit + Edit Redirect (PASS - 11.7s)
+- Kanıt paketleri: `audits/golden-thread-evidence/tc-gt-06-all-steps-reached.png`, `tc-gt-06-submit-result.png`, `tc-gt-06-results.json`.
+
+---
+
 ## Oturum 163 — 2026-09-08 | RC2 Sertifikasyonu, CQRS Tenant İzolasyonu, Admin Sidebar Onarımı & Action Center Faz 1-2 Entegrasyonu ✅
 
 **Kapsam:** P2-DS-01 Dead Code temizliği, ADR-042 CQRS projection modellerine `BelongsToTenant` uygulanması, Admin Sidebar 6 atıl/hatalı rotanın düzeltilmesi, Sprint 15 Action Center otomatik atama motoru ve event-to-action listener/migration paketinin depoya işlenmesi (`release-candidate/RC2`).
