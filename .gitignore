@@ -219,5 +219,8 @@ memory/ydl/snapshots/
 # Agent/LSP/IDE generated memory and test state (local pipeline artifacts)
 /storage/testing/
 
+# MCP audit log and governance artifacts (auto-generated per session)
+/storage/app/governance/
+
 # MCP audit log (auto-generated per session)
 .laravel-mcp-audit.jsonl
