@@ -39,6 +39,14 @@ Agent, bir dosyayı açtığında veya değiştireceği zaman bu tabloya bakarak
 | `docs/architecture/*` | `yalihan-constitution-review` + `saab` | Mimari anayasa uyumu ve kararları |
 | `app/Services/Ilan/IlanPhotoService.php` | `schema-contract-guardian` | Fotoğraf schema, display_order |
 | `app/Http/Controllers/Api/V2/*Photo*` | `schema-contract-guardian` + `authorization-boundary-auditor` | Photo upload + yetki |
+| `app/Http/Controllers/Api/*Ilan*` | `api-contract-envelope-guardian` | JSON envelope drift, status/yayin_durumu alan eşleşmesi |
+| `app/Http/Controllers/Api/*ActionCenter*` | `api-contract-envelope-guardian` | JSON envelope drift, action_evidence alan kontratı |
+| `resources/views/**/*.blade.php` (`<script>`, `x-data`, `x-init`, `x-on`, `x-model`) | `blade-alpine-runtime-guardian` | Script kapanışı, Alpine scope, window bağlama, duplicate init |
+| `resources/js/**/*.js` (Blade inline çağrıları) | `blade-alpine-runtime-guardian` | Global fonksiyon bağlama, CDN sırası |
+| `tests/e2e/*.spec.ts` | `blade-alpine-runtime-guardian` | Browser runtime hatası (`pageerror`, `ReferenceError`, duplicate init) |
+| `storage/app/public/ilan-fotograflari/**` | `media-storage-lifecycle-guardian` | DB-fiziksel dosya eşleşmesi, orphan dosya, cross-tenant risk |
+| `scripts/tools/rc2-release-certification-gate.sh` | `multi-agent-worktree-sandbox` | Release gate — kirli worktree, browser testi zorunluluğu |
+| `.git/worktree*`, `git worktree` komutları | `multi-agent-worktree-sandbox` | Worktree izolasyonu, ajan başına branch |
 | `/Users/macbookpro/Documents/Codex/*` | `codex-engineering-bridge` | Codex ortak çalışma alanı senkronizasyonu |
 | `.agents/skills/*` | `codex-engineering-bridge` | Multi-agent görev koordinasyonu |
 
@@ -59,6 +67,10 @@ Agent, bir dosyayı açtığında veya değiştireceği zaman bu tabloya bakarak
 | `yalihan-constitution-review` | Anayasa uyumluluk, normatif madde eşleme, sahte başarı/yanlış alarm koruması | `docs/architecture/`, mimari PR'lar |
 | `laravel-enterprise-reviewer` | Thin controller, N+1, DDD sınırları, detektör | Tüm service/controller dosyaları |
 | `api-contract-regression-guard` | JSON schema, pagination, V1/V2 geriye dönük uyumluluk | API controller return'ları |
+| `api-contract-envelope-guardian` | Frontend fetch/axios → Laravel route JSON envelope drift, alan adı eşleşmesi (`status`/`yayin_durumu`) | API controller, V1/V2 endpoint kontratı |
+| `media-storage-lifecycle-guardian` | DB-fiziksel dosya çapraz denetimi, orphan dosya, tenant'sız legacy path riski | `storage/app/public/ilan-fotograflari/` |
+| `blade-alpine-runtime-guardian` | Script kapanışı, Alpine scope tanımsız değişken, window bağlama, idempotent Leaflet init | Blade + Alpine/JS dosyaları |
+| `multi-agent-worktree-sandbox` | Worktree izolasyonu, test DB/storage ayrımı, fixture korelasyon ID, handoff kontratı | Git worktree, multi-agent oturum |
 | `security-secret-boundary-guard` | .env, PAT, API key sızıntısı, log maskeleme | Secret içeren dosyalar |
 | `ponytail` | Minimal kod, stdlib/native tercih, YAGNI | Tüm kod dosyaları (genel rehber) |
 

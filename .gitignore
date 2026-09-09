@@ -187,7 +187,8 @@ bootstrap/cache/*.php
 /test-results/
 /test_results*.log
 
-.kilo/worktrees/
+.kilo/
+.kilocode/
 
 # Agent/LSP audit logs
 .laravel-mcp-audit.jsonl
@@ -211,3 +212,6 @@ memory/ydl/snapshots/
 
 # Storage temp
 /storage/tmp/
+
+# Tenant photo uploads — NEVER commit user data
+/storage/app/public/ilan-fotograflari/
