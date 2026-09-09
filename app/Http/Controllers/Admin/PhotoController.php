@@ -473,4 +473,23 @@ class PhotoController extends AdminController
             ], 500);
         }
     }
+
+    public function getListingPhotos(Ilan $ilan): \Illuminate\Http\JsonResponse
+    {
+        try {
+            $photos = $ilan->fotograflar()->orderBy('display_order')->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'photos' => $photos,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Fotoğraflar yüklenirken hata: '.$e->getMessage(),
+            ], 500);
+        }
+    }
 }

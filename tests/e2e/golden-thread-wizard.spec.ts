@@ -413,6 +413,19 @@ async function fillSubmitFixture(page: Page): Promise<void> {
         setField('fiyat_gosterim_modu', 'exact');
         setField('para_birimi', 'TRY');
         setField('aciklama', 'Golden Thread full fixture test — Villa Satilik.');
+        setField('adres', 'Yalıkavak Marina Yanı No: 10');
+        setField('lat', '37.1054');
+        setField('lng', '27.2912');
+
+        const mahalleSelect = form.querySelector('[name="mahalle_id"]') as HTMLSelectElement | null;
+        if (mahalleSelect && !mahalleSelect.value) {
+            const opt = Array.from(mahalleSelect.options).find((o) => o.value && o.value !== '');
+            if (opt) {
+                mahalleSelect.value = opt.value;
+            } else {
+                setField('mahalle_id', '1');
+            }
+        }
 
         // Alpine wizard state sync
         const wizardEl = Array.from(document.querySelectorAll('[x-data]'))
@@ -522,9 +535,21 @@ test.describe('Golden Thread — Wizard Step 1–5 Full Traversal', () => {
     test.beforeEach(async ({ page }) => {
         consoleErrors = [];
         page.on('console', (msg) => {
+            console.log(`[BROWSER ${msg.type().toUpperCase()}] ${msg.text()}`);
             if (msg.type() === 'error') consoleErrors.push(msg.text());
         });
-        page.on('pageerror', (err) => consoleErrors.push(`PAGE_ERROR: ${err.message}`));
+        page.on('pageerror', (err) => {
+            console.log('💥 PAGE_ERROR STACK:', err.stack || err.message);
+            consoleErrors.push(`PAGE_ERROR: ${err.message}`);
+        });
+        page.on('requestfailed', (req) => {
+            console.log(`❌ REQUEST FAILED: ${req.url()} (${req.failure()?.errorText})`);
+        });
+        page.on('response', (resp) => {
+            if (resp.status() >= 400) {
+                console.log(`❌ HTTP ${resp.status()}: ${resp.url()}`);
+            }
+        });
 
         const auth = new AuthHelper(page);
         await auth.loginAsAdmin();
@@ -642,9 +667,13 @@ test.describe('Golden Thread — Wizard Step 1–5 Full Traversal', () => {
         await page.screenshot({ path: path.join(EVIDENCE_DIR, 'tc-gt-06-all-steps-reached.png'), fullPage: true });
 
         // ── Submit form via native submitForm() — single attempt, no JSON fallback ──
-        const responsePromise = new Promise<{ status: number; body: string }>(resolve => {
+        const responsePromise = new Promise<{ status: number; body: string }>((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                reject(new Error('Timed out waiting for POST /admin/ilanlar response (15s)'));
+            }, 15000);
             const handler = (resp: any) => {
                 if (resp.request().method() === 'POST' && resp.url().includes('/admin/ilanlar')) {
+                    clearTimeout(timeout);
                     page.off('response', handler);
                     resp.text().then((body: string) => resolve({ status: resp.status(), body })).catch(() => {});
                 }
@@ -652,20 +681,45 @@ test.describe('Golden Thread — Wizard Step 1–5 Full Traversal', () => {
             page.on('response', handler);
         });
 
-        await page.evaluate(() => {
+        const evalResult = await page.evaluate(async () => {
             const root = Array.from(document.querySelectorAll<HTMLElement>('[x-data]'))
                 .find((el) => (window as any).Alpine?.$data(el)?.wizard !== undefined);
             const data = (window as any).Alpine?.$data(root);
             const wizard = data?.wizard;
-            if (wizard && typeof wizard.submitForm === 'function') {
-                wizard.submitForm();
+            if (!wizard) return { ok: false, error: 'wizard Alpine instance not found' };
+            const form = document.getElementById('ilan-wizard-form');
+            const step4Vals = ['il_id', 'ilce_id', 'mahalle_id', 'adres', 'lat', 'lng'].map(n => {
+                const el = form?.querySelector(`[name="${n}"]`) as HTMLInputElement;
+                return { name: n, value: el?.value, hasReq: el?.hasAttribute('required'), rule: wizard?.wizardRules?.[n] };
+            });
+            console.log('[EVAL] step4 detail:', JSON.stringify(step4Vals));
+            const valResults = {
+                step1: wizard.validateStep(1),
+                step2: wizard.validateStep(2),
+                step3: wizard.validateStep(3),
+                step4: wizard.validateStep(4),
+                step5: wizard.validateStep(5),
+                currentStep: wizard.currentStep,
+                completedSteps: wizard.completedSteps,
+            };
+            console.log('[EVAL] Validation results per step:', JSON.stringify(valResults));
+            try {
+                console.log('[EVAL] Calling wizard.submitForm()...');
+                const res = await wizard.submitForm();
+                console.log('[EVAL] wizard.submitForm() returned:', res);
+                return { ok: true, res };
+            } catch (e: any) {
+                console.error('[EVAL] wizard.submitForm() threw error:', e.message, e.stack);
+                return { ok: false, error: e.message, stack: e.stack };
             }
         });
+        console.log('🔍 evalResult:', JSON.stringify(evalResult));
 
         let postResult: { status: number; body: string } | null = null;
         try {
             postResult = await responsePromise;
-        } catch {
+        } catch (e: any) {
+            console.log('⚠️ responsePromise error:', e.message);
             postResult = null;
         }
         const status = postResult?.status ?? 0;
@@ -718,11 +772,11 @@ test.describe('Golden Thread — Wizard Step 1–5 Full Traversal', () => {
         }
 
         expect(submitted, `Wizard should redirect to /admin/ilanlar/{id} after native submit. Got ${status}.`).toBe(true);
-        // Ignore post-redirect legacy edit page script warnings or unrelated CDN/network errors
+        // Only ignore benign external CDN / tile network aborts (e.g. arcgisonline, openstreetmap tiles, favicon)
         const postSubmitCriticalErrors = consoleErrors.filter(e =>
-            !e.includes('422') && !e.includes('429') && !e.includes('500') && !e.includes('Failed to load resource') &&
-            !e.includes('İlçe yükleme') && !e.includes('PAGE_ERROR') && !e.includes('Unexpected token') &&
-            !e.includes('Photo load')
+            !e.includes('arcgisonline.com') &&
+            !e.includes('tile.openstreetmap.org') &&
+            !e.includes('favicon.ico')
         );
         expect(postSubmitCriticalErrors, `Unexpected post-submit errors: ${postSubmitCriticalErrors.join(' | ')}`).toHaveLength(0);
         console.log('\n🎯 TC-GT-06 PASS — Native FormData submit + redirect verified');

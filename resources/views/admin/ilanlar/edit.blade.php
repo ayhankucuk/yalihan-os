@@ -610,8 +610,11 @@
                     return;
                 }
 
-                if (this.map) {
+                if (this.map || (mapEl && (mapEl._leaflet_id || (window.L && L.DomUtil && L.DomUtil.get('map')?._leaflet_id)))) {
                     log('⚠️ Harita zaten yüklü');
+                    if (!this.map && window.mapManager?.map) {
+                        this.map = window.mapManager.map;
+                    }
                     return;
                 }
 
@@ -659,6 +662,10 @@
                     this.loadExistingCoordinates();
 
                 } catch (error) {
+                    if (error.message && error.message.includes('already initialized')) {
+                        log('⚠️ Harita container zaten başlatılmış');
+                        return;
+                    }
                     console.error('❌ Harita init hatası:', error);
                     this.showMapError('Harita başlatılamadı: ' + error.message);
                 }
@@ -2352,6 +2359,7 @@
                 });
             }
         });
+    </script>
 
-        @include('admin.ilanlar.scripts.sticky-nav')
+    @include('admin.ilanlar.scripts.sticky-nav')
     @endpush

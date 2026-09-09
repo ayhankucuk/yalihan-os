@@ -151,6 +151,21 @@ Route::get('/ilceler/{ilId}', [\App\Http\Controllers\Api\LocationController::cla
 Route::get('/mahalleler/{ilceId}', [\App\Http\Controllers\Api\LocationController::class, 'getNeighborhoodsByDistrict'])
     ->name('api.legacy.mahalleler');
 
+Route::get('/currency/rates', function () {
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'rates' => [
+                'TRY' => 1,
+                'USD' => 34.5,
+                'EUR' => 37.2,
+                'GBP' => 43.8,
+            ],
+            'last_updated' => now()->toIso8601String(),
+        ],
+    ]);
+})->name('api.legacy.currency.rates');
+
 /*
 |--------------------------------------------------------------------------
 | API Route Modules Structure

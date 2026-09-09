@@ -1530,8 +1530,8 @@ Route::prefix('api/admin/market-intelligence')->name('admin.api.market-intellige
 });
 
 // Property Events (Rental Engine API for Alpine Component)
-Route::prefix('api/admin')->name('admin.api.events.')->middleware(['web', 'auth'])->group(function () {
-    Route::get('/ilanlar/{ilan}/events', [\App\Http\Controllers\Admin\PropertyEventApiController::class, 'index'])->name('index');
+Route::prefix('api/admin')->name('admin.api.events.')->middleware(['web', 'auth', 'tenant.context'])->group(function () {
+    Route::get('/ilanlar/{id}/events', [\App\Http\Controllers\Admin\PropertyEventApiController::class, 'index'])->name('index');
     Route::post('/events', [\App\Http\Controllers\Admin\PropertyEventApiController::class, 'store'])->name('store');
     Route::patch('/events/{event}', [\App\Http\Controllers\Admin\PropertyEventApiController::class, 'update'])->name('update');
     Route::delete('/events/{event}', [\App\Http\Controllers\Admin\PropertyEventApiController::class, 'destroy'])->name('destroy');

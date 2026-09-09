@@ -15,7 +15,6 @@ use App\Models\YayinTipiSablonu;
 use App\Rules\CoordinateRequiredRule;
 use App\Services\Category\CategoryTreeService;
 use App\Services\Ilan\IlanCrudService;
-use App\Services\Wizard\FieldEngine\FieldResolver;
 use App\Services\Wizard\WizardDraftService;
 use App\Services\Response\ResponseService;
 use App\Services\Wizard\DynamicFieldValueHydrator;
@@ -45,7 +44,6 @@ class IlanWizardController extends Controller
         private readonly DynamicFieldValueHydrator $fieldHydrator,
         private readonly IlanCrudService $ilanCrudService,
         private readonly CategoryTreeService $categoryTreeService,
-        private readonly FieldResolver $fieldResolver,
         private readonly WizardDraftService $draftService,
         private readonly WizardAIAssistantService $aiAssistant,
     ) {}
@@ -450,35 +448,6 @@ class IlanWizardController extends Controller
         }
 
         return response()->json(['data' => $result]);
-    }
-
-    /**
-     * 🏗️ Schema-Driven Field Schema API (Wizard Engine V2)
-     *
-     * GET /api/v1/wizard/field-schema?kategori_id=5&yayin_tipi_id=2
-     *
-     * Returns schema contract for dynamic Step 2 rendering.
-     * SSOT: KategoriYayinTipiFieldDependency table.
-     *
-     * @deprecated 2026-09-08 — P2-DS-01: Bu endpoint Sistem A'da (Wizard Engine V2)
-     *   aktif değildir. Güncel SSOT: FeatureTemplateResolver + feature_assignments tablosu.
-     *   Kaldırılacak: IlanWizardController ve fieldResolver dependency Injection.
-     *   Consumer yok — frontend Wizard mod1-orchestrator.js Step 2 için bu endpointi kullanmıyor.
-     */
-    public function fieldSchema(Request $request): JsonResponse
-    {
-        $request->validate([
-            'kategori_id' => 'required|integer|exists:ilan_kategorileri,id',
-            'yayin_tipi_id' => 'required|integer|exists:yayin_tipi_sablonlari,id',
-        ]);
-
-        $kategoriId = (int) $request->input('kategori_id');
-        $yayinTipiId = (int) $request->input('yayin_tipi_id');
-
-        // FieldResolver: DB → FieldDefinition[] → Schema Contract
-        $schema = $this->fieldResolver->resolveSchemaContract($kategoriId, $yayinTipiId);
-
-        return response()->json(['data' => $schema]);
     }
 
     /**

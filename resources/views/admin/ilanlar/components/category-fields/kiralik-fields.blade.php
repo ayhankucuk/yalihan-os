@@ -21,174 +21,176 @@
     </div>
 
     {{-- Yazlık Özel Alanlar (Sadece Yazlık kategorisi için) --}}
-    <div x-show="selectedKategoriSlug && selectedKategoriSlug.includes('yazlik')"
-        x-data="{
-            calculating: false,
-            selectedSeason: null,
-            seasons: @js(
-    config('yali_options.sezon_tipleri', [
-        'yaz' => ['label' => 'Yaz Sezonu', 'color' => 'yellow', 'icon' => '☀️'],
-        'ara_sezon' => ['label' => 'Ara Sezon', 'color' => 'orange', 'icon' => '🍂'],
-        'kis' => ['label' => 'Kış Sezonu', 'color' => 'blue', 'icon' => '❄️'],
-    ]),
-),
-            calculatePrices() {
-                const gunlukFiyatInput = document.getElementById('field_gunluk_fiyat') ||
-                    document.getElementById('gunluk_fiyat') ||
-                    document.querySelector('[name="gunluk_fiyat"]') ||
-                    document.querySelector('[name="features[gunluk-fiyat]"]');
-
-                if (!gunlukFiyatInput || !gunlukFiyatInput.value || parseFloat(gunlukFiyatInput.value) <= 0) {
-                    this.showToast('Lütfen önce günlük fiyatı giriniz.', 'error');
-                    return;
-                }
-
-                this.calculating = true;
-                const gunlukFiyat = parseFloat(gunlukFiyatInput.value);
-
-                // ✅ SAB: Merkezi API config kullan
-                const endpoint = window.APIConfig?.ai?.calculateSeasonalPrice || '/api/v1/ai/calculate-seasonal-price';
-                fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ gunluk_fiyat: gunlukFiyat })
-                })
-                .then(response => response.json())
-        .then(data => {
-        this.calculating = false;
-        if (data.success && data.data) {
-        // Haftalık fiyat
-        const haftalikInput = document.getElementById('field_haftalik_fiyat') ||
-        document.getElementById('haftalik_fiyat') ||
-        document.querySelector('[name="haftalik_fiyat"]') ||
-        document.querySelector('[name="features[haftalik-fiyat]"]');
-        if (haftalikInput && typeof data.data.haftalik_fiyat === 'number') {
-        haftalikInput.value = Math.round(data.data.haftalik_fiyat);
-        this.flashInput(haftalikInput);
-        }
-
-        // Aylık fiyat
-        const aylikInput = document.getElementById('field_aylik_fiyat') ||
-        document.getElementById('aylik_fiyat') ||
-        document.querySelector('[name="aylik_fiyat"]') ||
-        document.querySelector('[name="features[aylik-fiyat]"]');
-        if (aylikInput && typeof data.data.aylik_fiyat === 'number') {
-        aylikInput.value = Math.round(data.data.aylik_fiyat);
-        this.flashInput(aylikInput);
-        }
-
-        // Sezonluk günlük fiyatlar - yeni API yapısı
-        const sezonluk = data.data.sezonluk_fiyatlar || {};
-
-        const yazGunlukDegeri = (typeof data.data.yaz_sezonu_gunluk === 'number') ? data.data.yaz_sezonu_gunluk : (sezonluk.yaz && sezonluk.yaz.gunluk);
-        if (yazGunlukDegeri) {
-        const yazGunlukInput = document.querySelector('[name*="yaz_gunluk"]') ||
-        document.querySelector('[name*="yaz_sezonu_gunluk"]') ||
-        document.querySelector('[name*="features[yaz-gunluk]"]');
-        if (yazGunlukInput) {
-        yazGunlukInput.value = Math.round(yazGunlukDegeri);
-        this.flashInput(yazGunlukInput);
-        }
-        }
-
-        const araGunlukDegeri = (typeof data.data.ara_sezon_gunluk === 'number') ? data.data.ara_sezon_gunluk : (sezonluk.ara_sezon && sezonluk.ara_sezon.gunluk);
-        if (araGunlukDegeri) {
-        const araSezonGunlukInput = document.querySelector('[name*="ara_sezon_gunluk"]') ||
-        document.querySelector('[name*="features[ara-sezon-gunluk]"]');
-        if (araSezonGunlukInput) {
-        araSezonGunlukInput.value = Math.round(araGunlukDegeri);
-        this.flashInput(araSezonGunlukInput);
-        }
-        }
-
-        const kisGunlukDegeri = (typeof data.data.kis_sezonu_gunluk === 'number') ? data.data.kis_sezonu_gunluk : (sezonluk.kis && sezonluk.kis.gunluk);
-        if (kisGunlukDegeri) {
-        const kisGunlukInput = document.querySelector('[name*="kis_gunluk"]') ||
-        document.querySelector('[name*="kis_sezonu_gunluk"]') ||
-        document.querySelector('[name*="features[kis-gunluk]"]');
-        if (kisGunlukInput) {
-        kisGunlukInput.value = Math.round(kisGunlukDegeri);
-        this.flashInput(kisGunlukInput);
-        }
-        }
-
-        this.showToast('Fiyatlandırma hesaplandı!', 'success');
-        } else {
-        this.showToast(data.message || 'Fiyatlandırma hesaplanamadı.', 'error');
-        }
-        })
-        .catch(error => {
-        this.calculating = false;
-        console.error('Yazlık Fiyatlandırma Hatası:', error);
-        this.showToast('Fiyatlandırma hesaplanırken bir hata oluştu.', 'error');
-        });
-        },
-        flashInput(input) {
-        input.classList.add('bg-green-100', 'dark:bg-green-900/30', 'transition-colors', 'duration-300');
-        setTimeout(() => {
-        input.classList.remove('bg-green-100', 'dark:bg-green-900/30');
-        }, 1000);
-        },
-        showToast(message, type) {
-        if (window.showToast && typeof window.showToast === 'function') {
-        window.showToast(message, type);
-        } else if (window.showNotification && typeof window.showNotification === 'function') {
-        window.showNotification(message, type);
-        } else {
-        console.log(`[${type.toUpperCase()}] ${message}`);
-        }
-        },
-        getSeasonColor(seasonKey) {
-        const season = this.seasons[seasonKey];
-        if (!season) return 'gray';
-        return season.color || 'gray';
-        },
-        getSeasonIcon(seasonKey) {
-        const season = this.seasons[seasonKey];
-        if (!season) return '';
-        return season.icon || '';
-        },
-        getSeasonLabel(seasonKey) {
-        const season = this.seasons[seasonKey];
-        if (!season) return seasonKey;
-        return season.label || seasonKey;
-        }
-        }"
-        x-init="// Günlük fiyat input'una buton ekle
-        $watch('selectedKategoriSlug', (value) => {
-                    if (value && value.includes('yazlik')) {
-                        setTimeout(() => {
+    <script>
+        if (typeof window.seasonalPricingManager === 'undefined') {
+            window.seasonalPricingManager = function(seasonsData) {
+                return {
+                    calculating: false,
+                    selectedSeason: null,
+                    seasons: seasonsData || {},
+                    init() {
+                        this.$watch('selectedKategoriSlug', (value) => {
+                            if (value && value.includes('yazlik')) {
+                                setTimeout(() => {
                                     const gunlukFiyatInput = document.getElementById('field_gunluk_fiyat') ||
                                         document.getElementById('gunluk_fiyat') ||
                                         document.querySelector('[name="gunluk_fiyat"]') ||
-        document.querySelector('[name="features[gunluk-fiyat]"]');
+                                        document.querySelector('[name="features[gunluk-fiyat]"]');
 
-        if (gunlukFiyatInput && !gunlukFiyatInput.parentElement.querySelector('.auto-calculate-btn')) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'relative';
-        gunlukFiyatInput.parentNode.insertBefore(wrapper, gunlukFiyatInput);
-        wrapper.appendChild(gunlukFiyatInput);
+                                    if (gunlukFiyatInput && !gunlukFiyatInput.parentElement.querySelector('.auto-calculate-btn')) {
+                                        const wrapper = document.createElement('div');
+                                        wrapper.className = 'relative';
+                                        gunlukFiyatInput.parentNode.insertBefore(wrapper, gunlukFiyatInput);
+                                        wrapper.appendChild(gunlukFiyatInput);
 
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className='auto-calculate-btn absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed dark:shadow-none';
-        btn.innerHTML = '<span>⚡</span><span>Hesapla</span>';
-        btn.onclick = () => {
-        if (!this.calculating) {
-        this.calculatePrices();
+                                        const btn = document.createElement('button');
+                                        btn.type = 'button';
+                                        btn.className = 'auto-calculate-btn absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed dark:shadow-none';
+                                        btn.innerHTML = '<span>⚡</span><span>Hesapla</span>';
+                                        btn.onclick = () => {
+                                            if (!this.calculating) {
+                                                this.calculatePrices();
+                                            }
+                                        };
+                                        wrapper.appendChild(btn);
+                                    }
+                                }, 500);
+                            }
+                        });
+                    },
+                    calculatePrices() {
+                        const gunlukFiyatInput = document.getElementById('field_gunluk_fiyat') ||
+                            document.getElementById('gunluk_fiyat') ||
+                            document.querySelector('[name="gunluk_fiyat"]') ||
+                            document.querySelector('[name="features[gunluk-fiyat]"]');
+
+                        if (!gunlukFiyatInput || !gunlukFiyatInput.value || parseFloat(gunlukFiyatInput.value) <= 0) {
+                            this.showToast('Lütfen önce günlük fiyatı giriniz.', 'error');
+                            return;
+                        }
+
+                        this.calculating = true;
+                        const gunlukFiyat = parseFloat(gunlukFiyatInput.value);
+
+                        const endpoint = window.APIConfig?.ai?.calculateSeasonalPrice || '/api/v1/ai/calculate-seasonal-price';
+                        fetch(endpoint, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ gunluk_fiyat: gunlukFiyat })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            this.calculating = false;
+                            if (data.success && data.data) {
+                                const haftalikInput = document.getElementById('field_haftalik_fiyat') ||
+                                    document.getElementById('haftalik_fiyat') ||
+                                    document.querySelector('[name="haftalik_fiyat"]') ||
+                                    document.querySelector('[name="features[haftalik-fiyat]"]');
+                                if (haftalikInput && typeof data.data.haftalik_fiyat === 'number') {
+                                    haftalikInput.value = Math.round(data.data.haftalik_fiyat);
+                                    this.flashInput(haftalikInput);
+                                }
+
+                                const aylikInput = document.getElementById('field_aylik_fiyat') ||
+                                    document.getElementById('aylik_fiyat') ||
+                                    document.querySelector('[name="aylik_fiyat"]') ||
+                                    document.querySelector('[name="features[aylik-fiyat]"]');
+                                if (aylikInput && typeof data.data.aylik_fiyat === 'number') {
+                                    aylikInput.value = Math.round(data.data.aylik_fiyat);
+                                    this.flashInput(aylikInput);
+                                }
+
+                                const sezonluk = data.data.sezonluk_fiyatlar || {};
+
+                                const yazGunlukDegeri = (typeof data.data.yaz_sezonu_gunluk === 'number') ? data.data.yaz_sezonu_gunluk : (sezonluk.yaz && sezonluk.yaz.gunluk);
+                                if (yazGunlukDegeri) {
+                                    const yazGunlukInput = document.querySelector('[name*="yaz_gunluk"]') ||
+                                        document.querySelector('[name*="yaz_sezonu_gunluk"]') ||
+                                        document.querySelector('[name*="features[yaz-gunluk]"]');
+                                    if (yazGunlukInput) {
+                                        yazGunlukInput.value = Math.round(yazGunlukDegeri);
+                                        this.flashInput(yazGunlukInput);
+                                    }
+                                }
+
+                                const araGunlukDegeri = (typeof data.data.ara_sezon_gunluk === 'number') ? data.data.ara_sezon_gunluk : (sezonluk.ara_sezon && sezonluk.ara_sezon.gunluk);
+                                if (araGunlukDegeri) {
+                                    const araSezonGunlukInput = document.querySelector('[name*="ara_sezon_gunluk"]') ||
+                                        document.querySelector('[name*="features[ara-sezon-gunluk]"]');
+                                    if (araSezonGunlukInput) {
+                                        araSezonGunlukInput.value = Math.round(araGunlukDegeri);
+                                        this.flashInput(araSezonGunlukInput);
+                                    }
+                                }
+
+                                const kisGunlukDegeri = (typeof data.data.kis_sezonu_gunluk === 'number') ? data.data.kis_sezonu_gunluk : (sezonluk.kis && sezonluk.kis.gunluk);
+                                if (kisGunlukDegeri) {
+                                    const kisGunlukInput = document.querySelector('[name*="kis_gunluk"]') ||
+                                        document.querySelector('[name*="kis_sezonu_gunluk"]') ||
+                                        document.querySelector('[name*="features[kis-gunluk]"]');
+                                    if (kisGunlukInput) {
+                                        kisGunlukInput.value = Math.round(kisGunlukDegeri);
+                                        this.flashInput(kisGunlukInput);
+                                    }
+                                }
+
+                                this.showToast('Fiyatlandırma hesaplandı!', 'success');
+                            } else {
+                                this.showToast(data.message || 'Fiyatlandırma hesaplanamadı.', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            this.calculating = false;
+                            console.error('Yazlık Fiyatlandırma Hatası:', error);
+                            this.showToast('Fiyatlandırma hesaplanırken bir hata oluştu.', 'error');
+                        });
+                    },
+                    flashInput(input) {
+                        input.classList.add('bg-green-100', 'dark:bg-green-900/30', 'transition-colors', 'duration-300');
+                        setTimeout(() => {
+                            input.classList.remove('bg-green-100', 'dark:bg-green-900/30');
+                        }, 1000);
+                    },
+                    showToast(message, type) {
+                        if (window.showToast && typeof window.showToast === 'function') {
+                            window.showToast(message, type);
+                        } else if (window.showNotification && typeof window.showNotification === 'function') {
+                            window.showNotification(message, type);
+                        } else {
+                            console.log(`[${type.toUpperCase()}] ${message}`);
+                        }
+                    },
+                    getSeasonColor(seasonKey) {
+                        const season = this.seasons?.[seasonKey];
+                        if (!season) return 'gray';
+                        return season.color || 'gray';
+                    },
+                    getSeasonIcon(seasonKey) {
+                        const season = this.seasons?.[seasonKey];
+                        if (!season) return '';
+                        return season.icon || '';
+                    },
+                    getSeasonLabel(seasonKey) {
+                        const season = this.seasons?.[seasonKey];
+                        if (!season) return seasonKey;
+                        return season.label || seasonKey;
+                    },
+                    updateSeasonInput(key) {
+                        const input = document.querySelector("[name='features[sezon-tipi]']") ||
+                            document.querySelector("[name='sezon_tipi']");
+                        if (input) input.value = key;
+                    }
+                };
+            };
         }
-        };
-        wrapper.appendChild(btn);
-        }
-        }, 500);
-        }
-        });
-        "
+    </script>
+    <div x-show="selectedKategoriSlug && selectedKategoriSlug.includes('yazlik')"
+        x-data="seasonalPricingManager({{ json_encode(config('yali_options.sezon_tipleri', ['yaz' => ['label' => 'Yaz Sezonu', 'color' => 'yellow', 'icon' => '☀️'], 'ara_sezon' => ['label' => 'Ara Sezon', 'color' => 'orange', 'icon' => '🍂'], 'kis' => ['label' => 'Kış Sezonu', 'color' => 'blue', 'icon' => '❄️']])) }})"
         class="space-y-4">
 
         {{-- Sezon Tipi Renkli Select --}}
@@ -203,11 +205,7 @@
                     <label class="relative cursor-pointer">
                         <input type="radio" :name="'sezon_tipi'" :value="key" x-model="selectedSeason"
                             class="peer sr-only"
-                            @change="
-                                const input = document.querySelector('[name=\"features[sezon-tipi]\"]') ||
-                                    document.querySelector('[name=\"sezon_tipi\"]');
-                                if (input) input.value = key;
-                            ">
+                            @change="updateSeasonInput(key)">
                         <div
                             class="flex items-center gap-3 p-4 rounded-lg border-2 transition-all duration-200
                             peer-checked:border-2 peer-checked:shadow-lg
@@ -317,191 +315,7 @@
             </h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {{-- Denize Uzaklık Auto-Fill --}}
-                <div x-data="{
-                    calculatingDistance: false,
-                    geocodingAddress: false,
-                    async calculateDistanceToSea() {
-                        const latInput = document.querySelector('[name="lat"]') ||
-                            document.querySelector('[name="enlem"]') ||
-                            document.querySelector('[id="lat"]');
-                        const lngInput = document.querySelector('[name="lng"]') ||
-                            document.querySelector('[name="boylam"]') ||
-                            document.querySelector('[id="lng"]');
-
-                        // Koordinat yoksa adres bilgisinden çekmeyi dene
-                        if (!latInput || !lngInput || !latInput.value || !lngInput.value) {
-                            const ilInput = document.querySelector('[name="il_id"]');
-                            const ilceInput = document.querySelector('[name="ilce_id"]');
-                            const mahalleInput = document.querySelector('[name="mahalle_id"]');
-                            const sokakInput = document.querySelector('[name="sokak"]');
-                            const adresInput = document.querySelector('[name="adres"]');
-
-                            if (ilInput && ilceInput && ilInput.value && ilceInput.value) {
-                                // Adres bilgisinden koordinat çekmeyi dene
-                                const shouldGeocode = confirm('Koordinatlar bulunamadı. Adres bilgilerinden otomatik koordinat çekmek ister misiniz?');
-                                if (shouldGeocode) {
-                                    await this.geocodeFromAddress(ilInput, ilceInput, mahalleInput, sokakInput, adresInput, latInput, lngInput);
-                                    // Koordinat çekildikten sonra devam et
-                                    if (!latInput.value || !lngInput.value) {
-                                        this.showToast('Koordinat çekilemedi. Lütfen harita üzerinden konum seçiniz.', 'error');
-                                        return;
-                                    }
-                                } else {
-                                    this.showToast('Koordinatlar gerekli. Harita üzerinden konum seçebilir veya adres bilgilerinden koordinat çekebilirsiniz.', 'error');
-                                    return;
-                                }
-                            } else {
-                                this.showToast('Koordinatlar gerekli. Lütfen harita üzerinden konum seçiniz veya il/ilçe bilgilerini giriniz.', 'error');
-                                return;
-                            }
-                        }
-
-                        this.calculatingDistance = true;
-                        const lat = parseFloat(latInput.value);
-                        const lng = parseFloat(lngInput.value);
-                        const endpoint = window.APIConfig?.ai?.calculateDistanceToSea || '/api/v1/ai/calculate-distance-to-sea';
-                        fetch(endpoint, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({ lat, lng })
-                        })
-                        .then(response => response.json())
-                    .then(data => {
-                    this.calculatingDistance = false;
-                    if (data.success && data.data) {
-                    const denizeUzaklikInput = document.getElementById('field_denize_uzaklik') ||
-                    document.getElementById('denize_uzaklik') ||
-                    document.querySelector('[name="denize_uzaklik"]') ||
-                    document.querySelector('[name="features[denize-uzaklik]"]');
-
-                    if (denizeUzaklikInput) {
-                    // Metre cinsinden kaydet (database'de metre olarak saklanıyor)
-                    denizeUzaklikInput.value = Math.round(data.data.distance_m || (data.data.distance_km * 1000));
-                    this.flashInput(denizeUzaklikInput);
-
-                    // Kullanıcıya km cinsinden göster
-                    const distanceKm = data.data.distance_km || (data.data.distance_m / 1000).toFixed(2);
-                    const walkingMinutes = data.data.walking_minutes || Math.round((data.data.distance_m || distanceKm *
-                    1000) / 80);
-                    const location = data.data.location || 'Deniz';
-                    this.showToast(`Denize uzaklık: ${distanceKm} km (${walkingMinutes} dk yürüme) - ${location}`,
-                    'success');
-                    } else {
-                    // Input bulunamadıysa sadece bilgi mesajı göster
-                    const distanceKm = data.data.distance_km || (data.data.distance_m / 1000).toFixed(2);
-                    this.showToast(`Denize uzaklık hesaplandı: ${distanceKm} km. Lütfen 'denize_uzaklik' alanını manuel
-                    olarak doldurun.`, 'info');
-                    }
-                    } else {
-                    this.showToast(data.message || 'Denize uzaklık hesaplanamadı.', 'error');
-                    }
-                    })
-                    .catch(error => {
-                    this.calculatingDistance = false;
-                    console.error('Denize Uzaklık Hatası:', error);
-
-                    // Detaylı hata mesajı
-                    let errorMessage = 'Denize uzaklık hesaplanırken bir hata oluştu.';
-                    if (error.message) {
-                    errorMessage += ` (${error.message})`;
-                    } else if (error.response && error.response.status === 404) {
-                    errorMessage = 'Denize yakın bir nokta bulunamadı. Koordinatları kontrol ediniz.';
-                    } else if (error.response && error.response.status === 500) {
-                    errorMessage = 'Sunucu hatası. Lütfen daha sonra tekrar deneyiniz.';
-                    } else if (!navigator.onLine) {
-                    errorMessage = 'İnternet bağlantınızı kontrol ediniz.';
-                    }
-
-                    this.showToast(errorMessage, 'error');
-                    });
-                    },
-                    async geocodeFromAddress(ilInput, ilceInput, mahalleInput, sokakInput, adresInput, latInput,
-                    lngInput) {
-                    this.geocodingAddress = true;
-
-                    try {
-                    // Adres string'i oluştur
-                    const addressParts = [];
-                    if (sokakInput && sokakInput.value) addressParts.push(sokakInput.value);
-                    if (mahalleInput && mahalleInput.value) {
-                    const mahalleText = mahalleInput.options ? mahalleInput.options[mahalleInput.selectedIndex]?.text :
-                    mahalleInput.value;
-                    addressParts.push(mahalleText);
-                    }
-                    if (ilceInput && ilceInput.value) {
-                    const ilceText = ilceInput.options ? ilceInput.options[ilceInput.selectedIndex]?.text :
-                    ilceInput.value;
-                    addressParts.push(ilceText);
-                    }
-                    if (ilInput && ilInput.value) {
-                    const ilText = ilInput.options ? ilInput.options[ilInput.selectedIndex]?.text : ilInput.value;
-                    addressParts.push(ilText);
-                    }
-                    if (adresInput && adresInput.value) addressParts.push(adresInput.value);
-
-                    const address = addressParts.join(', ') || 'Türkiye';
-                    const geocodeEndpoint = window.APIConfig?.location?.geocode || '/api/v1/location/geocode';
-
-                    const response = await fetch(geocodeEndpoint, {
-                    method: 'POST',
-                    headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                    address: address,
-                    il_id: ilInput?.value || null,
-                    ilce_id: ilceInput?.value || null
-                    })
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success && data.data && data.data.data) {
-                    const coords = data.data.data;
-                    if (latInput) latInput.value = coords.latitude;
-                    if (lngInput) lngInput.value = coords.longitude;
-
-                    // Input'ları güncelle
-                    this.flashInput(latInput);
-                    this.flashInput(lngInput);
-
-                    this.showToast(`Koordinatlar çekildi: ${coords.latitude.toFixed(6)},
-                    ${coords.longitude.toFixed(6)}`, 'success');
-                    } else {
-                    throw new Error(data.message || 'Koordinat çekilemedi');
-                    }
-                    } catch (error) {
-                    console.error('Geocoding Hatası:', error);
-                    this.showToast('Adres bilgilerinden koordinat çekilemedi. Lütfen harita üzerinden konum seçiniz.',
-                    'error');
-                    } finally {
-                    this.geocodingAddress = false;
-                    }
-                    },
-                    flashInput(input) {
-                    input.classList.add('bg-green-100', 'dark:bg-green-900/30', 'transition-colors', 'duration-300');
-                    setTimeout(() => {
-                    input.classList.remove('bg-green-100', 'dark:bg-green-900/30');
-                    }, 1000);
-                    },
-                    showToast(message, type) {
-                    if (window.showToast && typeof window.showToast === 'function') {
-                    window.showToast(message, type);
-                    } else if (window.showNotification && typeof window.showNotification === 'function') {
-                    window.showNotification(message, type);
-                    } else {
-                    console.log(`[${type.toUpperCase()}] ${message}`);
-                    }
-                    }
-                    }">
+                <div x-data="calculateDistanceToSeaManager()">
                     <button type="button" @click="calculateDistanceToSea()"
                         :disabled="calculatingDistance || geocodingAddress"
                         class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-75 dark:shadow-none">
@@ -521,154 +335,7 @@
                 </div>
 
                 {{-- Havuz Tespiti Auto-Fill --}}
-                <div x-data="{
-                    detectingPool: false,
-                    detectPool() {
-                        const aciklamaInput = document.querySelector('[name="aciklama"]') ||
-                            document.querySelector('[name="ilan_aciklama"]') ||
-                            document.querySelector('[id="aciklama"]') ||
-                            document.querySelector('[id="ilan_aciklama"]') ||
-                            document.querySelector('textarea[name*="aciklama"]');
-
-                        if (!aciklamaInput || !aciklamaInput.value || aciklamaInput.value.length < 10) {
-                            this.showToast('Lütfen önce ilan açıklamasını giriniz (en az 10 karakter).', 'error');
-                            return;
-                        }
-
-                        this.detectingPool = true;
-                        const aciklama = aciklamaInput.value;
-                        const endpoint = window.APIConfig?.ai?.detectPool || '/api/v1/ai/detect-pool';
-                        fetch(endpoint, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({ aciklama })
-                        })
-                        .then(response => response.json())
-                    .then(data => {
-                    this.detectingPool = false;
-                    if (data.success && data.data) {
-                    // Havuz checkbox/input
-                    const havuzInput = document.getElementById('field_havuz') ||
-                    document.getElementById('havuz') ||
-                    document.querySelector('[name="havuz"]') ||
-                    document.querySelector('[name="features[havuz]"]');
-
-                    if (havuzInput) {
-                    if (havuzInput.type === 'checkbox') {
-                    havuzInput.checked = data.data.has_pool;
-                    } else {
-                    havuzInput.value = data.data.has_pool ? '1' : '0';
-                    }
-                    this.flashInput(havuzInput);
-                    }
-
-                    // Havuz türü (pool_type varsa)
-                    if (data.data.has_pool && data.data.pool_type) {
-                    const havuzTuruInput = document.getElementById('field_havuz_turu') ||
-                    document.getElementById('havuz_turu') ||
-                    document.querySelector('[name="havuz_turu"]') ||
-                    document.querySelector('[name="features[havuz-turu]"]');
-
-                    if (havuzTuruInput) {
-                    // Select ise option'ı seç, text ise değeri yaz
-                    if (havuzTuruInput.tagName === 'SELECT') {
-                    const option = Array.from(havuzTuruInput.options).find(
-                    opt => opt.value === data.data.pool_type ||
-                    opt.value.toLowerCase() === data.data.pool_type.toLowerCase()
-                    );
-                    if (option) {
-                    havuzTuruInput.value = option.value;
-                    this.flashInput(havuzTuruInput);
-                    }
-                    } else {
-                    havuzTuruInput.value = data.data.pool_type;
-                    this.flashInput(havuzTuruInput);
-                    }
-                    }
-                    }
-
-                    // Havuz boyutu (pool_size varsa)
-                    if (data.data.has_pool && data.data.pool_size) {
-                    const havuzBoyutInput = document.getElementById('field_havuz_boyut') ||
-                    document.getElementById('havuz_boyut') ||
-                    document.querySelector('[name="havuz_boyut"]') ||
-                    document.querySelector('[name="features[havuz-boyut]"]');
-
-                    if (havuzBoyutInput) {
-                    havuzBoyutInput.value = data.data.pool_size;
-                    this.flashInput(havuzBoyutInput);
-                    }
-                    }
-
-                    // Havuz derinliği (pool_depth varsa)
-                    if (data.data.has_pool && data.data.pool_depth) {
-                    const havuzDerinlikInput = document.getElementById('field_havuz_derinlik') ||
-                    document.getElementById('havuz_derinlik') ||
-                    document.querySelector('[name="havuz_derinlik"]') ||
-                    document.querySelector('[name="features[havuz-derinlik]"]');
-
-                    if (havuzDerinlikInput) {
-                    havuzDerinlikInput.value = data.data.pool_depth;
-                    this.flashInput(havuzDerinlikInput);
-                    }
-                    }
-
-                    const confidence = (data.data.confidence * 100).toFixed(0);
-                    let message = `Havuz tespiti: ${data.data.has_pool ? 'Var' : 'Yok'} (Güven: %${confidence})`;
-                    if (data.data.has_pool) {
-                    const details = [];
-                    if (data.data.pool_type) details.push(`Tür: ${data.data.pool_type}`);
-                    if (data.data.pool_size) details.push(`Boyut: ${data.data.pool_size}`);
-                    if (data.data.pool_depth) details.push(`Derinlik: ${data.data.pool_depth}`);
-                    if (details.length > 0) {
-                    message += ` - ${details.join(', ')}`;
-                    }
-                    }
-                    this.showToast(message, 'success');
-                    } else {
-                    this.showToast(data.message || 'Havuz tespiti yapılamadı.', 'error');
-                    }
-                    })
-                    .catch(error => {
-                    this.detectingPool = false;
-                    console.error('Havuz Tespiti Hatası:', error);
-
-                    // Detaylı hata mesajı
-                    let errorMessage = 'Havuz tespiti yapılırken bir hata oluştu.';
-                    if (error.message) {
-                    errorMessage += ` (${error.message})`;
-                    } else if (error.response && error.response.status === 400) {
-                    errorMessage = 'Açıklama çok kısa. Lütfen en az 10 karakter giriniz.';
-                    } else if (error.response && error.response.status === 500) {
-                    errorMessage = 'Sunucu hatası. Lütfen daha sonra tekrar deneyiniz.';
-                    } else if (!navigator.onLine) {
-                    errorMessage = 'İnternet bağlantınızı kontrol ediniz.';
-                    }
-
-                    this.showToast(errorMessage, 'error');
-                    });
-                    },
-                    flashInput(input) {
-                    input.classList.add('bg-green-100', 'dark:bg-green-900/30', 'transition-colors', 'duration-300');
-                    setTimeout(() => {
-                    input.classList.remove('bg-green-100', 'dark:bg-green-900/30');
-                    }, 1000);
-                    },
-                    showToast(message, type) {
-                    if (window.showToast && typeof window.showToast === 'function') {
-                    window.showToast(message, type);
-                    } else if (window.showNotification && typeof window.showNotification === 'function') {
-                    window.showNotification(message, type);
-                    } else {
-                    console.log(`[${type.toUpperCase()}] ${message}`);
-                    }
-                    }
-                    }">
+                <div x-data="detectPoolManager()">
                     <button type="button" @click="detectPool()" :disabled="detectingPool"
                         class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-cyan-600 hover:bg-cyan-700 disabled:bg-cyan-400 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-75 dark:shadow-none">
                         <svg x-show="!detectingPool" class="w-5 h-5" fill="none" stroke="currentColor"
@@ -685,6 +352,317 @@
                     </button>
                 </div>
             </div>
+            <script>
+                if (typeof window.calculateDistanceToSeaManager === 'undefined') {
+                    window.calculateDistanceToSeaManager = function() {
+                        return {
+                            calculatingDistance: false,
+                            geocodingAddress: false,
+                            async calculateDistanceToSea() {
+                                const latInput = document.querySelector('[name="lat"]') ||
+                                    document.querySelector('[name="enlem"]') ||
+                                    document.querySelector('[id="lat"]');
+                                const lngInput = document.querySelector('[name="lng"]') ||
+                                    document.querySelector('[name="boylam"]') ||
+                                    document.querySelector('[id="lng"]');
+
+                                if (!latInput || !lngInput || !latInput.value || !lngInput.value) {
+                                    const ilInput = document.querySelector('[name="il_id"]');
+                                    const ilceInput = document.querySelector('[name="ilce_id"]');
+                                    const mahalleInput = document.querySelector('[name="mahalle_id"]');
+                                    const sokakInput = document.querySelector('[name="sokak"]');
+                                    const adresInput = document.querySelector('[name="adres"]');
+
+                                    if (ilInput && ilceInput && ilInput.value && ilceInput.value) {
+                                        const shouldGeocode = confirm('Koordinatlar bulunamadı. Adres bilgilerinden otomatik koordinat çekmek ister misiniz?');
+                                        if (shouldGeocode) {
+                                            await this.geocodeFromAddress(ilInput, ilceInput, mahalleInput, sokakInput, adresInput, latInput, lngInput);
+                                            if (!latInput.value || !lngInput.value) {
+                                                this.showToast('Koordinat çekilemedi. Lütfen harita üzerinden konum seçiniz.', 'error');
+                                                return;
+                                            }
+                                        } else {
+                                            this.showToast('Koordinatlar gerekli. Harita üzerinden konum seçebilir veya adres bilgilerinden koordinat çekebilirsiniz.', 'error');
+                                            return;
+                                        }
+                                    } else {
+                                        this.showToast('Koordinatlar gerekli. Lütfen harita üzerinden konum seçiniz veya il/ilçe bilgilerini giriniz.', 'error');
+                                        return;
+                                    }
+                                }
+
+                                this.calculatingDistance = true;
+                                const lat = parseFloat(latInput.value);
+                                const lng = parseFloat(lngInput.value);
+                                const endpoint = window.APIConfig?.ai?.calculateDistanceToSea || '/api/v1/ai/calculate-distance-to-sea';
+                                fetch(endpoint, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({ lat, lng })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    this.calculatingDistance = false;
+                                    if (data.success && data.data) {
+                                        const denizeUzaklikInput = document.getElementById('field_denize_uzaklik') ||
+                                            document.getElementById('denize_uzaklik') ||
+                                            document.querySelector('[name="denize_uzaklik"]') ||
+                                            document.querySelector('[name="features[denize-uzaklik]"]');
+
+                                        if (denizeUzaklikInput) {
+                                            denizeUzaklikInput.value = Math.round(data.data.distance_m || (data.data.distance_km * 1000));
+                                            this.flashInput(denizeUzaklikInput);
+
+                                            const distanceKm = data.data.distance_km || (data.data.distance_m / 1000).toFixed(2);
+                                            const walkingMinutes = data.data.walking_minutes || Math.round((data.data.distance_m || distanceKm * 1000) / 80);
+                                            const location = data.data.location || 'Deniz';
+                                            this.showToast(`Denize uzaklık: ${distanceKm} km (${walkingMinutes} dk yürüme) - ${location}`, 'success');
+                                        } else {
+                                            const distanceKm = data.data.distance_km || (data.data.distance_m / 1000).toFixed(2);
+                                            this.showToast(`Denize uzaklık hesaplandı: ${distanceKm} km. Lütfen 'denize_uzaklik' alanını manuel olarak doldurun.`, 'info');
+                                        }
+                                    } else {
+                                        this.showToast(data.message || 'Denize uzaklık hesaplanamadı.', 'error');
+                                    }
+                                })
+                                .catch(error => {
+                                    this.calculatingDistance = false;
+                                    console.error('Denize Uzaklık Hatası:', error);
+                                    let errorMessage = 'Denize uzaklık hesaplanırken bir hata oluştu.';
+                                    if (error.message) {
+                                        errorMessage += ` (${error.message})`;
+                                    } else if (error.response && error.response.status === 404) {
+                                        errorMessage = 'Denize yakın bir nokta bulunamadı. Koordinatları kontrol ediniz.';
+                                    } else if (error.response && error.response.status === 500) {
+                                        errorMessage = 'Sunucu hatası. Lütfen daha sonra tekrar deneyiniz.';
+                                    } else if (!navigator.onLine) {
+                                        errorMessage = 'İnternet bağlantınızı kontrol ediniz.';
+                                    }
+                                    this.showToast(errorMessage, 'error');
+                                });
+                            },
+                            async geocodeFromAddress(ilInput, ilceInput, mahalleInput, sokakInput, adresInput, latInput, lngInput) {
+                                this.geocodingAddress = true;
+                                try {
+                                    const addressParts = [];
+                                    if (sokakInput && sokakInput.value) addressParts.push(sokakInput.value);
+                                    if (mahalleInput && mahalleInput.value) {
+                                        const mahalleText = mahalleInput.options ? mahalleInput.options[mahalleInput.selectedIndex]?.text : mahalleInput.value;
+                                        if (mahalleText) addressParts.push(mahalleText);
+                                    }
+                                    if (ilceInput && ilceInput.value) {
+                                        const ilceText = ilceInput.options ? ilceInput.options[ilceInput.selectedIndex]?.text : ilceInput.value;
+                                        if (ilceText) addressParts.push(ilceText);
+                                    }
+                                    if (ilInput && ilInput.value) {
+                                        const ilText = ilInput.options ? ilInput.options[ilInput.selectedIndex]?.text : ilInput.value;
+                                        if (ilText) addressParts.push(ilText);
+                                    }
+                                    if (adresInput && adresInput.value) addressParts.push(adresInput.value);
+
+                                    const fullAddress = addressParts.join(', ');
+                                    if (!fullAddress) {
+                                        this.showToast('Adres bilgisi bulunamadı.', 'error');
+                                        return;
+                                    }
+
+                                    const endpoint = window.APIConfig?.ai?.geocode || '/api/v1/ai/geocode';
+                                    const response = await fetch(endpoint, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                                            'X-Requested-With': 'XMLHttpRequest',
+                                            'Accept': 'application/json'
+                                        },
+                                        body: JSON.stringify({ address: fullAddress })
+                                    });
+                                    const data = await response.json();
+                                    if (data.success && data.data && data.data.lat && data.data.lng) {
+                                        latInput.value = data.data.lat;
+                                        lngInput.value = data.data.lng;
+                                        this.flashInput(latInput);
+                                        this.flashInput(lngInput);
+                                        this.showToast('Koordinatlar adres bilgisinden çekildi.', 'success');
+                                    } else {
+                                        this.showToast(data.message || 'Adres koordinatlara dönüştürülemedi.', 'error');
+                                    }
+                                } catch (error) {
+                                    console.error('Geocoding Hatası:', error);
+                                    this.showToast('Adres bilgilerinden koordinat çekilemedi. Lütfen harita üzerinden konum seçiniz.', 'error');
+                                } finally {
+                                    this.geocodingAddress = false;
+                                }
+                            },
+                            flashInput(input) {
+                                input.classList.add('bg-green-100', 'dark:bg-green-900/30', 'transition-colors', 'duration-300');
+                                setTimeout(() => {
+                                    input.classList.remove('bg-green-100', 'dark:bg-green-900/30');
+                                }, 1000);
+                            },
+                            showToast(message, type) {
+                                if (window.showToast && typeof window.showToast === 'function') {
+                                    window.showToast(message, type);
+                                } else if (window.showNotification && typeof window.showNotification === 'function') {
+                                    window.showNotification(message, type);
+                                } else {
+                                    console.log(`[${type.toUpperCase()}] ${message}`);
+                                }
+                            }
+                        };
+                    };
+                }
+
+                if (typeof window.detectPoolManager === 'undefined') {
+                    window.detectPoolManager = function() {
+                        return {
+                            detectingPool: false,
+                            detectPool() {
+                                const aciklamaInput = document.querySelector('[name="aciklama"]') ||
+                                    document.querySelector('[name="ilan_aciklama"]') ||
+                                    document.querySelector('[id="aciklama"]') ||
+                                    document.querySelector('[id="ilan_aciklama"]') ||
+                                    document.querySelector('textarea[name*="aciklama"]');
+
+                                if (!aciklamaInput || !aciklamaInput.value || aciklamaInput.value.length < 10) {
+                                    this.showToast('Lütfen önce ilan açıklamasını giriniz (en az 10 karakter).', 'error');
+                                    return;
+                                }
+
+                                this.detectingPool = true;
+                                const aciklama = aciklamaInput.value;
+                                const endpoint = window.APIConfig?.ai?.detectPool || '/api/v1/ai/detect-pool';
+                                fetch(endpoint, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({ aciklama })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    this.detectingPool = false;
+                                    if (data.success && data.data) {
+                                        const havuzInput = document.getElementById('field_havuz') ||
+                                            document.getElementById('havuz') ||
+                                            document.querySelector('[name="havuz"]') ||
+                                            document.querySelector('[name="features[havuz]"]');
+
+                                        if (havuzInput) {
+                                            if (havuzInput.type === 'checkbox') {
+                                                havuzInput.checked = data.data.has_pool;
+                                            } else {
+                                                havuzInput.value = data.data.has_pool ? '1' : '0';
+                                            }
+                                            this.flashInput(havuzInput);
+                                        }
+
+                                        if (data.data.has_pool && data.data.pool_type) {
+                                            const havuzTuruInput = document.getElementById('field_havuz_turu') ||
+                                                document.getElementById('havuz_turu') ||
+                                                document.querySelector('[name="havuz_turu"]') ||
+                                                document.querySelector('[name="features[havuz-turu]"]');
+
+                                            if (havuzTuruInput) {
+                                                if (havuzTuruInput.tagName === 'SELECT') {
+                                                    const option = Array.from(havuzTuruInput.options).find(
+                                                        opt => opt.value === data.data.pool_type ||
+                                                        opt.value.toLowerCase() === data.data.pool_type.toLowerCase()
+                                                    );
+                                                    if (option) {
+                                                        havuzTuruInput.value = option.value;
+                                                        this.flashInput(havuzTuruInput);
+                                                    }
+                                                } else {
+                                                    havuzTuruInput.value = data.data.pool_type;
+                                                    this.flashInput(havuzTuruInput);
+                                                }
+                                            }
+                                        }
+
+                                        if (data.data.has_pool && data.data.pool_size) {
+                                            const havuzBoyutInput = document.getElementById('field_havuz_boyut') ||
+                                                document.getElementById('havuz_boyut') ||
+                                                document.querySelector('[name="havuz_boyut"]') ||
+                                                document.querySelector('[name="features[havuz-boyut]"]');
+
+                                            if (havuzBoyutInput) {
+                                                havuzBoyutInput.value = data.data.pool_size;
+                                                this.flashInput(havuzBoyutInput);
+                                            }
+                                        }
+
+                                        if (data.data.has_pool && data.data.pool_depth) {
+                                            const havuzDerinlikInput = document.getElementById('field_havuz_derinlik') ||
+                                                document.getElementById('havuz_derinlik') ||
+                                                document.querySelector('[name="havuz_derinlik"]') ||
+                                                document.querySelector('[name="features[havuz-derinlik]"]');
+
+                                            if (havuzDerinlikInput) {
+                                                havuzDerinlikInput.value = data.data.pool_depth;
+                                                this.flashInput(havuzDerinlikInput);
+                                            }
+                                        }
+
+                                        const confidence = (data.data.confidence * 100).toFixed(0);
+                                        let message = `Havuz tespiti: ${data.data.has_pool ? 'Var' : 'Yok'} (Güven: %${confidence})`;
+                                        if (data.data.has_pool) {
+                                            const details = [];
+                                            if (data.data.pool_type) details.push(`Tür: ${data.data.pool_type}`);
+                                            if (data.data.pool_size) details.push(`Boyut: ${data.data.pool_size}`);
+                                            if (data.data.pool_depth) details.push(`Derinlik: ${data.data.pool_depth}`);
+                                            if (details.length > 0) {
+                                                message += ` - ${details.join(', ')}`;
+                                            }
+                                        }
+                                        this.showToast(message, 'success');
+                                    } else {
+                                        this.showToast(data.message || 'Havuz tespiti yapılamadı.', 'error');
+                                    }
+                                })
+                                .catch(error => {
+                                    this.detectingPool = false;
+                                    console.error('Havuz Tespiti Hatası:', error);
+                                    let errorMessage = 'Havuz tespiti yapılırken bir hata oluştu.';
+                                    if (error.message) {
+                                        errorMessage += ` (${error.message})`;
+                                    } else if (error.response && error.response.status === 400) {
+                                        errorMessage = 'Açıklama çok kısa. Lütfen en az 10 karakter giriniz.';
+                                    } else if (error.response && error.response.status === 500) {
+                                        errorMessage = 'Sunucu hatası. Lütfen daha sonra tekrar deneyiniz.';
+                                    } else if (!navigator.onLine) {
+                                        errorMessage = 'İnternet bağlantınızı kontrol ediniz.';
+                                    }
+                                    this.showToast(errorMessage, 'error');
+                                });
+                            },
+                            flashInput(input) {
+                                input.classList.add('bg-green-100', 'dark:bg-green-900/30', 'transition-colors', 'duration-300');
+                                setTimeout(() => {
+                                    input.classList.remove('bg-green-100', 'dark:bg-green-900/30');
+                                }, 1000);
+                            },
+                            showToast(message, type) {
+                                if (window.showToast && typeof window.showToast === 'function') {
+                                    window.showToast(message, type);
+                                } else if (window.showNotification && typeof window.showNotification === 'function') {
+                                    window.showNotification(message, type);
+                                } else {
+                                    console.log(`[${type.toUpperCase()}] ${message}`);
+                                }
+                            }
+                        };
+                    };
+                }
+            </script>
             <p class="text-xs text-gray-600 dark:text-gray-400 mt-3">
                 💡 <strong>Denize Uzaklık:</strong> Koordinatlar (lat, lng) gerekli. <strong>Havuz Tespiti:</strong>
                 İlan açıklaması gerekli.

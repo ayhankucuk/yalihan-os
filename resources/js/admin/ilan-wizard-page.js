@@ -2035,7 +2035,10 @@ if (typeof window.poiSelector === 'undefined') {
                 // Step 3 photo check is handled by validateStep(3) via nextStep() inline logic.
                 const stepOrder = [1, 2, 3, 4, 5];
                 for (const step of stepOrder) {
-                    if (!this.validateStep(step)) {
+                    const stepValid = this.validateStep(step);
+                    console.log(`[WIZARD SUBMIT] validateStep(${step}) result:`, stepValid);
+                    if (!stepValid) {
+                        console.warn(`[WIZARD SUBMIT] Validation failed at Step ${step}`);
                         this.__submitting = false;
                         return;
                     }
@@ -2050,6 +2053,7 @@ if (typeof window.poiSelector === 'undefined') {
 
                 // Block if recommendation=block and no override
                 if (qualityResult?.recommendation === 'block' && !overrideBlock) {
+                    console.warn('[WIZARD SUBMIT] Blocked by AI quality gate without override');
                     this.showNotification(
                         '⚠️ Kalite kontrolü engelliyor. Lütfen "Override" checkbox\'unu işaretleyin.',
                         'error'
@@ -2061,17 +2065,22 @@ if (typeof window.poiSelector === 'undefined') {
                 // ✅ Phase V0: Require kategori/yayın tipi in UI before publish
                 const kategoriSlug = this.getSelectedKategoriSlug();
                 const yayinTipiSlug = this.getSelectedYayinTipiSlug();
+                console.log('[WIZARD SUBMIT] kategoriSlug:', kategoriSlug, 'yayinTipiSlug:', yayinTipiSlug);
 
                 if (!yayinTipiSlug) {
+                    console.warn('[WIZARD SUBMIT] Missing yayinTipiSlug');
                     this.showNotification('Yayın tipi seçmeden devam edemezsiniz.', 'error');
                     this.__submitting = false;
                     return;
                 }
                 if (!kategoriSlug) {
+                    console.warn('[WIZARD SUBMIT] Missing kategoriSlug');
                     this.showNotification('Kategori seçmeden devam edemezsiniz.', 'error');
                     this.__submitting = false;
                     return;
                 }
+
+                console.log('[WIZARD SUBMIT] Passed pre-submit checks, proceeding to create FormData and wizardFetch');
 
                 const submitBtn = form?.querySelector('button[type="submit"]');
 
@@ -2094,6 +2103,7 @@ if (typeof window.poiSelector === 'undefined') {
                 // P0-FIX: Photo sync — attach from native input (DataTransfer keeps in sync)
                 formData.delete('fotograflar[]');
                 formData.delete('fotograflar');
+                const photoInput = document.getElementById('fotograflar');
                 const photoFiles = (photoInput && photoInput.files && photoInput.files.length > 0)
                     ? Array.from(photoInput.files)
                     : (Array.isArray(window.__wizardUploadedPhotos) ? window.__wizardUploadedPhotos : []);

@@ -21,68 +21,73 @@
     </div>
 
     {{-- Konut Akıllı Validasyon ve Metrikler --}}
-    <div x-data="{
-        netM2: null,
-        brutM2: null,
-        satisFiyati: null,
-        m2BirimFiyat: null,
-        validationError: null,
+    <script>
+        if (typeof window.konutValidationManager === 'undefined') {
+            window.konutValidationManager = function() {
+                return {
+                    netM2: null,
+                    brutM2: null,
+                    satisFiyati: null,
+                    m2BirimFiyat: null,
+                    validationError: null,
 
-        init() {
-            // Input değişikliklerini dinle
-            this.$watch('netM2', () => this.validateM2());
-            this.$watch('brutM2', () => this.validateM2());
-            this.$watch('satisFiyati', () => this.calculateM2Price());
-            this.$watch('brutM2', () => this.calculateM2Price());
+                    init() {
+                        this.$watch('netM2', () => this.validateM2());
+                        this.$watch('brutM2', () => this.validateM2());
+                        this.$watch('satisFiyati', () => this.calculateM2Price());
+                        this.$watch('brutM2', () => this.calculateM2Price());
 
-            // Form input'larını dinle
-            setTimeout(() => {
-                const netInput = document.getElementById('field_net_metrekare') ||
-                    document.getElementById('field_net-metrekare') ||
-                    document.querySelector('[name*="net_metrekare"]') ||
-                    document.querySelector('[name*="net-metrekare"]');
-                const brutInput = document.getElementById('field_brut_metrekare') ||
-                    document.getElementById('field_brut-metrekare') ||
-                    document.querySelector('[name*="brut_metrekare"]') ||
-                    document.querySelector('[name*="brut-metrekare"]');
-                const fiyatInput = document.querySelector('[name="satis_fiyati"]') ||
-                    document.querySelector('[name="fiyat"]');
-                
-                if (netInput) {
-                    netInput.addEventListener('input', () => {
-                        this.netM2 = parseFloat(netInput.value) || null;
-                    });
-                }
-                if (brutInput) {
-                    brutInput.addEventListener('input', () => {
-                        this.brutM2 = parseFloat(brutInput.value) || null;
-                    });
-                }
-                if (fiyatInput) {
-                    fiyatInput.addEventListener('input', () => {
-                        this.satisFiyati = parseFloat(fiyatInput.value) || null;
-                    });
-                }
-            }, 1000);
-        },
+                        setTimeout(() => {
+                            const netInput = document.getElementById('field_net_metrekare') ||
+                                document.getElementById('field_net-metrekare') ||
+                                document.querySelector('[name*="net_metrekare"]') ||
+                                document.querySelector('[name*="net-metrekare"]');
+                            const brutInput = document.getElementById('field_brut_metrekare') ||
+                                document.getElementById('field_brut-metrekare') ||
+                                document.querySelector('[name*="brut_metrekare"]') ||
+                                document.querySelector('[name*="brut-metrekare"]');
+                            const fiyatInput = document.querySelector('[name="satis_fiyati"]') ||
+                                document.querySelector('[name="fiyat"]');
 
-        validateM2() {
-        if (this.netM2 && this.brutM2 && this.netM2 > this.brutM2) {
-        this.validationError = 'Net metrekare, Brüt metrekareden büyük olamaz!';
-        return false;
+                            if (netInput) {
+                                netInput.addEventListener('input', () => {
+                                    this.netM2 = parseFloat(netInput.value) || null;
+                                });
+                            }
+                            if (brutInput) {
+                                brutInput.addEventListener('input', () => {
+                                    this.brutM2 = parseFloat(brutInput.value) || null;
+                                });
+                            }
+                            if (fiyatInput) {
+                                fiyatInput.addEventListener('input', () => {
+                                    this.satisFiyati = parseFloat(fiyatInput.value) || null;
+                                });
+                            }
+                        }, 1000);
+                    },
+
+                    validateM2() {
+                        if (this.netM2 && this.brutM2 && this.netM2 > this.brutM2) {
+                            this.validationError = 'Net metrekare, Brüt metrekareden büyük olamaz!';
+                            return false;
+                        }
+                        this.validationError = null;
+                        return true;
+                    },
+
+                    calculateM2Price() {
+                        if (this.satisFiyati && this.brutM2 && this.brutM2 > 0) {
+                            this.m2BirimFiyat = Math.round(this.satisFiyati / this.brutM2);
+                        } else {
+                            this.m2BirimFiyat = null;
+                        }
+                    }
+                };
+            };
         }
-        this.validationError = null;
-        return true;
-        },
-
-        calculateM2Price() {
-        if (this.satisFiyati && this.brutM2 && this.brutM2 > 0) {
-        this.m2BirimFiyat = Math.round(this.satisFiyati / this.brutM2);
-        } else {
-        this.m2BirimFiyat = null;
-        }
-        }
-        }"
+    </script>
+    <div x-data="konutValidationManager()"
         class="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl shadow-md dark:shadow-none">
         <div class="flex items-start gap-4">
             <div class="flex-shrink-0">

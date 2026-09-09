@@ -828,7 +828,7 @@
 
                             // API'den ilçeleri çek
                             console.log('🔍 İlçeler yükleniyor, ilId:', ilId);
-                            const response = await fetch(`/api/location/districts/${ilId}`);
+                            const response = await fetch(`/api/v1/location/districts/${ilId}`);
 
                             if (!response.ok) {
                                 const httpStatus = response['st' + 'atus'];
@@ -904,7 +904,7 @@
 
                             // API'den mahalleleri çek
                             console.log('🔍 Mahalleler yükleniyor, ilceId:', ilceId);
-                            const response = await fetch(`/api/location/neighborhoods/${ilceId}`);
+                            const response = await fetch(`/api/v1/location/neighborhoods/${ilceId}`);
 
                             if (!response.ok) {
                                 const httpStatus = response['st' + 'atus'];

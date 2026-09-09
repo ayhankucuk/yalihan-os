@@ -105,8 +105,12 @@ function clearAltKategoriler() {
     const altKategoriSelect = document.getElementById('alt_kategori_id');
     const yayinTipiSelect = document.getElementById('junction_id');
 
-    altKategoriSelect.innerHTML = '<option value="">Önce ana kategori seçin...</option>';
-    yayinTipiSelect.innerHTML = '<option value="">Önce alt kategori seçin...</option>';
+    if (altKategoriSelect) {
+        altKategoriSelect.innerHTML = '<option value="">Önce ana kategori seçin...</option>';
+    }
+    if (yayinTipiSelect) {
+        yayinTipiSelect.innerHTML = '<option value="">Önce alt kategori seçin...</option>';
+    }
 
     // Clear type-based fields
     clearTypeBasedFields();
@@ -116,8 +120,17 @@ function populateAltKategoriler(categories) {
     const altKategoriSelect = document.getElementById('alt_kategori_id');
     const yayinTipiSelect = document.getElementById('junction_id');
 
-    altKategoriSelect.innerHTML = '<option value="">Alt kategori seçin...</option>';
-    yayinTipiSelect.innerHTML = '<option value="">Önce alt kategori seçin...</option>';
+    if (altKategoriSelect) {
+        altKategoriSelect.innerHTML = '<option value="">Alt kategori seçin...</option>';
+    }
+    if (yayinTipiSelect) {
+        yayinTipiSelect.innerHTML = '<option value="">Önce alt kategori seçin...</option>';
+    }
+
+    if (!altKategoriSelect) {
+        console.warn('⚠️ alt_kategori_id element not found!');
+        return;
+    }
 
     categories.forEach((category) => {
         const option = document.createElement('option');
@@ -210,7 +223,9 @@ function loadYayinTipleri(altKategoriId) {
 
 function clearYayinTipleri() {
     const yayinTipiSelect = document.getElementById('junction_id');
-    yayinTipiSelect.innerHTML = '<option value="">Önce alt kategori seçin...</option>';
+    if (yayinTipiSelect) {
+        yayinTipiSelect.innerHTML = '<option value="">Önce alt kategori seçin...</option>';
+    }
 
     clearTypeBasedFields();
 }
