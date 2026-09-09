@@ -406,6 +406,128 @@
 
 ---
 
+## KRONİK SORUNLAR — 2026-09-09
+
+4 kronik sorun sabit TÜM release'leri kilitliyor. Her biri bağımsız BACKLOG maddesi gerektirir.
+
+---
+
+### KRONIK-1 — Priority: P0 (CRITICAL)
+### Şema/Migration/Schema-SQL Drift (Veritabanı Şeması Birbirini Tutmuyor)
+
+**Problem:** Bir ajan migration açtığında (`add_tenant_id_to_...`), `mysql-schema.sql` ve SQLite test veritabanı güncellenmiyor. Kod yerel ortamda çalışıyor; tam release testinde `Column not found: tenant_id` veya `Table doesn't exist` patlıyor.
+
+**Kanıt (REPO_VERIFIED):** `env-drift-guard` çıktısında ~30 kolon migration'da var ama `mysql-schema.sql`'de yok.
+
+**Çözüm:** Her migration sonunda otomatik schema drift check:
+1. `php artisan migrate --dry-run` → schema diff üret
+2. Diff'i `mysql-schema.sql` ve SQLite schema ile karşılaştır
+3. Drift tespit edilirse commit engellenir
+
+**Etki Alanı:** `database/migrations/`, `database/schema/mysql-schema.sql`, `database/schema/sqlite-schema.sql`
+
+**Exit Criterion:** Yeni migration commit edildiğinde otomatik drift kontrolü çalışır. Drift varsa commit engellenir, açık hata mesajı döner.
+
+**Status:** `OPEN`
+**Owner:** Kilo
+
+---
+
+### KRONIK-2 — Priority: P0 (CRITICAL)
+### Context7 Türkçe vs Legacy İngilizce Alan Adı Çatışması (Ghost Field Drift)
+
+**Problem:** Proje İngilizce alanlarla (`title`, `description`, `status`, `city`, `price`) başlamış. SAB Anayasası Türkçe kanonik değerler getirdi (`baslik`, `aciklama`, `yayin_durumu`, `il`, `fiyat`). Eski kod hâlâ İngilizce alan adları kullanıyor → ghost field drift, BEKÇİ uyarıları, yanlış veri.
+
+**Env-Drift Guard Flag'leri:**
+- `yayin_durumu` alanı için yasaklı değerler: `'Active'`, `'Draft'`, `'Inactive'`, `'Pending'`
+- `'Taslak'` → kanonik `'taslak'` (lowercase slug form)
+- `'Beklemede'` → kanonik `'beklemede'` (lowercase slug form)
+- `'Aktif'` → kanonik `IlanDurumu::YAYINDA->value`
+- `'Active'` → kanonik `IlanDurumu::YAYINDA->value`
+
+**Modül-Modül Düzeltme Planı (Big-Bang YOK):**
+
+| Paket | Domain | Dosyalar | Durum |
+|-------|--------|----------|-------|
+| A | Analitik & Raporlama | `IstatistikController.php`, `CortexAnalyticsService.php` | SCAN GEREKİYOR |
+| B | AI & Tahminleme | `ChurnRiskService.php`, `CortexSmartAPIController.php` | SCAN GEREKİYOR |
+| C | Bildirim & Entegrasyon | `TelegramBotService.php`, `TalepPortfolyoController.php` | SCAN GEREKİYOR |
+
+**⚠️ Ghost Field Tarama Kuralı:**
+- `env-drift-guard` ile tam tarama yapılana kadar spesifik dosya listesi kesinleşmez
+- Tarama sonucu olmadan hiçbir modül düzeltmesi başlatılmamalı
+- Her modül ayrı commit + ayrı test doğrulaması gerektirir
+
+**Exit Criterion:** Tüm domain'lerde kanonik enum değerleri kullanılır. `env-drift-guard` → 0 ghost field uyarısı.
+
+**Status:** `OPEN`
+**Owner:** Kilo (koordinasyon), Klio/Cline/Codex (modül düzeltmeleri)
+**Ön Koşul:** `env-drift-guard` tam tarama çıktısı mevcut değil — tarama önce yapılmalı
+
+---
+
+### KRONIK-3 — Priority: P1 (HIGH)
+### Worktree Kirliliği ve Ajan İzolasyonu Bozulması
+
+**Problem:** 35+ aktif worktree, birbirine bağlı olmayan branch'ler, dirty RC2 (83 dosya bugün temizlendi). Paralel ajanlar aynı `database.sqlite`'ı kilitliyor, `git status` sürekli "savaş alanı" mesajı veriyor.
+
+**Mevcut Koruma:** `multi-agent-worktree-sandbox` skill (v3.3) + RC2 gate.
+
+**Eksik:**
+1. `WORKTREE_INVENTORY.md` — tüm worktree'lerin durumu, son commit, sahip ajan
+2. Otomatik worktree temizlik scripti (artık 30+ günlük, dirty olmayan)
+3. Worktree health check: her 24 saatte bir `git worktree list` + dirty kontrolü
+
+**Exit Criterion:** Worktree listesi temiz, dirty worktree sayısı < 5, her worktree'nin sahibi belli.
+
+**Status:** `OPEN`
+**Owner:** Kilo
+
+---
+
+### KRONIK-4 — Priority: P1 (HIGH)
+### Sessiz Hata Yutma ve Gevşek Assertion'lar
+
+**Problem:** Boş `try-catch` blokları (`catch (\Exception $e) {}`), testlerde gevşek assertion'lar, maskelenmiş hata yolları. Harita bileşeni örneği: bileşen yüklenmiyor ama `|| _leaflet_id` nedeniyle test yeşil geçiyor.
+
+**Örnek Bulgu (REPO_VERIFIED):**
+- `TelegramBotService.php` ve `TelegramAIBotService.php` içinde `try {} catch {}` blokları sessiz fallback yapıyor
+- `env-drift-guard` `forbidden_values` listesi: testler dışındaki kodun bu değerleri kullanması engellenmeli
+
+**Çözüm:**
+1. `grep -rn "catch.*Exception.*}" app/` — boş catch taraması
+2. Her boş catch için: ya düzgün log atılmalı ya da exception yeniden fırlatılmalı
+3. Gevşek assertion'lar (`assertTrue(true)`, `assertNotNull($x) // $x her zaman dolu`) tespit edilmeli
+
+**Etki Alanı:** `app/Services/`, `app/Http/Controllers/`, `tests/`
+
+**Exit Criterion:** Boş catch sayısı 0'a düşer. Gevşek assertion'lar düzeltilir veya skip/known-issue olarak işaretlenir.
+
+**Status:** `OPEN`
+**Owner:** Kilo
+
+---
+
+### Backlog Özet — 2026-09-09
+
+| ID | Priority | Konu | Status | Owner |
+|----|----------|------|--------|-------|
+| BACKLOG-1 | HIGHEST | Secret Scanner | `CLOSED` ✅ | Antigravity/Kilo |
+| BACKLOG-2 | HIGH | Conflict Guard | `IMPLEMENTED` ✅ | Antigravity |
+| BACKLOG-3 | MEDIUM | Auto Guard Selection | `IMPLEMENTED` ✅ | Kilo |
+| BACKLOG-4 | MEDIUM | Auth Boundary CI | `IMPLEMENTED` ✅ | Kilo |
+| BACKLOG-5 | P0 | Lead Tenant Boundary | `IMPLEMENTED` ✅ | Cline |
+| BACKLOG-6 | P1 | AI Rate-Limit Race | `IMPLEMENTED` ✅ | Codex |
+| BACKLOG-7 | P1 | Security Log Leak | `IMPLEMENTED` ✅ | Codex |
+| BACKLOG-8 | P2 | Photo Race Condition | `IMPLEMENTED` ✅ | Codex |
+| BACKLOG-9 | P2 | Lead Unique Key | `CLOSED` ✅ | Cline |
+| **KRONIK-1** | **P0** | **Şema/Migration Drift** | **OPEN** | **Kilo** |
+| **KRONIK-2** | **P0** | **Ghost Field Env-Drift (yayin_durumu)** | **OPEN** | **Kilo+Multi-Agent** |
+| **KRONIK-3** | **P1** | **Worktree Kirliliği** | **OPEN** | **Kilo** |
+| **KRONIK-4** | **P1** | **Sessiz Hata Yutma** | **OPEN** | **Kilo** |
+
+---
+
 ## AGENT GÖREV DAĞILIMI — 2026-09-04 (Oturum 148)
 
 ### Tamamlanan Görevler
