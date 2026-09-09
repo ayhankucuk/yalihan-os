@@ -47,6 +47,13 @@
 
 ## Düşük / Çözüldü — 2026-09-09
 
+- **SEC-08 ✅ ÇÖZÜLDÜ — V2 `PUT/DELETE/publish/unpublish` 404 Kök Neden**
+  - Kök Neden: Laravel Route Model Binding `IlanController` öncesi çalışır → `BelongsToTenant` trait → `TenantScope` global scope ekler → `TenantContextService::hasTenant() = FALSE` (test ortamında set edilmiyor) → `WHERE 1 = 0` (fail-closed) → `ModelNotFoundException` → 404
+  - Düzeltme: `update`, `destroy`, `publish`, `unpublish` method'larında implicit `Ilan $ilan` binding yerine explicit `Ilan::withoutGlobalScope(TenantScope::class)->find($id)` + 404 kontrolü. `authorizeIlanAccess()` auth kontrolü aynı kaldı.
+  - Commit: `83dd1e8a` (`release-candidate/RC2`)
+  - Kanıt: `V2RouteBindingCountryScopeTest` 3/3 PASS, `V2IlanAuthResearchTest` 2/2 PASS
+  - Kanıt seviyesi: **TEST_VERIFIED**
+
 - **Yeni yetenekler Antigravity worktree'inden kopyalandı — 2026-09-09**
   - Kaynak: `codex/antigravity-browser-runtime-certification` worktree (commit: `4093e489`, `db43057f`, `9eb751c3`)
   - Commit durumu: `REPO_VERIFIED` (worktree'de commitli)
