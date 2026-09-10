@@ -401,9 +401,9 @@ check_layer4_security() {
     if [[ "$QUICK_MODE" == false ]]; then
         local tenant_rc=0
         local tenant_output
-        # Timeout: 60 saniye — SQLite :memory: veya API mock sorunu durumunda
-        # script sonsuza kadar beklemesin. MacOS'ta gtimeout/yok → perl wrapper.
-        tenant_output=$(perl -MPOSIX 'my $pid = fork; die "fork: $!" if !defined $pid; if (!$pid) { setpgrp(POSIX::PGID(), POSIX::getpid()); exec @ARGV; exit 127; } my $done = 0; local $SIG{ALRM} = sub { $done = 1; kill ALRM => $pid; }; alarm 60; while (!$done && waitpid($pid, WNOHANG) == 0) { usleep 100_000; } alarm 0; if ($done) { kill TERM => $pid; waitpid($pid, 0); exit 42; } my $rc = $? >> 8; exit $rc;' -- php artisan test --testsuite=Feature --filter=TenantIsolationTest 2>&1)
+        # Timeout: 60 saniye — MacOS'ta gtimeout/yok, bu yüzden
+        # kendi timeout.pl wrapper'ımızı kullanıyoruz. RC 42 = timeout aşıldı.
+        tenant_output=$(perl "${SCRIPT_DIR}/timeout.pl" 60 php artisan test --testsuite=Feature --filter=TenantIsolationTest 2>&1)
         tenant_rc=$?
         if [[ "$tenant_rc" -eq 0 ]] && echo "$tenant_output" | grep -q "PASS"; then
             record_check "PASS" "security" "Tenant İzolasyon Testleri" "Multi-tenant veri sınırları sızdırmaz (%100 PASS)"

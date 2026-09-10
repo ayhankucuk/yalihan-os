@@ -746,9 +746,22 @@ class EnvDriftGuard extends Command
 
         $envVars = $this->parseEnvFile($envPath);
 
-        // SQLite: in-memory — always reachable, skip PDO check
+        // SQLite: verify the database is reachable via PDO
         if (($envVars['DB_CONNECTION'] ?? '') === 'sqlite') {
-            $this->record('db_connectivity', 'pass', 'SQLite in-memory test DB configured (no PDO host check needed)');
+            $sqliteDb = $envVars['DB_SQLITE_DATABASE'] ?? '';
+            // :memory: databases exist only for the duration of the connection;
+            // we verify PDO can open it (even if empty) — any error means unreachable
+            try {
+                $dsn = 'sqlite:' . ($sqliteDb === ':memory:' ? ':memory:' : base_path($sqliteDb));
+                $pdo = new \PDO($dsn, null, null, [
+                    \PDO::ATTR_TIMEOUT => 5,
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                ]);
+                $label = $sqliteDb ?: '(in-memory)'; // show actual value in message
+                $this->record('db_connectivity', 'pass', "SQLite test DB reachable: {$label}");
+            } catch (\Exception $e) {
+                $this->record('db_connectivity', 'issue', 'SQLite test DB unreachable: ' . $e->getMessage());
+            }
             return;
         }
 
