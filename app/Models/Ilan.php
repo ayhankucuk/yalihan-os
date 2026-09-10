@@ -513,7 +513,9 @@ class Ilan extends BaseModel
         // See: docs/technical/legacy/ilan-model-legacy-fields-2025-12.md
 
         // T-UPS-V2-FULL: Kategori bazlı dinamik alan deposu
-        'ekstra_ozellikler',
+        // GHOST-FIELD-REMOVED-2026-09-10: ekstra_ozellikler — $fillable ve $casts'dan kaldırıldı
+        // Kanıt: mysql-schema.sql — ilanlar tablosunda ekstra_ozellikler kolonu yok
+        // Not: Migration yerine kod düzeltmesi yapıldı (migration yasak)
 
         // [YALIHAN_REPORTING_0206]
         'rapor_yolu',
@@ -564,7 +566,7 @@ class Ilan extends BaseModel
         'one_cikan' => 'boolean',                    // Context7: featured
         'display_order' => 'integer',                // Context7: display_ordering
         'metadata' => 'array',                       // JSON metadata (auto encode/decode)
-        'ekstra_ozellikler' => 'array',              // T-UPS-V2-FULL: Kategori bazlı dinamik alanlar (JSON)
+        // GHOST-FIELD-REMOVED-2026-09-10: ekstra_ozellikler — $fillable ve $casts'dan kaldırıldı
         'visibility_score' => 'integer',
 
         // ======================================================================
@@ -951,14 +953,16 @@ class Ilan extends BaseModel
     {
         return $query->where(function ($q) use ($startDate, $endDate) {
             // 1. MUST HAVE: Active pricing for the period (at least partial overlap)
+            // BUGFIX-2026-09-10: is_active → aktiflik_durumu
+            // Kanıt: mysql-schema.sql satır 4759 — yazlik_fiyatlandirma.aktiflik_durumu mevcut, is_active yok
             $q->whereHas('yazlikFiyatlandirma', function ($subQ) use ($startDate, $endDate) {
-                $subQ->where('is_active', true)
+                $subQ->where('aktiflik_durumu', true)
                     ->where('baslangic_tarihi', '<=', $endDate)
                     ->where('bitis_tarihi', '>=', $startDate);
             })
             // 2. MUST NOT HAVE: Inactive/Blocked periods for the range
                 ->whereDoesntHave('yazlikFiyatlandirma', function ($subQ) use ($startDate, $endDate) {
-                    $subQ->where('is_active', false)
+                    $subQ->where('aktiflik_durumu', false)
                         ->where('baslangic_tarihi', '<=', $endDate)
                         ->where('bitis_tarihi', '>=', $startDate);
                 });
