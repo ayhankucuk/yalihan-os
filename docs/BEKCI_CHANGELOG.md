@@ -1,5 +1,41 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 167 — 2026-09-10 | KRONIK-1 Migration Parity SSOT Eşitlemesi Tamamlandı ✅
+
+**Kapsam:** `mysql-schema.sql` ve `testing-schema.sql` dosyalarının migration'larda tanımlanmış ancak SSOT'a yansıtılmamış kolon/indeks'lerle tam eşitlenmesi, checksum mühürünün güncellenmesi.
+
+#### 1. SSOT Schema Düzeltmeleri (`mysql-schema.sql`) ✅
+- **`talepler.ana_kategori_id`**: Kolon + FK constraint eklendi (Context7: `ilan_kategorileri` kanonik kategori FK)
+- **`user_devices.device_token`**: Nullable olarak eklendi (P0 schema fix)
+- **`kisiler` tablosu**: `email` → `eposta`, `last_contacted_at` → `son_etkilesim_tarihi` (Context7 Türkçe kanonik naming)
+- **`kisiler` index**: `kisiler_email_index` (`eposta`), `idx_kisiler_last_contacted` (`son_etkilesim_tarihi`)
+
+#### 2. Test Schema Düzeltmeleri (`testing-schema.sql`) ✅
+- **`kisiler` tablosu**: 5 eksik kolon eklendi — `tenant_id`, `vergi_kimlik_no`, `kurum_unvani`, `mersis_no`, `sicil_no`
+- **`kisiler` tablosu**: `email` → `eposta`, `last_contacted_at` → `son_etkilesim_tarihi` (mysql-schema.sql ile tam eşleşme)
+- **Index düzeltmeleri**: `eposta` ve `son_etkilesim_tarihi` üzerine güncellendi
+
+#### 3. Checksum Mühürleme ✅
+- **Eski**: `9badeaae9f73c65bd07a5cba0dcdf7cc3c07ad4d7b9ab68010a69393451331d0`
+- **Yeni**: `d29cb7c7e37d9ee0692dcee6f4ab9f1d616cb54f18e3b460ffe35786447564fb`
+- **Dosya**: `.sab/schema-checksum.sha256`
+
+#### 4. Doğrulama Sonuçları ✅
+- `php artisan system:env-drift-guard`: **0 Failures, 1 Warning** (migration_parity false positive — rename migration'lar SSOT üzerinde çalışıyor)
+- `./scripts/tools/antigravity-full-gate.sh --quick`: **4/4 Gate PASSED** (Conflict Guard, 10 Golden Rules, Layout Validator, Route Duplication Guard)
+
+#### 5. Kalan Uyarı Analizi (False Positive) ✅
+| Uyarı | Neden | Durum |
+|-------|-------|-------|
+| `migration_parity`: `kisiler.email` | Migration RENAME yapıyor → `eposta` (SSOT'ta zaten `eposta`) | False positive ✅ |
+| `migration_parity`: `kisiler.last_contacted_at` | Migration RENAME yapıyor → `son_etkilesim_tarihi` (SSOT'ta zaten doğru) | False positive ✅ |
+| `migration_parity`: `ilan_favorileri.is_active` | Migration RENAME yapıyor → `aktiflik_durumu` (SSOT'ta zaten doğru) | False positive ✅ |
+| `migration_parity`: `property_key_custodies_v2` | Migration create→drop→rename pattern (SSOT doğru şekilde `property_key_custodies`) | False positive ✅ |
+
+**Açıklama**: Migration'lar `Schema::hasColumn()` guard'larıyla idempotent çalışıyor. Drift guard bu migration'ları yanlış pozitif olarak raporluyor çünkü drift kontrolü RENAME语义ını değil, "eklenen kolon"语义ını kullanıyor.
+
+---
+
 ## Oturum 166 — 2026-09-10 | KRONIK-1 Model & SSOT Şema Hizalaması, EnvDriftGuard UTF-8 Düzeltmesi ve Çift Taraflı Schema-Sync ✅
 
 **Kapsam:** `app/Models/Ilan.php` modelinin Context7 ve fiziksel veritabanı şemasıyla (`mysql-schema.sql`) tam eşitlenmesi, `tenant_id` alanının `testing-schema.sql` ve `mysql-schema.sql` dosyalarında senkronizasyonu, `EnvDriftGuard` UTF-8 regex hatasının giderilerek `firsat_mühru` false positive uyarısının çözülmesi.

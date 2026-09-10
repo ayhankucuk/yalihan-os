@@ -1212,7 +1212,29 @@ class EnvDriftGuard extends Command
         }
 
         $columns = [];
-        if (preg_match_all('/\$table->\w+\(\s*[\'"](\w+)[\'"]/', $body, $matches)) {
+        // Whitelist of column-adding Blueprint methods only.
+        // This prevents table names in ->constrained('table') or ->references('col')
+        // from being incorrectly captured as column names.
+        $colMethods = implode('|', [
+            'string','integer','bigInteger','unsignedBigInteger','unsignedInteger',
+            'tinyInteger','smallInteger','mediumInteger','unsignedTinyInteger',
+            'unsignedSmallInteger','unsignedMediumInteger',
+            'text','longText','mediumText','shortText',
+            'json','jsonb','binary','boolean','char','decimal','double','float',
+            'date','dateTime','timestamp','time','year','macAddress','ipAddress',
+            'enum','set','uuid','ulid',
+            'foreignId','foreignIdFor','morphs','nullableMorphs','uuidMorphs',
+            'increments','smallIncrements','mediumIncrements','bigIncrements',
+            'timestampMorphs','nullableTimestampMorphs',
+            'dropColumn','renameColumn',
+            'index','unique','primary','spatialIndex','fullText',
+            'softDeletes','softDeletesTz','rememberToken','nullable',
+        ]);
+        if (preg_match_all(
+            '/\$table->(?:' . $colMethods . ')\s*\(\s*[\'\"](\w+)[\'\"]/',
+            $body,
+            $matches
+        )) {
             $columns = array_unique($matches[1]);
         }
         return $columns;
@@ -1233,16 +1255,27 @@ class EnvDriftGuard extends Command
      */
     private function extractColumnsFromSql(string $sql, string $table): array
     {
-        // Match CREATE TABLE `table_name` ( ... ) block
-        $pattern = '/CREATE TABLE\s+`' . preg_quote($table, '/') . '`\s*\((.*?)\)\s*(ENGINE|;)/s';
-        if (!preg_match($pattern, $sql, $match)) {
+        // Depth-based block extraction — handles orphan tables (no ENGINE terminator)
+        $pattern = '/CREATE TABLE\s+[`"]?' . preg_quote($table, '/') . '[`"]?\s*\(/i';
+        if (!preg_match($pattern, $sql, $match, PREG_OFFSET_CAPTURE)) {
             return [];
         }
 
-        $body = $match[1];
-        $columns = [];
+        $start = $match[0][1] + strlen($match[0][0]) - 1; // position of opening (
+        $depth = 1;
+        $pos = $start + 1;
+        $body = '';
 
-        // Extract column definitions (lines starting with backtick-quoted name)
+        while ($pos < strlen($sql) && $depth > 0) {
+            $ch = $sql[$pos];
+            $body .= $ch;
+            if ($ch === '(') $depth++;
+            if ($ch === ')') $depth--;
+            $pos++;
+        }
+
+        // Now parse the body for backtick-quoted column names
+        $columns = [];
         foreach (explode("\n", $body) as $line) {
             $line = trim($line);
             if (preg_match('/^`([^`]+)`\s+(.+?)(?:,\s*)?$/u', $line, $colMatch)) {
