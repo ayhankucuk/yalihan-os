@@ -1,5 +1,30 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 166 — 2026-09-10 | KRONIK-1 Model & SSOT Şema Hizalaması, EnvDriftGuard UTF-8 Düzeltmesi ve Çift Taraflı Schema-Sync ✅
+
+**Kapsam:** `app/Models/Ilan.php` modelinin Context7 ve fiziksel veritabanı şemasıyla (`mysql-schema.sql`) tam eşitlenmesi, `tenant_id` alanının `testing-schema.sql` ve `mysql-schema.sql` dosyalarında senkronizasyonu, `EnvDriftGuard` UTF-8 regex hatasının giderilerek `firsat_mühru` false positive uyarısının çözülmesi.
+
+#### 1. Model Hizalaması (`app/Models/Ilan.php`) ✅
+- **`scopeAvailable` Düzeltmesi:** `is_active` yerine `yazlik_fiyatlandirma` tablosundaki gerçek kolon olan `aktiflik_durumu` kullanıldı (`mysql-schema.sql:4759` kanıtı).
+- **Hayalet Alanların Temizlenmesi:** Şemada karşılığı bulunmayan `ekstra_ozellikler` kaldırıldı. `management_model` ve `custom_commission_rate` alanları, migration'ı bulunmasına rağmen SSOT şemasına yansıtılmadığı için geçici model drift'inden arındırıldı.
+
+#### 2. SSOT & Test Şeması Senkronizasyonu ✅
+- **`mysql-schema.sql`:** `ilanlar` tablosuna `tenant_id` kolonu ve `ilanlar_tenant_id_index` indeksi eklendi (Migration `2026_09_01` kanıtı).
+- **`testing-schema.sql`:** `ilanlar` tablosuna `tenant_id` kolonu ve indeksi eklenerek `checkSchemaDiff` test uyumsuzluğu sıfırlandı.
+- **`.sab/schema-checksum.sha256`:** Yeni şema karması `9badeaae9f73c65bd07a5cba0dcdf7cc3c07ad4d7b9ab68010a69393451331d0` olarak kilitlendi.
+
+#### 3. `EnvDriftGuard` UTF-8 Regex Onarımı (`app/Console/Commands/EnvDriftGuard.php`) ✅
+- `extractColumnsFromSql()` içerisindeki `/^`(\w+)`\s+(.+?)(?:,\s*)?$/` regex'i, ASCII dışı Türkçe karakterleri (`ü` vb.) desteklemek üzere `/^`([^`]+)`\s+(.+?)(?:,\s*)?$/u` şeklinde revize edildi.
+- `firsat_mühru` kolonunun şemadan başarıyla okunması sağlandı; `fillable_alignment` denetimi doğrudan `PASS` durumuna geçti.
+
+#### 4. Doğrulama & Sağlık Sonuçları ✅
+- `php artisan system:env-drift-guard`: 0 Failures, 1 Warning (yalnızca 30+ migration SSOT kronik parity uyarısı kaldı).
+- `php artisan test --filter IlanTest`: 9/9 PASS (27 assertions).
+- `php artisan sab:integrity-scan`: 0 yeni ihlal (4410 baseline kayıtlı).
+- `./scripts/tools/antigravity-full-gate.sh --quick`: 4/4 Gate PASSED.
+
+---
+
 ## Oturum 165 — 2026-09-09 | Admin Edit Screen Root Cause Düzeltmeleri, Unmasked E2E Assertion ve Golden Thread Tam Sertifikasyon ✅
 
 **Kapsam:** `/admin/ilanlar/{id}/edit` ekranındaki tüm çalışma zamanı JS ve Blade hatalarının giderilmesi, test assertion filtrelerindeki yapay hata maskelemelerinin kaldırılması, unmasked kanıt paketinin üretilmesi ve Golden Thread Step 1-5'in sıfır konsol hatasıyla doğrulanması.

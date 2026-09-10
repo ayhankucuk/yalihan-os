@@ -1245,7 +1245,7 @@ class EnvDriftGuard extends Command
         // Extract column definitions (lines starting with backtick-quoted name)
         foreach (explode("\n", $body) as $line) {
             $line = trim($line);
-            if (preg_match('/^`(\w+)`\s+(.+?)(?:,\s*)?$/', $line, $colMatch)) {
+            if (preg_match('/^`([^`]+)`\s+(.+?)(?:,\s*)?$/u', $line, $colMatch)) {
                 $columns[$colMatch[1]] = $colMatch[2];
             }
         }

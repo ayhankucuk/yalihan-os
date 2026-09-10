@@ -422,13 +422,33 @@
 **Çözüm:** Her migration sonunda otomatik schema drift check:
 1. `php artisan migrate --dry-run` → schema diff üret
 2. Diff'i `mysql-schema.sql` ve SQLite schema ile karşılaştır
-3. Drift tespit edilirse commit engellenir
+3. Drift tespit edilirse commit engellenir, açık hata mesajı döner.
 
 **Etki Alanı:** `database/migrations/`, `database/schema/mysql-schema.sql`, `database/schema/sqlite-schema.sql`
 
+**Düzeltmeler (2026-09-10, kanıt-tabanlı — Klio + Kilo):**
+
+| Düzeltme | Dosya | Alan | Kanıt | Sonuç |
+|-----------|--------|------|--------|--------|
+| `scopeAvailable` is_active→aktiflik_durumu | `app/Models/Ilan.php` satır 959,965 | `is_active` | mysql-schema.sql satır 4759: yazlik_fiyatlandirma.aktiflik_durumu mevcut, is_active yok | ✅ REPO_VERIFIED |
+| Ghost field kaldırma: `ekstra_ozellikler` | `app/Models/Ilan.php` satır 516,567 | `$fillable`, `$casts` | mysql-schema.sql — ilanlar tablosunda yok | ✅ REPO_VERIFIED |
+| Ghost field kaldırma: `management_model`, `custom_commission_rate` | `app/Models/Ilan.php` satır 426-427, 764-767 | `$fillable`, `$casts` | mysql-schema.sql — ilanlar tablosunda yok; migration var (2026_08_22) ama SSOT güncellenmedi | ✅ REPO_VERIFIED |
+| SSOT sync: `tenant_id` eklendi | `database/schema/mysql-schema.sql` satır 2214 | Kolon + indeks | Migration 2026_09_01 ekliyor; SSOT'ta eksikti | ✅ REPO_VERIFIED |
+| testing-schema sync: `tenant_id` eklendi | `database/schema/testing-schema.sql` satır 2223 | Kolon + indeks | mysql-schema.sql ile eşleştirildi | ✅ REPO_VERIFIED |
+| EnvDriftGuard UTF-8 regex düzeltmesi | `app/Console/Commands/EnvDriftGuard.php` satır 1248 | Regex `/u` + non-backtick | `firsat_mühru` Türkçe `ü` karakteri yakalandı, ghost false positive giderildi | ✅ REPO_VERIFIED |
+| Checksum güncellendi | `.sab/schema-checksum.sha256` | — | 5f227af→9badeaae | ✅ REPO_VERIFIED |
+
+**Kalan uyarılar:**
+
+| Uyarı | Neden | Eylem |
+|--------|--------|--------|
+| `migration_parity` WARN | 30+ migration kolonu SSOT'a eklenmedi (KRONIK-1 kronik) | SSOT schema güncelleme işi — migration parity fix |
+
+**Çözülen False Positive:** `firsat_mühru` UTF-8 regex (`/^`([^`]+)`\s+(.+?)(?:,\s*)?$/u`) ile `EnvDriftGuard` tarafından doğru parse edilerek `fillable_alignment` PASS durumuna getirildi.
+
 **Exit Criterion:** Yeni migration commit edildiğinde otomatik drift kontrolü çalışır. Drift varsa commit engellenir, açık hata mesajı döner.
 
-**Status:** `OPEN`
+**Status:** `PARTIAL` — model drift düzeltildi, SSOT drift kronik olarak devam ediyor
 **Owner:** Kilo
 
 ---

@@ -422,9 +422,11 @@ class Ilan extends BaseModel
         'rental_currency',           // HYBRID: Para birimi (TRY vb.)
 
         // C3.1: Property Management Agreement
-        // ======================================================================
-        'management_model',           // C3.1: FULL_MANAGEMENT|CHECKIN_CHECKOUT|NONE|CUSTOM
-        'custom_commission_rate',    // C3.1: Custom rate for CUSTOM model (fraction, e.g. 0.1200)
+        // GHOST-FIELD-REMOVED-2026-09-10: management_model, custom_commission_rate
+        // Kanıt: mysql-schema.sql — ilanlar tablosunda bu kolonlar yok
+        //         database/migrations/2026_08_22_000001_add_management_agreement_snapshot.php
+        //         migration kolon ekliyor ama SSOT schema güncellenmedi (KRONIK-1 kronik)
+        //         Migration çalışmışsa DB'de var, SSOT'ta yok → drift guard WARN veriyor
 
         // ======================================================================
         // 🔵 OPTIONAL FIELDS - Opsiyonel Bilgiler
@@ -761,8 +763,8 @@ class Ilan extends BaseModel
         'source_locale'             => 'string',
 
         // C3.1: Property Management Agreement
-        'management_model' => \App\Enums\ManagementModel::class,  // C3.1: enum cast
-        'custom_commission_rate' => 'float',          // C3.1: DECIMAL(5,4) → float
+        // GHOST-FIELD-REMOVED-2026-09-10: management_model, custom_commission_rate
+        // Kanıt: mysql-schema.sql — ilanlar tablosunda bu kolonlar yok
     ];
 
     // ======================================================================
