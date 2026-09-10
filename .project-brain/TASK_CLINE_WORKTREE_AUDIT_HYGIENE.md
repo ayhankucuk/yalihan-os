@@ -4,7 +4,7 @@
 **Çalışma Alanı:** `cline/worktree-audit-hygiene`  
 **Öncelik:** P1 / Orta  
 **Tarih:** 2026-09-10  
-**Kaynak:** `release-candidate/RC2` (ff89b98a)  
+**Kaynak:** `release-candidate/RC2` (ff89b98a → 1a0c14f0)  
 **Referans Doktor Raporu:** 20 ✔ | 7 ▲ | 0 ✖ | ACCEPTABLE | 14/38 worktree kirli
 
 ---
@@ -15,7 +15,7 @@
 git worktree add ../yalihan-os.cline-worktree-audit -b cline/worktree-audit-hygiene release-candidate/RC2
 ```
 
-> ⚠️ ANA KURAL: **SİLME YOK.** `git worktree remove` ve `git branch -D` **KESİNLİKLE YASAK**. Yalnızca oku, analiz et, raporla. Tüm raporlar `kilo/worktree-audit-hygiene` branch'ine commit'lenir.
+> ⚠️ ANA KURAL: **SİLME YOK.** `git worktree remove` ve `git branch -D` **KESİNLİKLE YASAK**. Yalnızca oku, analiz et, raporla. Tüm raporlar `cline/worktree-audit-hygiene` branch'ine commit'lenir.
 
 ---
 
@@ -77,23 +77,23 @@ Dosya: `.project-brain/WORKTREE_HYGIENE_REPORT.md`
 
 ## Kategoriler
 
-### 🟢 BUDANABİLİR (Safe to Prune)
+### 🟢 BUDANABİLİR (Merged / Safe to Prune)
 Açıklama: Branch ana RC2'ye entegre edilmiş veya tamamen bayat.
 | Worktree | Branch | Son Commit | Neden |
 |---|---|---|---|
 | ... | ... | ... | ... |
 
-### 🟡 DİKKAT (Aktif / Bekleyen Değişiklik Var)
+### 🟡 BEKLEYEN DEĞİŞİKLİK (Dirty / Uncommitted)
 Açıklama: Değişiklikler var, değerlendirilmeli.
 | Worktree | Branch | Kirli Dosyalar | Değişiklik Özeti |
 |---|---|---|---|
 | ... | ... | ... | ... |
 
-### 🔴 KORUNMALI (Release veya RC Dalı)
+### 🔴 KORUNMALI (Aktif dal veya RC adayı)
 Açıklama: Aktif RC/release dalları, silinemez.
 | Worktree | Branch | Durum |
 |---|---|---|
-| release-candidate/RC2 | ff89b98a | ANA DAL |
+| release-candidate/RC2 | 1a0c14f0 | ANA DAL |
 | release/era-v-phase2a-rc1 | 249cfc14 | RC dalı |
 | ... | ... | ... |
 
@@ -108,7 +108,7 @@ Açıklama: Aktif RC/release dalları, silinemez.
 ## ✅ Başarı Kriteri
 
 - `.project-brain/WORKTREE_HYGIENE_REPORT.md` dosyası oluşturulmuş
-- Tüm 38 worktree kategorize edilmiş (BUDANABİLİR / DİKKAT / KORUNMALI)
+- Tüm 38 worktree kategorize edilmiş (BUDANABİLİR / BEKLEYEN DEĞİŞİKLİK / KORUNMALI)
 - Her kirli worktree için değişiklik özeti mevcut
 - Hiçbir worktree silinmemiş (salt okunur analiz)
 
