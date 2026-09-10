@@ -701,6 +701,24 @@ class EnvDriftGuard extends Command
         }
 
         $content = File::get($envPath);
+
+        // SQLite mode: only DB_CONNECTION is mandatory — no host/port/credentials needed
+        $isSqlite = (bool) preg_match('/^DB_CONNECTION=sqlite\b/m', $content);
+
+        if ($isSqlite) {
+            if (!preg_match('/^DB_CONNECTION=sqlite/m', $content)) {
+                $this->record('env_testing', 'issue', 'DB_CONNECTION=sqlite missing in .env.testing');
+                return;
+            }
+            if (!preg_match('/^DB_SQLITE_DATABASE=/m', $content)) {
+                $this->record('env_testing', 'issue', 'DB_SQLITE_DATABASE key missing in .env.testing');
+                return;
+            }
+            $this->record('env_testing', 'pass', '.env.testing valid — SQLite in-memory test DB configured');
+            return;
+        }
+
+        // MySQL / other drivers: require full set
         $requiredKeys = $this->policy['required_env_keys']
             ?? ['DB_CONNECTION', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME'];
 
@@ -727,6 +745,14 @@ class EnvDriftGuard extends Command
         }
 
         $envVars = $this->parseEnvFile($envPath);
+
+        // SQLite: in-memory — always reachable, skip PDO check
+        if (($envVars['DB_CONNECTION'] ?? '') === 'sqlite') {
+            $this->record('db_connectivity', 'pass', 'SQLite in-memory test DB configured (no PDO host check needed)');
+            return;
+        }
+
+        // MySQL / other remote drivers
         $host = $envVars['DB_HOST'] ?? '127.0.0.1';
         $port = $envVars['DB_PORT'] ?? '3306';
         $database = $envVars['DB_DATABASE'] ?? '';

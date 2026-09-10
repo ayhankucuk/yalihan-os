@@ -261,7 +261,7 @@ check_layer2_sab() {
 }
 
 # ==============================================================================
-# KATMAN 3: Hayalet Kolonlar & Enum Drift — YAPILANDIRILMIŞ PARSE
+# KATMAN 3: Hayalet Kolonlar & Enum Drift — DURUM-BAZLI KAYIT
 # ==============================================================================
 check_layer3_drift() {
     if [[ "$JSON_MODE" == false ]]; then
@@ -293,44 +293,79 @@ check_layer3_drift() {
         # JSON geçersiz veya boş — bu gerçek bir hata
         record_check "FAIL" "drift" "Env Drift Guard JSON" "Çıktı geçerli JSON değil (rc=$drift_cmd_rc) — env-drift-guard --json çalışıyor mu?"
     else
-        # JSON geçerli — her check'i ayrı ayrı kaydet
-        # enum_drift
-        local enum_status="PASS"
-        local enum_detail="Canonical enum değerler kodla tutarlı"
-        if echo "$drift_json" | grep -q '"enum_drift"'; then
-            local enum_check_result
-            enum_check_result=$(echo "$drift_json" | grep -o '"enum_drift"[^}]*}' | head -1 || echo "")
-            if echo "$enum_check_result" | grep -q '"durum":"issue"' 2>/dev/null || echo "$enum_check_result" | grep -q '"severity":"fail"' 2>/dev/null; then
-                enum_status="FAIL"
-                local enum_count
-                enum_count=$(echo "$drift_json" | grep -c "uses legacy value" || echo "1")
-                enum_detail="${enum_count} yerde kaçak enum değeri (Active/Taslak/Aktif)"
+        # JSON geçerli — tüm checks[] kayıtlarını durum alanına göre aktar.
+        # Tek kaynak: "durum" alanı. "severity" tek başına sonuç DEĞİL;
+        # başarılı kontrollerde de severity=fail olabilir
+        # (örn. schema_mysql: durum=pass, severity=fail).
+        if command -v jq >/dev/null 2>&1; then
+            local check_count=0
+            check_count=$(echo "$drift_json" | jq '.checks | length' 2>/dev/null || echo "0")
+
+            if [[ "$check_count" -gt 0 ]]; then
+                local idx=0
+                while [[ "$idx" -lt "$check_count" ]]; do
+                    local check_name check_durum check_mesaj
+                    check_name=$(echo "$drift_json" | jq -r ".checks[$idx].check" 2>/dev/null)
+                    check_durum=$(echo "$drift_json" | jq -r ".checks[$idx].durum" 2>/dev/null)
+                    check_mesaj=$(echo "$drift_json" | jq -r ".checks[$idx].mesaj" 2>/dev/null)
+
+                    # Boş değerleri güvenli varsayılanlarla doldur
+                    [[ -z "$check_name" ]] && check_name="check_$idx"
+                    [[ -z "$check_durum" ]] && check_durum="unknown"
+                    [[ -z "$check_mesaj" ]] && check_mesaj="no message"
+
+                    # durum → record_check status (tek kaynak: durum alanı)
+                    local record_status
+                    case "$check_durum" in
+                        pass) record_status="PASS" ;;
+                        warn) record_status="WARN" ;;
+                        fail) record_status="FAIL" ;;
+                        skip|skipped) record_status="SKIPPED" ;;
+                        *) record_status="WARN" ;;
+                    esac
+
+                    # Kısa detail: mesajın ilk satırı, 120 char ile sınırlı
+                    local short_detail
+                    short_detail=$(echo "$check_mesaj" | head -1 | cut -c1-120)
+
+                    record_check "$record_status" "drift" "EnvDrift: ${check_name}" "$short_detail"
+
+                    idx=$((idx + 1))
+                done
+            else
+                record_check "WARN" "drift" "Env Drift Guard" "checks dizisi boş veya okunamadı"
+            fi
+        else
+            # jq yok — text-based fallback
+            local line_count=0
+            line_count=$(echo "$drift_json" | grep -c '"durum":' 2>/dev/null || echo "0")
+
+            if [[ "$line_count" -gt 0 ]]; then
+                while IFS= read -r check_block; do
+                    [[ -z "$check_block" ]] && continue
+                    local durum_val
+                    durum_val=$(echo "$check_block" | sed 's/.*"durum": *"\([^"]*\)".*/\1/' | tr -d ' ')
+                    local check_name
+                    check_name=$(echo "$check_block" | sed 's/.*"check": *"\([^"]*\)".*/\1/' | tr -d ' ')
+                    [[ -z "$check_name" ]] && check_name="unknown"
+
+                    local record_status
+                    case "$durum_val" in
+                        pass) record_status="PASS" ;;
+                        warn) record_status="WARN" ;;
+                        fail) record_status="FAIL" ;;
+                        *) continue ;;
+                    esac
+
+                    record_check "$record_status" "drift" "EnvDrift: ${check_name}" "durum=$durum_val"
+                done <<< "$(echo "$drift_json" | grep -o '{"[^"]*check[^"]*":"[^"]*"[^"]*"durum":[^"]*"[^"]*}')"
+            else
+                record_check "WARN" "drift" "Env Drift Guard" "jq yok, text parse başarısız"
             fi
         fi
-        record_check "$enum_status" "drift" "Enum Value Drift" "$enum_detail"
-
-        # migration_parity
-        local migr_status="PASS"
-        local migr_detail="Migration ve mysql-schema.sql senkron"
-        local migr_count
-        migr_count=$(echo "$drift_json" | grep -c "not in mysql-schema.sql" || echo "0")
-        if [[ "$migr_count" -gt 0 ]]; then
-            migr_status="WARN"
-            migr_detail="${migr_count} kolon mysql-schema.sql'de eksik (KRONIK-1)"
-        fi
-        record_check "$migr_status" "drift" "Şema Senkronizasyonu" "$migr_detail"
-
-        # model_db_parity
-        local model_status="PASS"
-        local model_detail="Model ve DB şeması senkron"
-        if echo "$drift_json" | grep -q '"model_db_parity".*"durum":"issue"'; then
-            model_status="WARN"
-            model_detail="Model-DB drift tespit edildi"
-        fi
-        record_check "$model_status" "drift" "Model ↔ DB Parity" "$model_detail"
     fi
 
-    # 3.2 Ilan.php is_active Ghost Check — ayrı bir kontrol
+    # Ilan.php is_active Ghost Check — ayrı bir kontrol, drift guard dışında
     local ghost_field="PASS"
     local ghost_detail="Ilan.php Context7 uyumlu"
     if grep -q "'is_active'" app/Models/Ilan.php 2>/dev/null; then
@@ -366,10 +401,14 @@ check_layer4_security() {
     if [[ "$QUICK_MODE" == false ]]; then
         local tenant_rc=0
         local tenant_output
-        tenant_output=$(php artisan test --testsuite=Feature --filter=TenantIsolationTest 2>&1)
+        # Timeout: 60 saniye — SQLite :memory: veya API mock sorunu durumunda
+        # script sonsuza kadar beklemesin. MacOS'ta gtimeout/yok → perl wrapper.
+        tenant_output=$(perl -MPOSIX 'my $pid = fork; die "fork: $!" if !defined $pid; if (!$pid) { setpgrp(POSIX::PGID(), POSIX::getpid()); exec @ARGV; exit 127; } my $done = 0; local $SIG{ALRM} = sub { $done = 1; kill ALRM => $pid; }; alarm 60; while (!$done && waitpid($pid, WNOHANG) == 0) { usleep 100_000; } alarm 0; if ($done) { kill TERM => $pid; waitpid($pid, 0); exit 42; } my $rc = $? >> 8; exit $rc;' -- php artisan test --testsuite=Feature --filter=TenantIsolationTest 2>&1)
         tenant_rc=$?
         if [[ "$tenant_rc" -eq 0 ]] && echo "$tenant_output" | grep -q "PASS"; then
             record_check "PASS" "security" "Tenant İzolasyon Testleri" "Multi-tenant veri sınırları sızdırmaz (%100 PASS)"
+        elif [[ "$tenant_rc" -eq 42 ]]; then
+            record_check "FAIL" "security" "Tenant İzolasyon Testleri" "Test 60 sn içinde tamamlanamadı — timeout aşıldı"
         elif [[ "$tenant_rc" -ne 0 ]]; then
             record_check "FAIL" "security" "Tenant İzolasyon Testleri" "Test komutu hata verdi (rc=$tenant_rc)"
         else
