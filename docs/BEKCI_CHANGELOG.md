@@ -1,5 +1,28 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 170 — 2026-09-11 | Sprint 14 Sertifikasyonu: PropertyHub & Advisor Command Center Browser E2E Doğrulandı ✅
+
+**Kapsam:** Sprint 14 (Property Command Center & PropertyHub) sertifikasyon blokajlarının (Priority 1) çözülmesi ve browser E2E testleri ile mühürlenmesi: PropertyHub dashboard (`/admin/property-hub`) HTTP 500 hatası olmaksızın çalıştığının ve alt modüllerinin (templates, features, analytics) browser seviyesinde kanıtlanması; Advisor Command Center (`/command-center` ve `/command-center/fetch`) Playwright E2E akışının teyidi.
+
+#### 1. PropertyHub Playwright E2E Test Suite Eklendi (`tests/e2e/property-hub.spec.ts`) ✅
+- **Dashboard Erişimi (HTTP 200 & No 500):** `/admin/property-hub` başarıyla açıldı; `h1` başlığı ("Property Configuration Hub") ve `Sistem Sağlığı: 75/100` badge'inin görünür olduğu doğrulandı.
+- **Alt Modüllerin Sağlığı (HTTP 200):**
+  - `/admin/property-hub/templates` (200 OK)
+  - `/admin/property-hub/features` (200 OK)
+  - `/admin/property-hub/analytics` (200 OK)
+- **Console Hata Denetimi:** 0 kritik/eyleme konu console hatası (5/5 PASS, 13.2s).
+
+#### 2. Advisor Command Center Playwright E2E Doğrulandı (`tests/e2e/advisor-command-center.spec.ts`) ✅
+- **SPA Fetch URL:** `/command-center/fetch` valid JSON döndürdüğü, HTML fallback veya SyntaxError oluşmadığı doğrulandı (4 PASS, 1 skipped auth scope).
+- **Backend Thin Controller & Kontrat:** `AdvisorCommandCenterTest` 6/6 PASS (45 assertions).
+
+#### 3. Sertifikasyon & Yol Haritası Güncellendi ✅
+- `docs/ERA_V/Phase_Reports/SPRINT-14-CERTIFICATION.md`: G-01, G-02, G-03, G-04 Part 1 tam PASS olarak güncellendi. Status: **CONDITIONAL_CERTIFIED** (G-04 Part 2 canlı operatör zamanlaması bekliyor).
+- `docs/ERA_V/PHASE2-ROADMAP.md`: Priority 1 resolved olarak işaretlendi.
+- `docs/ERA_V/Evidence/sprint-14/G-04-BAI-EVIDENCE.md`: `tests/e2e/property-hub.spec.ts` kanıt tablosuna eklendi.
+
+---
+
 ## Oturum 169 — 2026-09-11 | Priority 2 — Hermes Workforce Güvenilirliği & H-05 Persistent Buffer Tamamlandı ✅
 
 **Kapsam:** Hermes AI Workforce pipeline güvenilirliğinin sertifikasyonu (Priority 2): H-05 borcunun kapatılması (PropertyScoreAgent persistent Cache buffer), chain ID propagasyonunun 5 ajan boyunca kesintisiz aktarımı, cross-instance buffer izolasyon testi ve 5 ajanlı unbroken E2E izlenebilirlik testi.

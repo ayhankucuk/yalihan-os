@@ -140,7 +140,8 @@ Kazanç: [VALUE] dk → [VALUE] dk = [%] zaman tasarrufu
 | Source | Status | Location |
 |--------|--------|----------|
 | AdvisorCommandCenterTest | ✅ 6 test / 45 assertion | `tests/Feature/AI/AdvisorCommandCenterTest.php` |
-| Playwright E2E | ✅ 4/5 pass | `tests/e2e/advisor-command-center.spec.ts` |
+| Advisor Playwright E2E | ✅ 4/5 pass | `tests/e2e/advisor-command-center.spec.ts` |
+| PropertyHub Playwright E2E | ✅ 5/5 pass | `tests/e2e/property-hub.spec.ts` |
 | PropertyHubDashboardHardening | ✅ 6/6 pass | `tests/Feature/Admin/PropertyHubDashboardHardeningTest.php` |
 | AI test suite | ✅ 121 PASS | `tests/Feature/AI/` |
 | SPA fetch URL fix | ✅ Fixed | `resources/views/advisor/command-center.blade.php:332` |

@@ -2,8 +2,8 @@
 
 **Sprint:** 14
 **Feature:** Property Command Center
-**Date:** 2026-08-28 (initial) / 2026-09-06 (re-verification)
-**Status:** CONDITIONAL_CERTIFIED (G-04 Part 2 pending operator timing)
+**Date:** 2026-08-28 (initial) / 2026-09-06 (re-verification) / 2026-09-11 (browser E2E certification)
+**Status:** CONDITIONAL_CERTIFIED (G-01, G-02, G-03, G-04 Part 1 PASS; G-04 Part 2 pending operator timing)
 
 ---
 
@@ -17,9 +17,9 @@
 
 | Gate | Status | Evidence |
 |------|--------|---------|
-| G-01 Capability | ✅ RESOLVED | Playwright: 4/5 pass (1 pre-existing skipped); page loads 200, heading visible |
-| G-02 Test | ✅ RESOLVED | 121 AI tests PASS; 6 new contract tests (45 assertions); 8 pre-existing failures |
-| G-03 Operational | ✅ RESOLVED | Backend: /fetch → 200 + valid JSON. Browser: SPA fetch URL fix verified |
+| G-01 Capability | ✅ RESOLVED | Playwright: AdvisorCommandCenter 4/5 pass (1 auth skipped), PropertyHub 5/5 pass; page loads 200, headings visible |
+| G-02 Test | ✅ RESOLVED | 121 AI tests PASS; 6 new contract tests (45 assertions); PropertyHub hardening (6/6); Hermes test suite 108/108 PASS |
+| G-03 Operational | ✅ RESOLVED | Backend: /fetch → 200 + valid JSON. Browser: SPA fetch URL fix verified; PropertyHub HTTP 500 resolved & verified (0 console errors) |
 | G-04 BAI Impact | ⚠️ PARTIAL | Part 1: Architecture automation gain ✅ (71% step reduction). Part 2: Operator timing ⏸️ |
 | **Overall** | ⚠️ **CONDITIONAL_CERTIFIED** | G-04 Part 2 (operator timing) completes full certification |
 
@@ -77,6 +77,16 @@ retrospectively logged as a sprint retrospective item.
 | `unauthenticated fetch API returns 401/redirect` | ✅ PASS | 401 returned |
 | `no console errors on page load` | ⏭️ SKIP | Pre-existing auth scope skip |
 
+**File:** `tests/e2e/property-hub.spec.ts`
+
+| Test | Result | Notes |
+|------|--------|-------|
+| `PropertyHub dashboard loads without error (200, no 500)` | ✅ PASS | Status 200 OK, Heading & Health score badge visible |
+| `PropertyHub templates section loads successfully (200)` | ✅ PASS | `/admin/property-hub/templates` loads 200 OK |
+| `PropertyHub features section loads successfully (200)` | ✅ PASS | `/admin/property-hub/features` loads 200 OK |
+| `PropertyHub analytics section loads successfully (200)` | ✅ PASS | `/admin/property-hub/analytics` loads 200 OK |
+| `no critical console errors on PropertyHub dashboard` | ✅ PASS | 0 actionable console errors |
+
 ---
 
 ## G-02: Test Evidence
@@ -126,10 +136,10 @@ retrospectively logged as a sprint retrospective item.
 | Area | Gap | Priority |
 |------|-----|----------|
 | Advisor `/command-center/fetch` full response contract | ✅ **RESOLVED** | — |
-| PropertyHub dashboard 500 fix | Need fresh browser evidence post-fix | HIGH |
-| G-01 manual browser flow | Authenticated E2E | HIGH |
-| Pre-existing seed conflicts | 2× DescriptionReviewModalTest, 4× other tests | MEDIUM |
-| Pre-existing 403 auth gaps | FeatureFeedbackContractTest | MEDIUM |
+| PropertyHub dashboard 500 fix | ✅ **RESOLVED** — Verified via `tests/e2e/property-hub.spec.ts` (5/5 PASS, status 200, 0 console errors) | — |
+| G-01 manual browser flow | ✅ **RESOLVED** — Verified via Playwright (`tests/e2e/advisor-command-center.spec.ts` & `tests/e2e/property-hub.spec.ts`) | — |
+| Pre-existing seed conflicts | ✅ **RESOLVED** (2026-09-06 AI suite resolution) | — |
+| Pre-existing 403 auth gaps | Documented known debt (Sanctum test bootstrap scope) | LOW |
 
 ---
 
@@ -142,7 +152,7 @@ retrospectively logged as a sprint retrospective item.
 | Advisor `priority_filter=today` | ✅ PASS | `priority_filter_today_returns_only_critical_and_high_actions` |
 | Advisor `/command-center` HTML page | ✅ PASS | Playwright: 200, heading visible |
 | Advisor SPA fetch → JSON (not HTML) | ✅ PASS | URL fix: `/advisor/command-center/fetch` → `/command-center/fetch` |
-| PropertyHub dashboard HTTP 500 | ✅ PASS | `dashboard loads without 500` — backend test confirms |
+| PropertyHub dashboard HTTP 500 | ✅ PASS | Backend test confirms + Playwright `tests/e2e/property-hub.spec.ts` (5/5 PASS) |
 | Wave 6 operations surface | ✅ PASS | Backend tests verified |
 | Wave 7 operations surface | ✅ PASS | Backend tests verified |
 
@@ -239,19 +249,30 @@ retrospectively logged as a sprint retrospective item.
 | `LeadAuthorityService` tenant-scoping | Code inspection | ✅ `TenantContextService` + `firstOrCreate(tenant_id, ...)` |
 | Unique index migration | Migration file | ✅ `2026_05_21_000000_add_tenant_id_to_leads_unique_index.php` |
 
+### PropertyHub Browser E2E — Verification (2026-09-11)
+
+| Check | Method | Result |
+|-------|--------|--------|
+| `property-hub.spec.ts` | Playwright E2E | ✅ 5/5 PASS |
+| `/admin/property-hub` | Browser GET | ✅ 200 OK (no 500), heading & health score visible |
+| `/admin/property-hub/templates` | Browser GET | ✅ 200 OK |
+| `/admin/property-hub/features` | Browser GET | ✅ 200 OK |
+| `/admin/property-hub/analytics` | Browser GET | ✅ 200 OK |
+| Console errors | Browser console listener | ✅ 0 actionable errors |
+
 ---
 
 ## Final Certification Position
 
 **Sprint 14 Status: CONDITIONAL_CERTIFIED**
 
-All code-level and test-level gates are PASS. The sole remaining blocker is G-04 Part 2 (operator timing measurement), which requires authorized operator to perform manual timing in production. This cannot be resolved through code changes.
+All code-level, contract, and browser E2E test-level gates are PASS. The sole remaining blocker is G-04 Part 2 (operator timing measurement), which requires authorized operator to perform manual timing in production. This cannot be resolved through code changes.
 
 | Gate | Status | Evidence |
 |------|--------|---------|
-| G-01 Capability | ✅ RESOLVED | Playwright 4/5 pass + backend tests |
-| G-02 Test | ✅ RESOLVED | 121 AI tests + 6 contract tests (45 assertions) + Hermes 27 tests |
-| G-03 Operational | ✅ RESOLVED | /fetch → 200 + valid JSON; PropertyHub dashboard loads without 500 |
+| G-01 Capability | ✅ RESOLVED | Playwright AdvisorCommandCenter (4/5 pass) + PropertyHub (5/5 pass) |
+| G-02 Test | ✅ RESOLVED | 121 AI tests + 6 contract tests (45 assertions) + PropertyHub hardening (6/6) + Hermes 108 tests |
+| G-03 Operational | ✅ RESOLVED | /fetch → 200 + valid JSON; PropertyHub dashboard loads without 500 (E2E verified) |
 | G-04 BAI Impact | ⚠️ PARTIAL | Part 1: ✅ VERIFIED. Part 2: ⏸️ PENDING (operator timing) |
 | **Overall** | ⚠️ **CONDITIONAL_CERTIFIED** | G-04 Part 2 completes full certification |
 
