@@ -1,5 +1,37 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 168 — 2026-09-11 | Priority 6 — Kategori & Özellik Şablon Matrisi Tamamlandı ✅
+
+**Kapsam:** Wizard Step 2 dinamik özellik çözümleme motorunda Yazlık Kiralama (4), Turistik Tesisler (5), Projeden Satış (6) ve Arsa Kat Karşılığı (3, lt=3) kategorilerinin 5 genel fallback alana düşme kusurunun giderilmesi; canonical `features`, `feature_categories` ve `feature_assignments` üzerinden matrisin tamamlanması.
+
+#### 1. CategoryFeatureMatrixSeeder Oluşturuldu (`database/seeders/CategoryFeatureMatrixSeeder.php`) ✅
+- **9 Yeni Özellik Kategorisi:** `yazlik-operasyonel`, `yazlik-finansal`, `yazlik-kurallar`, `turistik-temel`, `turistik-ozellikler`, `turistik-idari`, `proje-temel`, `proje-finansal`, `proje-insaat`.
+- **20+ Yeni Kanonik Özellik:** `minimum-konaklama`, `maksimum-misafir`, `giris-saati`, `cikis-saati`, `temizlik-ucreti`, `hasar-depozitosu`, `havuz-bakimi`, `evcil-hayvan-izni`, `parti-etkinlik-izni`, `oda-sayisi-turistik`, `yatak-kapasitesi`, `yildiz-sayisi`, `denize-mesafe-turistik`, `acik-havuz-turistik`, `restoran-bar`, `turizm-belgesi`, `toplam-unite-sayisi`, `teslim-tarihi`, `proje-alani-m2`, `pesinat-orani`, `vade-secenegi-ay`, `insaat-tamamlanma-orani`, `tapu-teslim-durumu`.
+- **Kanonik Atamalar (Scope & Constraints):**
+  - Yazlık Kiralama: 15 atama (required: `minimum-konaklama`, `maksimum-misafir`, `brut-alan`, `oda-sayisi`)
+  - Turistik Tesisler: 8 atama (required: `oda-sayisi-turistik`, `yatak-kapasitesi`, `turizm-belgesi`, `brut-alan`)
+  - Projeden Satış: 7 atama (required: `toplam-unite-sayisi`, `teslim-tarihi`)
+  - Arsa Kat Karşılığı: 12 atama (required: `imar_durumu`)
+- **İdempotent & Çift Yönlü Uyumluluk:** `updateOrInsert` ve SQLite/MySQL tip uyumlu.
+
+#### 2. Master DatabaseSeeder Güncellendi (`database/seeders/DatabaseSeeder.php`) ✅
+- `ArsaIsyeriFeatureAssignmentSeeder::class` ve `CategoryFeatureMatrixSeeder::class` seeder zincirine bağlandı.
+
+#### 3. Kapsamlı Regresyon Test Paketi (`tests/Feature/Wizard/CategoryFeatureMatrixTest.php`) ✅
+- `test_yazlik_kiralama_resolves_matrix_features`: PASS
+- `test_turistik_tesisler_resolves_matrix_features`: PASS
+- `test_projeden_satis_resolves_matrix_features`: PASS
+- `test_arsa_kat_karsiligi_resolves_matrix_features`: PASS
+- `test_all_six_categories_avoid_generic_fallback`: PASS
+- `test_category_feature_matrix_seeder_is_idempotent`: PASS
+- **6/6 Test, 71 Assertion — ALL PASS ✅**
+
+#### 4. Kalite Kapıları & Pre-commit Güvenliği ✅
+- `./scripts/tools/antigravity-full-gate.sh --quick`: 4/4 GATES PASSED
+- `vendor/bin/pint --test`: PASSED (0 lint error)
+
+---
+
 ## Oturum 167 — 2026-09-10 | KRONIK-1 Migration Parity SSOT Eşitlemesi Tamamlandı ✅
 
 **Kapsam:** `mysql-schema.sql` ve `testing-schema.sql` dosyalarının migration'larda tanımlanmış ancak SSOT'a yansıtılmamış kolon/indeks'lerle tam eşitlenmesi, checksum mühürünün güncellenmesi.

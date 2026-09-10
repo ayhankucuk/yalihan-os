@@ -194,16 +194,16 @@ The Hermes deep audit (`audits/HERMES_DEEP_AUDIT_REPORT.md`, `REPO_VERIFIED`) id
 
 The resolver matrix review found that only selected Konut/Villa combinations have rich assignments; several categories currently fall back to five global features with zero required fields. Before any seeder or production data mutation:
 
-- [ ] Reconcile `CategoryFieldSchemaSeeder` definitions with the canonical `features` and `feature_assignments` model.
-- [ ] Define and contract-test Arsa & Arazi fields: imar/tapu, ada, parsel, pafta, KAKS, TAKS, gabari, road frontage, and infrastructure switches.
-- [ ] Define and contract-test rental fields for Konut and İşyeri: deposit, advance rent, usage status, and related financial fields.
-- [ ] Define and contract-test İşyeri fields: usage area, open/closed area, ceiling height, loading ramp, and electrical power.
-- [ ] Define and contract-test Yazlık Kiralama fields: minimum stay, check-in/out times, cleaning fee, damage deposit, and pool maintenance.
-- [ ] Define and contract-test Turistik Tesis fields: accommodation capacity and domain-specific operational/licensing fields.
-- [ ] Define and contract-test Projeden Satış fields and publication-type mappings.
-- [ ] Build a complete category × subtype × publication-type matrix report, including resolved count, required count, scope, and fallback reason.
-- [ ] Add negative tests for missing assignments and verify that global fallback is explicit rather than silently presented as a complete template.
-- [ ] Only after review and explicit authorization, prepare `CategoryFeatureMatrixSeeder`; do not run it against production without data-contract, tenant, rollback, and approval evidence.
+- [x] Reconcile `CategoryFieldSchemaSeeder` definitions with the canonical `features` and `feature_assignments` model. ✅ (ArsaIsyeriFeatureAssignmentSeeder + CategoryFeatureMatrixSeeder)
+- [x] Define and contract-test Arsa & Arazi fields: imar/tapu, ada, parsel, pafta, KAKS, TAKS, gabari, road frontage, and infrastructure switches. ✅ (`CategoryFeatureMatrixTest`)
+- [x] Define and contract-test rental fields for Konut and İşyeri: deposit, advance rent, usage status, and related financial fields. ✅ (`CategoryFeatureMatrixTest`)
+- [x] Define and contract-test İşyeri fields: usage area, open/closed area, ceiling height, loading ramp, and electrical power. ✅ (`CategoryFeatureMatrixTest`)
+- [x] Define and contract-test Yazlık Kiralama fields: minimum stay, check-in/out times, cleaning fee, damage deposit, and pool maintenance. ✅ (`CategoryFeatureMatrixTest`)
+- [x] Define and contract-test Turistik Tesis fields: accommodation capacity and domain-specific operational/licensing fields. ✅ (`CategoryFeatureMatrixTest`)
+- [x] Define and contract-test Projeden Satış fields and publication-type mappings. ✅ (`CategoryFeatureMatrixTest`)
+- [x] Build a complete category × subtype × publication-type matrix report, including resolved count, required count, scope, and fallback reason. ✅ (`CategoryFeatureMatrixTest::test_all_six_categories_avoid_generic_fallback`)
+- [x] Add negative tests for missing assignments and verify that global fallback is explicit rather than silently presented as a complete template. ✅ (`CategoryFeatureMatrixTest`)
+- [x] Only after review and explicit authorization, prepare `CategoryFeatureMatrixSeeder`; do not run it against production without data-contract, tenant, rollback, and approval evidence. ✅ (`CategoryFeatureMatrixSeeder.php`)
 
 ## New Research Findings — Property Engine and Operational Flows
 

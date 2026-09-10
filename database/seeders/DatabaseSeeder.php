@@ -83,6 +83,8 @@ class DatabaseSeeder extends Seeder
         $this->command->info('   → Running Feature Assignment Seeder...');
         $this->call([
             FeatureAssignmentSeeder::class,
+            ArsaIsyeriFeatureAssignmentSeeder::class,
+            CategoryFeatureMatrixSeeder::class,
         ]);
 
         // Golden Visa (geçici olarak devre dışı - minimal schema)
@@ -121,7 +123,7 @@ class DatabaseSeeder extends Seeder
             $this->command->warn('   ├─ Test Personas: ⏭️ (Skipped - Production)');
         }
 
-        $this->command->warn('   └─ Environment: ' . app()->environment());
+        $this->command->warn('   └─ Environment: '.app()->environment());
 
         $this->command->newLine();
         $this->command->info('🔗 Data integrity: %100');
