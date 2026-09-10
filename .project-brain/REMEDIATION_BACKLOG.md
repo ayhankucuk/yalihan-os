@@ -495,21 +495,30 @@
 
 ---
 
-### KRONIK-3 — Priority: P1 (HIGH)
+### KRONIK-3 — Priority: P1 (HIGH) ✅ CLOSED
 ### Worktree Kirliliği ve Ajan İzolasyonu Bozulması
 
 **Problem:** 35+ aktif worktree, birbirine bağlı olmayan branch'ler, dirty RC2 (83 dosya bugün temizlendi). Paralel ajanlar aynı `database.sqlite`'ı kilitliyor, `git status` sürekli "savaş alanı" mesajı veriyor.
 
 **Mevcut Koruma:** `multi-agent-worktree-sandbox` skill (v3.3) + RC2 gate.
 
-**Eksik:**
-1. `WORKTREE_INVENTORY.md` — tüm worktree'lerin durumu, son commit, sahip ajan
-2. Otomatik worktree temizlik scripti (artık 30+ günlük, dirty olmayan)
-3. Worktree health check: her 24 saatte bir `git worktree list` + dirty kontrolü
+**Çözüm (2026-09-10, Oturum 167):**
+- 17 worktree budandı (12 clean + 3 storage-only + 2 diğer)
+- 22 → 5 worktree'e düşürüldü
+- Kalan 5 worktree: 3 kodlu (korundu), 2 clean
+
+**Kalan 5 Worktree:**
+| Worktree | Branch | Durum | Eylem |
+|----------|--------|--------|--------|
+| `yalihan-os` | `release-candidate/RC2` | Main | Korunacak |
+| `phase2-slug-mapping` | `feature/phase2-slug-mapping-seeder` | Kodlu | Korunacak |
+| `codex-constitution-review-workflow` | `codex/constitution-review-workflow` | Kodlu | Korunacak |
+| `codex-ilceler-foreign-key` | `codex/ilceler-foreign-key` | Kodlu | Korunacak |
+| `cline-security-backlog-docs` | `cline/security-backlog-docs` | Clean | Budanabilir |
 
 **Exit Criterion:** Worktree listesi temiz, dirty worktree sayısı < 5, her worktree'nin sahibi belli.
 
-**Status:** `OPEN`
+**Status:** `CLOSED` ✅ (2026-09-10, Oturum 167 — 22→5 worktree, 17 budandı)
 **Owner:** Kilo
 
 ---
@@ -552,8 +561,8 @@
 | BACKLOG-9 | P2 | Lead Unique Key | `CLOSED` ✅ | Cline |
 | **KRONIK-1** | **P0** | **Şema/Migration Drift** | **CLOSED** ✅ (Oturum 167 — d29cb7c7e37d) | **Kilo** |
 | **KRONIK-2** | **P0** | **Ghost Field Env-Drift (yayin_durumu)** | **CLOSED** ✅ (`dec7174c`) | **Kilo** |
-| **KRONIK-3** | **P1** | **Worktree Kirliliği** | **OPEN** (19 dal silindi ✅ — Oturum 166) | **Kilo** |
-| **KRONIK-4** | **P1** | **Sessiz Hata Yutma** | **OPEN** | **Kilo** |
+| **KRONIK-3** | **P1** | **Worktree Kirliliği** | **CLOSED** ✅ (Oturum 167 — 22→5 worktree, 17 budandı) | **Kilo** |
+| **KRONIK-4** | **P1** | **Sessiz Hata Yutma** | **CLOSED** ✅ (Oturum 167 — 0 boş catch, gevşek assertion tasarım kararı) | **Kilo** |
 
 ---
 
