@@ -4,8 +4,8 @@ namespace App\Services\Hermes\Handlers\Workforce;
 
 use App\Contracts\Hermes\HermesEventContract;
 use App\Contracts\Hermes\HermesHandlerContract;
-use App\Events\Workforce\PublishingDecisionReady;
 use App\Events\Workforce\PropertyScoreCalculated;
+use App\Events\Workforce\PublishingDecisionReady;
 use App\Models\Hermes\WorkforceExecutionLog;
 use App\Models\PortfolioDriveWorkspace;
 use App\Services\Hermes\HermesService;
@@ -32,7 +32,7 @@ class PublishDecisionAgent implements HermesHandlerContract
     ) {}
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function subscribesTo(): array
     {
@@ -42,13 +42,13 @@ class PublishDecisionAgent implements HermesHandlerContract
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function handle(HermesEventContract $event): array
     {
         $startTime = microtime(true);
 
-        if (!$event instanceof PropertyScoreCalculated) {
+        if (! $event instanceof PropertyScoreCalculated) {
             return [
                 'handler' => self::class,
                 'error' => 'Invalid event type',
@@ -61,6 +61,7 @@ class PublishDecisionAgent implements HermesHandlerContract
         $tenantId = $event->tenantId();
         $workspace = $event->workspace;
         $scoreResult = $event->scoreResult;
+        $chainId = $payload['chain_id'] ?? null;
 
         // Record execution
         $execLog = $this->recordExecution($ilanId, $tenantId, $payload);
@@ -80,6 +81,7 @@ class PublishDecisionAgent implements HermesHandlerContract
                 'workspace_id' => $workspace->getKey(),
                 'ilan_baslik' => $workspace->root_folder_name,
                 'tier' => $decision['quality_tier'],
+                'chain_id' => $chainId,
             ]);
 
             Log::info('[PublishDecisionAgent] Publishing decision made', [
@@ -103,12 +105,13 @@ class PublishDecisionAgent implements HermesHandlerContract
         } catch (\Throwable $e) {
             $execLog->markFailed($e->getMessage());
             Log::error('[PublishDecisionAgent] Failed', ['ilan_id' => $ilanId, 'error' => $e->getMessage()]);
+
             return ['handler' => self::class, 'ilan_id' => $ilanId, 'error' => $e->getMessage(), 'duration_ms' => $this->elapsed($startTime)];
         }
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function isAsync(): bool
     {
@@ -157,16 +160,13 @@ class PublishDecisionAgent implements HermesHandlerContract
         // Determine decision
         $decision = match (true) {
             // Critical blocking issues → reject
-            count(array_filter($blockingIssues, fn ($i) => ($i['severity'] ?? '') === 'critical')) > 0
-                => 'rejected',
+            count(array_filter($blockingIssues, fn ($i) => ($i['severity'] ?? '') === 'critical')) > 0 => 'rejected',
 
             // High score, no issues → approved
-            $overallScore >= 0.75 && empty($blockingIssues)
-                => 'approved',
+            $overallScore >= 0.75 && empty($blockingIssues) => 'approved',
 
             // Medium score → needs review
-            $overallScore >= 0.50
-                => 'needs_review',
+            $overallScore >= 0.50 => 'needs_review',
 
             // Low score → needs review (manual intervention needed)
             default => 'needs_review',
@@ -178,7 +178,7 @@ class PublishDecisionAgent implements HermesHandlerContract
         // Generate message
         $message = match ($decision) {
             'approved' => 'Gayrimenkul yayınlama için onaylandı. Otomatik yayınlama başlatılabilir.',
-            'needs_review' => 'Gayrimenkul manuel değerlendirme gerektiriyor. Kalite: ' . ucfirst($qualityTier) . '.',
+            'needs_review' => 'Gayrimenkul manuel değerlendirme gerektiriyor. Kalite: '.ucfirst($qualityTier).'.',
             'rejected' => 'Gayrimenkul yayınlama için uygun değil. Kritik kalite sorunları var.',
         };
 

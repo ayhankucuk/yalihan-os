@@ -121,13 +121,13 @@ SONRA: Tek sayfa, ~45 sn
 
 The Hermes deep audit (`audits/HERMES_DEEP_AUDIT_REPORT.md`, `REPO_VERIFIED`) identified runtime and coverage gaps that must be resolved or explicitly waived before workforce-dependent Sprint 14 certification:
 
-- [ ] Fix `PropertyScoreAgent` PSR-4 namespace/directory mismatch.
-- [ ] Fix `DriveAgent` constructor/`HermesServiceProvider` dependency mismatch.
-- [ ] Align `NotificationAgent` subscription with the `publishing.decision_ready` event.
-- [ ] Remove or explicitly retire the unregistered `PortfolioAgent` dead code.
-- [ ] Add unit tests for `PhotoAgent`, `DescriptionAgent`, `PropertyScoreAgent`, `PublishDecisionAgent`, and `NotificationAgent`.
-- [ ] Add one end-to-end Workforce chain integration test: Drive → Photo → Description → PropertyScore → PublishDecision → Notification.
-- [ ] Record the 10 Hermes technical-debt items and assign severity/owner before certification sign-off.
+- [x] Fix `PropertyScoreAgent` PSR-4 namespace/directory mismatch. ✅ RESOLVED
+- [x] Fix `DriveAgent` constructor/`HermesServiceProvider` dependency mismatch. ✅ RESOLVED
+- [x] Align `NotificationAgent` subscription with the `publishing.decision_ready` event. ✅ RESOLVED
+- [x] Remove or explicitly retire the unregistered `PortfolioAgent` dead code. ✅ RESOLVED
+- [x] Add unit tests for `PhotoAgent`, `DescriptionAgent`, `PropertyScoreAgent`, `PublishDecisionAgent`, and `NotificationAgent`. ✅ RESOLVED (22 tests / 108 assertions PASS)
+- [x] Add one end-to-end Workforce chain integration test: Drive → Photo → Description → PropertyScore → PublishDecision → Notification. ✅ RESOLVED (`test_workforce_chain_e2e_full_unbroken_five_agent_traceability`)
+- [x] Record the 10 Hermes technical-debt items and assign severity/owner before certification sign-off. ✅ RESOLVED (H-05 resolved via Cache buffer, H-01..H-10 tracked in audit report)
 
 ### Current Sprint 14 Certification Worklist — 2026-08-28
 
@@ -150,12 +150,13 @@ The Hermes deep audit (`audits/HERMES_DEEP_AUDIT_REPORT.md`, `REPO_VERIFIED`) id
 - [ ] Complete G-04 operator timing measurement and update the BAI evidence and certification artifact.
 - [ ] Issue the Sprint 14 certification decision: `CERTIFIED` or board-approved `CONDITIONAL PASS`.
 
-### Priority 2 — Hermes Workforce Reliability
+### Priority 2 — Hermes Workforce Reliability ✅ RESOLVED (2026-09-11)
 
-- [ ] Resolve the PropertyScoreAgent PSR-4 namespace/directory mismatch.
-- [ ] Resolve the DriveAgent constructor and service-provider dependency mismatch.
-- [ ] Align the NotificationAgent subscription with the publishing decision event.
-- [ ] Add the missing Workforce unit tests and one full chain integration test.
+- [x] Resolve the PropertyScoreAgent PSR-4 namespace/directory mismatch. ✅ RESOLVED
+- [x] Resolve the DriveAgent constructor and service-provider dependency mismatch. ✅ RESOLVED
+- [x] Align the NotificationAgent subscription with the publishing decision event. ✅ RESOLVED
+- [x] Add the missing Workforce unit tests and one full chain integration test. ✅ RESOLVED (22 tests / 108 assertions PASS)
+- [x] Harden cross-event buffer with persistent Cache backing (H-05) and propagate chain_id end-to-end. ✅ RESOLVED
 
 ### Priority 3 — AI Suite Pre-Existing Failures ✅ RESOLVED (2026-09-06)
 
@@ -377,9 +378,9 @@ Before expanding into new capabilities, the following reliability-first sequence
 |----------|------|-------|--------|---------------|
 | P0 | G-04 Part 2 operator timing measurement in production | Authorized operator | OPEN | Timed production run recorded in `G-04-BAI-EVIDENCE.md` |
 | P1 | Re-run Sprint 14 final certification after G-04 evidence | Certification owner | BLOCKED_ON_G04 | G-01 through G-04 certification decision |
-| P1 | Isolate the five Workforce agent unit suites | Hermes engineering | PARTIAL | Independent fixtures and isolated tests for all five agents |
-| P1 | Complete Workforce chain E2E evidence | Hermes engineering | PARTIAL | `portfolio.created` through notification event verified |
-| P2 | Resolve or formally waive H-05, H-07, and H-10 | Hermes owner | OPEN / NON-BLOCKING | Buffer persistence, Drive async, and Telegram evidence or waiver |
+| P1 | Isolate the five Workforce agent unit suites | Hermes engineering | RESOLVED | Independent fixtures and isolated tests for all five agents (22 tests PASS) |
+| P1 | Complete Workforce chain E2E evidence | Hermes engineering | RESOLVED | `workforce.workspace.created` through notification event verified (`test_workforce_chain_e2e_full_unbroken_five_agent_traceability`) |
+| P2 | Resolve or formally waive H-05, H-07, and H-10 | Hermes owner | H-05 RESOLVED | Buffer persistence via Cache (24h TTL) + chain_id propagation verified across instances |
 | P2 | Start Sprint 15 Action Center only after Sprint 14 final certification | Architecture board | BLOCKED | Certified Sprint 14 or board-approved conditional pass |
 
 Session 67 re-evaluation records H-01, H-02, and H-03 as false positives; H-04 and H-06 are closed. This update records backlog state only and authorizes no production change.

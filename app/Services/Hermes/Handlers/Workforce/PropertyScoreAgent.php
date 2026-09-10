@@ -10,6 +10,7 @@ use App\Events\Workforce\PropertyScoreCalculated;
 use App\Models\Hermes\WorkforceExecutionLog;
 use App\Models\PortfolioDriveWorkspace;
 use App\Services\Hermes\HermesService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -37,7 +38,7 @@ class PropertyScoreAgent implements HermesHandlerContract
     ) {}
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function subscribesTo(): array
     {
@@ -48,7 +49,7 @@ class PropertyScoreAgent implements HermesHandlerContract
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function handle(HermesEventContract $event): array
     {
@@ -71,30 +72,63 @@ class PropertyScoreAgent implements HermesHandlerContract
         try {
             // Load workspace
             $workspace = $this->loadWorkspace($workspaceId, $ilanId);
-            if (!$workspace) {
+            if (! $workspace) {
                 $execLog->markFailed('Workspace not found');
+
                 return ['error' => 'Workspace not found', 'duration_ms' => $this->elapsed($startTime)];
             }
 
-            // Buffer result by event type
-            $this->pendingResults[$workspace->ilan_id] ??= [];
-            if ($event instanceof PhotoAnalysisCompleted) {
-                $this->pendingResults[$workspace->ilan_id]['photo'] = $payload;
-            } elseif ($event instanceof DescriptionCompleted) {
-                $this->pendingResults[$workspace->ilan_id]['description'] = $payload;
-            }
+            // Check if workspace already completed score calculation for this cycle
+            $flags = $workspace->ai_completion_flags ?? [];
+            if (! empty($flags['property_score_agent']['complete']) && ! empty($flags['property_score_agent']['result'])) {
+                $execLog->markCompleted($flags['property_score_agent']['result']);
 
-            // Need both results to calculate score
-            $photo = $this->pendingResults[$workspace->ilan_id]['photo'] ?? null;
-            $description = $this->pendingResults[$workspace->ilan_id]['description'] ?? null;
-
-            if (!$photo && !$description) {
-                $execLog->markSkipped('No analysis results available', []);
                 return [
                     'handler' => self::class,
                     'ilan_id' => $ilanId,
-                    'skipped' => true,
-                    'reason' => 'No analysis results available',
+                    'workspace_id' => $workspaceId,
+                    'already_completed' => true,
+                    'duration_ms' => $this->elapsed($startTime),
+                ];
+            }
+
+            // Buffer result by event type with persistent Cache backing (H-05)
+            $buffer = $this->getPendingBuffer($workspace);
+
+            if ($event instanceof PhotoAnalysisCompleted) {
+                $buffer['photo'] = array_merge($payload, [
+                    'quality_score' => $payload['quality_score'] ?? ($event->analysisResult['quality_score'] ?? null),
+                    'recommendations' => $payload['recommendations'] ?? ($event->analysisResult['recommendations'] ?? []),
+                    'chain_id' => $payload['chain_id'] ?? null,
+                ]);
+            } elseif ($event instanceof DescriptionCompleted) {
+                $buffer['description'] = array_merge($payload, [
+                    'title_score' => $payload['title_score'] ?? ($event->analysisResult['title_score'] ?? null),
+                    'improved_title' => $payload['improved_title'] ?? ($event->analysisResult['improved_title'] ?? null),
+                    'suggestions' => $payload['suggestions'] ?? ($event->analysisResult['suggestions'] ?? []),
+                    'chain_id' => $payload['chain_id'] ?? null,
+                ]);
+            }
+
+            $this->savePendingBuffer($workspace->ilan_id, $buffer);
+
+            $photo = $buffer['photo'] ?? null;
+            $description = $buffer['description'] ?? null;
+
+            // Need BOTH results to calculate composite score
+            if (! $photo || ! $description) {
+                $waitingFor = ! $photo ? 'photo' : 'description';
+                $execLog->markCompleted([
+                    'buffered' => true,
+                    'waiting_for' => $waitingFor,
+                ]);
+
+                return [
+                    'handler' => self::class,
+                    'ilan_id' => $ilanId,
+                    'workspace_id' => $workspaceId,
+                    'buffered' => true,
+                    'waiting_for' => $waitingFor,
                     'duration_ms' => $this->elapsed($startTime),
                 ];
             }
@@ -107,12 +141,18 @@ class PropertyScoreAgent implements HermesHandlerContract
 
             $execLog->markCompleted($scoreResult);
 
+            // Propagate chain_id across workforce lifecycle
+            $chainId = $payload['chain_id']
+                ?? ($photo['chain_id'] ?? null)
+                ?? ($description['chain_id'] ?? null);
+
             // Emit PropertyScoreCalculated event
             $this->emitPropertyScoreCalculated($workspace, $scoreResult, [
                 'ilan_id' => $ilanId,
                 'workspace_id' => $workspaceId,
                 'ilan_baslik' => $workspace->root_folder_name,
                 'tier' => $scoreResult['quality_tier'],
+                'chain_id' => $chainId,
                 'triggered_by' => $eventName,
             ]);
 
@@ -121,10 +161,11 @@ class PropertyScoreAgent implements HermesHandlerContract
                 'workspace_id' => $workspaceId,
                 'overall_score' => $scoreResult['overall_score'],
                 'quality_tier' => $scoreResult['quality_tier'],
+                'chain_id' => $chainId,
             ]);
 
-            // Clear buffer for this workspace
-            unset($this->pendingResults[$workspace->ilan_id]);
+            // Clear buffer for this workspace (both cache and in-memory)
+            $this->clearPendingBuffer($workspace->ilan_id);
 
             return [
                 'handler' => self::class,
@@ -138,12 +179,13 @@ class PropertyScoreAgent implements HermesHandlerContract
         } catch (\Throwable $e) {
             $execLog->markFailed($e->getMessage());
             Log::error('[PropertyScoreAgent] Failed', ['ilan_id' => $ilanId, 'error' => $e->getMessage()]);
+
             return ['handler' => self::class, 'ilan_id' => $ilanId, 'error' => $e->getMessage(), 'duration_ms' => $this->elapsed($startTime)];
         }
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function isAsync(): bool
     {
@@ -255,8 +297,9 @@ class PropertyScoreAgent implements HermesHandlerContract
             return PortfolioDriveWorkspace::find($workspaceId);
         }
         if ($ilanId) {
-            return PortfolioDriveWorkspace::forPortfolio($ilanId)->first();
+            return PortfolioDriveWorkspace::forPortfolio($ilanId)->orderBy('id')->first();
         }
+
         return null;
     }
 
@@ -272,5 +315,66 @@ class PropertyScoreAgent implements HermesHandlerContract
     private function elapsed(float $startTime): float
     {
         return round((microtime(true) - $startTime) * 1000, 2);
+    }
+
+    // ─── Buffer Cache Management (H-05) ─────────────────────────────────
+
+    /**
+     * Retrieve pending buffer from memory, cache, or workspace completion flags.
+     *
+     * @return array<string, array>
+     */
+    private function getPendingBuffer(PortfolioDriveWorkspace $workspace): array
+    {
+        $ilanId = (int) $workspace->ilan_id;
+        if (isset($this->pendingResults[$ilanId])) {
+            return $this->pendingResults[$ilanId];
+        }
+
+        $cached = Cache::get("hermes:property_score:pending:{$ilanId}");
+        if (is_array($cached)) {
+            $this->pendingResults[$ilanId] = $cached;
+
+            return $cached;
+        }
+
+        $buffer = [];
+        $flags = $workspace->ai_completion_flags ?? [];
+
+        if (! empty($flags['photo_agent']['result'])) {
+            $buffer['photo'] = array_merge($flags['photo_agent']['result'], [
+                'chain_id' => $flags['photo_agent']['result']['chain_id'] ?? null,
+            ]);
+        }
+
+        if (! empty($flags['description_agent']['result'])) {
+            $buffer['description'] = array_merge($flags['description_agent']['result'], [
+                'chain_id' => $flags['description_agent']['result']['chain_id'] ?? null,
+            ]);
+        }
+
+        $this->pendingResults[$ilanId] = $buffer;
+
+        return $buffer;
+    }
+
+    /**
+     * Persist buffer to memory and Cache with 24-hour TTL.
+     *
+     * @param  array<string, array>  $buffer
+     */
+    private function savePendingBuffer(int $ilanId, array $buffer): void
+    {
+        $this->pendingResults[$ilanId] = $buffer;
+        Cache::put("hermes:property_score:pending:{$ilanId}", $buffer, now()->addDay());
+    }
+
+    /**
+     * Clear buffer from memory and Cache after score calculation.
+     */
+    private function clearPendingBuffer(int $ilanId): void
+    {
+        unset($this->pendingResults[$ilanId]);
+        Cache::forget("hermes:property_score:pending:{$ilanId}");
     }
 }

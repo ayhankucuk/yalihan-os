@@ -3,6 +3,7 @@
 namespace Tests\Unit\Hermes;
 
 use App\Contracts\Hermes\HermesEventContract;
+use App\Domain\Workspace\Enums\WorkspaceState;
 use App\Events\Workforce\DescriptionCompleted;
 use App\Events\Workforce\PhotoAnalysisCompleted;
 use App\Events\Workforce\PropertyScoreCalculated;
@@ -20,8 +21,8 @@ use App\Services\Hermes\Handlers\Workforce\PublishDecisionAgent;
 use App\Services\Hermes\HermesDispatcher;
 use App\Services\Hermes\HermesRegistry;
 use App\Services\Hermes\HermesService;
-use App\Domain\Workspace\Enums\WorkspaceState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 /**
@@ -38,13 +39,15 @@ class WorkforceAgentsTest extends TestCase
     use RefreshDatabase;
 
     private HermesRegistry $registry;
+
     private HermesDispatcher $dispatcher;
+
     private HermesService $hermes;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->registry = new HermesRegistry();
+        $this->registry = new HermesRegistry;
         $this->dispatcher = new HermesDispatcher($this->registry);
         $this->hermes = new HermesService($this->dispatcher);
     }
@@ -53,13 +56,13 @@ class WorkforceAgentsTest extends TestCase
 
     public function test_photo_agent_subscribes_to_workspace_created_event(): void
     {
-        $agent = new PhotoAgent(app(\App\Services\Hermes\HermesService::class));
+        $agent = new PhotoAgent(app(HermesService::class));
         $this->assertEquals(['workforce.workspace.created'], $agent->subscribesTo());
     }
 
     public function test_photo_agent_is_sync(): void
     {
-        $agent = new PhotoAgent(app(\App\Services\Hermes\HermesService::class));
+        $agent = new PhotoAgent(app(HermesService::class));
         $this->assertFalse($agent->isAsync());
     }
 
@@ -136,7 +139,7 @@ class WorkforceAgentsTest extends TestCase
 
     public function test_description_agent_subscribes_to_photo_analysis_completed(): void
     {
-        $agent = new DescriptionAgent(app(\App\Services\Hermes\HermesService::class));
+        $agent = new DescriptionAgent(app(HermesService::class));
         $this->assertEquals(['workforce.photo_analysis.completed'], $agent->subscribesTo());
     }
 
@@ -186,7 +189,7 @@ class WorkforceAgentsTest extends TestCase
         $results = $this->dispatcher->dispatch($event);
         $suggestions = $results[DescriptionAgent::class]['result']['suggestions'] ?? [];
 
-        $claritySuggestions = array_filter($suggestions, fn($s) => ($s['type'] ?? '') === 'clarity');
+        $claritySuggestions = array_filter($suggestions, fn ($s) => ($s['type'] ?? '') === 'clarity');
         $this->assertNotEmpty($claritySuggestions);
     }
 
@@ -194,7 +197,7 @@ class WorkforceAgentsTest extends TestCase
 
     public function test_property_score_agent_subscribes_to_both_events(): void
     {
-        $agent = new PropertyScoreAgent(app(\App\Services\Hermes\HermesService::class));
+        $agent = new PropertyScoreAgent(app(HermesService::class));
         $subscribed = $agent->subscribesTo();
 
         $this->assertContains('workforce.photo_analysis.completed', $subscribed);
@@ -205,20 +208,24 @@ class WorkforceAgentsTest extends TestCase
     {
         $ilan = $this->makeIlan(baslik: 'Test İlan');
         $workspace = $this->makeWorkspace($ilan);
-        $chainId = 'test-chain-score-' . uniqid();
+        $chainId = 'test-chain-score-'.uniqid();
 
         // Track all fired event names
         $firedEvents = [];
-        $trackingHermes = new class($this->dispatcher, $firedEvents) extends HermesService {
+        $trackingHermes = new class($this->dispatcher, $firedEvents) extends HermesService
+        {
             public array $firedEvents = [];
+
             public function __construct(HermesDispatcher $dispatcher, array &$fired)
             {
                 parent::__construct($dispatcher);
                 $this->firedEvents = &$fired;
             }
-            public function receive(HermesEventContract $event): \App\Models\Hermes\HermesEventLog
+
+            public function receive(HermesEventContract $event): HermesEventLog
             {
                 $this->firedEvents[] = $event->eventName();
+
                 return parent::receive($event);
             }
         };
@@ -268,11 +275,79 @@ class WorkforceAgentsTest extends TestCase
         $this->assertContains('workforce.property_score.calculated', $firedEvents);
     }
 
+    public function test_property_score_agent_persists_cross_event_buffer_across_instances(): void
+    {
+        $ilan = $this->makeIlan(baslik: 'Cross-Instance Buffer Test');
+        $workspace = $this->makeWorkspace($ilan);
+        $chainId = 'buffer-chain-'.uniqid();
+
+        // Clear any previous cache
+        Cache::forget("hermes:property_score:pending:{$ilan->id}");
+
+        // Instance 1: receives PhotoAnalysisCompleted only
+        $agentInstance1 = new PropertyScoreAgent($this->hermes);
+        $event1 = new PhotoAnalysisCompleted($workspace, [
+            'quality_score' => 0.88,
+            'recommendations' => [],
+            'suggested_photo_count' => 8,
+        ], [
+            'ilan_id' => $ilan->id,
+            'ilan_baslik' => $ilan->baslik,
+            'chain_id' => $chainId,
+        ]);
+
+        $res1 = $agentInstance1->handle($event1);
+
+        // Instance 1 buffers and waits for description
+        $this->assertTrue($res1['buffered'] ?? false);
+        $this->assertSame('description', $res1['waiting_for'] ?? null);
+
+        // Verify cache holds the buffered photo data (H-05)
+        $cachedBuffer = Cache::get("hermes:property_score:pending:{$ilan->id}");
+        $this->assertIsArray($cachedBuffer);
+        $this->assertArrayHasKey('photo', $cachedBuffer);
+        $this->assertEquals(0.88, $cachedBuffer['photo']['quality_score']);
+        $this->assertSame($chainId, $cachedBuffer['photo']['chain_id']);
+
+        // Instance 2: completely fresh instance with empty in-memory state
+        $agentInstance2 = new PropertyScoreAgent($this->hermes);
+        $event2 = new DescriptionCompleted($workspace, [
+            'title_score' => 0.92,
+            'suggestions' => [],
+            'improved_title' => 'Gelişmiş Başlık',
+            'keywords' => ['lüks', 'villa'],
+        ], [
+            'ilan_id' => $ilan->id,
+            'ilan_baslik' => $ilan->baslik,
+            'chain_id' => $chainId,
+        ]);
+
+        $res2 = $agentInstance2->handle($event2);
+
+        // Instance 2 reads photo from Cache, combines with description, and computes score
+        $this->assertArrayHasKey('overall_score', $res2);
+        $this->assertGreaterThan(0.8, $res2['overall_score']);
+        $this->assertSame('premium_plus', $res2['quality_tier']);
+
+        // Cache must be cleared after successful composite calculation
+        $this->assertNull(Cache::get("hermes:property_score:pending:{$ilan->id}"));
+
+        // Verify execution log recorded with propagated chain_id
+        $scoreLog = WorkforceExecutionLog::where('ilan_id', $ilan->id)
+            ->where('agent_name', 'property_score_agent')
+            ->where('chain_id', $chainId)
+            ->where('status', WorkforceExecutionLog::STATUS_COMPLETED)
+            ->first();
+
+        $this->assertNotNull($scoreLog);
+        $this->assertSame($chainId, $scoreLog->chain_id);
+    }
+
     // ─── PublishDecisionAgent Unit Tests ───────────────────────────────────
 
     public function test_publish_decision_agent_subscribes_to_property_score_calculated(): void
     {
-        $agent = new PublishDecisionAgent(app(\App\Services\Hermes\HermesService::class));
+        $agent = new PublishDecisionAgent(app(HermesService::class));
         $this->assertEquals(['workforce.property_score.calculated'], $agent->subscribesTo());
     }
 
@@ -404,7 +479,7 @@ class WorkforceAgentsTest extends TestCase
 
     public function test_notification_agent_subscribes_to_publishing_decision_ready(): void
     {
-        $agent = new NotificationAgent(app(\App\Services\Hermes\HermesService::class));
+        $agent = new NotificationAgent(app(HermesService::class));
         // H-03 fix verified: subscribes to workforce.publishing.decision_ready
         $this->assertEquals(['workforce.publishing.decision_ready'], $agent->subscribesTo());
     }
@@ -485,20 +560,24 @@ class WorkforceAgentsTest extends TestCase
     {
         $ilan = $this->makeIlan(baslik: 'Satılık Lüks Villa Deniz Manzaralı Havuzlu');
         $workspace = $this->makeWorkspace($ilan);
-        $chainId = 'e2e-chain-' . uniqid();
+        $chainId = 'e2e-chain-'.uniqid();
 
         // Track all events fired within this chain
         $firedEvents = [];
-        $trackingHermes = new class($this->dispatcher, $firedEvents) extends HermesService {
+        $trackingHermes = new class($this->dispatcher, $firedEvents) extends HermesService
+        {
             public array $firedEvents = [];
+
             public function __construct(HermesDispatcher $dispatcher, array &$fired)
             {
                 parent::__construct($dispatcher);
                 $this->firedEvents = &$fired;
             }
-            public function receive(HermesEventContract $event): \App\Models\Hermes\HermesEventLog
+
+            public function receive(HermesEventContract $event): HermesEventLog
             {
                 $this->firedEvents[] = $event->eventName();
+
                 return parent::receive($event);
             }
         };
@@ -545,6 +624,76 @@ class WorkforceAgentsTest extends TestCase
                 "{$log->agent_name} should be completed"
             );
         }
+    }
+
+    public function test_workforce_chain_e2e_full_unbroken_five_agent_traceability(): void
+    {
+        $ilan = $this->makeIlan(baslik: 'Satılık Lüks Villa Deniz Manzaralı Havuzlu');
+        $workspace = $this->makeWorkspace($ilan);
+        $chainId = 'full-traceability-'.uniqid();
+
+        // Clear any previous cache
+        Cache::forget("hermes:property_score:pending:{$ilan->id}");
+
+        $firedEvents = [];
+        $trackingHermes = new class($this->dispatcher, $firedEvents) extends HermesService
+        {
+            public array $firedEvents = [];
+
+            public function __construct(HermesDispatcher $dispatcher, array &$fired)
+            {
+                parent::__construct($dispatcher);
+                $this->firedEvents = &$fired;
+            }
+
+            public function receive(HermesEventContract $event): HermesEventLog
+            {
+                $this->firedEvents[] = $event->eventName();
+
+                return parent::receive($event);
+            }
+        };
+
+        // Register all 5 workforce agents in pipeline order
+        $this->registry->register(new PhotoAgent($trackingHermes));
+        $this->registry->register(new DescriptionAgent($trackingHermes));
+        $this->registry->register(new PropertyScoreAgent($trackingHermes));
+        $this->registry->register(new PublishDecisionAgent($trackingHermes));
+        $this->registry->register(new NotificationAgent($trackingHermes));
+
+        // Trigger chain from workspace creation
+        $trackingHermes->receive(new PropertyWorkspaceCreated($workspace, [
+            'ilan_id' => $ilan->id,
+            'ilan_baslik' => $ilan->baslik,
+            'chain_id' => $chainId,
+        ]));
+
+        // Assert all 5 events fired throughout the chain
+        $this->assertContains('workforce.workspace.created', $firedEvents);
+        $this->assertContains('workforce.photo_analysis.completed', $firedEvents);
+        $this->assertContains('workforce.description.completed', $firedEvents);
+        $this->assertContains('workforce.property_score.calculated', $firedEvents);
+        $this->assertContains('workforce.publishing.decision_ready', $firedEvents);
+
+        // Fetch execution logs for this chain
+        $logs = WorkforceExecutionLog::where('chain_id', $chainId)->orderBy('event_chain_step')->get();
+        $this->assertGreaterThanOrEqual(4, $logs->count());
+
+        // Verify chain complete helper returns true
+        $this->assertTrue(WorkforceExecutionLog::isChainComplete($chainId));
+
+        // Verify every log in chain shares the EXACT same chain_id and is completed
+        foreach ($logs as $log) {
+            $this->assertSame($chainId, $log->chain_id);
+            $this->assertEquals(WorkforceExecutionLog::STATUS_COMPLETED, $log->status);
+        }
+
+        // Verify workspace advanced through lifecycle
+        $refreshedWorkspace = $workspace->refresh();
+        $this->assertTrue(in_array($refreshedWorkspace->lifecycle_state, [
+            WorkspaceState::QUALITY_CHECKED,
+            WorkspaceState::READY_FOR_PUBLISH,
+        ]));
     }
 
     // ─── Tenant Isolation Test ───────────────────────────────────────────
@@ -596,7 +745,7 @@ class WorkforceAgentsTest extends TestCase
 
     private function makeIlan(string $baslik = 'Test İlan', int $tenantId = 1): Ilan
     {
-        $ilan = new Ilan();
+        $ilan = new Ilan;
         $ilan->id = (int) (Ilan::max('id') ?? 0) + 1;
         $ilan->baslik = $baslik;
         $ilan->tenant_id = $tenantId;
@@ -615,7 +764,7 @@ class WorkforceAgentsTest extends TestCase
             'lifecycle_state' => WorkspaceState::WORKSPACE_CREATED,
             'workspace_status' => 'ready',
             'root_folder_name' => $ilan->baslik,
-            'portfolio_no' => 'WS-' . str_pad((string) $ilan->id, 6, '0', STR_PAD_LEFT),
+            'portfolio_no' => 'WS-'.str_pad((string) $ilan->id, 6, '0', STR_PAD_LEFT),
         ]);
     }
 }

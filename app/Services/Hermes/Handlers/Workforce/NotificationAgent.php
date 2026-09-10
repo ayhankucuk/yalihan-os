@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
 class NotificationAgent implements HermesHandlerContract
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function subscribesTo(): array
     {
@@ -30,7 +30,7 @@ class NotificationAgent implements HermesHandlerContract
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function handle(HermesEventContract $event): array
     {
@@ -49,7 +49,7 @@ class NotificationAgent implements HermesHandlerContract
             'agent_name' => 'notification_agent',
             'agent_class' => self::class,
             'event_received' => $event->eventName(),
-            'event_chain_step' => 3,
+            'event_chain_step' => 5,
             'input_payload' => $payload,
             'output_payload' => [],
             'status' => WorkforceExecutionLog::STATUS_RUNNING,
@@ -128,7 +128,7 @@ class NotificationAgent implements HermesHandlerContract
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function isAsync(): bool
     {
@@ -156,7 +156,7 @@ class NotificationAgent implements HermesHandlerContract
         $title = "{$emoji} AI Zincir Tamamlandı — {$ilanBaslik}";
         $body = implode("\n", array_filter([
             "Portföy ID: {$ilanId}",
-            "Segment: " . ucfirst($tier),
+            'Segment: '.ucfirst($tier),
             "Zincir ID: {$chainId}",
             $agentsTriggered ? 'Tüm ajanlar tetiklendi: Fotoğraf, Açıklama, Bildirim' : null,
             '',

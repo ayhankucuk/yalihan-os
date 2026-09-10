@@ -1,5 +1,33 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 169 — 2026-09-11 | Priority 2 — Hermes Workforce Güvenilirliği & H-05 Persistent Buffer Tamamlandı ✅
+
+**Kapsam:** Hermes AI Workforce pipeline güvenilirliğinin sertifikasyonu (Priority 2): H-05 borcunun kapatılması (PropertyScoreAgent persistent Cache buffer), chain ID propagasyonunun 5 ajan boyunca kesintisiz aktarımı, cross-instance buffer izolasyon testi ve 5 ajanlı unbroken E2E izlenebilirlik testi.
+
+#### 1. H-05 Borcu Çözüldü (`app/Services/Hermes/Handlers/Workforce/PropertyScoreAgent.php`) ✅
+- **Cache Backing (24h TTL):** `Cache::put("hermes:property_score:pending:{$ilanId}", $buffer, now()->addDay())` ile cross-event buffer kalıcı hale getirildi; worker crash veya queue dağıtımlarında in-memory kayıp riski ortadan kaldırıldı.
+- **Çift Yönlü Fallback:** `$this->pendingResults` (hızlı bellek) -> `Cache::get` -> `$workspace->ai_completion_flags` üç kademeli okuma zinciri kuruldu.
+- **Erken Emit Engellendi:** Hem `photo` hem de `description` analizi tamamlanmadan `PropertyScoreCalculated` tetiklenmesi önlendi; eksik analiz durumunda execution log `['buffered' => true, 'waiting_for' => ...]` ile güvenli bekleme durumuna alındı.
+- **Hesaplama Sonrası Temizlik:** Kompozit skor hesaplandıktan sonra hem bellek hem de `Cache` temizlenerek bellek sızıntısı engellendi.
+- **Determinism Kuralı (Rule 5):** `loadWorkspace` sorgusuna `orderBy('id')` eklendi.
+
+#### 2. Chain ID Propagasyonu & Zincir Bütünlüğü ✅
+- **`PropertyScoreAgent`:** `emitPropertyScoreCalculated` metadata'sına `chain_id` eklendi.
+- **`PublishDecisionAgent` (`app/Services/Hermes/Handlers/Workforce/PublishDecisionAgent.php`):** Event payload'undan `chain_id` alınarak `emitPublishingDecisionReady` metadata'sına aktarıldı.
+- **`NotificationAgent` (`app/Services/Hermes/Handlers/Workforce/NotificationAgent.php`):** `event_chain_step` değeri hatalı `3` yerine doğru sıra olan `5`'e güncellendi.
+- Böylece zincirin başından sonuna kadar tüm 5 ajan (`photo_agent`, `description_agent`, `property_score_agent`, `publish_decision_agent`, `notification_agent`) aynı `chain_id` ile `WorkforceExecutionLog`'a yazıldı.
+
+#### 3. Test Paketi & Doğrulama (`tests/Unit/Hermes/WorkforceAgentsTest.php`) ✅
+- `test_property_score_agent_persists_cross_event_buffer_across_instances`: İki farklı ajan örneği arasında Cache persistence ve temizliği doğrulandı (PASS).
+- `test_workforce_chain_e2e_full_unbroken_five_agent_traceability`: Workspace oluşturulmasından bildirime kadar 5 ajanlık zincirin tam trace'i, aynı chain ID ve `WorkforceExecutionLog::isChainComplete = true` durumu doğrulandı (PASS).
+- **Hermes Test Paketi:** **108/108 PASS (461 assertions) ✅**
+
+#### 4. Kalite Kapıları & Pre-commit Güvenliği ✅
+- `./scripts/tools/antigravity-full-gate.sh --quick`: **4/4 GATES PASSED**
+- `vendor/bin/pint --test`: **PASSED (0 lint error)**
+
+---
+
 ## Oturum 168 — 2026-09-11 | Priority 6 — Kategori & Özellik Şablon Matrisi Tamamlandı ✅
 
 **Kapsam:** Wizard Step 2 dinamik özellik çözümleme motorunda Yazlık Kiralama (4), Turistik Tesisler (5), Projeden Satış (6) ve Arsa Kat Karşılığı (3, lt=3) kategorilerinin 5 genel fallback alana düşme kusurunun giderilmesi; canonical `features`, `feature_categories` ve `feature_assignments` üzerinden matrisin tamamlanması.

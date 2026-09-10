@@ -340,3 +340,21 @@
 - `CiGuardRawDbWriteTest` — ✅ ÇÖZÜLDÜ (7/7 PASS — 2026-09-06 Oturum 157 — guard whitelist: OptionARepairCommand + SeedFeatureAssignmentsCommand eklendi)
 - `DemandMatchingEngineTest` — ✅ ÇÖZÜLDÜ (4/4 PASS — 2026-09-06 Oturum 157 — INTENTIONAL_CROSS_TENANT: `Ilan::withoutTenant()` bypass eklendi)
 > Detaylar ve teşhisler için bkz: [docs/architecture/codex-handoff-2026-09-04.md](file:///Users/macbookpro/repos/yalihan-os/docs/architecture/codex-handoff-2026-09-04.md)
+
+### 10. Hermes AI Workforce Technical Debt (H-01 — H-10)
+
+Kaynak: `audits/HERMES_DEEP_AUDIT_REPORT.md` | Son Güncelleme: 2026-09-11 (Oturum 169 — Priority 2)
+
+| Borç ID | Tanım | Önem | Durum | Çözüm / Detay |
+|---------|-------|------|-------|----------------|
+| **H-01** | PropertyScoreAgent PSR-4 namespace/dizin uyuşmazlığı | 🔴 CRITICAL | ✅ ÇÖZÜLDÜ | `App\Services\Hermes\Handlers\Workforce` dizinine taşındı (2026-08-28) |
+| **H-02** | DriveAgent constructor 3-param binding uyuşmazlığı | 🔴 CRITICAL | ✅ ÇÖZÜLDÜ | `HermesServiceProvider` singleton factory ile bağlandı |
+| **H-03** | NotificationAgent event uyuşmazlığı | 🔴 CRITICAL | ✅ ÇÖZÜLDÜ | `publishing.decision_ready` dinlemesi sağlandı |
+| **H-04** | PortfolioAgent ölü kod (Sprint 4.3 kalıntısı) | 🟡 MEDIUM | ✅ ÇÖZÜLDÜ | Kod ve kayıtlar temizlendi |
+| **H-05** | PropertyScoreAgent in-memory cross-event buffer veri kaybı riski | 🟡 MEDIUM | ✅ ÇÖZÜLDÜ (Oturum 169) | `Cache` ile 24h TTL kalıcı buffer eklendi, `chain_id` 5 ajana yayıldı, cross-instance testleri PASS |
+| **H-06** | HermesReplayService event reconstruction kırılganlığı | 🟡 MEDIUM | ✅ ÇÖZÜLDÜ | FACTORY map ile güçlendirildi |
+| **H-07** | DriveAgent synchronous execution (performans) | 🟢 LOW | ⏳ AÇIK (Non-blocking) | Google Drive API gecikmelerinde queue'ya geçiş planlanacak |
+| **H-08** | Workforce ajanları bağımsız unit test eksikliği | 🔴 CRITICAL | ✅ ÇÖZÜLDÜ | `WorkforceAgentsTest.php` bağımsız testleri eklendi |
+| **H-09** | 5 ajanlı uçtan uca zincir izlenebilirlik testi eksikliği | 🔴 CRITICAL | ✅ ÇÖZÜLDÜ (Oturum 169) | `test_workforce_chain_e2e_full_unbroken_five_agent_traceability` (108 assertions PASS) |
+| **H-10** | TelegramNotificationHandler stub (dış servis bağlantısı) | 🟢 LOW | ⏳ AÇIK (Non-blocking) | Dış bildirim kanalları aktifleştiğinde ele alınacak |
+

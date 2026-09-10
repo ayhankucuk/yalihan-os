@@ -5,6 +5,7 @@ namespace App\Services\Ups;
 use App\Models\IlanKategori;
 use App\Models\YayinTipi;
 use App\Models\YayinTipiSablonu;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -41,14 +42,14 @@ class SlugMappingService
      * @see §1.4 V1 Slug → Canonical TypeSlug Lookup
      */
     private const V1_TO_CANONICAL = [
-        'satilik'          => 'satilik',
-        'kiralik'          => 'kiralik',
-        'gunluk-kiralik'   => 'gunluk',
+        'satilik' => 'satilik',
+        'kiralik' => 'kiralik',
+        'gunluk-kiralik' => 'gunluk',
         'haftalik-kiralik' => 'haftalik',
-        'aylik-kiralik'    => 'aylik',
+        'aylik-kiralik' => 'aylik',
         'sezonluk-kiralik' => 'sezonluk',
-        'devren'           => 'devren',
-        'kat-karsiligi'    => 'kat-karsiligi',
+        'devren' => 'devren',
+        'kat-karsiligi' => 'kat-karsiligi',
     ];
 
     /**
@@ -89,18 +90,19 @@ class SlugMappingService
     /**
      * Map a V1 yayin_tipleri.slug to the canonical typeSlug.
      *
-     * @param string $v1Slug The slug from the yayin_tipleri table
+     * @param  string  $v1Slug  The slug from the yayin_tipleri table
      * @return string The canonical short typeSlug
+     *
      * @throws InvalidArgumentException If the V1 slug is not in the lookup table
      */
     public function v1SlugToCanonical(string $v1Slug): string
     {
         $v1Slug = trim($v1Slug);
 
-        if (!isset(self::V1_TO_CANONICAL[$v1Slug])) {
+        if (! isset(self::V1_TO_CANONICAL[$v1Slug])) {
             throw new InvalidArgumentException(
                 "SlugMappingService: Unknown V1 yayin_tipleri slug: '{$v1Slug}'. "
-                . 'Expected one of: ' . implode(', ', array_keys(self::V1_TO_CANONICAL))
+                .'Expected one of: '.implode(', ', array_keys(self::V1_TO_CANONICAL))
             );
         }
 
@@ -110,8 +112,9 @@ class SlugMappingService
     /**
      * Look up the V1 yayin_tipleri.slug by listing_type_id.
      *
-     * @param int $listingTypeId The legacy listing_type_id
+     * @param  int  $listingTypeId  The legacy listing_type_id
      * @return string The V1 yayin_tipleri.slug
+     *
      * @throws InvalidArgumentException If listing_type_id is not mapped
      */
     public function listingTypeIdToV1Slug(int $listingTypeId): string
@@ -121,16 +124,16 @@ class SlugMappingService
         if ($yayinTipiId === null) {
             throw new InvalidArgumentException(
                 "SlugMappingService: Unknown listing_type_id: {$listingTypeId}. "
-                . 'Expected one of: ' . implode(', ', array_keys(self::LISTING_TYPE_TO_YAYIN_TIPI_ID))
+                .'Expected one of: '.implode(', ', array_keys(self::LISTING_TYPE_TO_YAYIN_TIPI_ID))
             );
         }
 
         $yayinTipi = YayinTipi::find($yayinTipiId);
 
-        if (!$yayinTipi) {
+        if (! $yayinTipi) {
             throw new RuntimeException(
                 "SlugMappingService: yayin_tipleri record not found for id={$yayinTipiId} "
-                . "(listing_type_id={$listingTypeId}). The yayin_tipleri table may need seeding."
+                ."(listing_type_id={$listingTypeId}). The yayin_tipleri table may need seeding."
             );
         }
 
@@ -146,9 +149,10 @@ class SlugMappingService
      *   template_slug = "{kategori.slug}-{typeSlug}"
      *   YayinTipiSablonu::where('slug', template_slug)
      *
-     * @param int $subCategoryId The ilan_kategorileri.id for the sub-category
-     * @param int $listingTypeId The legacy listing_type_id
+     * @param  int  $subCategoryId  The ilan_kategorileri.id for the sub-category
+     * @param  int  $listingTypeId  The legacy listing_type_id
      * @return YayinTipiSablonu The resolved template
+     *
      * @throws InvalidArgumentException If any mapping step fails
      * @throws RuntimeException If the template cannot be found
      */
@@ -162,24 +166,24 @@ class SlugMappingService
 
         // 3. sub_category_id → kategori slug
         $kategori = IlanKategori::find($subCategoryId);
-        if (!$kategori) {
+        if (! $kategori) {
             throw new RuntimeException(
                 "SlugMappingService: ilan_kategorileri record not found for id={$subCategoryId}."
             );
         }
 
         // 4. Construct template slug
-        $templateSlug = $kategori->slug . '-' . $typeSlug;
+        $templateSlug = $kategori->slug.'-'.$typeSlug;
 
         // 5. Resolve template
         $template = YayinTipiSablonu::where('slug', $templateSlug)->first();
 
-        if (!$template) {
+        if (! $template) {
             throw new RuntimeException(
                 "SlugMappingService: YayinTipiSablonu not found for slug='{$templateSlug}' "
-                . "(kategori_slug='{$kategori->slug}', typeSlug='{$typeSlug}', "
-                . "listing_type_id={$listingTypeId}, sub_category_id={$subCategoryId}). "
-                . 'The YayinTipiSeeder may need to be run to provision templates.'
+                ."(kategori_slug='{$kategori->slug}', typeSlug='{$typeSlug}', "
+                ."listing_type_id={$listingTypeId}, sub_category_id={$subCategoryId}). "
+                .'The YayinTipiSeeder may need to be run to provision templates.'
             );
         }
 
@@ -191,9 +195,10 @@ class SlugMappingService
      *
      * Alternative entry point using kategori slug directly instead of ID.
      *
-     * @param string $kategoriSlug The ilan_kategorileri.slug
-     * @param int $listingTypeId The legacy listing_type_id
+     * @param  string  $kategoriSlug  The ilan_kategorileri.slug
+     * @param  int  $listingTypeId  The legacy listing_type_id
      * @return YayinTipiSablonu The resolved template
+     *
      * @throws InvalidArgumentException If any mapping step fails
      * @throws RuntimeException If the template cannot be found
      */
@@ -206,17 +211,17 @@ class SlugMappingService
         $typeSlug = $this->v1SlugToCanonical($v1Slug);
 
         // 3. Construct template slug
-        $templateSlug = $kategoriSlug . '-' . $typeSlug;
+        $templateSlug = $kategoriSlug.'-'.$typeSlug;
 
         // 4. Resolve template
         $template = YayinTipiSablonu::where('slug', $templateSlug)->first();
 
-        if (!$template) {
+        if (! $template) {
             throw new RuntimeException(
                 "SlugMappingService: YayinTipiSablonu not found for slug='{$templateSlug}' "
-                . "(kategori_slug='{$kategoriSlug}', typeSlug='{$typeSlug}', "
-                . "listing_type_id={$listingTypeId}). "
-                . 'The YayinTipiSeeder may need to be run to provision templates.'
+                ."(kategori_slug='{$kategoriSlug}', typeSlug='{$typeSlug}', "
+                ."listing_type_id={$listingTypeId}). "
+                .'The YayinTipiSeeder may need to be run to provision templates.'
             );
         }
 
@@ -229,8 +234,6 @@ class SlugMappingService
      * Returns an array describing each mapping step for a given
      * sub_category_id + listing_type_id pair.
      *
-     * @param int $subCategoryId
-     * @param int $listingTypeId
      * @return array Mapping details
      */
     public function getMappingReport(int $subCategoryId, int $listingTypeId): array
@@ -248,7 +251,7 @@ class SlugMappingService
             $kategori = IlanKategori::find($subCategoryId);
             $report['kategori_slug'] = $kategori?->slug;
             $report['template_slug'] = $report['kategori_slug']
-                ? $report['kategori_slug'] . '-' . $report['canonical_type_slug']
+                ? $report['kategori_slug'].'-'.$report['canonical_type_slug']
                 : null;
 
             $report['template_id'] = null;
@@ -259,6 +262,7 @@ class SlugMappingService
 
             $report['resolved'] = $report['template_id'] !== null;
         } catch (Throwable $e) {
+            Log::warning('[SlugMappingService] Dry-run resolution error: '.$e->getMessage());
             $report['error'] = $e->getMessage();
             $report['resolved'] = false;
         }
