@@ -2448,7 +2448,8 @@ CREATE TABLE `ilceler` (
   PRIMARY KEY (`id`),
   KEY `ilceler_il_id_ilce_adi_index` (`il_id`,`ilce_adi`),
   KEY `ilceler_il_id_aktiflik_durumu_index` (`il_id`,`aktiflik_durumu`),
-  KEY `ilceler_api_id_index` (`api_id`)
+  KEY `ilceler_api_id_index` (`api_id`),
+  CONSTRAINT `ilceler_il_id_foreign` FOREIGN KEY (`il_id`) REFERENCES `iller` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `iletim_kayitlari`;
