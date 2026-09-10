@@ -721,3 +721,32 @@ TC-GT-06 — Full Golden Thread: Step 1→5 + native form submit redirect (PASS 
 - DEBT-03: `tab=drafts` ile wizard ilanları görünür
 - Map bridge kaynağı: `831f4353` commit — Antigravity worktree
 - Kanıt seviyesi: `BROWSER_VERIFIED` — 2026-09-09
+
+## Production Deploy — 2026-09-10 | RC2 (0f248940)
+
+**Deploy:** `scripts/rc2-production-deploy.sh` → Aşama 0–7 TAMAMLANDI
+**Commit:** `0f2489402d5b7882340bd4b485fba92b3a74f06b`
+**Backup:** `/opt/yalihan2026/backups/backup_pre_rc2_20260910_083429.sql` (464K)
+**Log:** `/var/log/rc2-deploy-20260910_083429.log`
+
+Aşama sonuçları:
+- Aşama 0 (DB backup): ✅ 464K SQL dump
+- Aşama 1 (Git checkout): ✅ `release-candidate/RC2 @ 0f248940`
+- Aşama 2 (Docker rebuild): ✅ yalihanai-app-v2 + yalihanai-nginx-v2
+- Aşama 3 (Container restart): ✅ 3 container healthy
+- Aşama 4 (Migration): ✅ 9 migration RAN (2026_09_01..09_09)
+- Aşama 5 (Cache clear): ✅ events/views/cache/route/config/compiled
+- Aşama 6 (Verification):
+  - HTTP root: **200 OK**
+  - TenantScope NULL: ilanlar=0, users=0 (fail-closed ✓)
+  - CQRS: listing_search/listings/talep ✓; buyer_interest MISSING tenant_id (bypassable)
+  - 2026_09 migration: TÜM RAN
+- Aşama 7 (PRODUCTION_VERIFIED): ✅
+
+Yerel + remote RC2 eşit: `origin/release-candidate/RC2 = 0f248940`
+Drift Guard: 10 PASS / 1 WARN / 0 FAIL
+Ilan model: scopeAvailable aktiflik_durumu, ghost field temizliği ✓
+EnvDriftGuard UTF-8 regex: firsat_mühr false-positive çözüldü ✓
+
+Kanıt seviyesi: `PRODUCTION_VERIFIED` — 2026-09-10
+Deploy operator: `root@157.180.116.63`
