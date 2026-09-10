@@ -224,3 +224,11 @@ memory/ydl/snapshots/
 
 # MCP audit log (auto-generated per session)
 .laravel-mcp-audit.jsonl
+
+# Agent scratch & one-off test scripts (KRONIK-1/3 Guard)
+/scripts/tools/test-*.php
+/scripts/tools/temp-*.php
+/scripts/tools/check-*.php
+/scripts/tools/sync-parity-*.php
+/scratch/
+

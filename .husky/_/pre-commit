@@ -1,11 +1,13 @@
 #!/bin/bash
 # ============================================================
-# YALIHAN OS — Husky Pre-Commit Hook (Thin Delegator)
+# YALIHAN OS — Husky Pre-Commit Hook (Iron Gate Delegator)
 # File: .husky/_/pre-commit
 # Active hook (core.hooksPath = .husky/_)
 # Delegation targets:
-#   1. scripts/tools/secret-scan.sh --staged (BACKLOG-1)
-#   2. scripts/tools/conflict-guard.sh --staged (BACKLOG-2)
+#   1. scripts/tools/secret-scan.sh --staged (BACKLOG-1: Secret Scan)
+#   2. scripts/tools/conflict-guard.sh --staged (BACKLOG-2: Hotspot/Branch Conflict)
+#   3. scripts/tools/schema-parity-guard.sh (KRONIK-1: SSOT Parity & Ghost Fields)
+#   4. scripts/tools/antigravity-preflight.sh (SAB Constitution: 10 Golden Rules)
 # ============================================================
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo '.')"
 COMMON_DIR="$(git rev-parse --git-common-dir 2>/dev/null || echo '')"
@@ -20,11 +22,28 @@ SECRET_SCAN="$REPO_ROOT/scripts/tools/secret-scan.sh"
 CONFLICT_GUARD="$REPO_ROOT/scripts/tools/conflict-guard.sh"
 [ -f "$CONFLICT_GUARD" ] || CONFLICT_GUARD="$COMMON_ROOT/scripts/tools/conflict-guard.sh"
 
+SCHEMA_GUARD="$REPO_ROOT/scripts/tools/schema-parity-guard.sh"
+[ -f "$SCHEMA_GUARD" ] || SCHEMA_GUARD="$COMMON_ROOT/scripts/tools/schema-parity-guard.sh"
+
+PREFLIGHT="$REPO_ROOT/scripts/tools/antigravity-preflight.sh"
+[ -f "$PREFLIGHT" ] || PREFLIGHT="$COMMON_ROOT/scripts/tools/antigravity-preflight.sh"
+
+# Gate 1: Secrets
 if [ -f "$SECRET_SCAN" ]; then
     "$SECRET_SCAN" --staged || exit 1
 fi
 
+# Gate 2: Hotspot / Branch conflicts
 if [ -f "$CONFLICT_GUARD" ]; then
     "$CONFLICT_GUARD" --staged || exit 1
 fi
 
+# Gate 3: Schema Parity & Ghost Field prevention
+if [ -f "$SCHEMA_GUARD" ]; then
+    "$SCHEMA_GUARD" || exit 1
+fi
+
+# Gate 4: 10 Golden Rules Preflight
+if [ -f "$PREFLIGHT" ]; then
+    "$PREFLIGHT" || exit 1
+fi
