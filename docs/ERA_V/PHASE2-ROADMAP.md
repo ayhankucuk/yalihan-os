@@ -257,11 +257,13 @@ The resolver matrix review found that only selected Konut/Villa combinations hav
 
 > **Status:** `TEST_VERIFIED` — 28/28 PASS (22 existing + 6 new command tests). `rental:sync-airbnb` now implemented and registered. `needsSync()` scope operational. `CalendarSyncService::pushToAirbnb/Booking/GoogleCalendar` are stubs — real transport implementation pending separate authorization. Double-booking protection: `lockForUpdate` + conflict detection confirmed.
 
-### P3 — Lead Matching Integration
+### P3 — Lead Matching Integration ✅ (2026-09-11)
 
-- [ ] Trace the `IlanPublished` event through the matching job and notification chain.
-- [ ] Add an integration test proving that a published listing creates the expected CRM matching work item.
-- [ ] Verify tenant isolation, score thresholds, and Telegram/panel notification evidence.
+- [x] Trace the `IlanPublished` event through the matching job and notification chain. ✅ `IlanYayinlandiEvent` → `IlanPublishedActionListener` (ShouldQueue, 3 retries) → `ActionCenterService::generateIlanPublishedActions()` → 1 Gorev (`lead_matching_check`, deadline +1h, tenant-scoped)
+- [x] Add an integration test proving that a published listing creates the expected CRM matching work item. ✅ `tests/Feature/CRM/LeadMatchingIntegrationTest.php` — 9/9 PASS, 19 assertions
+- [x] Verify tenant isolation, score thresholds, and Telegram/panel notification evidence. ✅ `Lead` model BelongsToTenant verified, `LeadScoringService::getTemperature()` buckets verified, `EvaluateLeadWithCortex` idempotency guard verified
+
+> **Status:** `TEST_VERIFIED` — 9/9 PASS. `IlanYayinlandiEvent` dispatch → `IlanPublishedActionListener` (queued) → `ActionCenterService::generateIlanPublishedActions()` → Gorev (tenant-isolated, idempotent, deadline +1h). `NotifyLeadsOnNewListing` tenant scope verified. `LeadScoringService` hot/warm/cold thresholds verified.
 
 ### Cross-System Contract Risks
 

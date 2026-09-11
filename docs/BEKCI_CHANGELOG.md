@@ -1,6 +1,28 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
-## Oturum 172 — 2026-09-11 | P1: Sidebar & Property Engine Konsolidasyonu (53/53 Rota 200 OK & 4/4 Tests PASS) ✅
+## Oturum 173 — 2026-09-11 | P2: Channel & iCal Güvenilirliği + P3: Lead Matching Integration (9/9 PASS) ✅
+
+**Kapsam:** ERA V Phase 2 Roadmap — P2 (Channel & iCal Reliability) `rental:sync-airbnb` command + `needsSync()` scope + 28/28 PASS sertifikasyonu. P3 (Lead Matching Integration) `IlanYayinlandiEvent` → listener zinciri → Action Center Gorev → tenant isolation kanıtı, 9 integration testi yazıldı.
+
+#### 1. P2 — Channel & iCal Güvenilirliği ✅ (`2badec27`)
+- `app/Console/Commands/RentalSyncAirbnbCommand.php`: `rental:sync-airbnb` artisan komutu (dry-run, --force, --ilan filtreleri) yazıldı ve `Kernel.php`'ye kaydedildi.
+- `IlanTakvimSync.php`: Eksik `needsSync()` scope eklendi (active + auto_sync + due filtresi).
+- Mevcut channel testleri: 22/22 PASS. Yeni command testleri: 6/6 PASS. Toplam: **28/28 PASS**.
+
+#### 2. P3 — Lead Matching Integration ✅
+- `IlanYayinlandiEvent` → `IlanPublishedActionListener` (ShouldQueue, 3 retry, backoff) zinciri doğrulandı.
+- `ActionCenterService::generateIlanPublishedActions()` → 1 Gorev (`lead_matching_check`, deadline +1h, tenant_id, source_event) üretiyor.
+- Idempotency: aynı ilan için çift firing → 1 Gorev oluşturuluyor.
+- `Lead` modeli `BelongsToTenant` scope ile cross-tenant izolasyonu doğrulandı.
+- `LeadScoringService::getTemperature()` buckets: hot(>=80), warm(50-79), cold(<50) doğrulandı.
+- `EvaluateLeadWithCortex` ShouldQueue implementasyonu ve yüksek güven idempotency guard doğrulandı.
+- **Test:** `tests/Feature/CRM/LeadMatchingIntegrationTest.php` — **9/9 PASS, 19 assertions**
+
+#### 3. Kalite Kapıları
+- `./scripts/tools/antigravity-full-gate.sh --quick`: **4/4 PASS**
+- Secret scan: temiz. Schema parity: değişiklik yok.
+
+
 
 **Kapsam:** ERA V Phase 2 Roadmap § New Research Findings — P1 (Sidebar and Property Engine Navigation) tamamlandı. Admin sidebar'ındaki 51 rotanın canlı denetimi yapıldı; tespit edilen HTTP 500 ve HTTP 302 hataları, SAB URL kuralı ihlalleri ve eksik şema/ikon tanımları onarıldı. Property Engine şema ve şablon araçları (10 araç) tek bir çatı altında konsolide edildi ve otomatik feature test paketi eklendi.
 
@@ -37,7 +59,10 @@
 
 ---
 
+## Oturum 172 — 2026-09-11 | P1: Sidebar & Property Engine Konsolidasyonu (53/53 Rota 200 OK & 4/4 Tests PASS) ✅
+
 ## Oturum 171 — 2026-09-11 | Priority 4 & Sprint 15 Action Center Sertifikasyonu (53/53 Tests PASS) ✅
+
 
 **Kapsam:** 
 1. **Priority 4 (Location & TKGM Reconciliation):** `ReconcileLocationsCommand` tip ve metot onarımı (`8999a588`), 7 FK yolunda orphan audit'i (0 orphan), pretend envanter doğrulaması (iller:81, ilceler:13, mahalleler:20), roadmap & decision log güncellemesi (`5c507d22`).
