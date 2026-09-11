@@ -59,4 +59,19 @@ class IlanTakvimSync extends BaseModel
     {
         return $query->where('senkron_durumu', 'active'); // context7-ignore
     }
+
+    /**
+     * Scope: records due for sync.
+     * Filters to active, auto-sync records where next_sync_at is null or in the past.
+     */
+    public function scopeNeedsSync($query)
+    {
+        return $query
+            ->where('senkron_durumu', 'active') // context7-ignore
+            ->where('auto_sync', true)
+            ->where(function ($q): void {
+                $q->whereNull('next_sync_at')
+                    ->orWhere('next_sync_at', '<=', now());
+            });
+    }
 }

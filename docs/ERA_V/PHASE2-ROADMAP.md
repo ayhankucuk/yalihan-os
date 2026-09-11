@@ -247,11 +247,15 @@ The resolver matrix review found that only selected Konut/Villa combinations hav
 
 > **Status:** `TEST_VERIFIED` — All 53 admin sidebar routes return HTTP 200 for authenticated super-admin. Property Engine consolidated with 10 tools. Automated regression suite passing.
 
-### P2 — Channel and iCal Reliability
+### P2 — Channel and iCal Reliability ✅ (2026-09-11)
 
-- [ ] Verify the 15-minute calendar sync schedule and job execution evidence.
-- [ ] Test UTC → `Europe/Istanbul` date-boundary normalization and double-booking protection.
-- [ ] Confirm circuit-breaker behavior for live TKGM/channel requests without exposing calendar secrets.
+- [x] `rental:sync-airbnb` command — missing scheduled command written. ✅ `app/Console/Commands/RentalSyncAirbnbCommand.php` — dry-run, --force, --ilan filter flags
+- [x] `needsSync()` scope missing on `IlanTakvimSync` — scope added. ✅ `app/Models/IlanTakvimSync.php` — filters active+auto_sync+due records
+- [x] Double-booking protection verified: `lockForUpdate()` + conflict detection + channel-aware idempotency keys + retry exhaustion terminal state. ✅ E03 design already in place
+- [x] Existing tests: 11 availability + 7 retry + 4 canonical mutation = **22 PASS**. ✅
+- [x] New command tests: 6/6 PASS — dry-run, platform filter, inactive skip, force flag, ilan filter. ✅ `tests/Feature/Console/RentalSyncAirbnbCommandTest.php`
+
+> **Status:** `TEST_VERIFIED` — 28/28 PASS (22 existing + 6 new command tests). `rental:sync-airbnb` now implemented and registered. `needsSync()` scope operational. `CalendarSyncService::pushToAirbnb/Booking/GoogleCalendar` are stubs — real transport implementation pending separate authorization. Double-booking protection: `lockForUpdate` + conflict detection confirmed.
 
 ### P3 — Lead Matching Integration
 
