@@ -5926,3 +5926,14 @@ Artık ajanlar bu dosyaları her açtığında otomatik olarak ilgili skill yük
 - Skill/Gate commit'i yok: ⏳ çözülmedi — sahiplik belirsiz — **ORTA**
 - Gate: ✅ çalışır, ✅ kirli worktree PASS, ⚠️ sab_integrity hâlâ 169 ihlalle FAIL
 - **ACİL KALAN**: sab_integrity 169 ihlal (169 LOW, blocking yok — ama gate FAIL veriyor)
+
+---
+
+#### Sprint B: Type Safety & Boolean Normalization (40fb9533) — 2026-09-11
+
+**Scope:** B1 — SchemaValidationRuleGenerator numeric boundary + B2 — DynamicFieldValueMapper boolean normalization
+
+- `SchemaValidationRuleGenerator::numberRules()`: extended signature to accept `$field` param; now reads BOTH `field_options` JSON AND `$field['min']`/`$field['max']` directly. `is_numeric()` guard prevents null from generating invalid rules. Fixes KAKS (`max:10`) upper-bound enforcement bypass.
+- `DynamicFieldValueMapper`: `BOOL_TRUTHY` and `BOOL_READ_TRUTHY` class constants replace duplicate inline arrays. `normalizeBoolean()` uses `strtolower()` consistently. `castValue()` now uses `BOOL_READ_TRUTHY` (was hardcoded). `'no'`/`'hayir'`/`'off'` removed from truthy set — prevented `'NO'`→`'on'` substring collision.
+- 5 new tests in `WizardSchemaStep2Test.php` — 88/88 suite PASS (501 assertions).
+- Full gate: 6/6 PASS.

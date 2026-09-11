@@ -750,3 +750,44 @@ EnvDriftGuard UTF-8 regex: firsat_mühr false-positive çözüldü ✓
 
 Kanıt seviyesi: `PRODUCTION_VERIFIED` — 2026-09-10
 Deploy operator: `root@157.180.116.63`
+
+---
+
+## Sprint B: Type Safety & Boolean Normalization — 2026-09-11 | RC2 (40fb9533)
+
+**Commit:** `40fb9533` — `release-candidate/RC2`
+**Branch:** `release-candidate/RC2`
+
+**B1 — SchemaValidationRuleGenerator numeric boundary (P1):**
+- `numberRules($options, $field)` signature extended: reads BOTH `field_options` JSON AND `$field['min']`/`$field['max']` directly
+- `is_numeric()` guard added so null/non-numeric sources are safely skipped
+- Fixes silent bypass: KAKS (`max:10`) was NOT enforcing upper bound before
+
+Files changed:
+- `app/Services/Wizard/FieldEngine/SchemaValidationRuleGenerator.php`
+  - `numberRules()`: `is_numeric()` guard + reads `$field['min']`/`$field['max']`
+  - `resolveTypeRules()`: `number` case now passes `$field` to `numberRules()`
+
+**B2 — DynamicFieldValueMapper boolean normalization hardening (P1):**
+- `BOOL_TRUTHY = ['1','true','yes','evet','on']` extracted as class constant
+- `BOOL_READ_TRUTHY = ['1','true','yes','evet','on']` for read-path `castValue()`
+- `normalizeBoolean()`: strtolower applied consistently; all values case-insensitive
+- `castValue()`: now uses `BOOL_READ_TRUTHY` (was hardcoded inline array)
+- Eliminated `'off'`/`'no'`/`'hayir'` from write truthy set to prevent substring collisions
+  (e.g., `'no'` lowercased from `'NO'` matched `'on'` substring in old array)
+
+Files changed:
+- `app/Services/Wizard/DynamicFieldValueMapper.php`
+  - `BOOL_TRUTHY` + `BOOL_READ_TRUTHY` constants
+  - `normalizeBoolean()`: uses `self::BOOL_TRUTHY`
+  - `castValue()`: uses `self::BOOL_READ_TRUTHY`
+
+**Test evidence:**
+- `tests/Feature/WizardSchemaStep2Test.php` — 5 new tests added
+- Suite: **88/88 PASS** (501 assertions, 54s)
+- New tests: `schema_rule_generator_enforces_kaks_max_boundary`, `schema_rule_generator_enforces_text_max_length_when_configured`, `normalize_value_rejects_non_numeric_for_number_type`, `normalize_boolean_covers_all_truthy_and_falsy_labels`, `cast_boolean_values_to_correct_php_type_on_read`
+
+**Full gate:** 6/6 PASS (SAB Integrity, Antigravity Preflight, Conflict Guard, Layout, Route, Bekçi)
+
+Kanıt seviyesi: `TEST_VERIFIED` — 2026-09-11
+
