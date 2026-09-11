@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Class IlanObserver
+ *
+ * @context7-ignore-file — CQRS projection tables use English schema by design
+ */
 class IlanObserver
 {
     /**

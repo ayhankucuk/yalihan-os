@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Log;
 /**
  * Class ProjectionsHydrateCommand
  *
+ * @context7-ignore-file — CQRS projection tables use English schema by design
+ *
  * SAB Enforced Idempotent Projection Hydration Engine.
  * Reconstructs and synchronizes `ilanlar_read_model` and `listing_search_projection`
  * from the master `ilanlar` dataset.

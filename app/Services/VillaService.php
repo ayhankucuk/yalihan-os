@@ -138,7 +138,7 @@ class VillaService
         try {
             $villa->increment('goruntulenme');
         } catch (\Throwable $e) {
-            // Read-only or counter failure should not block viewing detail
+            \Illuminate\Support\Facades\Log::debug('VillaService view increment skipped: ' . $e->getMessage(), ['villa_id' => $id]);
         }
 
         return $villa;

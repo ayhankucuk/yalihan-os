@@ -58,7 +58,7 @@ class SmartFieldGenerationService
             'features.id',
             'features.name',
             'features.slug',
-            'features.type as veri_tipi',
+            'features.type as veri_tipi', // context7-ignore
             'features.options as veri_secenekleri',
             'features.unit as birim',
             'features.is_required as zorunlu',
