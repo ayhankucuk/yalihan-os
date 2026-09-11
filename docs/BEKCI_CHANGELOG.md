@@ -1,5 +1,22 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 174 — 2026-09-12 | Wizard & Feature System Architecture Stabilization + CQRS Auto-Sync (103/103 PASS) ✅
+
+**Kapsam:** Kategori, Özellik ve Şablon sistemlerinin tam mimari uyumlaştırması, CQRS okuma modellerinin senkronizasyonu, `ekstra_ozellikler` alanı onarımı ve frontend/public endpoint sertifikasyonu tamamlandı.
+
+#### 1. Tamamlanan Mimari ve Sistem İyileştirmeleri ✅
+- **Aşama 1 (`5f0b42b8`):** `FeatureTemplateResolver` hiyerarşik kategori kalıtımı (`global` + `main_category` + `sub_category` + `listing_type`) düzeltildi; şablon ID ve ham yayın tipi ID standartlaştırıldı.
+- **Aşama 2 (`18f8dc12`):** `FeatureAssignmentSeeder` içinde `Villa Kiralık` için 34 özelliklik tam parite ve `depozito` kuralı tanımlandı (toplam assignment sayısı 82'den 299'a çıkarıldı).
+- **Aşama 3 (`1bd829b1`):** `projections:hydrate` komutu (`ProjectionsHydrateCommand`) yazıldı ve `IlanObserver` hook'ları (`saved`, `deleted`) üzerinden `ilanlar_read_model` ve `listing_search_projection` gerçek zamanlı CQRS senkronizasyonuna bağlandı.
+- **Aşama 4 (`19f6994a`):** `PropertyHubOrchestrator`, `PropertyHubController` ve `SmartFieldGenerationService` içerisindeki ölü `Ozellik` çağrıları kanonik `Feature` ve `FeatureAssignment` modellerine taşındı.
+- **Aşama 5 (`dceda411`, `1bbd3927`):** SAB bütünlük kuralları tamamlandı, `Ilan.php` modelinde `ekstra_ozellikler` `$fillable` ve `$casts` alanlarına geri kazandırıldı.
+
+#### 2. Test & Kalite Doğrulama ✅
+- `php artisan test tests/Feature/WizardSchemaStep2Test.php tests/Feature/Frontend/VillaListingTest.php tests/Feature/Crud/IlanCrudFeatureNormalizationTest.php` — **103/103 PASS (536 assertions)**.
+- `./scripts/tools/antigravity-full-gate.sh` — **6/6 Gates PASS**.
+
+---
+
 ## Oturum 173 — 2026-09-11 | P2: Channel & iCal Güvenilirliği + P3: Lead Matching Integration (9/9 PASS) ✅
 
 **Kapsam:** ERA V Phase 2 Roadmap — P2 (Channel & iCal Reliability) `rental:sync-airbnb` command + `needsSync()` scope + 28/28 PASS sertifikasyonu. P3 (Lead Matching Integration) `IlanYayinlandiEvent` → listener zinciri → Action Center Gorev → tenant isolation kanıtı, 9 integration testi yazıldı.
