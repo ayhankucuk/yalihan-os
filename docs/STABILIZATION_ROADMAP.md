@@ -68,20 +68,19 @@
 
 ### ③ Ghost Field Temizliği — Model/Schema Drift
 
-**Kaynak:** `tech_debt_registry.md` — GF-001 ÷ GF-006
+**Son Güncelleme:** 2026-09-11
+**Doğrulama:** `tests/Feature/Schema/ModelSchemaContractTest.php` — **29 PASS, 0 FAIL, 5 SKIP** (192s)
 
-| ID | Model | Field | Eylem | Test |
-|----|-------|-------|-------|------|
-| GF-001 | `YayinTipi` | `adi` | `$fillable`'dan kaldır | Unit test |
-| GF-002 | `Ilan` | `is_active` | `$fillable` + `$casts`'tan kaldır | Feature test |
-| GF-003 | `Ozellik` | `aciklama` | Karar: DB'ye ekle veya kaldır | DB şema kontrolü |
-| GF-004 | `Ozellik` | `veri_secenekleri` | Karar: DB'ye ekle veya kaldır | DB şema kontrolü |
-| GF-005 | `FeaturePack` | `display_order` | Karar: DB'ye ekle veya kaldır | DB şema kontrolü |
-| GF-006 | `Feature` | `deprecated_at` | `$casts`'tan kaldır | Unit test |
+| ID | Model | Field | Durum | Kanıt |
+|----|-------|-------|-------|-------|
+| GF-001 | `YayinTipi` | `adi` | ✅ KALDIRILDI | `c5e0ae15` — `$fillable` ve `$casts`'tan kaldırıldı |
+| GF-002 | `Ilan` | `is_active` | ✅ KALDIRILDI | `c5e0ae15` — `$fillable` ve `$casts`'tan kaldırıldı |
+| GF-003 | `Ozellik` | `aciklama` | ✅ GERÇEK KOLON | DB: `ozellikler.aciklama` mevcut ✓, `$fillable` var ✓ |
+| GF-004 | `Ozellik` | `veri_secenekleri` | ✅ GERÇEK KOLON | DB: `ozellikler.veri_secenekleri` mevcut ✓, `$fillable` var ✓ |
+| GF-005 | `FeaturePack` | `display_order` | ✅ GERÇEK KOLON | DB: `ups_feature_packs.display_order` mevcut ✓, `$fillable` var ✓ |
+| GF-006 | `Feature` | `deprecated_at` | ✅ GERÇEK KOLON | DB: `features.deprecated_at` mevcut ✓, `$casts` var ✓ |
 
-**Ön Koşul:** Her biri için DB'de gerçekten var mı kontrolü (`DESCRIBE table_name`).
-**Karar Verilmemiş (GF-003/004/005):** `ilanlar` veya `ozellikler` tablosunda `aciklama`/`veri_secenekleri`/`display_order` kolonu olup olmadığı kontrol edilecek. Yoksa model'den kaldırılacak. Varsa korunacak.
-**Kanıt:** `php artisan test --filter=GhostField` veya ilgili model testi.
+**Sonuç:** GF-001/002 kodda düzeltilmiş. GF-003/004/005/006 **ghost field DEĞİL** — tüm kolonlar hem DB'de hem model'de mevcut. Tech Debt Registry (STALE) bu kayıtları güncellemeli.
 
 ---
 

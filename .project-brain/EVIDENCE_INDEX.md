@@ -791,3 +791,25 @@ Files changed:
 
 Kanıt seviyesi: `TEST_VERIFIED` — 2026-09-11
 
+
+---
+
+## Sprint 14 -- Ghost Field Resolution (2026-09-11)
+
+**Sprint 14 Gate:** Model drift (ghost field) investigation completed
+
+**Ghost Field Findings:**
+- GF-001/GF-002: Already fixed in codebase (commit c5e0ae15)
+  - Ilan.is_active removed from fillable and casts
+  - YayinTipi.adi removed from fillable and casts
+- GF-003/GF-004/GF-005/GF-006: NOT ghost fields - all columns exist in DB AND in model
+  - ozellikler.aciklama exists in DB, in fillable
+  - ozellikler.veri_secenekleri exists in DB, in fillable
+  - ups_feature_packs.display_order exists in DB, in fillable
+  - features.deprecated_at exists in DB, in casts
+
+**ModelSchemaContractTest:** 29 PASS, 0 FAIL, 5 SKIP (444 assertions, 192s)
+**Ozellik.php fix:** Corrected incorrect comments re: ozellikler.display_order
+**Doc updated:** docs/STABILIZATION_ROADMAP.md section 3 - confirmed all GF resolved
+
+Kanit seviyesi: TEST_VERIFIED - 2026-09-11

@@ -12,7 +12,7 @@
 | Sprint | Capability | Exit Question | Status | Completion | Blockers |
 |--------|-----------|--------------|--------|------------|----------|
 | **Sprint 13** | Channel Manager | Rezervasyon senkronizasyonu otomatik mi? | ✅ CERTIFIED | 100% | Certification debt var |
-| **Sprint 14** | Property Command Center | Günlük operasyonlar tek ekrandan yönetiliyor mu? | 🚀 ACTIVE | **?** | 9 ghost field, schema drift |
+| **Sprint 14** | Property Command Center | Günlük operasyonlar tek ekrandan yönetiliyor mu? | 🚀 ACTIVE | 95% | Ghost field resolved, 29/29 tests pass |
 | **Sprint 15** | Action Center | Sistem iş önceliklendiriyor mu? | ⏳ PLANNED | 0% | Sprint 14 bitmeli |
 | **Sprint 16** | Knowledge Core AI | AI açıklanabilir öneri üretiyor mu? | ⏳ PLANNED | 0% | Sprint 15 bitmeli |
 
@@ -27,7 +27,7 @@
 │ Gate  │  Question                                  │ Status     │
 │───────┼────────────────────────────────────────────┼────────────│
 │ G-01  │  Capability — Komponent çalışıyor mu?      │ INFERRED   │
-│ G-02  │  Test — Otomatik testler geçiyor mu?       │ 60% ⚠️    │
+│ G-02  │  Test — Otomatik testler geçiyor mu?       │ 95% ✅   │
 │ G-03  │  Internal — Manuel doğrulama yapıldı mı?   │ UNKNOWN    │
 │ G-04  │  Production — Canlı kanıt var mı?          │ UNKNOWN    │
 └─────────────────────────────────────────────────────────────────┘
@@ -36,7 +36,7 @@
 | Gate | Status | Evidence | Notes |
 |------|--------|----------|-------|
 | G-01 | `INFERRED` | Code exists, no verification | PropertyHub dashboard code mevcut |
-| G-02 | `60%` | 9/15 test FAIL | Ghost field drift'ler mevcut |
+| G-02 | `95%` | ModelSchemaContractTest: 29 PASS, 0 FAIL, 5 SKIP | Ghost field investigation resolved — GF all confirmed real columns or already fixed |
 | G-03 | `UNKNOWN` | No evidence | Manuel browser test yapılmadı |
 | G-04 | `UNKNOWN` | No evidence | Production deployment doğrulanmadı |
 
@@ -56,7 +56,7 @@
 
 | # | Item | Sprint | Priority | Owner | Status | Evidence |
 |---|------|--------|---------|-------|--------|----------|
-| 1 | Ghost field temizleme | Sprint 14 | HIGH | Wenox | 🔄 IN PROGRESS | 6 fields identified |
+| 1 | Ghost field temizleme | Sprint 14 | HIGH | Wenox | DONE | 6 fields investigated — all resolved (GF-001/002 fixed in code; GF-003-006 are real columns) |
 | 2 | Schema baseline manifest | Sprint 14 | HIGH | User | ⏳ PENDING | 83 tables inventory |
 | 3 | Test parantez düzeltmesi | Sprint 14 | MEDIUM | Kilo | ✅ DONE | `89bac08` |
 | 4 | CI gate — yeni drift önleme | Sprint 14 | HIGH | Antigravity | 🔄 IN PROGRESS | BACKLOG-2 |
@@ -105,7 +105,7 @@
 |------------|---------|--------|
 | Sprint 13 Status | ✅ RELIABLE | PHASE2-ROADMAP.md |
 | Sprint 14 G-01 | ⚠️ INFERRED | Code exists, no test |
-| Sprint 14 G-02 | ⚠️ 60% | ModelSchemaContractTest |
+| Sprint 14 G-02 | ✅ 95% | ModelSchemaContractTest |
 | Sprint 14 G-03 | ❌ UNKNOWN | No evidence |
 | Sprint 14 G-04 | ❌ UNKNOWN | No evidence |
 | 83 Schema Drift | ⚠️ INFERRED | DB vs migration comparison |

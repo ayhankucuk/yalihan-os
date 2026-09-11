@@ -32,7 +32,7 @@ class Ozellik extends BaseModel
         'arama_filtresi',
         'ilan_kartinda_goster',
         'aktiflik_durumu', // ✅ SAB standard active field
-        // 'display_order', // ❌ REMOVED: Column does not exist in DB (Context7 LOOP DANGER fix)
+        // 'display_order', // ⚠️ DB column exists (ozellikler.display_order) but intentionally excluded from mass-assignment
         // 'aktif_mi', // Legacy
         // 'is_readonly', // Cortex ROI
     ];
@@ -41,7 +41,7 @@ class Ozellik extends BaseModel
         'aktiflik_durumu' => \App\Enums\AktiflikDurumu::class, // ✅ SAB standard
         // 'aktif_mi' => 'boolean',
         // 'is_readonly' => 'boolean',
-        // 'display_order' => 'integer', // ❌ REMOVED: Column does not exist in DB
+        // 'display_order' => 'integer', // ⚠️ DB column exists but intentionally excluded from casts
         'veri_secenekleri' => 'array',
         'zorunlu' => 'boolean',
         'arama_filtresi' => 'boolean',
