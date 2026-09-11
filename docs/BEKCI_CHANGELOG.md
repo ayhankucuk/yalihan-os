@@ -1,5 +1,25 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 171 — 2026-09-11 | Priority 4 & Sprint 15 Action Center Sertifikasyonu (53/53 Tests PASS) ✅
+
+**Kapsam:** 
+1. **Priority 4 (Location & TKGM Reconciliation):** `ReconcileLocationsCommand` tip ve metot onarımı (`8999a588`), 7 FK yolunda orphan audit'i (0 orphan), pretend envanter doğrulaması (iller:81, ilceler:13, mahalleler:20), roadmap & decision log güncellemesi (`5c507d22`).
+2. **Sprint 15 (Action Center):** Phase 2 (Auto-Assignment), Phase 3 (REST API), Phase 4 (Action Evidence & Lifecycle) implementasyon ve test sertifikasyonu (`c44dc8ad` + `2050dea2`).
+
+#### 1. Sprint 15 Test Paketi & Sertifikasyon (53/53 PASS) ✅
+- **`ActionCenterEventMappingTest`:** 7/7 PASS (domain events → Gorev auto-generation, idempotency, priority scoring).
+- **`ActionAssignmentServiceTest`:** 9/9 PASS (owner-assigned, round-robin danışman rotasyonu, workload balancing, admin fallback, tenant isolation).
+- **`ActionCenterControllerTest`:** 21/21 PASS (dashboard queue, paginated tasks, per_page forward, overdue filter, assign, status update, stats, 401/403 guards).
+- **`ActionEvidenceLifecycleTest`:** 13/13 PASS (note/photo/system_log kanıt üretimi, cascade delete, isCompletionProof doğrulama).
+- **Toplam Test:** **53/53 PASS**
+
+#### 2. Düzeltilen Servis & Kontrolör Kusurları ✅
+- **`ActionCenterController.php`:** `per_page` filtresi servise iletildi; `overdue` filtre desteği eklendi.
+- **`ActionCenterService.php`:** `getActionQueue($perPage)` parametresi ve `overdue` sorgu filtresi eklendi.
+- **`ActionAssignmentService.php`:** `is_active` alanı için `Schema::hasColumn` guard eklendi (Context7 kanonik alan kuralı uyumu).
+
+---
+
 ## Oturum 170 — 2026-09-11 | Sprint 14 Sertifikasyonu: PropertyHub & Advisor Command Center Browser E2E Doğrulandı ✅
 
 **Kapsam:** Sprint 14 (Property Command Center & PropertyHub) sertifikasyon blokajlarının (Priority 1) çözülmesi ve browser E2E testleri ile mühürlenmesi: PropertyHub dashboard (`/admin/property-hub`) HTTP 500 hatası olmaksızın çalıştığının ve alt modüllerinin (templates, features, analytics) browser seviyesinde kanıtlanması; Advisor Command Center (`/command-center` ve `/command-center/fetch`) Playwright E2E akışının teyidi.
