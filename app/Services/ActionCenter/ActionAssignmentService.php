@@ -177,11 +177,15 @@ class ActionAssignmentService
      */
     public function getAvailableAgents(int $tenantId, string $role): Collection
     {
-        return User::query()
+        $query = User::query()
             ->where('tenant_id', $tenantId)
-            ->where('is_active', true)
-            ->whereNull('deleted_at')
-            ->get()
+            ->whereNull('deleted_at');
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'is_active')) {
+            $query->where('is_active', true);
+        }
+
+        return $query->get()
             ->filter(fn(User $user) => $user->hasRole($role));
     }
 
@@ -273,11 +277,15 @@ class ActionAssignmentService
         }
 
         // Fallback: find admin in same tenant
-        return User::query()
+        $query = User::query()
             ->where('tenant_id', $ilan?->tenant_id ?? $gorev->tenant_id)
-            ->where('is_active', true)
-            ->whereNull('deleted_at')
-            ->get()
+            ->whereNull('deleted_at');
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'is_active')) {
+            $query->where('is_active', true);
+        }
+
+        return $query->get()
             ->filter(fn(User $u) => $u->hasRole('admin'))
             ->sortBy('id')
             ->first()?->id;

@@ -108,7 +108,7 @@ class ActionCenterController extends Controller
         }
 
         $perPage = (int) ($validated['per_page'] ?? 20);
-        $tasks = $this->actionCenter->getActionQueue($tenantId, $filters);
+        $tasks = $this->actionCenter->getActionQueue($tenantId, $filters, $perPage);
 
         return response()->json([
             'success' => true,

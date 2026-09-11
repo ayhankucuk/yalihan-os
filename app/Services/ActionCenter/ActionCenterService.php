@@ -488,7 +488,7 @@ class ActionCenterService
      * @param array $filters ['durum' => ?, 'oncelik' => ?, 'assigned_to' => ?]
      * @return LengthAwarePaginator
      */
-    public function getActionQueue(int $tenantId, array $filters = []): LengthAwarePaginator
+    public function getActionQueue(int $tenantId, array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
         $query = Gorev::withoutTenant()
             ->where('tenant_id', $tenantId)
@@ -506,13 +506,18 @@ class ActionCenterService
             $query->where('atanan_user_id', $filters['assigned_to']);
         }
 
+        if (!empty($filters['overdue'])) {
+            $query->where('bitis_tarihi', '<', now())
+                ->whereNotIn('gorev_durumu', ['tamamlandi', 'iptal']);
+        }
+
         // Sort by priority score then deadline
         $priorityOrder = ['acil' => 1, 'yuksek' => 2, 'normal' => 3, 'dusuk' => 4];
 
         return $query
             ->orderByRaw("CASE oncelik WHEN 'acil' THEN 1 WHEN 'yuksek' THEN 2 WHEN 'normal' THEN 3 WHEN 'dusuk' THEN 4 ELSE 5 END")
             ->orderBy('bitis_tarihi', 'asc')
-            ->paginate($filters['per_page'] ?? 20);
+            ->paginate($perPage);
     }
 
     /**
