@@ -2,6 +2,7 @@
 
 namespace App\Domain\Ilan\Services;
 
+use App\Domain\Ilan\Exceptions\ConcurrentModificationException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -45,7 +46,7 @@ class WizardSessionManager
     /**
      * Adım ilerlemesini kaydeder (İyimser Kilit Kontrollü).
      *
-     * @throws \RuntimeException Eğer lock_version uyuşmazlığı varsa (eşzamanlı değişiklik)
+     * @throws ConcurrentModificationException Eğer lock_version uyuşmazlığı varsa (eşzamanlı değişiklik)
      */
     public function advanceStep(int $userId, int $ilanId, int $completedStep, array $data, ?int $expectedLockVersion = null): array
     {
@@ -60,7 +61,7 @@ class WizardSessionManager
                 'expected_lock' => $expectedLockVersion,
             ]);
 
-            throw new \RuntimeException('Oturum başka bir sekmede güncellendi. Lütfen sayfayı yenileyin.');
+            throw new ConcurrentModificationException('Oturum başka bir sekmede güncellendi. Lütfen sayfayı yenileyin.');
         }
 
         if (!in_array($completedStep, $state['completed_steps'], true)) {

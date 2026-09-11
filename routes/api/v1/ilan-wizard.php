@@ -48,4 +48,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // 🤖 AI Assistant: Field suggestions for Step 2
     Route::get('/wizard/ai-suggestions/{id}', [IlanWizardController::class, 'getAiSuggestions'])
         ->name('wizard.ai-suggestions');
+
+    // ⚡ Hexagonal / DDD Domain Wizard Routes
+    Route::post('/wizard/step', [\App\Http\Controllers\Api\V1\WizardController::class, 'saveStep'])
+        ->name('wizard.step.save');
+
+    Route::post('/wizard/domain-submit', [\App\Http\Controllers\Api\V1\WizardController::class, 'submit'])
+        ->name('wizard.domain.submit');
+
+    Route::get('/wizard/session/{ilanId}', [\App\Http\Controllers\Api\V1\WizardController::class, 'sessionState'])
+        ->name('wizard.session.state');
 });

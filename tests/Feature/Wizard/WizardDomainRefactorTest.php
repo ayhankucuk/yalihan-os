@@ -56,7 +56,7 @@ class WizardDomainRefactorTest extends TestCase
         $this->assertContains(1, $advanced['completed_steps']);
 
         // Test optimistic lock conflict
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(\App\Domain\Ilan\Exceptions\ConcurrentModificationException::class);
         $manager->advanceStep($this->user->id, 999, 2, ['fiyat' => 1000], 1); // expected 1 but current is 2
     }
 
