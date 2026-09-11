@@ -110,6 +110,15 @@ class VillaListingTest extends TestCase
             'maksimum_misafir' => 8,
         ]);
 
+        \App\Models\Photo::create([
+            'tenant_id' => 1,
+            'ilan_id' => $villa->id,
+            'dosya_adi' => 'villa_featured.jpg',
+            'dosya_yolu' => 'photos/villa_featured.jpg',
+            'kapak_fotografi' => true,
+            'display_order' => 1,
+        ]);
+
         $response = $this->get('/yazliklar/' . $villa->id);
         $response->assertStatus(200);
         $response->assertViewIs('villas.show');

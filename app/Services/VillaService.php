@@ -135,7 +135,11 @@ class VillaService
             'events' => fn ($q) => $q->where('rezervasyon_durumu', 'onaylandi'),
         ])->where('yayin_durumu', 'yayinda')->findOrFail($id);
 
-        $villa->increment('goruntulenme');
+        try {
+            $villa->increment('goruntulenme');
+        } catch (\Throwable $e) {
+            // Read-only or counter failure should not block viewing detail
+        }
 
         return $villa;
     }

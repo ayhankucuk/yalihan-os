@@ -1024,7 +1024,7 @@ class Ilan extends BaseModel
      */
     public function featuredPhoto()
     {
-        return $this->hasOne(Photo::class)->where('one_cikan', true);
+        return $this->hasOne(Photo::class)->where('kapak_fotografi', true);
     }
 
 
