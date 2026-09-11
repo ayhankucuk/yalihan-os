@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Ozellik;
-use App\Models\OzellikKategori;
+use App\Models\Feature;
+use App\Models\FeatureCategory;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -30,11 +30,11 @@ class SmartFieldGenerationService
             // Mevcut özellikleri al
             $existingFields = $this->getExistingFields($kategoriSlug, $yayinTipi);
 
-            // AI ile öneriler al
-            $aiSuggestions = $this->aiService->suggestFieldsForCategory($kategoriSlug, $yayinTipi);
+            // AI önerilerini al
+            $aiSuggestions = $this->getAISuggestions($kategoriSlug, $yayinTipi, $existingFields);
 
-            // Mevcut ve AI önerilerini birleştir
-            return $this->mergeFieldSuggestions($existingFields, $aiSuggestions);
+            // Sonuçları birleştir ve formatla
+            return $this->mergeAndFormatFields($existingFields, $aiSuggestions);
         });
     }
 
@@ -43,27 +43,46 @@ class SmartFieldGenerationService
      */
     private function getExistingFields($kategoriSlug, $yayinTipi)
     {
-        $query = Ozellik::join('ozellik_kategorileri', 'ozellikler.kategori_id', '=', 'ozellik_kategorileri.id')
-            ->where('ozellik_kategorileri.slug', $kategoriSlug)
-            ->where('ozellikler.aktif_mi', 1);
+        $query = Feature::join('feature_categories', 'features.feature_category_id', '=', 'feature_categories.id')
+            ->where('features.aktiflik_durumu', 1);
+
+        if ($kategoriSlug) {
+            $query->where('feature_categories.slug', $kategoriSlug);
+        }
 
         if ($yayinTipi) {
             // Yayın tipi bazlı filtreleme (gelecekte implement edilecek)
         }
 
         return $query->select([
-            'ozellikler.id',
-            'ozellikler.name',
-            'ozellikler.slug',
-            'ozellikler.veri_tipi',
-            'ozellikler.veri_secenekleri',
-            'ozellikler.birim',
-            'ozellikler.zorunlu',
-            'ozellikler.arama_filtresi',
-            'ozellikler.ilan_kartinda_goster',
-            'ozellik_kategorileri.name as kategori_name',
-            'ozellik_kategorileri.slug as kategori_slug',
+            'features.id',
+            'features.name',
+            'features.slug',
+            'features.type as veri_tipi',
+            'features.options as veri_secenekleri',
+            'features.unit as birim',
+            'features.is_required as zorunlu',
+            'features.is_filterable as arama_filtresi',
+            'features.is_searchable as ilan_kartinda_goster',
+            'feature_categories.name as kategori_name',
+            'feature_categories.slug as kategori_slug',
         ])->get();
+    }
+
+    /**
+     * AI önerilerini al
+     */
+    private function getAISuggestions($kategoriSlug, $yayinTipi, $existingFields)
+    {
+        return $this->aiService->suggestFieldsForCategory($kategoriSlug, $yayinTipi);
+    }
+
+    /**
+     * Sonuçları birleştir ve formatla
+     */
+    private function mergeAndFormatFields($existingFields, $aiSuggestions)
+    {
+        return $this->mergeFieldSuggestions($existingFields, $aiSuggestions);
     }
 
     /**
@@ -178,14 +197,14 @@ class SmartFieldGenerationService
             $matrix = [];
 
             // Tüm özellik kategorilerini al
-            $ozellikKategorileri = OzellikKategori::where('aktiflik_durumu', 1)
+            $ozellikKategorileri = FeatureCategory::where('aktiflik_durumu', 1)
                 ->orderBy('display_order') // context7-ignore
                 ->get();
 
             foreach ($ozellikKategorileri as $kategori) {
-                $ozellikler = Ozellik::where('kategori_id', $kategori->id)
+                $ozellikler = Feature::where('feature_category_id', $kategori->id)
                     ->where('aktiflik_durumu', 1)
-                    ->orderBy('sira') // context7-ignore
+                    ->orderBy('display_order') // context7-ignore
                     ->get();
 
                 $matrix[$kategori->slug] = [
