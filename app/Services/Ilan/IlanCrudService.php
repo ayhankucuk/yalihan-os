@@ -195,8 +195,8 @@ class IlanCrudService
      */
     private function mapCoreData(Ilan $ilan, array $data): void
     {
-        $ilan->baslik = $data['baslik'];
-        $ilan->aciklama = $data['aciklama'] ?? null;
+        $ilan->baslik = $data['baslik'] ?? $ilan->baslik;
+        $ilan->aciklama = $data['aciklama'] ?? $ilan->aciklama;
         // SAB §5: State Machine enforcement
         // İlan durumu doğrudan set edilmez, akışın sonunda YalihanLifecycle kullanılır.
         // Ham veri burada sadece yetki kontrolü veya başlangıç değeri için saklanabilir.
