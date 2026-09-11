@@ -65,6 +65,36 @@ Mimari kararlar, bypass理由 ve kapsam değişiklikleri bu dosyada kaydedilir.
 
 ---
 
+## Karar #005 — 2026-09-11
+
+**Konu:** P4 Location Reconciliation — Command Onarım ve Canlı Veri Doğrulaması
+
+**Gerekçe:**
+- `ReconcileLocationsCommand` `BadMethodCallException` veriyordu — `canonicalMahalleler()` metodu tanımsızdı
+- `bodrumMahalleler()` yanlışlıkla `array` return type ile tanımlanmıştı, gerçekte `Collection` döndürüyordu
+- MySQL canlı veritabanında orphan FK durumu doğrulanmadı
+
+**Bulgu:**
+- MySQL `yalihanai_clone`: iller=81, ilceler=13, mahalleler=20, orphan ilceler=**0**
+- `ilanlar`: 47 kayıt (33 Muğla, 4 Adana, 1 İstanbul) — tüm FK temiz
+- `talepler`, `proj_listings`: 0 kayıt
+- MySQL 9.3.0 — full spatial extension desteği mevcut
+
+**Karar:**
+- `canonicalMahalleler()` çağrısı → `bodrumMahalleler()` olarak düzeltildi (satır 121, 148)
+- `bodrumMahalleler()` return type `array` → `\Illuminate\Support\Collection` olarak düzeltildi
+- `count()` → `->count()` olarak güncellendi
+- `php artisan location:reconcile --pretend` temiz çalışıyor → **0 orphan**
+- TKGM polygon persistence: `tkgm_parcel_geometries` tablosu gelecek sprint'e ertelendi (mevcutta parsel verisi yok)
+
+**Etki:**
+- Commit: `8999a588`
+- Command artık idempotent pretend/dry-run/apply döngüsü tamamlayabilir
+
+**Sahip:** Kilo
+
+---
+
 ## Karar #004 — 2026-09-09
 
 **Konu:** SEC-08 — V2 API Route Model Binding + TenantScope fail-closed 404
