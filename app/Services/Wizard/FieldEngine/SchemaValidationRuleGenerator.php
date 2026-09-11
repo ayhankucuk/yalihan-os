@@ -65,7 +65,7 @@ class SchemaValidationRuleGenerator
 
         return match ($type) {
             'text', 'textarea' => $this->textRules($options),
-            'number'           => $this->numberRules($options),
+            'number'           => $this->numberRules($options, $field),
             'boolean', 'toggle' => ['boolean'],
             'select'           => $this->selectRules($options),
             'multiselect'      => ['array'],
@@ -91,16 +91,22 @@ class SchemaValidationRuleGenerator
         return $rules;
     }
 
-    protected function numberRules(array $options): array
+    protected function numberRules(array $options, array $field = []): array
     {
         $rules = ['numeric'];
 
-        if (isset($options['min'])) {
-            $rules[] = 'min:' . $options['min'];
+        // $options: field_options JSON from DB seeder (e.g. {"min":0,"max":10,"step":0.01})
+        // $field: FieldDefinition DTO may carry direct min/max from DB columns.
+        // Both sources are checked so seeder-defined constraints are always enforced.
+        $min = $options['min'] ?? $field['min'] ?? null;
+        $max = $options['max'] ?? $field['max'] ?? null;
+
+        if (is_numeric($min)) {
+            $rules[] = 'min:' . $min;
         }
 
-        if (isset($options['max'])) {
-            $rules[] = 'max:' . $options['max'];
+        if (is_numeric($max)) {
+            $rules[] = 'max:' . $max;
         }
 
         return $rules;

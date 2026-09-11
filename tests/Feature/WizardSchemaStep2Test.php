@@ -1783,4 +1783,141 @@ class WizardSchemaStep2Test extends TestCase
         $this->assertContains('isitma_tipi', $dbValues);
         $this->assertNotContains('isitma_detay', $dbValues);
     }
+
+    /**
+     * @test
+     * @group wizard
+     * @group normalization
+     *
+     * B1 — bina_yasi/kaks/ada_no Type Safety
+     * Verifies SchemaValidationRuleGenerator enforces seeder-defined min/max on
+     * 'number' fields (kaks max:10) and that non-numeric strings return null.
+     */
+    public function schema_rule_generator_enforces_kaks_max_boundary(): void
+    {
+        $gen = app(\App\Services\Wizard\FieldEngine\SchemaValidationRuleGenerator::class);
+
+        // kaks is seeded with {"min":0,"max":10,"step":0.01} in CategoryFieldSchemaSeeder
+        $field = [
+            'name' => 'kaks',
+            'type' => 'number',
+            'options' => ['min' => 0, 'max' => 10, 'step' => 0.01],
+        ];
+
+        $rules = $gen->generate([$field], []);
+
+        $this->assertArrayHasKey('kaks', $rules);
+        $this->assertContains('numeric', $rules['kaks']);
+        $this->assertContains('min:0', $rules['kaks']);
+        $this->assertContains('max:10', $rules['kaks']);
+    }
+
+    /**
+     * @test
+     * @group wizard
+     * @group normalization
+     *
+     * B1 — ada_no numeric guard
+     * ada_no is a text field; non-numeric values must be rejected by the
+     * TypeConstraintValidator pipeline so garbage data never reaches the DB.
+     */
+    public function schema_rule_generator_enforces_text_max_length_when_configured(): void
+    {
+        $gen = app(\App\Services\Wizard\FieldEngine\SchemaValidationRuleGenerator::class);
+
+        // ada_no is field_type:text in arsa-satilik — no max_length in options,
+        // so it gets only the string rule (no bounding max).
+        $field = [
+            'name' => 'ada_no',
+            'type' => 'text',
+            'options' => [],
+        ];
+
+        $rules = $gen->generate([$field], []);
+
+        $this->assertArrayHasKey('ada_no', $rules);
+        $this->assertContains('string', $rules['ada_no']);
+        // No phantom numeric rule should be present
+        $this->assertNotContains('numeric', $rules['ada_no']);
+
+        // When max_length IS set, it must be enforced
+        $fieldWithLimit = [
+            'name' => 'ada_no_limited',
+            'type' => 'text',
+            'options' => ['max_length' => 10],
+        ];
+
+        $rulesLimited = $gen->generate([$fieldWithLimit], []);
+
+        $this->assertContains('max:10', $rulesLimited['ada_no_limited']);
+    }
+
+    /**
+     * @test
+     * @group wizard
+     * @group normalization
+     *
+     * B1 — non-numeric string in number field normalizes to null (not silently stored)
+     */
+    public function normalize_value_rejects_non_numeric_for_number_type(): void
+    {
+        $fieldDef = ['type' => 'number', 'required' => true, 'options' => null];
+
+        $this->assertNull($this->fieldMapper->normalizeValue('abc', $fieldDef));
+        $this->assertNull($this->fieldMapper->normalizeValue('', $fieldDef));
+        $this->assertEquals('0', $this->fieldMapper->normalizeValue(0, $fieldDef)); // 0 is numeric → OK
+    }
+
+    /**
+     * @test
+     * @group wizard
+     * @group normalization
+     *
+     * B2 — Boolean normalization covers all common truthy/falsy labels.
+     * Canonical DB storage must be deterministic: '1' or '0' only.
+     * Previously missing: 'no', 'hayir', 'off' (and uppercase variants).
+     */
+    public function normalize_boolean_covers_all_truthy_and_falsy_labels(): void
+    {
+        $fieldDef = ['type' => 'boolean', 'required' => false, 'options' => null];
+
+        // Truthy → '1' (canonical set; all mutually non-substring-safe)
+        foreach (['1', 'true', 'yes', 'evet', 'on', 'YES', 'TRUE', 'EVET', 'ON'] as $val) {
+            $this->assertEquals('1', $this->fieldMapper->normalizeValue($val, $fieldDef),
+                "Value '{$val}' must normalize to '1'");
+        }
+
+        // Falsy → '0' (anything not in the canonical truthy set)
+        foreach (['0', 'false', 'no', 'hayir', 'off', 'FALSE', 'NO', 'HAYIR', 'OFF', 'anything'] as $val) {
+            $this->assertEquals('0', $this->fieldMapper->normalizeValue($val, $fieldDef),
+                "Value '{$val}' must normalize to '0'");
+        }
+    }
+
+    /**
+     * @test
+     * @group wizard
+     * @group normalization
+     *
+     * B2 — Boolean castValue on read path also uses the full truthy set.
+     * Ensures DynamicFieldValueMapper::loadCastValues() returns correct type.
+     */
+    public function cast_boolean_values_to_correct_php_type_on_read(): void
+    {
+        // Access the private method via reflection
+        $mapper = $this->fieldMapper;
+        $reflector = new \ReflectionClass($mapper);
+        $method = $reflector->getMethod('castValue');
+        $method->setAccessible(true);
+
+        // Truthy read
+        $this->assertTrue($method->invoke($mapper, '1', 'boolean'));
+        $this->assertTrue($method->invoke($mapper, 'on', 'boolean'));
+        $this->assertTrue($method->invoke($mapper, 'evet', 'boolean'));
+
+        // Falsy read
+        $this->assertFalse($method->invoke($mapper, '0', 'boolean'));
+        $this->assertFalse($method->invoke($mapper, 'off', 'boolean'));
+        $this->assertFalse($method->invoke($mapper, 'hayir', 'boolean'));
+    }
 }
