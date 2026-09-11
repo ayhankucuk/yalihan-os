@@ -21,7 +21,7 @@ class VillaService
 {
     public function getYazlikKategori(): ?IlanKategori
     {
-        return IlanKategori::where('slug', 'yazlik-kiralama')->first();
+        return IlanKategori::where('slug', 'yazlik-kiralama')->orderBy('id')->first();
     }
 
     public function searchVillas(
@@ -91,14 +91,14 @@ class VillaService
             'price_low' => ['gunluk_fiyat', 'asc'],
             'price_high' => ['gunluk_fiyat', 'desc'],
             'newest' => ['created_at', 'desc'],
-            'popular' => ['view_count', 'desc'],
+            'popular' => ['goruntulenme', 'desc'],
         ];
 
         if (isset($sortMap[$sortBy])) {
             [$sortColumn, $sortDirection] = $sortMap[$sortBy];
             $query->orderBy($sortColumn, $sortDirection); // context7-ignore
         } else {
-            $query->sort($sortBy, $sortDirection, 'view_count');
+            $query->sort($sortBy, $sortDirection, 'goruntulenme');
         }
 
         return $query->paginate(24);
@@ -107,11 +107,14 @@ class VillaService
     public function getFilterLocations(int $kategoriId): Collection
     {
         // Mahalle bazında — sadece bu kategoride ilanı olan mahalleler, ilan sayısıyla birlikte
-        $mahalleler = Mahalle::withCount(['ilanlar as ilan_sayisi' => function ($q) use ($kategoriId) {
+        $mahalleler = Mahalle::whereHas('ilanlar', function ($q) use ($kategoriId) {
+                $q->where('ana_kategori_id', $kategoriId)
+                  ->whereIn('yayin_durumu', [IlanDurumu::YAYINDA->value, 'yayinda']);
+            })
+            ->withCount(['ilanlar as ilan_sayisi' => function ($q) use ($kategoriId) {
                 $q->where('ana_kategori_id', $kategoriId)
                   ->whereIn('yayin_durumu', [IlanDurumu::YAYINDA->value, 'yayinda']);
             }])
-            ->having('ilan_sayisi', '>', 0)
             ->orderByDesc('ilan_sayisi')
             ->orderBy('mahalle_adi')
             ->get(['id', 'mahalle_adi']);
@@ -132,7 +135,7 @@ class VillaService
             'events' => fn ($q) => $q->where('rezervasyon_durumu', 'onaylandi'),
         ])->where('yayin_durumu', 'yayinda')->findOrFail($id);
 
-        $villa->increment('view_count');
+        $villa->increment('goruntulenme');
 
         return $villa;
     }
@@ -168,9 +171,13 @@ class VillaService
     {
         $seasons = $villa->seasons()->where('aktiflik_durumu', 1)->get();
 
+        $dailyMin = $seasons->min('daily_price') ?? $villa->gunluk_fiyat;
+        $dailyMax = $seasons->max('daily_price') ?? $villa->gunluk_fiyat;
+
         return [
-            'daily_min' => $seasons->min('daily_price') ?? $villa->gunluk_fiyat,
-            'daily_max' => $seasons->max('daily_price') ?? $villa->gunluk_fiyat,
+            'daily_price' => $dailyMin ?? $villa->gunluk_fiyat ?? 0,
+            'daily_min' => $dailyMin,
+            'daily_max' => $dailyMax,
             'weekly' => $seasons->first()->weekly_price ?? null,
             'monthly' => $seasons->first()->monthly_price ?? null,
             'currency' => $villa->para_birimi ?? 'TRY',
