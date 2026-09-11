@@ -118,7 +118,7 @@ class ReconcileLocationsCommand extends Command
         // TurkiyeLocationSeeder verileri (canonical)
         $seederIller = $this->canonicalIller();
         $seederIlceler = $this->canonicalIlceler();
-        $seederMahalleler = $this->canonicalMahalleler();
+        $seederMahalleler = $this->bodrumMahalleler();
 
         // Orphan ilceler: il_id DB'de olmayan kayitlar
         $illerIds = $iller->pluck('id')->flip()->toArray();
@@ -145,7 +145,7 @@ class ReconcileLocationsCommand extends Command
             'mevcut_matched_iller' => $matchedIller->count(),
             'seeder_missing_iller' => $unmatchedIller->count(),
             'bodrum_mahalleler' => $mevcutBodrumMahalleler,
-            'seeder_bodrum_mahalleler' => count($seederMahalleler),
+            'seeder_bodrum_mahalleler' => $seederMahalleler->count(),
             'iller_by_id' => $iller,
         ];
     }
@@ -402,7 +402,7 @@ class ReconcileLocationsCommand extends Command
         ];
     }
 
-    private function bodrumMahalleler(): array
+    private function bodrumMahalleler(): \Illuminate\Support\Collection
     {
         // TurkiyeLocationSeeder Bodrum mahalleleri
         return collect([
