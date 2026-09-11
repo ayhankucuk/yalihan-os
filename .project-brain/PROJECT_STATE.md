@@ -323,7 +323,6 @@ Active Locks:
 -->
 HOTSPOT_LOCK:database/migrations/2026_09_01_000000_add_ulke_tenant_to_ilanlar_for_v2_api.php:wenox-rc2:2026-09-04T19:39:36Z:3600
   - HOTSPOT_LOCK:config/canonical_tables.php:Kilo:2026-09-05T12:35:00+03:00:7200
-HOTSPOT_LOCK:database/migrations/2026_09_05_100000_add_missing_ci_schema_columns.php:kilo:2026-09-05T23:34:00+03:00:7200
 
 ---
 
@@ -417,3 +416,4 @@ Mevcut sprint'te icra edilen tüm teknik borç maddeleri ya tamamlanmış ya da 
 2. `kategori_yayin_tipi_field_dependencies` → aktif admin kullanım analizi (Sistem B miras)
 3. FeatureTemplateResolver Faz 1 (shared trait)
 HOTSPOT_LOCK:database/migrations/2026_09_06_000001_add_ilceler_il_id_foreign_key.php:kilo-ilce-fk-fix:2026-09-10T21:07:36Z:7200
+HOTSPOT_LOCK:config/menus.php:antigravity:2026-09-11T01:54:05Z:3600

@@ -1,5 +1,42 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 172 — 2026-09-11 | P1: Sidebar & Property Engine Konsolidasyonu (53/53 Rota 200 OK & 4/4 Tests PASS) ✅
+
+**Kapsam:** ERA V Phase 2 Roadmap § New Research Findings — P1 (Sidebar and Property Engine Navigation) tamamlandı. Admin sidebar'ındaki 51 rotanın canlı denetimi yapıldı; tespit edilen HTTP 500 ve HTTP 302 hataları, SAB URL kuralı ihlalleri ve eksik şema/ikon tanımları onarıldı. Property Engine şema ve şablon araçları (10 araç) tek bir çatı altında konsolide edildi ve otomatik feature test paketi eklendi.
+
+#### 1. Düzeltilen Rota ve View Kusurları ✅
+- **`admin.ilanlarim.index` (HTTP 500 → 200 OK):** `components/admin/ilanlar/listings-table.blade.php:80` ve `admin/ilanlar/components/listings-table.blade.php:77` satırlarında `$listing->yayin_durumu` enum cast edildiğinde `IlanDurumu::tryFrom()` çağrısının PHP 8.2+ `TypeError` vermesi `instanceof \App\Enums\IlanDurumu` kontrolüyle giderildi. Ayrıca `Storage::url` ve `Str::limit` çağrıları FQCN standardına (`\Illuminate\Support\Facades\Storage`, `\Illuminate\Support\Str`) dönüştürüldü.
+- **`admin.takim.*` Rotaları (HTTP 500 → 200 OK):** Yerel MySQL veritabanında `2026_09_06_000001_add_action_center_fields_to_gorevler` migrasyonu çalıştırılarak `gorevler.tenant_id` kolonu eklendi. `admin.takim.takimlar.index`, `admin.takim.board` ve `admin.takim.gorevler.index` rotaları çalışır hale getirildi.
+- **`admin.takim.gorevler.toplu-ata` (RouteNotFound → 200 OK):** `GorevController::topluGorevAta` metodu `app/Modules/TakimYonetimi/routes/web.php` içine kaydedildi; view'daki eksik rota hatası çözüldü.
+- **`admin.satislar.create` (HTTP 302 → 200 OK):** `config/menus.php` içindeki Satışlar öğesi 302 redirect yapan ara rota yerine doğrudan `admin.analitik.istatistikler.satis` rotasına bağlandı.
+- **Adres Yönetimi SAB URL Kuralı:** `config/menus.php:652` satırındaki hardcoded `'url' => '/admin/address-management'` kaldırılarak `'route' => 'admin.address-management.index'` FQCN standardına getirildi.
+- **Eksik SVG Map İkonu:** `config/menus.php`'deki `icons` dizisine TKGM Parsel için `map` SVG path'i eklendi.
+
+#### 2. Property Engine (L2) Konsolidasyonu ✅
+- `config/menus.php` altında Property Engine menüsü 10 araçla birleştirildi:
+  1. `property-hub-dashboard` (`admin.property-hub.index`)
+  2. `features` (`admin.property-hub.features.index`)
+  3. `templates` (`admin.property-hub.templates.index`)
+  4. `packs` (`admin.property-hub.packs.index`)
+  5. `ilan-kategorileri` [YENİ EKLENDİ] (`admin.ilan-kategorileri.index`)
+  6. `ozellik-kategorileri` (`admin.ozellikler.kategoriler.index`)
+  7. `property-types` (`admin.property_types.index`)
+  8. `dependency-rules` (`admin.property-hub.dependency-rules.index`)
+  9. `field-suggestions` [KONSOLİDE EDİLDİ] (`admin.property-hub.field-suggestions.index`, badge: `AI`)
+  10. `tkgm-parsel` (`admin.tkgm-parsel.index`)
+- Cortex (L3) menüsünden duplicate `field-suggestions` öğesi çıkarılarak L3 sıralaması güncellendi.
+
+#### 3. Otomasyon Test Paketi & Doğrulama (`AdminSidebarNavigationTest.php`) ✅
+- `tests/Feature/Admin/AdminSidebarNavigationTest.php`:
+  - `test_all_sidebar_routes_exist_in_route_collection`: **PASS** (Tüm rotalar Laravel route havuzunda tanımlı).
+  - `test_property_engine_menu_contains_consolidated_10_tools`: **PASS** (10 araç tam ve doğru rotalarla bağlı).
+  - `test_authenticated_admin_can_access_all_sidebar_routes`: **PASS** (Tüm 53 sidebar rotası HTTP 200 OK).
+  - `test_unauthenticated_user_is_redirected_to_login`: **PASS** (Yetkisiz erişim 302 login redirect).
+- Toplam Assertions: **135 assertions · 4/4 PASS**
+- Full Quality Gate: **4/4 PASS** (`./scripts/tools/antigravity-full-gate.sh --quick`)
+
+---
+
 ## Oturum 171 — 2026-09-11 | Priority 4 & Sprint 15 Action Center Sertifikasyonu (53/53 Tests PASS) ✅
 
 **Kapsam:** 

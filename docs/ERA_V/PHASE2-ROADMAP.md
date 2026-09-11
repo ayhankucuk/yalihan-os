@@ -238,12 +238,14 @@ The resolver matrix review found that only selected Konut/Villa combinations hav
 - [ ] Define the canonical Arsa, İşyeri, and Kiralık feature sets and assignments.
 - [ ] Prepare a `FeatureAssignmentSeeder`/matrix change only after contract, tenant, rollback, and explicit data-change approval.
 
-### P1 — Sidebar and Property Engine Navigation
+### P1 — Sidebar and Property Engine Navigation ✅ (2026-09-11)
 
-- [ ] Repair or remove the six missing/incorrect sidebar routes.
-- [ ] Consolidate Property Hub, templates, categories, features, packs, AI schema suggestions, and dependency rules under one Property Engine menu.
-- [ ] Resolve legacy field-dependency versus `FeatureTemplateResolver` navigation/source-of-truth ambiguity.
-- [ ] Add route-audit and authenticated navigation tests for the consolidated menu.
+- [x] Repair or remove the missing/incorrect sidebar routes (`admin.ilanlarim.index` enum TypeError, `admin.satislar.create` redirect, `admin.address-management.index` URL string, `admin.takim.gorevler.toplu-ata` route registration, additive migration for `gorevler.tenant_id`). ✅
+- [x] Consolidate Property Hub, templates, categories, features, packs, AI schema suggestions, and dependency rules under one Property Engine menu. ✅ (`config/menus.php`)
+- [x] Resolve legacy field-dependency versus `FeatureTemplateResolver` navigation/source-of-truth ambiguity. ✅ (Canonical V2 `dependency-rules` anchored in Property Engine)
+- [x] Add route-audit and authenticated navigation tests for the consolidated menu. ✅ (`tests/Feature/Admin/AdminSidebarNavigationTest.php` — 4/4 PASS, 135 assertions)
+
+> **Status:** `TEST_VERIFIED` — All 53 admin sidebar routes return HTTP 200 for authenticated super-admin. Property Engine consolidated with 10 tools. Automated regression suite passing.
 
 ### P2 — Channel and iCal Reliability
 
