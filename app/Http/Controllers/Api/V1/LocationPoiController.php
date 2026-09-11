@@ -198,15 +198,22 @@ class LocationPoiController extends Controller
             $lng = (float) $validated['lng'];
 
             // 📊 Bölge özeti
+            $poiDensity = $this->calculatePoiDensity($lat, $lng);
+            $amenities = $this->getAmenitiesSummary($lat, $lng);
+
+            // Deterministic score estimation from POI and amenity density
+            $walkabilityScore = min(100, max(30, (int) ($poiDensity['density_score'] * 0.5 + ($amenities['shops'] + $amenities['parks']) * 5 + 40)));
+            $safetyScore = min(95, max(50, 75 + ($amenities['schools'] > 0 ? 10 : 0) + ($amenities['hospitals'] > 0 ? 5 : 0)));
+
             $profile = [
                 'location' => [
                     'lat' => $lat,
                     'lng' => $lng,
                 ],
-                'poi_density' => $this->calculatePoiDensity($lat, $lng),
-                'amenities' => $this->getAmenitiesSummary($lat, $lng),
-                'safety_score' => rand(65, 95), // Simulated data
-                'walkability_score' => rand(60, 90), // Simulated data
+                'poi_density' => $poiDensity,
+                'amenities' => $amenities,
+                'safety_score' => $safetyScore,
+                'walkability_score' => $walkabilityScore,
             ];
 
             LogService::info('neighborhood_profile_success', [

@@ -3,10 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 /**
- * @sab-ignore-catch
- */
-
-/**
  * @sab-ignore-service
  */
 
@@ -20,6 +16,7 @@ use App\Models\Ilce;
 use App\Models\Mahalle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class LocationController extends Controller
 {
@@ -41,6 +38,8 @@ class LocationController extends Controller
                 'data' => $provinces
             ]);
         } catch (\Exception $e) {
+            Log::error('LocationController::getProvinces failed', ['error' => $e->getMessage()]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'İller yüklenirken hata oluştu.'
@@ -68,6 +67,8 @@ class LocationController extends Controller
                 'data' => $districts
             ]);
         } catch (\Exception $e) {
+            Log::error('LocationController::getDistrictsByProvince failed', ['city_id' => $cityId, 'error' => $e->getMessage()]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'İlçeler yüklenirken hata oluştu: ' . $e->getMessage()
@@ -95,6 +96,8 @@ class LocationController extends Controller
                 'data' => $neighborhoods
             ]);
         } catch (\Exception $e) {
+            Log::error('LocationController::getNeighborhoodsByDistrict failed', ['district_id' => $districtId, 'error' => $e->getMessage()]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Mahalleler yüklenirken hata oluştu [ID: ' . $districtId . ']: ' . $e->getMessage()
@@ -124,6 +127,8 @@ class LocationController extends Controller
                 'data' => $neighborhood
             ]);
         } catch (\Exception $e) {
+            Log::error('LocationController::getNeighborhoodCoordinates failed', ['neighborhood_id' => $id, 'error' => $e->getMessage()]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Mahalle detayı alınamadı.'
@@ -160,6 +165,8 @@ class LocationController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
+            Log::error('LocationController::getDistrictCoordinates failed', ['district_id' => $id, 'error' => $e->getMessage()]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'İlçe detayı alınamadı: ' . $e->getMessage()
