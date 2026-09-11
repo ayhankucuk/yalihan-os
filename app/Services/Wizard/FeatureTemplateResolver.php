@@ -144,12 +144,28 @@ class FeatureTemplateResolver
                 'fc.slug as category_slug',
             ]);
 
-        return $this->collapseScopedAssignments(
+        $resolved = $this->collapseScopedAssignments(
             $rows,
             $resolvedMainCategoryId,
             $subCategoryId,
             $listingTypeId
         );
+
+        // A1 Guard: Log when no features are resolved — indicates an unconfigured
+        // category+listing_type combination (e.g. Arsa, İşyeri, Kiralık without seeded assignments).
+        // Callers (WizardFeatureController, PropertyPublicationPolicy) must treat an empty
+        // collection as "not ready" — never as "complete".
+        if ($resolved->isEmpty()) {
+            \Illuminate\Support\Facades\Log::warning('FeatureTemplateResolver: empty feature set resolved', [
+                'main_category_id'     => $mainCategoryId,
+                'resolved_main_cat_id' => $resolvedMainCategoryId,
+                'sub_category_id'      => $subCategoryId,
+                'listing_type_id'      => $listingTypeId,
+            ]);
+        }
+
+        return $resolved;
+
     }
 
     /**

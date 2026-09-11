@@ -201,6 +201,16 @@ class WizardSchemaStep2Test extends TestCase
         \Illuminate\Support\Facades\DB::table('feature_assignments')->delete();
         \Illuminate\Support\Facades\DB::table('features')->delete();
         \Illuminate\Support\Facades\DB::table('feature_categories')->delete();
+
+        // FeatureAssignmentSeeder → SlugMappingService → ilan_kategorileri lookup for Villa (id=8).
+        // seedTestData() only seeds konut(1) + daire(7). Ensure Villa exists before seeding.
+        $this->ensureKategori('villa', ['id' => 8, 'seviye' => 1, 'parent_id' => 1]);
+
+        // SlugMappingService also resolves YayinTipiSablonu by slug (e.g. 'villa-satilik').
+        // These records are provisioned by IlanKategoriSeeder + YayinTipiSeeder.
+        $this->seed(\Database\Seeders\IlanKategoriSeeder::class);
+        $this->seed(\Database\Seeders\YayinTipiSeeder::class);
+
         $this->seed(\Database\Seeders\FeatureAssignmentSeeder::class);
 
         // Correct cascade parameters:

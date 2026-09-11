@@ -70,9 +70,15 @@ class PropertyPublicationPolicy
             return $matrixPolicyIds;
         }
 
-        // Fallback: query DB for all active yayin_tipi of this kategori
-        // This ensures we don't break existing categories outside the matrix
+        // A1 Guard: No DB policy and not in matrix → empty means "no template configured".
+        // Callers MUST treat [] as "not ready", never as "all types allowed".
+        \Illuminate\Support\Facades\Log::warning('PropertyPublicationPolicy: no policy found for category', [
+            'kategori_id' => $kategoriId,
+            'note'        => 'Category is not in UPS matrix and has no UpsPolicy DB record. Feature template may be unconfigured.',
+        ]);
+
         return [];
+
     }
 
     /**
