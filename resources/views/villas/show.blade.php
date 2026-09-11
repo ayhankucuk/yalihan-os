@@ -92,7 +92,7 @@
     @foreach($villa->features as $index => $feature)
     {
       "@type": "LocationFeatureSpecification",
-      "name": "{{ $feature->label }}"
+      "name": "{{ $feature->name ?? $feature->label }}"
     }{{ $loop->last ? '' : ',' }}
     @endforeach
   ]
@@ -273,7 +273,7 @@
                             @foreach($villa->features as $feature)
                             <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
                                 <span class="material-symbols-outlined" style="font-size:20px; color: #C9A84C;">check</span>
-                                <span class="text-gray-700 dark:text-slate-200 dark:text-slate-300">{{ $feature->label }}</span>
+                                <span class="text-gray-700 dark:text-slate-200 dark:text-slate-300">{{ $feature->name ?? $feature->label }}</span>
                             </div>
                             @endforeach
                         </div>
