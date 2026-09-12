@@ -48,6 +48,7 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\IlanYayinlandiEvent::class => [
             \App\Listeners\NotifyLeadsOnNewListing::class,
             \App\Listeners\ActionCenter\IlanPublishedActionListener::class, // [Sprint 15] Action Center: lead matching check
+            \App\Listeners\CRM\StartDemandMatchingSaga::class, // CRM Decoupled Saga
         ],
         // Domain Wizard Events (Hexagonal / DDD Foundation)
         \App\Domain\Ilan\Events\WizardSubmitted::class => [
@@ -55,6 +56,10 @@ class EventServiceProvider extends ServiceProvider
             \App\Listeners\UpdateAnalyticsProjections::class,
             \App\Listeners\FindMatchingDemands::class,
             \App\Listeners\ActionCenter\IlanCreatedActionListener::class,
+            \App\Listeners\CRM\StartDemandMatchingSaga::class, // CRM Decoupled Saga
+        ],
+        \App\Events\CRM\DemandMatched::class => [
+            \App\Listeners\CRM\CreateActionCenterTaskForMatchedDemand::class,
         ],
         \App\Domain\Ilan\Events\WizardStepCompleted::class => [
             \App\Listeners\InvalidateIlanCache::class,

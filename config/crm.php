@@ -10,6 +10,14 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Strangler Fig Feature Flags
+    |--------------------------------------------------------------------------
+    */
+    'use_domain_talep' => (bool) env('FEATURE_DOMAIN_TALEP', false),
+    'demand_matching_enabled' => (bool) env('FEATURE_DEMAND_MATCHING', false),
+
     'matching' => [
         // Maximum number of listing candidates to process in memory after SQL pre-filtering
         'max_candidates' => 500,
