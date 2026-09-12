@@ -1,4 +1,11 @@
 # 🧱 STANDART UYGULAMA BLOĞU (SAB — PRODUCTION SEAL)
+
+> ## ⚠️ DEPRECATED — AKTİF KULLANIMDAN KALDIRILDI (2026-09-12)
+> **Bu dosya arşivlendi. Güncel mimari standartlar için:**
+> - **Runtime Authority:** `.sab/authority.json` (v6.1.1) — `.cursorrules` ile resmi SSOT ilan edildi
+> - **Mimari Anayasa:** `docs/ysos/SAAB_V7.md` — Board Resolution BR-2026-07-03 ile donduruldu
+> - **Bu dosya korunmaktadır** (referans veren eski dokümanlar kırılmamalı); içeriği değiştirmeyin.
+
 Version: 24.2.0 (Phase 12: Monetization & Financial Seal)
 
 SAB, projenin bağlayıcı teknik anayasasıdır.

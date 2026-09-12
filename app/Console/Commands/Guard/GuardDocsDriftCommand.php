@@ -23,8 +23,9 @@ class GuardDocsDriftCommand extends Command
         'php artisan context7:scan' => 'Doğru komut: php artisan sab:integrity-scan',
 
         // CI workflow isimleri (eski/yanlış referanslar)
-        'sab-guard.yml'             => 'Doğru CI workflow: gold-line.yml',
-        'postseal-guard.yml'        => 'Doğru CI workflow: gold-line.yml',
+        // Fix (2026-09-12): gold-line.yml dosyasi mevcut degil. Gercek aktif CI: core-ci.yml
+        'sab-guard.yml'             => 'Doğru CI workflow: core-ci.yml',
+        'postseal-guard.yml'        => 'Doğru CI workflow: core-ci.yml',
     ];
 
     /**
