@@ -1,3 +1,44 @@
+## Oturum 181 — 2026-09-12 | RC2 Paketleme — Talep Strangler Fig Commit + Tenant Bloke Paket
+
+**Kapsam:** RC2 dirty dosyaları iki pakete ayrıldı.
+
+```
+PAKET 1 — COMMIT EDİLDİ ✅
+Commit: 01eec131
+Dosyalar:
+  - config/crm.php          (feature flags)
+  - AppServiceProvider.php  (DI binding)
+  - EventServiceProvider.php (listener kayıtları)
+  - TalepController.php     (flag korumalı optional injection + CRUD/search)
+Test: 9/9 PASS (TalepControllerStranglerFigTest)
+
+PAKET 2 — BLOKE EDİLDİ ❌
+  - app/Models/Talep.php: tenant_id fillable
+  - Neden: BelongsToTenant trait eksik → mass-assignment yüzeyi genişler, koruma sağlamaz
+  - Sonraki görev: Talep tenant authority tasarımı (ayrı worktree)
+```
+
+**Kalan Dirty Dosyalar (RC2 kapsamı dışında — ayrı görev):**
+
+Bounded Context | Dosyalar
+---|---
+**Wizard Domain** | `IlanWizardController.php`, `app/Listeners/Wizard/`
+**Location Domain** | `LocationPoiController.php`, `PoiService.php`, `config/location.php`, `app/Domain/Location/`, `tests/Feature/Location/`
+**Database/Seeding** | `DatabaseSeeder.php`, `OzellikKategoriSeeder.php` (D), `PropertyHubOzelliklerSeeder.php` (D), `database/seeders/legacy/`
+**Cross-cutting** | `AGENTS.md`, `StoreOwnerIlanRequest.php`, `KisiScoringService.php`
+**Frontend/Views** | `app.js`, `show.blade.php`, `create.blade.php`
+**Routing** | `routes/admin.php`, `routes/admin/talepler.php`
+**Docs/Research** | `PROGRESS-TRACKER.md`, `YALIHAN_OS_RESEARCH/`, `docs/SAB/`, `docs/architecture/`
+
+**Sonraki Görev Öncelik Sırası:**
+1. **Talep tenant authority** — `BelongsToTenant` trait + domain test (ayrı worktree)
+2. **Wizard Domain** — ayrı branch
+3. **Location Domain** — ayrı branch
+4. Diğerleri — kapsam belirsiz, sahipleri tespit edilmeli
+
+---
+
+
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
 ## Oturum 180 — 2026-09-12 | RC2 Dirty State → Clean Commit
