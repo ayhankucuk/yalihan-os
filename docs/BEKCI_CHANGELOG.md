@@ -1,5 +1,41 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 180 — 2026-09-12 | RC2 Dirty State → Clean Commit
+
+**Kapsam:** Önceki oturumdan kalan dirty worktree temizlendi; 25 yeni dosya commit'lendi.
+
+```
+COMMIT: 557f79b7
+BRANCH: release-candidate/RC2
+TEST:   40/40 PASS (18 Feature + 22 Unit)
+GATE:   4/4 Antigravity PASS ✅
+```
+
+**Staged & Committed (25 dosya):**
+- Application/CRM/Services/MatchDemandsForListingUseCase
+- Domain/CRM/Contracts/TalepRepositoryInterface
+- Domain/CRM/DTOs/{DemandMatchResult, TalepCreateCommand, TalepListCriteria, TalepUpdateCommand}
+- Domain/CRM/Policies/DemandMatchingPolicy
+- Domain/CRM/Services/{Create,Delete,List,Match,Search,Update}TalepUseCase + DemandMatchingService
+- Events/CRM/DemandMatched
+- Infrastructure/CRM/EloquentTalepRepositoryAdapter
+- Listeners/CRM/{StartDemandMatchingSaga, CreateActionCenterTaskForMatchedDemand}
+- tests/Feature/CRM/{4 test dosyası}
+- tests/Unit/Domain/PropertyHub/CRM/TalepDomainCharacterizationTest
+
+**Kalan Dirty Dosyalar (ayrı görev):**
+- app/Http/Controllers/Admin/TalepController.php, Api/IlanWizardController.php, Api/V1/LocationPoiController.php
+- app/Models/Talep.php, app/Providers/{App,Event}ServiceProvider.php
+- config/crm.php, config/location.php, config/exchange.php
+- routes/admin.php, routes/admin/talepler.php
+- YALIHAN_OS_RESEARCH/, app/Domain/Location/, app/Listeners/Wizard/
+- database/seeders/legacy/, docs/SAB/, docs/architecture/
+
+---
+
+
+# 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
+
 ## Oturum 179 — 2026-09-12 | Forensic Audit C→A Adımları (RC2)
 
 **Kapsam:** Forensic audit bulgularının kontrollü temizliği tamamlandı.
