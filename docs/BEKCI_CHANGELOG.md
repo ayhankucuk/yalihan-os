@@ -1,5 +1,153 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 179 — 2026-09-12 | Forensic Audit C→A Adımları (RC2)
+
+**Kapsam:** Forensic audit bulgularının kontrollü temizliği tamamlandı.
+
+#### 1. A.1 — GuardDocsDriftCommand gold-line.yml Fix
+```
+Dosya: app/Console/Commands/Guard/GuardDocsDriftCommand.php (satır 26-27)
+Bug:   'gold-line.yml' -> 'Doğru CI: gold-line.yml' (phantom referans)
+Fix:   'core-ci.yml'   -> 'Doğru CI: core-ci.yml'
+Kanıt: authority.json:280 zaten dogrusunu söylüyordu
+        -> "core-ci.yml is the single active CI pipeline"
+
+Etki: docs/yalihan-project-brain-v3.md:L93 drift uyarisi DÜZELDI ✅
+Commit: c74d12d6
+```
+
+#### 2. A.2 — docs/SAB.md DEPRECATED
+```
+Dosya: docs/SAB.md (satır 1-7)
+Eklendi: ⚠️ DEPRECATED header
+  -> Runtime Authority: .sab/authority.json (v6.1.1)
+  -> Mimari Anayasa:  docs/ysos/SAAB_V7.md (BR-2026-07-03)
+Icrik: DEYISDIRILMADI (referans veren dosyalar kırılmamalı)
+
+Commit: c74d12d6
+```
+
+#### 3. Bilinen Kalan Sorun
+```
+guard:docs-drift self-reference bug:
+  verifiedDrift[0]: 'sab:integrity-scan' -> 'sab:integrity-scan'
+  Ayri gorev olarak ele alinacak (öncelik: DÜŞÜK)
+```
+
+---
+
+## Oturum 178 — 2026-09-12 | CRM Subdomain — Talep Domain & Demand Matching Saga Kademeli Strangler Fig (RC2 CERTIFIED) ✅
+
+**Kapsam:** 6 Mimari İlke (KNOWLEDGE, DECISION, ACTION) doğrultusunda Talep Domain ve Demand Matching Saga refactoru tamamlandı; katı DDD katman ayrımı, decoupled event saga, tam idempotency ve multi-tenant izolasyonu kanıtlandı (40/40 TESTS PASS).
+
+#### 1. Tamamlanan Mimari Bileşenler 🏛️
+- **Application Layer:**
+  - `App\Application\CRM\Services\MatchDemandsForListingUseCase` (Saga Orkestrasyonu, Port erişimi, DB Transaction, Event Dispatch)
+  - `App\Domain\CRM\Services\ListTaleplerUseCase`, `CreateTalepUseCase`, `UpdateTalepUseCase`, `DeleteTalepUseCase`, `SearchTaleplerUseCase`
+- **Domain Layer (Pure Business Logic):**
+  - `App\Domain\CRM\Services\DemandMatchingService` (Saf matematiksel skorlama motoru — veritabanı/IO bağımsız)
+  - `App\Domain\CRM\Policies\DemandMatchingPolicy` (Lokasyon: %40, Bütçe: %35, Tip: %25; Eşikler: 0-49 Ignore, 50-69 Weak, 70-84 Good, 85-100 Strong)
+  - `App\Domain\CRM\DTOs\DemandMatchResult`, `TalepCreateCommand`, `TalepUpdateCommand`, `TalepListCriteria`
+  - Driven Port: `App\Domain\CRM\Contracts\TalepRepositoryInterface`
+- **Infrastructure / Adapter & Event Backbone:**
+  - `App\Infrastructure\CRM\EloquentTalepRepositoryAdapter`
+  - Event: `App\Events\CRM\DemandMatched`
+  - Decoupled Listener: `App\Listeners\CRM\StartDemandMatchingSaga` (IlanYayinlandiEvent / WizardSubmitted → MatchDemands)
+  - ActionCenter Listener: `App\Listeners\CRM\CreateActionCenterTaskForMatchedDemand` (Idempotency Key: `tenant_id:listing_id:talep_id:demand_match`)
+- **Rollout Güvenliği (Strangler Fig):**
+  - `config('crm.use_domain_talep')` & `config('crm.demand_matching_enabled')` bağımsız çift feature flag.
+
+#### 2. Doğrulama & Test Kanıtları 🧪
+- `tests/Feature/CRM/DemandMatchingTenantIsolationTest.php`: **1/1 PASS** (Tenant A ilanının Tenant B talebiyle eşleşmediği kanıtlandı).
+- `tests/Feature/CRM/DemandMatchingIdempotencyTest.php`: **1/1 PASS** (Mükerrer eventlerin tek görev ürettiği kanıtlandı).
+- `tests/Feature/CRM/TalepContractParityTest.php`: **4/4 PASS** (Legacy vs Domain path %100 sözleşme denkliği).
+- `tests/Feature/CRM/DemandMatchingSagaTest.php`: **3/3 PASS**.
+- `tests/Feature/CRM/TalepControllerStranglerFigTest.php`: **9/9 PASS**.
+- `tests/Unit/Domain/PropertyHub/CRM/TalepDomainCharacterizationTest.php`: **22/22 PASS**.
+- **Antigravity Full Quality Gate:** **4/4 PASS (0 failure)**.
+
+---
+
+
+**Kapsam:** `POST /api/v1/location/poi-distances` akışı için karakterizasyon testi yazıldı (`tests/Feature/Location/LocationPoiCharacterizationTest.php`), eski kodun davranış kusurları ve sözleşme detayları kilitlendi.
+
+#### 1. Keşfedilen Mimari & Çalışma Zamanı Bulguları 🔍
+- **Sessiz SQLite SQL Hatası (Fail-Closed İhlali):**
+  - Mevcut `PoiService::findNearby` raw query içinde `HAVING distance_km <= ?` kullanıyor. SQLite test ortamında non-aggregate HAVING `General error: 1` fırlatıyor.
+  - `PoiService` bu hatayı `catch (\Exception $e)` bloğunda yutup `collect([])` dönüyor; `LocationPoiController` ise bunu `200 OK — "POI mesafeleri başarıyla hesaplandı"` zarfına sarıp istemciye boş liste veriyor.
+  - **Karar:** Hexagonal Adaptör ile hem MySQL hem SQLite uyumlu güvenli filtreleme yazılacak; testlerin boş dönmesi "başarı" kabul edilmeyecek.
+- **Sözleşme Bütünlüğü:**
+  - `data.pois` ve `data.data` (frontend geriye dönük uyumluluk mirror) korunmalı.
+  - `data.summary` (`total_found`, `by_type`, `closest_poi`, `farthest_poi`) ve `sealed: true` alanları Application Use Case'e taşınacak.
+- **Mesafe ve Yuvarlama:**
+  - `distance_km` = 2 hane ondalık, `distance` = tam sayı metre (`round($km * 1000)`).
+- **Rollback Güvencesi:**
+  - `config('location.use_domain_poi_search', false)` toggle eklenecek, rollback talimatına `php artisan config:clear` zorunluluğu yazıldı.
+
+#### 3. Bekçi Mimarisi Öğrenme Mührü (Enterprise 7-Layer Taxonomy) 🏛️
+- **Canonical Model:** `YALIHAN OS` mimari taksonomisi 7 katman olarak mühürlendi:
+  1. `CORE` (Anayasa + Sistem Kuralları + Güvenlik)
+  2. `DATA` (Properties, Guests, Reservations, CRM, Finance — SSOT)
+  3. `CAPABILITIES` (Domain Use Cases & Driven Ports)
+  4. `WORKFLOWS` (Hermes Event Bus & Sagas)
+  5. `AI` (Cortex, GPT, Claude, DeepSeek)
+  6. `INTEGRATIONS` (Airbnb, Booking, Telegram, WhatsApp, Google)
+  7. `ARCHIVE` (Karantina & Tarihsel Kayıtlar)
+- **Bekçi Knowledge Base:** `laravel-bekci` `record_learning` MCP aracı ile `learning_architecture_decision_2026-09-12T06-39-57.json` olarak kaydedildi.
+- **Referans Belge:** `docs/architecture/YALIHAN_OS_ENTERPRISE_TAXONOMY.md` oluşturuldu.
+
+---
+
+## Oturum 176 — 2026-09-12 | FAZ 4B-3 + FAZ 5: LocationValidationCapability Boundary Migration (6/6 GATES PASS) ✅
+
+**Kapsam:** IlanWizardController coordinate validation boundary'si domain service'e taşındı; duplicate kod kaldırıldı.
+
+#### 1. FAZ 4B-3 Durumu: NO-OP ✅
+- **Bulgı:** `WizardStepExecutor` V1 context'te hiçbir controller tarafından kullanılmıyor. `IlanWizardController::submitWizard()` legacy session-tabanlı akışı kullanıyor.
+- **Karar:** FAZ 4B-3 delegation'ı şu anda uygulanabilir değil — `WizardStepExecutor`'ın tamamen prodüksiyona geçmesi gerekiyor. Atlandı.
+
+#### 2. FAZ 5: LocationValidationCapability Entegrasyonu ✅
+- **Sorun:** `IlanWizardController::validateAsama3()` kendi Turkey-wide bounds (36.1-42.1 / 26.1-44.8) kontrolü yapıyordu. `ListingStateMachine` ise `LocationValidationCapability` kullanıyor (Muğla-specific: 36.12-37.35 / 26.25-29.75).
+- **Çözüm:** `LocationValidationCapability` → `IlanWizardController`'a enjekte edildi. Eski `validateCoordinates()` method'u kaldırıldı. Artık tek bir domain validator tüm koordinat kontrollerinden sorumlu.
+
+#### 3. Değişiklikler ✅
+- `app/Http/Controllers/Api/IlanWizardController.php`
+  - `RealityCheckException` import eklendi
+  - `LocationValidationCapability` import + constructor injection eklendi
+  - `validateCoordinates()` → try/catch ile `locationValidator->validate()` çağrısı
+  - Eski `validateCoordinates()` method'u kaldırıldı
+
+#### 4. Test & Kalite Doğrulama ✅
+- PHP syntax kontrolü → **0 hata**
+- `./scripts/tools/antigravity-full-gate.sh` → **6/6 Gates PASS**
+
+---
+
+## Oturum 175 — 2026-09-12 | FAZ 4B: Wizard Event → Listener Entegrasyonu (6/6 GATES PASS) ✅
+# 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
+
+## Oturum 175 — 2026-09-12 | FAZ 4B: Wizard Event → Listener Entegrasyonu (6/6 GATES PASS) ✅
+
+**Kapsam:** EventServiceProvider'a WizardSubmitted ve WizardStepCompleted domain event listener'ları bağlandı.
+
+#### 1. Mimari Düzeltme ✅
+- **Sorun:** `WizardSubmitted` ve `WizardStepCompleted` domain event'leri oluşturulmuştu ancak `EventServiceProvider::$listen` içinde kayıtlı değillerdi. Sihirbaz tamamlandığında tersine talep eşleştirme (lead matching), analitik güncelleme ve Action Center görevleri **tetiklenmiyordu**.
+- **Çözüm:** Proxy listener pattern ile mevcut IlanCreated listener zincirine bağlantı kuruldu.
+
+#### 2. Yeni Dosyalar ✅
+- `app/Listeners/Wizard/HandleWizardSubmission.php` — `WizardSubmitted` event'ini yakalar, `IlanCreated` event'ine proxy yaparak mevcut listener'lardaki tip imzalarını bozmadan (`FindMatchingDemands`, `IlanCreatedActionListener`) lead matching, n8n bildirimi ve Action Center görevlerini tetikler. **Idempotent**: sadece `yayinda/yayinda_bekleyen` durumları için lead matching yapar, taslak aşamasında sadece cache + analytics güncellenir.
+- `app/Listeners/Wizard/HandleWizardStepCompleted.php` — `WizardStepCompleted` event'ini yakalar, her adım sonrası kısmi cache invalidation + analytics projection güncellenir.
+
+#### 3. EventServiceProvider Güncellemesi ✅
+- `WizardSubmitted` → `HandleWizardSubmission` (IlanCreated chain proxy, cache flush, analytics sync, Action Center)
+- `WizardStepCompleted` → `HandleWizardStepCompleted` (partial cache + analytics)
+
+#### 4. Test & Kalite Doğrulama ✅
+- `./scripts/tools/antigravity-full-gate.sh` — **6/6 Gates PASS**.
+- PHP syntax kontrolü: `HandleWizardSubmission`, `HandleWizardStepCompleted`, `EventServiceProvider` → **0 hata**.
+
+---
+
 ## Oturum 174 — 2026-09-12 | Wizard & Feature System Architecture Stabilization + CQRS Auto-Sync (103/103 PASS) ✅
 
 **Kapsam:** Kategori, Özellik ve Şablon sistemlerinin tam mimari uyumlaştırması, CQRS okuma modellerinin senkronizasyonu, `ekstra_ozellikler` alanı onarımı ve frontend/public endpoint sertifikasyonu tamamlandı.
