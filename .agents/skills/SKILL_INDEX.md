@@ -17,6 +17,9 @@ Agent bir dosyayı açtığında veya değiştireceği zaman bu tabloya bakarak 
 | `*.blade.php` (Alpine/JS) | `blade-alpine-runtime-guardian` | Script kapanışı, Alpine scope, window bağlama |
 | `app/Http/Controllers/Api/*Ilan*` | `api-contract-envelope-guardian` | JSON envelope drift, `status`/`yayin_durumu` alan eşleşmesi |
 | Git worktree, `git worktree` | `multi-agent-worktree-sandbox` | Worktree izolasyonu, ajan başına branch, handoff |
+| Git dirty tree, cleanup | `git-worktree-hygiene` | Dirty tree sınıflandırma, güvenli paketleme, envanter yönetimi |
+| Commit öncesi / hot-spot | `conflict-guard-preflight` | Pre-commit hot-spot taraması, kilit edinme/bırakma |
+| Envanter analizi | `dirty-inventory-generator` | Dirty dosya analizi, risk matrisi ve envanter raporu üretimi |
 | `docs/ERA_V/*` | `saab` | ERA roadmap, mimari kararlar |
 | `docs/architecture/*` | `saab` + `core-engineering-guard` | Mimari anayasa uyumu |
 
