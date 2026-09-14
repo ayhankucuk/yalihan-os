@@ -1039,3 +1039,44 @@ Aktif kullanici dosyalari:
 4. `workforce_executions` aktif veri var mi? (M-04)
 5. `ozellikler` ve `ozellik_kategorileri` veri var mi? (S-02)
 
+---
+
+## 2026-09-14 — RC2 Dirty Inventory Temizlik Oturumu
+
+**Amaç:** 32 modified + 42 untracked → temiz git durumu
+**Yöntem:** git diff --staged, git status, dosya sınıflandırma, Conflict Guard pre-commit
+**Risk:** Düşük (read + commit; hot-spot'lar staged dışı bırakıldı)
+**Kanıt Seviyesi:** `REPO_VERIFIED` (git log, git status)
+
+**Commit özeti:**
+
+| # | Commit | Hash | Dosya | Açıklama |
+|---|--------|------|-------|----------|
+| 1 | RC2-BRAIN | `30ca0bc9` | 6 doküman | Proje brain tracking dokümanları |
+| 2 | ARCH-TAXONOMY | `420ac8c4` | 2 doküman | Enterprise mimari standartlar |
+| 3 | ADR-043 | `166cac3c` | **20 dosya** | Canonical form contract — DDD Value Objects, Domain Policy, Strangler Fig bridge. 25 test yeşil |
+| 4 | RC2-MISC | `6df04061` | 7 dosya | core-engineering-guard skill, SAB bounded context map, MCP script, CRM test |
+| 5 | RC2-GOVERNANCE | `1c3df54d` | 13 dosya | Agent skills, project brain, BEKCI audit services |
+| 6 | RC2-CHORE | `76352506` | 5 dosya | BEKCI health command refactor, CRM scoring, seeder order, routes |
+
+**Silinen:** `TENANT-FEATURE-ASSIGNMENT-01.md` (superseded), `YALIHAN_OS_RESEARCH/` (gezgin)
+
+**Kalan askıya alınan (18 dosya):**
+- 4 hot-spot (Conflict Guard blocker): `.sab/authority.json`, `.sab/sab-baseline.json`, `config/feature-flags.php`, `routes/admin.php`
+- 13 review gereken: 5 migration, 5 controller/service/request, 2 view, 1 config
+- 1 untracked hot-spot: `config/exchange.php`
+
+**Conflict Guard hot-spot'lar:**
+- `config/feature-flags.php` → `conflict-guard.sh --acquire` gerekli
+- `routes/admin.php` → `conflict-guard.sh --acquire` gerekli
+- `.sab/authority.json` + `.sab/sab-baseline.json` → SAB sahibi gerekli
+- `config/exchange.php` → hot-spot, lock gerekli
+
+**ADR-043 detay (166cac3c):**
+- Domain Value Objects: `FieldKey`, `FieldDefinition`, `ValidationRule` (pure PHP)
+- Domain Policy: `CategoryFieldPolicy` (konut, arsa, isyeri, yazlik)
+- Adapter: `DomainFieldResolverAdapter` (Strangler Fig bridge)
+- Listeners: `HandleWizardStepCompleted`, `HandleWizardSubmission` (queueable)
+- Tests: `FormFieldContractParityTest` (8 senaryo), `CategoryFieldPolicyTest`, `FieldKeyTest`, `ValidationRuleTest` (25 test, 103 assertion)
+- Runtime switch: `config('feature-flags.use_domain_form_policy')` false→legacy, true→domain
+

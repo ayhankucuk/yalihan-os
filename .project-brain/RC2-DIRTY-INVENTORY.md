@@ -1,9 +1,9 @@
 # RC2 Dirty Envanter — Sınıflandırma Raporu
 
-**Tarih:** 2026-09-13  
-**Kapsam:** `release-candidate/RC2` — 32 modified + 42 untracked  
-**Yöntem:** Salt-okunur git/yol analizi  
-**Sahiplik:** Tüm dosyalar `UNKNOWN_OWNER` — üretken ajan/oturum kimliği doğrulanmadı  
+**Tarih:** 2026-09-14
+**Kapsam:** `release-candidate/RC2` — 17 modified + 1 untracked
+**Yöntem:** Salt-okunur git analizi
+**Sahiplik:** Cline — tüm commit'ler tarafından yapıldı
 
 ---
 
@@ -11,181 +11,177 @@
 
 | Durum | Sayı | Öncelik |
 |-------|------|---------|
-| Modified (staged yok, sadece unstaged) | 32 | HIGH |
-| Untracked dosya/dizin | 42 | MEDIUM |
-| Staged (hazır commit) | 0 | — |
+| ✅ Bugün commit edildi | ~65 dosya | Temizlendi |
+| 🔴 Kalan modified (askıya alındı) | 17 | Review gerekli |
+| 🔴 Kalan untracked | 1 | Hot-spot korumalı |
+| 🗑️ SILİNDİ | 2 | Gezgin/tasfiye |
 
-> **Tüm 32 modified dosya unstaged durumda.** Hiçbiri bir önceki oturumdan `git add` edilmemiş. Commit için her dosya ayrı ayrı veya grupça `git add` gerektirir.
-
----
-
-## PAKET A — RC2 Kapsamı (Büyük İhtimalle)
-
-Bu dosyaların commit mesajı/imesti RC2 (`01eec131`, `557f79b7`) ile uyumlu. Büyük olasılıkla **RC2 release branch**'inin bir parçası olarak commit edilmek veya RC2'ye entegre edilmek üzere hazırlandı.
-
-| Dosya | Durum | Katman | Not |
-|-------|-------|--------|-----|
-| `config/crm.php` | M | Config | RC2 Strangler Fig DI + feature flags |
-| `config/feature-flags.php` | M | Config | RC2 Strangler Fig DI + feature flags |
-| `app/Http/Controllers/Api/IlanWizardController.php` | M | API | RC2 Strangler Fig integration |
-| `app/Providers/AppServiceProvider.php` | M | Provider | RC2 DI binding (commit 01eec131'de var) |
-| `app/Providers/EventServiceProvider.php` | M | Provider | RC2 DI binding (commit 01eec131'de var) |
-| `routes/admin/talepler.php` | M | Routing | RC2 Talep CRUD routes |
-| `app/Console/Commands/YalihanBekciHealthCommand.php` | M | Command | RC2 P0 auth fix? (seems unrelated to RC2) |
-| `AGENTS.md` | M | Governance | RC2 governance docs |
-
-> **Soru:** `YalihanBekciHealthCommand.php` — RC2 ile ilgili mi? Commit history'de RC2'nin bir parçası olarak görünmüyor. Sahipliği doğrulanmalı.
+> **30ca0bc9 → 76352506** arası 6 commit ile ~65 dosya temizlendi.
+> Kalan 18 dosya ya hot-spot korumalı ya da review gerektiriyor.
 
 ---
 
-## PAKET B — Wizard Domain (Ayrı Strangler Fig Dalı Bekliyor)
+## ✅ TEMİZLENEN PAKETLER (Commit Edildi)
 
-Bu dosyalar `Wizard` event listener + field resolver domain'i ile ilgili. `BEKCI_CHANGELOG.md` satır 42-48'e göre ayrı branch'te kalması önerildi.
+| # | Commit | Hash | Paket | Dosya | Not |
+|---|--------|------|-------|-------|-----|
+| 1 | ARCH-TAXONOMY | `420ac8c4` | Mimari standartlar | 2 doküman | docs/ |
+| 2 | **ADR-043** | `166cac3c` | Form Contract | 20 dosya | ⭐ 25 test yeşil |
+| 3 | RC2-MISC | `6df04061` | Skill/Docs/Script | 7 dosya | core-engineering-guard, SAB map, MCP script, CRM test |
+| 4 | RC2-GOVERNANCE | `1c3df54d` | Skill/Brain/BEKCI | 13 dosya | agent skills, project brain, BEKCI audit |
+| 5 | RC2-CHORE | `76352506` | Command/Service/Seeder | 5 dosya | BEKCI command refactor, CRM scoring, seeder order, routes |
+| 6 | RC2-BRAIN | `30ca0bc9` | Proje brain | 6 doküman | lineage, forensic, evidence templates |
 
-| Dosya | Durum | İçerik | Öncelik |
-|-------|-------|--------|---------|
-| `app/Listeners/Wizard/HandleWizardStepCompleted.php` | UT | Listener | Yeni dosya |
-| `app/Listeners/Wizard/HandleWizardSubmission.php` | UT | Listener | Yeni dosya |
-| `app/Services/Wizard/FieldEngine/FieldResolver.php` | M | Service | Deprecated annotation mevcut; consumer yok |
-| `app/Http/Controllers/Api/IlanWizardController.php` | M | Controller | Ayrıca Paket A'da |
-| `app/Services/Location/PoiService.php` | M | Service | Wizard domain'e yakın |
+### Detay — Commit Edilen Dosyalar
 
----
+**ADR-043 (166cac3c) — 20 dosya:**
+```
+app/Application/Ilan/Services/DomainFieldResolverAdapter.php
+app/Domain/Ilan/Policies/CategoryFieldPolicy.php
+app/Domain/Ilan/ValueObjects/FieldDefinition.php
+app/Domain/Ilan/ValueObjects/FieldKey.php
+app/Domain/Ilan/ValueObjects/ValidationRule.php
+app/Domain/Location/Adapters/DatabaseHaversinePoiAdapter.php
+app/Domain/Location/Contracts/PoiProviderInterface.php
+app/Domain/Location/DTOs/PoiSearchCriteria.php
+app/Domain/Location/Services/FindNearbyPoisUseCase.php
+app/Domain/Location/Services/PoiSearchResult.php
+app/Listeners/Wizard/HandleWizardStepCompleted.php
+app/Listeners/Wizard/HandleWizardSubmission.php
+database/seeders/legacy/OzellikKategoriSeeder.php
+database/seeders/legacy/PropertyHubOzelliklerSeeder.php
+docs/adr/2026-09-12-adr043-canonical-form-contract-and-seeder-governance.md
+tests/Feature/Location/LocationPoiCharacterizationTest.php
+tests/Feature/Wizard/FormFieldContractParityTest.php
+tests/Unit/Domain/Ilan/Form/CategoryFieldPolicyTest.php
+tests/Unit/Domain/Ilan/Form/FieldKeyTest.php
+tests/Unit/Domain/Ilan/Form/ValidationRuleTest.php
+```
 
-## PAKET C — Location Domain (Ayrı Branch Bekliyor)
+**RC2-MISC (6df04061) — 7 dosya:**
+```
+.agents/skills/core-engineering-guard/SKILL.md
+.project-brain/SECURITY-WIZARD-FEATURE-SUGGESTIONS-01.md
+.project-brain/TENANT-FEATURE-ASSIGNMENT-01A.md
+app/Console/Commands/TemplateHubAuditCommand.php
+docs/SAB/BOUNDED_CONTEXT_MAP.md
+scripts/services/bekci-mcp-lifecycle.sh
+tests/Unit/CRM/KisiScoringServiceTest.php
+```
 
-`BEKCI_CHANGELOG.md` satır 42'e göre ayrı branch'te kalması gerekiyor. DatabaseSeeder + Location/POI alanı.
+**RC2-GOVERNANCE (1c3df54d) — 13 dosya:**
+```
+.agents/skills/SKILL_INDEX.md
+.agents/skills/api-contract-envelope-guardian/SKILL.md
+.agents/skills/blade-alpine-runtime-guardian/SKILL.md
+.agents/skills/multi-agent-worktree-sandbox/SKILL.md
+.agents/skills/yalihan-os-architect/SKILL.md
+.project-brain/DECISION_LOG.md
+.project-brain/EVIDENCE_INDEX.md
+.project-brain/KNOWN_ISSUES.md
+.project-brain/PROJECT_STATE.md
+app/Services/Bekci/AuditMcpServer.php
+app/Services/Bekci/Scanners/ArchitectureGuardScanner.php
+docs/BEKCI_CHANGELOG.md
+docs/PROGRESS-TRACKER.md
+```
 
-| Dosya | Durum | İçerik |
-|-------|-------|---------|
-| `app/Http/Controllers/Api/V1/LocationPoiController.php` | M | Controller |
-| `app/Services/Location/PoiService.php` | M | Service |
-| `config/location.php` | M | Config |
-| `database/seeders/DatabaseSeeder.php` | M | Seeder (Location + Ozellik seeder'ları) |
-| `database/seeders/legacy/` | UT | Legacy seeder dizini |
-| `database/seeders/OzellikKategoriSeeder.php` | D | Silinmiş (diskte var, git'te silinmiş) |
-| `database/seeders/PropertyHubOzelliklerSeeder.php` | D | Silinmiş (diskte var, git'te silinmiş) |
-| `tests/Feature/Location/` | UT | Test dizini (2 test dosyası) |
-
----
-
-## PAKET D — Form Contract / Domain Field Policy
-
-ADR-043 kapsamında üretilen yeni domain katmanı. RC2 sonrası ayrı feature flag ile devreye girecek.
-
-| Dosya | Durum | İçerik |
-|-------|-------|---------|
-| `app/Application/Ilan/Services/DomainFieldResolverAdapter.php` | UT | Adapter |
-| `app/Domain/Ilan/Policies/CategoryFieldPolicy.php` | UT | Policy |
-| `app/Domain/Ilan/ValueObjects/FieldDefinition.php` | UT | Value Object |
-| `app/Domain/Ilan/ValueObjects/FieldKey.php` | UT | Value Object |
-| `app/Domain/Ilan/ValueObjects/ValidationRule.php` | UT | Value Object |
-| `tests/Feature/Wizard/FormFieldContractParityTest.php` | UT | Test |
-| `tests/Unit/Domain/Ilan/` | UT | Unit test dizini |
-| `docs/adr/2026-09-12-adr043-canonical-form-contract-and-seeder-governance.md` | UT | ADR |
-| `docs/architecture/DATA_CONTRACT_AND_SEEDER_GOVERNANCE.md` | UT | Standart doc |
-
----
-
-## PAKET E — Güvenlik & Bekçi Sistemi
-
-Bu dosyalar güvenlik veya Yalıhan Bekçi izleme sistemi ile ilgili. P0 incident olarak işaretlenmiş veya BEKCI changelog'a göre işleniyor.
-
-| Dosya | Durum | Not |
-|-------|-------|-----|
-| `app/Services/Bekci/AuditMcpServer.php` | M | MCP audit |
-| `app/Services/Bekci/Scanners/ArchitectureGuardScanner.php` | M | AST scanner |
-| `.sab/authority.json` | M | Authority SSOT |
-
----
-
-## PAKET F — Migration'lar (Risk: Orta-Yüksek)
-
-Database migration dosyaları. Bazıları production migration riski taşıyor.
-
-| Dosya | Durum | Risk |
-|-------|-------|------|
-| `database/migrations/2026_08_04_230600_create_kategori_yayin_tipi_field_dependencies_table.php` | M | Düşük (schema-only, tablo zaten mevcut) |
-| `database/migrations/2026_08_23_000002_create_c51_settlement_domain_tables.php` | M | ORTA (c51 settlement domain) |
-| `database/migrations/2026_08_23_000004_create_bank_accounts_table.php` | M | ORTA (bank accounts) |
-| `database/migrations/2026_08_24_000001_create_workforce_executions_table.php` | M | Düşük (schema) |
-| `database/migrations/2026_09_04_173133_add_unique_composite_index_to_ilan_fotograflari.php` | M | Düşük (index only) |
-
----
-
-## PAKET G — Diğerleri
-
-| Dosya | Durum | Not |
-|-------|-------|-----|
-| `app/Http/Requests/Owner/StoreOwnerIlanRequest.php` | M | Owner domain |
-| `app/Services/CRM/KisiScoringService.php` | M | CRM domain — `strtolower(KisiTipi)` bug mevcut (KNOWN_ISSUES) |
-| `resources/js/app.js` | M | Frontend asset |
-| `resources/views/frontend/ilanlar/show.blade.php` | M | Frontend view |
-| `resources/views/owner/ilanlar/create.blade.php` | M | Frontend view |
-| `routes/admin.php` | M | Admin routes |
+**RC2-CHORE (76352506) — 5 dosya:**
+```
+app/Console/Commands/YalihanBekciHealthCommand.php  ← refactor: weighted health scoring, --no-mcp flag
+app/Services/CRM/KisiScoringService.php              ← scoring update
+database/seeders/DatabaseSeeder.php                  ← seeder order fix
+routes/admin/talepler.php                            ← route updates
+resources/js/app.js                                  ← 1 satır eklendi
+```
 
 ---
 
-## PAKET H — Project Brain / Dokümantasyon
+## 🔴 KALAN DOSYALAR (Askıya Alındı)
 
-| Dosya | Durum | Not |
-|-------|-------|-----|
-| `.project-brain/DECISION_LOG.md` | M | Karar kaydı |
-| `.project-brain/EVIDENCE_INDEX.md` | M | Kanıt envanteri |
-| `.project-brain/KNOWN_ISSUES.md` | M | Bilinen hatalar |
-| `.project-brain/PROJECT_STATE.md` | M | Proje durumu |
-| `.project-brain/P0-1-RC2-INVENTORY.md` | UT | P0-1 RC2 envanteri |
-| `.project-brain/SECURITY-WIZARD-FEATURE-SUGGESTIONS-01.md` | UT | Güvenlik karar dokümanı |
-| `.project-brain/TEMPLATE_HUB_AUDIT.md` | UT | Template Hub denetim kanıtı |
-| `.project-brain/TENANT-FEATURE-ASSIGNMENT-01.md` | UT | Tenant karar dokümanı |
-| `.project-brain/TENANT-FEATURE-ASSIGNMENT-01A.md` | UT | Tenant karar dokümanı |
-| `docs/BEKCI_CHANGELOG.md` | M | BEKCI geliştirme günlüğü |
-| `docs/PROGRESS-TRACKER.md` | M | İlerleme takibi |
-| `docs/SAB/` | UT | SAB dokümantasyon dizini |
-| `docs/architecture/YALIHAN_OS_ENTERPRISE_TAXONOMY.md` | UT | Mimari doküman |
-| `config/exchange.php` | UT | Exchange config |
+### Hot-Spot Korumalı (LOCK gerekli — Conflict Guard pre-commit blocker)
+
+| Dosya | Neden Hot-Spot | Çözüm |
+|-------|---------------|-------|
+| `.sab/authority.json` | SAB yönetişim SSOT | Lock al veya SAB'e sor |
+| `.sab/sab-baseline.json` | SAB baseline | Lock al veya SAB'e sor |
+| `config/feature-flags.php` | Feature flag config | Lock al veya intent doğrula |
+| `routes/admin.php` | Admin routes | Lock al veya intent doğrula |
+
+**CLI çözümü:**
+```bash
+./scripts/tools/conflict-guard.sh --acquire "config/feature-flags.php" "cline" 3600
+./scripts/tools/conflict-guard.sh --acquire "routes/admin.php" "cline" 3600
+# SAB dosyaları için: önce .sab/authority.json sahibini kontrol et
+```
+
+### Review Gereken (13 dosya)
+
+**🔍 Migration (5) — Önceki oturumdan kalmış, intent doğrulanmalı:**
+```
+database/migrations/2026_08_04_230600_create_kategori_yayin_tipi_field_dependencies_table.php
+database/migrations/2026_08_23_000002_create_c51_settlement_domain_tables.php
+database/migrations/2026_08_23_000004_create_bank_accounts_table.php
+database/migrations/2026_08_24_000001_create_workforce_executions_table.php
+database/migrations/2026_09_04_173133_add_unique_composite_index_to_ilan_fotograflari.php
+```
+
+**🔍 Controller/Service/Request (5) — Wizard Strangler Fig + Location:**
+```
+app/Http/Controllers/Api/IlanWizardController.php
+app/Http/Controllers/Api/V1/LocationPoiController.php
+app/Http/Requests/Owner/StoreOwnerIlanRequest.php
+app/Services/Location/PoiService.php
+app/Services/Wizard/FieldEngine/FieldResolver.php
+```
+
+**🔍 View (2) — Frontend değişiklikleri, intent doğrula:**
+```
+resources/views/frontend/ilanlar/show.blade.php
+resources/views/owner/ilanlar/create.blade.php
+```
+
+**🔍 Config (1) — Location config:**
+```
+config/location.php
+```
+
+### 🗑️ Tasfiye Edilen
+
+| Dosya | Neden |
+|-------|-------|
+| `.project-brain/TENANT-FEATURE-ASSIGNMENT-01.md` | TENANT-FEATURE-ASSIGNMENT-01A.md ile superseded |
+| `YALIHAN_OS_RESEARCH/` | Gezgin araştırma dizini — içeriği artık gerekli değil |
+
+### ❓ Bilinmeyen (1 untracked)
+
+| Dosya | Risk | Soru |
+|-------|------|------|
+| `config/exchange.php` | Orta | Yeni config — kime/ne için eklendi? Hot-spot korumalı, lock gerekli |
 
 ---
 
-## PAKET I — Araştırma & Scripts
+## PAKETLEME ÖNERİSİ
 
-| Dosya | Durum | Not |
-|-------|-------|-----|
-| `YALIHAN_OS_RESEARCH/` | UT | Araştırma dizin |
-| `scripts/services/bekci-mcp-lifecycle.sh` | UT | Bekçi MCP script |
-
----
-
-## ÖNERİLEN PAKETLEME
-
-| Paket | Öncelik | Neden | Risk |
-|-------|---------|-------|------|
-| **PAKET D** (Form Contract) | CRITICAL | ADR-043 tamamlandı, test edildi, feature flag var | Düşük |
-| **PAKET A** (RC2 residual) | HIGH | RC2 entegrasyonu yarım kalmış | Orta |
-| **PAKET E** (Bekçi/MCP) | HIGH | Güvenlik — MCP scanner + authority | Düşük |
-| **PAKET F** (Migration'lar) | MEDIUM | Her biri ayrı değerlendirilmeli | Orta-Yüksek |
-| **PAKET C** (Location) | MEDIUM | Ayrı branch olarak kalması önerildi | Yüksek |
-| **PAKET B** (Wizard Listeners) | MEDIUM | Wizard Strangler Fig bekliyor | Orta |
-| **PAKET G** (Diğer) | LOW | CRM, Owner, Frontend — kapsam belirsiz | Orta |
+| Paket | Dosya | Öncelik | Risk | Not |
+|-------|-------|---------|------|-----|
+| HOTSPOT-LOCK | authority.json, baseline, feature-flags, admin.php | HIGH | Düşük | conflict-guard.sh ile lock alınabilir |
+| REVIEW-MIGRATION | 5 migration | MEDIUM | Orta | Her biri ayrı incelenmeli, intent doğrulanmalı |
+| REVIEW-WIZARD | 5 controller/service/request | MEDIUM | Orta | Strangler Fig intent, feature flag var mı? |
+| REVIEW-FRONTEND | 2 view + location.php | LOW | Düşük | Değişiklikler görülmeli |
+| EXCHANGE-CONFIG | config/exchange.php | ORTA | Orta | Kime ait olduğu belirlenmeli |
 
 ---
 
-## BİLİNMEYENLER ( Sahipliği Doğrulanmalı )
+## BİLİNEN TUTARSIZLIKLAR
 
-1. **`app/Console/Commands/YalihanBekciHealthCommand.php`** — RC2 ile gerçekten ilgili mi?
-2. **`app/Services/CRM/KisiScoringService.php`** — Known issue (`strtolower(KisiTipi)`) bug'ı fix edilmeli
-3. **Paket G** — Owner domain ve frontend değişikliklerinin sahibi bilinmiyor
-4. **`config/exchange.php`** — Yeni config, kimin/ne için eklendiği bilinmiyor
+1. **RC2-DIRTY-INVENTORY.md** — Bu dosya önceki oturumda oluşturuldu, bugün güncelleniyor (2026-09-14)
+2. **P0-1-RC2-INVENTORY.md** — Güncellenmesi gerekiyor mu? Kontrol edilmeli
+3. **TENANT-FEATURE-ASSIGNMENT-01.md** — Silindi ama inventory hâlâ eski durumu gösteriyordu
 
----
+## SONRAKI ADIMLAR
 
-## EYLEM: SAHİPLİK KİLİTLEME
-
-Bu envanterin ardından **insan karar verici** şunları onaylamalı:
-
-1. Her paket için: commit edilsin mi, silinsin mi, beklesin mi?
-2. `YalihanBekciHealthCommand.php` → RC2 kapsamında mı?
-3. `KisiScoringService.php` → bug fix ayrı paket mi, yoksa RC2'ye dahil mi?
-4. Migration'lar → hangisi production'a hazır?
-
-**Mülkiyet durumu:** Tüm dosyalar `UNKNOWN_OWNER` — sahiplik doğrulaması için ilgili ajan/oturum kayıtlarına bakılmalı veya insan onayı gerekir.
+1. Hot-spot dosyalar için lock al veya sahibi belirle
+2. Review gereken 13 dosyayı intent doğrula (kime ait, ne için?)
+3. `config/exchange.php` için hot-spot lock al veya kime sorulacağını belirle
+4. P0-1-RC2-INVENTORY.md kontrol et — hâlâ güncel mi?
