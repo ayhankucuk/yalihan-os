@@ -82,7 +82,7 @@
                 </label>
                 <div class="relative">
                     <select name="mahalle_id" id="mahalle_id" data-context7-field="mahalle_id" disabled
-                               focus:ring-4 focus:ring-blue-500 dark:focus:ring-blue-400/20 focus:border-orange-500 dark:focus:border-orange-400
+                               focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 dark:focus:border-amber-400
                                transition-all duration-200
                                hover:border-gray-400 dark:hover:border-gray-500
                                cursor-pointer
@@ -94,7 +94,7 @@
                         <option value="">Mahalle Seçin...</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <svg class="w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors"
+                        <svg class="w-5 h-5 text-gray-400 group-focus-within:text-amber-500 transition-colors"
                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
@@ -108,7 +108,7 @@
             <label for="adres"
                 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2 dark:text-slate-100">
                 <span
-                    class="flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-bold">
+                    class="flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-xs font-bold">
                     4
                 </span>
                 Detaylı Adres
@@ -132,7 +132,7 @@
                            bg-white dark:bg-gray-800
                            text-black dark:text-white
                            placeholder-gray-400 dark:placeholder-gray-500
-                           focus:ring-4 focus:ring-blue-500 dark:focus:ring-blue-400/20 focus:border-orange-500 dark:focus:border-orange-400
+                           focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 dark:focus:border-amber-400
                            transition-all duration-200
                            hover:border-gray-400 dark:hover:border-gray-500
                            resize-y min-h-[80px]
@@ -283,14 +283,14 @@
             {{-- 🗺️ Harita Container - VanillaLocationManager kullanıyor --}}
             <div class="relative">
                 <div id="map" data-lat-field="enlem" data-lng-field="boylam" data-address-field="adres"
-                    class="w-full rounded-2xl border-4 border-white dark:border-slate-800 overflow-hidden shadow-2xl ring-4 ring-green-500/10"
+                    class="w-full rounded-2xl border-4 border-white dark:border-slate-800 overflow-hidden shadow-sm ring-2 ring-green-500/20"
                     role="application" aria-label="Harita" style="height: 500px;">
                     {{-- Loading state - VanillaLocationManager başlatılana kadar gösterilir --}}
                     <div class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800"
                         id="map-loading" role="alert" aria-live="polite" aria-busy="true">
                         <div class="text-center">
                             <div
-                                class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white dark:bg-slate-900 shadow-xl mb-4">
+                                class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white dark:bg-slate-900 shadow-sm mb-4">
                                 <svg class="w-10 h-10 text-green-500 animate-pulse" fill="none"
                                     stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -307,10 +307,10 @@
                 <div class="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
                     {{-- Map Type Toggle --}}
                     <div
-                        class="bg-white dark:bg-slate-900 bg-opacity-95 dark:bg-opacity-95 backdrop-blur-md rounded-xl shadow-xl border-2 border-gray-200 dark:border-slate-800 p-1.5 text-gray-900 dark:text-white dark:border-slate-700 dark:text-slate-100">
+                        class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-1.5 text-slate-900 dark:text-slate-100">
                         <div class="flex gap-1" role="toolbar" aria-label="Harita görünüm seçici">
                             <button type="button" id="button-map-standard" data-map-type="standard"
-                                class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200 text-xs font-bold bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 motion-reduce:transform-none motion-reduce:transition-none"
+                                class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200 text-xs font-bold bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
                                 title="Standart Harita" aria-label="Standart Harita" aria-controls="map"
                                 aria-pressed="true">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -334,10 +334,10 @@
 
                     {{-- Zoom Controls --}}
                     <div
-                        class="bg-white dark:bg-slate-900 bg-opacity-95 dark:bg-opacity-95 backdrop-blur-md rounded-xl shadow-xl border-2 border-gray-200 dark:border-slate-800 p-1.5 text-gray-900 dark:text-white dark:border-slate-700 dark:text-slate-100">
+                        class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-1.5 text-slate-900 dark:text-slate-100">
                         <div class="flex flex-col gap-1">
                             <button type="button" id="button-map-zoom-in"
-                                class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 dark:shadow-none"
+                                class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
                                 title="Yakınlaştır" aria-label="Yakınlaştır">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -345,7 +345,7 @@
                                 </svg>
                             </button>
                             <button type="button" id="button-map-zoom-out"
-                                class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 dark:shadow-none"
+                                class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
                                 title="Uzaklaştır" aria-label="Uzaklaştır">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -357,9 +357,9 @@
 
                     {{-- GPS Location Button --}}
                     <div
-                        class="bg-white dark:bg-slate-900 bg-opacity-95 dark:bg-opacity-95 backdrop-blur-md rounded-xl shadow-xl border-2 border-gray-200 dark:border-slate-800 p-1.5 text-gray-900 dark:text-white dark:border-slate-700 dark:text-slate-100">
+                        class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-1.5 text-slate-900 dark:text-slate-100">
                         <button type="button" id="button-map-gps"
-                            class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 dark:shadow-none"
+                            class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 transition-all shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
                             title="Mevcut Konumumu Göster" aria-label="Mevcut Konumumu Göster">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -531,7 +531,7 @@
                             🏫 Okul
                         </button>
                         <button type="button" onclick="addDistancePoint('Market', '🛒')"
-                            class="px-4 py-2.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-lg hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-all text-xs font-medium">
+                            class="px-4 py-2.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-all text-xs font-medium">
                             🛒 Market
                         </button>
                         <button type="button" onclick="addDistancePoint('Hastane', '🏥')"
