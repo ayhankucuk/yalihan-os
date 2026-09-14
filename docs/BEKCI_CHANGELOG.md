@@ -1,3 +1,24 @@
+## Oturum 187 — 2026-09-15 | İlan Yaşam Döngüsü Senkronizasyonu & /admin/ilanlar/3 Lüks Kokpit / Sosyal CRM / WhatsApp Entegrasyonu
+
+**Kapsam:** İlan ekle (`create-wizard`), ilan düzenle (`edit`), ilan listesi (`index`) ve ilan kokpiti (`show`) arasındaki veri kontratı, hiyerarşi ve Akdeniz Lüks Tasarım Sistemi senkronize edildi. `/admin/ilanlar/3` (Bodrum Gündoğan İmarlı Arsa) sayfası derinlemesine denetlenerek tüm 500 hataları, DTO uyumsuzlukları ve dağınık CRM/Site yapıları giderildi.
+
+**Düzeltme & İyileştirmeler:**
+- `PortfolioPrioritizationService.php` & `IlanService.php`: `listing_id` DTO tip dönüşümü ve `priority_score` nesne erişim hatası düzeltildi (500 çökmesi önlendi).
+- `IlanRepository.php`: `findById()` ve `findOrFail()` metotlarında `withoutGlobalScopes` ve `getEffectiveTenantId()` uygulanarak model bulmada fail-closed engellendi.
+- `Ilan.php` & `IlanKategori.php`: DB sütun isim çakışması (`il`, `ilce`, `mahalle`, `kategori`) için relation erişimci (`getRelationValue`) katmanı eklendi.
+- `social-crm.blade.php`: "Bilinmeyen Kişi", "Site kaydı yok" vb. karmaşık yapı yerine 3 sekmeli Akdeniz Lüks Alpine.js widget'ı (`👤 Mal Sahibi`, `💼 Danışman`, `🏢 Site / Parsel`) geliştirildi.
+- `data-grid.blade.php`: Arsa ve bağımsız parsellere ait imar, KAKS, TAKS, alan ve altyapı bilgileri dinamik matrise entegre edildi.
+- `show.blade.php` & `vitals.blade.php`: Hermes AI Publish Gate (`/admin/ilanlar/{id}/publish`) entegre edildi, Eşleşmiş Alıcılar için tek tıkla doğrudan WhatsApp özel portföy sunumu, arama ve metin kopyalama aksiyonları eklendi.
+- `create-wizard.blade.php`: Font Awesome kalıntıları giderildi, `<x-icon>` entegrasyonu ve Akdeniz Lüks butonları tamamlandı.
+
+```
+KALİTE KAPISI:  4/4 Antigravity Gate PASS ✅ (Conflict Guard, Preflight Guard, Layout Validator, Route Guard)
+TESTLER:        5/5 PASSED (IlanCrudTest 5/5, 15 assertions)
+DOĞRULAMA:     /admin/ilanlar/3 Kokpit, Sosyal CRM & WhatsApp Entegrasyonu Aktif ✅
+```
+
+---
+
 ## Oturum 186 — 2026-09-14 | İlan Düzenleme (/admin/ilanlar/{id}/edit) Sekmeli Akdeniz Lüks Mimarisi & Konum Paritesi
 
 **Kapsam:** `/admin/ilanlar/{id}/edit` sayfası (2366 satırlık monolitik ve DOM'u bozan iç içe nested `<form>` yapısı) modernize edilerek 5/6 sekmeli Alpine.js lüks editöre dönüştürüldü. Lokasyon/Harita bileşeni turuncu temadan Akdeniz Lüks Altın (`#C9A84C`) ve Lacivert (`#0A1628`) temasına uyarlandı. Font Awesome (`fas fa-eye`, `fas fa-check` vb.) kalıntıları temizlenerek `<x-icon>` sistemine geçirildi.

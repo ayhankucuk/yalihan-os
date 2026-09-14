@@ -20,6 +20,7 @@ Agent bir dosyayı açtığında veya değiştireceği zaman bu tabloya bakarak 
 | Git dirty tree, cleanup | `git-worktree-hygiene` | Dirty tree sınıflandırma, güvenli paketleme, envanter yönetimi |
 | Commit öncesi / hot-spot | `conflict-guard-preflight` | Pre-commit hot-spot taraması, kilit edinme/bırakma |
 | Envanter analizi | `dirty-inventory-generator` | Dirty dosya analizi, risk matrisi ve envanter raporu üretimi |
+| `resources/views/**/*.blade.php` | `page-design-architecture-auditor` | Mediterranean Tasarım Sistemi, layout, ölü/yetim view, ergonomi ve route tekilliği |
 | `docs/ERA_V/*` | `saab` | ERA roadmap, mimari kararlar |
 | `docs/architecture/*` | `saab` + `core-engineering-guard` | Mimari anayasa uyumu |
 
