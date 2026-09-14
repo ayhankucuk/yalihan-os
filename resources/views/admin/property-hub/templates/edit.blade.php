@@ -1,4 +1,4 @@
-@extends('admin.layouts.app')
+@extends('admin.layouts.admin')
 
 @section('title', 'Şablon Düzenle - Property Hub')
 
@@ -44,7 +44,7 @@
                 <div class="flex items-start justify-between">
                     <div class="flex items-start gap-3">
                         <div class="flex-shrink-0 mt-1">
-                            <i class="fas fa-eye text-blue-600 dark:text-blue-400"></i>
+                            <x-icon name="goz" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
                             <h3 class="text-sm font-semibold text-blue-900 dark:text-blue-100">
@@ -69,8 +69,8 @@
                     <div>
                         @if ($kategori->id > 0)
                             <a href="{{ route('admin.property_types.show', $kategori->id) }}"
-                                class="text-xs font-medium text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100 underline">
-                                <i class="fas fa-external-link-alt mr-1"></i>
+                                class="text-xs font-medium text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100 underline inline-flex items-center">
+                                <x-icon name="dis-baglanti" class="w-3.5 h-3.5 mr-1" />
                                 Yöneticiye Git
                             </a>
                         @endif

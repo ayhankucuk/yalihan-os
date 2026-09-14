@@ -7,8 +7,8 @@
         <div class="max-w-4xl mx-auto">
             <!-- Success Header -->
             <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
-                    <i class="fas fa-check text-4xl text-green-600"></i>
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full mb-6">
+                    <x-icon name="onay" class="w-10 h-10 text-green-600 dark:text-green-400" />
                 </div>
                 <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4 dark:text-slate-100">
                     🎉 Tebrikler!
@@ -21,7 +21,7 @@
             <!-- İlan Detayları -->
             <div class="bg-gray-50 dark:bg-slate-900 rounded-xl shadow-lg p-8 mb-8">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center dark:text-slate-100">
-                    <i class="fas fa-info-circle text-blue-600 mr-3"></i>
+                    <x-icon name="bilgi" class="w-6 h-6 text-blue-600 dark:text-blue-400 mr-3" />
                     İlan Detayları
                 </h2>
 
@@ -107,8 +107,8 @@
                         <div class="bg-gray-50 dark:bg-slate-900 rounded-lg p-4">
                             <div class="flex items-center space-x-4">
                                 <div
-                                    class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-user text-blue-600"></i>
+                                    class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                                    <x-icon name="kullanici" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <div>
                                     <h4 class="font-semibold text-gray-900 dark:text-white dark:text-slate-100">
@@ -127,14 +127,14 @@
                 <!-- Düzenleme -->
                 <div class="bg-gray-50 dark:bg-slate-900 rounded-xl shadow-lg p-6 text-center">
                     <div
-                        class="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-edit text-2xl text-blue-600"></i>
+                        class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <x-icon name="duzenle" class="w-8 h-8 text-blue-600 dark:text-blue-400" />
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 dark:text-slate-100">Düzenle</h3>
                     <p class="text-gray-600 dark:text-gray-400 mb-4">İlan bilgilerini güncelleyin</p>
                     <a href="{{ route('admin.ilanlar.edit', $ilan->id ?? 1) }}"
                         class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        <i class="fas fa-edit mr-2"></i>
+                        <x-icon name="duzenle" class="w-4 h-4 mr-2" />
                         Düzenle
                     </a>
                 </div>
@@ -142,14 +142,14 @@
                 <!-- Frontend'de Görüntüle -->
                 <div class="bg-gray-50 dark:bg-slate-900 rounded-xl shadow-lg p-6 text-center">
                     <div
-                        class="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-eye text-2xl text-green-600"></i>
+                        class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <x-icon name="goz" class="w-8 h-8 text-green-600 dark:text-green-400" />
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 dark:text-slate-100">Websitesinde Görüntüle</h3>
                     <p class="text-gray-600 dark:text-gray-400 mb-4">İlanı müşteri görünümünde görün</p>
                     <a href="{{ route('ilanlar.show', $ilan->id ?? 1) }}" target="_blank"
                         class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                        <i class="fas fa-external-link-alt mr-2"></i>
+                        <x-icon name="dis-baglanti" class="w-4 h-4 mr-2" />
                         Görüntüle
                     </a>
                 </div>
@@ -157,14 +157,14 @@
                 <!-- Paylaş -->
                 <div class="bg-gray-50 dark:bg-slate-900 rounded-xl shadow-lg p-6 text-center">
                     <div
-                        class="w-16 h-16 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-share-alt text-2xl text-purple-600"></i>
+                        class="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <x-icon name="paylash" class="w-8 h-8 text-purple-600 dark:text-purple-400" />
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 dark:text-slate-100">Paylaş</h3>
                     <p class="text-gray-600 dark:text-gray-400 mb-4">İlanı sosyal medyada paylaşın</p>
                     <button onclick="shareProperty()"
                         class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                        <i class="fas fa-share-alt mr-2"></i>
+                        <x-icon name="paylash" class="w-4 h-4 mr-2" />
                         Paylaş
                     </button>
                 </div>
@@ -177,17 +177,17 @@
                 <div class="flex flex-wrap gap-4">
                     <a href="{{ route('admin.ilanlar.index') }}"
                         class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-                        <i class="fas fa-list mr-2"></i>
+                        <x-icon name="liste" class="w-4 h-4 mr-2" />
                         Tüm İlanlar
                     </a>
                     <a href="{{ route('admin.ilanlar.create') }}"
                         class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                        <i class="fas fa-plus mr-2"></i>
+                        <x-icon name="ekle" class="w-4 h-4 mr-2" />
                         Yeni İlan
                     </a>
                     <a href="{{ route('frontend.portfolio.index') }}" target="_blank"
                         class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        <i class="fas fa-building mr-2"></i>
+                        <x-icon name="bina" class="w-4 h-4 mr-2" />
                         Portföy Sayfası
                     </a>
                 </div>

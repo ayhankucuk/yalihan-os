@@ -3,23 +3,75 @@
 @section('title', 'İlan Düzenle')
 
 @section('content')
-    <div class="space-y-6">
-        {{-- 🛰️ Tactical Editor Strip (Sticky) --}}
+    <div class="space-y-6" x-data="{
+        activeTab: 'genel',
+        isRental: {{ ($ilan->rental_enabled || $ilan->kategori?->slug === 'yazlik-kiralama' || str_contains($ilan->kategori?->slug ?? '', 'kiralik')) ? 'true' : 'false' }},
+        selectedSite: null,
+        selectedPerson: null,
+        portal_ids: {
+            sahibinden: '{{ $ilan->sahibinden_id ?? '' }}',
+            emlakjet: '{{ $ilan->emlakjet_id ?? '' }}',
+            hepsiemlak: '{{ $ilan->hepsiemlak_id ?? '' }}',
+            zingat: '{{ $ilan->zingat_id ?? '' }}',
+            hurriyetemlak: '{{ $ilan->hurriyetemlak_id ?? '' }}'
+        }
+    }">
+        {{-- 🛰️ Mediterranean Top Editor Bar (Sticky) --}}
         @include('admin.ilanlar.components.edit.vitals', ['ilan' => $ilan])
 
-        <div class="mx-auto max-w-[1700px] p-4 md:p-6">
+        <div class="mx-auto max-w-[1700px] p-4 md:p-6 space-y-6">
+
+            {{-- 🧭 Luxury Tab Navigation Bar --}}
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-2">
+                <nav class="flex items-center gap-2 overflow-x-auto no-scrollbar" aria-label="Tabs">
+                    <button type="button" @click="activeTab = 'genel'"
+                        :class="activeTab === 'genel' ? 'bg-[#0A1628] text-amber-400 shadow-md font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 font-medium'"
+                        class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs md:text-sm whitespace-nowrap transition-all duration-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        <span>1. Temel Bilgiler & Fiyat</span>
+                    </button>
+
+                    <button type="button" @click="activeTab = 'konum'"
+                        :class="activeTab === 'konum' ? 'bg-[#0A1628] text-amber-400 shadow-md font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 font-medium'"
+                        class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs md:text-sm whitespace-nowrap transition-all duration-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <span>2. Konum & Harita</span>
+                    </button>
+
+                    <button type="button" @click="activeTab = 'ozellikler'"
+                        :class="activeTab === 'ozellikler' ? 'bg-[#0A1628] text-amber-400 shadow-md font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 font-medium'"
+                        class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs md:text-sm whitespace-nowrap transition-all duration-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        <span>3. İlan Özellikleri</span>
+                    </button>
+
+                    <button type="button" @click="activeTab = 'medya'"
+                        :class="activeTab === 'medya' ? 'bg-[#0A1628] text-amber-400 shadow-md font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 font-medium'"
+                        class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs md:text-sm whitespace-nowrap transition-all duration-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <span>4. Fotoğraflar & Video</span>
+                    </button>
+
+                    <button type="button" @click="activeTab = 'crm'"
+                        :class="activeTab === 'crm' ? 'bg-[#0A1628] text-amber-400 shadow-md font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 font-medium'"
+                        class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs md:text-sm whitespace-nowrap transition-all duration-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        <span>5. CRM, Portallar & Yayın</span>
+                    </button>
+
+                    {{-- Kiralama Sekmesi (Opsiyonel / Dinamik) --}}
+                    <button type="button" @click="activeTab = 'kiralama'" x-show="isRental"
+                        :class="activeTab === 'kiralama' ? 'bg-[#0A1628] text-amber-400 shadow-md font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 font-medium'"
+                        class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs md:text-sm whitespace-nowrap transition-all duration-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <span>6. Kiralama & Rezervasyon</span>
+                    </button>
+                </nav>
+            </div>
+
+            {{-- Form Başlangıcı --}}
             <form id="ilan-create-form" method="POST" action="{{ route('admin.ilanlar.update', $ilan->id) }}"
-                enctype="multipart/form-data" x-data="{
-                    selectedSite: null,
-                    selectedPerson: null,
-                    portal_ids: {
-                        sahibinden: '{{ $ilan->sahibinden_id ?? '' }}',
-                        emlakjet: '{{ $ilan->emlakjet_id ?? '' }}',
-                        hepsiemlak: '{{ $ilan->hepsiemlak_id ?? '' }}',
-                        zingat: '{{ $ilan->zingat_id ?? '' }}',
-                        hurriyetemlak: '{{ $ilan->hurriyetemlak_id ?? '' }}'
-                    }
-                }">
+                enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -29,444 +81,211 @@
                 <input type="hidden" name="boundary_area" id="boundary_area" value="">
                 <input type="hidden" name="geometry_type" id="geometry_type" value="{{ $ilan->geometry_type ?? 'point' }}">
 
-                {{-- 🛠️ Tactical Editor Grid --}}
-                <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
-                    {{-- 📦 Technical Data Matrix (Main Column) --}}
-                    <div class="space-y-6 xl:col-span-8">
+                {{-- ══════════════ TAB 1: TEMEL BİLGİLER & FİYAT ══════════════ --}}
+                <div x-show="activeTab === 'genel'" class="space-y-6">
+                    {{-- Kategori Sistemi --}}
+                    <div id="section-category" class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                        @include('admin.ilanlar.components.category-system', ['ilan' => $ilan])
+                    </div>
 
+                    {{-- Temel Bilgiler (Başlık & Açıklama) --}}
+                    <div id="section-basic-info" class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                        @include('admin.ilanlar.components.basic-info', ['ilan' => $ilan])
+                    </div>
 
+                    {{-- Fiyat Yönetimi --}}
+                    <div id="section-price" class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                        @include('admin.ilanlar.components.price-management', ['ilan' => $ilan])
+                    </div>
+                </div>
 
+                {{-- ══════════════ TAB 2: KONUM & HARİTA ══════════════ --}}
+                <div x-show="activeTab === 'konum'" class="space-y-6" style="display: none;">
+                    <div id="section-location" class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                        @include('admin.ilanlar.components.location-map', [
+                            'ilan' => $ilan,
+                            'iller' => $iller ?? [],
+                            'ilceler' => $ilceler ?? [],
+                            'mahalleler' => $mahalleler ?? [],
+                        ])
+                    </div>
+                </div>
 
-                        {{-- BÖLÜM 1: KATEGORİ SİSTEMİ --}}
-                        <div id="section-category"
-                            class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                            <div
-                                class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 dark:text-white">Kategori
-                                    Sistemi</h3>
-                            </div>
-                            @include('admin.ilanlar.components.category-system', ['ilan' => $ilan])
+                {{-- ══════════════ TAB 3: İLAN ÖZELLİKLERİ ══════════════ --}}
+                <div x-show="activeTab === 'ozellikler'" class="space-y-6" style="display: none;">
+                    <div id="section-fields" class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 space-y-6">
+                        @include('admin.ilanlar.components.smart-field-organizer', ['ilan' => $ilan])
+                        @include('admin.ilanlar.components.field-dependencies-dynamic', ['ilan' => $ilan])
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {{-- Site / Apartman --}}
+                        <div id="section-site" class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                            @include('admin.ilanlar.components.site-apartman-context7', ['ilan' => $ilan])
                         </div>
 
-                        {{-- BÖLÜM 2: LOKASYON --}}
-                        <div id="section-location"
-                            class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                            <div
-                                class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 dark:text-white">Konum
-                                    Bilgileri</h3>
-                            </div>
-                            @include('admin.ilanlar.components.location-map', [
-                                'ilan' => $ilan,
-                                'iller' => $iller ?? [],
-                                'ilceler' => $ilceler ?? [],
-                                'mahalleler' => $mahalleler ?? [],
-                            ])
+                        {{-- Anahtar Yönetimi --}}
+                        <div id="section-keys" class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                            @include('admin.ilanlar.components.key-management', ['ilan' => $ilan])
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ══════════════ TAB 4: MEDYA & FOTOĞRAFLAR ══════════════ --}}
+                <div x-show="activeTab === 'medya'" class="space-y-6" style="display: none;">
+                    <div id="section-photos" class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                        @include('admin.ilanlar.components.photo-upload-manager', ['ilan' => $ilan])
+                    </div>
+                </div>
+
+                {{-- ══════════════ TAB 5: CRM, PORTALLAR & YAYIN ══════════════ --}}
+                <div x-show="activeTab === 'crm'" class="space-y-6" style="display: none;">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        {{-- Kişi / Danışman Bilgileri --}}
+                        <div id="section-person" class="lg:col-span-8 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                            @include('admin.ilanlar.partials.stable._kisi-secimi', ['ilan' => $ilan])
                         </div>
 
-                        {{-- BÖLÜM 3: FİYAT --}}
-                        <div id="section-price"
-                            class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                            <div
-                                class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 dark:text-white">Fiyat
-                                    Yönetimi</h3>
-                            </div>
-                            @include('admin.ilanlar.components.price-management', ['ilan' => $ilan])
-                        </div>
+                        {{-- Yayın Durumu & Öncelik --}}
+                        <div class="lg:col-span-4 space-y-6">
+                            <div class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 space-y-6">
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                                    Yayın & Öncelik
+                                </h3>
 
-                        {{-- BÖLÜM 4: TEMEL BİLGİLER --}}
-                        <div id="section-basic-info"
-                            class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                            <div
-                                class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 dark:text-white">Temel
-                                    Bilgiler</h3>
-                            </div>
-                            @include('admin.ilanlar.components.basic-info', ['ilan' => $ilan])
-                        </div>
+                                @include('admin.ilanlar.components.publish-yayin-durumu-select', ['ilan' => $ilan])
 
-
-
-                        {{-- BÖLÜM 5: FOTOĞRAFLAR --}}
-                        <div id="section-photos"
-                            class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                            <div
-                                class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 dark:text-white">
-                                    Fotoğraflar ve Video</h3>
-                            </div>
-                            @include('admin.ilanlar.components.photo-upload-manager', ['ilan' => $ilan])
-                        </div>
-
-                        {{-- BÖLÜM 6: İLAN ÖZELLİKLERİ --}}
-                        <div id="section-fields"
-                            class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                            <div
-                                class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 dark:text-white">İlan
-                                    Özellikleri</h3>
-                            </div>
-                            {{-- Smart Field Organizer (Templates & AI) --}}
-                            @include('admin.ilanlar.components.smart-field-organizer', ['ilan' => $ilan])
-
-                            {{-- Field Dependencies --}}
-                            @include('admin.ilanlar.components.field-dependencies-dynamic', [
-                                'ilan' => $ilan,
-                            ])
-                        </div>
-
-                        {{-- BÖLÜM 11: TAKVİM/REZERVASYON --}}
-                        <div id="section-calendar"
-                            class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                            <div
-                                class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 dark:text-white">Takvim
-                                    ve Rezervasyon</h3>
-                            </div>
-                            @include('admin.ilanlar.components.event-booking-manager', ['ilan' => $ilan])
-                        </div>
-
-                        {{-- BÖLÜM 12: Rezervasyon Kuralları --}}
-                        <div id="section-booking"
-                            class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                            <div
-                                class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 dark:text-white">
-                                    Rezervasyon Kuralları</h3>
-                            </div>
-                            <div class="space-y-6 p-6">
-
-                                <div class="flex items-center gap-3">
-                                    <div
-                                        class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-white shadow dark:shadow-none">
-                                        12</div>
-                                    <h3 class="text-xl font-semibold text-gray-900 dark:text-slate-100 dark:text-white">
-                                        Rezervasyon Kuralları
-                                    </h3>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Kiralama akışı ve iptal politikaları
-                                    </p>
-                                </div>
-
-                                <div class="mb-4 md:col-span-2">
-                                    <label
-                                        class="flex cursor-pointer items-center space-x-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
-                                        <input type="hidden" name="rental_enabled" value="0">
-                                        <input type="checkbox" name="rental_enabled" value="1"
-                                            {{ old('rental_enabled', $ilan->rental_enabled) ? 'checked' : '' }}
-                                            class="h-5 w-5 rounded border-gray-300 bg-white text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800">
-                                        <div>
-                                            <span class="block text-sm font-bold text-gray-900 dark:text-white">Kiralama
-                                                Modülü Aktif</span>
-                                            <span class="block text-xs text-gray-500 dark:text-gray-400">Bu ilanı
-                                                yazlık/günlük kiralama altyapısına dahil eder.</span>
-                                        </div>
-                                    </label>
-                                </div>
-                                <div class="hidden">
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 dark:text-slate-200 dark:text-slate-300">Rezervasyon
-                                        Tipi</label>
-                                    <select name="booking_type"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:text-white">
-                                        <option value="">Seçin...</option>
-                                        <option value="instant"
-                                            {{ old('booking_type', $ilan->booking_type) == 'instant' ? 'selected' : '' }}>
-                                            Anında
-                                            rezervasyon</option>
-                                        <option value="request"
-                                            {{ old('booking_type', $ilan->booking_type) == 'request' ? 'selected' : '' }}>
-                                            Talep
-                                            gönder</option>
+                                <div class="space-y-2">
+                                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Öncelik Seviyesi</label>
+                                    <select name="oncelik" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500">
+                                        <option value="normal" {{ old('oncelik', $ilan->oncelik ?? 'normal') == 'normal' ? 'selected' : '' }}>📋 Normal</option>
+                                        <option value="yuksek" {{ old('oncelik', $ilan->oncelik ?? '') == 'yuksek' ? 'selected' : '' }}>⭐ Yüksek</option>
+                                        <option value="acil" {{ old('oncelik', $ilan->oncelik ?? '') == 'acil' ? 'selected' : '' }}>🚨 Acil</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 dark:text-slate-200 dark:text-slate-300">İptal
-                                        Politikası</label>
-                                    <select name="cancellation_policy"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:text-white">
-                                        <option value="">Seçin...</option>
-                                        <option value="flexible"
-                                            {{ old('cancellation_policy', $ilan->cancellation_policy) == 'flexible' ? 'selected' : '' }}>
-                                            Esnek</option>
-                                        <option value="moderate"
-                                            {{ old('cancellation_policy', $ilan->cancellation_policy) == 'moderate' ? 'selected' : '' }}>
-                                            Orta</option>
-                                        <option value="strict"
-                                            {{ old('cancellation_policy', $ilan->cancellation_policy) == 'strict' ? 'selected' : '' }}>
-                                            Katı</option>
-                                    </select>
-                                </div>
+                            </div>
 
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 dark:text-slate-200 dark:text-slate-300">Minimum
-                                        Konaklama
-                                        (gece)</label>
-                                    <input type="number" name="min_stay_nights"
-                                        value="{{ old('min_stay_nights', $ilan->min_stay_nights) }}" min="1"
-                                        max="365"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:text-white" />
+                            {{-- Cortex AI Hızlı Yardımcı --}}
+                            <div class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-900 text-white shadow-sm p-6 space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Cortex AI Asistan</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">Aktif</span>
                                 </div>
-                                <div class="hidden">
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 dark:text-slate-200 dark:text-slate-300">Maksimum
-                                        Konaklama (gece)</label>
-                                    <input type="number" name="maximum_stay"
-                                        value="{{ old('maximum_stay', $ilan->maximum_stay) }}" min="1"
-                                        max="365"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:text-white" />
-                                </div>
-
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 dark:text-slate-200 dark:text-slate-300">Giriş
-                                        Saati</label>
-                                    <input type="time" name="checkin_time"
-                                        value="{{ old('checkin_time', $ilan->checkin_time) }}" placeholder="14:00"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:text-white" />
-                                </div>
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 dark:text-slate-200 dark:text-slate-300">Çıkış
-                                        Saati</label>
-                                    <input type="time" name="checkout_time"
-                                        value="{{ old('checkout_time', $ilan->checkout_time) }}" placeholder="11:00"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:text-white" />
-                                </div>
-
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 dark:text-slate-200 dark:text-slate-300">Maksimum
-                                        Misafir</label>
-                                    <input type="number" name="max_guests"
-                                        value="{{ old('max_guests', $ilan->max_guests) }}" min="1" max="50"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:text-white" />
-                                </div>
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 dark:text-slate-200 dark:text-slate-300">Baz
-                                        Misafir
-                                        Sayısı</label>
-                                    <input type="number" name="base_guest_count"
-                                        value="{{ old('base_guest_count', $ilan->base_guest_count) }}" min="0"
-                                        max="50"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:text-white" />
-                                </div>
-
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 dark:text-slate-200 dark:text-slate-300">Ek
-                                        Misafir
-                                        Ücreti</label>
-                                    <input type="number" step="0.01" name="extra_guest_fee"
-                                        value="{{ old('extra_guest_fee', $ilan->extra_guest_fee) }}" min="0"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:text-white" />
-                                </div>
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 dark:text-slate-200 dark:text-slate-300">Temizlik
-                                        Ücreti</label>
-                                    <input type="number" step="0.01" name="cleaning_fee"
-                                        value="{{ old('cleaning_fee', $ilan->cleaning_fee) }}" min="0"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:text-white" />
-                                </div>
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 dark:text-slate-200 dark:text-slate-300">Depozito</label>
-                                    <input type="number" step="0.01" name="security_deposit"
-                                        value="{{ old('security_deposit', $ilan->security_deposit) }}" min="0"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:text-white" />
+                                <div class="grid grid-cols-1 gap-2">
+                                    <button type="button" id="ai-generate-title" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-200 transition-colors">
+                                        <span class="text-amber-400">✨</span> Başlık Önerisi Üret
+                                    </button>
+                                    <button type="button" id="ai-generate-description" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-200 transition-colors">
+                                        <span class="text-amber-400">📝</span> Açıklama Optimize Et
+                                    </button>
+                                    <button type="button" id="ai-price-suggestion" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-200 transition-colors">
+                                        <span class="text-amber-400">📊</span> Fiyat Analizi Al
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-
-
-                    {{-- PORTAL IDLERI --}}
-                    <div
-                        class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                        <div
-                            class="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                            <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 dark:text-white">Portal ID
-                                Yönetimi</h3>
+                    {{-- Portal Entegrasyon ID'leri --}}
+                    <div class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 space-y-4">
+                        <div class="border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Portal Entegrasyon Numaraları</h3>
+                            <p class="text-xs text-slate-500">Dış emlak portallarındaki referans ilan numaralarını girin</p>
                         </div>
-                        <div class="p-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                            @include('admin.ilanlar.components.portal-id-fields')
+                        </div>
+                    </div>
+                </div>
 
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-200">Portal ID Güncelle</h3>
-                            <form method="POST" action="{{ route('admin.ilanlar.portal-ids', $ilan) }}"
-                                class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-                                @csrf
-                                @include('admin.ilanlar.components.portal-id-fields')
+                {{-- ══════════════ TAB 6: KİRALAMA & REZERVASYON (OPSİYONEL) ══════════════ --}}
+                <div x-show="activeTab === 'kiralama'" class="space-y-6" style="display: none;">
+                    {{-- Rezervasyon Kuralları --}}
+                    <div id="section-booking" class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 space-y-6">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                            <div>
+                                <h3 class="text-base font-bold text-slate-900 dark:text-white">Rezervasyon & Konaklama Kuralları</h3>
+                                <p class="text-xs text-slate-500">Kiralık mülkler için giriş, çıkış ve misafir politikaları</p>
+                            </div>
+                        </div>
 
-                                <div class="md:col-span-3">
-                                    <button type="submit"
-                                        class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-white transition-colors hover:bg-indigo-700">Kaydet</button>
+                        <div class="mb-4">
+                            <label class="flex cursor-pointer items-center space-x-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+                                <input type="hidden" name="rental_enabled" value="0">
+                                <input type="checkbox" name="rental_enabled" value="1"
+                                    {{ old('rental_enabled', $ilan->rental_enabled) ? 'checked' : '' }}
+                                    @change="isRental = $el.checked"
+                                    class="h-5 w-5 rounded border-slate-300 text-amber-500 focus:ring-amber-400">
+                                <div>
+                                    <span class="block text-sm font-bold text-slate-900 dark:text-white">Kiralama Modülü Aktif</span>
+                                    <span class="block text-xs text-slate-500">Bu ilanı yazlık/günlük kiralama ve takvim rezervasyon altyapısına dahil eder.</span>
                                 </div>
-                            </form>
+                            </label>
                         </div>
-                    </div>
 
-
-
-                    <!-- Section 6: Kişi Bilgileri (CRM) -->
-                    <div id="section-person"
-                        class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
-                        x-data="{ selectedPerson: null }">
-                        <div
-                            class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                            <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 dark:text-white">Müşteri
-                                Bilgileri</h3>
-                        </div>
-                        @include('admin.ilanlar.partials.stable._kisi-secimi', ['ilan' => $ilan])
-                    </div>
-
-                    <!-- Section 7: Site/Apartman Bilgileri -->
-                    <div id="section-site"
-                        class="kategori-specific-section overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
-                        data-show-for-categories="konut" style="display: none;">
-                        <div
-                            class="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                            <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 dark:text-white">
-                                Site/Apartman Bilgileri
-                            </h3>
-                        </div>
-                        @include('admin.ilanlar.components.site-apartman-context7', ['ilan' => $ilan])
-                    </div>
-
-                    <!-- Section 8: Anahtar Bilgileri -->
-                    <div id="section-keys"
-                        class="kategori-specific-section overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
-                        data-show-for-categories="konut" style="display: none;">
-                        <div
-                            class="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                            <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 dark:text-white">Anahtar
-                                Bilgileri</h3>
-                        </div>
-                        @include('admin.ilanlar.components.key-management', ['ilan' => $ilan])
-                    </div>
-                </div> {{-- End of Main Column (Left) --}}
-
-
-                {{-- 🛰️ Intelligence & Control Sidebar (Right Column) --}}
-                <div class="space-y-6 xl:col-span-4">
-                    {{-- 🤖 AI Intelligence Panel --}}
-                    <section
-                        class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                        <div
-                            class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                            <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 dark:text-white">Cortex AI
-                            </h3>
-                            <span
-                                class="rounded border border-blue-200 bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400">Hazır</span>
-                        </div>
-                        <div class="space-y-4 p-6">
-                            <div class="mb-2 flex items-center justify-between">
-                                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Veri
-                                    Hazırlığı</span>
-                                <span id="ai-readiness-badge"
-                                    class="rounded border border-gray-200 bg-gray-100 px-2 py-0.5 text-xs text-blue-600 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-blue-400">Taranıyor...</span>
-                            </div>
-                            <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                                <div id="ai-readiness-bar-fill" class="h-full bg-blue-600 transition-all duration-500"
-                                    style="width: 0%"></div>
-                            </div>
-
-                            <div class="grid grid-cols-1 gap-2 pt-2">
-                                <button type="button" id="ai-generate-title"
-                                    class="group flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 transition-all hover:bg-gray-100 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:text-white dark:hover:bg-gray-700">
-                                    <div
-                                        class="rounded-lg bg-blue-100 p-2 text-blue-600 transition-all group-hover:bg-blue-600 group-hover:text-white dark:bg-blue-900/30 dark:text-blue-400 dark:group-hover:bg-blue-600">
-                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </div>
-                                    <span class="text-xs font-semibold">Başlık Üret</span>
-                                </button>
-                                <button type="button" id="ai-generate-description"
-                                    class="group flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 transition-all hover:bg-gray-100 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:text-white dark:hover:bg-gray-700">
-                                    <div
-                                        class="rounded-lg bg-green-100 p-2 text-green-600 transition-all group-hover:bg-green-600 group-hover:text-white dark:bg-green-900/30 dark:text-green-400 dark:group-hover:bg-green-600">
-                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M7 8h10M7 12h8M7 16h6" />
-                                        </svg>
-                                    </div>
-                                    <span class="text-xs font-semibold">Açıklama Yaz</span>
-                                </button>
-                                <button type="button" id="ai-price-suggestion"
-                                    class="group flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 transition-all hover:bg-gray-100 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:text-white dark:hover:bg-gray-700">
-                                    <div
-                                        class="rounded-lg bg-amber-100 p-2 text-amber-600 transition-all group-hover:bg-amber-600 group-hover:text-white dark:bg-amber-900/30 dark:text-amber-400 dark:group-hover:bg-amber-600">
-                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                    </div>
-                                    <span class="text-xs font-semibold">Fiyat Analizi</span>
-                                </button>
-                            </div>
-                        </div>
-                    </section>
-
-                    {{-- 🚦 Publication Status & Priority --}}
-                    <section
-                        class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                        <div
-                            class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900">
-                            <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 dark:text-white">Yayın
-                                Kontrol</h3>
-                        </div>
-                        <div class="space-y-6 p-6">
-                            @include('admin.ilanlar.components.publish-yayin-durumu-select', [
-                                'ilan' => $ilan,
-                            ])
-
-                            <div class="space-y-2">
-                                <label
-                                    class="text-xs font-medium text-gray-700 dark:text-slate-200 dark:text-slate-300">Öncelik
-                                    Seviyesi</label>
-                                <select name="oncelik"
-                                    class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-900 transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-900 dark:text-slate-100 dark:text-white dark:focus:border-blue-600 dark:focus:ring-blue-600">
-                                    <option value="normal"
-                                        {{ old('oncelik', $ilan->oncelik ?? 'normal') == 'normal' ? 'selected' : '' }}>
-                                        📋 Normal</option>
-                                    <option value="yuksek"
-                                        {{ old('oncelik', $ilan->oncelik ?? '') == 'yuksek' ? 'selected' : '' }}>⭐
-                                        Yüksek</option>
-                                    <option value="acil"
-                                        {{ old('oncelik', $ilan->oncelik ?? '') == 'acil' ? 'selected' : '' }}>🚨 Acil
-                                    </option>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">İptal Politikası</label>
+                                <select name="cancellation_policy" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm">
+                                    <option value="">Seçin...</option>
+                                    <option value="flexible" {{ old('cancellation_policy', $ilan->cancellation_policy) == 'flexible' ? 'selected' : '' }}>Esnek</option>
+                                    <option value="moderate" {{ old('cancellation_policy', $ilan->cancellation_policy) == 'moderate' ? 'selected' : '' }}>Orta</option>
+                                    <option value="strict" {{ old('cancellation_policy', $ilan->cancellation_policy) == 'strict' ? 'selected' : '' }}>Katı</option>
                                 </select>
                             </div>
 
-                            <div
-                                class="space-y-4 border-t border-gray-200 pt-4 dark:border-slate-700 dark:border-slate-800">
-                                <button type="submit" id="submit-btn"
-                                    class="group flex w-full items-center justify-center gap-3 rounded-lg bg-blue-600 py-4 text-sm font-semibold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg dark:shadow-none">
-                                    <svg id="submit-icon" class="h-5 w-5 transition-transform group-hover:scale-110"
-                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    <span id="submit-text">Değişiklikleri Kaydet</span>
-                                </button>
-                                <button type="button"
-                                    class="w-full rounded-lg bg-gray-200 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-300 dark:bg-gray-700 dark:text-slate-200 dark:text-slate-300 dark:hover:bg-gray-600">
-                                    Taslak Olarak Kaydet
-                                </button>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Min. Konaklama (Gece)</label>
+                                <input type="number" name="min_stay_nights" value="{{ old('min_stay_nights', $ilan->min_stay_nights) }}" min="1" max="365" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm" />
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Maks. Misafir</label>
+                                <input type="number" name="max_guests" value="{{ old('max_guests', $ilan->max_guests) }}" min="1" max="50" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm" />
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Giriş Saati</label>
+                                <input type="time" name="checkin_time" value="{{ old('checkin_time', $ilan->checkin_time) }}" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm" />
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Çıkış Saati</label>
+                                <input type="time" name="checkout_time" value="{{ old('checkout_time', $ilan->checkout_time) }}" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm" />
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Temizlik Ücreti</label>
+                                <input type="number" step="0.01" name="cleaning_fee" value="{{ old('cleaning_fee', $ilan->cleaning_fee) }}" min="0" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm" />
                             </div>
                         </div>
-                    </section>
+                    </div>
 
-                    {{-- 🔗 Similar Intel --}}
-                    @include('admin.ilanlar.partials.similar-listings', ['listing' => $ilan])
-                </div> {{-- End of Sidebar (Right) --}}
-        </div> {{-- End of Grid --}}
-        </form>
+                    {{-- Takvim Yöneticisi --}}
+                    <div id="section-calendar" class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                        @include('admin.ilanlar.components.event-booking-manager', ['ilan' => $ilan])
+                    </div>
+                </div>
+
+                {{-- 🎯 Alt Sabit Aksiyon Çubuğu (Floating Action Footer) --}}
+                <div class="sticky bottom-4 z-40 bg-[#0A1628]/95 backdrop-blur-xl border border-amber-500/20 rounded-2xl p-4 shadow-2xl flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-xs text-slate-300">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        <span>Tüm sekmelerdeki değişiklikler tek seferde kaydedilir.</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button type="submit"
+                            class="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-amber-500/20 flex items-center gap-2 transition-all active:scale-95">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Değişiklikleri Kaydet
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 @endsection
 

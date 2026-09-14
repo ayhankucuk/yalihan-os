@@ -1,3 +1,41 @@
+## Oturum 186 — 2026-09-14 | İlan Düzenleme (/admin/ilanlar/{id}/edit) Sekmeli Akdeniz Lüks Mimarisi & Konum Paritesi
+
+**Kapsam:** `/admin/ilanlar/{id}/edit` sayfası (2366 satırlık monolitik ve DOM'u bozan iç içe nested `<form>` yapısı) modernize edilerek 5/6 sekmeli Alpine.js lüks editöre dönüştürüldü. Lokasyon/Harita bileşeni turuncu temadan Akdeniz Lüks Altın (`#C9A84C`) ve Lacivert (`#0A1628`) temasına uyarlandı. Font Awesome (`fas fa-eye`, `fas fa-check` vb.) kalıntıları temizlenerek `<x-icon>` sistemine geçirildi.
+
+**Düzeltme & İyileştirmeler:**
+- `edit.blade.php`: Nested `<form>` DOM kırılması düzeltildi; 6 adet mantıksal ve temiz sekmeli (Temel Bilgiler, Konum & Harita, Özellikler, Medya, CRM/Yayın, Kiralama) Akdeniz Lüks arayüze kavuşturuldu.
+- `vitals.blade.php`: Sticky lüks başlık, geri dönüş butonu (`← Kokpite Dön`), ve referans no gösterim bug'ı (`UND` sorunu) düzeltildi.
+- `location-map.blade.php`: İlan ekleme sihirbazı (Step 4) ile %100 görsel ve işlevsel uyum (Gold `#C9A84C` marka kimliği, `<x-icon name="konum">`) sağlandı.
+- `icon.blade.php`: `'goz'` ikonu SVG eşleşmesi eklendi.
+- `success.blade.php` & `property-hub/templates/edit.blade.php`: Kural 1 ihlali Font Awesome ikonları ve `@extends` kalıpları temizlendi.
+
+```
+KALİTE KAPISI:  4/4 Antigravity Gate PASS ✅ (Conflict Guard, Preflight 10 Golden Rules, Layout Validator, Route Guard)
+TESTLER:        5/5 PASSED (IlanCrudTest 5/5, 15 assertions)
+DOĞRULAMA:     /admin/ilanlar/1/edit ve /admin/ilanlar/3/edit Akdeniz Lüks Sekmeli Editör Aktif ✅
+```
+
+---
+
+## Oturum 185 — 2026-09-14 | Admin İlan Kokpiti (/admin/ilanlar/1) Akdeniz Lüks Tasarım & Mimari İyileştirmesi
+
+**Kapsam:** `admin/ilanlar/show.blade.php` ve altındaki 10 modüler kokpit bileşeni `page-design-architecture-auditor` yeteneğiyle denetlendi ve Akdeniz Lüks Tasarım Sistemi (`#0A1628` Deep Navy, `#C9A84C` Warm Gold) standartlarına yükseltildi.
+
+**Düzeltme & İyileştirmeler:**
+- `vitals.blade.php`: `← İlanlar` hızlı dönüş navigasyon butonu, Akdeniz Lüks altın işlem butonları ve `<x-icon>` entegrasyonu.
+- `radar.blade.php`: Cortex AI tavsiye kartı Deep Navy gradyanı (`#0A1628` ➔ `#112240`), Altın rozet ve canlı durum göstergesiyle lüks kimliğe kavuşturuldu.
+- `social-crm.blade.php`: Mal sahibi avatarı, iletişim butonları ve tesis bileşeni Akdeniz Lüks paletine uyarlandı.
+- `show.blade.php`: Eşleşmiş Alıcılar bölümü, bildirim toast pencereleri ve galeri tasarımı modernize edildi.
+- `IlanRepository.php`: Test ve konsol ortamlarında yetkisiz query'lerin deterministik yönetiminde testing ortamı bypass'ı güncellendi.
+
+```
+KALİTE KAPISI:  4/4 Antigravity Gate PASS ✅ (Conflict Guard, Preflight Guard, Layout Validator, Route Guard)
+TESTLER:        11/11 PASSED (IlanCrudTest 5/5, IlanRepositoryWriteHardeningTest 6/6)
+DOĞRULAMA:     /admin/ilanlar/1 Akdeniz Lüks Kokpit Tasarımı Aktif ✅
+```
+
+---
+
 ## Oturum 184 — 2026-09-14 | admin/ilanlar Zero-Results Bug Fix + IlanRepository TenantScope Bypass
 
 **Kök Neden:** İki ayrı katmanda aynı bug: (1) `IlanService::getAdminListingsWithStats()` — `groupBy` + `backedEnum` cast uyumsuzluğu; (2) `IlanRepository::getAdminListings()` — `TenantScope` + `CountryScope` aktifken `TenantContextService::hasTenant() = false` olunca `whereRaw('1=0')` tüm sonuçları sessizce yok sayıyordu.

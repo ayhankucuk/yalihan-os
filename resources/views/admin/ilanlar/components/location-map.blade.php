@@ -1,31 +1,17 @@
 @props(['ilan', 'iller' => [], 'ilceler' => [], 'mahalleler' => []])
 
-{{-- 🎨 Section 3: Lokasyon ve Harita Sistemi (Tailwind Modernized) --}}
-<div
-    class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-slate-800 p-8 hover:shadow-2xl transition-shadow duration-300 dark:border-slate-700">
+{{-- 🎨 Section: Lokasyon ve Harita Sistemi (Mediterranean Luxury) --}}
+<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 md:p-8 space-y-6">
     <!-- Section Header -->
-    <div
-        class="px-5 py-3 border-b border-gray-200 dark:border-gray-700
-                bg-gradient-to-r from-gray-50 to-white
-                dark:from-gray-800 dark:to-gray-800
-                rounded-t-lg
-                flex items-center gap-4 mb-8">
-        <div
-            class="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/50 font-bold text-lg">
-            3
+    <div class="flex items-center gap-4 pb-6 border-b border-slate-100 dark:border-slate-800">
+        <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/20 font-bold text-lg">
+            <x-icon name="konum" class="w-6 h-6 text-slate-950" />
         </div>
         <div>
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 dark:text-slate-100">
-                <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 Lokasyon ve Harita
             </h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Adres bilgileri ve harita konumu</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Adres bilgileri, koordinatlar ve harita konumu</p>
         </div>
     </div>
 
@@ -34,29 +20,16 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- İl Seçimi -->
             <div class="group">
-                <label for="il_id"
-                    class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2 dark:text-slate-100">
-                    <span
-                        class="flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-bold">
+                <label for="il_id" class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-amber-500/10 text-amber-500 text-[10px] font-bold">
                         1
                     </span>
-                    İl
-                    <span class="text-red-500 font-bold">*</span>
+                    İl <span class="text-red-500 font-bold">*</span>
                 </label>
                 <div class="relative">
                     <select name="il_id" id="il_id" required data-context7-field="il_id"
                         @error('il_id') aria-invalid="true" aria-describedby="il_id-error" data-error="true" @enderror
-                        class="w-full px-4 py-2.5
-                               border-2 border-gray-300 dark:border-gray-600
-                               rounded-xl
-                               bg-white dark:bg-gray-900
-                               text-black dark:text-white
-                               focus:ring-4 focus:ring-blue-500 dark:focus:ring-blue-400/20 focus:border-orange-500 dark:focus:border-orange-400
-                               transition-all duration-200
-                               hover:border-gray-400 dark:hover:border-gray-500
-                               cursor-pointer
-                               shadow-sm hover:shadow-md focus:shadow-lg
-                               appearance-none"
+                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all cursor-pointer shadow-sm text-sm"
                         style="color-scheme: light dark;">
                         <option value="" class="bg-gray-50 dark:bg-slate-900 text-gray-500">İl Seçin...</option>
                         @foreach ($iller as $il)
@@ -66,21 +39,10 @@
                                 {{ $il->name ?? $il->il_adi }}</option>
                         @endforeach
                     </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <svg class="w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors"
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </div>
                 </div>
                 @error('il_id')
                     <div id="il_id-error" role="alert" aria-live="assertive"
-                        class="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-4 py-2.5 rounded-lg">
-                        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd"
-                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                clip-rule="evenodd" />
-                        </svg>
+                        class="mt-2 flex items-center gap-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg">
                         {{ $message }}
                     </div>
                 @enderror
@@ -88,50 +50,23 @@
 
             <!-- İlçe Seçimi -->
             <div class="group">
-                <label for="ilce_id"
-                    class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2 dark:text-slate-100">
-                    <span
-                        class="flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-bold">
+                <label for="ilce_id" class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-amber-500/10 text-amber-500 text-[10px] font-bold">
                         2
                     </span>
-                    İlçe
-                    <span class="text-red-500 font-bold">*</span>
+                    İlçe <span class="text-red-500 font-bold">*</span>
                 </label>
                 <div class="relative">
                     <select name="ilce_id" id="ilce_id" required data-context7-field="ilce_id" disabled
                         @error('ilce_id') aria-invalid="true" aria-describedby="ilce_id-error" data-error="true" @enderror
-                        class="w-full px-4 py-2.5
-                               border-2 border-gray-300 dark:border-gray-600
-                               rounded-xl
-                               bg-white dark:bg-gray-900
-                               text-black dark:text-white
-                               focus:ring-4 focus:ring-blue-500 dark:focus:ring-blue-400/20 focus:border-orange-500 dark:focus:border-orange-400
-                               transition-all duration-200
-                               hover:border-gray-400 dark:hover:border-gray-500
-                               cursor-pointer
-                               shadow-sm hover:shadow-md focus:shadow-lg
-                               disabled:bg-gray-100 dark:disabled:bg-gray-700
-                               disabled:text-gray-500 dark:disabled:text-gray-400
-                               disabled:cursor-not-allowed disabled:opacity-75
-                               appearance-none"
+                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all cursor-pointer shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         style="color-scheme: light dark;">
                         <option value="" class="bg-gray-50 dark:bg-slate-900 text-gray-500">İlçe Seçin...</option>
                     </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <svg class="w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors"
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </div>
                 </div>
                 @error('ilce_id')
                     <div id="ilce_id-error" role="alert" aria-live="assertive"
-                        class="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-4 py-2.5 rounded-lg">
-                        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd"
-                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                clip-rule="evenodd" />
-                        </svg>
+                        class="mt-2 flex items-center gap-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg">
                         {{ $message }}
                     </div>
                 @enderror
@@ -139,21 +74,14 @@
 
             <!-- Mahalle Seçimi -->
             <div class="group">
-                <label for="mahalle_id"
-                    class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2 dark:text-slate-100">
-                    <span
-                        class="flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-bold">
+                <label for="mahalle_id" class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-amber-500/10 text-amber-500 text-[10px] font-bold">
                         3
                     </span>
                     Mahalle
                 </label>
                 <div class="relative">
                     <select name="mahalle_id" id="mahalle_id" data-context7-field="mahalle_id" disabled
-                        class="w-full px-4 py-2.5
-                               border-2 border-gray-300 dark:border-gray-600
-                               rounded-xl
-                               bg-white dark:bg-gray-800
-                               text-black dark:text-white
                                focus:ring-4 focus:ring-blue-500 dark:focus:ring-blue-400/20 focus:border-orange-500 dark:focus:border-orange-400
                                transition-all duration-200
                                hover:border-gray-400 dark:hover:border-gray-500
