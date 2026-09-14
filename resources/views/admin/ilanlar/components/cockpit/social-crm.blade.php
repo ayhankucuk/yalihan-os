@@ -1,86 +1,151 @@
-{{-- 🏢 Cockpit Social/CRM --}}
-<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+{{-- 🏢 Cockpit Social/CRM — Segmented Luxury Tabs --}}
+@php
+    $sahip = $ilan->kisi ?? $ilan->ilanSahibi;
+    $danisman = $ilan->danisman;
+    $hasSahip = !empty($sahip) && (!empty($sahip->ad) || !empty($sahip->soyad) || !empty($sahip->ad_soyad));
+    $sahipAd = $hasSahip ? ($sahip->ad_soyad ?? trim(($sahip->ad ?? '') . ' ' . ($sahip->soyad ?? ''))) : 'Atanmamış';
+    $sahipTelefon = $hasSahip ? ($sahip->telefon ?? $sahip->phone ?? null) : null;
+    $sahipEposta = $hasSahip ? ($sahip->eposta ?? $sahip->email ?? null) : null;
+@endphp
 
-    {{-- Owner & Contacts --}}
-    <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-sm dark:shadow-none dark:border-slate-700">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 dark:border-slate-700">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white dark:text-slate-100">İlan Sahibi</h3>
-        </div>
+<div x-data="{ crmTab: 'sahip' }" class="space-y-4">
+    {{-- Segmented Tab Switcher --}}
+    <div class="flex items-center p-1 bg-slate-100 dark:bg-slate-800/90 rounded-xl border border-slate-200 dark:border-slate-700/80">
+        <button type="button"
+            @click="crmTab = 'sahip'"
+            :class="crmTab === 'sahip' 
+                ? 'bg-white dark:bg-[#0A1628] text-slate-900 dark:text-[#C9A84C] shadow-sm font-bold border border-slate-200/80 dark:border-[#C9A84C]/30' 
+                : 'text-slate-600 dark:text-slate-400 font-medium hover:text-slate-900 dark:hover:text-slate-200 border-transparent'"
+            class="flex-1 py-1.5 px-3 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5">
+            <x-icon name="kullanici" class="w-3.5 h-3.5 text-[#C9A84C]" />
+            <span>Mal Sahibi</span>
+        </button>
 
-        <div class="p-6 space-y-8">
-            {{-- Owner Section --}}
-            <div class="flex items-start gap-6">
-                <div class="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full border border-blue-200 dark:border-blue-800 flex items-center justify-center text-2xl font-bold text-blue-600 dark:text-blue-400 shrink-0">
-                    {{ mb_substr($ilan->ilanSahibi->ad ?? '?', 0, 1) }}{{ mb_substr($ilan->ilanSahibi->soyad ?? '?', 0, 1) }}
+        <button type="button"
+            @click="crmTab = 'danisman'"
+            :class="crmTab === 'danisman' 
+                ? 'bg-white dark:bg-[#0A1628] text-slate-900 dark:text-[#C9A84C] shadow-sm font-bold border border-slate-200/80 dark:border-[#C9A84C]/30' 
+                : 'text-slate-600 dark:text-slate-400 font-medium hover:text-slate-900 dark:hover:text-slate-200 border-transparent'"
+            class="flex-1 py-1.5 px-3 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5">
+            <x-icon name="kullanicilar" class="w-3.5 h-3.5 text-[#C9A84C]" />
+            <span>Danışman</span>
+        </button>
+
+        <button type="button"
+            @click="crmTab = 'site'"
+            :class="crmTab === 'site' 
+                ? 'bg-white dark:bg-[#0A1628] text-slate-900 dark:text-[#C9A84C] shadow-sm font-bold border border-slate-200/80 dark:border-[#C9A84C]/30' 
+                : 'text-slate-600 dark:text-slate-400 font-medium hover:text-slate-900 dark:hover:text-slate-200 border-transparent'"
+            class="flex-1 py-1.5 px-3 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5">
+            <x-icon name="bina" class="w-3.5 h-3.5 text-[#C9A84C]" />
+            <span>Site / İdari</span>
+        </button>
+    </div>
+
+    {{-- TAB 1: Mal Sahibi --}}
+    <div x-show="crmTab === 'sahip'" x-transition class="space-y-4 pt-1">
+        @if($hasSahip)
+            <div class="flex items-start gap-4 p-4 bg-gray-50/70 dark:bg-slate-800/50 rounded-xl border border-gray-200/80 dark:border-slate-700/60">
+                <div class="w-12 h-12 rounded-xl bg-[#0A1628] border border-[#C9A84C]/40 flex items-center justify-center text-sm font-bold text-[#C9A84C] shrink-0 shadow-sm">
+                    {{ mb_substr($sahip->ad ?? $sahipAd, 0, 1) }}{{ mb_substr($sahip->soyad ?? '', 0, 1) }}
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
-                        <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Mal Sahibi</span>
-                        <div class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></div>
+                        <span class="text-[11px] font-bold text-[#C9A84C] uppercase tracking-wider">Kayıtlı Mal Sahibi</span>
+                        <span class="px-1.5 py-0.2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold rounded">Doğrulanmış</span>
                     </div>
-                    <h4 class="text-xl font-bold text-gray-900 dark:text-white mt-1 dark:text-slate-100">{{ $ilan->ilanSahibi->ad ?? 'Belirsiz' }} {{ $ilan->ilanSahibi->soyad ?? '' }}</h4>
-
-                    <div class="mt-4 flex flex-wrap gap-2">
-                        <a href="tel:{{ $ilan->ilanSahibi->telefon }}" class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-slate-900 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-semibold text-gray-900 dark:text-white rounded-lg border border-gray-200 dark:border-slate-800 transition-all dark:border-slate-700 dark:text-slate-100">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                            Telefon
-                        </a>
-                        @if($ilan->ilanSahibi->eposta)
-                            <a href="mailto:{{ $ilan->ilanSahibi->eposta }}" class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-slate-900 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-semibold text-gray-900 dark:text-white rounded-lg border border-gray-200 dark:border-slate-800 transition-all dark:border-slate-700 dark:text-slate-100">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                                E-posta
+                    <h4 class="text-sm font-bold text-gray-900 dark:text-white truncate mt-0.5">{{ $sahipAd }}</h4>
+                    
+                    <div class="mt-2.5 flex flex-wrap gap-2">
+                        @if($sahipTelefon)
+                            <a href="tel:{{ $sahipTelefon }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white dark:bg-slate-900 hover:bg-[#C9A84C]/10 text-xs font-bold text-gray-900 dark:text-white hover:text-[#C9A84C] rounded-lg border border-slate-200 dark:border-slate-700 transition-all shadow-sm">
+                                <x-icon name="telefon" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                <span>{{ $sahipTelefon }}</span>
+                            </a>
+                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $sahipTelefon) }}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-lg border border-emerald-200 dark:border-emerald-800 transition-all shadow-sm">
+                                <span>WhatsApp</span>
+                            </a>
+                        @endif
+                        @if($sahipEposta)
+                            <a href="mailto:{{ $sahipEposta }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white dark:bg-slate-900 hover:bg-[#C9A84C]/10 text-xs font-bold text-gray-900 dark:text-white hover:text-[#C9A84C] rounded-lg border border-slate-200 dark:border-slate-700 transition-all shadow-sm">
+                                <x-icon name="eposta" class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                                <span>E-posta</span>
                             </a>
                         @endif
                     </div>
                 </div>
             </div>
-
-            {{-- Context Info --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="p-4 bg-gray-50 dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 dark:border-slate-700">
-                    <span class="text-xs font-medium text-gray-600 dark:text-gray-400 block mb-2">Konum</span>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white dark:text-slate-100">
-                        {{ optional($ilan->il)->il_adi }}, {{ optional($ilan->ilce)->ilce_adi }}
-                    </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ optional($ilan->mahalle)->mahalle_adi }}</p>
+        @else
+            <div class="p-5 text-center bg-gray-50/60 dark:bg-slate-800/40 rounded-xl border border-dashed border-gray-200 dark:border-slate-800">
+                <div class="w-10 h-10 mx-auto rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 mb-2">
+                    <x-icon name="kullanici" class="w-5 h-5 text-slate-400" />
                 </div>
+                <h5 class="text-xs font-bold text-gray-900 dark:text-white">Mal Sahibi Henüz Atanmamış</h5>
+                <p class="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">Bu ilanın mal sahibi veya müşteri kaydı ilişkilendirilmemiş.</p>
+                <div class="mt-3">
+                    <a href="{{ route('admin.ilanlar.edit', $ilan->id) }}#tab-crm" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0A1628] hover:bg-[#112240] text-[#C9A84C] border border-[#C9A84C]/40 text-xs font-bold rounded-lg transition-all shadow-sm">
+                        <x-icon name="ekle" class="w-3.5 h-3.5" />
+                        <span>Kişi Ata / Düzenle</span>
+                    </a>
+                </div>
+            </div>
+        @endif
+    </div>
 
-                <div class="p-4 bg-gray-50 dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 dark:border-slate-700">
-                    <span class="text-xs font-medium text-gray-600 dark:text-gray-400 block mb-2">Kategori</span>
-                    <div class="flex flex-wrap gap-2">
-                        @if($ilan->ana_kategori_id) <span class="px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-xs font-semibold text-gray-900 dark:text-white rounded dark:text-slate-100">{{ $ilan->kategori->name ?? 'Belirsiz' }}</span> @endif
-                        @if($ilan->junction_id) <span class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-semibold border border-blue-200 dark:border-blue-800 rounded">Aktif</span> @endif
-                    </div>
+    {{-- TAB 2: Danışman --}}
+    <div x-show="crmTab === 'danisman'" x-transition class="space-y-4 pt-1">
+        <div class="flex items-start gap-4 p-4 bg-gray-50/70 dark:bg-slate-800/50 rounded-xl border border-gray-200/80 dark:border-slate-700/60">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0A1628] to-[#112240] border border-[#C9A84C]/50 flex items-center justify-center text-sm font-bold text-[#C9A84C] shrink-0 shadow-sm">
+                {{ mb_substr($danisman->name ?? 'YK', 0, 2) }}
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-[11px] font-bold text-[#C9A84C] uppercase tracking-wider">Portföy Temsilcisi</span>
+                    <span class="px-1.5 py-0.2 bg-[#C9A84C]/15 text-[#C9A84C] text-[10px] font-bold rounded border border-[#C9A84C]/30">Yetkili</span>
+                </div>
+                <h4 class="text-sm font-bold text-gray-900 dark:text-white truncate mt-0.5">{{ $danisman->name ?? 'Merkez Ofis Danışmanı' }}</h4>
+                <p class="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">Yalıhan Emlak Bodrum</p>
+
+                <div class="mt-2.5 flex flex-wrap gap-2">
+                    @if(!empty($danisman->phone))
+                        <a href="tel:{{ $danisman->phone }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white dark:bg-slate-900 text-xs font-bold text-gray-900 dark:text-white rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <x-icon name="telefon" class="w-3.5 h-3.5 text-emerald-600" />
+                            <span>{{ $danisman->phone }}</span>
+                        </a>
+                    @endif
+                    @if(!empty($danisman->email))
+                        <a href="mailto:{{ $danisman->email }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white dark:bg-slate-900 text-xs font-bold text-gray-900 dark:text-white rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <x-icon name="eposta" class="w-3.5 h-3.5 text-blue-600" />
+                            <span>{{ $danisman->email }}</span>
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Site/Apartman --}}
-    @if(view()->exists('admin.ilanlar.components.site-apartman-context7'))
-        <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-sm dark:shadow-none dark:border-slate-700">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 dark:border-slate-700">
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-white dark:text-slate-100">Site Bilgileri</h3>
-            </div>
-            <div class="p-6">
-                <div class="space-y-4">
-                    @if($ilan->site_id)
-                        <div class="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                            <div>
-                                <span class="text-xs font-medium text-green-600 dark:text-green-400">Aktif Site</span>
-                                <h5 class="text-lg font-bold text-gray-900 dark:text-white dark:text-slate-100">{{ $ilan->site->ad ?? 'Belirsiz Site' }}</h5>
-                            </div>
-                            <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-full text-green-600 dark:text-green-400">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                            </div>
-                        </div>
-                    @else
-                        <div class="py-12 text-center text-gray-500 dark:text-gray-400">
-                            <span class="text-sm font-medium">Site bilgisi yok</span>
-                        </div>
-                    @endif
+    {{-- TAB 3: Site & İdari --}}
+    <div x-show="crmTab === 'site'" x-transition class="space-y-4 pt-1">
+        @if($ilan->site_id && $ilan->site)
+            <div class="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 rounded-xl">
+                <div>
+                    <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">Kayıtlı Site / Kompleks</span>
+                    <h5 class="text-sm font-bold text-gray-900 dark:text-white mt-0.5">{{ $ilan->site->ad }}</h5>
+                </div>
+                <div class="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-full text-emerald-600 dark:text-emerald-400">
+                    <x-icon name="bina" class="w-5 h-5" />
                 </div>
             </div>
-        </div>
-    @endif
+        @else
+            <div class="p-4 bg-gray-50/70 dark:bg-slate-800/50 rounded-xl border border-gray-200/80 dark:border-slate-700/60 flex items-center gap-3">
+                <div class="p-2.5 bg-slate-200 dark:bg-slate-700 rounded-xl text-slate-600 dark:text-slate-300 shrink-0">
+                    <x-icon name="ev" class="w-5 h-5 text-[#C9A84C]" />
+                </div>
+                <div>
+                    <h5 class="text-xs font-bold text-gray-900 dark:text-white">Müstakil / Bağımsız Parsel</h5>
+                    <p class="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">Bu gayrimenkul site veya tesis dışı bağımsız parsel statüsündedir.</p>
+                </div>
+            </div>
+        @endif
+    </div>
 </div>

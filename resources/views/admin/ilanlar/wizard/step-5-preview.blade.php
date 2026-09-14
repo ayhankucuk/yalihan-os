@@ -75,9 +75,9 @@
 
     {{-- Akıllı Özet Paneli --}}
     <div
-        class="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-sm dark:border-blue-800 dark:from-blue-900/20 dark:to-indigo-900/20 dark:shadow-none">
+        class="rounded-2xl border border-[#C9A84C]/30 bg-gradient-to-br from-amber-50/50 to-slate-50 p-6 shadow-sm dark:border-[#C9A84C]/30 dark:from-[#C9A84C]/5 dark:to-slate-900 dark:shadow-none">
         <div class="mb-6 flex items-center gap-4">
-            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0A1628] text-[#C9A84C] shadow-md">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -86,7 +86,7 @@
             <div>
                 <h4 class="text-lg font-bold text-gray-900 dark:text-slate-100" x-text="summary.baslik">
                 </h4>
-                <p class="text-sm font-medium text-blue-700 dark:text-blue-300" x-text="summary.kategori"></p>
+                <p class="text-sm font-medium text-[#C9A84C]" x-text="summary.kategori"></p>
             </div>
         </div>
 
@@ -271,7 +271,7 @@
     {{-- Portal Numaraları & Gizli Not --}}
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {{-- Gizli Not --}}
-        <div class="rounded-xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-900/10">
+        <div class="rounded-xl border border-amber-200/60 bg-amber-50/50 p-6 dark:border-amber-700/50 dark:bg-amber-900/10">
             <label for="gizli_not"
                 class="mb-4 flex items-center gap-2 text-sm font-bold text-amber-800 dark:text-amber-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -284,7 +284,7 @@
         </div>
 
         {{-- Portallar --}}
-        <div class="rounded-xl border border-purple-200 bg-purple-50 p-6 dark:border-purple-800 dark:bg-purple-900/10">
+        <div class="rounded-xl border border-purple-200/60 bg-purple-50/50 p-6 dark:border-purple-800/50 dark:bg-purple-900/10">
             <label class="mb-4 flex items-center gap-2 text-sm font-bold text-purple-800 dark:text-purple-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
@@ -305,7 +305,7 @@
     </div>
 
     {{-- Yayın Durumu Seçimi --}}
-    <div class="rounded-2xl border-2 border-blue-500 bg-white p-8 shadow-xl dark:border-blue-400 dark:bg-slate-900">
+    <div class="rounded-2xl border-2 border-[#C9A84C] bg-white p-8 shadow-md dark:border-[#C9A84C]/50 dark:bg-slate-900">
         <div class="flex flex-col items-center justify-between gap-8 md:flex-row">
             <div class="flex-1">
                 <h4 class="mb-2 text-xl font-black text-gray-900 dark:text-slate-100">🚀 Yayına Hazır

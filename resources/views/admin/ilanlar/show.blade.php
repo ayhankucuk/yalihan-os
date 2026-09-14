@@ -3,8 +3,8 @@
 @section('title', 'İlan Kokpiti | ' . $ilan->kisa_referans)
 
 @section('content')
-    <div class="space-y-6" x-data="{ toasts: [] }"
-        x-on:show-toast.window="toasts.push({ id: Date.now(), message: $event.detail.message, show: true }); setTimeout(() => { const idx = toasts.findIndex(t => t.id === Date.now()); if(idx > -1) toasts[idx].show = false; }, 3000)">
+    <div class="space-y-6" x-data="cockpitManager({{ $ilan->id }})"
+        x-on:show-toast.window="addToast($event.detail.message)">
 
         {{-- 🛰️ Tactical Vitals (Sticky) --}}
         @include('admin.ilanlar.components.cockpit.vitals', ['ilan' => $ilan])
@@ -18,12 +18,12 @@
                 'pricingInsight' => $pricingInsight ?? null,
             ])
 
-            {{-- � Trust Breakdown: Karar Dağılımı --}}
+            {{--  Trust Breakdown: Karar Dağılımı --}}
             @if (!empty($trustBreakdown))
                 <x-market-intelligence.trust-breakdown :data="$trustBreakdown" />
             @endif
 
-            {{-- �🗺️ Unified Intelligence Map: Hero Position --}}
+            {{-- 🗺️ Unified Intelligence Map: Hero Position --}}
             @include('admin.ilanlar.components.cockpit.intelligence-map', [
                 'ilan' => $ilan,
                 'locationInsight' => $locationInsight ?? null,
@@ -39,13 +39,15 @@
                 <div class="xl:col-span-8 space-y-6">
                     {{-- 🛸 Radar & AI Insights --}}
                     <section
-                        class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-sm dark:shadow-none dark:border-slate-700">
+                        class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm dark:shadow-none">
                         <div
-                            class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 flex justify-between items-center dark:border-slate-700">
-                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white dark:text-slate-100">Bölge Analizi
-                            </h3>
+                            class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/40 flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <x-icon name="harita" class="w-4 h-4 text-[#C9A84C]" />
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Bölge & Piyasa Radarı</h3>
+                            </div>
                             <span
-                                class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium rounded border border-blue-200 dark:border-blue-800">Canlı</span>
+                                class="px-2.5 py-0.5 bg-[#C9A84C]/15 text-[#C9A84C] text-xs font-bold rounded border border-[#C9A84C]/30">Canlı</span>
                         </div>
                         <div class="p-6">
                             @include('admin.ilanlar.components.cockpit.radar')
@@ -54,12 +56,14 @@
 
                     {{-- 📦 Technical Data Matrix --}}
                     <section
-                        class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-sm dark:shadow-none dark:border-slate-700">
+                        class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm dark:shadow-none">
                         <div
-                            class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 flex justify-between items-center dark:border-slate-700">
-                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white dark:text-slate-100">Teknik
-                                Özellikler</h3>
-                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Detaylı Bilgiler</span>
+                            class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/40 flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <x-icon name="liste" class="w-4 h-4 text-[#C9A84C]" />
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Teknik Özellikler</h3>
+                            </div>
+                            <span class="text-xs font-medium text-gray-500 dark:text-slate-400">Detaylı Matris</span>
                         </div>
                         <div class="p-6">
                             @include('admin.ilanlar.components.cockpit.data-grid')
@@ -68,29 +72,34 @@
 
                     {{-- 🎨 Multimedia Gallery --}}
                     <section
-                        class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-sm dark:shadow-none dark:border-slate-700">
+                        class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm dark:shadow-none">
                         <div
-                            class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 flex justify-between items-center dark:border-slate-700">
-                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white dark:text-slate-100">Fotoğraf
-                                Galerisi</h3>
+                            class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/40 flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <x-icon name="kamera" class="w-4 h-4 text-[#C9A84C]" />
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Fotoğraf Galerisi</h3>
+                            </div>
                             <span
-                                class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ $ilan->fotograflar->count() }}
-                                Fotoğraf</span>
+                                class="text-xs font-semibold px-2.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md border border-slate-200 dark:border-slate-700">{{ $ilan->fotograflar->count() }} Fotoğraf</span>
                         </div>
                         <div class="p-6">
                             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                                @foreach ($ilan->fotograflar as $photo)
+                                @forelse ($ilan->fotograflar as $photo)
                                     <div
-                                        class="group relative aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-slate-800 bg-gray-100 dark:bg-slate-900 shadow-sm cursor-pointer hover:border-gray-300 dark:hover:border-gray-600 transition-all dark:shadow-none dark:border-slate-700">
+                                        class="group relative aspect-video rounded-xl overflow-hidden border border-gray-200 dark:border-slate-800 bg-gray-100 dark:bg-slate-900 shadow-sm cursor-pointer hover:border-[#C9A84C]/50 transition-all">
                                         <img src="{{ Storage::url($photo->dosya_yolu) }}"
                                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                                         <div
-                                            class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-gray-900/90 py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0A1628]/95 via-[#0A1628]/60 to-transparent py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <span
                                                 class="text-xs font-semibold text-white">{{ $photo->oda_tipi ?? 'Genel' }}</span>
                                         </div>
                                     </div>
-                                @endforeach
+                                @empty
+                                    <div class="col-span-full py-8 text-center text-gray-400 dark:text-slate-500 text-xs">
+                                        Bu ilan için henüz fotoğraf yüklenmemiş.
+                                    </div>
+                                @endforelse
                             </div>
                         </div>
                     </section>
@@ -98,7 +107,7 @@
 
                 {{-- RIGHT COLUMN: CRM, Access & Logs (4 Units) --}}
                 <div class="xl:col-span-4 space-y-6">
-                    {{-- � MIE v1 Alpha: Pricing Insight --}}
+                    {{-- 💰 MIE v1 Alpha: Pricing Insight --}}
                     @include('admin.ilanlar.components.cockpit.pricing-insight', [
                         'pricingInsight' => $pricingInsight ?? null,
                     ])
@@ -115,15 +124,17 @@
                         'ilan' => $ilan,
                     ])
 
-                    {{-- �👤 Client Information & CRM --}}
+                    {{-- 👤 Client Information & CRM --}}
                     <section
-                        class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-sm dark:shadow-none dark:border-slate-700">
+                        class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm dark:shadow-none">
                         <div
-                            class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 flex justify-between items-center dark:border-slate-700">
-                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white dark:text-slate-100">Müşteri
-                                Bilgileri</h3>
+                            class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/40 flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <x-icon name="kullanici" class="w-4 h-4 text-[#C9A84C]" />
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Müşteri Bilgileri</h3>
+                            </div>
                             <span
-                                class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium rounded border border-green-200 dark:border-green-800">Aktif</span>
+                                class="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold rounded border border-emerald-200 dark:border-emerald-800">Aktif</span>
                         </div>
                         <div class="p-6">
                             @include('admin.ilanlar.components.cockpit.social-crm')
@@ -132,11 +143,13 @@
 
                     {{-- 📜 Audit Logs & Archive --}}
                     <section
-                        class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-sm dark:shadow-none dark:border-slate-700">
+                        class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm dark:shadow-none">
                         <div
-                            class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 flex justify-between items-center dark:border-slate-700">
-                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white dark:text-slate-100">Kayıt ve
-                                Arşiv</h3>
+                            class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/40 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <x-icon name="kalkan" class="w-4 h-4 text-[#C9A84C]" />
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Kayıt ve Arşiv</h3>
+                            </div>
                         </div>
                         <div class="p-6">
                             @include('admin.ilanlar.components.cockpit.logs-vault')
@@ -147,21 +160,22 @@
 
             {{-- 🎯 Potansiyel Alıcılar --}}
             @if (!empty($potentialBuyers) && count($potentialBuyers) > 0)
-                <section class="pt-12 border-t border-gray-200 dark:border-slate-800 dark:border-slate-700">
-                    <div class="flex items-center gap-4 mb-8">
-                        <div
-                            class="p-3 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg border border-green-200 dark:border-green-800 shadow-sm dark:shadow-none">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
+                <section class="pt-8 border-t border-gray-200 dark:border-slate-800">
+                    <div class="flex items-center justify-between gap-4 mb-6">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="p-3 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-200 dark:border-emerald-800/60 shadow-sm">
+                                <x-icon name="kullanicilar" class="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Eşleşmiş Alıcılar</h2>
+                                <p class="text-xs text-gray-500 dark:text-slate-400 font-medium mt-0.5">
+                                    Portföydeki aktif taleplerden {{ count($potentialBuyers) }} kişi eşleşti</p>
+                            </div>
                         </div>
-                        <div>
-                            <h2 class="text-xl font-bold text-gray-900 dark:text-white dark:text-slate-100">Eşleşmiş
-                                Alıcılar</h2>
-                            <p class="text-xs text-gray-600 dark:text-gray-400 font-medium mt-0.5">
-                                {{ count($potentialBuyers) }} kişi tespit edildi</p>
-                        </div>
+                        <span class="px-3 py-1 bg-[#C9A84C]/15 text-[#C9A84C] text-xs font-bold rounded-lg border border-[#C9A84C]/30">
+                            AI Match Matrix
+                        </span>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -171,31 +185,87 @@
                                 $kisi = $talep->kisi;
                                 $score = $match['yuzde'];
                                 $scoreColor = $score >= 90 ? 'emerald' : ($score >= 80 ? 'blue' : 'amber');
+                                $phoneClean = preg_replace('/[^0-9]/', '', $kisi->telefon ?: ($kisi->gsm ?? ''));
+                                if (str_starts_with($phoneClean, '0')) {
+                                    $phoneClean = '90' . substr($phoneClean, 1);
+                                } elseif (!str_starts_with($phoneClean, '90') && strlen($phoneClean) === 10) {
+                                    $phoneClean = '90' . $phoneClean;
+                                }
+                                $pitchText = "Merhaba " . ($kisi->ad ?? 'Değerli Müşterimiz') . ",\n\n"
+                                    . "Yalıhan Emlak portföyümüze yeni eklenen '" . ($ilan->baslik) . "' (" . ($ilan->kisa_referans ?: '#' . $ilan->id) . ") ilanımız kriterlerinizle %" . $score . " oranında eşleşmiştir.\n\n"
+                                    . "Fiyat: " . number_format($ilan->fiyat) . " " . $ilan->para_birimi . "\n"
+                                    . "Lokasyon: " . ($ilan->mahalle?->mahalle_adi ? $ilan->mahalle->mahalle_adi . ', ' : '') . ($ilan->ilce?->ilce_adi ?: 'Bodrum') . "\n\n"
+                                    . "Detaylı sunum ve yer gösterimi için benimle iletişime geçebilirsiniz.";
+                                $waUrl = "https://wa.me/" . $phoneClean . "?text=" . rawurlencode($pitchText);
                             @endphp
                             <div
-                                class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-6 hover:border-gray-300 dark:hover:border-gray-600 transition-all group shadow-sm dark:shadow-none dark:border-slate-700">
-                                <div class="flex items-center gap-4 mb-6">
-                                    <div
-                                        class="w-12 h-12 rounded-full bg-{{ $scoreColor }}-100 dark:bg-{{ $scoreColor }}-900/30 flex items-center justify-center text-{{ $scoreColor }}-600 dark:text-{{ $scoreColor }}-400 font-bold border border-{{ $scoreColor }}-200 dark:border-{{ $scoreColor }}-800">
-                                        {{ mb_substr($kisi->ad, 0, 1) }}{{ mb_substr($kisi->soyad ?? '', 0, 1) }}
+                                class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl p-5 hover:border-[#C9A84C]/50 transition-all group shadow-sm flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center gap-3.5 mb-4">
+                                        <div
+                                            class="w-11 h-11 rounded-full bg-{{ $scoreColor }}-100 dark:bg-{{ $scoreColor }}-900/30 flex items-center justify-center text-{{ $scoreColor }}-600 dark:text-{{ $scoreColor }}-400 font-bold border border-{{ $scoreColor }}-200 dark:border-{{ $scoreColor }}-800 text-sm shrink-0">
+                                            {{ mb_substr($kisi->ad ?? 'M', 0, 1) }}{{ mb_substr($kisi->soyad ?? '', 0, 1) }}
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <h4 class="text-sm font-bold text-gray-900 dark:text-white truncate">
+                                                {{ $kisi->ad ?? 'İsimsiz' }} {{ $kisi->soyad ?? '' }}
+                                            </h4>
+                                            <p class="text-xs font-medium text-gray-500 dark:text-slate-400">
+                                                {{ $match['kategori'] ?? 'Alıcı Talebi' }}
+                                            </p>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="text-lg font-black text-{{ $scoreColor }}-600 dark:text-{{ $scoreColor }}-400">%{{ $score }}</span>
+                                        </div>
                                     </div>
-                                    <div class="flex-1 min-w-0">
-                                        <h4
-                                            class="text-sm font-semibold text-gray-900 dark:text-white truncate dark:text-slate-100">
-                                            {{ $kisi->ad }} {{ $kisi->soyad }}</h4>
-                                        <p class="text-xs font-medium text-gray-600 dark:text-gray-400">
-                                            {{ $match['kategori'] ?? 'Eşleşme' }}</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <span
-                                            class="text-xl font-bold text-{{ $scoreColor }}-600 dark:text-{{ $scoreColor }}-400">{{ $score }}%</span>
+
+                                    {{-- İletişim Bilgileri --}}
+                                    <div class="space-y-1.5 text-xs text-gray-600 dark:text-slate-400 mb-4 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-lg border border-slate-200/60 dark:border-slate-700/60">
+                                        @if($kisi->telefon || $kisi->gsm)
+                                            <div class="flex items-center gap-2">
+                                                <x-icon name="telefon" class="w-3.5 h-3.5 text-[#C9A84C]" />
+                                                <span class="font-mono text-gray-900 dark:text-slate-200">{{ $kisi->telefon ?: $kisi->gsm }}</span>
+                                            </div>
+                                        @endif
+                                        @if($kisi->eposta)
+                                            <div class="flex items-center gap-2 truncate">
+                                                <x-icon name="posta" class="w-3.5 h-3.5 text-[#C9A84C]" />
+                                                <span class="truncate">{{ $kisi->eposta }}</span>
+                                            </div>
+                                        @endif
+                                        @if($talep->butce_max ?? false)
+                                            <div class="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60 text-[11px]">
+                                                <span>Bütçe Aralığı:</span>
+                                                <span class="font-bold text-gray-900 dark:text-white">{{ number_format($talep->butce_min ?? 0) }} - {{ number_format($talep->butce_max) }} {{ $talep->para_birimi ?? '₺' }}</span>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
 
-                                <button
-                                    class="w-full py-3 bg-{{ $scoreColor }}-600 hover:bg-{{ $scoreColor }}-700 text-white text-xs font-semibold rounded-lg transition-all shadow-md dark:shadow-none">
-                                    İletişim Başlat
-                                </button>
+                                {{-- Aksiyonlar --}}
+                                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100 dark:border-slate-800">
+                                    @if($phoneClean)
+                                        <a href="{{ $waUrl }}" target="_blank"
+                                           class="inline-flex items-center justify-center gap-1 py-2 px-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-all shadow-sm"
+                                           title="WhatsApp ile Portföy Gönder">
+                                            <x-icon name="mesaj" class="w-3.5 h-3.5" />
+                                            <span>WhatsApp</span>
+                                        </a>
+                                        <a href="tel:{{ $kisi->telefon ?: $kisi->gsm }}"
+                                           class="inline-flex items-center justify-center gap-1 py-2 px-2 bg-[#0A1628] hover:bg-[#112240] text-[#C9A84C] border border-[#C9A84C]/40 text-xs font-bold rounded-lg transition-all"
+                                           title="Doğrudan Ara">
+                                            <x-icon name="telefon" class="w-3.5 h-3.5" />
+                                            <span>Ara</span>
+                                        </a>
+                                    @endif
+                                    <button type="button"
+                                            @click="copyToClipboard({{ json_encode($pitchText) }}, 'Sunum metni kopyalandı 📋')"
+                                            class="inline-flex items-center justify-center gap-1 py-2 px-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg transition-all border border-slate-200 dark:border-slate-700 col-span-{{ $phoneClean ? 1 : 3 }}"
+                                            title="Özel Sunum Metnini Kopyala">
+                                        <x-icon name="kopyala" class="w-3.5 h-3.5" />
+                                        <span>{{ $phoneClean ? 'Kopyala' : 'Metni Kopyala' }}</span>
+                                    </button>
+                                </div>
                             </div>
                         @endforeach
                     </div>
@@ -204,12 +274,13 @@
 
         </div>
 
-        {{-- Toast Notifications --}}
+        {{-- Toast Notifications (Mediterranean Luxury Dark Navy + Gold) --}}
         <div class="fixed bottom-6 right-6 z-[9999] space-y-3 pointer-events-none">
             <template x-for="toast in toasts" :key="toast.id">
                 <div x-show="toast.show" x-transition
-                    class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-xl border border-blue-500 flex items-center gap-3 pointer-events-auto">
-                    <span x-text="toast.message" class="text-sm font-semibold"></span>
+                    class="bg-[#0A1628] text-slate-100 px-5 py-3 rounded-xl shadow-2xl border border-[#C9A84C]/40 flex items-center gap-3 pointer-events-auto">
+                    <span class="w-2 h-2 rounded-full bg-[#C9A84C] shrink-0"></span>
+                    <span x-text="toast.message" class="text-xs font-bold"></span>
                 </div>
             </template>
         </div>
@@ -255,7 +326,7 @@
                     navigator.clipboard.writeText(text).then(() => {
                         this.addToast(message);
                     }).catch(err => {
-                        this.addToast('🛑 Arıza: Uplink Hatası');
+                        this.addToast('🛑 Metin kopyalanamadı');
                     });
                 },
 
@@ -275,9 +346,38 @@
                     }, 3000);
                 },
 
-                async sealDraft() {
-                    if (!confirm('İlan yayına alınsın mı? (Seal Mission)')) return;
+                async publishViaGate() {
                     this.processing = true;
+                    this.addToast('Hermes Yayın Denetimi Başlatılıyor... 🛡️');
+                    try {
+                        const response = await fetch(`/admin/ilanlar/${this.ilanId}/publish`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                override: false
+                            })
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            this.addToast('İlan başarıyla yayına alındı! 🎉');
+                            setTimeout(() => location.reload(), 1200);
+                        } else {
+                            this.addToast('Yayın Uyarısı: ' + (data.message || 'Eksik alanlar var.'));
+                        }
+                    } catch (error) {
+                        this.addToast('🛑 Yayın Hatası: İletişim kurulamadı.');
+                    } finally {
+                        this.processing = false;
+                    }
+                },
+
+                async togglePublish() {
+                    this.processing = true;
+                    this.addToast('Durum güncelleniyor...');
                     try {
                         const response = await fetch(`/admin/ilanlar/${this.ilanId}/yayin-durumu-toggle`, {
                             method: 'POST',
@@ -289,11 +389,13 @@
                         });
                         const data = await response.json();
                         if (data.success) {
-                            this.addToast('Mission Sealed! 🎖️');
-                            setTimeout(() => location.reload(), 1500);
+                            this.addToast('Yayın durumu güncellendi! ✅');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            this.addToast(data.message || 'İşlem başarısız.');
                         }
                     } catch (error) {
-                        this.addToast('🛑 Seal Failure');
+                        this.addToast('🛑 Sunucu hatası oluştu.');
                     } finally {
                         this.processing = false;
                     }

@@ -65,11 +65,11 @@
 
         {{-- Konum Bilgileri Formu --}}
         <div
-            class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-lg p-6 dark:border-slate-700">
+            class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 dark:border-slate-700">
             <div class="flex items-center gap-3 mb-6 dark:mb-6">
                 <div
-                    class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center dark:justify-center">
-                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor"
+                    class="w-10 h-10 bg-[#C9A84C]/20 dark:bg-[#C9A84C]/10 rounded-lg flex items-center justify-center dark:justify-center">
+                    <svg class="w-6 h-6 text-[#C9A84C]" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -182,7 +182,7 @@
                             🗺️ Harita
                         </button>
                         <button type="button" id="satellite-view-button-step4" onclick="switchMapView('satellite')"
-                            class="px-4 py-2 text-sm font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/20 dark:shadow-none transition-all active:scale-95 border border-transparent">
+                            class="px-4 py-2 text-sm font-bold rounded-lg bg-[#0A1628] text-[#C9A84C] hover:bg-[#132238] shadow-md transition-all active:scale-95 border border-transparent">
                             🛰️ Uydu
                         </button>
                     </div>
@@ -195,10 +195,10 @@
                 <div
                     class="absolute top-4 left-4 z-[1000] w-72 dark:w-72">
                     <div class="relative dark:relative">
-                        <input type="text" id="map-search-input-step4" class="wizard-field shadow-xl"
+                        <input type="text" id="map-search-input-step4" class="wizard-field shadow-sm"
                             placeholder="Yer ara (Bodrum, Yalıkavak...)">
                         <div id="search-results-step4"
-                            class="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 rounded-lg shadow-2xl border border-gray-100 dark:border-slate-800 hidden dark:hidden">
+                            class="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200/80 dark:border-slate-800 hidden dark:hidden">
                         </div>
                     </div>
                 </div>
@@ -206,7 +206,7 @@
                 {{-- Coordinates Display --}}
                 <div class="absolute bottom-4 left-4 z-[1000] flex flex-col gap-2">
                     <div
-                        class="bg-white dark:bg-slate-900 backdrop-blur-xl px-4 py-3 rounded-xl shadow-xl border border-gray-200 dark:border-slate-800 flex items-center gap-4 text-gray-900 dark:text-white dark:border-slate-700 dark:text-slate-100">
+                        class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 py-3 rounded-xl shadow-lg border border-slate-200/80 dark:border-slate-700 flex items-center gap-4 text-gray-900 dark:text-white">
                         <div class="flex items-center gap-2 dark:gap-2">
                             <span
                                 class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Enlem</span>
