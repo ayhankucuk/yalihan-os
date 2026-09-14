@@ -9,6 +9,7 @@ import './components/ToastNotification.js';
 
 // ✅ SAB: Wizard Components Integration
 import './components/CortexObserver.js';
+import './wizard/step1-cascade.js'; // Konum cascade SSOT — tüm sayfalar için window.loadIlceler/loadMahalleler
 import './wizard/step2-category.js';
 import './wizard/step2-features.js';
 import './wizard/components/ai-description.js';
