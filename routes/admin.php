@@ -862,6 +862,8 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
         Route::get('/', [TalepController::class, 'index'])->name('index');
         Route::get('/create', [TalepController::class, 'create'])->name('create');
         Route::post('/', [TalepController::class, 'store'])->name('store');
+        Route::get('/search', [TalepController::class, 'search'])->name('search');
+        Route::post('/bulk-action', [TalepController::class, 'bulkAction'])->name('talep.bulk.action');
         Route::get('/{talep}', [TalepController::class, 'show'])->name('show');
         Route::get('/{talep}/edit', [TalepController::class, 'edit'])->name('edit');
         Route::put('/{talep}', [TalepController::class, 'update'])->name('update');
@@ -869,8 +871,6 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
         Route::post('/{talep}/restore', [TalepController::class, 'restore'])->name('restore');
         Route::get('/{talep}/eslesen', [TalepController::class, 'eslesen'])->name('eslesen');
         Route::get('/{talep}/matches', [TalepController::class, 'showMatches'])->name('matches'); // 🎯 Eşleşme Kokpiti
-        Route::get('/search', [TalepController::class, 'search'])->name('search');
-        Route::post('/bulk-action', [TalepController::class, 'bulkAction'])->name('talep.bulk.action');
     });
 
     // Eşleştirme Sistemi
