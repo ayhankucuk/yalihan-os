@@ -16,9 +16,10 @@ supersedes: null
 <!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
 - **Repository Commit:** `e8a90cda` (HEAD) — RC2 dirty tree fully cleaned, 3 hygiene skills added
 - **Branch:** `release-candidate/RC2`
-- **Working Tree:** CLEAN — `nothing to commit, working tree clean` ✅
-- **Evidence Date:** 2026-09-14T10:30:00+03:00
-- **Evidence Level:** `TEST_VERIFIED` — TenantScope fail-closed + V2 isolation tests 30/30 PASS
+- **Working Tree:** DIRTY — 2 dosya değişti (`app/Repositories/IlanRepository.php`, `docs/BEKCI_CHANGELOG.md`)
+- **Evidence Date:** 2026-09-14T14:00:00+03:00
+- **Evidence Level:** `TEST_VERIFIED` — `admin/ilanlar` zero-results root cause: `backedEnum + groupBy` + `TenantScope whereRaw('1=0')` — both layers fixed
+- **admin/ilanlar Fix:** `IlanService` stat sorguları → `DB::table()` facade + `CAST(yayin_durumu AS CHAR)`, `IlanRepository` → `withoutGlobalScopes()` + explicit `tenant_id`
 - **Production Authorization:** BACKFILL + FAIL_CLOSED AUTHORIZED (OPERATOR/Saab 2026-09-08)
 - **Production Authorization:** `NONE (Read-Only Gate)`
 <!-- ───────────────────────────────────────────────────────────── -->
@@ -97,7 +98,7 @@ Agent pipeline artık: Architect skill → MCP tools → PHP Artisan → sonuç.
 - Sprint 13 — Channel Manager: documented as CERTIFIED.
 - Sprint 14 — Property Command Center: documented as LAUNCHED / ACTIVE.
 - Sprint 15 — Action Center: PLANNED.
-- Sprint 16 — Knowledge Core AI: PLANNED.
+- Sprint 16 — Knowledge Core AI: **IN_PROGRESS** (2026-09-14). Migration `2026_09_06_000001` çalıştırıldı. 4 yeni API endpoint + 3 service sınıfı eklendi.
 - Current engineering focus: production hardening of the listing/wizard flow, authentication/session continuity, category and publication-type data, and the `/yazliklar` public page.
 - Strategic decision: scope freeze and Golden Thread certification take priority over speculative feature expansion. The eight-step flow must pass code, automated, browser, and production evidence gates.
 

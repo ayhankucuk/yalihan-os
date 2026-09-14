@@ -7,9 +7,11 @@ use App\Models\Ilan;
 use App\Models\User;
 use App\Enums\IlanDurumu;
 use App\Services\Ilan\IlanCrudService;
+use App\Services\SaaS\TenantContextService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * ✅ P1: İlan Repository Pattern
@@ -94,7 +96,14 @@ class IlanRepository
      */
     public function getAdminListings(array $filters = [], int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        $query = $this->applyOwnershipScope($this->model->newQuery())
+        // Bypass ALL global scopes (TenantScope + CountryScope) and apply explicit tenant filter.
+        // TenantScope MUST remain active for production multi-tenant isolation.
+        // Fix: withoutGlobalScopes() + explicit where('tenant_id', ...) prevents silent-empty-result
+        // bug when TenantContextService has no active tenant (Laravel backedEnum + groupBy incompatibility).
+        $tenantId = $this->getEffectiveTenantId();
+        $query = $this->model->newQuery()
+            ->withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
             ->with(['kategori', 'il', 'ilce', 'danisman', 'fotograflar'])
             ->latest();
 
@@ -140,7 +149,25 @@ class IlanRepository
             $query->where('danisman_id', $filters['danisman_id']);
         }
 
-        return $query->paginate($perPage);
+        return $this->applyOwnershipScope($query)->paginate($perPage);
+    }
+
+    /**
+     * Resolve effective tenant ID for repository queries.
+     * Mirrors IlanService::getCurrentTenantId() — keeps logic consistent.
+     *
+     * Priority: TenantContextService > auth()->tenant_id > session('tenant_id', 1)
+     */
+    private function getEffectiveTenantId(): int
+    {
+        if (app()->bound(TenantContextService::class)) {
+            $tenantService = app(TenantContextService::class);
+            if ($tenantService->hasTenant()) {
+                return (int) $tenantService->getTenant()->id;
+            }
+        }
+
+        return (int) (Auth::user()?->tenant_id ?? session('tenant_id', 1));
     }
 
     /**

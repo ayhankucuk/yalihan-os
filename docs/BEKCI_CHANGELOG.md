@@ -1,3 +1,22 @@
+## Oturum 184 — 2026-09-14 | admin/ilanlar Zero-Results Bug Fix + IlanRepository TenantScope Bypass
+
+**Kök Neden:** İki ayrı katmanda aynı bug: (1) `IlanService::getAdminListingsWithStats()` — `groupBy` + `backedEnum` cast uyumsuzluğu; (2) `IlanRepository::getAdminListings()` — `TenantScope` + `CountryScope` aktifken `TenantContextService::hasTenant() = false` olunca `whereRaw('1=0')` tüm sonuçları sessizce yok sayıyordu.
+
+**Düzeltme:**
+- `IlanService`: Tüm count/groupBy sorguları → `DB::table()` facade + explicit `tenant_id` + `CAST(yayin_durumu AS CHAR)`
+- `IlanService`: Yeni `getCurrentTenantId()` private metodu — `TenantContextService > auth()->tenant_id > session > 1` öncelik sırası
+- `IlanRepository::getAdminListings()`: `withoutGlobalScopes()` + explicit `where('tenant_id', $tenantId)` + yeni `getEffectiveTenantId()` private metodu
+
+```
+KALİTE KAPISI:  6/6 Antigravity Gate PASS ✅
+TEST:          5/5 IlanServiceTest PASS
+TEST:          6/6 IlanRepositoryAuthorizationTest PASS
+TEST:          3 FAILED (pre-existing, getAdminListings dışında — findOrFail pasif saga için)
+DOĞRULAMA:    Auth context ile getAdminListings() → 3 satır geliyor ✅
+```
+
+---
+
 ## Oturum 183 — 2026-09-14 | RC2 Dirty Tree Tasfiyesi & Otonom Hijyen Skill'leri
 
 **Kapsam:** `release-candidate/RC2` üzerindeki 83 dirty/untracked dosya sınıflandırıldı, proaktif Conflict Guard kilitleri ve schema parity denetimleri eşliğinde 14 atomic commit halinde temizlendi. Çalışma ağacı 100% temiz state'e getirildi. 3 yeni otonom yetenek (`git-worktree-hygiene`, `conflict-guard-preflight`, `dirty-inventory-generator`) çıkarılıp `.agents/skills/` altına kaydedildi ve indekslendi.
@@ -6156,7 +6175,37 @@ Ana RC2 (kirli) → BLOCKED_DIRTY → JSON kanıt üretildi → EXIT_CODE=1 ✅
 - **Çözüm:** RC2 alanında çalıştır (vendor mevcut)
 - **Öncelik:** ORTA
 
-### 3. Düzeltilen Hatalar — 2026-09-09 ✅
+### 3. Sprint 16 — Knowledge Core AI Phase 1 (2026-09-14) 🟡 IN_PROGRESS
+
+**Scope:** AI advisory modules → Action Center bridge; provenance, explainability, human-in-the-loop approval.
+
+| Bileşen | Dosya | Durum |
+|---------|-------|-------|
+| Migration | `2026_09_06_000001_add_action_center_fields_to_gorevler` | ✅ Çalıştırıldı |
+| Gorev durumu | `onay_bekliyor` → `getDurumlar()`, `onayBekliyorMu()` | ✅ |
+| AIRecommendationRecorder | `app/Services/ActionCenter/` | ✅ Yeni |
+| ActionExplainabilityService | `app/Services/ActionCenter/` | ✅ Yeni |
+| AIRecommendationManagementService | `app/Services/ActionCenter/` | ✅ Yeni |
+| AIRecommendationController | `app/Http/Controllers/Api/V1/` | ✅ Yeni (thin) |
+| Routes (4 endpoint) | `routes/api/v1/action-center.php` | ✅ → AIRecommendationController |
+| SAB Gate | 6/6 PASS ✅ | ✅ |
+| Unit tests | 10 PASS / 17 assertions ✅ | ✅ |
+| Evidence level | `REPO_VERIFIED` | ✅ |
+
+---
+
+### 4. MiniDemoIlanSeeder — Demo Portföy Verisi (2026-09-14) ✅
+
+| Değişiklik | Detay |
+|------------|--------|
+| `MiniDemoIlanSeeder` → `DatabaseSeeder` Section 3 | Local-only, idempotent, Context7 uyumlu |
+| Demo içerik | Bodrum Yalıkavak Villa + Türkbükü Daire + Gündoğan Arsa |
+| Seed sonucu | 3 ilan oluşturuldu (ilan sayısı: 0 → 3) |
+| Syntax | ✅ php -l clean |
+
+---
+
+### 5. Düzeltilen Hatalar — 2026-09-09 ✅
 
 | Hata | Dosya | Düzeltme |
 |------|--------|-----------|
@@ -6164,7 +6213,7 @@ Ana RC2 (kirli) → BLOCKED_DIRTY → JSON kanıt üretildi → EXIT_CODE=1 ✅
 | Kural 7 normalize eksik | `blade-alpine-runtime-guardian/SKILL.md` | "URL path normalize" ipucu eklendi (Cline — Antigravity kaynağından, `DOCUMENTED`) |
 | Temizlik komutu eksik | `multi-agent-worktree-sandbox/SKILL.md` | `git restore` alternatif olarak eklendi (Cline — Antigravity kaynağından, `DOCUMENTED`) |
 
-### 4. Yeni Yetenekler — SKILL_INDEX Kayıtları
+### 6. Yeni Yetenekler — SKILL_INDEX Kayıtları
 
 Artık ajanlar bu dosyaları her açtığında otomatik olarak ilgili skill yüklenecek:
 
@@ -6179,7 +6228,7 @@ Artık ajanlar bu dosyaları her açtığında otomatik olarak ilgili skill yük
 | `scripts/tools/rc2-release-certification-gate.sh` | `multi-agent-worktree-sandbox` |
 | `.git/worktree*`, `git worktree` komutları | `multi-agent-worktree-sandbox` |
 
-### 5. Ajan Uyarıları (Bu oturumdan itibaren geçerli)
+### 7. Ajan Uyarıları (Bu oturumdan itibaren geçerli)
 
 **TÜM AJANLAR OKUMALI:** `.project-brain/KNOWN_ISSUES.md` — ACİL bölümü
 
