@@ -1,3 +1,17 @@
+## Oturum 183 — 2026-09-14 | RC2 Dirty Tree Tasfiyesi & Otonom Hijyen Skill'leri
+
+**Kapsam:** `release-candidate/RC2` üzerindeki 83 dirty/untracked dosya sınıflandırıldı, proaktif Conflict Guard kilitleri ve schema parity denetimleri eşliğinde 14 atomic commit halinde temizlendi. Çalışma ağacı 100% temiz state'e getirildi. 3 yeni otonom yetenek (`git-worktree-hygiene`, `conflict-guard-preflight`, `dirty-inventory-generator`) çıkarılıp `.agents/skills/` altına kaydedildi ve indekslendi.
+
+```
+COMMITLER:        30ca0bc9 → 5997842d (14 atomic commit)
+İŞLENEN DOSYA:    83 dosya (65 safe/brain + 5 hot-spot + 13 review/refactor)
+YENİ SKILL'LER:   git-worktree-hygiene, conflict-guard-preflight, dirty-inventory-generator
+DURUM:            Clean Working Tree (0 dirty dosya) ✅
+MİMARİ KAZANIM:   Conflict Guard & Schema Parity Guard zincirleme pre-flight protokolü
+```
+
+---
+
 ## Oturum 182 — 2026-09-12 | Data Contract Gate & FORM-CONTRACT-BRIDGE-01
 
 **Kapsam:** Yalıhan Bekçi mimarisine Data Contract Gate eklendi; Form Sözleşmesi ADR-043 kabul edildi, saf Domain katmanı (`FieldKey`, `ValidationRule`, `FieldDefinition`, `CategoryFieldPolicy`) ve Application Adaptörü (`DomainFieldResolverAdapter`) inşa edildi. `FieldResolver` içinde `use_domain_form_policy` runtime Strangler Fig anahtarı hem `doResolve` hem de `doResolveBySlug` girişlerine bağlandı. Eşdeğerlik Feature testi (`FormFieldContractParityTest`) ile tam parity (seçenek slug normalizasyonu ve tüm metadata zarfı) kanıtlandı.
