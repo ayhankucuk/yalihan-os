@@ -33,15 +33,12 @@ return new class extends Migration
         // Only check if table has rows (avoid empty-table false positives)
         $hasRows = DB::table('ilan_fotograflari')->exists();
         if ($hasRows) {
-            // Cross-DB: check soft delete only if column exists
-            $query = DB::table('ilan_fotograflari');
-            if (Schema::hasColumn('ilan_fotograflari', 'deleted_at')) {
-                $query->whereNull('deleted_at');
-            }
-            $dupes = $query
-                ->groupBy('ilan_id', 'display_order')
-                ->havingRaw('COUNT(*) > 1')
-                ->first();
+            $hasSoftDelete = Schema::hasColumn('ilan_fotograflari', 'deleted_at');
+            $deletedFilter = $hasSoftDelete ? "WHERE `deleted_at` IS NULL " : "";
+            $dupes = DB::select(
+                "SELECT 1 FROM `ilan_fotograflari` {$deletedFilter}"
+                . "GROUP BY `ilan_id`, `display_order` HAVING COUNT(*) > 1 LIMIT 1"
+            );
 
             if ($dupes) {
                 throw new \RuntimeException(

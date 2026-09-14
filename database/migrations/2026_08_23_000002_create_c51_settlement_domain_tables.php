@@ -33,6 +33,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('provider_settlements')) {
+            return;
+        }
+
         // ── 1. Provider Settlements ────────────────────────────────────────────────
         // RAW immutable evidence from OTA/channel payout reports.
         // One row per external payout event from the provider.

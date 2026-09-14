@@ -17,6 +17,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('bank_accounts')) {
+            return;
+        }
+
         Schema::create('bank_accounts', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('tenant_id')->index();

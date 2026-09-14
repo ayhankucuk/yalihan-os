@@ -1,6 +1,21 @@
 <?php
 
 return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Strangler Fig — Domain POI Search
+    |--------------------------------------------------------------------------
+    |
+    | Domain katmanındaki FindNearbyPoisUseCase + DatabaseHaversinePoiAdapter'ı
+    | etkinleştirir. Kapalıken legacy PoiService çalışmaya devam eder.
+    |
+    | false → Legacy (PoiService, app/Services/Location/)
+    | true  → Domain (FindNearbyPoisUseCase, app/Domain/Location/)
+    |
+    */
+    'use_domain_poi_search' => env('LOCATION_USE_DOMAIN_POI_SEARCH', false),
+
     /*
     |--------------------------------------------------------------------------
     | Popüler Şehirler

@@ -511,3 +511,14 @@ HOTSPOT_LOCK:database/migrations/2026_09_06_000001_add_ilceler_il_id_foreign_key
 
 ### Strangler Fig Sonraki Adım
 Controller adapter → `config('crm.use_domain_talep', false)` feature flag ile aktif edilecek
+HOTSPOT_LOCK:config/feature-flags.php:cline:2026-09-14T07:22:09Z:3600
+HOTSPOT_LOCK:routes/admin.php:cline:2026-09-14T07:22:09Z:3600
+HOTSPOT_LOCK:.sab/sab-baseline.json:cline:2026-09-14T07:23:04Z:3600
+HOTSPOT_LOCK:.sab/authority.json:cline:2026-09-14T07:23:04Z:3600
+HOTSPOT_LOCK:config/exchange.php:cline:2026-09-14T07:24:04Z:3600
+HOTSPOT_LOCK:config/location.php:cline:2026-09-14T07:24:04Z:3600
+HOTSPOT_LOCK:database/migrations/2026_08_04_230600_create_kategori_yayin_tipi_field_dependencies_table.php:cline:2026-09-14T07:24:04Z:3600
+HOTSPOT_LOCK:database/migrations/2026_08_23_000002_create_c51_settlement_domain_tables.php:cline:2026-09-14T07:24:05Z:3600
+HOTSPOT_LOCK:database/migrations/2026_09_04_173133_add_unique_composite_index_to_ilan_fotograflari.php:cline:2026-09-14T07:24:05Z:3600
+HOTSPOT_LOCK:database/migrations/2026_08_23_000004_create_bank_accounts_table.php:cline:2026-09-14T07:24:12Z:3600
+HOTSPOT_LOCK:database/migrations/2026_08_24_000001_create_workforce_executions_table.php:cline:2026-09-14T07:24:12Z:3600
