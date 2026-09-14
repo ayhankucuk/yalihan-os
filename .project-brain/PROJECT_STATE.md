@@ -522,3 +522,4 @@ HOTSPOT_LOCK:database/migrations/2026_08_23_000002_create_c51_settlement_domain_
 HOTSPOT_LOCK:database/migrations/2026_09_04_173133_add_unique_composite_index_to_ilan_fotograflari.php:cline:2026-09-14T07:24:05Z:3600
 HOTSPOT_LOCK:database/migrations/2026_08_23_000004_create_bank_accounts_table.php:cline:2026-09-14T07:24:12Z:3600
 HOTSPOT_LOCK:database/migrations/2026_08_24_000001_create_workforce_executions_table.php:cline:2026-09-14T07:24:12Z:3600
+HOTSPOT_LOCK:database/schema/mysql-schema.sql:cline:2026-09-14T07:29:05Z:3600
