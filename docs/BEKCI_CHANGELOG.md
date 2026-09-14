@@ -1,3 +1,20 @@
+## Oturum 182 — 2026-09-12 | Data Contract Gate & FORM-CONTRACT-BRIDGE-01
+
+**Kapsam:** Yalıhan Bekçi mimarisine Data Contract Gate eklendi; Form Sözleşmesi ADR-043 kabul edildi, saf Domain katmanı (`FieldKey`, `ValidationRule`, `FieldDefinition`, `CategoryFieldPolicy`) ve Application Adaptörü (`DomainFieldResolverAdapter`) inşa edildi. `FieldResolver` içinde `use_domain_form_policy` runtime Strangler Fig anahtarı hem `doResolve` hem de `doResolveBySlug` girişlerine bağlandı. Eşdeğerlik Feature testi (`FormFieldContractParityTest`) ile tam parity (seçenek slug normalizasyonu ve tüm metadata zarfı) kanıtlandı.
+
+```
+MİMARİ ADR:     docs/adr/2026-09-12-adr043-canonical-form-contract-and-seeder-governance.md
+MİMARİ STANDART: docs/architecture/DATA_CONTRACT_AND_SEEDER_GOVERNANCE.md
+PAKET:          FORM-CONTRACT-BRIDGE-01
+ADAPTÖR:        App\Application\Ilan\Services\DomainFieldResolverAdapter
+FEATURE FLAG:   config/feature-flags.php -> use_domain_form_policy (default: false)
+RUNTIME SWITCH: App\Services\Wizard\FieldEngine\FieldResolver (doResolve + doResolveBySlug)
+PARITY TESTİ:   25/25 PASS (103 assertion) — Feature/Wizard & Unit/Domain/Ilan
+KALİTE KAPISI:  4/4 Antigravity Gate PASS ✅
+```
+
+---
+
 ## Oturum 181 — 2026-09-12 | RC2 Paketleme — Talep Strangler Fig Commit + Tenant Bloke Paket
 
 **Kapsam:** RC2 dirty dosyaları iki pakete ayrıldı.

@@ -3,101 +3,131 @@ name: skill-index
 description: Yalıhan OS agent skill taxonomy — dosya yolu bazlı otomatik skill seçimi rehberi.
 ---
 
-# SKILL_INDEX — Automatic Backend Guard Selection
+# SKILL_INDEX — Automatic Skill Selection
 
-Agent, bir dosyayı açtığında veya değiştireceği zaman bu tabloya bakarak hangi skill'in gerekli olduğunu otomatik belirler.
-
-## File → Skill Mapping Table
-
-| File Pattern | Required Skill(s) | Rationale |
-|---|---|---|
-| `app/Http/Controllers/Api/V2/*` | `authorization-boundary-auditor` | Tenant/country scope ve 401/403/404 sınırları |
-| `app/Http/Controllers/Api/V2/*Cortex*` | `cortex-orchestration-evaluator` + `authorization-boundary-auditor` | AI orkestrasyon + yetki kontrolü |
-| `app/Http/Controllers/Api/V2/*Checkin*` | `hermes-event-sync` + `authorization-boundary-auditor` | n8n event entegrasyonu + yetki |
-| `app/Http/Controllers/Owner/*` | `authorization-boundary-auditor` | Owner portal yetki sınırları |
-| `app/Models/V2/*` | `schema-contract-guardian` | V2 model kontratı, $fillable drift |
-| `app/Models/Lead.php` | `authorization-boundary-auditor` + `schema-contract-guardian` | Tenant boundary + schema |
-| `database/migrations/*` | `schema-contract-guardian` | Kolon şeması, FK, index uyumu |
-| `app/Services/IlanCrudService.php` | `authorization-boundary-auditor` + `schema-contract-guardian` | CRUD yetki + kontrat |
-| `app/Services/CRM/*` | `authorization-boundary-auditor` | CRM yetki ve tenant izolasyonu |
-| `app/Http/Middleware/*` | `authorization-boundary-auditor` | Middleware güvenlik sınırları |
-| `tests/Feature/Security/*` | `authorization-boundary-auditor` | Güvenlik test coverage |
-| `tests/Feature/Ilan/*` | `schema-contract-guardian` | İlan schema kontratı |
-| `config/*.php` | `schema-contract-guardian` | Config şema uyumu |
-| `routes/*.php` | `authorization-boundary-auditor` | Route yetki ve tenant scope |
-| `app/Services/Cortex/*` | `cortex-orchestration-evaluator` | AI orkestrasyon, LLM çağrıları |
-| `app/AI/*` | `cortex-orchestration-evaluator` | AI prompt, model routing |
-| `app/Http/Controllers/Api/V2/*Location*` | `location-data-reconciliation` | Location hiyerarşi |
-| `tests/Feature/*Location*` | `location-data-reconciliation` | Location veri doğrulama |
-| `app/Services/YalihanCortex.php` | `cortex-orchestration-evaluator` | Cortex orchestration |
-| `docs/ERA_V/*` | `saab` | ERA_V roadmap, mimari kararlar |
-| `app/Events/*` | `hermes-event-sync` | Event sınıfı, payload kontratı |
-| `app/Listeners/*` | `hermes-event-sync` | Event listener, n8n webhook |
-| `app/Http/Controllers/Api/V2/*Webhook*` | `hermes-event-sync` + `authorization-boundary-auditor` | Webhook + event koordinasyonu |
-| `tests/Feature/*Webhook*` | `hermes-event-sync` | Webhook idempotency testi |
-| `tests/Unit/*Cost*` | `cortex-orchestration-evaluator` | AI maliyet hesaplama |
-| `docs/architecture/*` | `yalihan-constitution-review` + `saab` | Mimari anayasa uyumu ve kararları |
-| `app/Services/Ilan/IlanPhotoService.php` | `schema-contract-guardian` | Fotoğraf schema, display_order |
-| `app/Http/Controllers/Api/V2/*Photo*` | `schema-contract-guardian` + `authorization-boundary-auditor` | Photo upload + yetki |
-| `app/Http/Controllers/Api/*Ilan*` | `api-contract-envelope-guardian` | JSON envelope drift, status/yayin_durumu alan eşleşmesi |
-| `app/Http/Controllers/Api/*ActionCenter*` | `api-contract-envelope-guardian` | JSON envelope drift, action_evidence alan kontratı |
-| `resources/views/**/*.blade.php` (`<script>`, `x-data`, `x-init`, `x-on`, `x-model`) | `blade-alpine-runtime-guardian` | Script kapanışı, Alpine scope, window bağlama, duplicate init |
-| `resources/js/**/*.js` (Blade inline çağrıları) | `blade-alpine-runtime-guardian` | Global fonksiyon bağlama, CDN sırası |
-| `tests/e2e/*.spec.ts` | `blade-alpine-runtime-guardian` | Browser runtime hatası (`pageerror`, `ReferenceError`, duplicate init) |
-| `storage/app/public/ilan-fotograflari/**` | `media-storage-lifecycle-guardian` | DB-fiziksel dosya eşleşmesi, orphan dosya, cross-tenant risk |
-| `scripts/tools/rc2-release-certification-gate.sh` | `multi-agent-worktree-sandbox` | Release gate — kirli worktree, browser testi zorunluluğu |
-| `.git/worktree*`, `git worktree` komutları | `multi-agent-worktree-sandbox` | Worktree izolasyonu, ajan başına branch |
-| `/Users/macbookpro/Documents/Codex/*` | `codex-engineering-bridge` | Codex ortak çalışma alanı senkronizasyonu |
-| `.agents/skills/*` | `codex-engineering-bridge` | Multi-agent görev koordinasyonu |
+Agent bir dosyayı açtığında veya değiştireceği zaman bu tabloya bakarak hangi skill'in gerekli olduğunu otomatik belirler.
 
 ---
 
-## Skill Definitions
+## 🔷 Core Skills (Her Görev Öncesi — Zorunlu)
 
-| Skill | Amaç | Anahtar Dosyalar |
+| File Pattern | Required Skill | Rationale |
 |---|---|---|
-| `computer-software-architect-engineer` | Bilgisayar & Yazılım Mühendisi disiplini, SAB Anayasası, sıfır varsayım (kanıt-temelli), tüm MCP yönetimi, Codex çift yönlü senkronizasyonu | Core mimari, tüm controller/service/testler, `/Documents/Codex/` |
-| `codex-engineering-bridge` | Codex kredi darboğazında lider mühendisliği devralma, Codex workspace senkronizasyonu ve multi-agent görev dağıtımı | `/Users/macbookpro/Documents/Codex/`, `.agents/skills/` |
-| `authorization-boundary-auditor` | 401/403/404 sınırları, tenant/country scope, enumeration koruması | `OwnerAuthController`, V2 API controllers |
-| `schema-contract-guardian` | Eloquent $fillable drift, DB kolon kontratı, migration uyumu | Modeller, migrations |
-| `cortex-orchestration-evaluator` | AI orkestrasyon, DeepSeek/Ollama/OpenAI routing, token maliyet | `YalihanCortex.php`, AI service'leri |
-| `hermes-event-sync` | n8n webhook, event idempotency, kuyruk akışları | Event/Listener sınıfları |
-| `location-data-reconciliation` | Location hiyerarşi, orphan FK, migration planı | Location model ve migrations |
-| `saab` | Mimari karar, ERA roadmap, ADRS | `docs/ERA_V/`, `.project-brain/SAAB*` |
-| `yalihan-constitution-review` | Anayasa uyumluluk, normatif madde eşleme, sahte başarı/yanlış alarm koruması | `docs/architecture/`, mimari PR'lar |
-| `laravel-enterprise-reviewer` | Thin controller, N+1, DDD sınırları, detektör | Tüm service/controller dosyaları |
-| `api-contract-regression-guard` | JSON schema, pagination, V1/V2 geriye dönük uyumluluk | API controller return'ları |
-| `api-contract-envelope-guardian` | Frontend fetch/axios → Laravel route JSON envelope drift, alan adı eşleşmesi (`status`/`yayin_durumu`) | API controller, V1/V2 endpoint kontratı |
-| `media-storage-lifecycle-guardian` | DB-fiziksel dosya çapraz denetimi, orphan dosya, tenant'sız legacy path riski | `storage/app/public/ilan-fotograflari/` |
-| `blade-alpine-runtime-guardian` | Script kapanışı, Alpine scope tanımsız değişken, window bağlama, idempotent Leaflet init | Blade + Alpine/JS dosyaları |
-| `multi-agent-worktree-sandbox` | Worktree izolasyonu, test DB/storage ayrımı, fixture korelasyon ID, handoff kontratı | Git worktree, multi-agent oturum |
-| `security-secret-boundary-guard` | .env, PAT, API key sızıntısı, log maskeleme | Secret içeren dosyalar |
-| `ponytail` | Minimal kod, stdlib/native tercih, YAGNI | Tüm kod dosyaları (genel rehber) |
+| Tüm dosyalar | `core-engineering-guard` | Mimari kurallar, kanıt standardı, Laravel kod kalitesi, thin controller |
+| `*.blade.php` (Alpine/JS) | `blade-alpine-runtime-guardian` | Script kapanışı, Alpine scope, window bağlama |
+| `app/Http/Controllers/Api/*Ilan*` | `api-contract-envelope-guardian` | JSON envelope drift, `status`/`yayin_durumu` alan eşleşmesi |
+| Git worktree, `git worktree` | `multi-agent-worktree-sandbox` | Worktree izolasyonu, ajan başına branch, handoff |
+| `docs/ERA_V/*` | `saab` | ERA roadmap, mimari kararlar |
+| `docs/architecture/*` | `saab` + `core-engineering-guard` | Mimari anayasa uyumu |
 
 ---
 
-## Kullanım
+## 🔒 Güvenlik & Yetki
 
-Agent bir dosyayı değiştirmeden ÖNCE:
+| File Pattern | Required Skill | Kontrol Ettiği Şey |
+|---|---|---|
+| `Api/V2/*`, `Owner/*` | `core-engineering-guard` | Tenant scope, 401/403/404 sınırları |
+| `app/Http/Middleware/*` | `core-engineering-guard` | Middleware güvenlik sınırları |
+| `app/Services/CRM/*` | `core-engineering-guard` | CRM yetki ve tenant izolasyonu |
+| `routes/*.php` | `core-engineering-guard` | Route yetki ve tenant scope |
+
+---
+
+## 🗄️ Schema & Veri
+
+| File Pattern | Required Skill | Kontrol Ettiği Şey |
+|---|---|---|
+| `database/migrations/*` | `core-engineering-guard` | Kolon şeması, FK, index uyumu |
+| `app/Models/*` | `core-engineering-guard` | $fillable drift, canonical alan adları |
+| `config/*.php` | `core-engineering-guard` | Config şema uyumu, `env()` yasağı |
+| `app/Services/IlanCrudService.php` | `core-engineering-guard` | CRUD yetki + kontrat |
+| `Location*`, `tests/*Location*` | `core-engineering-guard` | Location hiyerarşi, orphan FK (location-data-reconciliation skill'ine yönlendir) |
+
+---
+
+## 🤖 AI & Cortex
+
+| File Pattern | Required Skill | Kontrol Ettiği Şey |
+|---|---|---|
+| `app/Services/Cortex/*` | `core-engineering-guard` | AI routing, token maliyet, LLM çağrıları |
+| `app/AI/*` | `core-engineering-guard` | AI prompt, model routing |
+| `app/Services/YalihanCortex.php` | `core-engineering-guard` | Cortex orchestration |
+
+---
+
+## 🔌 Entegrasyon & Events
+
+| File Pattern | Required Skill | Kontrol Ettiği Şey |
+|---|---|---|
+| `app/Events/*` | `core-engineering-guard` | Event sınıfı, payload kontratı |
+| `app/Listeners/*` | `core-engineering-guard` | Event listener, n8n webhook |
+| `app/Http/Controllers/Api/V2/*Webhook*` | `core-engineering-guard` | Webhook + event koordinasyonu |
+
+---
+
+## 🧪 Test & Quality
+
+| File Pattern | Required Skill | Kontrol Ettiği Şey |
+|---|---|---|
+| `tests/Feature/Security/*` | `core-engineering-guard` | Güvenlik test coverage |
+| `tests/Feature/Ilan/*` | `core-engineering-guard` | İlan schema kontratı |
+| `tests/Feature/Wizard/*` | `core-engineering-guard` | Wizard akış kontratı |
+
+---
+
+## 📦 Storage & Media
+
+| File Pattern | Required Skill | Kontrol Ettiği Şey |
+|---|---|---|
+| `storage/app/public/ilan-fotograflari/` | `media-storage-lifecycle-guardian` | DB-fiziksel dosya çapraz denetimi |
+| `app/Services/Ilan/IlanPhotoService.php` | `core-engineering-guard` | Fotoğraf schema, display_order |
+| `app/Http/Controllers/Api/V2/*Photo*` | `core-engineering-guard` | Photo upload + yetki |
+
+---
+
+## 🛠️ Kullanım
+
+Agent bir dosyayı değiştirmeden **ÖNCE**:
 
 1. Dosya yolunu yukarıdaki tabloda ara
 2. Gerekli skill(leri) `skill()` tool ile yükle
 3. Skill rehberine göre kodu gözden geçir
 4. Değişikliği uygula
 
-Örnek:
+**Örnek:**
 ```
-Agent: app/Http/Controllers/Api/V2/IlanController.php dosyasını açıyor
-→ Tablo: authorization-boundary-auditor gerekli
-→ skill('authorization-boundary-auditor') çağır
-→ Skill rehberine göre tenant/country scope kontrol et
+Agent: app/Http/Controllers/Api/V1/IlanController.php dosyasını açıyor
+→ Tablo: core-engineering-guard + api-contract-envelope-guardian gerekli
+→ skill('core-engineering-guard') çağır
+→ skill('api-contract-envelope-guardian') çağır
+→ Kanıt standardı + thin controller + JSON envelope kontrol et
 → Değişikliği uygula
 ```
 
 ---
 
-## Auto-Load Kuralı (AGENTS.md konvansiyonu)
+## Skill Öncelik Sırası
 
-Agent'ın `file_open` veya mutation başladığında otomatik olarak skill yüklemesi için:
-`skill_index` alias'ı veya startup script'i bu tabloyu referans alır.
-Manuel müdahale gerekmez — agent dosya yolunu okuyup skill seçimini yapar.
+1. **Zorunlu** (`core-engineering-guard`) — tüm PHP/Blade dosyaları
+2. **Bağlamsal** (`blade-alpine-runtime-guardian`, `api-contract-envelope-guardian`) — ilgili dosya tiplerinde
+3. **Koordinasyon** (`multi-agent-worktree-sandbox`) — Git/worktree operasyonlarında
+4. **Stratejik** (`saab`) — mimari karar ve ERA_V dokümanlarında
+
+---
+
+## Skill Özet Kartları
+
+### `core-engineering-guard`
+Mimari değişmezler + Laravel kod kalitesi + kanıt standardı + release sınırları
+
+### `blade-alpine-runtime-guardian`
+Blade/JS bütünlüğü + Alpine scope + DOM bağlı kütüphane idempotency
+
+### `api-contract-envelope-guardian`
+Frontend-backend JSON kontratı + HTTP durum kodu + tenant scope
+
+### `multi-agent-worktree-sandbox`
+Git worktree izolasyonu + test DB ayrımı + handoff protokolü
+
+### `saab`
+Mimari karar + ERA roadmap + ADRS + stratejik öncelik zinciri

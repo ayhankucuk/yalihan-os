@@ -1,5 +1,15 @@
 # Known Issues and Open Questions
 
+## Bekçi Gate Treshold Tutarsızlığı — 2026-09-12
+
+- **[GATE-THRESHOLD] `bekci:health` gate PASS/FAIL kararı skor eşiğiyle uyumsuz**
+  - `YalihanBekciHealthCommand`: MCP offline iken genel sağlık %59 `NEEDS ATTENTION` ama wrapper `PASS` döndürüyor
+  - `HealthCheckGate::passes()`: skoru 0–100 normalize edip karşılaştırmıyor; sadece `!$mcpOffline` kontrolü var
+  - Bekçi gate %70 hedefi var (bkz. .clinerules §7) ama eşik kontrolü eksik
+  - **Etki**: CI, %59 sağlık skoruyla PASS veriyor — yanlış negatif riski
+  - **Olası çözüm**: `HealthCheckGate::passes()` → `->value('overall_score')` karşılaştırması ekle
+  - **Durum**: AÇIK — ayrı görev
+
 ## Acil — 2026-09-09
 
 - **[GÜVENLİK] `storage/app/public/ilan-fotograflari/` — `.gitignore` eklendi ama tarihi commit'te mevcut**

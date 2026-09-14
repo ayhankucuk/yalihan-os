@@ -16,8 +16,8 @@ supersedes: null
 <!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
 - **Repository Commit:** `fe17dd5c` (HEAD) — fail-closed TenantScope + orphan ilan/user/ilan backfill
 - **Branch:** `integration/antigravity-kilo-takeover`
-- **Working Tree:** `Stash dirty (wip-pre-cherry-pick stashed)`
-- **Evidence Date:** 2026-09-08T14:57:00+03:00
+- **Working Tree:** Dirty (local edits, not staged)
+- **Evidence Date:** 2026-09-14T00:00:00+03:00
 - **Evidence Level:** `TEST_VERIFIED` — TenantScope fail-closed + V2 isolation tests 30/30 PASS
 - **Production Authorization:** BACKFILL + FAIL_CLOSED AUTHORIZED (OPERATOR/Saab 2026-09-08)
 - **Production Authorization:** `NONE (Read-Only Gate)`
@@ -38,6 +38,30 @@ YALIHAN OS is an AI-assisted real-estate and property-operations operating syste
 ## Current phase
 
 - ERA V Phase 2 — Autonomous Operations: ACTIVE.
+
+## Bekçi MCP — Stdio Transport (2026-09-14)
+
+MCP server `yalihan-bekci-mcp.js` **stdio subprocess** olarak çalışır (HTTP server değil).
+Health check artık `pgrep` ile process check yapıyor — eski HTTP probe yanlıştı.
+Overall score: **79%** (önceki 59% — MCP artık doğru algılanıyor).
+
+## BEKCI-IMMUNE-V1 Kararı (2026-09-14)
+
+KABUL EDİLDİ. Uygulama ayrı worktree'de yapılacak:
+`worktree-bekci-immune/feature/BEKCI-IMMUNE-V1`
+
+5'li öğrenme döngüsü: Incident → Bug Class → Rule Proposal → Approval Gate → Permanent Guard
+
+Kaynak: `.project-brain/DECISION_LOG.md` — "BEKCI-IMMUNE-V1" section.
+
+## Architect ↔ Bekçi MCP Entegrasyonu (2026-09-14)
+
+`yalihan-os-architect` skill'i artık Yalihan Bekçi MCP tool'larını çağırıyor:
+- `check_violation`, `get_authority`, `get_canonical`, `validate_file`, `get_project_health`, `record_learning`, `get_audit_report`, `get_learning_history`
+
+Entegrasyon noktası: `.agents/skills/yalihan-os-architect/SKILL.md` — "MCP Entegrasyon Noktaları" section.
+
+Agent pipeline artık: Architect skill → MCP tools → PHP Artisan → sonuç.
 - Sprint 13 — Channel Manager: documented as CERTIFIED.
 - Sprint 14 — Property Command Center: documented as LAUNCHED / ACTIVE.
 - Sprint 15 — Action Center: PLANNED.
@@ -187,10 +211,13 @@ Never mark a feature complete from code or an automated test alone. Require code
 
 | Worktree | Branch | HEAD | Dirty | Sahip | Görev Amacı | Durum |
 |----------|--------|------|-------|-------|-------------|-------|
-| `/repos/yalihan-os` (main) | `integration/era-v-phase2a-e01` | `81be956` | 29 unstaged + 26 untracked | Kullanıcı + Kilo | Ana geliştirme | `ACTIVE_DIRTY` |
+| `/repos/yalihan-os` | `release-candidate/RC2` | `3638a978` | 53 dirty | Bu oturum | RC2 geliştirme (governance/dokümantasyon) | `ACTIVE_DIRTY` |
 | `.codex/worktrees/0584/...` | `cleanup/playwright-mcp-screenshots-2026-08-29` | `6967cb2` | 17 untracked | Codex | Playwright MCP screenshot kanıtları | `CLEAN_UNTRACKED` |
 | `.roo/worktrees/yalihan-os-9yphh` | `worktree/roo-9yphh` | `a5e14c1` | Temiz | Roo | Tamamlanmış/kullanım dışı | `CLEAN_INACTIVE` |
 | `.kilo/worktrees/confirmed-nigella` | `confirmed-nigella` | `6967cb2` | Temiz | Kilo | Tamamlanmış/kullanım dışı | `CLEAN_INACTIVE` |
+| `.worktrees/codex-security-wizard-01` | `codex/security-wizard-feature-suggestions-01` | `3638a978` | 1 untracked | Bu oturum | SECURITY-WIZARD-FEATURE-SUGGESTIONS-01 | `ACTIVE_DIRTY` |
+| `.worktrees/codex-bekci-agent-preflight` | `codex/bekci-agent-preflight` | `3638a978` | Temiz | Codex | Bekçi agent preflight | `CLEAN_INACTIVE` |
+| `.worktrees/codex-constitution-review-workflow` | `codex/constitution-review-workflow` | `67a07e43` | Temiz | Codex | Constitution review | `CLEAN_INACTIVE` |
 
 ### Commit Karşılaştırması
 
@@ -387,7 +414,29 @@ HOTSPOT_LOCK:database/migrations/2026_09_08_000001_add_tenant_id_to_cqrs_project
 
 ---
 
-## 2026-09-08 — Sprint 15/RC2 Mühürleme & Açık Madde Durumu
+## 2026-09-12 — Oturum 176: Wizard ERA V FAZ 4B-3 + FAZ 5
+
+**Commit:** `d592f404`
+**Evidence Level:** REPO_VERIFIED
+**Quality Gates:** 6/6 PASS (antigravity-full-gate)
+
+### Tamamlanan
+| Faz | Görev | Durum |
+|-----|-------|-------|
+| 4B-3 | Legacy submitWizard → WizardStepExecutor delegation | ⏸️ NO-OP — WizardStepExecutor prodüksiyonda kullanılmıyor |
+| 5 | LocationValidationCapability boundary migration | ✅ DONE — IlanWizardController coordinate validation → domain service |
+
+### Mimari Karar
+- `IlanWizardController::validateAsama3()` içindeki `validateCoordinates()` (Turkey-wide: 36.1-42.1 / 26.1-44.8) kaldırıldı.
+- `LocationValidationCapability` (Muğla-specific: 36.12-37.35 / 26.25-29.75) enjekte edildi. Artık tek yetkili domain validator.
+- `RealityCheckException` ile standardize error handling.
+
+### Değişen Dosyalar
+- `app/Http/Controllers/Api/IlanWizardController.php`
+
+---
+
+## 2026-09-08 — Sprint 15/RC2 Mühürleme & Açık Madre Durumu
 
 **Commit:** `911e4e3c` (P2-DS-01) + `331fd10a` (BACKLOG-02) + `8b1ca956` (E2E)
 **Lead Architect Review:** Antigravity — 2026-09-08T18:43
@@ -416,3 +465,49 @@ Mevcut sprint'te icra edilen tüm teknik borç maddeleri ya tamamlanmış ya da 
 2. `kategori_yayin_tipi_field_dependencies` → aktif admin kullanım analizi (Sistem B miras)
 3. FeatureTemplateResolver Faz 1 (shared trait)
 HOTSPOT_LOCK:database/migrations/2026_09_06_000001_add_ilceler_il_id_foreign_key.php:kilo-ilce-fk-fix:2026-09-10T21:07:36Z:7200
+
+HOTSPOT_LOCK:database/migrations/2026_09_06_000001_add_ilceler_il_id_foreign_key.php:kilo-ilce-fk-fix:2026-09-10T21:07:36Z:7200
+
+---
+
+## 2026-09-12 — Talep Domain Strangler Fig (Adım 2.1)
+
+**Branch:** `release-candidate/RC2` — unstaged artifacts
+
+### Açık P0 Güvenlik Görevleri
+| ID | Açıklama | Durum | Öncelik |
+|---|---|---|---|
+| `SECURITY-WIZARD-FEATURE-SUGGESTIONS-01` | Wizard approve/rollback: auth:sanctum + tenant.context + role:admin|super_admin + 2 savunma hattı | DESIGN_APPROVED | P0 |
+
+### Blokeli Ürün Kararları
+| ID | Karar | Blokeli | Öncelik |
+|---|---|---|---|
+| `TENANT-FEATURE-ASSIGNMENT-01A` | A/B ürün kararı | SECURITY-WIZARD-FEATURE-SUGGESTIONS-01 | P0 |
+
+### Önceki Kararlar (Düzeltilmiş)
+- `TENANT-FEATURE-ASSIGNMENT-01A` → `BLOCKED_PENDING_SECURITY` (önceki: `A — GLOBAL_TEMPLATE_ONLY`, hatalı)
+
+### Eklenen Artifact'lar — REPO_VERIFIED
+
+| Dosya | Tür | Açıklama |
+|-------|-----|----------|
+| `app/Domain/CRM/Contracts/TalepRepositoryInterface.php` | Driven Port | TalepRepository kontratı |
+| `app/Domain/CRM/DTOs/TalepCreateCommand.php` | DTO | Immutable creation input (spillover-aware) |
+| `app/Domain/CRM/DTOs/TalepListCriteria.php` | DTO | Immutable query criteria |
+| `app/Domain/CRM/Services/ListTaleplerUseCase.php` | Application Service | Listeleme + stats + form data |
+| `app/Domain/CRM/Services/CreateTalepUseCase.php` | Application Service | Oluşturma + Kişi spillover |
+| `app/Infrastructure/CRM/EloquentTalepRepositoryAdapter.php` | Adapter | Legacy repo → domain interface |
+| `tests/Unit/Domain/PropertyHub/CRM/TalepDomainCharacterizationTest.php` | Karakterizasyon | 21 PASS / 1 SKIP (KisiScoringService bug) |
+
+### Mimari Kararlar
+- `EloquentTalepRepositoryAdapter`: `search` → `q`, `status` → `talep_durumu`, `il_id` post-filter (legacy repo eksik)
+- `CreateTalepUseCase`: `kisi_tipi = 'lead'` → `KisiTipi::LEAD` (NOT 'Potansiyel')
+- `TalepCreateCommand::kisiId`: nullable (`?int`) — Kişi spillover gerekli durumlar için
+- Admin mock: `Mockery::mock` + `isAdmin()` + `hasRole()` → Spatie DB check bypass
+
+### Bilinen Gap'ler
+- `KisiScoringService::segmentSkoru` → `strtolower(KisiTipi)` pre-existing bug (line 101) — ayrı tracked
+- `talepler.tip` migration eksik → `TalepOrchestrationParityTest` SKIP
+
+### Strangler Fig Sonraki Adım
+Controller adapter → `config('crm.use_domain_talep', false)` feature flag ile aktif edilecek

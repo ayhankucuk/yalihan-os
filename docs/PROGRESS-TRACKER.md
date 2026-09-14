@@ -1,8 +1,10 @@
 # Governance Progress Tracker
-**Son Güncelleme:** 2026-09-12 (Oturum 174 — Wizard & Property Feature System Architecture Stabilization + Phase 4 SAB Domain Refactor ✅ — 106/106 PASS)
-**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + 🧙‍♂️ **WIZARD DOMAIN REFACTOR COMPLETE (106/106 PASS)**
-| ERA III/IV | Katman | Sprint | Status |
+**Son Güncelleme:** 2026-09-12 (Oturum 178 — 🤝 CRM Talep Domain & Demand Matching Saga Kademeli Strangler Fig CERTIFIED ✅ — 40/40 TESTS PASS)
+**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + 🧙‍♂️ **WIZARD DOMAIN REFACTOR COMPLETE (106/106 PASS)** + 🔗 **FAZ 4B EVENT LISTENER COMPLETE** + 📍 **POI STRANGLER FIG CERTIFIED** + 🤝 **CRM TALEP & DEMAND MATCHING SAGA CERTIFIED**
+| ERA III/IV / DOMAINS | Katman | Sprint | Status |
 |---------|--------|--------|--------|
+| **🤝 CRM Subdomain** | **Talep Domain & Demand Matching Saga (RC2)** | **Sprint 5.2** | **✅ CERTIFIED (40/40 PASS — Multi-Tenant Isolation, Idempotency, Strangler Fig Parity)** |
+| **📍 Location Domain** | **POI Distance Calculation Strangler Fig Pilot** | **Sprint 5.1** | **✅ CERTIFIED (5/5 PASS — Legacy + Domain Use Case %100 Equivalence)** |
 | Observation | Cockpit | 4.6 | ✅ Certified |
 | Execution | Queue/Replay | 4.7 | ✅ Certified |
 | Integration | Drive Webhook | 4.8 | ✅ Certified |
@@ -23,6 +25,9 @@
 | **🔑 CHECKIN_CHECKOUT** | **Guest Arrival Readiness — Wave 2: Property Readiness + Access Credentials + Check-in Window** | **WAVE 2** | **✅ CERTIFIED (Oturum 129 — 20/20 PASS, commit 8782a4fa)** |
 | **🔑 CHECKIN_CHECKOUT** | **Wave 3: Credential Delivery — SEC-W3-01 Recovery + Sync Boundary** | **WAVE 3** | **✅ CERTIFIED — SEC-W3-01 CLOSED (Oturum 133 — 19/19 PASS, commit 9e8f6f8)** |
 | **🤖 GUEST_CONCIERGE** | **Micro Pilot Readiness — PILOT-GATE-01/02/03 + P01-P10** | **PILOT-READINESS** | **✅ GATES PASSED — awaiting Antigravity verification (commit ae4c6fc — 54/54 PASS)** |
+| **🧙 Wizard ERA V** | **FAZ 4B-3: Legacy submitWizard delegation → WizardStepExecutor** | **4B-3** | **⏸️ NO-OP — WizardStepExecutor prodüksiyonda kullanılmıyor, delegation atlandı** |
+| **🧙 Wizard ERA V** | **FAZ 5: LocationValidationCapability boundary migration** | **5** | **✅ COMPLETE — IlanWizardController coordinate validation → domain service (6/6 PASS)** |
+| **🧙 Wizard ERA V** | **FAZ 6: E2E / Golden Thread wizard flow test** | **6** | **⏳ PENDING** |
 | **🛡️ SAAB 4.5** | **Tenant Isolation Certification** | **SAAB 4.5** | **✅ CERTIFIED — 3 MUST in SAAB_4.5_IMPL_PREREQ_CHARTER** |
 | **📡 AVAILABILITY SYNC — E03** | **Airbnb Inbound — Per-Channel Execution Isolation — E3.1–E3.6 PASS + GAP-03 CERTIFIED — Airbnb/Booking/Channex independent job isolation** | **SPRINT 13 E03** | **✅ CERTIFIED WITH DEBT — CERT-DEBT-GAP03-01 OPEN / NON-BLOCKING** |
 | **📡 AVAILABILITY SYNC — GAP-03** | **Retry Boundary Fix — BookingAvailabilityException propagation to Laravel queue — 7/7 PASS, dual-inspector audit PASS, 0 regressions** | **GAP-03** | **✅ CLOSED — Certification restored (`471dff1`)** |

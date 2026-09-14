@@ -1,5 +1,27 @@
 # Evidence Index
 
+---
+
+## [2026-09-12] TEMPLATE_HUB_AUDIT
+
+**Commit:** dirty (audit run)
+**Session:** Template Hub İlişki Denetimi
+**Tool:** `php artisan audit:template-hub` + kod analizi
+**DB:** `yalihanai_clone` (MySQL)
+**Evidence Level:** `REPO_VERIFIED`
+
+| # | Bulgu | Kaynak | Seviye | Öncelik |
+|---|-------|--------|--------|----------|
+| 1 | `yayin_tipi_sablonlari` ve `feature_assignments` AYRI ZİNCİR; FK yok | Kod analizi | REPO_VERIFIED | CRITICAL |
+| 2 | 11 Template Hub kaydında SIFIR feature | audit command | REPO_VERIFIED | HIGH |
+| 3 | 52 sahte ana kategori (`id ∈ [35-86]`) lorem-ipsum | DB count | REPO_VERIFIED | HIGH |
+| 4 | `kategori_yayin_tipi_field_dependencies` legacy — 40 kayıt, tüketici bilinmiyor | DB sample | INFERRED | MEDIUM |
+
+**Sayılar:** Gerçek ana kat=6, alt kat=28, yayın tipi=8, Template Hub aktif=91 (29 real), FA canonical=~1400+
+**Yeni Komut:** `app/Console/Commands/TemplateHubAuditCommand.php` → `php artisan audit:template-hub [--matrix]`
+**Kanıt Dosyası:** `.project-brain/TEMPLATE_HUB_AUDIT.md`
+**Risk:** WRITE_GATE kapalı — sadece okuma
+
 ## Evidence levels
 
 - `REPO_VERIFIED`: observed in the current checkout.
@@ -813,3 +835,207 @@ Kanıt seviyesi: `TEST_VERIFIED` — 2026-09-11
 **Doc updated:** docs/STABILIZATION_ROADMAP.md section 3 - confirmed all GF resolved
 
 Kanit seviyesi: TEST_VERIFIED - 2026-09-11
+
+## Sprint 15 -- Bekçi Authority & Health Audit (2026-09-12)
+
+**Görev:** AuditMcpServer + YalihanBekciHealthCommand düzeltmeleri
+
+**Düzeltme 1 — AuditMcpServer authority path:**
+- Sorun: `$authority['governance']['forbidden_fields']` authority.json v6.1.1'de yok
+- Düzeltme: `context7_standards` + `governance` altındaki `canonical` map'leri birleştirildi
+- Doğrulama: `php -l app/Services/Bekci/AuditMcpServer.php` → ✅ Syntax OK
+- Kanıt: `REPO_VERIFIED` — authority.json canonical yapısı doğrulandı (2026-09-12)
+
+**Düzeltme 2 — YalihanBekciHealthCommand gereksiz MCP HTTP çağrısı:**
+- Sorun: `generateRecommendations()` `--no-mcp` set edilse bile `checkMCPServer()` çağırıyordu
+- Düzeltme: `$skipMcp` kontrolü eklendi — sadece `--no-mcp` yoksa MCP check yapılıyor
+- Doğrulama: `REPO_VERIFIED` — `php -l` → ✅ Syntax OK (2026-09-12)
+
+**Düzeltme 3 — Stale command önerisi kaldırıldı:**
+- Sorun: `context7:validate-migration` mevcut değil (authority.json REMOVED listesinde)
+- Düzeltme: Öneri kaldırıldı; yorum doğru şekilde güncellendi
+- Doğrulama: `REPO_VERIFIED` — authority.json stale_commands + code review (2026-09-12)
+
+**Bekçi Gate Treshold Tutarsızlığı — AÇIK (ayrı görev):**
+- `bekci:health` %59 skorda PASS döndürüyor ama %70 eşik hedefi var
+- `HealthCheckGate::passes()` skoru karşılaştırmıyor
+- Kayıt: `.project-brain/KNOWN_ISSUES.md` → `[GATE-THRESHOLD]` (2026-09-12)
+- Kanıt: `REPO_VERIFIED` — HealthCheckGate kaynak kodu incelendi
+
+## 2026-09-12 — SECURITY-WIZARD-FEATURE-SUGGESTIONS-01 (P0)
+
+**Bulgu:** Wizard feature suggestions approve + rollback endpoint'leri yalnız `ThrottleApiRequests` middleware ile açık. `auth`, `role`, `tenant.context`, yetki kontrolü YOK.
+
+**Etkilenen endpoint'ler:**
+- `POST /api/v1/wizard/field-suggestions/approve`
+- `POST /api/v1/wizard/field-suggestions/rollback`
+
+**Saldırı zinciri:** Yetkisiz istemci → approve endpoint → global `feature_assignments` oluşturma / rollback yapma.
+
+**Kayıt:** `.project-brain/SECURITY-WIZARD-FEATURE-SUGGESTIONS-01.md`
+**Kanıt:** `REPO_VERIFIED` — route middleware + controller + engine zinciri doğrulandı
+**Canlı VPS erişilebilirlik:** `UNKNOWN` — production kanıtı yok
+
+## 2026-09-12 — TENANT-FEATURE-ASSIGNMENT-01A Düzeltilmiş Karar
+
+**Önceki karar (hatalı):** `A — GLOBAL_TEMPLATE_ONLY`
+**Düzeltilmiş karar:** `BLOCKED_PENDING_SECURITY`
+**Bloke eden:** `SECURITY-WIZARD-FEATURE-SUGGESTIONS-01`
+
+**Düzeltilen kanıt seviyeleri:**
+- T-03: Sızıntı potansiyeli `REPO_VERIFIED`; gerçek cross-tenant etki `INFERRED` (tenant fixture testi yok)
+- T-04: MySQL NULL unique davranışı disposable integration test olmadan `INFERRED`
+- T-05: P0 yükseltildi — public route + tenant_id filtresiz zincir `REPO_VERIFIED`
+
+**Kayıt:** `.project-brain/TENANT-FEATURE-ASSIGNMENT-01A.md`
+
+## 2026-09-13 — SECURITY-WIZARD-FEATURE-SUGGESTIONS-01 Design Onayı
+
+**Tasarım kararı onaylandı (2026-09-13).**
+
+**4 karar noktası:**
+1. Guard: `auth:sanctum` (mevcut `ThrottleApiRequests` üzerine)
+2. Tenant context: route middleware `tenant.context` (controller değil)
+3. Rol: `fieldSuggestions` = auth+tenant; `approve/rollback` = `role:admin|super_admin`
+4. Rollback: iki savunma hattı (controller + engine/repository)
+
+**Değişiklik kapsamı:**
+- Değişecek: `routes/api/v1/common.php`, `WizardFeatureController`, `AiFieldSuggestionEngine`
+- Değişmeyecek: model, migration, seeder, `FeatureTemplateResolver`, `WizardFormSchemaProvider`
+
+**Hedef mimari:** `Public write endpoint → Auth + tenant + role → Engine-level auth → Audit trail`
+
+**Worktree:** `codex/security-wizard-feature-suggestions-01` (@ 3638a978)
+**Durum:** `DESIGN_APPROVED` — Yazma izni bekleniyor
+**Kayıt:** `.project-brain/SECURITY-WIZARD-FEATURE-SUGGESTIONS-01.md`
+
+---
+
+## PR #1 & RC2 Lineage Analizi — 2026-09-13
+
+**Commit:** `3638a978` (RC2 HEAD)  
+**Dosya:** `.project-brain/PR1-RC2-LINEAGE.md`  
+**Yöntem:** `gh pr view --json`, `git log`, `git merge-base`, `git diff --name-only`  
+**Risk:** YOK (salt okuma, hiçbir dosya değiştirilmedi)  
+
+**Bulgu:**  
+- PR #1 (integration/era-v-phase2a-e01) → `main`'e 509 commit GERİDE, CONFLICTING+DIRTY  
+- RC2, PR#1'i içeriyor (177 commit sonra, root = 41301042f9 = PR#1 son commit)  
+- RC2 63 dirty dosya (74 değil — düzeltildi)  
+- PR#1 değişiklikleri: 632 PHP + 169 MD + 127 YML + 31 PNG + 31 diğer = 1,035 toplam  
+- PR#1 son commit: 41301042 (2026-09-03), 395 commit toplam  
+- RC2 son commit: 3638a978 (2026-09-12), 177 commit PR#1 üzerine  
+- Production yayında: `yalihanemlak.com.tr` → 200 OK  
+
+**Öneri:** PR#1 kapat, RC2 dirty dosyaları sahiplik+insan onayı ile temizle, ayrı PR aç.
+
+---
+
+## PR #1 Kapatıldı — 2026-09-13
+
+**Commit:** `3638a978` (RC2 HEAD)  
+**Yöntem:** `gh pr comment` + `gh pr close --delete-branch=false`  
+**Risk:** YOK — salt okuma + yorum + kapatma (merge/push/delete yok)  
+
+**Doğrulamalar (tümü GEÇTİ):**  
+- ✅ PR #1 → number=1, state=OPEN, head=integration/era-v-phase2a-e01, base=main  
+- ✅ PR#1 head commit → 41301042f9  
+- ✅ RC2 HEAD → 3638a978  
+- ✅ PR#1 head (41301042f9), RC2 HEAD (3638a978) içinde ancestor  
+
+**Yapılan:**  
+1. Yorum eklendi → `https://github.com/ayhankucuk/yalihan-os/pull/1#issuecomment-5655338599`  
+2. PR kapatıldı → state=CLOSED, branch silinmedi  
+
+**Yapılmayan:** merge, push, branch silme, rebase, reset, dosya yazma
+**Yapılan:**
+1. Yorum eklendi → `https://github.com/ayhankucuk/yalihan-os/pull/1#issuecomment-5655338599`
+2. PR kapatıldı → state=CLOSED, branch silinmedi
+
+**Yapılmayan:** merge, push, branch silme, rebase, reset, dosya yazma
+
+---
+
+## RC2 Migration + Seeder Forensic Review — 2026-09-13
+
+**Commit:** `3638a978` (RC2 HEAD)
+**Dosya:** `.project-brain/RC2-MIGRATION-SEEDER-FORENSIC.md`
+**Yöntem:** Salt-okunur — `git show`, `git diff`, `migrate:status`, dosya okuma
+**Risk:** YOK (hiçbir dosya değiştirilmedi, hiçbir komut çalıştırılmadı)
+**Kanıt Seviyesi:** `REPO_VERIFIED` (migrate:status, dosya içerikleri) + `UNKNOWN` (production DB durumu)
+
+**5 Migration — Production durumları:**
+- `2026_08_04_230600_create_kategori_yayin_tipi_field_dependencies_table.php` — `[54] Ran`
+- `2026_08_23_000002_create_c51_settlement_domain_tables.php` — `[54] Ran` (4 tablo)
+- `2026_08_23_000004_create_bank_accounts_table.php` — `[54] Ran`
+- `2026_08_24_000001_create_workforce_executions_table.php` — `[55] Ran`
+- `2026_09_04_173133_add_unique_composite_index_to_ilan_fotograflari.php` — `[56] Ran`
+
+**Karar özeti:**
+- `READY_FOR_ISOLATED_PACKAGE`: M-03 (bank_accounts), M-05 (ilan_fotograflari index), S-03 (PropertyHubOzelliklerSeeder)
+- `HUMAN_DECISION_REQUIRED`: M-01 (wizard deps), M-04 (workforce_executions rollback), S-01 (DatabaseSeeder yeni seeder'lar)
+- `BLOCKED`: M-02 (C5.1 settlement — bank_transactions FK durumu bilinmiyor), S-02 (ozellikler FK bütünlüğü)
+- `HOLD`: S-04 (legacy/ klasörü)
+
+**Öncelik sırası:** M-05 → M-03 → S-03 → (M-04 + S-01) → (M-02 + S-02) → M-01
+
+**Bilinen boşluklar (UNKNOWN):**
+1. Production DB'de `bank_transactions` FK constraint mevcut mu? (M-02)
+2. `workforce_executions` tablosunda aktif veri var mı? (M-04)
+3. `ozellikler` ve `ozellik_kategorileri` tablosunda veri var mı? (S-02)
+4. Wizard akışı `kategori_yayin_tipi_field_dependencies` tablosunu okuyor mu? (M-01)
+
+---
+
+## 2026-09-13 -- RC2 Forensic Duzeltme Kaydi
+
+Onboarding sonrasi duzeltme: Kararlarin bir kismi yanlisti, duzeltildi.
+
+### M-01 Wizard kodu taramasi (REPO_VERIFIED)
+
+grep taramasi sonucu: 11 dosya, 15+ referans noktasi.
+
+Aktif kullanici dosyalari:
+- `DynamicFormController.php:66,297` -- `where('kategori_slug')` ile okuma
+- `FieldDependencyController.php` -- Full CRUD
+- `FieldDependencyService.php` -- Tum is mantigi
+- `PropertyTypeManagerController.php` -- CRUD + toggle + sequence
+- `SmartFormsCanonicalSeeder.php:92,102,117` -- `exists` + `create()` + `count()`
+- `PropertyHubController.php`, `FieldSchemaDTO.php`, `PropertyConfigurationDTO.php`
+- `FieldResolver.php`, `routes/admin/property_types.php:12-17`, `routes/api/v1/admin.php:181-183`
+
+**Sonuc:** Tablo aktif kullaniliyor. Insan karari gerekmez, sadece DB dogrulamasi.
+
+### Karar duzeltmeleri
+
+| ID | Eski | Yeni | Neden |
+|----|------|------|-------|
+| M-01 | HUMAN_DECISION_REQUIRED | VALIDATION_PENDING | Kod tuketicisi REPO_VERIFIED |
+| M-03 | READY_FOR_ISOLATED_PACKAGE | VALIDATION_PENDING | Yerel Ran kaydi prod. kanit degil |
+| M-05 | READY_FOR_ISOLATED_PACKAGE | VALIDATION_PENDING | Yerel Ran kaydi prod. kanit degil |
+| S-03 | READY_FOR_ISOLATED_PACKAGE | VALIDATION_PENDING | `exists` check kismi kanit |
+
+### Duzeltilmis karar ozeti
+
+| ID | Karar | Kanit |
+|----|-------|-------|
+| M-01 | VALIDATION_PENDING | REPO_VERIFIED (11 dosya aktif kullanici). Prod. seed data bilinmiyor. Kaldirma/de\u011fi\u015ftirme yonunde ayrica insan mimari karan gerekir. |
+| M-02 | BLOCKED | FK durumu bilinmiyor. |
+| M-03 | VALIDATION_PENDING | Yerel Ran prod. kanit degil. |
+| M-04 | HUMAN_DECISION_REQUIRED | Rollback veri kaybi riski. |
+| M-05 | VALIDATION_PENDING | Yerel Ran prod. kanit degil. |
+| S-01 | HUMAN_DECISION_REQUIRED | TenantBaselineSeeder cakisma riski. |
+| S-02 | BLOCKED | FK butunlugu dogrulanmadi. |
+| S-03 | VALIDATION_PENDING | Runtime/FK bagimsizligi dogrulanmadi. |
+| S-04 | HOLD | Commit edilme. |
+
+**Deploy sirasi YOK.** Tum migration/seeder ancak Production Tur 1 gectikten sonra paketlenir.
+
+### Bilinen bosluklar (guncellendi)
+
+1. ~~Wizard kodu~~ -> ARADAN KALKTI (REPO_VERIFIED).
+2. `kategori_yayin_tipi_field_dependencies` seed data var mi? (M-01)
+3. `bank_transactions` FK constraint mevcut mu? (M-02)
+4. `workforce_executions` aktif veri var mi? (M-04)
+5. `ozellikler` ve `ozellik_kategorileri` veri var mi? (S-02)
+
