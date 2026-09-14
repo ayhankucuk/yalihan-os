@@ -6,18 +6,18 @@ status: active
 canonical: true
   evidence_level: TEST_VERIFIED
   as_of_commit: 911e4e3c
-last_reviewed: 2026-09-08
-review_after: 2026-09-22
+last_reviewed: 2026-09-14
+review_after: 2026-09-28
 supersedes: null
 ---
 
 # YALIHAN OS — Project Brain State
 
 <!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
-- **Repository Commit:** `fe17dd5c` (HEAD) — fail-closed TenantScope + orphan ilan/user/ilan backfill
-- **Branch:** `integration/antigravity-kilo-takeover`
-- **Working Tree:** Dirty (local edits, not staged)
-- **Evidence Date:** 2026-09-14T00:00:00+03:00
+- **Repository Commit:** `e8a90cda` (HEAD) — RC2 dirty tree fully cleaned, 3 hygiene skills added
+- **Branch:** `release-candidate/RC2`
+- **Working Tree:** CLEAN — `nothing to commit, working tree clean` ✅
+- **Evidence Date:** 2026-09-14T10:30:00+03:00
 - **Evidence Level:** `TEST_VERIFIED` — TenantScope fail-closed + V2 isolation tests 30/30 PASS
 - **Production Authorization:** BACKFILL + FAIL_CLOSED AUTHORIZED (OPERATOR/Saab 2026-09-08)
 - **Production Authorization:** `NONE (Read-Only Gate)`
@@ -38,6 +38,13 @@ YALIHAN OS is an AI-assisted real-estate and property-operations operating syste
 ## Current phase
 
 - ERA V Phase 2 — Autonomous Operations: ACTIVE.
+
+## RC2 Hygiene Skills (2026-09-14)
+
+Oturum 183'te öğrenilen 3 yeni agent skill:
+- `git-worktree-hygiene` — Dirty tree'yi temiz state'e getirir, kararları loglar
+- `conflict-guard-preflight` — Commit öncesi hot-spot taraması + lock kontrolü
+- `dirty-inventory-generator` — Dirty dosyaları otomatik sınıflandırma + önceliklendirme
 
 ## Bekçi MCP — Stdio Transport (2026-09-14)
 
