@@ -39,6 +39,31 @@ YALIHAN OS is an AI-assisted real-estate and property-operations operating syste
 
 - ERA V Phase 2 — Autonomous Operations: ACTIVE.
 
+## Sprint 14 Certification — Hermes Hardening Findings (Oturum 184 — 2026-09-14)
+
+**Sprint 14:** `CONDITIONAL_CERTIFIED` (board-approved 2026-09-11) — G-01..G-04 Part 1 PASS
+- G-04 Part 2 (operator timing): BLOCKED — API yokluğu, production'da operator ölçümü bekleniyor
+
+**3 Critical Hermes Runtime Findings — STATUS:**
+| ID | Bulgu | Status | Kanıt |
+|----|-------|--------|-------|
+| H-01 | PropertyScoreAgent namespace/directory mismatch | ✅ RESOLVED (2026-08-28) | namespace Workforce→Workflow |
+| H-02 | DriveAgent constructor eksik DriveWebhookService | ✅ RESOLVED (2026-08-28) | ServiceProvider'a eklendi |
+| H-03 | NotificationAgent subscribesTo event mismatch | ✅ RESOLVED (2026-08-28) | subscribesTo: workforce.publishing.decision_ready |
+
+**Non-blocking / LOW:**
+| ID | Bulgu | Status |
+|----|-------|--------|
+| H-05 | PropertyScoreAgent in-memory buffer | ✅ RESOLVED — Cache 24h TTL + chain_id propagation |
+| H-07 | DriveAgent sync execution | ⏳ AÇIK — Non-blocking, queue'ya geçiş planlanacak |
+| H-10 | TelegramNotificationHandler stub | ⏳ AÇIK — Non-blocking, dış servis bağlantısı bekleniyor |
+
+**Sprint 14 Workforce Chain Tests:**
+- `WorkforceAgentsTest.php`: 22 PASS / 108 assertions ✅
+- E2E zincir: `workforce.workspace.created` → tüm ajanlar → notification ✅
+
+**Sprint 15 (Action Center):** LAUNCHED — 53 PASS (c44dc8ad) — Herme'siz bağımsız çalışıyor
+
 ## RC2 Hygiene Skills (2026-09-14)
 
 Oturum 183'te öğrenilen 3 yeni agent skill:
