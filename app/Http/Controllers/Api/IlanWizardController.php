@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api;
  */
 
 use App\Http\Controllers\Controller;
+use App\Exceptions\RealityCheckException;
 use App\Exceptions\TemplateCategoryMismatchException;
 use App\Exceptions\TemplateNotFoundException;
 use App\Models\IlanKategori;
@@ -15,6 +16,7 @@ use App\Models\YayinTipiSablonu;
 use App\Rules\CoordinateRequiredRule;
 use App\Services\Category\CategoryTreeService;
 use App\Services\Ilan\IlanCrudService;
+use App\Services\Location\LocationValidationCapability;
 use App\Services\Wizard\WizardDraftService;
 use App\Services\Response\ResponseService;
 use App\Services\Wizard\DynamicFieldValueHydrator;
@@ -46,6 +48,7 @@ class IlanWizardController extends Controller
         private readonly CategoryTreeService $categoryTreeService,
         private readonly WizardDraftService $draftService,
         private readonly WizardAIAssistantService $aiAssistant,
+        private readonly LocationValidationCapability $locationValidator,
     ) {}
 
     /**
@@ -173,8 +176,13 @@ class IlanWizardController extends Controller
             'lng' => 'required|numeric|between:-180,180',
         ]);
 
-        if (!$this->validateCoordinates($validated['lat'], $validated['lng'])) {
-            return ResponseService::error('Koordinatlar geçersiz. Lütfen harita üzerinden seçiniz.', 422);
+        try {
+            $this->locationValidator->validate(
+                (float) $validated['lat'],
+                (float) $validated['lng']
+            );
+        } catch (RealityCheckException $e) {
+            return ResponseService::error($e->getMessage(), 422);
         }
 
         session(['wizard_step_3' => $validated]);
@@ -547,11 +555,4 @@ class IlanWizardController extends Controller
         }
     }
 
-    /**
-     * 🔍 Koordinatları Doğrula (Türkiye sınırları)
-     */
-    protected function validateCoordinates(float $lat, float $lng): bool
-    {
-        return $lat >= 36.1 && $lat <= 42.1 && $lng >= 26.1 && $lng <= 44.8;
-    }
 }
