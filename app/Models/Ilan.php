@@ -859,6 +859,38 @@ class Ilan extends BaseModel
             ]);
     }
 
+    /**
+     * Bypasses column collision for il relation
+     */
+    public function getIlAttribute()
+    {
+        return $this->getRelationValue('il');
+    }
+
+    /**
+     * Bypasses column collision for ilce relation
+     */
+    public function getIlceAttribute()
+    {
+        return $this->getRelationValue('ilce');
+    }
+
+    /**
+     * Bypasses column collision for mahalle relation
+     */
+    public function getMahalleAttribute()
+    {
+        return $this->getRelationValue('mahalle');
+    }
+
+    /**
+     * Bypasses column collision for kategori relation
+     */
+    public function getKategoriAttribute()
+    {
+        return $this->getRelationValue('kategori');
+    }
+
     // --- Kategori İlişkileri ---
 
     public function anaKategori(): BelongsTo

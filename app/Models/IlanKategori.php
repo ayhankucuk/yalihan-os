@@ -185,6 +185,14 @@ class IlanKategori extends BaseModel
         return $map[$this->icon] ?? '📁';
     }
 
+    /**
+     * Canonical name alias (Context7 parity)
+     */
+    public function getAdAttribute(): string
+    {
+        return $this->name ?? '';
+    }
+
     protected static function boot()
     {
         parent::boot();

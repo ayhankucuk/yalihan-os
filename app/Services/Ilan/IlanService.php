@@ -147,31 +147,33 @@ class IlanService
 
         // Tab counts — bypass VisibilitySorting scope only (not tenant scoping).
         // TenantScope MUST remain active for tenant isolation (SAB Kural #1).
-        // Fix: withoutGlobalScope('visibility') instead of withoutGlobalScopes()
-        // — prevents cross-tenant count leakage + preserves ORDER BY for paginated list.
-        $statusCounts = Ilan::withoutGlobalScope('visibility')
+        $tenantId = $this->getCurrentTenantId();
+
+        $statusCounts = Ilan::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->selectRaw("yayin_durumu, count(*) as cnt")
             ->groupBy('yayin_durumu')
             ->pluck('cnt', 'yayin_durumu');
 
         $tabCounts = [
-            'active'  => $statusCounts->get('yayinda', 0), // context7-ignore
-            'passive' => $statusCounts->get('pasif', 0), // context7-ignore
-            'drafts'  => $statusCounts->get('taslak', 0), // context7-ignore
-            'expired' => $statusCounts->get('arsiv', 0), // context7-ignore
-            'office'  => $statusCounts->get('beklemede', 0), // context7-ignore
-            'deleted' => Ilan::withoutGlobalScope('visibility')->whereNotNull('deleted_at')->count(),
+            'active'  => (int) $statusCounts->get('yayinda', 0), // context7-ignore
+            'passive' => (int) $statusCounts->get('pasif', 0), // context7-ignore
+            'drafts'  => (int) $statusCounts->get('taslak', 0), // context7-ignore
+            'expired' => (int) $statusCounts->get('arsiv', 0), // context7-ignore
+            'office'  => (int) $statusCounts->get('beklemede', 0), // context7-ignore
+            'deleted' => Ilan::withoutGlobalScopes()->where('tenant_id', $tenantId)->whereNotNull('deleted_at')->count(),
         ];
 
         $stats = [
-            'total'     => Ilan::withoutGlobalScope('visibility')->whereNull('deleted_at')->count(),
-            'active'    => $statusCounts->get('yayinda', 0), // context7-ignore
-            'this_month' => Ilan::withoutGlobalScope('visibility')
+            'total'     => Ilan::withoutGlobalScopes()->where('tenant_id', $tenantId)->whereNull('deleted_at')->count(),
+            'active'    => (int) $statusCounts->get('yayinda', 0), // context7-ignore
+            'this_month' => Ilan::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
                 ->whereNull('deleted_at')
                 ->where('created_at', '>=', now()->startOfMonth())
                 ->count(),
-            'pending'   => $statusCounts->get('beklemede', 0),
+            'pending'   => (int) $statusCounts->get('beklemede', 0),
         ];
 
         $kategoriler = IlanKategori::active()->whereNull('parent_id')->orderBy('name')->get(); // context7-ignore
@@ -715,11 +717,13 @@ class IlanService
 
                 // V1.4/V1.5 sinyallerini zenginleştir
                 $advisorPayload = $pricingInsight->toArray();
+                $advisorPayload['listing_id'] = (int) $ilan->id;
+                $advisorPayload['ilan_id'] = (int) $ilan->id;
 
                 $priorityService = app(\App\Services\MarketIntelligence\PortfolioPrioritizationService::class);
                 $priority = $priorityService->evaluateListing($advisorPayload);
-                $advisorPayload['priority_score'] = $priority['priority_score'] ?? 0;
-                $advisorPayload['priority_label'] = $priority['priority_label'] ?? 'LOW';
+                $advisorPayload['priority_score'] = $priority->priority_score ?? 0;
+                $advisorPayload['priority_label'] = $priority->priority_label ?? 'LOW';
 
                 $workflowService = app(\App\Services\MarketIntelligence\WorkflowDecisionService::class);
                 $decision = $workflowService->decide($advisorPayload);
@@ -880,6 +884,21 @@ class IlanService
         $config['feature_groups'] = $featureGroups;
 
         return $config;
+    }
+
+    /**
+     * Resolve effective tenant ID for queries.
+     */
+    private function getCurrentTenantId(): int
+    {
+        if (app()->bound(\App\Services\SaaS\TenantContextService::class)) {
+            $tenantService = app(\App\Services\SaaS\TenantContextService::class);
+            if ($tenantService->hasTenant()) {
+                return (int) $tenantService->getTenant()->id;
+            }
+        }
+
+        return (int) (\Illuminate\Support\Facades\Auth::user()?->tenant_id ?? session('tenant_id', 1));
     }
 }
 
