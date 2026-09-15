@@ -18,6 +18,9 @@
         {{-- 🛰️ Mediterranean Top Editor Bar (Sticky) --}}
         @include('admin.ilanlar.components.edit.vitals', ['ilan' => $ilan])
 
+        {{-- 🧭 Section Navigator (Sticky — 10 bölüm arasında atlayış) --}}
+        @include('admin.ilanlar.components.edit.section-navigator')
+
         <div class="mx-auto max-w-[1700px] p-4 md:p-6 space-y-6">
 
             {{-- Form Başlangıcı --}}
