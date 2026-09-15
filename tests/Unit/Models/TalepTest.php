@@ -18,31 +18,17 @@ class TalepTest extends TestCase
      */
     public function test_talep_can_be_created(): void
     {
-        $tenantId = $this->getDefaultTenantId();
-        $kisiId = DB::table('kisiler')->insertGetId([
-            'tenant_id' => $tenantId,
-            'ad' => 'Test',
-            'soyad' => 'Kisi',
-            'eposta' => 'test@example.com',
-            'telefon' => '5551234567',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $talepId = DB::table('talepler')->insertGetId([
+        // Use factory to avoid tenant_id mismatches between DB insert and TenantContextService
+        $kisi = Kisi::factory()->create();
+        $talep = Talep::factory()->create([
+            'kisi_id' => $kisi->id,
             'talep_tipi' => 'Konut',
             'notlar' => 'Test açıklama',
-            'talep_durumu' => 'yayinda',
-            'emlak_tipi' => 'Daire',
-            'kisi_id' => $kisiId,
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
-
-        $talep = Talep::find($talepId);
 
         $this->assertInstanceOf(Talep::class, $talep);
         $this->assertEquals('Konut', $talep->talep_tipi);
+        $this->assertEquals($kisi->id, $talep->kisi_id);
     }
 
     /**
