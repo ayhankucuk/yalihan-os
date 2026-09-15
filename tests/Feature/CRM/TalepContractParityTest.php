@@ -52,7 +52,7 @@ class TalepContractParityTest extends TestCase
         $realAdmin = User::factory()->create([
             'email' => 'parity-admin-' . uniqid() . '@yalihan.local',
             'role_id' => $adminRole->id,
-            'tenant_id' => 'tenant-1',
+            'tenant_id' => 1,
         ]);
         $this->admin = \Mockery::mock($realAdmin)->makePartial();
         $this->admin->shouldReceive('isAdmin')->andReturn(true);
@@ -92,7 +92,7 @@ class TalepContractParityTest extends TestCase
     public function test_index_parity_between_legacy_and_domain_modes(): void
     {
         Talep::create([
-            'tenant_id'       => 'tenant-1',
+            'tenant_id'       => 1,
             'danisman_id'     => $this->admin->id,
             'kisi_id'         => $this->kisi->id,
             'baslik'          => 'Parity Test Talebi',
@@ -144,7 +144,7 @@ class TalepContractParityTest extends TestCase
     public function test_update_and_destroy_parity(): void
     {
         $talep = Talep::create([
-            'tenant_id'       => 'tenant-1',
+            'tenant_id'       => 1,
             'danisman_id'     => $this->admin->id,
             'kisi_id'         => $this->kisi->id,
             'baslik'          => 'Update Test Talebi',
@@ -175,7 +175,7 @@ class TalepContractParityTest extends TestCase
     public function test_ajax_search_parity(): void
     {
         Talep::create([
-            'tenant_id'       => 'tenant-1',
+            'tenant_id'       => 1,
             'danisman_id'     => $this->admin->id,
             'kisi_id'         => $this->kisi->id,
             'baslik'          => 'Searchable Luxury Demand',

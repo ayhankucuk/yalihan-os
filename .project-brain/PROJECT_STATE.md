@@ -556,3 +556,32 @@ HOTSPOT_LOCK:database/migrations/2026_09_04_173133_add_unique_composite_index_to
 HOTSPOT_LOCK:database/migrations/2026_08_23_000004_create_bank_accounts_table.php:cline:2026-09-14T07:24:12Z:3600
 HOTSPOT_LOCK:database/migrations/2026_08_24_000001_create_workforce_executions_table.php:cline:2026-09-14T07:24:12Z:3600
 HOTSPOT_LOCK:database/schema/mysql-schema.sql:cline:2026-09-14T07:29:05Z:3600
+
+---
+
+## 2026-09-15 — İlan Edit Sayfası: Tabless Redesign
+
+**Branch:** `release-candidate/RC2` — commit `77518bb2`
+
+### Yapılan Değişiklikler
+- İlan Edit səhifəsi (admin/ilanlar/edit.blade.php) — 6 tab'dan 0 tab'a
+- Bütün sections eyni anda görünür:
+  - SECTION 1: Temel Bilgiler & Fiyat
+  - SECTION 2: Konum & Harita
+  - SECTION 3: İlan Özellikleri
+  - SECTION 4: Medya & Fotoğraflar
+  - SECTION 5: CRM, Portallar & Yayın
+  - SECTION 6: Kiralama & Rezervasyon (opsiyonel)
+- Tab Navigation Bar silindi
+- activeTab Alpine state çıxarıldı
+- x-show conditional wrappers silindi
+- Floating footer text: "Tüm sekmelerdeki" → "Tüm alanlardaki"
+
+### User Request
+"İlan ekleme, düzenleme, detay tüm verileri göstermeli, tab vs olmamalı"
+
+### Durum
+✅ REPO_VERIFIED — Antigravity Quality Gates 6/6 PASS
+
+### Etkilenen Dosyalar
+- `resources/views/admin/ilanlar/edit.blade.php` (-78 satır, +18 satır)

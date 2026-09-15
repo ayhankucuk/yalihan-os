@@ -23,6 +23,8 @@ class TenantScope implements Scope
 
         if ($tenantService->hasTenant()) {
             $builder->where($model->getTable() . '.tenant_id', $tenantService->getTenant()->id);
+        } elseif (auth()->check() && !empty(auth()->user()->tenant_id)) {
+            $builder->where($model->getTable() . '.tenant_id', auth()->user()->tenant_id);
         } else {
             // Fail-closed koruması: Tenant context yoksa hiçbir veriyi döndürme (Kural 1)
             $builder->whereRaw('1 = 0');

@@ -35,10 +35,12 @@ class MatchDemandsForListingUseCase
     public function execute(Ilan $ilan, bool $dispatchEvents = true): Collection
     {
         // Multi-tenant isolation: Only fetch demands for the SAME tenant
-        $query = Talep::query();
+        $query = Talep::withoutGlobalScopes([\App\Scopes\TenantScope::class]);
 
         if (!empty($ilan->tenant_id)) {
             $query->where('tenant_id', $ilan->tenant_id);
+        } else {
+            $query->whereNull('tenant_id');
         }
 
         // Active demands only

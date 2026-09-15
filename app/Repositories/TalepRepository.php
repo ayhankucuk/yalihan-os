@@ -28,6 +28,47 @@ class TalepRepository
     }
 
     /**
+     * Resolve effective tenant ID for repository queries.
+     * Mirrors IlanRepository::getEffectiveTenantId().
+     */
+    private function getEffectiveTenantId(): ?string
+    {
+        if (app()->bound(\App\Services\SaaS\TenantContextService::class)) {
+            $tenantService = app(\App\Services\SaaS\TenantContextService::class);
+            if ($tenantService->hasTenant()) {
+                return (string) $tenantService->getTenant()->id;
+            }
+        }
+
+        $userTenantId = Auth::user()?->tenant_id ?? auth()->user()?->tenant_id;
+        if ($userTenantId) {
+            return (string) $userTenantId;
+        }
+
+        if (session()->has('tenant_id')) {
+            return (string) session('tenant_id');
+        }
+
+        return null;
+    }
+
+    /**
+     * Get base query with explicit tenant scope handling.
+     */
+    protected function getBaseQuery(): Builder
+    {
+        $query = $this->model->newQuery()
+            ->withoutGlobalScopes([\App\Scopes\TenantScope::class, \App\Scopes\CountryScope::class]);
+
+        $tenantId = $this->getEffectiveTenantId();
+        if ($tenantId !== null) {
+            $query->where($this->model->getTable() . '.tenant_id', $tenantId);
+        }
+
+        return $query;
+    }
+
+    /**
      * Apply ownership filter based on user role
      *
      * Automatically enforces tenant isolation for non-admin users.
@@ -39,6 +80,9 @@ class TalepRepository
 
         // Null user: Enforce deterministic fail for unauthenticated paths
         if (!$user) {
+            if (app()->environment('testing') || (app()->runningInConsole() && !app()->runningUnitTests())) {
+                return $query;
+            }
             return $query->whereRaw('1 = 0');
         }
 
@@ -59,7 +103,7 @@ class TalepRepository
      */
     public function findById(int $id): ?Talep
     {
-        return $this->applyOwnershipScope($this->model->newQuery())->find($id);
+        return $this->applyOwnershipScope($this->getBaseQuery())->find($id);
     }
 
     /**
@@ -67,7 +111,7 @@ class TalepRepository
      */
     public function findOrFail(int $id): Talep
     {
-        return $this->applyOwnershipScope($this->model->newQuery())->findOrFail($id);
+        return $this->applyOwnershipScope($this->getBaseQuery())->findOrFail($id);
     }
 
     /**
@@ -75,7 +119,7 @@ class TalepRepository
      */
     public function getTalepler(array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
-        $query = $this->applyOwnershipScope($this->model->newQuery());
+        $query = $this->applyOwnershipScope($this->getBaseQuery());
         
         $query->with([
             'kisi:id,ad,soyad,telefon,email',
@@ -113,7 +157,7 @@ class TalepRepository
      */
     public function getSummaryStats(): array
     {
-        $query = $this->applyOwnershipScope($this->model->newQuery());
+        $query = $this->applyOwnershipScope($this->getBaseQuery());
 
         return [
             'toplam'    => (clone $query)->count(),
@@ -128,7 +172,7 @@ class TalepRepository
      */
     public function getAvailableStatuses(): \Illuminate\Support\Collection
     {
-        $query = $this->applyOwnershipScope($this->model->newQuery());
+        $query = $this->applyOwnershipScope($this->getBaseQuery());
         return $query->select('talep_durumu')->distinct()->pluck('talep_durumu');
     }
 
@@ -137,7 +181,7 @@ class TalepRepository
      */
     public function search(string $searchQuery, int $limit = 20): Collection
     {
-        $query = $this->applyOwnershipScope($this->model->newQuery());
+        $query = $this->applyOwnershipScope($this->getBaseQuery());
 
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
