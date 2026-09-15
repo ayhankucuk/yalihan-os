@@ -662,4 +662,3 @@ AI Agent karar üretir
 
 ### Etkilenen Dosyalar
 - `resources/views/admin/ilanlar/edit.blade.php` (-78 satır, +18 satır)
-HOTSPOT_LOCK:routes/admin.php:antigravity:2026-09-15T07:03:14Z:3600
