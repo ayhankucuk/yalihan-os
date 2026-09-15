@@ -29,11 +29,6 @@ class Kernel extends ConsoleKernel
             ->dailyAt('03:00')
             ->appendOutputTo(storage_path('logs/testsprite-auto-learn.log'));
 
-        // Unified Quality Gate - Her gece 03:00'te resmi zincir
-        $schedule->command('quality:gate --with-context7')
-            ->dailyAt('03:00')
-            ->appendOutputTo(storage_path('logs/quality-gate.log'));
-
         // Context7: Query String Scanner - Her saat taraması (Controller/Route queries)
         $schedule->command('context7:query-scan --persist')
             ->hourly()
@@ -83,22 +78,12 @@ class Kernel extends ConsoleKernel
             ->at('03:00')
             ->appendOutputTo(storage_path('logs/context7-trends.log'));
 
-        // TestSprite otomatik test - Her 6 saatte bir
-        $schedule->exec('cd ' . base_path('testsprite') . ' && ./test-run.sh')
-            ->everySixHours()
-            ->appendOutputTo(storage_path('logs/testsprite-tests.log'));
-
         // Context7 standard check - Haftalık
         $schedule->command('standard:check --type=context7')
             ->weekly()
             ->sundays()
             ->at('02:00')
             ->appendOutputTo(storage_path('logs/context7-standard-check.log'));
-
-        // Context7 daily compliance check - Her gün 09:00
-        $schedule->exec(base_path('scripts/context7-daily-check.sh'))
-            ->dailyAt('09:00')
-            ->appendOutputTo(storage_path('logs/context7-daily-check.log'));
 
         // Context7: Takım Yönetimi Otomasyonu - Görev Deadline Kontrolü
         // Her gün sabah 08:00 ve öğleden sonra 14:00'te kontrol et

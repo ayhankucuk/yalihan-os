@@ -1,3 +1,19 @@
+## Oturum 190 — 2026-09-15 | Ölü Blade Şablonları, Mükerrer Servisler, Listener ve Cron Görevlerinin Temizlenmesi
+
+**Kapsam:** Kullanıcının onayı ile kod tabanında mükerrer veya işlevsiz kalmış 3 ana alandaki gereksiz yapılar tamamen temizlendi:
+1. **Blade Şablonları (13 Adet):** `wizard/deprecated/` altındaki 6 eski step dosyası, `edit-elegant.blade.php`, `dashboard-minimal.blade.php`, `sidebar-optimized.blade.php`, `yayin-durumu-elegant.blade.php`, eski wizard step-4 konut/arsa dosyaları ve `tkgm-widget.blade.php` kaldırıldı.
+2. **Servisler:** Eski ve mükerrer olan `SmartFieldGenerationService.php` ile `app/Services/AI/AiTelemetryService.php` silindi; çağıran sınıflar (`CortexVoiceService`, `CortexNotificationService`) kanonik `App\Services\AI\Monitoring\AiTelemetryService` servisine yönlendirildi.
+3. **Listener & Cron Görevleri:** `EventServiceProvider.php` içinde `WizardSubmitted` event'ine mükerrer bağlı `FindMatchingDemands` listener'ı kaldırıldı (`IlanCreated` üzerinde zaten dinleniyor). `Kernel.php` içindeki mükerrer `quality:gate` günlük cron'u ve var olmayan `testsprite` / `context7-daily-check.sh` `exec` çağrıları temizlendi.
+4. **UI & İkon Uyumu:** `analytics/show.blade.php` ve `ai-governance/index.blade.php` içindeki Font Awesome kalıntıları SAB anayasasına uygun `<x-icon>` bileşenleri ile güncellendi.
+
+```
+KALİTE KAPISI:  4/4 Antigravity Gate PASS ✅ (Conflict Guard, Preflight Guard, Layout Validator, Route Guard)
+TESTLER:        145/145 PASSED (CRM 37/37, Hermes 108/108, 598 assertions)
+DURUM:          0 broken routes, 0 missing classes, temiz mimari ✅
+```
+
+---
+
 ## Oturum 189 — 2026-09-15 | Dublikat, Yetim Route və Boş Stub Controller-lərin Təmizlənməsi
 
 **Kapsam:** Kod bazasında yüklənməyən, eyni işi təkrar edən və ya yarımçıq dummy/stub olaraq qalmış bütün yetim route faylları və controller-lər təhlükəsiz şəkildə təmizləndi.

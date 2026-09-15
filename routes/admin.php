@@ -1409,6 +1409,9 @@ Route::prefix('admin/ai-category')->group(function () {
 Route::prefix('admin/analytics')->name('admin.analytics.')->group(function () {
     Route::get('/', [AnalyticsController::class, 'index'])->name('index');
     Route::get('/data', [AnalyticsController::class, 'data'])->name('data');
+    // AI Governance Dashboard (Prompt Compliance Telemetry) - specific routes before wildcard
+    Route::get('/ai-governance', [\App\Http\Controllers\Admin\AIGovernanceController::class, 'index'])->name('ai-governance');
+    // Wildcard MUST be last
     Route::get('/{id}', [AnalyticsController::class, 'show'])->name('show');
 });
 

@@ -54,7 +54,6 @@ class EventServiceProvider extends ServiceProvider
         \App\Domain\Ilan\Events\WizardSubmitted::class => [
             \App\Listeners\InvalidateIlanCache::class,
             \App\Listeners\UpdateAnalyticsProjections::class,
-            \App\Listeners\FindMatchingDemands::class,
             \App\Listeners\ActionCenter\IlanCreatedActionListener::class,
             \App\Listeners\CRM\StartDemandMatchingSaga::class, // CRM Decoupled Saga
         ],

@@ -10,7 +10,7 @@ use App\Models\Kisi;
 use App\Models\Mahalle;
 use App\Models\Talep;
 use App\Services\AIService;
-use App\Services\AI\AiTelemetryService;
+use App\Services\AI\Monitoring\AiTelemetryService;
 use App\Services\AI\VoiceSearchService;
 use App\Services\Logging\LogService;
 use App\Enums\AktiflikDurumu;
