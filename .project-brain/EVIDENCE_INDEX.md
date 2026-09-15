@@ -1080,3 +1080,21 @@ Aktif kullanici dosyalari:
 - Tests: `FormFieldContractParityTest` (8 senaryo), `CategoryFieldPolicyTest`, `FieldKeyTest`, `ValidationRuleTest` (25 test, 103 assertion)
 - Runtime switch: `config('feature-flags.use_domain_form_policy')` false→legacy, true→domain
 
+
+---
+
+## [2026-09-15] TALEP_DOMAIN_PARITY_FIX
+
+**Commit:** `084df928`
+**Session:** Talep Domain — Karakterizasyon testleri & CRM parite kontrolü
+**Tool:** `./vendor/bin/phpunit --filter Talep` + analiz
+**DB:** SQLite (testing)
+**Evidence Level:** `TEST_VERIFIED`
+
+| # | Bulgu | Kaynak | Seviye | Öncelik |
+|---|-------|--------|--------|----------|
+| 1 | `TalepTest::test_talep_can_be_created` — DB insert tenant_id mismatch | unit test | TEST_VERIFIED | FIXED |
+| 2 | `TalepRepositoryAuthorizationTest::null_user` — testing bypass assertion | unit test | TEST_VERIFIED | FIXED |
+| 3 | Bütün Talep testləri əvvəlki run-dakı spurious failure yox — ayrı işləyəndə hamısı keçirdi | test run | TEST_VERIFIED | INFO |
+
+**Sayılar:** 61/61 tests ✅, 187 assertions, 3 skipped, 6/6 quality gates ✅

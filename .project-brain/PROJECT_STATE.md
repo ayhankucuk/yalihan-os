@@ -545,7 +545,6 @@ HOTSPOT_LOCK:database/migrations/2026_09_06_000001_add_ilceler_il_id_foreign_key
 ### Strangler Fig Sonraki Adım
 Controller adapter → `config('crm.use_domain_talep', false)` feature flag ile aktif edilecek
 HOTSPOT_LOCK:config/feature-flags.php:cline:2026-09-14T07:22:09Z:3600
-HOTSPOT_LOCK:routes/admin.php:cline:2026-09-14T07:22:09Z:3600
 HOTSPOT_LOCK:.sab/sab-baseline.json:cline:2026-09-14T07:23:04Z:3600
 HOTSPOT_LOCK:.sab/authority.json:cline:2026-09-14T07:23:04Z:3600
 HOTSPOT_LOCK:config/exchange.php:cline:2026-09-14T07:24:04Z:3600
@@ -583,5 +582,84 @@ HOTSPOT_LOCK:database/schema/mysql-schema.sql:cline:2026-09-14T07:29:05Z:3600
 ### Durum
 ✅ REPO_VERIFIED — Antigravity Quality Gates 6/6 PASS
 
+---
+
+## [2026-09-15] GOVERNANCE SISTEMI — YAPI VE CALISMA PRENSIBI
+
+**Son Güncelleme:** 2026-09-15
+**Kaynak:** `docs/SAB.md` (deprecated), `app/Http/Controllers/Admin/DecisionEngineController.php`, codebase analizi
+
+### SAB Nedir?
+- **SAB = Standart Uygulama Bloğu** — projenin bağlayıcı teknik anayasası
+- Version: 24.2.0 (Phase 12: Monetization & Financial Seal)
+- **Deprecated (2026-09-12):** `docs/SAB.md` arşivlendi
+  - Güncel SSOT: `.sab/authority.json` (v6.1.1)
+  - Mimari Anayasa: `docs/ysos/SAAB_V7.md`
+
+### SAB Governorluk ile Iliskili Bilesenler
+
+| Kısaltma | Acikım | Fonksiyon | Ilgili Controller/Service |
+|---|---|---|---|
+| SAB2 | Cortex Decision Engine | AI kararlarinin olusturulmasi ve onay/red | DecisionEngineController::reviewQueue |
+| SAB3 | Decision Safety Layer | Rollback, suppression, override | RollbackService, SuppressionService |
+| SAB4 | Multi-Agent Intelligence Center | Agent öneri yönetimi | CortexFindingService |
+| SAB5 | Operator Intelligence | AI davranis kurallarini dinamik güncelleme | DecisionEngineController::toggleSafeMode |
+| SAB6 | Controlled Autonomy | AI özerklik seviyesi | AutonomyService, DecisionEngineController::autonomyPanel |
+| SAB8 | Decision → Action → Feedback Loop | Aksiyon sonuç feedback'i | ActionFeedbackService |
+
+### Mimari Dosya Yapisi
+```
+app/Services/Governance/
+├── GovernanceDashboardService.php
+├── GovernanceMetricsService.php
+├── GovernanceObservabilityService.php
+├── EloquentGovernanceAuditLogger.php
+└── Telemetry/
+
+app/Services/Intelligence/
+├── CortexFindingService.php     (SAB4)
+├── AutonomyService.php         (SAB6)
+├── ActionFeedbackService.php    (SAB8)
+├── RollbackService.php          (SAB3)
+└── SuppressionService.php       (SAB3)
+
+app/Http/Controllers/Admin/
+├── DecisionEngineController.php  ← SAB2/SAB3/SAB5/SAB6/SAB8
+├── GovernanceController.php       ← Ana dashboard
+└── UpsGovernanceController.php    ← Feature health matrix
+```
+
+### Admin Panel Route-Lari
+- `/admin/governance` → dashboard
+- `/admin/governance/telemetry` → Livewire real-time izleme
+- `/admin/governance/review-queue` → SAB2 karar onay kuyruğu
+- `/admin/governance/decision-history` → Gecmis kararlar
+- `/admin/governance/intelligence-center` → SAB4 agent önerileri
+- `/admin/governance/feature-health` → Feature saglik matrisi
+- `/admin/governance/autonomy` → SAB6 özerklik kontrolü
+- `/admin/governance/action-dashboard` → SAB8 feedback döngüsü
+- `/admin/yalihan-bekci` → Sistem saglik kontrolü
+- `/admin/audit-log` → Tüm operasyonlarin kaydi
+
+### Calısma Akısı
+```
+AI Agent karar üretir
+  → Review Queue (SAB2)
+    → Admin: Onayla / Reddet / Rollback
+      → Onay: Aksiyon hayata gecer
+      → Red: Loglanir
+      → Rollback: Önceki state'e döner (SAB3)
+    → Feedback kaydi (SAB8)
+    → Sistem öğrenir
+```
+
+### Güvenlik Kurallari
+- Core'a dogrudan write yasak → sadece Service katmani
+- Silent catch yasak → hata log + rethrow zorunlu
+- Governance bypass yasak → bypass eden kod merge edilemez
+- Multi-tenant tenant_id zorunlu
+- AI Circuit Breaker: her AI operasyonu AiBudgetGuard'a tabi
+
 ### Etkilenen Dosyalar
 - `resources/views/admin/ilanlar/edit.blade.php` (-78 satır, +18 satır)
+HOTSPOT_LOCK:routes/admin.php:antigravity:2026-09-15T07:03:14Z:3600

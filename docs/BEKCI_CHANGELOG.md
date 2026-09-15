@@ -1,3 +1,40 @@
+## Oturum 189 — 2026-09-15 | Dublikat, Yetim Route və Boş Stub Controller-lərin Təmizlənməsi
+
+**Kapsam:** Kod bazasında yüklənməyən, eyni işi təkrar edən və ya yarımçıq dummy/stub olaraq qalmış bütün yetim route faylları və controller-lər təhlükəsiz şəkildə təmizləndi.
+
+**Təmizlənən Komponentlər:**
+- **25 Yetim Route Faylı:** `routes/admin/` altındakı yüklənməyən 24 fayl (`adres_yonetimi.php`, `ayarlar.php`, `blog.php`, `crm.php`, `danismanlar.php`, `dashboard.php`, `eslesmeler.php`, `ilanlarim.php`, `integrations.php`, `intelligence.php`, `kisiler.php`, `kullanicilar.php`, `notifications.php`, `ozellikler.php`, `page_analyzer.php`, `profilim.php`, `property_hub.php`, `property_types.php`, `reports.php`, `site.php`, `takim.php`, `talepler.php`, `ups.php`, `wikimapia.php`) və `routes/web/admin/validation.php`.
+- **8 Ədəd İstifadəsiz / Stub Controller:** `ValidationController.php`, `FormValidationController.php`, `ProfileController.php`, `MapController.php` və `PropertyHubController` tərəfindən əvəzlənmiş `PropertyHub/` altındakı 4 controller (`DashboardController`, `FeatureController`, `PackController`, `TemplateController`).
+- **`routes/admin.php`:** `/auth-test`, `/test-simple`, `/test-minimal` və köhnə comment qalıqları silindi.
+- **`routes/api/v1/admin.php`:** İstifadəsiz `MapController` və `/nearby/preview` route-u təmizləndi.
+
+```
+KALİTE KAPISI:  4/4 Antigravity Gate PASS ✅ (Conflict Guard, Preflight Guard, Layout Validator, Route Guard)
+TESTLER:        145/145 PASSED (CRM 37/37, Hermes 108/108, 598 assertions)
+ROUTE GUARD:    0 duplicate routes, 0 missing classes ✅
+```
+
+---
+
+## Oturum 188 — 2026-09-15 | Governance Segment Temizlik & Sidebar Yeniden Yapılandırma
+
+**Kapsam:** `admin/governance` segmenti altındaki tüm sayfalar analiz edildi. Legacy/duplicate Livewire bileşenleri kaldırıldı, dağınık governance linkleri tek dropdown altında toplandı.
+
+**Değişiklikler:**
+- `GovernanceDashboardService.php:271` — `catch (\Throwable)` → `catch (\Throwable $e)` bug düzeltildi (PHP undefined variable)
+- `routes/admin.php` — 3 legacy route kaldırıldı: `admin.analytics.ai-governance`, `admin.analytics.governance.command-center`, `admin.analytics.governance.dashboard` (Livewire bileşenleri artık kullanım dışı)
+- `routes/admin.php` — UPS Governance redirect route'ları kaldırıldı (`admin.ups.governance.index` → redirect zinciri)
+- `sidebar-content.blade.php` — Analytics dropdown'daki stale "Governance Dashboard" linki kaldırıldı
+- `sidebar-content.blade.php` — UPS "LifeCycle & Governance" linki doğrudan `admin.governance.feature-health`'e bağlandı
+- `sidebar-content.blade.php` — Yeni `🏛️ Governance` dropdown eklendi: SAB Dashboard, İnceleme Kuyruğu, AI Kontrol Merkezi, Otonom Kontrol, Karar Geçmişi, Feature Health, Bastırma Kuralları
+- `property-hub/index.blade.php` — Orphan `admin.ups.governance.index` referansı `admin.governance.feature-health`'e düzeltildi
+
+**Korunan Sayfalar (9):** dashboard, review-queue, decisions/{id}, decision-history, intelligence-center, autonomy, feature-health, action-dashboard, suppressions
+
+**Silinerek Temizlenen:** GovernanceDashboard (Livewire), GovernanceCommandCenter (Livewire), AIGovernanceController JSON endpoint
+
+---
+
 ## Oturum 187 — 2026-09-15 | İlan Yaşam Döngüsü Senkronizasyonu & /admin/ilanlar/3 Lüks Kokpit / Sosyal CRM / WhatsApp Entegrasyonu
 
 **Kapsam:** İlan ekle (`create-wizard`), ilan düzenle (`edit`), ilan listesi (`index`) ve ilan kokpiti (`show`) arasındaki veri kontratı, hiyerarşi ve Akdeniz Lüks Tasarım Sistemi senkronize edildi. `/admin/ilanlar/3` (Bodrum Gündoğan İmarlı Arsa) sayfası derinlemesine denetlenerek tüm 500 hataları, DTO uyumsuzlukları ve dağınık CRM/Site yapıları giderildi.

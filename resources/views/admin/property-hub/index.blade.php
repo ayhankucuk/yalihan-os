@@ -265,7 +265,7 @@
                         Dışa Aktar
                     </button>
 
-                    <a href="{{ route('admin.ups.governance.index') }}"
+                    <a href="{{ route('admin.governance.feature-health') }}"
                         class="inline-flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg
                           transition-all duration-200 text-sm font-medium">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

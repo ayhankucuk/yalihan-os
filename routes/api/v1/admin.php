@@ -6,7 +6,6 @@ use App\Http\Controllers\Admin\ArsaCalculatorController;
 use App\Http\Controllers\Admin\CalendarSyncController;
 use App\Http\Controllers\Admin\AI\IlanAIController;
 use App\Http\Controllers\Admin\KategoriOzellikApiController;
-use App\Http\Controllers\Admin\MapController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PageAnalyzerController;
 use App\Http\Controllers\Admin\PhotoController;
@@ -204,9 +203,6 @@ Route::prefix('admin')->name('api.admin.')->middleware(['auth', 'admin', 'role:a
         Route::get('/default-types', [SearchController::class, 'getDefaultPropertyTypes'])->name('default-types');
         Route::get('/compatible-types', [SearchController::class, 'getCompatiblePropertyTypes'])->name('compatible-types');
     });
-
-    // Nearby Preview API
-    Route::get('/nearby/preview', [MapController::class, 'nearbyPreview'])->name('map.nearby.preview');
 
     // Marketing API - Phase 8.0: Pazarlama ve Sosyal Medya Motoru
     Route::prefix('marketing')->name('marketing.')->group(function () {
