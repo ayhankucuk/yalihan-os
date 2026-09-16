@@ -2,10 +2,13 @@
 
 namespace App\Services\Matching;
 
-use App\Models\Ilan;
-use App\Models\Talep;
 use App\Enums\IlanDurumu;
 use App\Enums\TalepDurumu;
+use App\Models\Ilan;
+use App\Models\Talep;
+use App\Scopes\TenantScope;
+use App\Services\Notification\N8nWebhookService;
+use App\Services\Price\CurrencyRateService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -36,13 +39,18 @@ class DemandMatchingEngine
      */
     const PRICE_TOLERANCE = 0.15; // %15
 
+    public function __construct(
+        private ?CurrencyRateService $currencyRate = null
+    ) {
+        $this->currencyRate = $currencyRate ?? app(CurrencyRateService::class);
+    }
+
     /**
      * 🎯 Ana Eşleştirme Metodu
      *
      * Bir talep için uygun ilanları bulur ve skorlar
      *
-     * @param Talep $talep
-     * @param int $limit Maksimum sonuç sayısı
+     * @param  int  $limit  Maksimum sonuç sayısı
      * @return Collection Skorlanmış ilanlar
      */
     public function matchDemand(Talep $talep, int $limit = 10): Collection
@@ -63,7 +71,7 @@ class DemandMatchingEngine
 
         // 🔥 3. FİLTRELEME: Minimum skoru geçenleri al
         $uygunIlanlar = $skorlanmisIlanlar
-            ->filter(fn($item) => $item['skor'] >= self::MIN_MATCH_SCORE)
+            ->filter(fn ($item) => $item['skor'] >= self::MIN_MATCH_SCORE)
             ->sortByDesc('skor')
             ->take($limit);
 
@@ -77,7 +85,7 @@ class DemandMatchingEngine
 
         // 🎯 5. n8n BİLDİRİMİ: %90+ skorlu eşleşmeleri bildir
         if (config('n8n.enabled')) {
-            $webhookService = app(\App\Services\Notification\N8nWebhookService::class);
+            $webhookService = app(N8nWebhookService::class);
 
             foreach ($uygunIlanlar as $eslesen) {
                 if ($eslesen['skor'] >= config('n8n.thresholds.min_match_score', 90)) {
@@ -107,10 +115,6 @@ class DemandMatchingEngine
      * - Fiyat: %30
      * - Kategori: %20
      * - Metrekare: %10
-     *
-     * @param Ilan $ilan
-     * @param Talep $talep
-     * @return float
      */
     protected function calculateMatchScore(Ilan $ilan, Talep $talep): float
     {
@@ -138,7 +142,7 @@ class DemandMatchingEngine
         $skorlar['semantic'] = $semanticBonus; // 0-20 arası bonus
 
         // 🎯 TOPLAM SKOR (base score + semantic bonus)
-        $baseScore = array_sum(array_filter($skorlar, fn($key) => $key !== 'semantic', ARRAY_FILTER_USE_KEY));
+        $baseScore = array_sum(array_filter($skorlar, fn ($key) => $key !== 'semantic', ARRAY_FILTER_USE_KEY));
         $totalScore = $baseScore + $semanticBonus;
 
         return round($totalScore, 2);
@@ -191,7 +195,7 @@ class DemandMatchingEngine
     protected function calculatePriceScore(Ilan $ilan, Talep $talep): float
     {
         // Talep fiyat aralığı yoksa
-        if (!$talep->min_fiyat && !$talep->max_fiyat) {
+        if (! $talep->min_fiyat && ! $talep->max_fiyat) {
             return 50; // Nötr skor
         }
 
@@ -234,7 +238,7 @@ class DemandMatchingEngine
      */
     protected function calculateCategoryScore(Ilan $ilan, Talep $talep): float
     {
-        if (!$talep->alt_kategori_id) {
+        if (! $talep->alt_kategori_id) {
             return 50; // Kategori belirtilmemiş
         }
 
@@ -261,7 +265,7 @@ class DemandMatchingEngine
     protected function calculateAreaScore(Ilan $ilan, Talep $talep): float
     {
         // Talep metrekare aralığı yoksa
-        if (!$talep->min_metrekare && !$talep->max_metrekare) {
+        if (! $talep->min_metrekare && ! $talep->max_metrekare) {
             return 50; // Nötr skor
         }
 
@@ -344,8 +348,7 @@ class DemandMatchingEngine
      *
      * Bir ilan için bekleyen talepleri tarar ve uygun alıcıları bulur.
      *
-     * @param Ilan $ilan
-     * @param int $minScore Minimum eşleşme skoru (varsayılan: 70)
+     * @param  int  $minScore  Minimum eşleşme skoru (varsayılan: 70)
      * @return Collection Skorlanmış talepler
      */
     public function findPotentialBuyers(Ilan $ilan, int $minScore = 70): Collection
@@ -370,7 +373,7 @@ class DemandMatchingEngine
 
         // 3. Minimum skoru geçenleri filtrele ve sırala
         return $skorlanmisTalepler
-            ->filter(fn($item) => $item['skor'] >= $minScore)
+            ->filter(fn ($item) => $item['skor'] >= $minScore)
             ->sortByDesc('skor')
             ->values();
     }
@@ -393,13 +396,13 @@ class DemandMatchingEngine
         if ($ilan->fiyat && $talep->max_fiyat) {
             if ($ilan->fiyat <= $talep->max_fiyat) {
                 $margin = $talep->max_fiyat - $ilan->fiyat;
-                $reasons[] = "Bütçe içinde (+" . number_format($margin, 0, ',', '.') . " TL fark var)";
+                $reasons[] = 'Bütçe içinde (+'.number_format($margin, 0, ',', '.').' TL fark var)';
             }
         }
 
         // Kategori nedeni
         if ($ilan->alt_kategori_id && $talep->alt_kategori_id && $ilan->alt_kategori_id === $talep->alt_kategori_id) {
-            $reasons[] = "Aranan kategori";
+            $reasons[] = 'Aranan kategori';
         }
 
         // Metrekare nedeni
@@ -411,7 +414,7 @@ class DemandMatchingEngine
         }
 
         if (empty($reasons)) {
-            $reasons[] = "Kısmi eşleşme";
+            $reasons[] = 'Kısmi eşleşme';
         }
 
         return $reasons;
@@ -422,7 +425,7 @@ class DemandMatchingEngine
      *
      * Önemli: Bu metod OOM riskini önlemek için veritabanı seviyesinde filtreleme yapar.
      */
-    protected function getIlanCandidates(Talep $talep): Collection
+    public function getIlanCandidates(Talep $talep): Collection
     {
         $tolerance = config('crm.matching.price_tolerance', 0.15);
         $maxCandidates = config('crm.matching.max_candidates', 500);
@@ -430,13 +433,14 @@ class DemandMatchingEngine
         // [INTENTIONAL CROSS-TENANT] Matching requires global listing corpus.
         // Demand ↔ Supply pairing must search across all active listings, not just owner's portfolio.
         // This is NOT a security bypass — see docs/governance/PHASE4_SEMANTIC_CLASSIFICATION.md
-        $query = Ilan::where('yayin_durumu', IlanDurumu::YAYINDA->value);
+        $query = Ilan::withoutGlobalScope(TenantScope::class)
+            ->where('yayin_durumu', IlanDurumu::YAYINDA->value);
 
         Log::debug('🔍 SQL Pre-filter Trace', [
             'talep_id' => $talep->id,
             'target_il' => $talep->il_id,
             'target_alt_cat' => $talep->alt_kategori_id,
-            'raw_attributes' => $talep->getAttributes()
+            'raw_attributes' => $talep->getAttributes(),
         ]);
 
         // Kategori ön filtresi
@@ -457,12 +461,22 @@ class DemandMatchingEngine
             $query->where('mahalle_id', $talep->mahalle_id);
         }
 
-        // Fiyat ön filtresi (Toleranslı)
-        if ($talep->min_fiyat) {
-            $query->where('fiyat', '>=', $talep->min_fiyat * (1 - $tolerance));
-        }
-        if ($talep->max_fiyat) {
-            $query->where('fiyat', '<=', $talep->max_fiyat * (1 + $tolerance));
+        // Fiyat ön filtresi (Toleranslı ve Kur Duyarlı - SAAB-A3 SSOT)
+        if ($talep->min_fiyat || $talep->max_fiyat) {
+            $talepCurrency = $this->currencyRate->normalizeCurrency($talep->para_birimi ?? 'TRY');
+            $minTry = $talep->min_fiyat ? $this->currencyRate->convert((float) $talep->min_fiyat, $talepCurrency, 'TRY') : null;
+            $maxTry = $talep->max_fiyat ? $this->currencyRate->convert((float) $talep->max_fiyat, $talepCurrency, 'TRY') : null;
+
+            $normalized = $this->currencyRate->getTryNormalizedPriceSql('fiyat', 'para_birimi');
+
+            if ($minTry !== null) {
+                $minThreshold = (float) ($minTry * (1 - $tolerance));
+                $query->whereRaw("{$normalized['sql']} >= (? * 1.0)", array_merge($normalized['bindings'], [$minThreshold]));
+            }
+            if ($maxTry !== null) {
+                $maxThreshold = (float) ($maxTry * (1 + $tolerance));
+                $query->whereRaw("{$normalized['sql']} <= (? * 1.0)", array_merge($normalized['bindings'], [$maxThreshold]));
+            }
         }
 
         // Metrekare ön filtresi (Toleranslı - Brut veya Alan kontrolü)
@@ -489,7 +503,7 @@ class DemandMatchingEngine
         Log::debug('🛰️ Candidates Found', [
             'count' => $results->count(),
             'ids' => $results->pluck('id')->toArray(),
-            'cat_ids' => $results->pluck('alt_kategori_id')->toArray()
+            'cat_ids' => $results->pluck('alt_kategori_id')->toArray(),
         ]);
 
         return $results;
@@ -521,9 +535,9 @@ class DemandMatchingEngine
 
         // Fiyat ön filtresi (İlanın fiyatına göre talepleri filtrele)
         if ($ilan->fiyat) {
-            $query->where(function($q) use ($ilan, $tolerance) {
+            $query->where(function ($q) use ($ilan, $tolerance) {
                 $q->whereNull('max_fiyat')
-                  ->orWhere('max_fiyat', '>=', $ilan->fiyat * (1 - $tolerance));
+                    ->orWhere('max_fiyat', '>=', $ilan->fiyat * (1 - $tolerance));
             });
         }
 

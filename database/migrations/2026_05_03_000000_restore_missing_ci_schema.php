@@ -20,20 +20,20 @@ return new class extends Migration
         // Restore 'il' and 'ilce' columns to 'ilanlar' table if missing
         if (Schema::hasTable('ilanlar')) {
             Schema::table('ilanlar', function (Blueprint $table) {
-                if (!Schema::hasColumn('ilanlar', 'il')) {
+                if (! Schema::hasColumn('ilanlar', 'il')) {
                     $table->unsignedBigInteger('il')->nullable()->after('ana_kategori_id');
                 }
-                if (!Schema::hasColumn('ilanlar', 'ilce')) {
+                if (! Schema::hasColumn('ilanlar', 'ilce')) {
                     $table->string('ilce')->nullable()->after('ilce_id');
                 }
-                if (!Schema::hasColumn('ilanlar', 'yayin_durumu')) {
+                if (! Schema::hasColumn('ilanlar', 'yayin_durumu')) {
                     $table->string('yayin_durumu', 20)->default('taslak')->after('para_birimi');
                 }
             });
         }
 
         // Restore 'copilot_action_logs' table if missing
-        if (!Schema::hasTable('copilot_action_logs')) {
+        if (! Schema::hasTable('copilot_action_logs')) {
             Schema::create('copilot_action_logs', function (Blueprint $table) {
                 $table->id();
                 $table->string('action_type')->nullable();
@@ -45,7 +45,7 @@ return new class extends Migration
         }
 
         // Restore 'optimizer_suggestions' table if missing
-        if (!Schema::hasTable('optimizer_suggestions')) {
+        if (! Schema::hasTable('optimizer_suggestions')) {
             Schema::create('optimizer_suggestions', function (Blueprint $table) {
                 $table->id();
                 $table->string('suggestion_type');
@@ -61,7 +61,7 @@ return new class extends Migration
         }
 
         // Restore 'agent_memory' table if missing
-        if (!Schema::hasTable('agent_memory')) {
+        if (! Schema::hasTable('agent_memory')) {
             Schema::create('agent_memory', function (Blueprint $table) {
                 $table->id();
                 $table->string('agent_name');
@@ -75,7 +75,7 @@ return new class extends Migration
         }
 
         // Restore 'governance_suppressions' table if missing
-        if (!Schema::hasTable('governance_suppressions')) {
+        if (! Schema::hasTable('governance_suppressions')) {
             Schema::create('governance_suppressions', function (Blueprint $table) {
                 $table->id();
                 $table->string('rule_key');
@@ -91,7 +91,7 @@ return new class extends Migration
         }
 
         // Restore 'ups_templates' table if missing
-        if (!Schema::hasTable('ups_templates')) {
+        if (! Schema::hasTable('ups_templates')) {
             Schema::create('ups_templates', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('yayin_tipi_sablonu_id')->nullable();
@@ -111,7 +111,7 @@ return new class extends Migration
         }
 
         // Restore 'template_change_logs' table if missing
-        if (!Schema::hasTable('template_change_logs')) {
+        if (! Schema::hasTable('template_change_logs')) {
             Schema::create('template_change_logs', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('ups_template_id')->nullable();
@@ -130,7 +130,7 @@ return new class extends Migration
         }
 
         // Restore 'ai_threshold_overrides' table if missing
-        if (!Schema::hasTable('ai_threshold_overrides')) {
+        if (! Schema::hasTable('ai_threshold_overrides')) {
             Schema::create('ai_threshold_overrides', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('kategori_id')->nullable();
@@ -145,7 +145,7 @@ return new class extends Migration
         }
 
         // Restore 'ai_esik_profilleri' table if missing
-        if (!Schema::hasTable('ai_esik_profilleri')) {
+        if (! Schema::hasTable('ai_esik_profilleri')) {
             Schema::create('ai_esik_profilleri', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('kategori_id')->nullable();
@@ -159,7 +159,7 @@ return new class extends Migration
         }
 
         // Restore 'ai_prompt_logs' table if missing
-        if (!Schema::hasTable('ai_prompt_logs')) {
+        if (! Schema::hasTable('ai_prompt_logs')) {
             Schema::create('ai_prompt_logs', function (Blueprint $table) {
                 $table->id();
                 $table->string('prompt_hash', 64)->unique();
@@ -178,14 +178,14 @@ return new class extends Migration
         }
 
         // Restore 'ai_logs' missing column if exists
-        if (Schema::hasTable('ai_logs') && !Schema::hasColumn('ai_logs', 'error_message')) {
+        if (Schema::hasTable('ai_logs') && ! Schema::hasColumn('ai_logs', 'error_message')) {
             Schema::table('ai_logs', function (Blueprint $table) {
                 $table->text('error_message')->nullable()->after('calisma_durumu');
             });
         }
 
         // Restore 'advisor_photos' table
-        if (!Schema::hasTable('advisor_photos')) {
+        if (! Schema::hasTable('advisor_photos')) {
             Schema::create('advisor_photos', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
@@ -197,7 +197,7 @@ return new class extends Migration
         }
 
         // Restore 'saved_searches' table
-        if (!Schema::hasTable('saved_searches')) {
+        if (! Schema::hasTable('saved_searches')) {
             Schema::create('saved_searches', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('user_id');
@@ -208,14 +208,14 @@ return new class extends Migration
                 $table->timestamp('last_notified_at')->nullable();
                 $table->timestamps();
             });
-        } elseif (!Schema::hasColumn('saved_searches', 'criteria')) {
+        } elseif (! Schema::hasColumn('saved_searches', 'criteria')) {
             Schema::table('saved_searches', function (Blueprint $table) {
                 $table->json('criteria')->after('name');
             });
         }
 
         // Restore projection tables for CQRS
-        if (!Schema::hasTable('proj_listings')) {
+        if (! Schema::hasTable('proj_listings')) {
             Schema::create('proj_listings', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('ilan_id')->index();
@@ -237,7 +237,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('proj_event_offsets')) {
+        if (! Schema::hasTable('proj_event_offsets')) {
             Schema::create('proj_event_offsets', function (Blueprint $table) {
                 $table->id();
                 $table->string('projector_name');
@@ -247,7 +247,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('proj_activity_stream')) {
+        if (! Schema::hasTable('proj_activity_stream')) {
             Schema::create('proj_activity_stream', function (Blueprint $table) {
                 $table->string('id')->primary();
                 $table->timestamp('occurred_at')->nullable();
@@ -259,7 +259,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('proj_agent_performance')) {
+        if (! Schema::hasTable('proj_agent_performance')) {
             Schema::create('proj_agent_performance', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('danisman_id');
@@ -271,7 +271,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('proj_kpi_snapshots')) {
+        if (! Schema::hasTable('proj_kpi_snapshots')) {
             Schema::create('proj_kpi_snapshots', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('danisman_id')->nullable();
@@ -282,7 +282,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('languages')) {
+        if (! Schema::hasTable('languages')) {
             Schema::create('languages', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -293,13 +293,13 @@ return new class extends Migration
         }
 
         // Restore remaining missing columns and tables
-        if (Schema::hasTable('ilanlar') && !Schema::hasColumn('ilanlar', 'mahalle')) {
+        if (Schema::hasTable('ilanlar') && ! Schema::hasColumn('ilanlar', 'mahalle')) {
             Schema::table('ilanlar', function (Blueprint $table) {
                 $table->string('mahalle')->nullable()->after('ilce');
             });
         }
 
-        if (!Schema::hasTable('user_devices')) {
+        if (! Schema::hasTable('user_devices')) {
             Schema::create('user_devices', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('user_id');
@@ -314,7 +314,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('property_availabilities')) {
+        if (! Schema::hasTable('property_availabilities')) {
             Schema::create('property_availabilities', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('property_id');
@@ -328,7 +328,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('property_reservations')) {
+        if (! Schema::hasTable('property_reservations')) {
             Schema::create('property_reservations', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('property_id');
@@ -346,13 +346,13 @@ return new class extends Migration
                 $table->timestamps();
                 $table->softDeletes();
             });
-        } elseif (!Schema::hasColumn('property_reservations', 'guest_phone')) {
+        } elseif (! Schema::hasColumn('property_reservations', 'guest_phone')) {
             Schema::table('property_reservations', function (Blueprint $table) {
                 $table->string('guest_phone')->nullable()->after('guest_name');
             });
         }
 
-        if (!Schema::hasTable('property_config_versions')) {
+        if (! Schema::hasTable('property_config_versions')) {
             Schema::create('property_config_versions', function (Blueprint $table) {
                 $table->id();
                 $table->string('version_hash')->nullable(); // Added for CI
@@ -369,13 +369,13 @@ return new class extends Migration
         }
 
         // Restore missing columns to 'user_devices'
-        if (Schema::hasTable('user_devices') && !Schema::hasColumn('user_devices', 'device_id')) {
+        if (Schema::hasTable('user_devices') && ! Schema::hasColumn('user_devices', 'device_id')) {
             Schema::table('user_devices', function (Blueprint $table) {
                 $table->string('device_id')->nullable()->after('device_token');
             });
         }
 
-        if (!Schema::hasTable('ai_optimization_runs')) {
+        if (! Schema::hasTable('ai_optimization_runs')) {
             Schema::create('ai_optimization_runs', function (Blueprint $table) {
                 $table->id();
                 $table->string('window')->default('daily');
@@ -383,13 +383,13 @@ return new class extends Migration
                 $table->json('metrics')->nullable();
                 $table->timestamps();
             });
-        } elseif (!Schema::hasColumn('ai_optimization_runs', 'window')) {
+        } elseif (! Schema::hasColumn('ai_optimization_runs', 'window')) {
             Schema::table('ai_optimization_runs', function (Blueprint $table) {
                 $table->string('window')->default('daily')->after('id');
             });
         }
 
-        if (!Schema::hasTable('prediction_snapshots')) {
+        if (! Schema::hasTable('prediction_snapshots')) {
             Schema::create('prediction_snapshots', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('listing_id');
@@ -410,7 +410,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('tenants')) {
+        if (! Schema::hasTable('tenants')) {
             Schema::create('tenants', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -421,13 +421,13 @@ return new class extends Migration
                 $table->timestamps();
                 $table->softDeletes(); // Added for CI parity
             });
-        } elseif (!Schema::hasColumn('tenants', 'deleted_at')) {
+        } elseif (! Schema::hasColumn('tenants', 'deleted_at')) {
             Schema::table('tenants', function (Blueprint $table) {
                 $table->softDeletes();
             });
         }
 
-        if (!Schema::hasTable('ai_workspace_wallets')) {
+        if (! Schema::hasTable('ai_workspace_wallets')) {
             Schema::create('ai_workspace_wallets', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('tenant_id')->nullable();
@@ -439,7 +439,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('ai_provider_decisions')) {
+        if (! Schema::hasTable('ai_provider_decisions')) {
             Schema::create('ai_provider_decisions', function (Blueprint $table) {
                 $table->id();
                 $table->string('provider')->nullable();
@@ -449,7 +449,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('property_seasonal_rates')) {
+        if (! Schema::hasTable('property_seasonal_rates')) {
             Schema::create('property_seasonal_rates', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('property_id');
@@ -460,7 +460,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('pipeline_runs')) {
+        if (! Schema::hasTable('pipeline_runs')) {
             Schema::create('pipeline_runs', function (Blueprint $table) {
                 $table->id();
                 $table->uuid('run_uuid')->unique();
@@ -482,7 +482,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('pipeline_steps')) {
+        if (! Schema::hasTable('pipeline_steps')) {
             Schema::create('pipeline_steps', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('pipeline_run_id')->nullable();
@@ -510,7 +510,7 @@ return new class extends Migration
         // ========================================
 
         // Core Domain Tables
-        if (!Schema::hasTable('ilanlar')) {
+        if (! Schema::hasTable('ilanlar')) {
             Schema::create('ilanlar', function (Blueprint $table) {
                 $table->id();
                 $table->string('slug')->nullable();
@@ -546,7 +546,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('kisiler')) {
+        if (! Schema::hasTable('kisiler')) {
             Schema::create('kisiler', function (Blueprint $table) {
                 $table->id();
                 $table->string('ad')->nullable();
@@ -573,7 +573,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('users')) {
+        if (! Schema::hasTable('users')) {
             Schema::create('users', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -589,7 +589,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('iller')) {
+        if (! Schema::hasTable('iller')) {
             Schema::create('iller', function (Blueprint $table) {
                 $table->id();
                 $table->string('il_adi');
@@ -604,7 +604,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('ilceler')) {
+        if (! Schema::hasTable('ilceler')) {
             Schema::create('ilceler', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('il_id');
@@ -620,7 +620,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('ilan_kategorileri')) {
+        if (! Schema::hasTable('ilan_kategorileri')) {
             Schema::create('ilan_kategorileri', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -635,7 +635,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('yayin_tipi_sablonlari')) {
+        if (! Schema::hasTable('yayin_tipi_sablonlari')) {
             Schema::create('yayin_tipi_sablonlari', function (Blueprint $table) {
                 $table->id();
                 $table->string('ad');
@@ -651,7 +651,7 @@ return new class extends Migration
         }
 
         // RBAC Tables
-        if (!Schema::hasTable('etiketler')) {
+        if (! Schema::hasTable('etiketler')) {
             Schema::create('etiketler', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -662,7 +662,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('roles')) {
+        if (! Schema::hasTable('roles')) {
             Schema::create('roles', function (Blueprint $table) {
                 $table->id();
                 $table->string('name')->unique();
@@ -671,7 +671,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('model_has_roles')) {
+        if (! Schema::hasTable('model_has_roles')) {
             Schema::create('model_has_roles', function (Blueprint $table) {
                 $table->unsignedBigInteger('role_id');
                 $table->string('model_type');
@@ -681,7 +681,7 @@ return new class extends Migration
         }
 
         // Domain Logic Tables
-        if (!Schema::hasTable('talepler')) {
+        if (! Schema::hasTable('talepler')) {
             Schema::create('talepler', function (Blueprint $table) {
                 $table->id();
                 $table->string('talep_tipi')->nullable();
@@ -712,13 +712,19 @@ return new class extends Migration
                 $table->timestamps();
                 $table->softDeletes();
             });
-        } elseif (!Schema::hasColumn('talepler', 'il_id')) {
+        } elseif (! Schema::hasColumn('talepler', 'il_id')) {
             Schema::table('talepler', function (Blueprint $table) {
                 $table->unsignedBigInteger('il_id')->nullable()->after('il');
             });
         }
 
-        if (!Schema::hasTable('eslesmeler')) {
+        if (Schema::hasTable('talepler') && ! Schema::hasColumn('talepler', 'para_birimi')) {
+            Schema::table('talepler', function (Blueprint $table) {
+                $table->string('para_birimi', 10)->default('TRY')->nullable();
+            });
+        }
+
+        if (! Schema::hasTable('eslesmeler')) {
             Schema::create('eslesmeler', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('talep_id')->nullable();
@@ -736,7 +742,7 @@ return new class extends Migration
         }
 
         // AI Infrastructure Tables
-        if (!Schema::hasTable('ai_feature_usages')) {
+        if (! Schema::hasTable('ai_feature_usages')) {
             Schema::create('ai_feature_usages', function (Blueprint $table) {
                 $table->id();
                 $table->string('istek_id')->nullable();
@@ -757,7 +763,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('ai_tenant_quotas')) {
+        if (! Schema::hasTable('ai_tenant_quotas')) {
             Schema::create('ai_tenant_quotas', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tenant_id');
@@ -768,7 +774,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('ai_tenant_settings')) {
+        if (! Schema::hasTable('ai_tenant_settings')) {
             Schema::create('ai_tenant_settings', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tenant_id');
@@ -779,7 +785,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('ai_deneyler')) {
+        if (! Schema::hasTable('ai_deneyler')) {
             Schema::create('ai_deneyler', function (Blueprint $table) {
                 $table->id();
                 $table->string('deney_adi');
@@ -793,7 +799,7 @@ return new class extends Migration
         }
 
         // Restore 'feedback_results' table if missing (CI test bootstrap parity)
-        if (!Schema::hasTable('feedback_results')) {
+        if (! Schema::hasTable('feedback_results')) {
             Schema::create('feedback_results', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('listing_id')->nullable();
@@ -811,7 +817,7 @@ return new class extends Migration
         }
 
         // Restore 'listing_outcomes' table if missing (CI test bootstrap parity)
-        if (!Schema::hasTable('listing_outcomes')) {
+        if (! Schema::hasTable('listing_outcomes')) {
             Schema::create('listing_outcomes', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('listing_id')->nullable();
@@ -826,7 +832,7 @@ return new class extends Migration
         }
 
         // Restore 'ups_feature_packs' table if missing (CI test bootstrap parity)
-        if (!Schema::hasTable('ups_feature_packs')) {
+        if (! Schema::hasTable('ups_feature_packs')) {
             Schema::create('ups_feature_packs', function (Blueprint $table) {
                 $table->id();
                 $table->string('name')->nullable();
@@ -839,7 +845,7 @@ return new class extends Migration
         }
 
         // Restore 'ups_feature_pack_items' table if missing (CI test bootstrap parity)
-        if (!Schema::hasTable('ups_feature_pack_items')) {
+        if (! Schema::hasTable('ups_feature_pack_items')) {
             Schema::create('ups_feature_pack_items', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('feature_pack_id')->nullable();
@@ -847,14 +853,14 @@ return new class extends Migration
                 $table->unsignedInteger('display_order')->default(0); // Added for CI
                 $table->timestamps();
             });
-        } elseif (!Schema::hasColumn('ups_feature_pack_items', 'display_order')) {
+        } elseif (! Schema::hasColumn('ups_feature_pack_items', 'display_order')) {
             Schema::table('ups_feature_pack_items', function (Blueprint $table) {
                 $table->unsignedInteger('display_order')->default(0)->after('feature_id');
             });
         }
 
         // Restore 'ai_ogrenme_sinyalleri' table if missing (CI test bootstrap parity)
-        if (!Schema::hasTable('ai_ogrenme_sinyalleri')) {
+        if (! Schema::hasTable('ai_ogrenme_sinyalleri')) {
             Schema::create('ai_ogrenme_sinyalleri', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('kategori_id')->nullable();
@@ -871,7 +877,7 @@ return new class extends Migration
         }
 
         // Restore 'ai_pricing_plans' table if missing (CI test bootstrap parity)
-        if (!Schema::hasTable('ai_pricing_plans')) {
+        if (! Schema::hasTable('ai_pricing_plans')) {
             Schema::create('ai_pricing_plans', function (Blueprint $table) {
                 $table->id();
                 $table->string('name')->nullable();
@@ -881,7 +887,7 @@ return new class extends Migration
         }
 
         // Restore 'market_valuation_reports' table if missing (CI test bootstrap parity)
-        if (!Schema::hasTable('market_valuation_reports')) {
+        if (! Schema::hasTable('market_valuation_reports')) {
             Schema::create('market_valuation_reports', function (Blueprint $table) {
                 $table->id();
                 $table->string('location_il')->nullable();
@@ -902,7 +908,7 @@ return new class extends Migration
         }
 
         // Restore 'ai_feature_prices' table if missing (CI test bootstrap parity)
-        if (!Schema::hasTable('ai_feature_prices')) {
+        if (! Schema::hasTable('ai_feature_prices')) {
             Schema::create('ai_feature_prices', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('plan_id')->nullable();
@@ -915,7 +921,7 @@ return new class extends Migration
         }
 
         // Restore 'property_calendar_feeds' table if missing (CI test bootstrap parity)
-        if (!Schema::hasTable('property_calendar_feeds')) {
+        if (! Schema::hasTable('property_calendar_feeds')) {
             Schema::create('property_calendar_feeds', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('property_id')->nullable();
@@ -928,7 +934,7 @@ return new class extends Migration
         }
 
         // Restore 'listing_search_projection' table if missing (CI test bootstrap parity)
-        if (!Schema::hasTable('listing_search_projection')) {
+        if (! Schema::hasTable('listing_search_projection')) {
             Schema::create('listing_search_projection', function (Blueprint $table) {
                 $table->unsignedBigInteger('listing_id')->primary();
                 $table->string('title')->nullable();
@@ -942,14 +948,14 @@ return new class extends Migration
         }
 
         // Restore missing 'aktiflik_durumu' column to 'ups_templates' table if missing (CI test bootstrap parity)
-        if (Schema::hasTable('ups_templates') && !Schema::hasColumn('ups_templates', 'aktiflik_durumu')) {
+        if (Schema::hasTable('ups_templates') && ! Schema::hasColumn('ups_templates', 'aktiflik_durumu')) {
             Schema::table('ups_templates', function (Blueprint $table) {
                 $table->boolean('aktiflik_durumu')->default(true)->after('id');
             });
         }
 
         // Restore 'listing_state_transitions' table if missing (CI test bootstrap parity)
-        if (!Schema::hasTable('listing_state_transitions')) {
+        if (! Schema::hasTable('listing_state_transitions')) {
             Schema::create('listing_state_transitions', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('ilan_id')->nullable();
@@ -962,7 +968,7 @@ return new class extends Migration
         }
 
         // Restore 'country_financial_rules' table if missing (CI test bootstrap parity)
-        if (!Schema::hasTable('country_financial_rules')) {
+        if (! Schema::hasTable('country_financial_rules')) {
             Schema::create('country_financial_rules', function (Blueprint $table) {
                 $table->id();
                 $table->string('country_code', 2);
@@ -978,7 +984,7 @@ return new class extends Migration
         }
 
         // Restore 'governance_incidents' table if missing (CI test bootstrap parity)
-        if (!Schema::hasTable('governance_incidents')) {
+        if (! Schema::hasTable('governance_incidents')) {
             Schema::create('governance_incidents', function (Blueprint $table) {
                 $table->id();
                 $table->string('tenant_id')->default('SYSTEM');
@@ -993,7 +999,7 @@ return new class extends Migration
         }
 
         // Restore 'ilan_price_history' table if missing (CI test bootstrap parity)
-        if (!Schema::hasTable('ilan_price_history')) {
+        if (! Schema::hasTable('ilan_price_history')) {
             Schema::create('ilan_price_history', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('ilan_id');

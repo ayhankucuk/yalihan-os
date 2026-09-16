@@ -75,34 +75,84 @@ class CurrencyRateService
     }
 
     /**
+     * Para birimi kodunu normalize et
+     */
+    public function normalizeCurrency(?string $currency): string
+    {
+        $c = strtoupper(trim((string) ($currency ?? 'TRY')));
+        if ($c === 'TL' || $c === '') {
+            return 'TRY';
+        }
+
+        return $c;
+    }
+
+    /**
+     * Normalize edilmiş TRY fiyat SQL ifadesini ve binding'lerini döndürür.
+     * Single Source of Truth (SSOT) for SQL-level currency normalization.
+     *
+     * @return array{sql: string, bindings: array<float>}
+     */
+    public function getTryNormalizedPriceSql(string $priceColumn = 'fiyat', string $currencyColumn = 'para_birimi'): array
+    {
+        $rates = $this->getRates()['rates'] ?? self::FALLBACK_RATES;
+
+        $toTryRate = function (string $currency) use ($rates): float {
+            $val = (float) ($rates[$currency] ?? self::FALLBACK_RATES[$currency] ?? 1.0);
+            if ($val <= 0) {
+                return 1.0;
+            }
+
+            return $val < 1.0 ? (1.0 / $val) : $val;
+        };
+
+        $usdToTry = $toTryRate('USD');
+        $eurToTry = $toTryRate('EUR');
+        $gbpToTry = $toTryRate('GBP');
+
+        $sql = "CASE {$currencyColumn} WHEN 'USD' THEN {$priceColumn} * ? WHEN 'EUR' THEN {$priceColumn} * ? WHEN 'GBP' THEN {$priceColumn} * ? ELSE {$priceColumn} END";
+        $bindings = [$usdToTry, $eurToTry, $gbpToTry];
+
+        return [
+            'sql' => $sql,
+            'bindings' => $bindings,
+        ];
+    }
+
+    /**
      * Belirli bir para birimi çifti için kur al
      */
     public function getRate(string $from, string $to): float
     {
+        $from = $this->normalizeCurrency($from);
+        $to = $this->normalizeCurrency($to);
+
         if ($from === $to) {
             return 1.0;
         }
 
-        $rates = $this->getRates()['rates'];
+        $rates = $this->getRates()['rates'] ?? self::FALLBACK_RATES;
 
-        // TRY to X
-        if ($from === 'TRY' && isset($rates[$to])) {
-            return 1 / $rates[$to];
+        $toTryRate = function (string $currency) use ($rates): float {
+            if ($currency === 'TRY') {
+                return 1.0;
+            }
+            $val = (float) ($rates[$currency] ?? self::FALLBACK_RATES[$currency] ?? 1.0);
+            if ($val <= 0) {
+                return 1.0;
+            }
+
+            return $val < 1.0 ? (1.0 / $val) : $val;
+        };
+
+        $fromInTry = $toTryRate($from);
+        $toInTry = $toTryRate($to);
+
+        if ($toInTry <= 0) {
+            return 1.0;
         }
 
-        // X to TRY
-        if ($to === 'TRY' && isset($rates[$from])) {
-            return $rates[$from];
-        }
-
-        // X to Y (cross rate)
-        if (isset($rates[$from]) && isset($rates[$to])) {
-            $inTRY = $rates[$from];
-
-            return $inTRY / $rates[$to];
-        }
-
-        return 1.0;
+        return $fromInTry / $toInTry;
     }
 
     /**

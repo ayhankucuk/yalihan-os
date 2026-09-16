@@ -2,11 +2,14 @@
 
 namespace App\Services\Ilan;
 
+use App\Models\Ilan;
+use App\Services\IlanReferansService;
 use App\Services\Price\CurrencyRateService;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Collection;
 
 /**
  * 🔍 ILAN SEARCH SERVICE (SAB v6.0)
@@ -24,9 +27,6 @@ class IlanSearchService
 
     /**
      * Search listings with dynamic column filtering.
-     *
-     * @param array $params
-     * @return array
      */
     public function search(array $params): array
     {
@@ -60,7 +60,7 @@ class IlanSearchService
         }
 
         if ($q && Schema::hasColumn('ilanlar', 'baslik')) {
-            $builder->where('baslik', 'like', '%' . $q . '%');
+            $builder->where('baslik', 'like', '%'.$q.'%');
         }
 
         // SAAB-A3: Normalize all currencies to TRY before comparing price.
@@ -68,18 +68,15 @@ class IlanSearchService
             $min = $minFiyat !== null && $minFiyat !== '' ? (float) $minFiyat : 0;
             $max = $maxFiyat !== null && $maxFiyat !== '' ? (float) $maxFiyat : PHP_FLOAT_MAX;
 
-            $rates = $this->currencyRate->getRates()['rates'];
-            $usdToTry = $rates['USD'] ?? 34.50;
-            $eurToTry = $rates['EUR'] ?? 37.20;
-            $gbpToTry = $rates['GBP'] ?? 43.80;
+            $normalized = $this->currencyRate->getTryNormalizedPriceSql('fiyat', 'para_birimi');
 
             $builder->whereRaw(
-                "CASE para_birimi WHEN 'USD' THEN fiyat * ? WHEN 'EUR' THEN fiyat * ? WHEN 'GBP' THEN fiyat * ? ELSE fiyat END >= ?",
-                [$usdToTry, $eurToTry, $gbpToTry, $min]
+                "{$normalized['sql']} >= (? * 1.0)",
+                array_merge($normalized['bindings'], [$min])
             );
             $builder->whereRaw(
-                "CASE para_birimi WHEN 'USD' THEN fiyat * ? WHEN 'EUR' THEN fiyat * ? WHEN 'GBP' THEN fiyat * ? ELSE fiyat END <= ?",
-                [$usdToTry, $eurToTry, $gbpToTry, $max]
+                "{$normalized['sql']} <= (? * 1.0)",
+                array_merge($normalized['bindings'], [$max])
             );
         }
 
@@ -92,7 +89,7 @@ class IlanSearchService
                 $select[] = $c;
             }
         }
-        if (!empty($select)) {
+        if (! empty($select)) {
             $builder->select($select);
         }
 
@@ -100,10 +97,10 @@ class IlanSearchService
         $parts = explode(':', $sort);
         $sortCol = $parts[0] ?? 'id';
         $sortDir = strtolower($parts[1] ?? 'desc');
-        if (!in_array($sortCol, $allowedSorts, true)) {
+        if (! in_array($sortCol, $allowedSorts, true)) {
             $sortCol = 'id';
         }
-        if (!in_array($sortDir, ['asc', 'desc'], true)) {
+        if (! in_array($sortDir, ['asc', 'desc'], true)) {
             $sortDir = 'desc';
         }
 
@@ -122,10 +119,6 @@ class IlanSearchService
 
     /**
      * Export listings as raw data for CSV.
-     *
-     * @param array $filters
-     * @param int $limit
-     * @return Collection
      */
     public function exportData(array $filters, int $limit = 10000): Collection
     {
@@ -143,7 +136,7 @@ class IlanSearchService
         }
 
         $allowedColumns = ['id', 'baslik', 'fiyat', 'para_birimi', 'yayin_durumu', 'kategori_id', 'yayin_tipi_id', 'created_at'];
-        $select = array_filter($allowedColumns, fn($c) => Schema::hasColumn('ilanlar', $c));
+        $select = array_filter($allowedColumns, fn ($c) => Schema::hasColumn('ilanlar', $c));
 
         return $q->select($select)
             ->limit($limit)
@@ -154,7 +147,6 @@ class IlanSearchService
     /**
      * Build a paginated listing query with all filters.
      *
-     * @param array $params
      * @return array{data: Collection, meta: array}
      */
     public function buildQuery(array $params): array
@@ -166,9 +158,7 @@ class IlanSearchService
      * Consultant listings base query.
      * P1 Query Authority Lock: Consultant can ONLY see their own listings.
      *
-     * @param int $consultantId
-     * @param array $params
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     protected function baseMyListingsQuery(int $consultantId, array $params)
     {
@@ -178,7 +168,7 @@ class IlanSearchService
         $categoryId = $params['category'] ?? null;
         $searchTerm = $params['search'] ?? null;
 
-        $query = \App\Models\Ilan::where('danisman_id', $consultantId);
+        $query = Ilan::where('danisman_id', $consultantId);
 
         // Filter: Status
         if ($status) {
@@ -192,7 +182,7 @@ class IlanSearchService
 
         // Filter: Search (Reference number search)
         if ($searchTerm) {
-            $referansService = app(\App\Services\IlanReferansService::class);
+            $referansService = app(IlanReferansService::class);
             $searchSubquery = $referansService->searchQuery($searchTerm)
                 ->where('danisman_id', $consultantId);
 
@@ -201,7 +191,7 @@ class IlanSearchService
 
         // Sorting (Enforce allowed columns)
         $allowedSorts = ['id', 'fiyat', 'created_at', 'updated_at', 'goruntulenme'];
-        if (!in_array($sortBy, $allowedSorts)) {
+        if (! in_array($sortBy, $allowedSorts)) {
             $sortBy = 'updated_at';
         }
         $query->orderBy($sortBy, $sortOrder === 'asc' ? 'asc' : 'desc');
@@ -212,18 +202,16 @@ class IlanSearchService
     /**
      * Consultant specific listings search (P1 Query Authority Lock)
      *
-     * @param int $consultantId
-     * @param array $params
-     * @return \Illuminate\Pagination\LengthAwarePaginator
+     * @return LengthAwarePaginator
      */
     public function searchMyListings(int $consultantId, array $params)
     {
         $perPage = min(100, max(1, (int) ($params['perPage'] ?? 20)));
-        
+
         return $this->baseMyListingsQuery($consultantId, $params)
             ->select([
-                'id', 'baslik', 'fiyat', 'para_birimi', 'yayin_durumu', 
-                'goruntulenme', 'alt_kategori_id', 'ana_kategori_id', 
+                'id', 'baslik', 'fiyat', 'para_birimi', 'yayin_durumu',
+                'goruntulenme', 'alt_kategori_id', 'ana_kategori_id',
                 'il_id', 'ilce_id', 'referans_no', 'dosya_adi', 'created_at', 'updated_at',
             ])
             ->with([
@@ -243,16 +231,14 @@ class IlanSearchService
     /**
      * Get all consultant listings for export (P1 Query Authority Lock)
      *
-     * @param int $consultantId
-     * @param array $params
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getAllMyListingsForExport(int $consultantId, array $params)
     {
         return $this->baseMyListingsQuery($consultantId, $params)
             ->select([
-                'id', 'baslik', 'fiyat', 'para_birimi', 'yayin_durumu', 
-                'goruntulenme', 'alt_kategori_id', 'ana_kategori_id', 
+                'id', 'baslik', 'fiyat', 'para_birimi', 'yayin_durumu',
+                'goruntulenme', 'alt_kategori_id', 'ana_kategori_id',
                 'il_id', 'ilce_id', 'referans_no', 'created_at', 'updated_at',
             ])
             ->with([
