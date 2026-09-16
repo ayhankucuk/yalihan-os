@@ -5,8 +5,8 @@ namespace App\Http\Requests;
 use App\Models\IlanKategori;
 use App\Models\YayinTipiSablonu;
 use App\Services\CategoryFieldValidator;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class UpdateIlanRequest extends FormRequest
@@ -15,16 +15,16 @@ class UpdateIlanRequest extends FormRequest
     {
         $warnings = [];
         $turkishToEnglish = [
-            'min_konaklama'     => 'minimum_stay',
-            'check_in_saati'    => 'check_in_time',
-            'check_out_saati'   => 'check_out_time',
-            'max_misafir'       => 'max_guests',
-            'temizlik_ucreti'   => 'cleaning_fee',
-            'iptal_politikasi'  => 'cancellation_policy',
+            'min_konaklama' => 'minimum_stay',
+            'check_in_saati' => 'check_in_time',
+            'check_out_saati' => 'check_out_time',
+            'max_misafir' => 'max_guests',
+            'temizlik_ucreti' => 'cleaning_fee',
+            'iptal_politikasi' => 'cancellation_policy',
         ];
 
         foreach ($turkishToEnglish as $tr => $en) {
-            if ($this->has($tr) && !$this->has($en)) {
+            if ($this->has($tr) && ! $this->has($en)) {
                 $warnings[] = "Deprecated Turkish field '{$tr}' used. Please send '{$en}'.";
                 Log::warning('Context7: Turkish field detected in UpdateIlanRequest', ['field' => $tr, 'preferred' => $en]);
             }
@@ -135,6 +135,8 @@ class UpdateIlanRequest extends FormRequest
             'ev_tipi' => 'nullable|string|max:50',
             'ev_konsepti' => 'nullable|string|max:100',
             'proje_id' => 'nullable|exists:projeler,id',
+            'site_id' => 'nullable|integer',
+            'site_apartman_id' => 'nullable|integer',
 
             // HYBRID CORE (English keys)
             'minimum_stay' => 'nullable|integer|min:1|max:365',
@@ -160,12 +162,12 @@ class UpdateIlanRequest extends FormRequest
         $yayinId = $this->input('yayin_tipi_id');
         $slug = null;
         if ($yayinId) {
-            $yayin = \App\Models\YayinTipiSablonu::find($yayinId);
+            $yayin = YayinTipiSablonu::find($yayinId);
             $slug = $yayin ? strtolower($yayin->slug ?? '') : null;
         }
         if (in_array($slug, ['on-satis', 'insaat-halinde'])) {
             $validator->addRules([
-                'proje_id' => 'required|exists:projeler,id',
+                'proje_id' => 'nullable|exists:projeler,id',
             ]);
         }
     }

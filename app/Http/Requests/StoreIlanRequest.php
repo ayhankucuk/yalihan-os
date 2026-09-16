@@ -2,14 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\IlanDurumu;
 use App\Models\IlanKategori;
 use App\Models\YayinTipiSablonu;
 use App\Services\CategoryFieldValidator;
 use App\Services\Wizard\DependencyRuleEvaluator;
 use App\Services\Wizard\EffectiveListingTypeResolver;
 use App\Services\Wizard\EffectiveWizardSchemaResolver;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
@@ -19,16 +20,16 @@ class StoreIlanRequest extends FormRequest
     {
         $warnings = [];
         $turkishToEnglish = [
-            'min_konaklama'     => 'minimum_stay',
-            'check_in_saati'    => 'check_in_time',
-            'check_out_saati'   => 'check_out_time',
-            'max_misafir'       => 'max_guests',
-            'temizlik_ucreti'   => 'cleaning_fee',
-            'iptal_politikasi'  => 'cancellation_policy',
+            'min_konaklama' => 'minimum_stay',
+            'check_in_saati' => 'check_in_time',
+            'check_out_saati' => 'check_out_time',
+            'max_misafir' => 'max_guests',
+            'temizlik_ucreti' => 'cleaning_fee',
+            'iptal_politikasi' => 'cancellation_policy',
         ];
 
         foreach ($turkishToEnglish as $tr => $en) {
-            if ($this->has($tr) && !$this->has($en)) {
+            if ($this->has($tr) && ! $this->has($en)) {
                 $warnings[] = "Deprecated Turkish field '{$tr}' used. Please send '{$en}'.";
                 Log::warning('Context7: Turkish field detected in StoreIlanRequest', ['field' => $tr, 'preferred' => $en]);
             }
@@ -75,7 +76,7 @@ class StoreIlanRequest extends FormRequest
             $yayinTipiSlug = $yayin ? strtolower($yayin->slug ?? '') : null;
         }
 
-        $statusValues = \App\Enums\IlanDurumu::values();
+        $statusValues = IlanDurumu::values();
         $base = [
             'baslik' => 'required|string|max:255',
             'aciklama' => 'nullable|string',
@@ -162,6 +163,8 @@ class StoreIlanRequest extends FormRequest
             'ev_tipi' => 'nullable|string|max:50',
             'ev_konsepti' => 'nullable|string|max:100',
             'proje_id' => 'nullable|exists:projeler,id',
+            'site_id' => 'nullable|integer',
+            'site_apartman_id' => 'nullable|integer',
 
             // HYBRID CORE (English keys)
             'minimum_stay' => 'nullable|integer|min:1|max:365',
@@ -208,7 +211,7 @@ class StoreIlanRequest extends FormRequest
                 // Option whitelist for select fields
                 if ($field['type'] === 'select' && ! empty($field['options'])) { // context7-ignore
                     $allowed = collect($field['options'])->pluck('value')->toArray();
-                    $fieldRules[] = 'in:' . implode(',', $allowed);
+                    $fieldRules[] = 'in:'.implode(',', $allowed);
                 }
 
                 $base[$slug] = $fieldRules;
@@ -233,7 +236,7 @@ class StoreIlanRequest extends FormRequest
         }
         if (in_array($slug, ['on-satis', 'insaat-halinde'])) {
             $validator->addRules([
-                'proje_id' => 'required|exists:projeler,id',
+                'proje_id' => 'nullable|exists:projeler,id',
             ]);
         }
 
