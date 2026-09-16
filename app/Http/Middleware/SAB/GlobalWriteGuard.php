@@ -43,12 +43,19 @@ class GlobalWriteGuard
         // Şimdilik sadece "Policy Denetimi Aktif" logu düşüyoruz.
         // İleride burada Gate::check() veya Policy heuristic çalıştırılabilir.
 
-        Log::channel('sab')->info('SAB_WRITE_INTERCEPTOR', [
-            'method' => $request->getMethod(),
-            'uri' => $request->getRequestUri(),
-            'action' => $action,
-            'user_id' => auth()->id() ?? 'guest',
-            'ip' => $request->ip()
-        ]);
+        try {
+            $channel = Log::channel('sab');
+        } catch (\Throwable) {
+            $channel = null;
+        }
+        if ($channel) {
+            $channel->info('SAB_WRITE_INTERCEPTOR', [
+                'method' => $request->getMethod(),
+                'uri' => $request->getRequestUri(),
+                'action' => $action,
+                'user_id' => auth()->id() ?? 'guest',
+                'ip' => $request->ip()
+            ]);
+        }
     }
 }

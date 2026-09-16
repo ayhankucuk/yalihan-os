@@ -696,10 +696,17 @@ class IlanCrudService
         // 3. OBSERVABILITY: Log unmapped slugs to detect future silent drops
         // =====================================================================
         if (!empty($unmappedSlugs)) {
-            Log::channel('sab')->warning('syncFeatures: unmapped feature slugs detected', [
-                'ilan_id' => $ilan->id,
-                'unmapped' => $unmappedSlugs,
-            ]);
+            try {
+                $channel = Log::channel('sab');
+            } catch (\Throwable) {
+                $channel = null;
+            }
+            if ($channel) {
+                $channel->warning('syncFeatures: unmapped feature slugs detected', [
+                    'ilan_id' => $ilan->id,
+                    'unmapped' => $unmappedSlugs,
+                ]);
+            }
         }
     }
 

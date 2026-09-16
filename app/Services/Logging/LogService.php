@@ -238,8 +238,14 @@ class LogService
         }
 
         // Log to specific channel or default
-        $logger = $channel ? Log::channel($channel) : Log::channel(self::CHANNEL_DEFAULT);
-
+        try {
+            $logger = $channel ? Log::channel($channel) : Log::channel(self::CHANNEL_DEFAULT);
+        } catch (\Throwable) {
+            $logger = null;
+        }
+        if (! $logger) {
+            return;
+        }
         $logger->{$level}($message, $context);
     }
 

@@ -20,7 +20,15 @@ trait SabGuard
 
     protected function logSealedAccess(string $operation): void
     {
-        Log::channel('sab')->debug("SabGuard: {$operation}", [
+        try {
+            $channel = Log::channel('sab');
+        } catch (\Throwable) {
+            $channel = null;
+        }
+        if (! $channel) {
+            return;
+        }
+        $channel->debug("SabGuard: {$operation}", [
             'model' => static::class,
             'id' => $this->getKey(),
         ]);

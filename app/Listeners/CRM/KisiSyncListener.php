@@ -19,9 +19,16 @@ class KisiSyncListener
      */
     public function handleKisiCreated(object $event): void
     {
-        Log::channel('sab')->info('KisiSyncListener: Kisi created', [
-            'kisi_id' => $event->kisi->id ?? null,
-        ]);
+        try {
+            $channel = Log::channel('sab');
+        } catch (\Throwable) {
+            $channel = null;
+        }
+        if ($channel) {
+            $channel->info('KisiSyncListener: Kisi created', [
+                'kisi_id' => $event->kisi->id ?? null,
+            ]);
+        }
     }
 
     /**
@@ -29,9 +36,16 @@ class KisiSyncListener
      */
     public function handleKisiUpdated(object $event): void
     {
-        Log::channel('sab')->info('KisiSyncListener: Kisi updated', [
-            'kisi_id' => $event->kisi->id ?? null,
-        ]);
+        try {
+            $channel = Log::channel('sab');
+        } catch (\Throwable) {
+            $channel = null;
+        }
+        if ($channel) {
+            $channel->info('KisiSyncListener: Kisi updated', [
+                'kisi_id' => $event->kisi->id ?? null,
+            ]);
+        }
     }
 
     /**
