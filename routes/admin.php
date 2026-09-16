@@ -595,6 +595,12 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard'])-
         ->name('ilanlar.draft.clear')
         ->middleware(['auth', 'throttle:10,1']);
 
+    // ✅ SAAB-A1: Commit draft to real listing — was missing, causes 404 on publish
+    Route::post('/ilanlar/draft/{id}/commit', [\App\Http\Controllers\Admin\IlanDraftController::class, 'commit'])
+        ->name('ilanlar.draft.commit')
+        ->middleware(['auth', 'verified', 'can:create,App\Models\Ilan', 'throttle:10,1'])
+        ->whereNumber('id');
+
     Route::prefix('/ilan-ai/draft')->name('ilan-ai.draft.')->group(function () {
         Route::post('/generate/{ilan}', [\App\Http\Controllers\Admin\DescriptionDraftController::class, 'generate'])->name('generate');
         Route::get('/{ilan}', [\App\Http\Controllers\Admin\DescriptionDraftController::class, 'show'])->name('show');
