@@ -11,17 +11,17 @@ namespace App\Http\Controllers\Admin\AI;
  */
 
 use App\Http\Controllers\Controller;
-use App\Models\Setting;
-use App\Services\AI\YalihanCortex;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
-use App\Models\IlanKategori;
 use App\Models\Il;
+use App\Models\Ilan;
+use App\Models\IlanKategori;
 use App\Models\Ilce;
 use App\Models\Mahalle;
-use App\Models\YayinTipiSablonu;
+use App\Services\AI\YalihanCortex;
+use App\Services\Logging\LogService;
+use App\Traits\YayinTipiResolverTrait;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * İlan AI Controller
@@ -33,6 +33,8 @@ use App\Models\YayinTipiSablonu;
  */
 class IlanAIController extends Controller
 {
+    use YayinTipiResolverTrait;
+
     protected YalihanCortex $cortex;
 
     public function __construct(YalihanCortex $cortex)
@@ -47,8 +49,9 @@ class IlanAIController extends Controller
      */
     public function suggest(Request $request): JsonResponse
     {
-        if (!config('ai.cortex_enforced', true)) {
+        if (! config('ai.cortex_enforced', true)) {
             Log::warning('Legacy AI suggest endpoint accessed while cortex_enforced=false', ['ip' => $request->ip()]);
+
             return response()->json(['success' => false, 'error' => 'Legacy AI path is disabled. Cortex enforcement required.'], 403);
         }
 
@@ -79,10 +82,10 @@ class IlanAIController extends Controller
                     ], 400);
             }
         } catch (\Exception $e) {
-            \App\Services\Logging\LogService::ai('cortex_controller_suggest_failed', 'YalihanCortex', [
+            LogService::ai('cortex_controller_suggest_failed', 'YalihanCortex', [
                 'action' => $request->input('action'),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ], 0, false);
 
             return response()->json([
@@ -99,14 +102,17 @@ class IlanAIController extends Controller
      */
     protected function buildTitleResult(Request $request): array
     {
+        // ✅ WFC-002: Resolve canonical name from ID if provided
+        $yayinTipi = $request->filled('yayin_tipi_id')
+            ? $this->resolveYayinTipiNameOrFail((int) $request->input('yayin_tipi_id'))
+            : $request->input('yayin_tipi', 'Satılık');
+
         // İlan verisini hazırla
         $ilanData = [
             'kategori' => $request->input('kategori', 'Gayrimenkul'),
             'il' => $request->input('il'),
             'ilce' => $request->input('ilce'),
             'mahalle' => $request->input('mahalle'),
-            // ✅ WFC-002: Resolve canonical name from ID
-            $yayinTipi = $this->resolveYayinTipiNameOrFail((int) $request->input('yayin_tipi_id')),
             'yayin_tipi' => $yayinTipi,
             'fiyat' => $request->input('fiyat'),
             'para_birimi' => $request->input('para_birimi', 'TRY'),
@@ -219,7 +225,7 @@ class IlanAIController extends Controller
 
             $results = [];
             foreach ($ilanIds as $ilanId) {
-                $ilan = \App\Models\Ilan::with(['kategori', 'il', 'ilce', 'ilanSahibi'])->find($ilanId);
+                $ilan = Ilan::with(['kategori', 'il', 'ilce', 'ilanSahibi'])->find($ilanId);
 
                 if (! $ilan) {
                     continue;
@@ -313,9 +319,9 @@ class IlanAIController extends Controller
 
         // Basit başlık önerileri
         if ($ilan->kategori && $ilan->il) {
-            $suggestedTitles[] = $ilan->kategori->name . ' - ' . $ilan->il->il_adi;
+            $suggestedTitles[] = $ilan->kategori->name.' - '.$ilan->il->il_adi;
             if ($ilan->ilce) {
-                $suggestedTitles[] = $ilan->kategori->name . ' ' . $ilan->ilce->ilce_adi . ', ' . $ilan->il->il_adi;
+                $suggestedTitles[] = $ilan->kategori->name.' '.$ilan->ilce->ilce_adi.', '.$ilan->il->il_adi;
             }
         }
 
@@ -449,7 +455,7 @@ class IlanAIController extends Controller
         $formatted = number_format((float) $amount, 0, ',', '.');
         $symbol = $symbols[$currency ?? 'TRY'] ?? '₺';
 
-        return $formatted . ' ' . $symbol;
+        return $formatted.' '.$symbol;
     }
 
     /**
@@ -458,7 +464,7 @@ class IlanAIController extends Controller
      */
     public function getAIPropertySuggestions(Request $request): JsonResponse
     {
-        if (!config('ai.cortex_enforced', true)) {
+        if (! config('ai.cortex_enforced', true)) {
             return response()->json(['success' => false, 'message' => 'AI sistemi Policy nedeniyle devre dışı bırakılmıştır.'], 503);
         }
 
@@ -490,15 +496,15 @@ class IlanAIController extends Controller
                 ],
             ]);
         } catch (\Exception $e) {
-            \App\Services\Logging\LogService::ai('cortex_property_suggestions_failed', 'YalihanCortex', [
+            LogService::ai('cortex_property_suggestions_failed', 'YalihanCortex', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ], 0, false);
-            Log::error('AI Property Suggestions Error: ' . $e->getMessage());
+            Log::error('AI Property Suggestions Error: '.$e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'AI önerileri alınamadı: ' . $e->getMessage(),
+                'message' => 'AI önerileri alınamadı: '.$e->getMessage(),
                 'suggestions' => [],
             ], 500);
         }
@@ -509,17 +515,27 @@ class IlanAIController extends Controller
      */
     protected function getLocationName($locationId)
     {
-        if (!$locationId) return '';
-        if (!is_numeric($locationId)) return $locationId;
+        if (! $locationId) {
+            return '';
+        }
+        if (! is_numeric($locationId)) {
+            return $locationId;
+        }
 
         $il = Il::find($locationId);
-        if ($il) return $il->il_adi ?? $il->name ?? '';
+        if ($il) {
+            return $il->il_adi ?? $il->name ?? '';
+        }
 
         $ilce = Ilce::find($locationId);
-        if ($ilce) return $ilce->ilce_adi ?? $ilce->name ?? '';
+        if ($ilce) {
+            return $ilce->ilce_adi ?? $ilce->name ?? '';
+        }
 
         $mahalle = Mahalle::find($locationId);
-        if ($mahalle) return $mahalle->mahalle_adi ?? $mahalle->name ?? '';
+        if ($mahalle) {
+            return $mahalle->mahalle_adi ?? $mahalle->name ?? '';
+        }
 
         return '';
     }
@@ -529,11 +545,17 @@ class IlanAIController extends Controller
      */
     protected function getCategoryName($categoryValue)
     {
-        if (!$categoryValue) return '';
-        if (!is_numeric($categoryValue)) return $categoryValue;
+        if (! $categoryValue) {
+            return '';
+        }
+        if (! is_numeric($categoryValue)) {
+            return $categoryValue;
+        }
 
         $kategori = IlanKategori::find($categoryValue);
-        if ($kategori) return $kategori->name ?? $kategori->slug ?? '';
+        if ($kategori) {
+            return $kategori->name ?? $kategori->slug ?? '';
+        }
 
         return '';
     }

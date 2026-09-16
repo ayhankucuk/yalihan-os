@@ -104,7 +104,8 @@
                      data-max-results="10"
                      data-creatable="true">
 
-                    <input type="hidden" name="site_apartman_id" id="site_apartman_id" value="{{ old('site_apartman_id') }}">
+                    <input type="hidden" name="site_apartman_id" id="site_apartman_id" value="{{ old('site_apartman_id', old('site_id', $ilan->site_id ?? '')) }}">
+                    <input type="hidden" name="site_id" id="site_id" value="{{ old('site_id', old('site_apartman_id', $ilan->site_id ?? '')) }}">
 
                     <input type="text"
                            id="site_apartman_search"
@@ -327,6 +328,9 @@ function displaySiteResults(results) {
 // Site Seç
 function selectSite(id, name, adres, daireCount) {
     document.getElementById('site_apartman_id').value = id;
+    if (document.getElementById('site_id')) {
+        document.getElementById('site_id').value = id;
+    }
     document.getElementById('site_apartman_search').value = name;
 
     // Seçilen site'yi göster
@@ -348,6 +352,9 @@ function selectSite(id, name, adres, daireCount) {
 // Seçimi Temizle
 function clearSiteSelection() {
     document.getElementById('site_apartman_id').value = '';
+    if (document.getElementById('site_id')) {
+        document.getElementById('site_id').value = '';
+    }
     document.getElementById('site_apartman_search').value = '';
     document.getElementById('selected-site-display').classList.add('hidden');
     document.getElementById('site-ozellikler-container').classList.add('hidden');

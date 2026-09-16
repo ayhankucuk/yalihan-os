@@ -3,17 +3,19 @@
 namespace App\Services\Ilan;
 
 use App\Enums\IlanDurumu;
+use App\Events\IlanCreated;
+use App\Events\IlanDeleted;
+use App\Events\IlanUpdated;
+use App\Models\Dikey\IlanArsaDetail;
+use App\Models\Dikey\IlanTurizmDetail;
 use App\Models\Ilan;
 use App\Models\IlanPriceHistory;
-use App\Models\IlanKategori;
 use App\Models\User;
 use App\Services\IlanReferansService;
-use App\Services\Listing\ListingStateMachine;
-use App\Services\Utility\NumberToTextConverter;
+use App\Services\Listing\YalihanLifecycle;
 use App\Services\Logging\LogService;
-use App\Events\IlanCreated;
-use App\Events\IlanUpdated;
-use App\Events\IlanDeleted;
+use App\Services\Utility\NumberToTextConverter;
+use App\Traits\GuardsAgentWrites;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -32,19 +34,18 @@ use Illuminate\Support\Str;
  */
 class IlanCrudService
 {
-    use \App\Traits\GuardsAgentWrites;
+    use GuardsAgentWrites;
+
     public function __construct(
-        private IlanReferansService  $refService,
+        private IlanReferansService $refService,
         private NumberToTextConverter $numberToText,
-        private \App\Services\Listing\YalihanLifecycle $lifecycle,
+        private YalihanLifecycle $lifecycle,
         private IlanPhotoService $photoService,
     ) {}
 
     /**
      * Create a new listing (with full atomicity)
      *
-     * @param array $data
-     * @return Ilan
      * @throws \Exception
      */
     public function store(array $data): Ilan
@@ -53,7 +54,7 @@ class IlanCrudService
 
         $ilan = DB::transaction(function () use ($data) {
             // 1. Initialize Ilan with basic data
-            $ilan = new Ilan();
+            $ilan = new Ilan;
 
             // 2. Map core data
             $this->mapCoreData($ilan, $data);
@@ -102,9 +103,6 @@ class IlanCrudService
     /**
      * Update an existing listing
      *
-     * @param Ilan $ilan
-     * @param array $data
-     * @return Ilan
      * @throws \Exception
      */
     public function update(Ilan $ilan, array $data): Ilan
@@ -162,9 +160,6 @@ class IlanCrudService
 
     /**
      * Delete a listing (soft delete)
-     *
-     * @param Ilan $ilan
-     * @return bool
      */
     public function destroy(Ilan $ilan): bool
     {
@@ -177,7 +172,7 @@ class IlanCrudService
             $result = $ilan->delete();
 
             LogService::action('ilan_deleted', 'ilan', $ilanId, [
-                'ref' => $ilan->referans_no
+                'ref' => $ilan->referans_no,
             ]);
 
             return $result;
@@ -210,6 +205,13 @@ class IlanCrudService
             $ilan->ilgili_kisi_id = $data['ilgili_kisi_id'] ?: null;
         }
         $ilan->crm_only = $data['crm_only'] ?? false;
+        if (array_key_exists('site_id', $data) || array_key_exists('site_apartman_id', $data)) {
+            $siteVal = $data['site_id'] ?? $data['site_apartman_id'] ?? null;
+            $ilan->site_id = $siteVal ? (int) $siteVal : null;
+        }
+        if (array_key_exists('proje_id', $data)) {
+            $ilan->proje_id = $data['proje_id'] ? (int) $data['proje_id'] : null;
+        }
 
         // ======================================================================
         // RENTAL ENGINE FIELDS — guarded by schema check to prevent column-not-found
@@ -236,12 +238,10 @@ class IlanCrudService
             $ilan->check_out_time = substr((string) $ilan->checkout_time, 0, 5);
         }
 
-
-
         // Property specifics (Still in main table as legacy or common fields)
         $propertyFields = [
             'oda_sayisi', 'banyo_sayisi', 'salon_sayisi', 'brut_m2', 'net_m2', 'kat',
-            'toplam_kat', 'bina_yasi', 'isinma_tipi', 'ada_no', 'parsel_no'
+            'toplam_kat', 'bina_yasi', 'isinma_tipi', 'ada_no', 'parsel_no',
         ];
 
         foreach ($propertyFields as $field) {
@@ -249,10 +249,18 @@ class IlanCrudService
             $value = $data[$field] ?? null;
 
             // Legacy mapping for m2
-            if ($field === 'brut_m2' && isset($data['brut_alan'])) $value = $data['brut_alan'];
-            if ($field === 'brut_m2' && $value === null && isset($data['brut-metrekare'])) $value = $data['brut-metrekare'];
-            if ($field === 'net_m2' && isset($data['net_alan'])) $value = $data['net_alan'];
-            if ($field === 'net_m2' && $value === null && isset($data['net-metrekare'])) $value = $data['net-metrekare'];
+            if ($field === 'brut_m2' && isset($data['brut_alan'])) {
+                $value = $data['brut_alan'];
+            }
+            if ($field === 'brut_m2' && $value === null && isset($data['brut-metrekare'])) {
+                $value = $data['brut-metrekare'];
+            }
+            if ($field === 'net_m2' && isset($data['net_alan'])) {
+                $value = $data['net_alan'];
+            }
+            if ($field === 'net_m2' && $value === null && isset($data['net-metrekare'])) {
+                $value = $data['net-metrekare'];
+            }
 
             if ($value !== null) {
                 $ilan->{$field} = $value;
@@ -269,7 +277,7 @@ class IlanCrudService
      */
     private function handlePricing(Ilan $ilan, array $data, bool $isNew): void
     {
-        $newPrice = (float)($data['fiyat_raw'] ?? (isset($data['fiyat']) ? str_replace('.', '', $data['fiyat']) : 0));
+        $newPrice = (float) ($data['fiyat_raw'] ?? (isset($data['fiyat']) ? str_replace('.', '', $data['fiyat']) : 0));
         $currency = $data['para_birimi'] ?? 'TRY';
 
         $ilan->fiyat = $newPrice;
@@ -312,37 +320,38 @@ class IlanCrudService
      */
     private function resolveAndGuardDanismanId(?int $danismanId): ?int
     {
-        if (!$danismanId) {
+        if (! $danismanId) {
             return $danismanId;
         }
 
         $authUser = Auth::user();
 
         // No tenant context → pass-through (super-admin or CLI context)
-        if (!$authUser || !$authUser->tenant_id) {
+        if (! $authUser || ! $authUser->tenant_id) {
             return $danismanId;
         }
 
         $danisman = \App\Modules\Auth\Models\User::where('id', $danismanId)
             ->where('tenant_id', $authUser->tenant_id)
+            ->orderBy('id')
             ->first();
 
-        if (!$danisman) {
+        if (! $danisman) {
             Log::warning('IlanCrudService: cross-tenant danisman_id rejected', [
                 'requested_danisman_id' => $danismanId,
-                'auth_user_id'          => $authUser->id,
-                'auth_tenant_id'        => $authUser->tenant_id,
+                'auth_user_id' => $authUser->id,
+                'auth_tenant_id' => $authUser->tenant_id,
             ]);
             throw new \DomainException(
                 "Danışman #{$danismanId} bu organizasyona ait değil. Cross-tenant atama reddedildi."
             );
         }
 
-        if (!$danisman->aktiflik_durumu) {
+        if (! $danisman->aktiflik_durumu) {
             Log::warning('IlanCrudService: inactive danisman_id rejected', [
                 'requested_danisman_id' => $danismanId,
-                'auth_user_id'          => $authUser->id,
-                'auth_tenant_id'        => $authUser->tenant_id,
+                'auth_user_id' => $authUser->id,
+                'auth_tenant_id' => $authUser->tenant_id,
             ]);
             throw new \DomainException(
                 "Danışman #{$danismanId} aktif değil. Pasif danışman ataması reddedildi."
@@ -380,7 +389,7 @@ class IlanCrudService
         $ilan->adres = $data['adres'] ?? $data['adres_detay'] ?? null;
 
         // Geometry support (point vs polygon)
-        if (!empty($data['boundary_geojson'])) {
+        if (! empty($data['boundary_geojson'])) {
             $geojson = is_string($data['boundary_geojson'])
                 ? json_decode($data['boundary_geojson'], true)
                 : $data['boundary_geojson'];
@@ -390,7 +399,7 @@ class IlanCrudService
                 $ilan->geometry = $geojson;
 
                 // Extract centroid for MIE if lat/lng not set
-                if (empty($ilan->lat) && !empty($geojson['coordinates'])) {
+                if (empty($ilan->lat) && ! empty($geojson['coordinates'])) {
                     $centroid = $this->calculateCentroid($geojson);
                     if ($centroid) {
                         $ilan->lat = $centroid['lat'];
@@ -413,22 +422,22 @@ class IlanCrudService
     private function calculateCentroid(array $geojson): ?array
     {
         $coords = $geojson['coordinates'][0] ?? null;
-        if (!$coords || count($coords) < 3) {
+        if (! $coords || count($coords) < 3) {
             return null;
         }
 
         // GeoJSON polygon rings are closed: first point === last point.
         // Drop the closing duplicate before averaging to get the true centroid.
         $firstPoint = $coords[0];
-        $lastPoint  = $coords[count($coords) - 1];
-        $isClosed   = $firstPoint[0] === $lastPoint[0] && $firstPoint[1] === $lastPoint[1];
+        $lastPoint = $coords[count($coords) - 1];
+        $isClosed = $firstPoint[0] === $lastPoint[0] && $firstPoint[1] === $lastPoint[1];
         if ($isClosed && count($coords) > 3) {
             array_pop($coords);
         }
 
         $latSum = 0;
         $lngSum = 0;
-        $count  = count($coords);
+        $count = count($coords);
 
         foreach ($coords as $point) {
             $lngSum += $point[0]; // GeoJSON: [lng, lat]
@@ -447,7 +456,7 @@ class IlanCrudService
     private function handleReference(Ilan $ilan): void
     {
         // Reference No generating needs the ID and categories
-        if (!$ilan->referans_no) {
+        if (! $ilan->referans_no) {
             $ilan->referans_no = $this->refService->generateReferansNo($ilan);
         }
 
@@ -469,7 +478,7 @@ class IlanCrudService
     {
         // Kullanıcı doğrudan ekstra_ozellikler array'i gönderdiyse merge et
         $incoming = $data['ekstra_ozellikler'] ?? [];
-        if (!is_array($incoming)) {
+        if (! is_array($incoming)) {
             $incoming = [];
         }
 
@@ -502,9 +511,9 @@ class IlanCrudService
 
         // Mevcut değerle merge et (incoming öncelikli)
         $existing = $ilan->ekstra_ozellikler ?? [];
-        $merged   = array_merge($existing, $dynamic, $incoming);
+        $merged = array_merge($existing, $dynamic, $incoming);
 
-        if (!empty($merged)) {
+        if (! empty($merged)) {
             $ilan->ekstra_ozellikler = $merged;
         }
     }
@@ -527,26 +536,26 @@ class IlanCrudService
         // $ilan accessor'ları ilanlar SSOT kolonlarından okur (IlanDetailTables trait).
         // $data sadece ilanlar'da karşılığı olmayan sezon alanları için kullanılır.
         if ($kategoriSlug === 'yazlık' || $kategoriSlug === 'yazlik') {
-            \App\Models\Dikey\IlanTurizmDetail::updateOrCreate(
+            IlanTurizmDetail::updateOrCreate(
                 ['ilan_id' => $ilan->id],
                 [
-                    'check_in_saati'  => $ilan->check_in_time,
+                    'check_in_saati' => $ilan->check_in_time,
                     'check_out_saati' => $ilan->check_out_time,
-                    'min_konaklama'   => $ilan->minimum_stay,
-                    'max_misafir'     => $ilan->max_guests,
-                    'gunluk_fiyat'    => $ilan->gunluk_fiyat ?? $ilan->fiyat,
+                    'min_konaklama' => $ilan->minimum_stay,
+                    'max_misafir' => $ilan->max_guests,
+                    'gunluk_fiyat' => $ilan->gunluk_fiyat ?? $ilan->fiyat,
                     'temizlik_ucreti' => $ilan->cleaning_fee,
-                    'havuz_var'       => (bool) ($ilan->havuz_var ?? $ilan->havuz ?? false),
+                    'havuz_var' => (bool) ($ilan->havuz_var ?? $ilan->havuz ?? false),
                     // sezon alanları sadece ilan_turizm_details'te yaşar — ilanlar'da karşılığı yok
                     'sezon_baslangic' => $data['sezon_baslangic'] ?? null,
-                    'sezon_bitis'     => $data['sezon_bitis'] ?? null,
+                    'sezon_bitis' => $data['sezon_bitis'] ?? null,
                 ]
             );
         }
 
         // 2. Arsa Details (slug: arsa or arsa-arazi)
         if (str_starts_with($kategoriSlug, 'arsa')) {
-            \App\Models\Dikey\IlanArsaDetail::updateOrCreate(
+            IlanArsaDetail::updateOrCreate(
                 ['ilan_id' => $ilan->id],
                 [
                     'ada_no' => $data['ada_no'] ?? null,
@@ -562,9 +571,8 @@ class IlanCrudService
     /**
      * Update portal IDs for a listing.
      *
-     * @param  Ilan  $ilan
      * @param  array<string, string|null>  $portalIds
-     * @return array<string>  List of updated column names
+     * @return array<string> List of updated column names
      */
     public function updatePortalIds(Ilan $ilan, array $portalIds): array
     {
@@ -575,7 +583,7 @@ class IlanCrudService
             }
         }
 
-        if (!empty($updates)) {
+        if (! empty($updates)) {
             $ilan->update($updates);
         }
 
@@ -595,7 +603,7 @@ class IlanCrudService
      */
     private function syncFeatures(Ilan $ilan, array $data): void
     {
-        if (!isset($data['features']) || !is_array($data['features'])) {
+        if (! isset($data['features']) || ! is_array($data['features'])) {
             return;
         }
 
@@ -606,15 +614,15 @@ class IlanCrudService
         // Schema-driven fields that map to ilanlar table columns
         // =====================================================================
         $slugToColumn = [
-            'brut-metrekare'  => 'brut_m2',
-            'net-metrekare'   => 'net_m2',
-            'oda-sayisi'      => 'oda_sayisi',
-            'banyo-sayisi'    => 'banyo_sayisi',
-            'bina-yasi'       => 'bina_yasi',
-            'kat'             => 'kat',
-            'isitma'          => 'isitma',
-            'esyali'          => 'esyali',
-            'aidat'           => 'aidat',
+            'brut-metrekare' => 'brut_m2',
+            'net-metrekare' => 'net_m2',
+            'oda-sayisi' => 'oda_sayisi',
+            'banyo-sayisi' => 'banyo_sayisi',
+            'bina-yasi' => 'bina_yasi',
+            'kat' => 'kat',
+            'isitma' => 'isitma',
+            'esyali' => 'esyali',
+            'aidat' => 'aidat',
         ];
 
         // Column → DB-native type map. Property Engine sends schema option values
@@ -623,15 +631,15 @@ class IlanCrudService
         // strict mode raises 500 (e.g. 'Evet' → tinyint, '1-5 Yıl' → year,
         // ['Doğalgaz'] → varchar).
         $columnType = [
-            'brut_m2'      => 'float',
-            'net_m2'       => 'float',
-            'oda_sayisi'   => 'int',
+            'brut_m2' => 'float',
+            'net_m2' => 'float',
+            'oda_sayisi' => 'int',
             'banyo_sayisi' => 'int',
-            'bina_yasi'    => 'year',
-            'kat'          => 'int',
-            'isitma'       => 'string',
-            'esyali'       => 'boolean',
-            'aidat'        => 'string',
+            'bina_yasi' => 'year',
+            'kat' => 'int',
+            'isitma' => 'string',
+            'esyali' => 'boolean',
+            'aidat' => 'string',
         ];
 
         $directUpdates = [];
@@ -639,7 +647,7 @@ class IlanCrudService
         $unmappedSlugs = [];
 
         foreach ($features as $slug => $value) {
-            if (!is_string($slug) || $value === null || $value === '') {
+            if (! is_string($slug) || $value === null || $value === '') {
                 continue;
             }
 
@@ -651,6 +659,7 @@ class IlanCrudService
                     $columnType[$column] ?? 'string',
                     $slug
                 );
+
                 continue;
             }
 
@@ -658,6 +667,7 @@ class IlanCrudService
             $featureId = $this->resolveFeatureId($slug);
             if ($featureId) {
                 $pivotData[$featureId] = ['value' => is_array($value) ? json_encode($value) : (string) $value];
+
                 continue;
             }
 
@@ -666,13 +676,13 @@ class IlanCrudService
         }
 
         // Apply direct column updates
-        if (!empty($directUpdates)) {
+        if (! empty($directUpdates)) {
             $ilan->forceFill($directUpdates);
             $ilan->saveQuietly();
         }
 
         // Sync pivot table (only if there are resolved feature IDs)
-        if (!empty($pivotData)) {
+        if (! empty($pivotData)) {
             $ilan->features()->syncWithoutDetaching($pivotData);
         }
 
@@ -685,7 +695,7 @@ class IlanCrudService
         // =====================================================================
         // 3. OBSERVABILITY: Log unmapped slugs to detect future silent drops
         // =====================================================================
-        if (!empty($unmappedSlugs)) {
+        if (! empty($unmappedSlugs)) {
             Log::channel('sab')->warning('syncFeatures: unmapped feature slugs detected', [
                 'ilan_id' => $ilan->id,
                 'unmapped' => $unmappedSlugs,
@@ -707,7 +717,6 @@ class IlanCrudService
      * @param  mixed  $value  Raw Property Engine value
      * @param  string  $type  Target DB-native type: boolean|int|float|year|string
      * @param  string  $slug  Feature slug used for actionable validation errors
-     * @return mixed
      */
     private function normalizeFeatureValue(mixed $value, string $type, string $slug): mixed
     {
@@ -791,7 +800,7 @@ class IlanCrudService
         }
 
         $str = trim((string) $value);
-        if ($str === '' || !is_numeric($str)) {
+        if ($str === '' || ! is_numeric($str)) {
             return null;
         }
 
@@ -816,7 +825,7 @@ class IlanCrudService
         }
 
         $str = trim((string) $value);
-        if ($str === '' || !is_numeric($str)) {
+        if ($str === '' || ! is_numeric($str)) {
             return null;
         }
 
@@ -885,6 +894,7 @@ class IlanCrudService
                 array_values($value)
             );
             $parts = array_filter($parts, fn ($v) => $v !== '');
+
             return $parts ? implode(', ', $parts) : null;
         }
 
@@ -922,8 +932,8 @@ class IlanCrudService
         // Arsa detail slug → column mapping
         if (str_starts_with($kategoriSlug, 'arsa')) {
             $arsaMapping = [
-                'imar-durumu'  => 'imar_durumu',
-                'tapu-durumu'  => null, // No column in ilan_arsa_details; stored as pivot if feature exists
+                'imar-durumu' => 'imar_durumu',
+                'tapu-durumu' => null, // No column in ilan_arsa_details; stored as pivot if feature exists
             ];
 
             $arsaUpdates = [];
@@ -933,8 +943,8 @@ class IlanCrudService
                 }
             }
 
-            if (!empty($arsaUpdates)) {
-                \App\Models\Dikey\IlanArsaDetail::updateOrCreate(
+            if (! empty($arsaUpdates)) {
+                IlanArsaDetail::updateOrCreate(
                     ['ilan_id' => $ilan->id],
                     $arsaUpdates
                 );

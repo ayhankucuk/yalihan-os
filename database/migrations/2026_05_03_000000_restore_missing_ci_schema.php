@@ -1014,6 +1014,28 @@ return new class extends Migration
                 $table->timestamp('created_at')->nullable();
             });
         }
+
+        // Restore 'anahtar_yonetimi' table if missing (CI test bootstrap parity)
+        if (! Schema::hasTable('anahtar_yonetimi')) {
+            Schema::create('anahtar_yonetimi', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('ilan_id');
+                $table->string('anahtar_statusu')->default('Beklemede');
+                $table->dateTime('teslim_tarihi')->nullable();
+                $table->unsignedBigInteger('teslim_eden_kisi_id')->nullable();
+                $table->unsignedBigInteger('teslim_alan_kisi_id')->nullable();
+                $table->string('anahtar_konumu')->nullable();
+                $table->text('anahtar_notlari')->nullable();
+                $table->string('anahtar_tipi')->default('Ana Anahtar');
+                $table->integer('anahtar_sayisi')->default(1);
+                $table->json('anahtar_ozellikleri')->nullable();
+                $table->string('anahtar_durumu')->default('Aktif');
+                $table->unsignedBigInteger('created_by')->nullable();
+                $table->unsignedBigInteger('updated_by')->nullable();
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
     }
 
     /**

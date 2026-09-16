@@ -10,11 +10,13 @@ namespace App\Http\Controllers\Admin;
  * @sab-ignore-thin
  */
 
+use App\Actions\Admin\Key\DeleteKeyAction;
+use App\Actions\Admin\Key\StoreKeyAction;
+use App\Actions\Admin\Key\UpdateKeyAction;
 use App\Models\AnahtarYonetimi;
 use App\Models\Ilan;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class AnahtarYonetimiController extends AdminController
 {
@@ -41,8 +43,8 @@ class AnahtarYonetimiController extends AdminController
      */
     public function create()
     {
-        $ilanlar = Ilan::where('yayin_durumu', 'Yayında')->select(['id', 'ana_baslik', 'fiyat'])->get();
-        $kullanicilar = User::where('aktiflik_durumu', true)->select(['id', 'isim', 'email'])->get();
+        $ilanlar = Ilan::whereIn('yayin_durumu', ['Yayında', 'Aktif'])->select(['id', 'baslik', 'fiyat'])->orderBy('id', 'desc')->get();
+        $kullanicilar = User::where('aktiflik_durumu', true)->select(['id', 'name', 'email'])->orderBy('id', 'asc')->get();
 
         return view('admin.anahtar-yonetimi.create', compact('ilanlar', 'kullanicilar'));
     }
@@ -50,7 +52,7 @@ class AnahtarYonetimiController extends AdminController
     /**
      * Anahtar kaydetme
      */
-    public function store(Request $request, \App\Actions\Admin\Key\StoreKeyAction $action)
+    public function store(Request $request, StoreKeyAction $action)
     {
         $data = $request->validate([
             'ilan_id' => 'required|exists:ilanlar,id',
@@ -64,6 +66,9 @@ class AnahtarYonetimiController extends AdminController
             'anahtar_sayisi' => 'required|integer|min:1',
             'anahtar_ozellikleri' => 'nullable|array',
         ]);
+
+        $data['anahtar_statusu'] = $data['anahtar_durumu'];
+        $data['anahtar_durumu'] = 'Aktif';
 
         $action->handle($data);
 
@@ -88,8 +93,8 @@ class AnahtarYonetimiController extends AdminController
     public function edit($id)
     {
         $anahtar = AnahtarYonetimi::findOrFail($id);
-        $ilanlar = Ilan::where('yayin_durumu', 'Yayında')->select(['id', 'ana_baslik', 'fiyat'])->get();
-        $kullanicilar = User::where('aktiflik_durumu', true)->select(['id', 'isim', 'email'])->get();
+        $ilanlar = Ilan::whereIn('yayin_durumu', ['Yayında', 'Aktif'])->select(['id', 'baslik', 'fiyat'])->orderBy('id', 'desc')->get();
+        $kullanicilar = User::where('aktiflik_durumu', true)->select(['id', 'name', 'email'])->orderBy('id', 'asc')->get();
 
         return view('admin.anahtar-yonetimi.edit', compact('anahtar', 'ilanlar', 'kullanicilar'));
     }
@@ -97,7 +102,7 @@ class AnahtarYonetimiController extends AdminController
     /**
      * Anahtar güncelleme
      */
-    public function update(Request $request, $id, \App\Actions\Admin\Key\UpdateKeyAction $action)
+    public function update(Request $request, $id, UpdateKeyAction $action)
     {
         $anahtar = AnahtarYonetimi::findOrFail($id);
 
@@ -113,6 +118,9 @@ class AnahtarYonetimiController extends AdminController
             'anahtar_ozellikleri' => 'nullable|array',
         ]);
 
+        $data['anahtar_statusu'] = $data['anahtar_durumu'];
+        $data['anahtar_durumu'] = 'Aktif';
+
         $action->handle($anahtar, $data);
 
         return redirect()->route('admin.anahtar-yonetimi.index')
@@ -122,7 +130,7 @@ class AnahtarYonetimiController extends AdminController
     /**
      * Anahtar silme
      */
-    public function destroy($id, \App\Actions\Admin\Key\DeleteKeyAction $action)
+    public function destroy($id, DeleteKeyAction $action)
     {
         $anahtar = AnahtarYonetimi::findOrFail($id);
         $action->handle($anahtar);
@@ -134,7 +142,7 @@ class AnahtarYonetimiController extends AdminController
     /**
      * Anahtar durumu güncelleme (AJAX)
      */
-    public function updateDurum(Request $request, $id, \App\Actions\Admin\Key\UpdateKeyAction $action)
+    public function updateDurum(Request $request, $id, UpdateKeyAction $action)
     {
         $anahtar = AnahtarYonetimi::findOrFail($id);
 
@@ -143,6 +151,8 @@ class AnahtarYonetimiController extends AdminController
         ]);
 
         $data['teslim_tarihi'] = $data['anahtar_durumu'] === 'Teslim Edildi' ? now() : $anahtar->teslim_tarihi;
+        $data['anahtar_statusu'] = $data['anahtar_durumu'];
+        $data['anahtar_durumu'] = 'Aktif';
 
         $action->handle($anahtar, $data);
 
@@ -156,7 +166,7 @@ class AnahtarYonetimiController extends AdminController
     /**
      * Anahtar teslim etme
      */
-    public function deliver(Request $request, $id, \App\Actions\Admin\Key\UpdateKeyAction $action)
+    public function deliver(Request $request, $id, UpdateKeyAction $action)
     {
         $anahtar = AnahtarYonetimi::findOrFail($id);
 
@@ -172,7 +182,8 @@ class AnahtarYonetimiController extends AdminController
             'anahtar_notlari' => 'nullable|string',
         ]);
 
-        $data['anahtar_durumu'] = 'Teslim Edildi';
+        $data['anahtar_statusu'] = 'Teslim Edildi';
+        $data['anahtar_durumu'] = 'Aktif';
         $data['teslim_tarihi'] = now();
         $data['teslim_eden_kisi_id'] = auth()->id();
 

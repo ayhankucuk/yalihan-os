@@ -1,5 +1,32 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
+## Oturum 148 — 2026-09-16 | P0/P1 Audit Blokajları Onarımı (IlanAI, proje_id, site_id, anahtar_yonetimi) 🛡️
+
+**Kapsam:** İlan ve portföy yönetimindeki kritik mimari ve runtime blokajları giderildi; test paketi eklendi ve tüm kalite kapıları yeşile çekildi.
+
+#### 1. P0: IlanAIController `resolveYayinTipiNameOrFail` Onarımı
+- `App\Http\Controllers\Admin\AI\IlanAIController`: `App\Traits\YayinTipiResolverTrait` eklendi.
+- `buildTitleResult()`: `$request->filled('yayin_tipi_id')` durumunda canonical isim çözümleme yapıldı, aksi halde `yayin_tipi` veya varsayılan `'Satılık'` değerine fallback sağlandı.
+
+#### 2. P0: `StoreIlanRequest` & `UpdateIlanRequest` proje_id Kuralı
+- UI üzerinde `proje_id` alanı bulunmadığından `on-satis` ve `insaat-halinde` ilan girişlerini engelleyen `required` kuralı `nullable|exists:projeler,id` olarak esnetildi.
+
+#### 3. P1: site_id & site_apartman_id Çift Yönlü Kalıcılık
+- `StoreIlanRequest` ve `UpdateIlanRequest`: `site_id` ve `site_apartman_id` (`nullable|integer`) kuralları eklendi.
+- `IlanCrudService::mapCoreData`: `site_id` veya `site_apartman_id` gelirse `$ilan->site_id` alanına yazıldı; `proje_id` ataması sağlandı.
+- `resources/views/admin/ilanlar/components/site-apartman-context7.blade.php`: Hem `site_apartman_id` hem `site_id` gizli inputları oluşturuldu ve JS `selectSite` / `clearSiteSelection` senkronize edildi.
+
+#### 4. P1: AnahtarYonetimi Model & Controller `anahtar_statusu` / `anahtar_durumu` Uyumlaması
+- `App\Models\AnahtarYonetimi`: `anahtar_statusu` fillable listesine eklendi; Context7/kanonik mutator ve accessor yazıldı; `canBeDelivered()` metodu eklendi (`['Hazır', 'Beklemede', 'Geri Alındı']`).
+- `App\Http\Controllers\Admin\AnahtarYonetimiController`: `create` ve `edit` methodlarındaki kolon adları düzeltildi (`baslik`, `name`); `store`, `update`, `updateDurum` ve `deliver` metodlarında `anahtar_statusu` ve `anahtar_durumu` haritalaması yapıldı.
+- `database/migrations/2026_05_03_000000_restore_missing_ci_schema.php`: SQLite CI ortamı için `anahtar_yonetimi` tablosu restorasyon şeması eklendi.
+
+#### 5. Kalite Kapıları & Testler
+- `tests/Unit/Models/AnahtarYonetimiAuditTest.php`: 5 test / 19 assertion %100 PASS.
+- Antigravity Full Gate (Preflight 10 Golden Rules, Layout Validator, Route Guard): 3/3 PASS.
+- Laravel Pint: Formatted & Clean.
+
+
 ## Oturum 146 — 2026-08-28 | Danışman Modülü P0 Fixture Onarımı, Service Katmanı Refactor & Thin Controller 🛡️
 
 **Kapsam:** Danışman (Advisor) modülü yetkilendirme testlerindeki fixture çakışmaları çözüldü, `DanismanController` 645 satırdan 165 satıra düşürülerek `DanismanService` katmanına refactor edildi, tüm yetki testleri %100 yeşile çekildi.
