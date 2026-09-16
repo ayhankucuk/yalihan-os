@@ -2,18 +2,16 @@
 
 namespace App\Models;
 
-use App\Models\Ilan;
-use App\Traits\HasActiveScope;
-use App\Models\BaseModel;
+use App\Enums\TalepDurumu;
 use App\Traits\HasCountryScope;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Talep extends BaseModel
 {
+    use HasCountryScope;
     use HasFactory;
     use SoftDeletes;
-    use HasCountryScope;
 
     protected $table = 'talepler';
 
@@ -39,6 +37,7 @@ class Talep extends BaseModel
         'mahalle_id',      // ✅ Added 2026-01-31
         'min_fiyat',
         'max_fiyat',
+        'para_birimi',
         // Context7: Talep reformu - 2025-11-24
         // Context7: Talep reformu - 2025-11-24
         // Context7: Talep reformu - 2025-11-24
@@ -58,7 +57,7 @@ class Talep extends BaseModel
         'max_metrekare' => 'integer',
         'aranan_ozellikler_json' => 'array',
         'metadata' => 'array',
-        'talep_durumu' => \App\Enums\TalepDurumu::class, // ✅ SAB: talep_durumu (TalepDurumu Enum)
+        'talep_durumu' => TalepDurumu::class, // ✅ SAB: talep_durumu (TalepDurumu Enum)
         'deleted_at' => 'datetime',
     ];
 
@@ -182,14 +181,12 @@ class Talep extends BaseModel
         return implode(', ', array_filter($adresParcalari));
     }
 
-
-
     /**
      * Durum filter (Context7 canonical: talep_durumu)
      */
     public function scopeByDurum($query, $talepDurumu)
     {
-        if ($talepDurumu instanceof \App\Enums\TalepDurumu) {
+        if ($talepDurumu instanceof TalepDurumu) {
             return $query->where('talep_durumu', $talepDurumu->value);
         }
 
@@ -198,7 +195,7 @@ class Talep extends BaseModel
 
     public function scopeActive($query)
     {
-        return $query->byDurum(\App\Enums\TalepDurumu::AKTIF);
+        return $query->byDurum(TalepDurumu::AKTIF);
     }
 
     public function scopeAktif($query)

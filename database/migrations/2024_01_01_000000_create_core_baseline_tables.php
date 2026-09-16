@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * 🛡️ Baseline Migration: Core Tables
- * 
+ *
  * This migration restores the baseline schema for core entities that were squashed into mysql-schema.sql.
  * It ensures that test environments (SQLite) can bootstrap the database from scratch.
  */
@@ -15,7 +15,7 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Users Table
-        if (!Schema::hasTable('users')) {
+        if (! Schema::hasTable('users')) {
             Schema::create('users', function (Blueprint $table) {
                 $table->id();
                 $table->string('name')->nullable();
@@ -48,7 +48,7 @@ return new class extends Migration
         }
 
         // 1.1 Ulkeler Table
-        if (!Schema::hasTable('ulkeler')) {
+        if (! Schema::hasTable('ulkeler')) {
             Schema::create('ulkeler', function (Blueprint $table) {
                 $table->id();
                 $table->string('ulke_adi');
@@ -61,7 +61,7 @@ return new class extends Migration
         }
 
         // 2. Kisiler Table (CRM SSOT)
-        if (!Schema::hasTable('kisiler')) {
+        if (! Schema::hasTable('kisiler')) {
             Schema::create('kisiler', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('danisman_id')->nullable()->constrained('users')->nullOnDelete();
@@ -91,7 +91,7 @@ return new class extends Migration
         }
 
         // 3. Iller Table
-        if (!Schema::hasTable('iller')) {
+        if (! Schema::hasTable('iller')) {
             Schema::create('iller', function (Blueprint $table) {
                 $table->id();
                 $table->string('il_adi');
@@ -108,7 +108,7 @@ return new class extends Migration
         }
 
         // 4. Ilceler Table
-        if (!Schema::hasTable('ilceler')) {
+        if (! Schema::hasTable('ilceler')) {
             Schema::create('ilceler', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('il_id')->constrained('iller')->cascadeOnDelete();
@@ -125,7 +125,7 @@ return new class extends Migration
         }
 
         // 5. Mahalleler Table
-        if (!Schema::hasTable('mahalleler')) {
+        if (! Schema::hasTable('mahalleler')) {
             Schema::create('mahalleler', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('ilce_id')->constrained('ilceler')->cascadeOnDelete();
@@ -143,7 +143,7 @@ return new class extends Migration
         }
 
         // 6. Ilan Kategorileri Table
-        if (!Schema::hasTable('ilan_kategorileri')) {
+        if (! Schema::hasTable('ilan_kategorileri')) {
             Schema::create('ilan_kategorileri', function (Blueprint $table) {
                 $table->id();
                 $table->string('tenant_id')->default('SYSTEM');
@@ -161,7 +161,7 @@ return new class extends Migration
         }
 
         // 7. Yayin Tipi Sablonlari Table
-        if (!Schema::hasTable('yayin_tipi_sablonlari')) {
+        if (! Schema::hasTable('yayin_tipi_sablonlari')) {
             Schema::create('yayin_tipi_sablonlari', function (Blueprint $table) {
                 $table->id();
                 $table->string('tenant_id')->default('SYSTEM');
@@ -179,7 +179,7 @@ return new class extends Migration
         }
 
         // 8. Ilanlar Table Baseline
-        if (!Schema::hasTable('ilanlar')) {
+        if (! Schema::hasTable('ilanlar')) {
             Schema::create('ilanlar', function (Blueprint $table) {
                 $table->id();
                 $table->string('baslik');
@@ -194,7 +194,7 @@ return new class extends Migration
                 $table->string('investment_currency', 3)->default('TRY');
                 $table->decimal('investor_target_roi', 5, 2)->nullable();
                 $table->string('para_birimi', 10)->default('TRY');
-                
+
                 // Rental Fields
                 $table->decimal('gunluk_fiyat', 10, 2)->nullable();
                 $table->decimal('haftalik_fiyat', 10, 2)->nullable();
@@ -212,7 +212,7 @@ return new class extends Migration
                 $table->string('havuz_turu')->nullable();
                 $table->string('havuz_boyut')->nullable();
                 $table->decimal('havuz_derinlik', 5, 2)->nullable();
-                
+
                 $table->string('yayin_durumu', 20)->default('taslak');
                 $table->tinyInteger('completion_score')->unsigned()->default(0);
                 $table->boolean('rental_enabled')->default(false);
@@ -228,7 +228,7 @@ return new class extends Migration
                 $table->time('checkout_time')->default('11:00:00');
                 $table->decimal('deposit_amount', 12, 2)->nullable();
                 $table->string('rental_currency', 3)->default('TRY');
-                
+
                 $table->boolean('crm_only')->default(false);
                 $table->boolean('firsat_mühru')->default(false);
                 $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
@@ -239,7 +239,7 @@ return new class extends Migration
                 $table->string('check_out_time', 5)->default('11:00');
                 $table->string('price_text')->nullable();
                 $table->decimal('cleaning_fee', 10, 2)->default(0);
-                
+
                 $table->unsignedBigInteger('site_id')->nullable();
                 $table->foreignId('danisman_id')->nullable()->constrained('users')->nullOnDelete();
                 $table->unsignedBigInteger('ana_kategori_id')->nullable();
@@ -249,7 +249,7 @@ return new class extends Migration
                 $table->unsignedBigInteger('ilce_id')->nullable();
                 $table->unsignedBigInteger('mahalle_id')->nullable();
                 $table->string('adres')->nullable();
-                
+
                 // Land / Area Fields
                 $table->string('ada_no', 50)->nullable();
                 $table->string('parsel_no', 50)->nullable();
@@ -265,7 +265,7 @@ return new class extends Migration
                 $table->boolean('altyapi_elektrik')->default(false);
                 $table->boolean('altyapi_su')->default(false);
                 $table->boolean('altyapi_dogalgaz')->default(false);
-                
+
                 // Structural Fields
                 $table->integer('oda_sayisi')->nullable();
                 $table->integer('salon_sayisi')->nullable();
@@ -278,7 +278,7 @@ return new class extends Migration
                 $table->string('isitma')->nullable();
                 $table->string('aidat')->nullable();
                 $table->boolean('esyali')->default(false);
-                
+
                 $table->string('ilan_no')->nullable();
                 $table->string('referans_no', 50)->nullable()->unique();
                 $table->string('dosya_adi')->nullable();
@@ -287,18 +287,18 @@ return new class extends Migration
                 $table->string('hepsiemlak_id', 50)->nullable();
                 $table->string('zingat_id', 50)->nullable();
                 $table->string('hurriyetemlak_id', 50)->nullable();
-                
+
                 $table->json('portal_sync_status')->nullable();
                 $table->json('metadata')->nullable();
                 $table->json('structured_data')->nullable();
                 $table->string('structured_data_scope')->nullable();
                 $table->string('schema_version')->nullable();
-                
+
                 $table->timestamp('approved_at')->nullable();
                 $table->unsignedBigInteger('approved_by')->nullable();
                 $table->unsignedBigInteger('created_by')->nullable();
                 $table->unsignedBigInteger('updated_by')->nullable();
-                
+
                 $table->string('rapor_yolu')->nullable();
                 $table->string('rapor_hash')->nullable();
                 $table->timestamp('rapor_uretildi_at')->nullable();
@@ -307,22 +307,22 @@ return new class extends Migration
                 $table->timestamp('rapor_gecersizlestirildi_at')->nullable();
                 $table->string('rapor_locale', 5)->nullable();
                 $table->string('rapor_surum', 10)->nullable();
-                
+
                 $table->integer('visibility_score')->default(0);
                 $table->string('country_code', 2)->default('TR');
                 $table->string('source_locale', 5)->default('tr_TR');
-                
+
                 $table->decimal('lat', 10, 8)->nullable();
                 $table->decimal('lng', 11, 8)->nullable();
                 $table->unsignedBigInteger('goruntulenme')->default(0);
-                
+
                 $table->timestamps();
                 $table->softDeletes();
             });
         }
 
         // 9. Roles Table
-        if (!Schema::hasTable('roles')) {
+        if (! Schema::hasTable('roles')) {
             Schema::create('roles', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -333,7 +333,7 @@ return new class extends Migration
         }
 
         // 10. Permissions Table
-        if (!Schema::hasTable('permissions')) {
+        if (! Schema::hasTable('permissions')) {
             Schema::create('permissions', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -343,7 +343,7 @@ return new class extends Migration
         }
 
         // 11. Role has Permissions Table
-        if (!Schema::hasTable('role_has_permissions')) {
+        if (! Schema::hasTable('role_has_permissions')) {
             Schema::create('role_has_permissions', function (Blueprint $table) {
                 $table->foreignId('permission_id')->constrained('permissions')->cascadeOnDelete();
                 $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
@@ -352,7 +352,7 @@ return new class extends Migration
         }
 
         // 12. Model has Roles Table
-        if (!Schema::hasTable('model_has_roles')) {
+        if (! Schema::hasTable('model_has_roles')) {
             Schema::create('model_has_roles', function (Blueprint $table) {
                 $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
                 $table->string('model_type');
@@ -363,7 +363,7 @@ return new class extends Migration
         }
 
         // 13. Model has Permissions Table
-        if (!Schema::hasTable('model_has_permissions')) {
+        if (! Schema::hasTable('model_has_permissions')) {
             Schema::create('model_has_permissions', function (Blueprint $table) {
                 $table->foreignId('permission_id')->constrained('permissions')->cascadeOnDelete();
                 $table->string('model_type');
@@ -374,7 +374,7 @@ return new class extends Migration
         }
 
         // 17. AI Logs Table (Context7 Standard)
-        if (!Schema::hasTable('ai_logs')) {
+        if (! Schema::hasTable('ai_logs')) {
             Schema::create('ai_logs', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tenant_id')->nullable();
@@ -407,7 +407,7 @@ return new class extends Migration
         }
 
         // 15. Leads Table
-        if (!Schema::hasTable('leads')) {
+        if (! Schema::hasTable('leads')) {
             Schema::create('leads', function (Blueprint $table) {
                 $table->id();
                 $table->string('name')->nullable();
@@ -447,7 +447,7 @@ return new class extends Migration
         }
 
         // 16. Lead Activities Table
-        if (!Schema::hasTable('lead_activities')) {
+        if (! Schema::hasTable('lead_activities')) {
             Schema::create('lead_activities', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('lead_id')->constrained('leads')->cascadeOnDelete();
@@ -460,7 +460,7 @@ return new class extends Migration
         }
 
         // 17. AI Feature Usages Table
-        if (!Schema::hasTable('ai_feature_usages')) {
+        if (! Schema::hasTable('ai_feature_usages')) {
             Schema::create('ai_feature_usages', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tenant_id')->nullable();
@@ -488,7 +488,7 @@ return new class extends Migration
         }
 
         // 18. Talepler Table
-        if (!Schema::hasTable('talepler')) {
+        if (! Schema::hasTable('talepler')) {
             Schema::create('talepler', function (Blueprint $table) {
                 $table->id();
                 $table->string('baslik')->nullable();
@@ -499,6 +499,7 @@ return new class extends Migration
                 $table->string('emlak_tipi');
                 $table->decimal('min_fiyat', 15, 2)->nullable();
                 $table->decimal('max_fiyat', 15, 2)->nullable();
+                $table->string('para_birimi', 10)->default('TRY');
                 $table->string('talep_durumu')->default('aktif');
                 $table->timestamps();
                 $table->softDeletes();
@@ -506,7 +507,7 @@ return new class extends Migration
         }
 
         // 19. Settings Table
-        if (!Schema::hasTable('settings')) {
+        if (! Schema::hasTable('settings')) {
             Schema::create('settings', function (Blueprint $table) {
                 $table->id();
                 $table->string('key')->unique();
@@ -519,7 +520,7 @@ return new class extends Migration
         }
 
         // 20. Activity Log Table
-        if (!Schema::hasTable('activity_log')) {
+        if (! Schema::hasTable('activity_log')) {
             Schema::create('activity_log', function (Blueprint $table) {
                 $table->id();
                 $table->string('log_name')->nullable();
@@ -539,7 +540,7 @@ return new class extends Migration
         }
 
         // 21. Kisi Etkilesimler Table
-        if (!Schema::hasTable('kisi_etkilesimler')) {
+        if (! Schema::hasTable('kisi_etkilesimler')) {
             Schema::create('kisi_etkilesimler', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('kisi_id')->constrained('kisiler')->cascadeOnDelete();
@@ -555,7 +556,7 @@ return new class extends Migration
         }
 
         // 22. Gorevler Table
-        if (!Schema::hasTable('gorevler')) {
+        if (! Schema::hasTable('gorevler')) {
             Schema::create('gorevler', function (Blueprint $table) {
                 $table->id();
                 $table->string('baslik');
@@ -576,7 +577,7 @@ return new class extends Migration
         }
 
         // 23. Etiketler Table
-        if (!Schema::hasTable('etiketler')) {
+        if (! Schema::hasTable('etiketler')) {
             Schema::create('etiketler', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -591,7 +592,7 @@ return new class extends Migration
         }
 
         // 28. Feature Categories Table
-        if (!Schema::hasTable('feature_categories')) {
+        if (! Schema::hasTable('feature_categories')) {
             Schema::create('feature_categories', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -607,7 +608,7 @@ return new class extends Migration
         }
 
         // 29. Features Table
-        if (!Schema::hasTable('features')) {
+        if (! Schema::hasTable('features')) {
             Schema::create('features', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -630,7 +631,7 @@ return new class extends Migration
         }
 
         // 30. Feature Assignments Table
-        if (!Schema::hasTable('feature_assignments')) {
+        if (! Schema::hasTable('feature_assignments')) {
             Schema::create('feature_assignments', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('feature_id');
@@ -666,7 +667,7 @@ return new class extends Migration
         }
 
         // 24. AI Deneyler Table
-        if (!Schema::hasTable('ai_deneyler')) {
+        if (! Schema::hasTable('ai_deneyler')) {
             Schema::create('ai_deneyler', function (Blueprint $table) {
                 $table->id();
                 $table->string('deney_adi');
@@ -682,7 +683,7 @@ return new class extends Migration
         }
 
         // 25. Ledger Accounts Table
-        if (!Schema::hasTable('ledger_accounts')) {
+        if (! Schema::hasTable('ledger_accounts')) {
             Schema::create('ledger_accounts', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -697,7 +698,7 @@ return new class extends Migration
         }
 
         // 26. Ledger Balances Table
-        if (!Schema::hasTable('ledger_balances')) {
+        if (! Schema::hasTable('ledger_balances')) {
             Schema::create('ledger_balances', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('account_id');
@@ -712,7 +713,7 @@ return new class extends Migration
         }
 
         // 27. Ledger Entries Table
-        if (!Schema::hasTable('ledger_entries')) {
+        if (! Schema::hasTable('ledger_entries')) {
             Schema::create('ledger_entries', function (Blueprint $table) {
                 $table->id();
                 $table->uuid('transaction_group_id');
@@ -732,7 +733,7 @@ return new class extends Migration
         }
 
         // 34. Ledger Transactions Table
-        if (!Schema::hasTable('ledger_transactions')) {
+        if (! Schema::hasTable('ledger_transactions')) {
             Schema::create('ledger_transactions', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->string('idempotency_key', 100)->nullable()->unique();
@@ -743,7 +744,7 @@ return new class extends Migration
         }
 
         // 31. Ilan Feature Table
-        if (!Schema::hasTable('ilan_feature')) {
+        if (! Schema::hasTable('ilan_feature')) {
             Schema::create('ilan_feature', function (Blueprint $table) {
                 $table->foreignId('ilan_id')->constrained('ilanlar')->cascadeOnDelete();
                 $table->foreignId('feature_id')->constrained('features')->cascadeOnDelete();
@@ -754,7 +755,7 @@ return new class extends Migration
         }
 
         // 32. Ilan Fotograflari Table
-        if (!Schema::hasTable('ilan_fotograflari')) {
+        if (! Schema::hasTable('ilan_fotograflari')) {
             Schema::create('ilan_fotograflari', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('ilan_id')->constrained('ilanlar')->cascadeOnDelete();
@@ -769,7 +770,7 @@ return new class extends Migration
         }
 
         // 33. Ilan Videolari Table
-        if (!Schema::hasTable('ilan_videolari')) {
+        if (! Schema::hasTable('ilan_videolari')) {
             Schema::create('ilan_videolari', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('ilan_id')->constrained('ilanlar')->cascadeOnDelete();
@@ -780,7 +781,7 @@ return new class extends Migration
             });
         }
         // 35. Governance Decisions Table
-        if (!Schema::hasTable('governance_decisions')) {
+        if (! Schema::hasTable('governance_decisions')) {
             Schema::create('governance_decisions', function (Blueprint $table) {
                 $table->id();
                 $table->string('finding_id')->unique();
@@ -816,7 +817,7 @@ return new class extends Migration
             });
         }
         // 36. Ozellik Kategorileri
-        if (!Schema::hasTable('ozellik_kategorileri')) {
+        if (! Schema::hasTable('ozellik_kategorileri')) {
             Schema::create('ozellik_kategorileri', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -827,7 +828,7 @@ return new class extends Migration
         }
 
         // 37. Ozellikler
-        if (!Schema::hasTable('ozellikler')) {
+        if (! Schema::hasTable('ozellikler')) {
             Schema::create('ozellikler', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('kategori_id')->nullable();
@@ -841,7 +842,7 @@ return new class extends Migration
         }
 
         // 38. Notifications
-        if (!Schema::hasTable('notifications')) {
+        if (! Schema::hasTable('notifications')) {
             Schema::create('notifications', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->string('type');
@@ -853,7 +854,7 @@ return new class extends Migration
         }
 
         // 39. Saved Searches
-        if (!Schema::hasTable('saved_searches')) {
+        if (! Schema::hasTable('saved_searches')) {
             Schema::create('saved_searches', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
@@ -865,7 +866,7 @@ return new class extends Migration
         }
 
         // 40. Projeler
-        if (!Schema::hasTable('projeler')) {
+        if (! Schema::hasTable('projeler')) {
             Schema::create('projeler', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -883,7 +884,7 @@ return new class extends Migration
         }
 
         // 41. Yayin Tipleri
-        if (!Schema::hasTable('yayin_tipleri')) {
+        if (! Schema::hasTable('yayin_tipleri')) {
             Schema::create('yayin_tipleri', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -894,7 +895,7 @@ return new class extends Migration
         }
 
         // 42. Yazlik Details
-        if (!Schema::hasTable('yazlik_details')) {
+        if (! Schema::hasTable('yazlik_details')) {
             Schema::create('yazlik_details', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('ilan_id')->constrained('ilanlar')->cascadeOnDelete();
@@ -907,7 +908,7 @@ return new class extends Migration
         }
 
         // 43. Yazlik Fiyatlandirma
-        if (!Schema::hasTable('yazlik_fiyatlandirma')) {
+        if (! Schema::hasTable('yazlik_fiyatlandirma')) {
             Schema::create('yazlik_fiyatlandirma', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('ilan_id')->constrained('ilanlar')->cascadeOnDelete();
@@ -920,7 +921,7 @@ return new class extends Migration
         }
 
         // 44. Yazlik Rezervasyonlar
-        if (!Schema::hasTable('yazlik_rezervasyonlar')) {
+        if (! Schema::hasTable('yazlik_rezervasyonlar')) {
             Schema::create('yazlik_rezervasyonlar', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('ilan_id')->constrained('ilanlar')->cascadeOnDelete();
@@ -934,7 +935,7 @@ return new class extends Migration
         }
 
         // 45. Yayin Tipi Pivot Atamalari
-        if (!Schema::hasTable('yayin_tipi_pivot_atamalari')) {
+        if (! Schema::hasTable('yayin_tipi_pivot_atamalari')) {
             Schema::create('yayin_tipi_pivot_atamalari', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('yayin_tipi_id');
@@ -948,7 +949,7 @@ return new class extends Migration
         }
 
         // 46. Ilan Taslaklar
-        if (!Schema::hasTable('ilan_taslaklar')) {
+        if (! Schema::hasTable('ilan_taslaklar')) {
             Schema::create('ilan_taslaklar', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
