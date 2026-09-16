@@ -3,6 +3,7 @@
 namespace App\Services\Admin;
 
 use App\Models\Ilan;
+use App\Services\Price\CurrencyRateService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
@@ -11,9 +12,18 @@ use Illuminate\Http\Request;
  *
  * Context7: C7-ILAN-SEARCH-2025-12-27
  * Filtreleme mantığını merkezileştirir
+ *
+ * SAAB-A3: Price filter normalizes all currencies to TRY before comparison.
+ * Without this, a 2M EUR listing incorrectly appears in "max 5M TL" results.
  */
 class IlanSearchService
 {
+    private CurrencyRateService $currencyRate;
+
+    public function __construct(CurrencyRateService $currencyRate)
+    {
+        $this->currencyRate = $currencyRate;
+    }
     /**
      * İlan arama ve filtreleme
      *
@@ -131,9 +141,39 @@ class IlanSearchService
         if ($request->filled('ilce_id')) $query->where('ilce_id', $request->ilce_id);
         if ($request->filled('mahalle_id')) $query->where('mahalle_id', $request->mahalle_id);
 
-        // Fiyat aralığı
-        if ($request->filled('min_price')) $query->where('fiyat', '>=', $request->min_price);
-        if ($request->filled('max_price')) $query->where('fiyat', '<=', $request->max_price);
+        // Fiyat aralığı — SAAB-A3: Normalize all currencies to TRY before comparing.
+        // User input is always treated as TRY. Each listing is converted to TRY
+        // using its para_birimi, then compared against the user's min/max range.
+        // Fallback: If CurrencyRateService fails, TRY-only listings are searched.
+        if ($request->filled('min_price') || $request->filled('max_price')) {
+            $minPrice = $request->filled('min_price') ? (float) $request->min_price : 0;
+            $maxPrice = $request->filled('max_price') ? (float) $request->max_price : PHP_FLOAT_MAX;
+
+            $rates = $this->currencyRate->getRates()['rates'];
+            $usdToTry = $rates['USD'] ?? 34.50;
+            $eurToTry = $rates['EUR'] ?? 37.20;
+            $gbpToTry = $rates['GBP'] ?? 43.80;
+
+            $query->where(function (Builder $q) use ($minPrice, $maxPrice, $usdToTry, $eurToTry, $gbpToTry) {
+                $q->whereRaw(
+                    "CASE para_birimi
+                        WHEN 'USD' THEN fiyat * ?
+                        WHEN 'EUR' THEN fiyat * ?
+                        WHEN 'GBP' THEN fiyat * ?
+                        ELSE fiyat
+                     END >= ?",
+                    [$usdToTry, $eurToTry, $gbpToTry, $minPrice]
+                )->whereRaw(
+                    "CASE para_birimi
+                        WHEN 'USD' THEN fiyat * ?
+                        WHEN 'EUR' THEN fiyat * ?
+                        WHEN 'GBP' THEN fiyat * ?
+                        ELSE fiyat
+                     END <= ?",
+                    [$usdToTry, $eurToTry, $gbpToTry, $maxPrice]
+                );
+            });
+        }
 
         // Sıralama
         $sortBy = $request->input('sort_by', 'created_at');

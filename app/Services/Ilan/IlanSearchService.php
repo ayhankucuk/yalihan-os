@@ -2,8 +2,10 @@
 
 namespace App\Services\Ilan;
 
+use App\Services\Price\CurrencyRateService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
 
 /**
@@ -11,9 +13,15 @@ use Illuminate\Support\Collection;
  *
  * Handles dynamic listing searches, filtering, and data exports.
  * Adheres to Zero-Trust layer isolation principles.
+ *
+ * SAAB-A3: Price filter normalizes all currencies to TRY before comparison.
  */
 class IlanSearchService
 {
+    public function __construct(
+        private CurrencyRateService $currencyRate,
+    ) {}
+
     /**
      * Search listings with dynamic column filtering.
      *
@@ -55,13 +63,24 @@ class IlanSearchService
             $builder->where('baslik', 'like', '%' . $q . '%');
         }
 
-        if (Schema::hasColumn('ilanlar', 'fiyat')) {
-            if ($minFiyat !== null && $minFiyat !== '') {
-                $builder->where('fiyat', '>=', (float) $minFiyat);
-            }
-            if ($maxFiyat !== null && $maxFiyat !== '') {
-                $builder->where('fiyat', '<=', (float) $maxFiyat);
-            }
+        // SAAB-A3: Normalize all currencies to TRY before comparing price.
+        if (Schema::hasColumn('ilanlar', 'fiyat') && ($minFiyat !== null || $maxFiyat !== null)) {
+            $min = $minFiyat !== null && $minFiyat !== '' ? (float) $minFiyat : 0;
+            $max = $maxFiyat !== null && $maxFiyat !== '' ? (float) $maxFiyat : PHP_FLOAT_MAX;
+
+            $rates = $this->currencyRate->getRates()['rates'];
+            $usdToTry = $rates['USD'] ?? 34.50;
+            $eurToTry = $rates['EUR'] ?? 37.20;
+            $gbpToTry = $rates['GBP'] ?? 43.80;
+
+            $builder->whereRaw(
+                "CASE para_birimi WHEN 'USD' THEN fiyat * ? WHEN 'EUR' THEN fiyat * ? WHEN 'GBP' THEN fiyat * ? ELSE fiyat END >= ?",
+                [$usdToTry, $eurToTry, $gbpToTry, $min]
+            );
+            $builder->whereRaw(
+                "CASE para_birimi WHEN 'USD' THEN fiyat * ? WHEN 'EUR' THEN fiyat * ? WHEN 'GBP' THEN fiyat * ? ELSE fiyat END <= ?",
+                [$usdToTry, $eurToTry, $gbpToTry, $max]
+            );
         }
 
         $total = (clone $builder)->count();
@@ -118,63 +137,34 @@ class IlanSearchService
         if ($kategoriId && Schema::hasColumn('ilanlar', 'kategori_id')) {
             $q->where('kategori_id', $kategoriId);
         }
+
         if ($yayinTipiId && Schema::hasColumn('ilanlar', 'yayin_tipi_id')) {
             $q->where('yayin_tipi_id', $yayinTipiId);
         }
 
-        $cols = [];
-        foreach (['id', 'baslik', 'fiyat', 'para_birimi', 'yayin_durumu', 'kategori_id', 'yayin_tipi_id', 'created_at'] as $c) {
-            if (Schema::hasColumn('ilanlar', $c)) {
-                $cols[] = $c;
-            }
-        }
-        if (!empty($cols)) {
-            $q->select($cols);
-        }
+        $allowedColumns = ['id', 'baslik', 'fiyat', 'para_birimi', 'yayin_durumu', 'kategori_id', 'yayin_tipi_id', 'created_at'];
+        $select = array_filter($allowedColumns, fn($c) => Schema::hasColumn('ilanlar', $c));
 
-        return $q->limit($limit)->get();
-    }
-
-    /**
-     * Get top viewed listings for a period.
-     *
-     * @param string $startDate
-     * @param int $limit
-     * @return Collection
-     */
-    public function getTopViewedListings(string $startDate, int $limit = 10): Collection
-    {
-        return DB::table('ilan_goruntulenme_gunluk')
-            ->join(
-                'ilanlar',
-                'ilan_goruntulenme_gunluk.ilan_id',
-                '=',
-                'ilanlar.id'
-            )
-            ->where(
-                'ilan_goruntulenme_gunluk.tarih',
-                '>=',
-                $startDate
-            )
-            ->selectRaw(
-                'ilan_goruntulenme_gunluk.ilan_id, ' .
-                'SUM(ilan_goruntulenme_gunluk.adet) as views, ' .
-                'ilanlar.baslik, ilanlar.fiyat, ilanlar.para_birimi, ilanlar.slug'
-            )
-            ->groupBy(
-                'ilan_goruntulenme_gunluk.ilan_id',
-                'ilanlar.baslik',
-                'ilanlar.fiyat',
-                'ilanlar.para_birimi',
-                'ilanlar.slug'
-            )
-            ->orderByDesc('views') // context7-ignore
+        return $q->select($select)
             ->limit($limit)
+            ->orderBy('id', 'desc')
             ->get();
     }
 
     /**
-     * Base query for consultant listings (Common for search, index, export)
+     * Build a paginated listing query with all filters.
+     *
+     * @param array $params
+     * @return array{data: Collection, meta: array}
+     */
+    public function buildQuery(array $params): array
+    {
+        return $this->search($params);
+    }
+
+    /**
+     * Consultant listings base query.
+     * P1 Query Authority Lock: Consultant can ONLY see their own listings.
      *
      * @param int $consultantId
      * @param array $params
@@ -274,4 +264,3 @@ class IlanSearchService
             ->get();
     }
 }
-

@@ -324,11 +324,12 @@ class Kisi extends BaseModel
 
     /**
      * Bu kişinin "ilan sahibi" olduğu ilanları döndürür.
-     * Context7: Foreign key is 'user_id' in ilanlar table
+     * Context7: Foreign key is 'ilan_sahibi_id' in ilanlar table — points to kisiler.id (property owner)
+     * NOTE: 'user_id' in ilanlar is the creating advisor, NOT the property owner.
      */
     public function ilanlarAsSahibi(): HasMany
     {
-        return $this->hasMany(Ilan::class, 'user_id');
+        return $this->hasMany(Ilan::class, 'ilan_sahibi_id');
     }
     /**
      * CRM - Referans veren kişi
