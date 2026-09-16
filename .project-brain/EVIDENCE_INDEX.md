@@ -744,6 +744,29 @@ TC-GT-06 — Full Golden Thread: Step 1→5 + native form submit redirect (PASS 
 - Map bridge kaynağı: `831f4353` commit — Antigravity worktree
 - Kanıt seviyesi: `BROWSER_VERIFIED` — 2026-09-09
 
+## Session 2026-09-16 (Oturum 216) — SAAB-A1/A2/A3 P0 Search Fixes
+
+**Commit:** `8e6e3f15` (branch `p0-pii-search-fix`)
+**PR:** [#6](https://github.com/ayhankucuk/yalihan-os/pull/6) — OPEN
+**Worktree:** `/Users/macbookpro/repos/worktree-p0-pii-search-fix`
+**Evidence Level:** `REPO_VERIFIED`
+
+| # | Bulgu | Dosya | Öncelik |
+|---|-------|-------|---------|
+| A1 | `POST /admin/ilanlar/draft/{id}/commit` route tanımlı değil — 404 on publish | `routes/admin.php` | P0 |
+| A2 | `Kisi::ilanlarAsSahibi()` FK yanlış: `user_id` → `ilan_sahibi_id` | `app/Models/Kisi.php` | P0 |
+| A3 | Fiyat filtresi `para_birimi` kontrol etmiyor — 2M EUR "max 5M TL" sonucunda çıkıyor | `app/Services/Admin/IlanSearchService.php` + `app/Services/Ilan/IlanSearchService.php` | P0 |
+
+**Çözümler:**
+- A1: Route eklendi — `auth + verified + can:create,Ilan + throttle:10,1`
+- A2: `hasMany(Ilan::class, 'ilan_sahibi_id')` — property owner FK doğru
+- A3: `CASE WHEN para_birimi THEN fiyat * kur ELSE fiyat` — `CurrencyRateService` ile normalize (1h cache, exchangerate-api.com). Fallback: USD 34.50 / EUR 37.20 / GBP 43.80
+
+**Kalite Kapısı:** Preflight + Layout ✅; Route gate worktree artisan bootstrap sorunu (false positive, standalone route check temiz)
+**Sıradaki:** PR #6 → integration/era-v-phase2a-e01; sonra Drive webhook + KisiPolicy tenant isolation
+
+---
+
 ## Production Deploy — 2026-09-10 | RC2 (0f248940)
 
 **Deploy:** `scripts/rc2-production-deploy.sh` → Aşama 0–7 TAMAMLANDI
