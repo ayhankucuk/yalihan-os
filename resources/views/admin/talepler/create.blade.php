@@ -294,6 +294,81 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- 💰 Fiyat & Bütçe Kriterleri Card -->
+                    <div class="bg-white dark:bg-gray-800
+                                rounded-2xl shadow-xl
+                                border border-gray-100 dark:border-gray-700
+                                transition-all duration-300 ease-in-out
+                                hover:shadow-2xl">
+                        <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-700
+                                    bg-gradient-to-r from-purple-50 to-indigo-50
+                                    dark:from-gray-800 dark:to-gray-700
+                                    rounded-t-2xl">
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                                <div class="w-10 h-10 bg-purple-600 dark:bg-purple-700 rounded-lg flex items-center justify-center mr-3
+                                            shadow-lg transform hover:scale-110 transition-all duration-200 text-white">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                    </svg>
+                                </div>
+                                <span class="text-gray-900 dark:text-white dark:text-slate-100">Bütçe ve Fiyat Kriterleri</span>
+                            </h2>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Müşterinin hedef bütçe aralığı ve para birimi</p>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <!-- Minimum Bütçe -->
+                                <div class="space-y-2">
+                                    <label for="min_fiyat" class="block text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">
+                                        Min. Bütçe
+                                    </label>
+                                    <input type="number" id="min_fiyat" name="min_fiyat" min="0" step="any"
+                                        x-model="form.min_fiyat"
+                                        value="{{ old('min_fiyat') }}"
+                                        placeholder="Örn: 1000000"
+                                        class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 transition-all duration-200">
+                                    @error('min_fiyat')
+                                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <!-- Maksimum Bütçe -->
+                                <div class="space-y-2">
+                                    <label for="max_fiyat" class="block text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">
+                                        Maks. Bütçe
+                                    </label>
+                                    <input type="number" id="max_fiyat" name="max_fiyat" min="0" step="any"
+                                        x-model="form.max_fiyat"
+                                        value="{{ old('max_fiyat') }}"
+                                        placeholder="Örn: 5000000"
+                                        class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 transition-all duration-200">
+                                    @error('max_fiyat')
+                                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <!-- Para Birimi -->
+                                <div class="space-y-2">
+                                    <label for="para_birimi" class="block text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">
+                                        Para Birimi
+                                    </label>
+                                    <select style="color-scheme: light dark;" id="para_birimi" name="para_birimi"
+                                        x-model="form.para_birimi"
+                                        class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 transition-all duration-200">
+                                        <option value="TRY" {{ old('para_birimi', 'TRY') === 'TRY' ? 'selected' : '' }}>TRY (₺)</option>
+                                        <option value="USD" {{ old('para_birimi') === 'USD' ? 'selected' : '' }}>USD ($)</option>
+                                        <option value="EUR" {{ old('para_birimi') === 'EUR' ? 'selected' : '' }}>EUR (€)</option>
+                                        <option value="GBP" {{ old('para_birimi') === 'GBP' ? 'selected' : '' }}>GBP (£)</option>
+                                    </select>
+                                    @error('para_birimi')
+                                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Sağ Kolon - Lokasyon ve Kişi Bilgileri -->
@@ -597,6 +672,8 @@
                                     data-max-results="20">
                                     <input type="hidden" id="kisi_id" name="kisi_id" x-model="form.kisi_id">
                                     <input type="text"
+                                        id="kisi_search_input"
+                                        value="{{ old('kisi_display', isset($selectedKisi) ? ($selectedKisi->ad . ' ' . $selectedKisi->soyad . ' (' . ($selectedKisi->telefon ?? '') . ')') : '') }}"
                                         class="w-full px-4 py-2.5
                                                   border border-gray-300 dark:border-gray-500
                                                   rounded-lg
@@ -1177,12 +1254,15 @@
                         il_id: '{{ old('il_id') }}',
                         ilce_id: '{{ old('ilce_id') }}',
                         mahalle_id: '{{ old('mahalle_id') }}',
-                        kisi_id: '{{ old('kisi_id', request('kisi_id')) }}',
-                        kisi_ad: '{{ old('kisi_ad') }}',
-                        kisi_soyad: '{{ old('kisi_soyad') }}',
-                        kisi_telefon: '{{ old('kisi_telefon') }}',
-                        kisi_email: '{{ old('kisi_email') }}',
-                        danisman_id: '{{ old('danisman_id') }}'
+                        kisi_id: '{{ old('kisi_id', request('kisi_id', $selectedKisi->id ?? '')) }}',
+                        kisi_ad: '{{ old('kisi_ad', $selectedKisi->ad ?? '') }}',
+                        kisi_soyad: '{{ old('kisi_soyad', $selectedKisi->soyad ?? '') }}',
+                        kisi_telefon: '{{ old('kisi_telefon', $selectedKisi->telefon ?? '') }}',
+                        kisi_email: '{{ old('kisi_email', $selectedKisi->email ?? '') }}',
+                        danisman_id: '{{ old('danisman_id') }}',
+                        min_fiyat: '{{ old('min_fiyat') }}',
+                        max_fiyat: '{{ old('max_fiyat') }}',
+                        para_birimi: '{{ old('para_birimi', 'TRY') }}'
                     },
                     aiLoading: {
                         analysis: false,

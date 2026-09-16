@@ -2,13 +2,15 @@
 
 namespace App\Services\CRM;
 
+use App\Enums\KisiDurumu;
 use App\Models\Kisi;
-use Carbon\Carbon;
 use App\Traits\GuardsAgentWrites;
+use Carbon\Carbon;
 
 class KisiScoringService
 {
     use GuardsAgentWrites;
+
     /**
      * Kişi için lead score hesapla (0-100)
      */
@@ -81,11 +83,16 @@ class KisiScoringService
 
     private function pipelineSkoru(Kisi $kisi): int
     {
-        return match ($kisi->crm_surec_asamasi) {
-            \App\Enums\KisiDurumu::ISLEMYAPMIS->value => 20,
-            \App\Enums\KisiDurumu::SICAK->value => 15,
-            \App\Enums\KisiDurumu::TAKIPTE->value => 10,
-            \App\Enums\KisiDurumu::ILGILI->value => 5,
+        $stage = $kisi->crm_surec_asamasi;
+        if (is_string($stage)) {
+            $stage = KisiDurumu::tryFromDatabase($stage);
+        }
+
+        return match ($stage) {
+            KisiDurumu::ISLEMYAPMIS, KisiDurumu::TAMAMLANDI => 20,
+            KisiDurumu::SICAK => 15,
+            KisiDurumu::TAKIPTE, KisiDurumu::TAKIP => 10,
+            KisiDurumu::ILGILI, KisiDurumu::GORUSME => 5,
             default => 0,
         };
     }
@@ -125,15 +132,15 @@ class KisiScoringService
 
         // Mapping from int to enum value
         $mapping = [
-            1 => \App\Enums\KisiDurumu::POTANSIYEL->value,
-            2 => \App\Enums\KisiDurumu::ILGILI->value,
-            3 => \App\Enums\KisiDurumu::TAKIPTE->value,
-            4 => \App\Enums\KisiDurumu::SICAK->value,
-            5 => \App\Enums\KisiDurumu::ISLEMYAPMIS->value,
-            0 => \App\Enums\KisiDurumu::PASIF->value,
+            1 => KisiDurumu::POTANSIYEL->value,
+            2 => KisiDurumu::ILGILI->value,
+            3 => KisiDurumu::TAKIPTE->value,
+            4 => KisiDurumu::SICAK->value,
+            5 => KisiDurumu::ISLEMYAPMIS->value,
+            0 => KisiDurumu::PASIF->value,
         ];
 
-        $kisi->crm_surec_asamasi = $mapping[$stage] ?? \App\Enums\KisiDurumu::POTANSIYEL->value;
+        $kisi->crm_surec_asamasi = $mapping[$stage] ?? KisiDurumu::POTANSIYEL->value;
         $kisi->son_etkilesim = now();
         $kisi->save();
 
@@ -166,7 +173,7 @@ class KisiScoringService
     {
         $kisi = Kisi::find($kisiId); // governance-bypass: audit read-only lookup, no ownership scope required
 
-        if (!$kisi) {
+        if (! $kisi) {
             return ['success' => false, 'message' => 'Kişi bulunamadı'];
         }
 
@@ -178,32 +185,32 @@ class KisiScoringService
             $suggestions[] = [
                 'type' => 'crm_score', // context7-ignore
                 'priority' => 'high',
-                'message' => 'CRM skoru düşük (' . $score . '/100). Eksik bilgileri tamamlayın.',
+                'message' => 'CRM skoru düşük ('.$score.'/100). Eksik bilgileri tamamlayın.',
                 'actions' => [
-                    'tc_kimlik' => !$kisi->tc_kimlik ? 'TC Kimlik No ekleyin' : null,
-                    'telefon' => !$kisi->telefon ? 'Telefon numarası ekleyin' : null,
-                    'email' => !$kisi->email ? 'E-posta adresi ekleyin' : null,
-                    'adres' => !$kisi->il_id ? 'Adres bilgilerini tamamlayın' : null,
+                    'tc_kimlik' => ! $kisi->tc_kimlik ? 'TC Kimlik No ekleyin' : null,
+                    'telefon' => ! $kisi->telefon ? 'Telefon numarası ekleyin' : null,
+                    'email' => ! $kisi->email ? 'E-posta adresi ekleyin' : null,
+                    'adres' => ! $kisi->il_id ? 'Adres bilgilerini tamamlayın' : null,
                 ],
             ];
         }
 
         // İlan sahibi uygunluğu
-        if (!$kisi->isOwnerEligible()) {
+        if (! $kisi->isOwnerEligible()) {
             $suggestions[] = [
                 'type' => 'owner_eligibility', // context7-ignore
                 'priority' => 'medium',
                 'message' => 'Bu kişi ilan sahibi olarak uygun değil.',
                 'actions' => [
-                    'tc_kimlik' => !$kisi->tc_kimlik ? 'TC Kimlik No gerekli' : null,
-                    'telefon' => !$kisi->telefon ? 'Telefon numarası gerekli' : null,
-                    'adres' => !$kisi->il_id ? 'Adres bilgileri gerekli' : null,
+                    'tc_kimlik' => ! $kisi->tc_kimlik ? 'TC Kimlik No gerekli' : null,
+                    'telefon' => ! $kisi->telefon ? 'Telefon numarası gerekli' : null,
+                    'adres' => ! $kisi->il_id ? 'Adres bilgileri gerekli' : null,
                 ],
             ];
         }
 
         // Kişi tipi önerileri (Context7: kisi_tipi)
-        if (!$kisi->kisi_tipi) {
+        if (! $kisi->kisi_tipi) {
             $suggestions[] = [
                 'type' => 'kisi_tipi', // context7-ignore
                 'priority' => 'medium',

@@ -18,6 +18,13 @@ enum KisiDurumu: string
     case POTANSIYEL = 'potansiyel';
     case ISLEMYAPMIS = 'islemyapmis'; // Replaces 'musteri' for better clarity
 
+    // CRM Süreç Aşama Values
+    case YENI = 'yeni';
+    case GORUSME = 'gorusme';
+    case TAKIP = 'takip';
+    case TAMAMLANDI = 'tamamlandi';
+    case KAYBEDILDI = 'kaybedildi';
+
     /**
      * Get human-readable label
      */
@@ -31,6 +38,11 @@ enum KisiDurumu: string
             self::PASIF => 'Pasif',
             self::POTANSIYEL => 'Potansiyel',
             self::ISLEMYAPMIS => 'İşlem Yapmış',
+            self::YENI => 'Yeni Lead',
+            self::GORUSME => 'Görüşme Aşamasında',
+            self::TAKIP => 'Takip Ediliyor',
+            self::TAMAMLANDI => 'Kazanıldı (Tamamlandı)',
+            self::KAYBEDILDI => 'Kaybedildi',
         };
     }
 
@@ -47,6 +59,11 @@ enum KisiDurumu: string
             self::PASIF => 'Pasif durumda, aktif takip edilmiyor',
             self::POTANSIYEL => 'Gelecek vaat eden kişi, henüz aktif değil',
             self::ISLEMYAPMIS => 'Daha önce başarıyla işlem/satış tamamlamış kişi',
+            self::YENI => 'Sisteme yeni girmiş lead/potansiyel',
+            self::GORUSME => 'Danışman ile aktif görüşme aşamasında',
+            self::TAKIP => 'Teklif verilmiş veya takip sürecinde',
+            self::TAMAMLANDI => 'Satış veya kiralama başarıyla sonuçlanmış',
+            self::KAYBEDILDI => 'İşlem olumsuz sonuçlanmış veya vazgeçilmiş',
         };
     }
 
@@ -63,6 +80,11 @@ enum KisiDurumu: string
             self::PASIF => '😴',
             self::POTANSIYEL => '💡',
             self::ISLEMYAPMIS => '🤝',
+            self::YENI => '✨',
+            self::GORUSME => '💬',
+            self::TAKIP => '🔄',
+            self::TAMAMLANDI => '🏆',
+            self::KAYBEDILDI => '❌',
         };
     }
 
@@ -79,7 +101,30 @@ enum KisiDurumu: string
             self::PASIF => 'slate',
             self::POTANSIYEL => 'yellow',
             self::ISLEMYAPMIS => 'green',
+            self::YENI => 'blue',
+            self::GORUSME => 'amber',
+            self::TAKIP => 'indigo',
+            self::TAMAMLANDI => 'emerald',
+            self::KAYBEDILDI => 'rose',
         };
+    }
+
+    /**
+     * Safely parse value from database string (PHP 8.4 safe)
+     */
+    public static function tryFromDatabase(?string $value): ?self
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        $val = strtolower(trim($value));
+
+        if ($val === 'musteri') {
+            return self::ISLEMYAPMIS;
+        }
+
+        return self::tryFrom($val);
     }
 
     /**
@@ -87,7 +132,7 @@ enum KisiDurumu: string
      */
     public function isUrgent(): bool
     {
-        return in_array($this, [self::SICAK, self::ILGILI]);
+        return in_array($this, [self::SICAK, self::ILGILI, self::YENI, self::GORUSME]);
     }
 
     /**

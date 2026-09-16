@@ -7,14 +7,15 @@ use Illuminate\Support\Facades\Auth;
 
 class QuickNoteAction
 {
-    public function handle(int $kisiId, string $note): KisiEtkilesim
+    public function handle(int $kisiId, string $note, string $tip = 'not'): KisiEtkilesim
     {
         return KisiEtkilesim::create([
             'kisi_id' => $kisiId,
-            'etkilesim_tipi' => 'not',
-            'aciklama' => $note,
-            'tarih' => now(),
-            'kullanici_id' => Auth::id()
+            'kullanici_id' => Auth::id() ?? 1,
+            'tip' => $tip,
+            'notlar' => $note,
+            'etkilesim_tarihi' => now(),
+            'aktiflik_durumu' => true,
         ]);
     }
 }

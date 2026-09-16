@@ -1,8 +1,39 @@
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
 
-## Oturum 148 — 2026-09-16 | P0/P1 Audit Blokajları Onarımı (IlanAI, proje_id, site_id, anahtar_yonetimi) 🛡️
+## Oturum 149 — 2026-09-16 | Talep Create Bütçe/Kişi Preselect, CRM Pipeline & PHP 8.4 Enum Güvenliği 🛡️
 
-**Kapsam:** İlan ve portföy yönetimindeki kritik mimari ve runtime blokajları giderildi; test paketi eklendi ve tüm kalite kapıları yeşile çekildi.
+**Kapsam:** Müşteri/Talep oluşturma akışındaki bütçe ve kişi önseçim eksiklikleri giderildi, CRM Pipeline Kanban ve PHP 8.4 enum dönüşüm güvenliği sağlandı, tüm kalite kapıları %100 yeşillendi.
+
+#### 1. Talep Oluşturma Akışı (`/admin/talepler/create?kisi_id=...`)
+- `TalepController::create()`: `$request->input('kisi_id')` üzerinden `$selectedKisi` çekilerek view'a aktarıldı.
+- `resources/views/admin/talepler/create.blade.php`:
+  - "Bütçe ve Fiyat Kriterleri" kartı (`min_fiyat`, `max_fiyat`, `para_birimi`) eklendi.
+  - Canlı kişi arama input'una ve Alpine.js `talepForm()` durumuna önseçilen kişi ve bütçe alanları bağlandı.
+- `TalepController::store()` & `update()`: `min_fiyat`, `max_fiyat`, `para_birimi`, `category_id`, `alt_kategori_id`, `notlar` validasyon kuralları eklendi.
+- `TalepAuthorityService::mapTalepData()`: `para_birimi` default 'TRY', `category_id` fallback ve `talep_durumu` canonical normalizasyonu (`aktif`/`yayinda` -> `TalepDurumu::AKTIF->value`) sağlandı.
+- `resources/views/admin/talepler/edit.blade.php`: Font Awesome `fas fa-edit` ve `fas fa-arrow-left` ikonları `<x-icon name="..." />` bileşeni ile değiştirildi.
+
+#### 2. Kişi CRM Durum & PHP 8.4 Enum Uyumu
+- `App\Enums\KisiDurumu`: Eksik CRM pipeline aşamaları (`YENI`, `GORUSME`, `TAKIP`, `TAMAMLANDI`, `KAYBEDILDI`) eklendi; `tryFromDatabase(?string $value)` yazıldı (`musteri` -> `ISLEMYAPMIS` fallback).
+- `App\Casts\NullableKisiDurumuCast`: PHP 8.4 `ValueError` istisnalarını önleyen güvenli enum cast sınıfı oluşturuldu.
+- `App\Models\Kisi`: `'crm_surec_asamasi'` cast'i `NullableKisiDurumuCast` olarak güncellendi; `latestEtkilesim(): HasOne` ilişkisi tanımlandı.
+- `App\Services\CRM\KisiScoringService`: `pipelineSkoru()` metodu hem enum hem string girdiyle uyumlu hale getirildi.
+- `App\Http\Controllers\Admin\KisiController`: `update` redirect rotasındaki `{kisiId}` parametresi düzeltildi.
+
+#### 3. CRM Pipeline & Quick Note Onarımı
+- `App\Http\Controllers\Admin\CRM\PipelineController`: Context7 `KisiDurumu` değerleriyle uyumlandı, BackedEnum/string tip güvenliği sağlandı, SQLite uyumlu istatistik sorgusu eklendi.
+- `App\Actions\CRM\Pipeline\QuickNoteAction`: DB şemasında var olan `kisi_etkilesimler` kolonları (`tip`, `notlar`, `etkilesim_tarihi`) kullanılarak SQL hatası giderildi.
+- `resources/views/admin/crm/pipeline/index.blade.php`: `@extends('admin.layouts.admin')` ve Light Executive tasarımına güncellendi.
+- `database/migrations/2026_05_03_000000_restore_missing_ci_schema.php`: SQLite CI için `talepler` tablosuna `one_cikan`, `baslik`, `aciklama` eklendi.
+
+#### 4. Kalite Kapıları & Testler
+- `tests/Feature/Admin/TalepCreatePreselectTest.php`: 3/3 PASS (13 assertions).
+- `tests/Feature/Admin/CRM/PipelineControllerTest.php`: 4/4 PASS (18 assertions).
+- `tests/Feature/Admin/KisiControllerAuthorizationTest.php`: 7/7 PASS (23 assertions).
+- Toplam 27 test / 75 assertions %100 PASS.
+- Antigravity Full Gate (Preflight, Layout, Route Guard): 3/3 PASS.
+- Laravel Pint: Formatted & Clean.
+
 
 #### 1. P0: IlanAIController `resolveYayinTipiNameOrFail` Onarımı
 - `App\Http\Controllers\Admin\AI\IlanAIController`: `App\Traits\YayinTipiResolverTrait` eklendi.

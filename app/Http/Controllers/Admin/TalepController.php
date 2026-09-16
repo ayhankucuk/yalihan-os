@@ -2,17 +2,20 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Admin\Talep\DeleteTalepAction;
+use App\Actions\Admin\Talep\StoreTalepAction;
 use App\Http\Controllers\Controller;
+use App\Models\Kisi;
 use App\Models\Talep;
+use App\Repositories\TalepRepository;
 use App\Services\CRM\TalepAuthorityService;
 use App\Services\CRM\TalepOrchestrator;
-use App\Actions\Admin\Talep\StoreTalepAction;
-use App\Actions\Admin\Talep\DeleteTalepAction;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Contracts\View\View;
-use Illuminate\Http\RedirectResponse;
 
 /**
  * 🛰️ TalepController
@@ -20,7 +23,9 @@ use Illuminate\Http\RedirectResponse;
  * Thin proxy for Demand (Talep) management.
  * All complex filtering, stats, and coordination are delegated to TalepOrchestrator.
  * All mutations are handled via TalepAuthorityService or dedicated Actions.
+ *
  * @sab-ignore-thin
+ *
  * @sab-ignore-catch
  */
 class TalepController extends Controller
@@ -30,7 +35,7 @@ class TalepController extends Controller
         private readonly TalepAuthorityService $authorityService,
         private readonly StoreTalepAction $storeTalepAction,
         private readonly DeleteTalepAction $deleteTalepAction,
-        private readonly \App\Repositories\TalepRepository $repository
+        private readonly TalepRepository $repository
     ) {}
 
     /**
@@ -41,21 +46,29 @@ class TalepController extends Controller
         $this->authorize('viewAny', Talep::class);
 
         return view('admin.talepler.index', [
-            'talepler'      => $this->orchestrator->getTalepler($request->all()),
+            'talepler' => $this->orchestrator->getTalepler($request->all()),
             'istatistikler' => $this->orchestrator->getSummaryStats(),
-            'statuslar'     => $this->orchestrator->getAvailableStatuses(),
-            ...$this->orchestrator->getFormData()
+            'statuslar' => $this->orchestrator->getAvailableStatuses(),
+            ...$this->orchestrator->getFormData(),
         ]);
     }
 
     /**
      * Show the form for creating a new Talep.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
         $this->authorize('create', Talep::class);
 
-        return view('admin.talepler.create', $this->orchestrator->getFormData());
+        $selectedKisi = null;
+        if ($request->filled('kisi_id')) {
+            $selectedKisi = Kisi::find($request->input('kisi_id'));
+        }
+
+        return view('admin.talepler.create', array_merge(
+            $this->orchestrator->getFormData(),
+            ['selectedKisi' => $selectedKisi]
+        ));
     }
 
     /**
@@ -64,21 +77,27 @@ class TalepController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'baslik'          => 'required|string|max:255',
-            'aciklama'        => 'nullable|string',
-            'tip'             => 'required|string|in:Satılık,Kiralık,Günlük Kiralık,Devren',
-            'alt_kategori_id' => 'nullable|exists:ilan_kategoriler,id',
-            'talep_durumu'    => 'required|string',
-            'one_cikan'       => 'nullable|boolean',
-            'il_id'           => 'required|exists:iller,id',
-            'ilce_id'         => 'nullable|exists:ilceler,id',
-            'mahalle_id'      => 'nullable|exists:mahalleler,id',
-            'kisi_id'         => 'nullable|exists:kisiler,id',
-            'danisman_id'     => 'nullable|exists:users,id',
-            'kisi_ad'         => 'nullable|string|max:100',
-            'kisi_soyad'      => 'nullable|string|max:100',
-            'kisi_telefon'    => 'nullable|string|max:20',
-            'kisi_email'      => 'nullable|email|max:100',
+            'baslik' => 'required|string|max:255',
+            'aciklama' => 'nullable|string',
+            'tip' => 'required|string|in:Satılık,Kiralık,Günlük Kiralık,Devren',
+            'kategori_id' => 'nullable|integer',
+            'alt_kategori_id' => 'nullable|integer',
+            'category_id' => 'nullable|integer',
+            'talep_durumu' => 'required|string',
+            'one_cikan' => 'nullable|boolean',
+            'il_id' => 'required|exists:iller,id',
+            'ilce_id' => 'nullable|exists:ilceler,id',
+            'mahalle_id' => 'nullable|exists:mahalleler,id',
+            'kisi_id' => 'nullable|exists:kisiler,id',
+            'danisman_id' => 'nullable|exists:users,id',
+            'min_fiyat' => 'nullable|numeric|min:0',
+            'max_fiyat' => 'nullable|numeric|min:0',
+            'para_birimi' => 'nullable|string|in:TRY,USD,EUR,GBP',
+            'notlar' => 'nullable|string',
+            'kisi_ad' => 'nullable|string|max:100',
+            'kisi_soyad' => 'nullable|string|max:100',
+            'kisi_telefon' => 'nullable|string|max:20',
+            'kisi_email' => 'nullable|email|max:100',
         ]);
 
         try {
@@ -88,7 +107,8 @@ class TalepController extends Controller
                 ->route('admin.talepler.show', $talep->id)
                 ->with('success', 'Talep başarıyla oluşturuldu! 🎉');
         } catch (\Exception $e) {
-            Log::error('Talep store error: ' . $e->getMessage());
+            Log::error('Talep store error: '.$e->getMessage());
+
             return redirect()->back()->withInput()->with('error', 'Talep oluşturulurken hata oluştu.');
         }
     }
@@ -118,7 +138,7 @@ class TalepController extends Controller
 
         return view('admin.talepler.edit', [
             'talep' => $talep,
-            ...$this->orchestrator->getFormData()
+            ...$this->orchestrator->getFormData(),
         ]);
     }
 
@@ -131,20 +151,23 @@ class TalepController extends Controller
         $this->authorize('update', $talep);            // Layer 1: Capability check
 
         $validated = $request->validate([
-            'baslik'          => 'required|string|max:255',
-            'aciklama'        => 'nullable|string',
-            'tip'             => 'required|string|in:Satılık,Kiralık,Günlük Kiralık,Devren',
-            'alt_kategori_id' => 'nullable|exists:ilan_kategoriler,id',
-            'talep_durumu'    => 'required|string',
-            'one_cikan'       => 'nullable|boolean',
-            'il_id'           => 'required|exists:iller,id',
-            'ilce_id'         => 'nullable|exists:ilceler,id',
-            'mahalle_id'      => 'nullable|exists:mahalleler,id',
-            'kisi_id'         => 'nullable|exists:kisiler,id',
-            'danisman_id'     => 'nullable|exists:users,id',
-            'min_fiyat'       => 'nullable|numeric',
-            'max_fiyat'       => 'nullable|numeric',
-            'notlar'          => 'nullable|string',
+            'baslik' => 'required|string|max:255',
+            'aciklama' => 'nullable|string',
+            'tip' => 'required|string|in:Satılık,Kiralık,Günlük Kiralık,Devren',
+            'kategori_id' => 'nullable|integer',
+            'alt_kategori_id' => 'nullable|integer',
+            'category_id' => 'nullable|integer',
+            'talep_durumu' => 'required|string',
+            'one_cikan' => 'nullable|boolean',
+            'il_id' => 'required|exists:iller,id',
+            'ilce_id' => 'nullable|exists:ilceler,id',
+            'mahalle_id' => 'nullable|exists:mahalleler,id',
+            'kisi_id' => 'nullable|exists:kisiler,id',
+            'danisman_id' => 'nullable|exists:users,id',
+            'min_fiyat' => 'nullable|numeric|min:0',
+            'max_fiyat' => 'nullable|numeric|min:0',
+            'para_birimi' => 'nullable|string|in:TRY,USD,EUR,GBP',
+            'notlar' => 'nullable|string',
         ]);
 
         try {
@@ -154,7 +177,8 @@ class TalepController extends Controller
                 ->route('admin.talepler.show', $talep->id)
                 ->with('success', 'Talep başarıyla güncellendi! 🚀');
         } catch (\Exception $e) {
-            Log::error('Talep update error: ' . $e->getMessage());
+            Log::error('Talep update error: '.$e->getMessage());
+
             return redirect()->back()->withInput()->with('error', 'Talep güncellenirken hata oluştu.');
         }
     }
@@ -190,15 +214,15 @@ class TalepController extends Controller
         $baslik = $talep->baslik;
         $restored = $this->repository->restore((int) $id);
 
-        if (!$restored) {
+        if (! $restored) {
             return redirect()
                 ->route('admin.talepler.index')
-                ->with('error', '"' . $baslik . '" geri yüklenemedi.');
+                ->with('error', '"'.$baslik.'" geri yüklenemedi.');
         }
 
         return redirect()
             ->route('admin.talepler.index')
-            ->with('success', '"' . $baslik . '" başarıyla geri yüklendi.');
+            ->with('success', '"'.$baslik.'" başarıyla geri yüklendi.');
     }
 
     /**
@@ -212,9 +236,9 @@ class TalepController extends Controller
         $matches = $this->orchestrator->getMatches($talep);
 
         return view('admin.talepler.matches', [
-            'talep'           => $talep,
-            'eslesenIlanlar'  => $matches['eslesenIlanlar'],
-            'semanticMatches' => $matches['semanticMatches']
+            'talep' => $talep,
+            'eslesenIlanlar' => $matches['eslesenIlanlar'],
+            'semanticMatches' => $matches['semanticMatches'],
         ]);
     }
 
@@ -229,24 +253,24 @@ class TalepController extends Controller
         $matches = $this->orchestrator->getMatches($talep);
 
         return view('admin.talepler.eslesen', [
-            'talep'          => $talep,
-            'eslesenIlanlar' => $matches['eslesenIlanlar']
+            'talep' => $talep,
+            'eslesenIlanlar' => $matches['eslesenIlanlar'],
         ]);
     }
 
     /**
      * 🔎 AJAX Search endpoint for talepler
      */
-    public function search(Request $request): \Illuminate\Http\JsonResponse
+    public function search(Request $request): JsonResponse
     {
         $query = $request->input('q', '');
         $talepler = $this->repository->search($query, 20);
 
         $mapped = $talepler->map(function ($talep) {
             return [
-                'id'    => $talep->id,
-                'text'  => $talep->baslik . ' - ' . ($talep->kisi ? $talep->kisi->ad_soyad : 'N/A'),
-                'value' => $talep->id
+                'id' => $talep->id,
+                'text' => $talep->baslik.' - '.($talep->kisi ? $talep->kisi->ad_soyad : 'N/A'),
+                'value' => $talep->id,
             ];
         });
 
@@ -256,12 +280,12 @@ class TalepController extends Controller
     /**
      * 📦 Bulk action handler for talepler
      */
-    public function bulkAction(Request $request): \Illuminate\Http\JsonResponse
+    public function bulkAction(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'action' => 'required|string|in:activate,deactivate,delete',
-            'ids'    => 'required|array|min:1',
-            'ids.*'  => 'required|integer|exists:talepler,id'
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'required|integer|exists:talepler,id',
         ]);
 
         try {
@@ -272,13 +296,15 @@ class TalepController extends Controller
             foreach ($ids as $id) {
                 // Find via repository to enforce tenant boundaries (Fail-Safe Kernel)
                 $talep = $this->repository->findById($id);
-                if (!$talep) continue;
+                if (! $talep) {
+                    continue;
+                }
 
                 match ($action) {
-                    'activate'   => $this->authorityService->setOneCikan($talep, true, Auth::user()),
+                    'activate' => $this->authorityService->setOneCikan($talep, true, Auth::user()),
                     'deactivate' => $this->authorityService->setOneCikan($talep, false, Auth::user()),
-                    'delete'     => $this->deleteTalepAction->handle($talep),
-                    default      => null
+                    'delete' => $this->deleteTalepAction->handle($talep),
+                    default => null
                 };
 
                 $count++;
@@ -287,13 +313,14 @@ class TalepController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "{$count} talep başarıyla işlendi.",
-                'count'   => $count
+                'count' => $count,
             ]);
         } catch (\Exception $e) {
-            Log::error('Talep bulk action error: ' . $e->getMessage());
+            Log::error('Talep bulk action error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Toplu işlem sırasında hata oluştu.'
+                'message' => 'Toplu işlem sırasında hata oluştu.',
             ], 500);
         }
     }

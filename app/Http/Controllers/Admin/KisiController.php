@@ -10,29 +10,49 @@ namespace App\Http\Controllers\Admin;
  * @sab-ignore-thin
  */
 
-use App\Models\Kisi;
-use App\Modules\Crm\Services\KisiService;
-use App\Services\Admin\KisiSearchService;
-use App\Services\Admin\KisiManagerService;
-use App\Services\Kisi\BulkKisiService;
 use App\Http\Requests\KisiStoreRequest;
 use App\Http\Requests\KisiUpdateRequest;
-use App\Services\Response\ResponseService;
-use App\Services\CRMIntelligenceService;
+use App\Models\Il;
+use App\Models\Ilce;
+use App\Models\Kisi;
+use App\Models\Mahalle;
+use App\Models\User;
+use App\Modules\Crm\Models\Etiket;
+use App\Modules\Crm\Services\KisiService;
 use App\Repositories\KisiRepository;
+use App\Services\Admin\KisiManagerService;
+use App\Services\Admin\KisiSearchService;
+use App\Services\AI\YalihanCortex;
+use App\Services\CRM\KisiRegistrationService;
+use App\Services\CRM\KisiScoringService;
+use App\Services\CRMIntelligenceService;
+use App\Services\Kisi\BulkKisiService;
+use App\Services\Response\ResponseService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class KisiController extends AdminController
 {
-    protected \App\Services\CRM\KisiRegistrationService $registrationService;
-    protected \App\Services\Admin\KisiManagerService $managerService;
-    protected \App\Services\Admin\KisiSearchService $searchService;
-    protected \App\Services\AI\YalihanCortex $cortex;
-    protected \App\Services\CRMIntelligenceService $intelligenceService;
-    protected \App\Services\CRM\KisiScoringService $scoringService;
-    protected \App\Repositories\KisiRepository $kisiRepository;
-    protected \App\Services\Kisi\BulkKisiService $bulkKisiService;
+    protected KisiRegistrationService $registrationService;
+
+    protected KisiManagerService $managerService;
+
+    protected KisiSearchService $searchService;
+
+    protected YalihanCortex $cortex;
+
+    protected CRMIntelligenceService $intelligenceService;
+
+    protected KisiScoringService $scoringService;
+
+    protected KisiRepository $kisiRepository;
+
+    protected BulkKisiService $bulkKisiService;
 
     /**
      * Constructor
@@ -40,15 +60,15 @@ class KisiController extends AdminController
      * Architectural Enhancement: Added Central CRM Authority (RegistrationService)
      */
     public function __construct(
-        \App\Modules\Crm\Services\KisiService $kisiService,
-        \App\Services\CRM\KisiRegistrationService $registrationService,
-        \App\Services\Admin\KisiManagerService $managerService,
-        \App\Services\Admin\KisiSearchService $searchService,
-        \App\Services\AI\YalihanCortex $cortex,
-        \App\Services\CRMIntelligenceService $intelligenceService,
-        \App\Services\CRM\KisiScoringService $scoringService,
-        \App\Repositories\KisiRepository $kisiRepository,
-        \App\Services\Kisi\BulkKisiService $bulkKisiService
+        KisiService $kisiService,
+        KisiRegistrationService $registrationService,
+        KisiManagerService $managerService,
+        KisiSearchService $searchService,
+        YalihanCortex $cortex,
+        CRMIntelligenceService $intelligenceService,
+        KisiScoringService $scoringService,
+        KisiRepository $kisiRepository,
+        BulkKisiService $bulkKisiService
     ) {
         $this->kisiService = $kisiService;
         $this->registrationService = $registrationService;
@@ -65,7 +85,7 @@ class KisiController extends AdminController
      * Display a listing of the resource.
      * Context7: Kişi listesi ve filtreleme
      *
-     * @return Response|\Illuminate\Contracts\View\View
+     * @return Response|View
      */
     public function index(Request $request)
     {
@@ -83,7 +103,7 @@ class KisiController extends AdminController
         ];
 
         // ✅ ENFORCEMENT: Pass authenticated user for automatic ownership scoping
-        /** @var \Illuminate\Pagination\LengthAwarePaginator $kisiler */
+        /** @var LengthAwarePaginator $kisiler */
         $kisiler = $this->kisiRepository->paginate(20, $filters, auth()->user());
 
         // ✅ SAB: Get statistics via Repository pattern with explicit user scoping
@@ -100,7 +120,7 @@ class KisiController extends AdminController
         }
 
         // ✅ SAB: Active users via Model scope
-        $danismanlar = \App\Models\User::with('role:id,name')
+        $danismanlar = User::with('role:id,name')
             ->whereHas('role', function ($q) {
                 $q->where('name', 'danisman');
             })
@@ -111,7 +131,7 @@ class KisiController extends AdminController
 
         // ✅ FALLBACK: Eğer role ile danışman bulunamazsa, aktif kullanıcıları göster
         if ($danismanlar->isEmpty()) {
-            $danismanlar = \App\Models\User::active()
+            $danismanlar = User::active()
                 ->select(['id', 'name', 'email'])
                 ->orderBy('name') // context7-ignore
                 ->get();
@@ -131,14 +151,14 @@ class KisiController extends AdminController
      * Show the form for creating a new resource.
      * Context7: Yeni kişi oluşturma formu
      *
-     * @return Response|\Illuminate\Contracts\View\View
+     * @return Response|View
      */
     public function create()
     {
         // ✅ 🛡️ POLICY: Check if user can create
         $this->authorize('create', Kisi::class);
         // ✅ SAB: Active users via Model scope
-        $danismanlar = \App\Models\User::with('role:id,name')
+        $danismanlar = User::with('role:id,name')
             ->whereHas('role', function ($q) {
                 $q->where('name', 'danisman');
             })
@@ -149,14 +169,14 @@ class KisiController extends AdminController
 
         // ✅ FALLBACK: Eğer role ile danışman bulunamazsa, aktif kullanıcıları göster
         if ($danismanlar->isEmpty()) {
-            $danismanlar = \App\Models\User::active()
+            $danismanlar = User::active()
                 ->select(['id', 'name', 'email'])
                 ->orderBy('name') // context7-ignore
                 ->get();
         }
 
         // ✅ N+1 FIX: Select optimization
-        $iller = \App\Models\Il::select(['id', 'il_adi'])
+        $iller = Il::select(['id', 'il_adi'])
             ->orderBy('il_adi') // context7-ignore
             ->get();
 
@@ -164,7 +184,7 @@ class KisiController extends AdminController
             'ev_sahibi' => 'Ev Sahibi',
             'satici' => 'Satıcı',
             'alici' => 'Alıcı',
-            'kiraci' => 'Kiracı'
+            'kiraci' => 'Kiracı',
         ];
         $kaynaklar = ['Web', 'Telefon', 'Referans', 'Sosyal Medya', 'Diğer'];
 
@@ -175,7 +195,7 @@ class KisiController extends AdminController
      * Store a newly created resource in storage.
      * Context7: Yeni kişi kaydetme
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     * @return RedirectResponse|JsonResponse
      *
      * @throws \Exception
      */
@@ -190,7 +210,7 @@ class KisiController extends AdminController
 
             return redirect()
                 ->route('admin.kisiler.index')
-                ->with('success', $kisi->ad . ' ' . $kisi->soyad . ' başarıyla eklendi! ✅');
+                ->with('success', $kisi->ad.' '.$kisi->soyad.' başarıyla eklendi! ✅');
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
                 return ResponseService::serverError('Kişi eklenirken hata oluştu', $e);
@@ -199,7 +219,7 @@ class KisiController extends AdminController
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Kişi eklenirken hata oluştu: ' . $e->getMessage());
+                ->with('error', 'Kişi eklenirken hata oluştu: '.$e->getMessage());
         }
     }
 
@@ -208,7 +228,7 @@ class KisiController extends AdminController
      * Context7: Kişi detay sayfası
      *
      * @param  int|string  $kisiId
-     * @return Response|\Illuminate\Contracts\View\View
+     * @return Response|View
      */
     public function show($kisiId)
     {
@@ -245,7 +265,7 @@ class KisiController extends AdminController
      * Context7: Kişi düzenleme formu
      *
      * @param  int|string  $kisiId
-     * @return Response|\Illuminate\Contracts\View\View
+     * @return Response|View
      */
     public function edit($kisiId)
     {
@@ -264,7 +284,7 @@ class KisiController extends AdminController
         ]);
 
         // ✅ SAB: Active users via Model scope
-        $danismanlar = \App\Models\User::with('roles:id,name')
+        $danismanlar = User::with('roles:id,name')
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'danisman');
             })
@@ -275,25 +295,25 @@ class KisiController extends AdminController
 
         // ✅ FALLBACK: Eğer role ile danışman bulunamazsa, aktif kullanıcıları göster
         if ($danismanlar->isEmpty()) {
-            $danismanlar = \App\Models\User::active()
+            $danismanlar = User::active()
                 ->select(['id', 'name', 'email'])
                 ->orderBy('name') // context7-ignore
                 ->get();
         }
 
         // ✅ N+1 FIX: Select optimization
-        $iller = \App\Models\Il::select(['id', 'il_adi'])
+        $iller = Il::select(['id', 'il_adi'])
             ->orderBy('il_adi') // context7-ignore
             ->get();
 
         // ✅ N+1 FIX: Select optimization
-        $ilceler = $kisi->il_id ? \App\Models\Ilce::where('il_id', $kisi->il_id)
+        $ilceler = $kisi->il_id ? Ilce::where('il_id', $kisi->il_id)
             ->select(['id', 'ilce_adi'])
             ->orderBy('ilce_adi') // context7-ignore
             ->get() : [];
 
         // ✅ N+1 FIX: Select optimization
-        $mahalleler = $kisi->ilce_id ? \App\Models\Mahalle::where('ilce_id', $kisi->ilce_id)
+        $mahalleler = $kisi->ilce_id ? Mahalle::where('ilce_id', $kisi->ilce_id)
             ->select(['id', 'mahalle_adi'])
             ->orderBy('mahalle_adi') // context7-ignore
             ->get() : [];
@@ -302,11 +322,11 @@ class KisiController extends AdminController
             'ev_sahibi' => 'Ev Sahibi',
             'satici' => 'Satıcı',
             'alici' => 'Alıcı',
-            'kiraci' => 'Kiracı'
+            'kiraci' => 'Kiracı',
         ];
 
         // ✅ N+1 FIX: Select optimization
-        $etiketler = \App\Modules\Crm\Models\Etiket::select(['id', 'name', 'color'])
+        $etiketler = Etiket::select(['id', 'name', 'color'])
             ->orderBy('name') // context7-ignore
             ->get();
 
@@ -332,7 +352,7 @@ class KisiController extends AdminController
      * Update the specified resource in storage.
      * Context7: Kişi güncelleme
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     * @return RedirectResponse|JsonResponse
      *
      * @throws \Exception
      */
@@ -356,8 +376,8 @@ class KisiController extends AdminController
             }
 
             return redirect()
-                ->route('admin.kisiler.edit', ['kisi' => $kisi->id])
-                ->with('success', $kisi->ad . ' ' . $kisi->soyad . ' başarıyla güncellendi! ✅');
+                ->route('admin.kisiler.edit', ['kisiId' => $kisi->id])
+                ->with('success', $kisi->ad.' '.$kisi->soyad.' başarıyla güncellendi! ✅');
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
                 return ResponseService::serverError('Kişi güncellenirken hata oluştu', $e);
@@ -366,7 +386,7 @@ class KisiController extends AdminController
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Kişi güncellenirken hata oluştu: ' . $e->getMessage());
+                ->with('error', 'Kişi güncellenirken hata oluştu: '.$e->getMessage());
         }
     }
 
@@ -374,7 +394,7 @@ class KisiController extends AdminController
      * Remove the specified resource from storage.
      * Context7: Kişi silme
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     * @return RedirectResponse|JsonResponse
      *
      * @throws \Exception
      */
@@ -388,36 +408,36 @@ class KisiController extends AdminController
             $this->authorize('delete', $kisi);
 
             // ✅ REFACTORED: Use KisiService
-            $kisiAdi = $kisi->ad . ' ' . $kisi->soyad;
+            $kisiAdi = $kisi->ad.' '.$kisi->soyad;
             $this->kisiService->deleteKisi($kisi);
 
             // JSON response for AJAX requests
             if (request()->expectsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => $kisiAdi . ' başarıyla silindi.',
+                    'message' => $kisiAdi.' başarıyla silindi.',
                 ]);
             }
 
             // Redirect for form submissions
             return redirect()
                 ->route('admin.kisiler.index')
-                ->with('success', $kisiAdi . ' başarıyla silindi.');
-        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+                ->with('success', $kisiAdi.' başarıyla silindi.');
+        } catch (HttpException $e) {
             throw $e;
         } catch (\Exception $e) {
             // JSON response for AJAX requests
             if (request()->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Kişi silinirken bir hata oluştu: ' . $e->getMessage(),
+                    'message' => 'Kişi silinirken bir hata oluştu: '.$e->getMessage(),
                 ], 500);
             }
 
             // Redirect for form submissions
             return redirect()
                 ->route('admin.kisiler.index')
-                ->with('error', 'Kişi silinirken bir hata oluştu: ' . $e->getMessage());
+                ->with('error', 'Kişi silinirken bir hata oluştu: '.$e->getMessage());
         }
     }
 
@@ -434,10 +454,10 @@ class KisiController extends AdminController
 
             $this->authorize('restore', $kisi);
 
-            $kisiAdi = $kisi->ad . ' ' . $kisi->soyad;
+            $kisiAdi = $kisi->ad.' '.$kisi->soyad;
             $restored = $this->kisiService->restoreKisi((int) $kisi->id);
 
-            if (!$restored) {
+            if (! $restored) {
                 if ($request->expectsJson()) {
                     return response()->json([
                         'success' => false,
@@ -453,26 +473,26 @@ class KisiController extends AdminController
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => $kisiAdi . ' başarıyla geri yüklendi.',
+                    'message' => $kisiAdi.' başarıyla geri yüklendi.',
                 ]);
             }
 
             return redirect()
                 ->route('admin.kisiler.index')
-                ->with('success', $kisiAdi . ' başarıyla geri yüklendi.');
-        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+                ->with('success', $kisiAdi.' başarıyla geri yüklendi.');
+        } catch (HttpException $e) {
             throw $e;
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Kişi geri yüklenirken hata oluştu: ' . $e->getMessage(),
+                    'message' => 'Kişi geri yüklenirken hata oluştu: '.$e->getMessage(),
                 ], 500);
             }
 
             return redirect()
                 ->route('admin.kisiler.index')
-                ->with('error', 'Kişi geri yüklenirken hata oluştu: ' . $e->getMessage());
+                ->with('error', 'Kişi geri yüklenirken hata oluştu: '.$e->getMessage());
         }
     }
 
@@ -480,7 +500,7 @@ class KisiController extends AdminController
      * Search persons
      * Context7: Kişi arama endpoint
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function search(Request $request)
     {
@@ -489,7 +509,7 @@ class KisiController extends AdminController
 
         // Context7 uyumlu kişi arama
         $search = $request->get('q', '');
-        $limit = (int)$request->get('limit', 10);
+        $limit = (int) $request->get('limit', 10);
 
         if (empty($search)) {
             return response()->json(['items' => []]);
@@ -501,7 +521,7 @@ class KisiController extends AdminController
             ->map(function ($kisi) {
                 return [
                     'id' => $kisi->id,
-                    'text' => $kisi->tam_ad . ' - ' . ($kisi->telefon ?? 'Tel yok') . ' - ' . ($kisi->il->il_adi ?? ''),
+                    'text' => $kisi->tam_ad.' - '.($kisi->telefon ?? 'Tel yok').' - '.($kisi->il->il_adi ?? ''),
                     'tam_ad' => $kisi->tam_ad,
                     'telefon' => $kisi->telefon,
                     'email' => $kisi->email,
@@ -518,7 +538,7 @@ class KisiController extends AdminController
      * Check for duplicate persons
      * Context7: Mükerrer kişi kontrolü
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function checkDuplicate(Request $request)
     {
@@ -539,7 +559,7 @@ class KisiController extends AdminController
      * Bulk action for persons
      * Context7: Toplu işlem endpoint
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function bulkAction(Request $request)
     {
@@ -557,8 +577,8 @@ class KisiController extends AdminController
         // ⚠️ CRITICAL: Per-record authorization check
         // Ensure user has permission for EACH record they are trying to modify
         foreach ($ids as $id) {
-            $kisi = $this->kisiRepository->findWithTrashed((int)$id, auth()->user());
-            if (!$kisi) {
+            $kisi = $this->kisiRepository->findWithTrashed((int) $id, auth()->user());
+            if (! $kisi) {
                 return response()->json(['success' => false, 'message' => "Kişi #{$id} bulunamadı veya yetkiniz yok."], 403);
             }
 
@@ -573,18 +593,18 @@ class KisiController extends AdminController
         switch ($action) {
             case 'activate':
                 $count = $this->bulkKisiService->bulkUpdate($ids, ['aktiflik_durumu' => true]);
-                $message = $count . ' kişi etkinleştirildi';
+                $message = $count.' kişi etkinleştirildi';
                 break;
 
             case 'pasif_yap':
                 $count = $this->bulkKisiService->bulkUpdate($ids, ['aktiflik_durumu' => false]);
-                $message = $count . ' kişi pasif yapıldı';
+                $message = $count.' kişi pasif yapıldı';
                 break;
 
             case 'sil':
             case 'delete':
                 $count = $this->bulkKisiService->bulkDelete($ids);
-                $message = $count . ' kişi silindi';
+                $message = $count.' kişi silindi';
                 break;
 
             default:
@@ -598,12 +618,12 @@ class KisiController extends AdminController
      * AI analysis for person
      * Context7: AI destekli kişi analizi
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function aiAnalyze(Request $request)
     {
         // Resolve kişi to ensure ownership
-        $kisiId = (int)$request->get('kisi_id');
+        $kisiId = (int) $request->get('kisi_id');
         $kisi = $this->resolve($kisiId);
 
         // ✅ 🛡️ POLICY: Check if user can view this person
@@ -613,10 +633,10 @@ class KisiController extends AdminController
         $audit = $this->scoringService->performAudit($kisiId);
 
         // 🧠 AI Enrichment via Cortex Authority
-        $enrichment = $this->cortex->requestCustomerAiEnrichment((int)$request->get('kisi_id'));
+        $enrichment = $this->cortex->requestCustomerAiEnrichment((int) $request->get('kisi_id'));
 
         $result = array_merge($audit, [
-            'ai_enrichment' => $enrichment
+            'ai_enrichment' => $enrichment,
         ]);
 
         return response()->json($result);
@@ -626,7 +646,7 @@ class KisiController extends AdminController
      * Person tracking page
      * Context7: Kişi takip sayfası
      *
-     * @return Response|\Illuminate\Contracts\View\View
+     * @return Response|View
      */
     public function takip(Request $request)
     {
@@ -646,7 +666,7 @@ class KisiController extends AdminController
      * Context7: Kişi resolver helper
      *
      * @param  int|string|Kisi  $kisi
-     * @param  bool  $withTrashed Include soft-deleted records
+     * @param  bool  $withTrashed  Include soft-deleted records
      */
     private function resolve($kisi, bool $withTrashed = false): Kisi
     {
@@ -656,9 +676,9 @@ class KisiController extends AdminController
 
         // ✅ REFACTORED: Use repository instead of direct model access
         // This ensures that ownership scope is applied at the point of retrieval
-        $kisiModel = $this->kisiRepository->findWithTrashed((int)$kisi, auth()->user());
+        $kisiModel = $this->kisiRepository->findWithTrashed((int) $kisi, auth()->user());
 
-        if (!$kisiModel) {
+        if (! $kisiModel) {
             abort(404, 'Kişi bulunamadı veya erişim yetkiniz yok.');
         }
 
@@ -669,7 +689,7 @@ class KisiController extends AdminController
      * Render any available view
      * Context7: View render helper
      */
-    private function renderAny(array $views, array $data = []): Response|\Illuminate\Contracts\View\View
+    private function renderAny(array $views, array $data = []): Response|View
     {
         foreach ($views as $view) {
             if (view()->exists($view)) {

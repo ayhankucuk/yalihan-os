@@ -2,13 +2,13 @@
 
 namespace App\Services\CRM;
 
+use App\Enums\TalepDurumu;
 use App\Models\Talep;
 use App\Models\User;
 use App\Services\Logging\LogService;
+use App\Traits\GuardsAgentWrites;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-
-use App\Traits\GuardsAgentWrites;
 
 /**
  * 🎯 TalepAuthorityService
@@ -28,10 +28,6 @@ class TalepAuthorityService
      * 🛰️ Create a new Talep (Authority Entrypoint)
      *
      * Handles customer registration spillover if kisi_id is missing.
-     *
-     * @param array $data
-     * @param User|null $actor
-     * @return Talep
      */
     public function createTalep(array $data, ?User $actor = null): Talep
     {
@@ -39,7 +35,7 @@ class TalepAuthorityService
 
         return DB::transaction(function () use ($data, $actor) {
             // 1. Handle Kisi Registration if needed (Sealing Leakage)
-            if (empty($data['kisi_id']) && !empty($data['kisi_ad'])) {
+            if (empty($data['kisi_id']) && ! empty($data['kisi_ad'])) {
                 $kisiData = [
                     'ad' => $data['kisi_ad'],
                     'soyad' => $data['kisi_soyad'] ?? null,
@@ -69,11 +65,6 @@ class TalepAuthorityService
      * 🛰️ Update an existing Talep (Authority Entrypoint)
      *
      * Fixes the previous "dead surface" in the controller.
-     *
-     * @param Talep $talep
-     * @param array $data
-     * @param User|null $actor
-     * @return Talep
      */
     public function updateTalep(Talep $talep, array $data, ?User $actor = null): Talep
     {
@@ -119,10 +110,6 @@ class TalepAuthorityService
 
     /**
      * Sprint 4.2: Restore soft-deleted Talep
-     *
-     * @param Talep $talep
-     * @param User|null $actor
-     * @return bool
      */
     public function restoreTalep(Talep $talep, ?User $actor = null): bool
     {
@@ -142,11 +129,6 @@ class TalepAuthorityService
 
     /**
      * 🛰️ Set one_cikan flag (Authority Entrypoint for bulk operations)
-     *
-     * @param Talep $talep
-     * @param bool $value
-     * @param User|null $actor
-     * @return Talep
      */
     public function setOneCikan(Talep $talep, bool $value, ?User $actor = null): Talep
     {
@@ -170,12 +152,30 @@ class TalepAuthorityService
      */
     protected function mapTalepData(array $data, ?User $actor = null): array
     {
+        $talepDurumu = $data['talep_durumu'] ?? null;
+        if (is_string($talepDurumu)) {
+            $normalized = strtolower(trim($talepDurumu));
+            if ($normalized === 'aktif' || $normalized === 'yayinda') {
+                $talepDurumu = TalepDurumu::AKTIF->value;
+            } elseif ($normalized === 'beklemede') {
+                $talepDurumu = TalepDurumu::BEKLEMEDE->value;
+            } elseif ($normalized === 'taslak') {
+                $talepDurumu = TalepDurumu::TASLAK->value;
+            } elseif ($normalized === 'iptal' || $normalized === 'iptal edildi') {
+                $talepDurumu = TalepDurumu::IPTAL->value;
+            } elseif ($normalized === 'tamamlandi' || $normalized === 'karsilandi' || $normalized === 'karşılandı') {
+                $talepDurumu = TalepDurumu::KARSIILANDI->value;
+            } elseif ($normalized === 'acil') {
+                $talepDurumu = TalepDurumu::ACIL->value;
+            }
+        }
+
         return [
             'baslik' => $data['baslik'] ?? null,
             'aciklama' => $data['aciklama'] ?? null,
             'talep_tipi' => $data['tip'] ?? ($data['talep_tipi'] ?? null),
-            'alt_kategori_id' => $data['alt_kategori_id'] ?? null,
-            'talep_durumu' => $data['talep_durumu'] ?? null,
+            'alt_kategori_id' => $data['alt_kategori_id'] ?? ($data['category_id'] ?? null),
+            'talep_durumu' => $talepDurumu,
             'one_cikan' => $data['one_cikan'] ?? false,
             'il_id' => $data['il_id'] ?? null,
             'ilce_id' => $data['ilce_id'] ?? null,
@@ -184,6 +184,7 @@ class TalepAuthorityService
             'danisman_id' => $data['danisman_id'] ?? ($actor?->id),
             'min_fiyat' => $data['min_fiyat'] ?? null,
             'max_fiyat' => $data['max_fiyat'] ?? null,
+            'para_birimi' => $data['para_birimi'] ?? 'TRY',
             'notlar' => $data['notlar'] ?? null,
         ];
     }
@@ -205,7 +206,7 @@ class TalepAuthorityService
 
         LogService::info("CRM Authority: Talep {$action}", [
             'talep_id' => $talep->id,
-            'actor' => $actor?->id
+            'actor' => $actor?->id,
         ]);
     }
 }
