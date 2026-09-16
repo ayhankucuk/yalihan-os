@@ -1,5 +1,9 @@
 # Change Impact Analysis
 
+## 2026-09-06 — P4 ilceler FK (base 7f467b8a)
+
+Scope: additive MySQL ilceler.il_id -> iller.id RESTRICT constraint and isolated tests. No row mutation. Risk: existing orphans, conflicting FK, MySQL DDL locks. Use actual FK metadata, not index names. SQLite is a no-op. Automatic MySQL down is blocked because a pre-existing equivalent constraint may not belong to this migration; reversal requires a reviewed forward migration. Production authorization remains pending. Focused SQLite tests and requested full suite will be attempted in dedicated checkout.
+
 Bu kayıt, her material değişiklikten önce doldurulur. Amaç yalnızca değişen dosyayı değil, etkilenen sistemi görmek.
 
 ## Active analysis

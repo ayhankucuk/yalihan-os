@@ -34,6 +34,7 @@ class UserFactory extends Factory
             // role_id dinamik atanacak; varsayılanı admin yerine null bırakıyoruz.
             // Test senaryolarında state() ile spesifik rol set edilecek.
             'role_id' => null,
+            'tenant_id' => 1, // TenantBaselineSeeder canonical super-admin tenant (id=1). Testlerde state() ile override edilebilir.
         ];
     }
 

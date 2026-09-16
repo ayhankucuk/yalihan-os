@@ -478,4 +478,76 @@ class WizardController extends Controller
             return ResponseService::serverError('Sablon cozumlemesi sirasinda beklenmeyen hata olustu.', $e);
         }
     }
+
+    /**
+     * ⚡ Hexagonal / DDD: Save Wizard Step
+     * POST /api/v1/wizard/step
+     */
+    public function saveStep(Request $request)
+    {
+        $validated = $request->validate([
+            'step' => 'required|integer|between:1,5',
+            'ilan_id' => 'nullable|integer',
+            'lock_version' => 'nullable|integer',
+            'data' => 'required|array',
+        ]);
+
+        try {
+            $userId = (int) auth()->id() ?: 1;
+            $result = $this->hub->stepExecutor->executeStep(
+                $userId,
+                (int) $validated['step'],
+                $validated['data'],
+                !empty($validated['ilan_id']) ? (int) $validated['ilan_id'] : null,
+                !empty($validated['lock_version']) ? (int) $validated['lock_version'] : null
+            );
+
+            return ResponseService::success($result, 'Adım başarıyla kaydedildi');
+        } catch (\App\Domain\Ilan\Exceptions\ConcurrentModificationException $e) {
+            return ResponseService::error($e->getMessage(), 409);
+        } catch (\Exception $e) {
+            LogService::error('wizard_save_step_failed', ['error' => $e->getMessage()], $e);
+            return ResponseService::serverError('Adım kaydedilirken hata oluştu.', $e);
+        }
+    }
+
+    /**
+     * 🚀 Hexagonal / DDD: Submit Wizard
+     * POST /api/v1/wizard/submit
+     */
+    public function submit(Request $request)
+    {
+        $validated = $request->validate([
+            'ilan_id' => 'required|integer|exists:ilanlar,id',
+            'yayin_durumu' => 'nullable|string',
+        ]);
+
+        try {
+            $userId = (int) auth()->id() ?: 1;
+            $result = $this->hub->stepExecutor->submitWizard(
+                $userId,
+                (int) $validated['ilan_id'],
+                ['yayin_durumu' => $validated['yayin_durumu'] ?? 'yayinda']
+            );
+
+            return ResponseService::success($result, 'İlan sihirbazı başarıyla tamamlandı.');
+        } catch (\App\Domain\Ilan\Exceptions\WizardIncompleteException $e) {
+            return ResponseService::error($e->getMessage(), 422);
+        } catch (\Exception $e) {
+            LogService::error('wizard_submit_failed', ['error' => $e->getMessage()], $e);
+            return ResponseService::serverError('İlan onaylanırken hata oluştu.', $e);
+        }
+    }
+
+    /**
+     * 🔒 Hexagonal / DDD: Get Wizard Session State
+     * GET /api/v1/wizard/session/{ilanId}
+     */
+    public function sessionState(int $ilanId)
+    {
+        $userId = (int) auth()->id() ?: 1;
+        $state = $this->hub->sessionManager->getSessionState($userId, $ilanId);
+
+        return ResponseService::success($state);
+    }
 }

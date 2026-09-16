@@ -2,6 +2,27 @@
 
 @section('title', 'Yeni İlan Oluştur')
 
+@push('scripts')
+    {{-- Konum cascade — step1-cascade.js SSOT: window.loadIlceler, window.loadMahalleler --}}
+    <script>
+        (function () {
+            var ilSelect = document.getElementById('il_id');
+            var ilceSelect = document.getElementById('ilce_id');
+
+            if (ilSelect) {
+                ilSelect.addEventListener('change', function () {
+                    if (window.loadIlceler) window.loadIlceler(this.value);
+                });
+            }
+            if (ilceSelect) {
+                ilceSelect.addEventListener('change', function () {
+                    if (window.loadMahalleler) window.loadMahalleler(this.value);
+                });
+            }
+        })();
+    </script>
+@endpush
+
 @section('content')
 <div class="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
@@ -195,6 +216,40 @@
                 </div>
 
                 <div>
+                    <label for="ilce_id" class="block text-sm font-medium text-gray-700 dark:text-slate-300">
+                        İlçe
+                    </label>
+                    <select id="ilce_id" name="ilce_id"
+                        class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm
+                               focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                               dark:border-slate-600 dark:bg-slate-700 dark:text-white
+                               disabled
+                               @error('ilce_id') border-red-500 @enderror">
+                        <option value="">Önce İl Seçin</option>
+                    </select>
+                    @error('ilce_id')
+                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="mahalle_id" class="block text-sm font-medium text-gray-700 dark:text-slate-300">
+                        Mahalle
+                    </label>
+                    <select id="mahalle_id" name="mahalle_id"
+                        class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm
+                               focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                               dark:border-slate-600 dark:bg-slate-700 dark:text-white
+                               disabled
+                               @error('mahalle_id') border-red-500 @enderror">
+                        <option value="">Önce İlçe Seçin</option>
+                    </select>
+                    @error('mahalle_id')
+                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
                     <label for="adres" class="block text-sm font-medium text-gray-700 dark:text-slate-300">
                         Açık Adres
                     </label>
@@ -208,6 +263,36 @@
         </div>
     </div>
 
+    {{-- Yayın Tipi --}}
+    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div class="border-b border-gray-200 px-6 py-4 dark:border-slate-700">
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Yayın Tipi <span class="text-xs font-normal text-gray-400">(opsiyonel)</span></h2>
+        </div>
+        <div class="space-y-5 p-6">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="yayin_tipi" class="block text-sm font-medium text-gray-700 dark:text-slate-300">
+                        İlan Türü
+                    </label>
+                    <select id="yayin_tipi" name="yayin_tipi"
+                        class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm
+                               focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                               dark:border-slate-600 dark:bg-slate-700 dark:text-white">
+                        <option value="">Seçiniz...</option>
+                        <option value="satilik" {{ old('yayin_tipi') === 'satilik' ? 'selected' : '' }}>Satılık</option>
+                        <option value="kiralik" {{ old('yayin_tipi') === 'kiralik' ? 'selected' : '' }}>Kiralık</option>
+                    </select>
+                </div>
+
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-slate-400">
+                        İlan taslak olarak kaydedilir. Yayına almak için danışmanınızla iletişime geçin.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Mülk Özellikleri --}}
     <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
         <div class="border-b border-gray-200 px-6 py-4 dark:border-slate-700">
@@ -215,11 +300,20 @@
         </div>
         <div class="grid grid-cols-1 gap-5 p-6 sm:grid-cols-3">
             <div>
-                <label for="metrekare" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Alan (m²)</label>
-                <input type="number" id="metrekare" name="metrekare" value="{{ old('metrekare') }}" min="0"
+                <label for="net_m2" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Alan (m² Net)</label>
+                <input type="number" id="net_m2" name="net_m2" value="{{ old('net_m2') }}" min="0"
                     class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm
                            focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
-                           dark:border-slate-600 dark:bg-slate-700 dark:text-white" placeholder="0">
+                           dark:border-slate-600 dark:bg-slate-700 dark:text-white
+                           @error('net_m2') border-red-500 @enderror" placeholder="0">
+            </div>
+            <div>
+                <label for="brut_m2" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Alan (m² Brüt)</label>
+                <input type="number" id="brut_m2" name="brut_m2" value="{{ old('brut_m2') }}" min="0"
+                    class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm
+                           focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                           dark:border-slate-600 dark:bg-slate-700 dark:text-white
+                           @error('brut_m2') border-red-500 @enderror" placeholder="0">
             </div>
             <div>
                 <label for="oda_sayisi" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Oda Sayısı</label>
@@ -234,6 +328,90 @@
                     class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm
                            focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
                            dark:border-slate-600 dark:bg-slate-700 dark:text-white" placeholder="0">
+            </div>
+
+            {{-- Koordinatlar (gizli, harita entegrasyonu için) --}}
+            <div>
+                <label for="lat" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Enlem (Lat)</label>
+                <input type="text" id="lat" name="lat" value="{{ old('lat') }}"
+                    class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm
+                           focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                           dark:border-slate-600 dark:bg-slate-700 dark:text-white" placeholder="Örn: 41.0082">
+            </div>
+
+            <div>
+                <label for="lng" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Boylam (Lng)</label>
+                <input type="text" id="lng" name="lng" value="{{ old('lng') }}"
+                    class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm
+                           focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                           dark:border-slate-600 dark:bg-slate-700 dark:text-white" placeholder="Örn: 28.9784">
+            </div>
+
+            <div>
+                <label for="toplam_kat" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Toplam Kat</label>
+                <input type="number" id="toplam_kat" name="toplam_kat" value="{{ old('toplam_kat') }}" min="0"
+                    class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm
+                           focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                           dark:border-slate-600 dark:bg-slate-700 dark:text-white" placeholder="0">
+            </div>
+
+            <div>
+                <label for="banyo_sayisi" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Banyo Sayısı</label>
+                <input type="number" id="banyo_sayisi" name="banyo_sayisi" value="{{ old('banyo_sayisi') }}" min="0" max="50"
+                    class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm
+                           focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                           dark:border-slate-600 dark:bg-slate-700 dark:text-white
+                           @error('banyo_sayisi') border-red-500 @enderror" placeholder="0">
+            </div>
+
+            <div>
+                <label for="esyali" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Eşyalı mı?</label>
+                <select id="esyali" name="esyali"
+                    class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm
+                           focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                           dark:border-slate-600 dark:bg-slate-700 dark:text-white
+                           @error('esyali') border-red-500 @enderror">
+                    <option value="">Seçiniz...</option>
+                    <option value="1" {{ old('esyali') == '1' ? 'selected' : '' }}>Evet</option>
+                    <option value="0" {{ old('esyali') == '0' ? 'selected' : '' }}>Hayır</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="aidat" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Aidat (opsiyonel)</label>
+                <input type="text" id="aidat" name="aidat" value="{{ old('aidat') }}"
+                    class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm
+                           focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                           dark:border-slate-600 dark:bg-slate-700 dark:text-white
+                           @error('aidat') border-red-500 @enderror" placeholder="500 TL">
+            </div>
+        </div>
+    </div>
+
+    {{-- Fotoğraf Yükleme (basit) --}}
+    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div class="border-b border-gray-200 px-6 py-4 dark:border-slate-700">
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Fotoğraflar <span class="text-xs font-normal text-gray-400">(opsiyonel)</span></h2>
+        </div>
+        <div class="space-y-5 p-6">
+            <div>
+                <label for="kapak_resmi" class="block text-sm font-medium text-gray-700 dark:text-slate-300">
+                    Kapak Fotoğrafı
+                </label>
+                <input type="file" id="kapak_resmi" name="kapak_resmi" accept="image/*"
+                    class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file: rounded-lg file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100
+                           dark:file:bg-slate-700 dark:file:text-slate-200 dark:text-slate-400">
+                <p class="mt-1 text-xs text-gray-400 dark:text-slate-500">Maksimum 5MB. İzin verilen formatlar: JPG, PNG, WEBP</p>
+            </div>
+
+            <div>
+                <label for="fotograflar" class="block text-sm font-medium text-gray-700 dark:text-slate-300">
+                    Galeri Fotoğrafları
+                </label>
+                <input type="file" id="fotograflar" name="fotograflar[]" accept="image/*" multiple
+                    class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100
+                           dark:file:bg-slate-700 dark:file:text-slate-200 dark:text-slate-400">
+                <p class="mt-1 text-xs text-gray-400 dark:text-slate-500">Birden fazla fotoğraf seçebilirsiniz. Maksimum 5MB/fotoğraf.</p>
             </div>
         </div>
     </div>

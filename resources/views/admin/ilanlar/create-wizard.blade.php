@@ -48,17 +48,23 @@
         {{-- Page Header --}}
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">
+                <div class="flex items-center gap-2.5 mb-1.5">
+                    <div class="w-8 h-8 bg-[#0A1628] text-[#C9A84C] rounded-lg flex items-center justify-center shadow-sm">
+                        <x-icon name="ekle" class="w-4 h-4" />
+                    </div>
+                    <span class="text-[10px] font-black uppercase tracking-[0.25em] text-[#0A1628] dark:text-[#C9A84C]">Yalıhan AI OS</span>
+                </div>
+                <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                     Yeni İlan Oluştur
                 </h1>
-                <p class="mt-1.5 text-sm text-gray-600 dark:text-slate-300">
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400 font-medium">
                     Adım adım ilan bilgilerinizi doldurun
                 </p>
             </div>
             <a href="{{ route('admin.ilanlar.index') }}"
-                class="inline-flex items-center rounded-lg bg-gray-600 px-4 py-2.5 font-medium text-white shadow-sm transition-all duration-200 hover:bg-gray-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 active:scale-95 dark:shadow-none">
-                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0A1628] hover:bg-[#132238] text-[#C9A84C] rounded-xl shadow-md transition-all duration-200 font-bold text-sm active:scale-95">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
                 Geri Dön
             </a>
@@ -66,19 +72,18 @@
 
         {{-- Progress Bar --}}
         <div
-            class="rounded-3xl border border-white/20 bg-white/70 p-6 shadow-xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+            class="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
             <div class="mb-3 flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <span class="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">İlerleme
-                        Durumu</span>
+                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-[#C9A84C]">İlerleme Durumu</span>
                     <span
-                        class="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-black text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                        class="rounded-full bg-[#C9A84C]/15 px-2 py-0.5 text-[10px] font-black text-[#C9A84C] border border-[#C9A84C]/30"
                         x-text="`${Math.round((wizard?.currentStep || 1) / (wizard?.totalSteps || 5) * 100)}%`"></span>
                 </div>
             </div>
             <div
-                class="h-2.5 w-full overflow-hidden rounded-full border border-gray-200 bg-gray-100 p-0.5 dark:border-slate-700 dark:bg-slate-800">
-                <div class="cubic-bezier(0.4, 0, 0.2, 1) relative h-full rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-1000 dark:from-blue-600 dark:via-purple-600 dark:to-pink-600"
+                class="h-2.5 w-full overflow-hidden rounded-full border border-slate-200 bg-slate-100 p-0.5 dark:border-slate-700 dark:bg-slate-800">
+                <div class="cubic-bezier(0.4, 0, 0.2, 1) relative h-full rounded-full bg-gradient-to-r from-[#0A1628] to-[#C9A84C] transition-all duration-1000"
                     :style="`width: ${((wizard?.currentStep || 1) / (wizard?.totalSteps || 5)) * 100}%`">
                     <div class="absolute inset-0 animate-pulse bg-white/20 dark:bg-slate-600/30"></div>
                 </div>
@@ -95,11 +100,11 @@
             <div class="relative z-10 flex items-center justify-between">
                 @php
                     $steps = [
-                        ['id' => 1, 'label' => '1. Kategori', 'icon' => 'fas fa-map-marker-alt'],
-                        ['id' => 2, 'label' => '2. Bilgiler', 'icon' => 'fas fa-info-circle'],
-                        ['id' => 3, 'label' => '3. Fotoğraf', 'icon' => 'fas fa-images'],
-                        ['id' => 4, 'label' => '4. Adres', 'icon' => 'fas fa-map-pin'],
-                        ['id' => 5, 'label' => '5. Önizleme', 'icon' => 'fas fa-check-double'],
+                        ['id' => 1, 'label' => '1. Kategori', 'icon' => 'kategori'],
+                        ['id' => 2, 'label' => '2. Bilgiler', 'icon' => 'bilgi'],
+                        ['id' => 3, 'label' => '3. Fotoğraf', 'icon' => 'resim'],
+                        ['id' => 4, 'label' => '4. Adres', 'icon' => 'harita'],
+                        ['id' => 5, 'label' => '5. Önizleme', 'icon' => 'yildiz'],
                     ];
                 @endphp
                 @foreach ($steps as $step)
@@ -113,7 +118,7 @@
                                     'current': wizard?.currentStep === {{ $step['id'] }},
                                     'pending': !wizard?.completedSteps?.includes({{ $step['id'] }}) && wizard?.currentStep !== {{ $step['id'] }}
                                 }">
-                                <i class="{{ $step['icon'] }}"></i>
+                                <x-icon :name="$step['icon']" class="w-5 h-5" />
 
                                 {{-- Checkmark for completed --}}
                                 <div x-show="wizard?.completedSteps?.includes({{ $step['id'] }}) && wizard?.currentStep !== {{ $step['id'] }}"
@@ -247,10 +252,13 @@
                 x-transition:leave-end="opacity-0 transform -translate-x-8 blur-sm" class="wizard-card p-8">
                 @include('admin.ilanlar.wizard.step-1-category')
 
-                <div class="mt-8 flex justify-end gap-4">
+                <div class="mt-8 flex justify-end">
                     <button type="button" @click="wizard?.nextStep()"
-                        class="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-all duration-200 hover:scale-105 hover:bg-blue-700 active:scale-95">
-                        İleri →
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-[#0A1628] hover:bg-[#132238] text-[#C9A84C] rounded-xl shadow-md transition-all duration-200 font-bold text-sm active:scale-95">
+                        İleri
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -281,12 +289,14 @@
 
                 <div class="mt-8 flex justify-between gap-4">
                     <button type="button" @click="wizard?.prevStep()"
-                        class="rounded-lg bg-gray-200 px-6 py-3 font-medium text-gray-700 transition-all duration-200 hover:scale-105 hover:bg-gray-300 active:scale-95 dark:bg-gray-700 dark:text-slate-200 dark:text-slate-300 dark:hover:bg-gray-600">
-                        ← Geri
+                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs transition-all active:scale-95">
+                        <x-icon name="sol-ok" class="w-3.5 h-3.5" />
+                        <span>Geri</span>
                     </button>
                     <button type="button" @click="wizard?.nextStep()"
-                        class="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-all duration-200 hover:scale-105 hover:bg-blue-700 active:scale-95">
-                        İleri →
+                        class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#0A1628] hover:bg-[#132238] text-[#C9A84C] rounded-xl border border-[#C9A84C]/40 shadow-sm font-bold text-xs transition-all active:scale-95">
+                        <span>İleri</span>
+                        <x-icon name="sag-ok" class="w-3.5 h-3.5 text-[#C9A84C]" />
                     </button>
                 </div>
             </div>
@@ -304,12 +314,14 @@
 
                 <div class="mt-8 flex justify-between gap-4">
                     <button type="button" @click="wizard?.prevStep()"
-                        class="rounded-lg bg-gray-200 px-6 py-3 font-medium text-gray-700 transition-all duration-200 hover:scale-105 hover:bg-gray-300 active:scale-95 dark:bg-gray-700 dark:text-slate-200 dark:text-slate-300 dark:hover:bg-gray-600">
-                        ← Geri
+                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs transition-all active:scale-95">
+                        <x-icon name="sol-ok" class="w-3.5 h-3.5" />
+                        <span>Geri</span>
                     </button>
                     <button type="button" @click="wizard?.nextStep()"
-                        class="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-all duration-200 hover:scale-105 hover:bg-blue-700 active:scale-95">
-                        İleri →
+                        class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#0A1628] hover:bg-[#132238] text-[#C9A84C] rounded-xl border border-[#C9A84C]/40 shadow-sm font-bold text-xs transition-all active:scale-95">
+                        <span>İleri</span>
+                        <x-icon name="sag-ok" class="w-3.5 h-3.5 text-[#C9A84C]" />
                     </button>
                 </div>
             </div>
@@ -326,25 +338,22 @@
 
                 <div class="mt-8 flex justify-between gap-4">
                     <button type="button" @click="wizard?.prevStep()"
-                        class="rounded-lg bg-gray-200 px-6 py-3 font-medium text-gray-700 transition-all duration-200 hover:scale-105 hover:bg-gray-300 active:scale-95 dark:bg-gray-700 dark:text-slate-200 dark:text-slate-300 dark:hover:bg-gray-600">
-                        ← Geri
+                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs transition-all active:scale-95">
+                        <x-icon name="sol-ok" class="w-3.5 h-3.5" />
+                        <span>Geri</span>
                     </button>
-                    <div class="flex gap-4" x-data="{ cortexScore: 0 }" x-init="window.addEventListener('cortex-score-updated', e => { cortexScore = e.detail.score || 0 })">
+                    <div class="flex gap-3" x-data="{ cortexScore: 0 }" x-init="window.addEventListener('cortex-score-updated', e => { cortexScore = e.detail.score || 0 })">
                         <button type="button" @click="wizard?.saveDraft()"
-                            class="rounded-lg bg-yellow-600 px-6 py-3 font-medium text-white transition-all duration-200 hover:scale-105 hover:bg-yellow-700 active:scale-95">
-                            💾 Taslak Kaydet
+                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs transition-all active:scale-95">
+                            <x-icon name="kaydet" class="w-3.5 h-3.5 text-[#C9A84C]" />
+                            <span>Taslak Kaydet</span>
                         </button>
-                        {{-- ✅ FIX-2 (SAB Sprint 2026-04-04): Cortex blocker → WARNING mode --}}
-                        {{-- Önceki: :disabled="cortexScore < 40" (Cortex down → submit impossible) --}}
-                        {{-- Yeni: Her zaman tıklanabilir, score < 40 ise sadece uyarı gösterilir --}}
                         <button type="submit"
-                            class="rounded-lg px-6 py-3 font-medium transition-all duration-200"
-                            :class="cortexScore < 40 ?
-                                'bg-yellow-500 text-white hover:bg-yellow-600 hover:scale-105 active:scale-95' :
-                                'bg-green-600 text-white hover:bg-green-700 hover:scale-105 active:scale-95'">
-                            <span x-show="cortexScore < 40 && cortexScore > 0">⚠️ Düşük Skorla Kaydet</span>
-                            <span x-show="cortexScore === 0">💾 Taslak Olarak Kaydet</span>
-                            <span x-show="cortexScore >= 40">✅ Yayınla</span>
+                            class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#0A1628] hover:bg-[#132238] text-[#C9A84C] rounded-xl border border-[#C9A84C]/40 shadow-sm font-bold text-xs transition-all active:scale-95">
+                            <x-icon name="onay" class="w-3.5 h-3.5 text-[#C9A84C]" />
+                            <span x-show="cortexScore < 40 && cortexScore > 0">Düşük Skorla Kaydet</span>
+                            <span x-show="cortexScore === 0">Taslak Olarak Kaydet</span>
+                            <span x-show="cortexScore >= 40">İlanı Yayınla</span>
                         </button>
                     </div>
                 </div>

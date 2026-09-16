@@ -430,7 +430,12 @@ class DemandMatchingEngine
         // [INTENTIONAL CROSS-TENANT] Matching requires global listing corpus.
         // Demand ↔ Supply pairing must search across all active listings, not just owner's portfolio.
         // This is NOT a security bypass — see docs/governance/PHASE4_SEMANTIC_CLASSIFICATION.md
-        $query = Ilan::where('yayin_durumu', IlanDurumu::YAYINDA->value);
+        //
+        // ⚠️ TenantScope bypass: Ilan model uses BelongsToTenant trait which adds TenantScope.
+        // The matching engine MUST search across all tenants (global corpus). Use withoutTenant()
+        // to remove the global scope. Without this, factory-created test ilanlar with NULL tenant_id
+        // are filtered out, and cross-tenant matching is impossible in production.
+        $query = Ilan::withoutTenant()->where('yayin_durumu', IlanDurumu::YAYINDA->value);
 
         Log::debug('🔍 SQL Pre-filter Trace', [
             'talep_id' => $talep->id,

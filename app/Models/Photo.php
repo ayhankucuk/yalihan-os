@@ -5,13 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
 use App\Traits\HasCountryScope;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
 class Photo extends BaseModel
 {
     use HasFactory;
-    use SoftDeletes;
     use HasCountryScope;
 
     /**
@@ -41,7 +39,6 @@ class Photo extends BaseModel
     protected $casts = [
         'kapak_fotografi' => 'boolean',
         'display_order' => 'integer',
-        'is_active' => \App\Enums\AktiflikDurumu::class,
     ];
 
     /**

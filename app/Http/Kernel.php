@@ -37,6 +37,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\LocaleAndCurrencyMiddleware::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
+            \App\Http\Middleware\SetTenantContext::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\TrackUserActivity::class,
             // \App\Http\Middleware\RoleBasedMenuMiddleware::class, // ❌ DISABLED: Causing infinite redirect loop

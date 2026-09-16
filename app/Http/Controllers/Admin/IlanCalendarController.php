@@ -196,6 +196,8 @@ class IlanCalendarController extends Controller
      */
     public function cancel(Ilan $ilan, IlanReservation $reservation, Request $request)
     {
+        $this->ensureReservationBelongsToIlan($ilan, $reservation);
+
         $t0 = microtime(true);
         $slug = $ilan->yayinTipi->name ?? null;
         if ($slug) {
@@ -301,6 +303,8 @@ class IlanCalendarController extends Controller
      */
     public function confirm(Ilan $ilan, IlanReservation $reservation, Request $request)
     {
+        $this->ensureReservationBelongsToIlan($ilan, $reservation);
+
         $t0 = microtime(true);
         $slug = $ilan->yayinTipi->name ?? null;
         if ($slug) {
@@ -345,5 +349,23 @@ class IlanCalendarController extends Controller
                 $e->getMessage()
             );
         }
+    }
+
+    /**
+     * The legacy calendar adapter binds an IlanReservation directly, so nested
+     * route binding cannot establish ownership from Ilan::reservations().
+     * Enforce the canonical property and tenant boundary before a mutation.
+     */
+    private function ensureReservationBelongsToIlan(Ilan $ilan, IlanReservation $reservation): void
+    {
+        $user = auth()->user();
+
+        abort_unless($user?->tenant_id, 403);
+        abort_unless((int) $ilan->tenant_id === (int) $user->tenant_id, 404);
+        abort_unless(
+            (int) $reservation->property_id === (int) $ilan->id
+                && (int) $reservation->tenant_id === (int) $user->tenant_id,
+            404,
+        );
     }
 }

@@ -92,7 +92,7 @@ Route::prefix('/ilanlar')->name('ilanlar.')->group(function () {
 */
     Route::post('/{ilan}/ai-copy', [\App\Http\Controllers\Admin\IlanAITitleDescriptionController::class, 'generateAiCopy'])->name('ai-copy');
     // Phase D: AI-Assisted Publish Control (UPS SSOT + Cortex observer mode)
-    Route::post('/{ilan}/publish', [\App\Http\Controllers\Admin\IlanPublishGateController::class, 'publish'])->name('publish')->middleware(['throttle:10,1']);
+    Route::post('/{id}/publish', [\App\Http\Controllers\Admin\IlanPublishGateController::class, 'publish'])->name('publish')->middleware(['throttle:10,1']);
 /*
     Route::get('/{ilan}/price-history', [\App\Http\Controllers\Admin\IlanCrudController::class, 'priceHistoryApi'])->name('price-history');
 */
@@ -101,6 +101,7 @@ Route::prefix('/ilanlar')->name('ilanlar.')->group(function () {
     Route::post('/{ilan}/duplicate', [\App\Http\Controllers\Admin\IlanPublishController::class, 'duplicate'])->name('duplicate');
 
     // ✅ REFACTORED: Photo management → specialized controller
+    Route::get('/{ilan}/photos', [\App\Http\Controllers\Admin\PhotoController::class, 'getListingPhotos'])->name('photos');
     Route::post('/{ilan}/upload-photos', [\App\Http\Controllers\Admin\PhotoController::class, 'uploadPhotos'])->name('upload-photos');
     Route::delete('/{ilan}/photos/{photo}', [\App\Http\Controllers\Admin\PhotoController::class, 'deletePhoto'])->name('delete-photo');
     // Context7: forbidden pattern fixed - using sequence instead

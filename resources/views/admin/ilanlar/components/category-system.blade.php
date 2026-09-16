@@ -19,16 +19,16 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                 </svg>
-                Kategori Sistemi
+                İlan Kategorisi
             </h2>
-            <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">İlanınızın kategori ve yayın tipini seçin</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">İlanınızın kategorisini seçin</p>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {{-- Ana Kategori - Enhanced --}}
         <div class="group">
-            <label for="ana_kategori"
+            <label for="ana_kategori_id"
                 class="text-sm font-medium text-gray-900 dark:text-white mb-1.5 flex items-center gap-2 dark:text-slate-100">
                 <span
                     class="flex items-center justify-center w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-semibold">
@@ -38,7 +38,7 @@
                 <span class="text-red-500 font-semibold">*</span>
             </label>
             <div class="relative">
-                <select name="ana_kategori_id" id="ana_kategori" required data-context7-field="ana_kategori_id"
+                <select name="ana_kategori_id" id="ana_kategori_id" required data-context7-field="ana_kategori_id"
                     onchange="loadAltKategoriler(this.value); safeDispatchCategoryChanged();"
                     @error('ana_kategori_id') aria-invalid="true" aria-describedby="ana_kategori_id-error" data-error="true" @enderror
                     class="w-full px-4 py-2.5 text-base
@@ -53,8 +53,8 @@
                            focus:shadow-md
                            appearance-none"
                     style="color-scheme: light dark;">
-                    <option value="" class="bg-gray-50 dark:bg-slate-900 text-gray-500">Kategori Seçin...</option>
-                    @foreach ($anaKategoriler as $kategori)
+                    <option value="">Ana Kategori Seçin</option>
+                    @foreach ($anaKategoriler ?? [] as $kategori)
                         <option value="{{ $kategori->id }}" data-slug="{{ $kategori->slug }}"
                             class="bg-white dark:bg-slate-900 text-gray-900 dark:text-white dark:text-slate-100"
                             {{ old('ana_kategori_id', $ilan->ana_kategori_id ?? null) == $kategori->id ? 'selected' : '' }}>
@@ -84,7 +84,7 @@
 
         {{-- Alt Kategori - Enhanced --}}
         <div class="group" x-data="{ loading: false }">
-            <label for="alt_kategori"
+            <label for="alt_kategori_id"
                 class="text-sm font-medium text-gray-900 dark:text-white mb-1.5 flex items-center gap-2 dark:text-slate-100">
                 <span
                     class="flex items-center justify-center w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-semibold">
@@ -94,7 +94,7 @@
                 <span class="text-red-500 font-semibold">*</span>
             </label>
             <div class="relative">
-                <select name="alt_kategori_id" id="alt_kategori" required data-context7-field="alt_kategori_id"
+                <select name="alt_kategori_id" id="alt_kategori_id" required data-context7-field="alt_kategori_id"
                     data-default="{{ old('alt_kategori_id', $ilan->alt_kategori_id ?? null) }}"
                     onchange="loadYayinTipleri(this.value); safeDispatchCategoryChanged();"
                     @error('alt_kategori_id') aria-invalid="true" aria-describedby="alt_kategori_id-error" data-error="true" @enderror
@@ -227,7 +227,7 @@
 
     window.safeDispatchCategoryChanged = function(force = false) {
         // Debounce: Son 300ms içinde aynı event dispatch edildiyse, yeni dispatch etme
-        const kategoriSelect = document.getElementById('ana_kategori');
+        const kategoriSelect = document.getElementById('ana_kategori_id') || document.getElementById('ana_kategori');
         const yayinSelect = document.getElementById('junction_id');
 
         if (!kategoriSelect) return;

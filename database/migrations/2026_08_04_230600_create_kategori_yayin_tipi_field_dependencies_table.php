@@ -17,6 +17,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('kategori_yayin_tipi_field_dependencies')) {
+            return;
+        }
+
         Schema::create('kategori_yayin_tipi_field_dependencies', function (Blueprint $table) {
             $table->id();
             $table->string('kategori_slug'); // e.g., 'konut', 'arsa', 'ticari'

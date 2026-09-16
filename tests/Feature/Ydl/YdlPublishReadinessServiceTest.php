@@ -64,7 +64,6 @@ class YdlPublishReadinessServiceTest extends TestCase
             'ilce_id'         => 1,
             'ana_kategori_id' => 1,
             'yayin_tipi_id'   => 1,
-            'ilan_sahibi_id'  => 1,
         ]);
 
         // Add at least 1 photo
@@ -122,7 +121,6 @@ class YdlPublishReadinessServiceTest extends TestCase
             'ilce_id'  => 1,
             'ana_kategori_id' => 1,
             'yayin_tipi_id'  => 1,
-            'ilan_sahibi_id'  => 1,
         ]);
 
         $ilan->fotograflar()->create(['ilan_id' => $ilan->id, 'dosya_adi' => 'test.jpg', 'dosya_yolu' => '/photos/test.jpg', 'display_order' => 1]);
@@ -148,7 +146,6 @@ class YdlPublishReadinessServiceTest extends TestCase
             'ilce_id'         => 1,
             'ana_kategori_id' => 1,
             'yayin_tipi_id'   => null, // MISSING
-            'ilan_sahibi_id'  => 1,
         ]);
 
         $ilan->fotograflar()->create(['ilan_id' => $ilan->id, 'dosya_adi' => 'test.jpg', 'dosya_yolu' => '/photos/test.jpg', 'display_order' => 1]);
@@ -174,7 +171,6 @@ class YdlPublishReadinessServiceTest extends TestCase
             'ilce_id'         => 1,
             'ana_kategori_id' => 1,
             'yayin_tipi_id'   => 1,
-            'ilan_sahibi_id'  => 1,
         ]);
         $ilan->fotograflar()->create(['ilan_id' => $ilan->id, 'dosya_adi' => 'test.jpg', 'dosya_yolu' => '/photos/test.jpg', 'display_order' => 1]);
 
@@ -229,7 +225,6 @@ class YdlPublishReadinessServiceTest extends TestCase
             'ilce_id'         => 1,
             'ana_kategori_id' => 1,
             'yayin_tipi_id'   => 1,
-            'ilan_sahibi_id'  => 1,
         ]);
         $ilanReady->fotograflar()->create(['ilan_id' => $ilanReady->id, 'dosya_adi' => 'test-ready.jpg', 'dosya_yolu' => '/photos/test-ready.jpg', 'display_order' => 1]);
 
@@ -254,7 +249,6 @@ class YdlPublishReadinessServiceTest extends TestCase
             'ilce_id'         => 1,
             'ana_kategori_id' => 1,
             'yayin_tipi_id'   => 1,
-            'ilan_sahibi_id'  => 1,
         ]);
         $ilan->fotograflar()->create(['ilan_id' => $ilan->id, 'dosya_adi' => 'test.jpg', 'dosya_yolu' => '/photos/test.jpg', 'display_order' => 1]);
 
@@ -304,7 +298,6 @@ class YdlPublishReadinessServiceTest extends TestCase
             'ilce_id'         => 1,
             'ana_kategori_id' => 1,
             'yayin_tipi_id'   => 1,
-            'ilan_sahibi_id'  => 1,
         ]);
         $ilan->fotograflar()->create(['ilan_id' => $ilan->id, 'dosya_adi' => 'test.jpg', 'dosya_yolu' => '/photos/test.jpg', 'display_order' => 1]);
 
@@ -329,7 +322,6 @@ class YdlPublishReadinessServiceTest extends TestCase
             'ilce_id'         => 1,
             'ana_kategori_id' => 1,
             'yayin_tipi_id'   => 1,
-            'ilan_sahibi_id'  => 1,
         ]);
         $ilan->fotograflar()->create(['ilan_id' => $ilan->id, 'dosya_adi' => 'test.jpg', 'dosya_yolu' => '/photos/test.jpg', 'display_order' => 1]);
 

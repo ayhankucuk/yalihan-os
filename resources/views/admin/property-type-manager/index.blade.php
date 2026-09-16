@@ -1,32 +1,46 @@
 @extends('admin.layouts.admin')
 
 @section('content')
-    <div class="container mx-auto px-4 py-6">
+    <div class="container mx-auto px-4 py-6" x-data="{ search: '' }">
         <!-- Header -->
         <div class="mb-8">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3 dark:text-slate-100">
-                        <span class="text-4xl">🎯</span>
-                        Yayın Tipi Yöneticisi
+                    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mb-2 flex items-center gap-3">
+                        <span class="text-3xl text-[#C9A84C]">🎯</span>
+                        <span>Yayın Tipi Yöneticisi</span>
                     </h1>
-                    <p class="text-gray-600 dark:text-gray-400">
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
                         Tek Sayfada Kategori, Yayın Tipi ve İlişki Yönetimi
                     </p>
                 </div>
                 <div class="flex items-center gap-3">
                     <button type="button"
                         onclick="showAddKategoriModal()"
-                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-lg shadow-lg hover:from-green-700 hover:to-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 transition-all duration-200 transform hover:scale-105 active:scale-95 dark:ring-offset-gray-900">
-                        <i class="fas fa-plus mr-2"></i>
-                        Kategori Ekle
+                        class="inline-flex items-center px-4 py-2.5 bg-[#0A1628] hover:bg-[#15243B] text-[#C9A84C] font-semibold text-sm rounded-xl border border-[#C9A84C]/40 shadow-sm transition-all hover:scale-[1.02] active:scale-95">
+                        <x-icon name="ekle" class="w-4 h-4 mr-2 text-[#C9A84C]" />
+                        <span>Kategori Ekle</span>
                     </button>
                     <a href="{{ route('admin.ilan-kategorileri.index') }}"
-                        class="inline-flex items-center px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-lg hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 transition-all duration-200 dark:bg-slate-900 dark:hover:bg-gray-600 dark:focus-visible:ring-offset-gray-900">
-                        <i class="fas fa-list mr-2"></i>
-                        Tüm Kategoriler
+                        class="inline-flex items-center px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-sm rounded-xl shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                        <x-icon name="liste" class="w-4 h-4 mr-2 text-slate-400" />
+                        <span>Tüm Kategoriler</span>
                     </a>
                 </div>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <div class="relative w-full sm:w-80">
+                <input type="text"
+                    x-model="search"
+                    placeholder="Kategori ara..."
+                    class="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 pl-10 text-sm text-slate-800 dark:text-slate-100 shadow-sm focus:border-[#C9A84C] focus:outline-none focus:ring-1 focus:ring-[#C9A84C]" />
+                <x-icon name="arama" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+            </div>
+            <div class="text-xs font-medium text-slate-500 dark:text-slate-400">
+                Toplam <span class="font-bold text-slate-900 dark:text-white">{{ $kategoriler->count() }}</span> Ana Kategori
             </div>
         </div>
 
@@ -34,7 +48,8 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach ($kategoriler as $kategori)
                 <a href="{{ route('admin.property_types.show', $kategori->id) }}"
-                    class="group bg-gray-50 dark:bg-slate-900 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border-l-4 border-blue-500 hover:border-blue-600 transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:focus-visible:ring-offset-gray-900">
+                    x-show="!search || '{{ strtolower(addslashes($kategori->name)) }}'.includes(search.toLowerCase())"
+                    class="group bg-white dark:bg-slate-900 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-6 border-l-4 border-blue-600 dark:border-blue-500 border border-slate-200/80 dark:border-slate-800 transform hover:-translate-y-0.5">
 
                     <!-- Kategori İkonu ve İsim -->
                     <div class="flex items-center mb-4">
@@ -105,23 +120,23 @@
                     </div>
 
                     <!-- Stats & Action -->
-                    <div class="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-slate-800">
-                        <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                            <span class="flex items-center gap-1">
-                                <i class="fas fa-layer-group text-blue-500"></i>
-                                {{ $kategori->children->count() }}
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+                        <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                            <span class="inline-flex items-center gap-1.5" title="Alt Kategori Sayısı">
+                                <x-icon name="katman" class="w-3.5 h-3.5 text-blue-500" />
+                                <span>{{ $kategori->children->count() }} alt kategori</span>
                             </span>
                             @if ($kategori->yayinTipleri && $kategori->yayinTipleri->count() > 0)
-                                <span class="flex items-center gap-1">
-                                    <i class="fas fa-tags text-green-500"></i>
-                                    {{ $kategori->yayinTipleri->count() }}
+                                <span class="inline-flex items-center gap-1.5" title="Yayın Tipi Sayısı">
+                                    <x-icon name="etiket" class="w-3.5 h-3.5 text-emerald-500" />
+                                    <span>{{ $kategori->yayinTipleri->count() }} yayın tipi</span>
                                 </span>
                             @endif
                         </div>
                         <span
-                            class="text-sm text-blue-600 dark:text-blue-400 font-semibold group-hover:text-blue-700 dark:group-hover:text-blue-300 flex items-center gap-2">
+                            class="text-xs font-bold text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 flex items-center gap-1">
                             Yönet
-                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                            <x-icon name="sag-ok" class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                         </span>
                     </div>
                 </a>
@@ -191,7 +206,7 @@
                     </button>
                     <button type="submit"
                         class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-lg shadow-lg hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 active:scale-95 flex-1">
-                        <i class="fas fa-plus mr-2"></i>
+                        <x-icon name="ekle" class="w-4 h-4 mr-2" />
                         Ekle
                     </button>
                 </div>

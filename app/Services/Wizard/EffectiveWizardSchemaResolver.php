@@ -63,17 +63,20 @@ class EffectiveWizardSchemaResolver
         $isSablonId = $sablon && !empty($sablon->yayin_tipi_id);
 
         if ($isSablonId) {
-            // Sablon ID path (IlanWizardController convention):
-            // kategori_id IS the sub-category ID (e.g. 8 for Villa)
-            // yayin_tipi_id IS the sablon ID (e.g. 24 for Villa Gunluk)
             $publicationTypeId = (int) $sablon->yayin_tipi_id;
-            $subCategoryId = $kategoriId; // kategori_id IS the sub-category here
-            $mainCategoryId = (int) $sablon->kategori_id; // sablon's kategori_id = main category
+            $targetKategoriId = $kategoriId > 0 ? $kategoriId : (int) $sablon->kategori_id;
         } else {
-            // Raw yayin_tipi_id path (WizardFeatureController convention)
             $publicationTypeId = $yayinTipiId;
+            $targetKategoriId = $kategoriId;
+        }
+
+        $kategori = \App\Models\IlanKategori::find($targetKategoriId);
+        if ($kategori && $kategori->parent_id) {
+            $subCategoryId = (int) $kategori->id;
+            $mainCategoryId = (int) $kategori->parent_id;
+        } else {
+            $mainCategoryId = $targetKategoriId;
             $subCategoryId = null;
-            $mainCategoryId = $kategoriId;
         }
 
         $features = $this->featureResolver->resolveFeatures($mainCategoryId, $subCategoryId, $publicationTypeId);

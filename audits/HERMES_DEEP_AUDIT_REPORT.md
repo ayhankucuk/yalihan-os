@@ -312,11 +312,11 @@ Bu event'lerin hiçbiri tek `array $payload` parametresi ile çalışmaz. **Repl
 | H-02 | DriveAgent constructor eksik parametre (DriveWebhookService) | 🔴 CRITICAL | ✅ KAPALI (2026-08-28 — DriveWebhookService ServiceProvider'a eklendi) |
 | H-03 | NotificationAgent event uyuşmazlığı (zincir kopuk) | 🔴 CRITICAL | ✅ KAPALI (2026-08-28 — subscribesTo workforce.publishing.decision_ready) |
 | H-04 | PortfolioAgent dead code (Sprint 4.3 hayaleti) | 🟡 MEDIUM | ✅ KAPALI (2026-08-28 — PortfolioAgent.php silindi, AgentRegistry import temizlendi) |
-| H-05 | PropertyScoreAgent in-memory buffer (async riski) | 🟡 MEDIUM | ⏳ AÇIK |
+| H-05 | PropertyScoreAgent in-memory buffer (async riski) | 🟡 MEDIUM | ✅ KAPALI (2026-09-11 Oturum 169 — Cache 24h TTL buffer + chain_id) |
 | H-06 | HermesReplayService reconstructEvent brittle | 🟡 MEDIUM | ✅ KAPALI (2026-08-28 — EVENT_FACTORIES map + 6 factory method) |
 | H-07 | Tüm ajanlar sync (DriveAgent async olmalı) | 🟢 LOW | ⏳ AÇIK |
-| H-08 | 5 workforce ajanının test eksikliği | 🔴 CRITICAL | ✅ KAPALI (2026-08-28 — WorkforceAgentsTest.php 20 test) |
-| H-09 | Uçtan uca zincir entegrasyon testi yok | 🔴 CRITICAL | ✅ KAPALI (2026-08-28 — E2E test doğrulandı) |
+| H-08 | 5 workforce ajanının test eksikliği | 🔴 CRITICAL | ✅ KAPALI (2026-09-11 — WorkforceAgentsTest.php 22 test / 108 assertions PASS) |
+| H-09 | Uçtan uca zincir entegrasyon testi yok | 🔴 CRITICAL | ✅ KAPALI (2026-09-11 — test_workforce_chain_e2e_full_unbroken_five_agent_traceability) |
 | H-10 | TelegramNotificationHandler stub/disabled | 🟢 LOW | ⏳ AÇIK (bilerek) |
 
 ### 5.2 known-debt.md'de Hermes İle İlgili Kayıt

@@ -55,10 +55,9 @@ class PropertyHubController extends Controller
 
         // Sprint 6.8: Canonical feature catalog stats
         // ozellikler (22 aktif) — master katalog
-        // kategori_yayin_tipi_field_dependencies (42 kayıt) — field schema
         $catalogStats = [
-            'ozellik_catalog' => Ozellik::where('aktiflik_durumu', 1)->count(),
-            'field_schema' => KategoriYayinTipiFieldDependency::aktif()->count(),
+            'ozellik_catalog' => \App\Models\Feature::where('aktiflik_durumu', 1)->count(),
+            'field_schema' => \App\Models\FeatureAssignment::where('aktiflik_durumu', 1)->count(),
             'combinations' => $this->propertyConfig->getAvailableCombinations(),
         ];
 

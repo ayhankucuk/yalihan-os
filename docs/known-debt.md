@@ -1,6 +1,6 @@
 # Known Technical Debt
 
-> Son güncelleme: 2026-06-16 (Oturum 59 — MD Audit & Yeni Borçlar eklendi)
+> Son güncelleme: 2026-09-04 (RC2 Release Status eklendi — Oturum 155)
 > Risk: LOW-MEDIUM — hiçbiri release blocker değil
 
 ## Active Debt Items
@@ -240,7 +240,7 @@
 - **Risk:** 🟢 LOW — Admin UI tamamlandı
 - **Durum:** ✅ KAPALI (Sprint 4.1 — 2026-07-03)
 
-### 37. Availability Sync — SQLite Test Schema Gap (CERT-DEBT) ⏳ AÇIK
+### 37. Availability Sync — SQLite Test Schema Gap (CERT-DEBT) ✅ ÇÖZÜLDÜ
 - **Kaynak:** `b98bb10` — Single Materializer Cutover certification run
 - **Etkilenen testler:**
   - `AvailabilitySynchronizationServiceTest::test_it_blocks_availability_for_confirmed_reservation`
@@ -248,24 +248,113 @@
   - `ReservationServiceTest::test_fails_if_dates_overlap_with_airbnb`
 - **Sorun:** `SQLSTATE[HY000]: General error: 1 no such table: property_availability` — `phpunit.xml` SQLite kullanıyor (`DB_CONNECTION=sqlite`) ama `php artisan migrate` SQLite'e `property_availability` tablosunu oluşturmuyor. `migrate` yerine MySQL schema dump kullanılıyor; SQLite migration path'ı çalışmıyor.
 - **Risk:** 🟡 MEDIUM — Test suite'enviro test hatası; production runtime etkilenmiyor
-- **Durum:** ⏳ AÇIK — Test altyapısı düzeltmesi gerekiyor (Availability Sync mimarisinden bağımsız)
-- **Çözüm:** Ya `phpunit.xml`'i MySQL'e yönlendir ya da SQLite migration path'ını `property_availability` create statement ile tamamla
-- **Not:** Certification için bu 3 test atlanabilir; asıl doğrulama `ChannexCanonicalMutationTest` (4/4 PASS) ve `ReservationEventBackboneTest` (7/7 PASS) üzerinden yapıldı.
+- **Durum:** ✅ ÇÖZÜLDÜ (2026-09-05) — `restore_missing_ci_schema.php` migration'ı SQLite'ta `property_availabilities` tablosunu doğru oluşturuyor. Tüm 3 test artık PASS:
+  - `AvailabilitySynchronizationServiceTest` — 11/11 PASS (47 assertions)
+  - `ReservationServiceTest` — 4/4 PASS (22 assertions) (`test_fails_if_dates_overlap_with_airbnb` dahil)
+- **Çözüm:** SQLite migration path'ı zaten çalışıyor — `restore_missing_ci_schema.php` içindeki `if (!Schema::hasTable('property_availabilities'))` kontrolü SQLite `:memory:`'da doğru çalışıyor.
+- **Not:** Certification için asıl doğrulama `ChannexCanonicalMutationTest` (4/4 PASS) ve `ReservationEventBackboneTest` (7/7 PASS) üzerinden yapıldı.
 
-### 38. DTO-based Retryable Channel Failures — GAP-03 Debt ⏳ AÇIK
+### 38. DTO-based Retryable Channel Failures — GAP-03 Debt ✅ ÇÖZÜLDÜ
 - **Kaynak:** `471dff1` — GAP-03 Retry Boundary Fix (2026-08-15)
 - **Sorun:** GAP-03 BookingAvailabilityException retry boundary düzeltildi. Ancak Airbnb/Channex `ChannelSyncResponse::retryable=true` path'i exception throw etmiyor. Bu channel'lar için aynı retry lifecycle garanti değil. `CERT-DEBT-GAP03-01` olarak izleniyor.
-- **Örnek:** `AirbnbRetryableException` mevcut değil — adapter retryable 5xx'i `ChannelSyncResponse::failure(retryable=true)` olarak dönebilir. Bu path `syncToChannel()`'da yakalanıp `SyncResult::failure()` üretir; exception fırlatmaz. Laravel retry tetiklenmez.
-- **Risk:** 🟡 MEDIUM — Airbnb/Channex 5xx failure'ları için retry lifecycle farklı davranabilir
-- **Durum:** ⏳ AÇIK — Sonraki sprint'te Airbnb/Channex adapter retry path'ı normalize edilmeli
-- **Çözüm:** Airbnb/Channex adapter'larında retryable 5xx → `AirbnbRetryableException` (veya `ChannexRetryableException`) fırlatmalı. `AvailabilitySynchronizationService::isRetryableException()` güncellenmeli.
-- **Not:** GAP-03 Booking retry recovery geçersiz kılmaz — Booking 5xx → Laravel retry ✅ garantili. Airbnb/Channex için aynı garantinin sağlanması gerekiyor.
+- **Çözüm:** `syncToChannel()` response branch'inde `$response->retryable === true` ise `ChannelSynchronizationException` fırlatılır. `isRetryableException()` metoduna `ChannelSynchronizationException` desteği eklendi. GAP-03 re-throw → Laravel retry tetiklenir.
+- **Fix:** Commit `a5a50824` (2026-09-05) — `AvailabilitySynchronizationService.php`
+- **Test:** 18/18 PASS (SynchronizeAvailabilityJobRetryTest + AvailabilitySynchronizationServiceTest)
+- **Durum:** ✅ ÇÖZÜLDÜ — Airbnb/Channex retryable 5xx artık Laravel queue retry tetikliyor
 
-### 39. Hermes Workforce Runtime Wiring and Coverage — HERMES-AUDIT-2026-08-28 ⏳ AÇIK
+### 39. Hermes Workforce Runtime Wiring and Coverage — HERMES-AUDIT-2026-08-28 ✅ ÇÖZÜLDÜ
 - **Kaynak:** `audits/HERMES_DEEP_AUDIT_REPORT.md` — satır satır repository audit, `REPO_VERIFIED`.
-- **Bulgular:** `PropertyScoreAgent` PSR-4 namespace/dizin uyuşmazlığı; `DriveAgent` constructor ile `HermesServiceProvider` dependency uyuşmazlığı; `NotificationAgent` subscription event’i ile publishing decision event’i uyumsuz; `PortfolioAgent` registry’de kullanılmayan dead code.
-- **Kapsam:** Workforce zinciri: `DriveAgent → PhotoAgent → DescriptionAgent → PropertyScoreAgent → PublishDecisionAgent → NotificationAgent`.
-- **Eksik kanıt:** Beş workforce ajanı için unit test ve zincirin tamamı için uçtan uca integration test bulunmuyor.
-- **Risk:** 🔴 CRITICAL — Runtime zinciri production-ready kabul edilemez; Sprint 14/15 certification için düzeltme veya açık waiver gerekir.
-- **Yapılacaklar:** Runtime wiring düzeltmeleri, beş unit test paketi, bir chain integration testi, 10 teknik borcun owner/severity/remediation ile kaydı.
-- **Durum:** ⏳ AÇIK — Kod değişikliği, deploy, migration veya seed yapılmadı.
+- **Bulgular (2026-08-28):** `PropertyScoreAgent` PSR-4 namespace/dizin uyuşmazlığı; `DriveAgent` constructor ile `HermesServiceProvider` dependency uyuşmazlığı; `NotificationAgent` subscription event’i ile publishing decision event’i uyumsuz; `PortfolioAgent` registry’de kullanılmayan dead code.
+- **Çözüm:** Tüm 4 runtime wiring sorunu sonradan düzeltildi:
+  - PropertyScoreAgent: namespace `Workflow` → dizin `Workflow/` ✅
+  - DriveAgent: ServiceProvider 3-param binding (DriveWorkspaceService + DriveWebhookService + HermesService) ✅
+  - NotificationAgent: `subscribesTo()` → `WORKFORCE_PUBLISHING_DECISION_READY` ✅
+  - PortfolioAgent: dead code kaldırıldı, AgentRegistry import temizlendi ✅
+- **Test Coverage:** 106/106 PASS (426 assertions) — DriveAgent 7, PhotoAgent 5, DescriptionAgent 3, PropertyScoreAgent 2, PublishDecisionAgent 5, NotificationAgent 3, E2E chain 2, event bus 12, capability 10, analytics 6, governance 6, telegram 7, communication 11, registry 14, vocabulary 13
+- **Durum:** ✅ ÇÖZÜLDÜ (2026-09-04 — RC2 sonrası doğrulama)
+
+### 40. TD-13 — `ai_saglayici_profilleri` vs `ai_provider_profiles` İki Tablo ⏳ AÇIK (P2)
+- **Kaynak:** Codex ARAŞTIRMA-3 (2026-09-04), `docs/architecture/td-13-td-14-decision-2026-09-04.md`
+- **Teşhis:** İki ayrı tablo, iki ayrı model, iki ayrı service — **farklı özellikler** (aynı değil)
+  - `ai_saglayici_profilleri` (TR): `ProviderSelectorService` + `AiSaglayiciProfili` — yayin_tipi bazlı
+  - `ai_provider_profiles` (EN): `ProviderOptimizationService` + `AiProviderProfile` — window (7d/30d) bazlı
+- **Karar:** Birleştirme YAPMA — farklı amaçlar serve ediyorlar. P1 → P2'ye düşürüldü.
+- **Aksiyon:** Gelecek sprint'te architectural review gerekli (RC2 scope dışı)
+- **Durum:** ⏳ AÇIK — Dokümante edildi, kod değişikliği gerekmiyor
+
+### 41. TD-14 — `kapak_mi` → `kapak_fotografi` Migration Drift ✅ ÇÖZÜLDÜ (P1)
+- **Kaynak:** Codex ARAŞTIRMA-3 (2026-09-04), `docs/architecture/td-13-td-14-decision-2026-09-04.md`
+- **Teşhis:** Baseline migration `kapak_mi` yaratır, tüm uygulama kodu (41 referans) `kapak_fotografi` kullanır. Rename migration YOK.
+- **Risk:** 🔴 Fresh install BREAK — yeni DB kurulumunda kod kolonu bulamaz
+- **Karar:** Baseline migration fix — `kapak_mi` → `kapak_fotografi`
+- **Fix:** Commit `4564040` — baseline migration `2024_01_01_000000` line 766 düzeltildi
+- **Durum:** ✅ ÇÖZÜLDÜ — Production etkisi yok (prod'da kolon zaten `kapak_fotografi`)
+
+---
+
+## RC2 Release Status — 2026-09-04
+
+**Branch:** `release-candidate/RC2`
+**Karar:** `RELEASE_GATE_OPEN — TÜM BLOKLER KALDIRILDI`
+
+### RC2 Release Blockers Durumu
+
+| # | Bulgu | Sahip | Durum |
+|---|-------|-------|-------|
+| RC-B1 | Wenox: RC2 branch doğrulaması + MySQL unique-index test | Wenox | ✅ DONE (Security 67/67, Governance 197/197) |
+| RC-B2 | V2IlanAuthorizationBoundaryTest: S1/S4/S5/S6 başarısız | Wenox | ✅ DONE (commit `ed53649`) |
+| RC-B3 | BACKLOG-1 final audit | Antigravity | ✅ DONE (25/25 regression PASS, CLOSED) |
+| RC-B4 | Production migration: `ilan_fotograflari` unique index | Kilo | ✅ DONE (VPS deploy, migration applied, index verified, commit `0161747`) |
+| RC-B5 | TD-13, TD-14 teknik karar | Codex | ✅ DONE |
+
+### RC2 Kapsamı — Tamamlanan Çalışmalar
+
+- **BACKLOG-1** (Secret Scanner): CLOSED ✅ — 25/25 regression PASS, SSOT verified
+- **BACKLOG-2** (Conflict Guard): IMPLEMENTED ✅ — 17/17 PASS
+- **BACKLOG-3** (Backend Guard Selection): IMPLEMENTED ✅ — SKILL_INDEX.md
+- **BACKLOG-4** (Auth Boundary CI Gate): IMPLEMENTED ✅ — 15/15 PASS
+- **BACKLOG-5/6/7** (Security Triyaj): IMPLEMENTED ✅
+- **BACKLOG-8** (Fotoğraf display_order Race): DEPLOYED ✅ — production migration applied, index verified on VPS
+- **TD-14 fix**: ✅ `kapak_mi` → `kapak_fotografi` baseline migration
+- **Token enumeration fix**: ✅ OwnerAuthController
+- **Migration cross-DB fix**: ✅ `SHOW INDEX` → `Schema::hasIndex`
+- **V2 Ilan route binding fix**: ✅ Route params, CountryScope, fillable, destroy return type (commit `ed53649`)
+
+### Kalan Açık Borç (RC2 Dışı)
+
+- **#27 / #34** Dikey İlan JSONB Tam Göçü (Read Path)
+- **#35** Deploy Görevleri (#21-25) — Sunucu kurulum
+- **#40** TD-13 `ai_saglayici_profilleri` vs `ai_provider_profiles` — P2
+
+### Oturum 156 Güncellemesi (2026-09-05)
+
+- **#37** ✅ ÇÖZÜLDÜ — SQLite schema gap zaten çalışıyor (AvailabilitySynchronizationServiceTest 11/11, ReservationServiceTest 4/4 PASS)
+- **#38** ✅ ÇÖZÜLDÜ — GAP-03 Airbnb/Channex retryable response path fix (commit `a5a50824`, 18/18 PASS)
+- **BACKLOG-5/9** ✅ Cherry-pick — Lead tenant boundary RC1→RC2 (commit `37144cd7`, LeadTenantBoundaryTest 10/10 PASS)
+- **RC2 GitHub sync** ✅ — Tüm yeni commit'ler push edildi (`27fd89d7..9f95dfca`)
+
+### Pre-existing Test Failures (RC2 Dışı / Unit Test Borçları) — ✅ TAMAMEN ÇÖZÜLDÜ
+
+- `FeatureAssignmentObserverTest` — ✅ ÇÖZÜLDÜ (9/9 PASS — 2026-09-04 Oturum 155 doğrulaması)
+- `UserTest` — ✅ ÇÖZÜLDÜ (7/7 PASS — 2026-09-06 Oturum 157 — TenantScope: raw DB insert'e `tenant_id` eklendi)
+- `CiGuardRawDbWriteTest` — ✅ ÇÖZÜLDÜ (7/7 PASS — 2026-09-06 Oturum 157 — guard whitelist: OptionARepairCommand + SeedFeatureAssignmentsCommand eklendi)
+- `DemandMatchingEngineTest` — ✅ ÇÖZÜLDÜ (4/4 PASS — 2026-09-06 Oturum 157 — INTENTIONAL_CROSS_TENANT: `Ilan::withoutTenant()` bypass eklendi)
+> Detaylar ve teşhisler için bkz: [docs/architecture/codex-handoff-2026-09-04.md](file:///Users/macbookpro/repos/yalihan-os/docs/architecture/codex-handoff-2026-09-04.md)
+
+### 10. Hermes AI Workforce Technical Debt (H-01 — H-10)
+
+Kaynak: `audits/HERMES_DEEP_AUDIT_REPORT.md` | Son Güncelleme: 2026-09-11 (Oturum 169 — Priority 2)
+
+| Borç ID | Tanım | Önem | Durum | Çözüm / Detay |
+|---------|-------|------|-------|----------------|
+| **H-01** | PropertyScoreAgent PSR-4 namespace/dizin uyuşmazlığı | 🔴 CRITICAL | ✅ ÇÖZÜLDÜ | `App\Services\Hermes\Handlers\Workforce` dizinine taşındı (2026-08-28) |
+| **H-02** | DriveAgent constructor 3-param binding uyuşmazlığı | 🔴 CRITICAL | ✅ ÇÖZÜLDÜ | `HermesServiceProvider` singleton factory ile bağlandı |
+| **H-03** | NotificationAgent event uyuşmazlığı | 🔴 CRITICAL | ✅ ÇÖZÜLDÜ | `publishing.decision_ready` dinlemesi sağlandı |
+| **H-04** | PortfolioAgent ölü kod (Sprint 4.3 kalıntısı) | 🟡 MEDIUM | ✅ ÇÖZÜLDÜ | Kod ve kayıtlar temizlendi |
+| **H-05** | PropertyScoreAgent in-memory cross-event buffer veri kaybı riski | 🟡 MEDIUM | ✅ ÇÖZÜLDÜ (Oturum 169) | `Cache` ile 24h TTL kalıcı buffer eklendi, `chain_id` 5 ajana yayıldı, cross-instance testleri PASS |
+| **H-06** | HermesReplayService event reconstruction kırılganlığı | 🟡 MEDIUM | ✅ ÇÖZÜLDÜ | FACTORY map ile güçlendirildi |
+| **H-07** | DriveAgent synchronous execution (performans) | 🟢 LOW | ⏳ AÇIK (Non-blocking) | Google Drive API gecikmelerinde queue'ya geçiş planlanacak |
+| **H-08** | Workforce ajanları bağımsız unit test eksikliği | 🔴 CRITICAL | ✅ ÇÖZÜLDÜ | `WorkforceAgentsTest.php` bağımsız testleri eklendi |
+| **H-09** | 5 ajanlı uçtan uca zincir izlenebilirlik testi eksikliği | 🔴 CRITICAL | ✅ ÇÖZÜLDÜ (Oturum 169) | `test_workforce_chain_e2e_full_unbroken_five_agent_traceability` (108 assertions PASS) |
+| **H-10** | TelegramNotificationHandler stub (dış servis bağlantısı) | 🟢 LOW | ⏳ AÇIK (Non-blocking) | Dış bildirim kanalları aktifleştiğinde ele alınacak |
+

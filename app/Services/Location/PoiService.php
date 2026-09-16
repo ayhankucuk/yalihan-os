@@ -51,31 +51,58 @@ class PoiService
                 )) AS distance_km
             ";
 
-            $query->select('*')
-                ->selectRaw($haversineFormula, [$lat, $lng, $lat])
-                ->whereNotNull('lat')
-                ->whereNotNull('lng')
-                ->having('distance_km', '<=', $radiusKm);
+            // SQLite < 3.38.0: HAVING non-aggregate sütunla Exception atar.
+            // MySQL: HAVING sorunsuz çalışır.
+            // Çözüm: driver bazlı dallanma — Strangler Fig sürecinde teknik borç olarak kayıt.
+            // context7-ignore: legacy kod teknik borç — domain katmanında temiz çözüm mevcut
+            $driver = DB::connection()->getDriverName();
+            if ($driver === 'sqlite') {
+                // SQLite: fetch pre-filtered + PHP-side radius filter
+                // SQLite HAVING bug + text comparison sorunları nedeniyle
+                // PHP-side filtering en güvenli çözüm (POI tablosu ~200 satır)
+                $subQuery = PointOfInterest::query()
+                    ->select('*')
+                    ->selectRaw($haversineFormula, [$lat, $lng, $lat])
+                    ->whereNotNull('lat')
+                    ->whereNotNull('lng');
+                if (!empty($filters['types'])) {
+                    $subQuery->whereIn('poi_turu', $filters['types']);
+                }
+                $subQuery->where(function ($q) {
+                    $q->where('aktiflik_durumu', true)
+                      ->orWhere('aktiflik_durumu', 1)
+                      ->orWhereNull('aktiflik_durumu');
+                });
+                $subQuery->orderBy('distance_km', 'asc')->limit(200);
+                $all = $subQuery->get();
 
-            // POI tipi filtreleri (Context7: poi_turu)
-            if (!empty($filters['types'])) { // context7-ignore
-                $query->whereIn('poi_turu', $filters['types']); // context7-ignore
+                // PHP-side radius filter: SQLite selectRaw AS alias string comparison workaround
+                $results = $all
+                    ->filter(fn($poi) => isset($poi->distance_km) && (float) $poi->distance_km <= $radiusKm)
+                    ->take(50)
+                    ->values()
+                    ->all();
+            } else {
+                $query = PointOfInterest::query()
+                    ->select('*')
+                    ->selectRaw($haversineFormula, [$lat, $lng, $lat])
+                    ->whereNotNull('lat')
+                    ->whereNotNull('lng')
+                    ->having('distance_km', '<=', $radiusKm);
+                if (!empty($filters['types'])) {
+                    $query->whereIn('poi_turu', $filters['types']);
+                }
+                $query->where(function ($q) {
+                    $q->where('aktiflik_durumu', true)
+                      ->orWhere('aktiflik_durumu', 1)
+                      ->orWhereNull('aktiflik_durumu');
+                });
+                $query->orderBy('distance_km', 'asc')->limit(50);
+                $results = $query->get();
             }
 
-            // Aktif POI'ler (Context7: aktiflik_durumu)
-            // ✅ Null-safe aktiflik kontrolü
-            $query->where(function($q) {
-                $q->where('aktiflik_durumu', true)
-                  ->orWhere('aktiflik_durumu', 1)
-                  ->orWhereNull('aktiflik_durumu'); // Null değerleri de kabul et
-            });
-
-            // Mesafeye göre sırala
-            $query->orderBy('distance_km', 'asc') // context7-ignore
-                ->limit(50);
-
-            // Sonuçları transform et (Context7 compliant + backward compatibility)
-            return $query->get()
+            // Transform sonuçlar (Context7 compliant + backward compatibility)
+            return collect($results)
                 ->map(fn($poi) => [
                     'id' => $poi->id,
                     'poi_adi' => $poi->poi_adi, // ✅ SAB

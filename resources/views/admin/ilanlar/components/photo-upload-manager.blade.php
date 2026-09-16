@@ -2,7 +2,7 @@
 {{-- Pure Tailwind + Alpine.js, NO DROPZONE! --}}
 {{-- Yalıhan Bekçi kurallarına %100 uyumlu --}}
 
-<div x-data="photoUploadManager({{ json_encode($ilan->id ?? null) }})"
+<div x-data="photoUploadManager({{ json_encode($ilan->id ?? null) }}, {{ json_encode($ilan->fotograflar ?? []) }})"
      x-init="init()"
      class="bg-white dark:bg-slate-900 rounded-xl border-2 border-gray-200 dark:border-slate-800 p-6 dark:border-slate-700">
 
@@ -149,11 +149,11 @@
 
 @push('scripts')
 <script>
-function photoUploadManager(ilanId = null) {
+function photoUploadManager(ilanId = null, initialPhotos = []) {
     return {
         ilanId: ilanId,
         // ✅ FIX: Ensure photos is always an array (Alpine.js reactive)
-        photos: [],
+        photos: Array.isArray(initialPhotos) && initialPhotos.length > 0 ? initialPhotos : [],
         uploadErrors: [],
         uploading: false,
         uploadProgress: 0,
@@ -165,8 +165,8 @@ function photoUploadManager(ilanId = null) {
             if (!Array.isArray(this.photos)) {
                 this.photos = [];
             }
-            // Mevcut fotoğrafları yükle (edit mode)
-            if (this.ilanId) {
+            // Mevcut fotoğrafları yükle (edit mode - sadece boşsa)
+            if (this.photos.length === 0 && this.ilanId) {
                 await this.loadExistingPhotos();
             }
         },
@@ -174,8 +174,7 @@ function photoUploadManager(ilanId = null) {
         async loadExistingPhotos() {
             try {
                 console.log('📸 Loading photos for ilan:', this.ilanId);
-                // ✅ FIX: Route prefix kontrolü - api.php'de /api prefix'i var
-                const url = `/api/ilanlar/${this.ilanId}/photos`;
+                const url = `/admin/ilanlar/${this.ilanId}/photos`;
                 console.log('📸 Fetching from:', url);
 
                 const response = await fetch(url, {

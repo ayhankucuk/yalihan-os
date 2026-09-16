@@ -88,69 +88,64 @@ class FeatureTemplateResolver
     }
 
     /**
-     * Get feature assignments for a publication type (Master Template)
+     * Get feature assignments for a publication type (Master Template).
      *
-     * G1 Cascade Fix: Walks the category inheritance chain to also resolve
-     * IlanKategori::class assignments from root → leaf. SAAB 1B decision.
+     * Query plan:
+     * 1. YayinTipiSablonu assignments (listing_type scope, G3/G4/G5)
+     * 2. IlanKategori assignments (global scope, G1) — always include, regardless of yayinTipiId
      *
-     * @param int $kategoriId Category ID (used to walk inheritance chain for G1)
-     * @param int|null $yayinTipiId Publication Type Template ID
+     * G1 rationale: global scope assignments (scope_type=global, main_category_id=null)
+     * attach to IlanKategori::class with the root seviye-0 kategori as assignable_id.
+     * The FeatureTemplateResolver cascade in Wizard layer handles inheritance
+     * at query time. At UPS level, IlanKategori assignments are returned raw.
+     *
+     * @param int $kategoriId IlanKategori ID (not used for filtering here; used by callers)
+     * @param int|null $yayinTipiId YayinTipiSablonu ID
      * @return Collection Collection of FeatureAssignment
      */
     private function getAssignments(int $kategoriId, ?int $yayinTipiId = null): Collection
     {
         if (!$yayinTipiId) {
-            return collect();
+            // G1 global scope has no yayin_tipi dependency; still return it
+            return $this->getIlanKategoriAssignments();
         }
 
-        // V1: Template-level assignments (YayinTipiSablonu)
-        $templateAssignments = FeatureAssignment::where('assignable_type', 'App\Models\YayinTipiSablonu')
+        // 1. YayinTipiSablonu assignments (G3/G4/G5)
+        $yayinTipiAssignments = FeatureAssignment::query()
+            ->where('assignable_type', 'App\Models\YayinTipiSablonu')
             ->where('assignable_id', $yayinTipiId)
-            ->with(['feature', 'feature.category'])
             ->where('is_visible', true)
             ->orderBy('display_order')
             ->orderBy('feature_id')
             ->get();
 
-        // G1 Cascade Fix: Walk category inheritance chain for IlanKategori::class assignments
-        // SAAB 1B: Global features should be visible on all root categories
-        // Walk from root → leaf so child assignments override parent
-        $chain = $this->getInheritanceChain($kategoriId); // [root, ..., $kategoriId]
-        $categoryAssignments = collect();
-        foreach ($chain as $katId) {
-            $katAssignments = FeatureAssignment::where('assignable_type', IlanKategori::class)
-                ->where('assignable_id', $katId)
-                ->with(['feature', 'feature.category'])
-                ->where('is_visible', true)
-                ->orderBy('display_order')
-                ->get();
-            $categoryAssignments = $this->mergeCategoryAssignments($categoryAssignments, $katAssignments);
-        }
+        // 2. IlanKategori global scope assignments (G1)
+        $ilanKategoriAssignments = $this->getIlanKategoriAssignments();
 
-        // Merge: template-level overrides category-level
-        return $this->mergeTemplateOverCategory($categoryAssignments, $templateAssignments);
+        return $yayinTipiAssignments->merge($ilanKategoriAssignments);
     }
 
     /**
-     * Merge child category assignments into base (child overrides parent)
+     * Load G1 global scope assignments (scope_type=global).
+     *
+     * G1 records attach to IlanKategori::class with the root seviye-0 kategori ID.
+     * These are the universal features that apply to ALL categories via cascade.
+     * No yayin_tipi filter — global scope is yayin_tipi-agnostic.
+     *
+     * @return Collection FeatureAssignments with IlanKategori scope
      */
-    private function mergeCategoryAssignments(Collection $base, Collection $override): Collection
-    {
-        $overrideIds = $override->pluck('feature_id')->flip();
-        return $base->reject(fn($a) => $overrideIds->has($a->feature_id))
-            ->merge($override);
-    }
+    public function getIlanKategoriAssignments(): Collection
 
-    /**
-     * Template-level assignments override category-level
-     */
-    private function mergeTemplateOverCategory(Collection $category, Collection $template): Collection
     {
-        $templateIds = $template->pluck('feature_id')->flip();
-        return $category->reject(fn($a) => $templateIds->has($a->feature_id))
-            ->merge($template)
-            ->sortBy('display_order')
-            ->values();
+        return FeatureAssignment::query()
+            ->where('assignable_type', IlanKategori::class)
+            ->whereNull('main_category_id')
+            ->whereNull('sub_category_id')
+            ->whereNull('listing_type_id')
+            ->where('is_visible', true)
+            ->orderBy('display_order')
+            ->orderBy('feature_id')
+            ->get();
     }
 
     /**

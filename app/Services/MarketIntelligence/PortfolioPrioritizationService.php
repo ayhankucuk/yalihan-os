@@ -48,7 +48,7 @@ class PortfolioPrioritizationService
         $reason = $this->buildReason($payload, $priorityScore);
 
         return new PortfolioPriorityDTO(
-            listing_id: $payload['listing_id'],
+            listing_id: (int) ($payload['listing_id'] ?? $payload['ilan_id'] ?? $payload['id'] ?? 0),
             priority_score: $priorityScore,
             priority_label: $label,
             priority_reason: $reason,

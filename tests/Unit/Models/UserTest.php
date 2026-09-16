@@ -98,7 +98,10 @@ class UserTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        // Create listings
+        // Create listings — tenant_id is required because Ilan model uses
+        // BelongsToTenant trait + TenantScope, which filters by tenant_id
+        // when TenantContextService has a tenant set (injected by TestCase::setUp).
+        $tenantId = $this->getDefaultTenantId();
         DB::table('ilanlar')->insert([
             [
                 'baslik' => 'İlan 1',
@@ -107,6 +110,7 @@ class UserTest extends TestCase
                 'para_birimi' => 'TL',
                 'yayin_durumu' => 'yayinda',
                 'danisman_id' => $userId,
+                'tenant_id' => $tenantId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -117,6 +121,7 @@ class UserTest extends TestCase
                 'para_birimi' => 'TL',
                 'yayin_durumu' => 'yayinda',
                 'danisman_id' => $userId,
+                'tenant_id' => $tenantId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

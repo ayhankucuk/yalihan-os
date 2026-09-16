@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
  * @sab-ignore-thin
  */
 
+use App\Enums\IlanDurumu;
 use App\Http\Controllers\Controller;
 use App\Services\CortexROIEngine;
 use App\Services\IlanVerticalDomainService;
@@ -357,10 +358,10 @@ class CortexSmartAPIController extends Controller
             $minInvestmentTRY = 400000 * 32.5;
 
             $ilanlar = \App\Models\Ilan::with(['il', 'ilce', 'anaKategori'])
-                ->where('yayin_durumu', 'active') // context7-ignore
+                ->where('yayin_durumu', IlanDurumu::YAYINDA->value)
                 ->where('fiyat', '>=', $minInvestmentTRY)
                 ->whereIn('ana_kategori_id', [1, 2, 3, 7])
-                ->orderByDesc('fiyat') // context7-ignore
+                ->orderByDesc('fiyat')
                 ->limit($request->input('limit', 20))
                 ->get();
 

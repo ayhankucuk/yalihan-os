@@ -14,6 +14,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('workforce_executions')) {
+            return;
+        }
+
         Schema::create('workforce_executions', function (Blueprint $table) {
             $table->id();
             $table->string('uuid', 36)->unique();
@@ -73,7 +77,7 @@ return new class extends Migration
             // Composite indexes
             $table->index(['aggregate_type', 'aggregate_id']);
             $table->index(['tenant_id', 'execution_status']);
-            $table->index(['execution_status', 'failure_classification']);
+            $table->index(['execution_status', 'failure_classification'], 'we_status_failure_idx');
         });
     }
 

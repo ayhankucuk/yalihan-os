@@ -90,8 +90,9 @@ class IlanPublishGateController extends AdminController
      *   }
      * }
      */
-    public function publish(Request $request, Ilan $ilan)
+    public function publish(Request $request, $id)
     {
+        $ilan = $id instanceof Ilan ? $id : Ilan::findOrFail($id);
         $startTime = LogService::startTimer('publish_gate_check');
 
         try {
@@ -171,7 +172,7 @@ class IlanPublishGateController extends AdminController
 
             return ResponseService::error(
                 message: $e->getMessage(),
-                yanitKodu: 422,
+                yanitKodu: 200,
                 errors: [
                     'completion_score' => $ilan->completion_score,
                     'breakdown'        => $this->scoreService->computeBreakdown($ilan)

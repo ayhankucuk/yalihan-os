@@ -51,10 +51,19 @@ class FeatureTemplateResolver
         // When sub_category is provided, check if main_category is actually a sub-category.
         // The seeder seeds feature_assignments using the parent main_category (e.g. Konut=1),
         // not the sub-category itself (e.g. Villa=8). Traverse ilan_kategorileri parent chain.
+        // Automatically resolve main and sub categories whether $mainCategoryId is root or child
         $resolvedMainCategoryId = $mainCategoryId;
+        $resolvedSubCategoryId = $subCategoryId;
+
         if ($subCategoryId !== null) {
             $parentId = $this->resolveMainCategoryFromSub($subCategoryId);
-            if ($parentId !== null) {
+            if ($parentId !== null && $parentId !== $subCategoryId) {
+                $resolvedMainCategoryId = $parentId;
+            }
+        } elseif ($mainCategoryId > 0) {
+            $parentId = $this->resolveMainCategoryFromSub($mainCategoryId);
+            if ($parentId !== null && $parentId !== $mainCategoryId) {
+                $resolvedSubCategoryId = $mainCategoryId;
                 $resolvedMainCategoryId = $parentId;
             }
         }
@@ -65,7 +74,7 @@ class FeatureTemplateResolver
             ->whereNull('fa.rolled_back_at')
             ->where('fa.aktiflik_durumu', true)
             ->where('fa.is_visible', true)
-            ->where(function ($q) use ($resolvedMainCategoryId, $subCategoryId, $listingTypeId) {
+            ->where(function ($q) use ($resolvedMainCategoryId, $resolvedSubCategoryId, $listingTypeId) {
                 // Global scope (no category/listing type)
                 $q->where(function ($q2) {
                     $q2->whereNull('fa.main_category_id')
@@ -81,18 +90,21 @@ class FeatureTemplateResolver
                 });
 
                 // Sub category scope
-                if ($subCategoryId) {
-                    $q->orWhere(function ($q2) use ($resolvedMainCategoryId, $subCategoryId) {
-                        $q2->where('fa.main_category_id', $resolvedMainCategoryId)
-                            ->where('fa.sub_category_id', $subCategoryId)
+                if ($resolvedSubCategoryId) {
+                    $q->orWhere(function ($q2) use ($resolvedMainCategoryId, $resolvedSubCategoryId) {
+                        $q2->where('fa.sub_category_id', $resolvedSubCategoryId)
+                            ->where(function ($inner) use ($resolvedMainCategoryId) {
+                                $inner->whereNull('fa.main_category_id')
+                                    ->orWhere('fa.main_category_id', $resolvedMainCategoryId);
+                            })
                             ->whereNull('fa.listing_type_id');
                     });
                 }
 
                 // Listing type scope (global + category-specific)
-                $q->orWhere(function ($q2) use ($resolvedMainCategoryId, $subCategoryId, $listingTypeId) {
+                $q->orWhere(function ($q2) use ($resolvedMainCategoryId, $resolvedSubCategoryId, $listingTypeId) {
                     $q2->where('fa.listing_type_id', $listingTypeId)
-                        ->where(function ($inner) use ($resolvedMainCategoryId, $subCategoryId) {
+                        ->where(function ($inner) use ($resolvedMainCategoryId, $resolvedSubCategoryId) {
                             // Global listing-type assignments (no category filter)
                             $inner->where(function ($g) {
                                 $g->whereNull('fa.main_category_id')
@@ -104,10 +116,13 @@ class FeatureTemplateResolver
                                     ->whereNull('fa.sub_category_id');
                             });
                             // Sub-category scoped listing-type assignments
-                            if ($subCategoryId) {
-                                $inner->orWhere(function ($s) use ($resolvedMainCategoryId, $subCategoryId) {
-                                    $s->where('fa.main_category_id', $resolvedMainCategoryId)
-                                        ->where('fa.sub_category_id', $subCategoryId);
+                            if ($resolvedSubCategoryId) {
+                                $inner->orWhere(function ($s) use ($resolvedMainCategoryId, $resolvedSubCategoryId) {
+                                    $s->where('fa.sub_category_id', $resolvedSubCategoryId)
+                                        ->where(function ($subInner) use ($resolvedMainCategoryId) {
+                                            $subInner->whereNull('fa.main_category_id')
+                                                ->orWhere('fa.main_category_id', $resolvedMainCategoryId);
+                                        });
                                 });
                             }
                         });
@@ -144,12 +159,29 @@ class FeatureTemplateResolver
                 'fc.slug as category_slug',
             ]);
 
-        return $this->collapseScopedAssignments(
+        $resolved = $this->collapseScopedAssignments(
             $rows,
             $resolvedMainCategoryId,
-            $subCategoryId,
+            $resolvedSubCategoryId,
             $listingTypeId
         );
+
+        // A1 Guard: Log when no features are resolved — indicates an unconfigured
+        // category+listing_type combination (e.g. Arsa, İşyeri, Kiralık without seeded assignments).
+        // Callers (WizardFeatureController, PropertyPublicationPolicy) must treat an empty
+        // collection as "not ready" — never as "complete".
+        if ($resolved->isEmpty()) {
+            \Illuminate\Support\Facades\Log::warning('FeatureTemplateResolver: empty feature set resolved', [
+                'main_category_id'     => $mainCategoryId,
+                'resolved_main_cat_id' => $resolvedMainCategoryId,
+                'sub_category_id'      => $subCategoryId,
+                'resolved_sub_cat_id'  => $resolvedSubCategoryId,
+                'listing_type_id'      => $listingTypeId,
+            ]);
+        }
+
+        return $resolved;
+
     }
 
     /**

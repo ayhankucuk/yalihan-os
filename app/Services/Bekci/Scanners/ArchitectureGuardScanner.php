@@ -29,8 +29,30 @@ class ArchitectureGuardScanner
         'OptimizerSuggestion',
     ];
 
+    /**
+     * Paths excluded from all architecture scans.
+     * Internal framework/support code, enums, and migrations are not
+     * consumer-facing business logic and generate false positives.
+     */
+    private const EXCLUDED_PATTERNS = [
+        'app/Enums/',
+        'app/Traits/',
+        'app/Support/Governance/',
+        'app/Support/Helpers/',
+        'database/migrations/',
+        'vendor/',
+        'node_modules/',
+    ];
+
     public function scanFile(array $lines, string $filePath): array
     {
+        // Skip excluded paths entirely — no noise from internal code
+        foreach (self::EXCLUDED_PATTERNS as $pattern) {
+            if (str_contains($filePath, $pattern)) {
+                return [];
+            }
+        }
+
         $issues = [];
         $isController = Str::contains($filePath, 'app/Http/Controllers');
         $isModel = Str::contains($filePath, 'app/Models');

@@ -48,8 +48,8 @@ class TalepPortfolyoController extends Controller
 
         $portfolyoStats = Cache::remember('portfolyo_stats', 300, function () {
             return [
-                'toplam_ilan' => Ilan::where('yayin_durumu', 'Yayında')->count(),
-                'taslakyayinda_ilan' => Ilan::where('yayin_durumu', 'Taslak')->count(),
+                'toplam_ilan' => Ilan::where('yayin_durumu', IlanDurumu::YAYINDA->value)->count(),
+                'taslakyayinda_ilan' => Ilan::where('yayin_durumu', IlanDurumu::TASLAK->value)->count(),
             ];
         });
 

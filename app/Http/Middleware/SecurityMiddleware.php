@@ -155,8 +155,8 @@ class SecurityMiddleware
                 'user_agent' => $request->userAgent(),
                 'url' => $request->fullUrl(),
                 'method' => $request->method(),
-                'headers' => $request->headers->all(),
-                'input' => $request->all(),
+                'headers' => $this->maskSensitiveHeaders($request->headers->all()),
+                'input' => $this->maskSensitiveInput($request->all()),
                 'timestamp' => now()->toISOString(),
             ]);
         }
@@ -172,6 +172,74 @@ class SecurityMiddleware
                 'timestamp' => now()->toISOString(),
             ]);
         }
+    }
+
+    /**
+     * Mask sensitive headers to prevent secret leakage in security logs.
+     * BACKLOG-7: Authorization, Cookie, API keys, tokens are replaced with '[REDACTED]'.
+     */
+    private function maskSensitiveHeaders(array $headers): array
+    {
+        $sensitiveHeaderKeys = [
+            'authorization',
+            'cookie',
+            'set-cookie',
+            'x-api-key',
+            'x-auth-token',
+            'x-csrf-token',
+            'x-xsrf-token',
+            'api-key',
+            'x-goog-channel-token',
+            'x-goog-resource-token',
+        ];
+
+        foreach ($headers as $key => $value) {
+            if (in_array(strtolower($key), $sensitiveHeaderKeys, true)) {
+                $headers[$key] = '[REDACTED]';
+            }
+        }
+
+        return $headers;
+    }
+
+    /**
+     * Mask sensitive input fields to prevent secret leakage in security logs.
+     * BACKLOG-7: password, token, secret, credit card fields are replaced with '[REDACTED]'.
+     */
+    private function maskSensitiveInput(array $input): array
+    {
+        $sensitiveInputKeys = [
+            'password',
+            'password_confirmation',
+            'current_password',
+            'new_password',
+            'token',
+            'api_token',
+            'access_token',
+            'refresh_token',
+            'secret',
+            'client_secret',
+            'api_key',
+            'apikey',
+            'private_key',
+            'credit_card',
+            'card_number',
+            'cvv',
+            'cvc',
+            'ssn',
+            'iban',
+            'account_number',
+        ];
+
+        foreach ($input as $key => $value) {
+            if (in_array(strtolower($key), $sensitiveInputKeys, true)) {
+                $input[$key] = '[REDACTED]';
+            } elseif (is_array($value)) {
+                $input[$key] = $this->maskSensitiveInput($value);
+            }
+        }
+
+        return $input;
     }
 
     /**

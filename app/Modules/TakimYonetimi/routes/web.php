@@ -41,6 +41,7 @@ Route::middleware(['web', 'auth', 'admin', 'role:admin'])->prefix('admin/takim-y
 
     // Görev İşlemleri
     Route::get('gorevler/board', [GorevController::class, 'board'])->name('gorevler.board');
+    Route::post('gorevler/toplu-ata', [GorevController::class, 'topluGorevAta'])->name('gorevler.toplu-ata');
     Route::post('gorevler/{gorev}/atama', [GorevController::class, 'atama'])->name('gorevler.atama');
     Route::post('gorevler/{gorev}/durum-guncelle', [GorevController::class, 'updateStatus'])->name('gorevler.durum-guncelle');
     Route::get('gorevler/{gorev}/rapor', [GorevController::class, 'rapor'])->name('gorevler.rapor');

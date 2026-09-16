@@ -29,9 +29,9 @@ class DatabaseSeeder extends Seeder
         $this->command->newLine();
 
         // ================================================
-        // 1. ROLES & PERMISSIONS (Her zaman çalışır)
+        // 1. ROLES & MULTI-TENANT (Her zaman çalışır)
         // ================================================
-        $this->command->info('🔐 1/5 Roles & Permissions Loading...');
+        $this->command->info('🔐 1/4 Roles & Multi-Tenant Baseline Loading...');
         $this->call([
             TenantBaselineSeeder::class,     // Tenant kaydı önce (AdminUserSeeder tenant_id'ye ihtiyaç duyar)
             RoleSeeder::class,               // Spatie roles (super-admin, admin, danisman, musteri)
@@ -39,61 +39,46 @@ class DatabaseSeeder extends Seeder
         $this->command->newLine();
 
         // ================================================
-        // 2. CORE SYSTEM (Her zaman çalışır)
+        // 2. CORE DOMAIN MASTER DATA (Her zaman çalışır - Prodüksiyon SSOT)
         // ================================================
-        $this->command->info('📦 2/5 Core System Loading...');
+        $this->command->info('📦 2/4 Core Domain Master Data Loading...');
         $this->call([
-            AdminUserSeeder::class,          // Super-admin users (ayhankucuk@gmail.com, yalihanemlak@gmail.com) — tenant_id+role_id backfill dahil
-            // Context7MasterSeeder::class,     // Kategori, özellikler, sistem verileri (Deleted/Missing)
-            IlanKategoriSeeder::class,
-            YayinTipiSeeder::class,          // Canonical publication types
-            KategoriYayinTipiPivotSeeder::class,
-            OzellikKategoriSeeder::class,
-            PropertyHubOzelliklerSeeder::class,
-            SmartFormsCanonicalSeeder::class,
-            ExpenseItemSeeder::class,
-            TurkiyeLocationSeeder::class,    // 81 İl + Muğla ilçeleri + Bodrum mahalleleri (Bodrum-First Strategy)
+            AdminUserSeeder::class,                    // Super-admin users (ayhankucuk@gmail.com, yalihanemlak@gmail.com)
+            IlanKategoriSeeder::class,                 // 6 Ana Kategori + Alt Kategoriler
+            YayinTipiSeeder::class,                    // Canonical publication types
+            KategoriYayinTipiPivotSeeder::class,       // Kategori × Yayın Tipi eşleşmeleri
+            FeatureAssignmentSeeder::class,            // Canonical Feature Schema (Konut)
+            ArsaIsyeriFeatureAssignmentSeeder::class,  // Canonical Feature Schema (Arsa & İşyeri)
+            CategoryFeatureMatrixSeeder::class,        // Canonical Feature Schema (Yazlık, Turistik, Proje)
+            SmartFormsCanonicalSeeder::class,          // Dinamik form kuralları
+            ExpenseItemSeeder::class,                  // Finansal kalemler
+            TurkiyeLocationSeeder::class,              // 81 İl + Muğla ilçeleri + Bodrum mahalleleri
         ]);
         $this->command->newLine();
 
         // ================================================
-        // 3. TEST PERSONAS (Local/Dev/Test ortamında)
+        // 3. TEST PERSONAS & POI FIXTURES (Local/Dev/Test ortamında)
         // ================================================
         if (app()->environment(['local', 'development', 'testing'])) {
-            $this->command->info('👥 3/5 Test Personas Loading...');
-            $this->command->info('   → Operational Digest workflow validation personas');
+            $this->command->info('👥 3/4 Test Personas & POI Fixtures Loading...');
+            $this->command->info('   → Operational Digest & Workflow Validation Personas');
 
             $this->call([
                 DanismanSeeder::class,       // Danışmanlar (Atılay, Sedat, Yunus)
                 MusteriSeeder::class,        // Test müşteriler (5 deterministic personas)
+                BodrumPoiSeeder::class,      // Bodrum & Muğla 200+ POI noktası
             ]);
 
             $this->command->newLine();
         } else {
-            $this->command->warn('⏭️  3/5 Test Personas skipped (Production mode)');
+            $this->command->warn('⏭️  3/4 Test Personas & POI Fixtures skipped (Production mode)');
             $this->command->newLine();
         }
 
         // ================================================
-        // 4. OPTIONAL SEEDERS (İsteğe bağlı)
+        // 4. FINALIZATION
         // ================================================
-        $this->command->info('⚙️  4/5 Optional Seeders...');
-
-        // Feature Assignments (Orphaned Features'ı atamak için)
-        $this->command->info('   → Running Feature Assignment Seeder...');
-        $this->call([
-            FeatureAssignmentSeeder::class,
-        ]);
-
-        // Golden Visa (geçici olarak devre dışı - minimal schema)
-        $this->command->warn('   → Golden Visa seeder skipped (minimal schema)');
-
-        $this->command->newLine();
-
-        // ================================================
-        // 5. FINALIZATION
-        // ================================================
-        $this->command->info('🎉 5/5 Finalization...');
+        $this->command->info('🎉 4/4 Finalization...');
         $this->displaySummary();
     }
 
@@ -121,7 +106,7 @@ class DatabaseSeeder extends Seeder
             $this->command->warn('   ├─ Test Personas: ⏭️ (Skipped - Production)');
         }
 
-        $this->command->warn('   └─ Environment: ' . app()->environment());
+        $this->command->warn('   └─ Environment: '.app()->environment());
 
         $this->command->newLine();
         $this->command->info('🔗 Data integrity: %100');

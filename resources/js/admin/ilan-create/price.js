@@ -10,6 +10,7 @@ window.advancedPriceManager = function () {
         mainPrice: 0,
         mainPriceInput: '', // Kullanıcı girişi için string
         mainCurrency: 'TRY',
+        fiyatGosterimModu: 'exact',
         startingPrice: 0,
         dailyPrice: 0,
         metrekare: 0,

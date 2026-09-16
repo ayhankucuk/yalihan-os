@@ -20,6 +20,8 @@ use App\Actions\Api\V2\Ilan\UpdateIlanAction;
 use App\Http\Controllers\Controller;
 use App\Models\V2\Ilan;
 use App\Http\Resources\Mobile\IlanDetailResource;
+use App\Http\Resources\IlanPublicDetailResource;
+use App\Scopes\TenantScope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -80,42 +82,64 @@ class IlanController extends Controller
     /**
      * Display the specified listing
      * GET /api/v1/ilanlar/{id}
+     *
+     * Politika (ADR-Ilan-Erisim-Politikasi):
+     *   - Yayınlanmış ilan → 200 + TIKLANABİLİR alanlar
+     *   - Taslak/yayınlanmamış ilan → 404 (kayıt yokmuş gibi)
+     *   - Cross-tenant yayınlanmış ilan → 200 (kamu verisi)
+     *   - Cross-tenant özel/yazma → 404
+     *
+     * Auth kullanıcı, kendi ilanının detayında tam alanları alır;
+     * başka tenant'ın yayınlanmış ilanında TIKLANABİLİR alanları alır.
      */
-    public function show($id): IlanDetailResource|JsonResponse
+    public function show(Request $request, $id): IlanPublicDetailResource|IlanDetailResource|JsonResponse
     {
-        $ilan = Ilan::with(['il', 'ilce', 'mahalle', 'fotograflar', 'danisman', 'anaKategori'])
+        $ilan = Ilan::withoutGlobalScope(TenantScope::class)
+            ->with(['il', 'ilce', 'mahalle', 'fotograflar', 'danisman', 'anaKategori'])
             ->find($id);
 
         if (!$ilan) {
             return response()->json(['message' => 'İlan bulunamadı'], 404);
         }
 
-        // SAB Kural #1 — Tenant Isolation IDOR protection
-        if (auth('sanctum')->check()) {
-            $user = auth('sanctum')->user();
-            if ($user->tenant_id !== $ilan->tenant_id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Bu ilana erişim izniniz yok',
-                ], 403);
-            }
+        // Auth kullanıcı kontrolü
+        $user = auth('sanctum')->user();
+        $isOwner = $user && $ilan->danisman_id === $user->id;
+        $isSameTenant = $user && (int) $ilan->tenant_id === (int) $user->tenant_id;
+
+        // Yayınlanmamış ilanlar sadece kendi tenant'ı tarafından görüntülenebilir
+        if ($ilan->yayin_durumu !== IlanDurumu::YAYINDA->value && !$isSameTenant) {
+            return response()->json(['message' => 'İlan bulunamadı'], 404);
         }
 
-        return new IlanDetailResource($ilan);
+        // Yayınlanmış ilan — herkes 200 alır
+        if ($user && ($isOwner || $isSameTenant)) {
+            $request->attributes->set('ilan_detail_full', true);
+            return new IlanDetailResource($ilan);
+        }
+
+        return new IlanPublicDetailResource($ilan);
     }
 
     /**
      * Update the specified listing
      * PUT /api/v1/ilanlar/{id}
+     *
+     * ⚠️ Implicit route model binding KULLANILMAZ — TenantScope fail-closed davranışı
+     * nedeniyle controller method'undan ÖNCE patlar ve 404 döner.
+     * Bu yüzden explicit query + withoutGlobalScope(TenantScope::class) kullanılır.
+     * @see IlanController::show() — aynı pattern orada zaten mevcut
      */
-    public function update(Request $request, Ilan $ilan, UpdateIlanAction $action): JsonResponse
+    public function update(Request $request, $id, UpdateIlanAction $action): JsonResponse
     {
-        // Check authorization
-        if ($ilan->danisman_id !== auth('sanctum')->id()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bu ilana erişim izniniz yok',
-            ], 403);
+        $ilan = Ilan::withoutGlobalScope(TenantScope::class)->find($id);
+
+        if (!$ilan) {
+            return response()->json(['message' => 'İlan bulunamadı'], 404);
+        }
+
+        if ($authError = $this->authorizeIlanAccess($ilan)) {
+            return $authError;
         }
 
         $validated = $request->validate([
@@ -143,35 +167,44 @@ class IlanController extends Controller
     /**
      * Delete the specified listing
      * DELETE /api/v1/ilanlar/{id}
+     *
+     * ⚠️ Implicit route model binding KULLANILMAZ — TenantScope fail-closed.
+     * @see IlanController::update() açıklama bloğu
      */
-    public function destroy(Ilan $ilan, DestroyIlanAction $action): JsonResponse
+    public function destroy($id, DestroyIlanAction $action): JsonResponse
     {
-        if ($ilan->danisman_id !== auth('sanctum')->id()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bu ilana erişim izniniz yok',
-            ], 403);
+        $ilan = Ilan::withoutGlobalScope(TenantScope::class)->find($id);
+
+        if (!$ilan) {
+            return response()->json(['message' => 'İlan bulunamadı'], 404);
+        }
+
+        if ($authError = $this->authorizeIlanAccess($ilan)) {
+            return $authError;
         }
 
         $action->handle($ilan);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'İlan başarıyla silindi',
-        ]);
+        return response()->json(null, 204);
     }
 
     /**
      * Publish listing
      * PATCH /api/v1/ilanlar/{id}/publish
+     *
+     * ⚠️ Implicit route model binding KULLANILMAZ — TenantScope fail-closed.
+     * @see IlanController::update() açıklama bloğu
      */
-    public function publish(Ilan $ilan, PublishIlanAction $action): JsonResponse
+    public function publish($id, PublishIlanAction $action): JsonResponse
     {
-        if ($ilan->danisman_id !== auth('sanctum')->id()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bu ilana erişim izniniz yok',
-            ], 403);
+        $ilan = Ilan::withoutGlobalScope(TenantScope::class)->find($id);
+
+        if (!$ilan) {
+            return response()->json(['message' => 'İlan bulunamadı'], 404);
+        }
+
+        if ($authError = $this->authorizeIlanAccess($ilan)) {
+            return $authError;
         }
 
         $action->handle($ilan);
@@ -186,14 +219,20 @@ class IlanController extends Controller
     /**
      * Unpublish listing
      * PATCH /api/v1/ilanlar/{id}/unpublish
+     *
+     * ⚠️ Implicit route model binding KULLANILMAZ — TenantScope fail-closed.
+     * @see IlanController::update() açıklama bloğu
      */
-    public function unpublish(Ilan $ilan, UnpublishIlanAction $action): JsonResponse
+    public function unpublish($id, UnpublishIlanAction $action): JsonResponse
     {
-        if ($ilan->danisman_id !== auth('sanctum')->id()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bu ilana erişim izniniz yok',
-            ], 403);
+        $ilan = Ilan::withoutGlobalScope(TenantScope::class)->find($id);
+
+        if (!$ilan) {
+            return response()->json(['message' => 'İlan bulunamadı'], 404);
+        }
+
+        if ($authError = $this->authorizeIlanAccess($ilan)) {
+            return $authError;
         }
 
         $action->handle($ilan);
@@ -203,5 +242,31 @@ class IlanController extends Controller
             'message' => 'İlan pasif duruma alındı',
             'data' => $ilan,
         ]);
+    }
+
+    /**
+     * 🛡️ Tenant İzolasyonu ve Danışman Yetki Kontrolü
+     *
+     * 1. Cross-tenant istekler → 404 (ID Enumeration zafiyeti engellenir; kayıt yokmuş gibi davranılır)
+     * 2. Aynı tenant, fakat farklı danışman → 403 (Kullanıcı kendi şirketinin ilanına yetkisizdir)
+     */
+    private function authorizeIlanAccess(Ilan $ilan): ?JsonResponse
+    {
+        $user = auth('sanctum')->user();
+
+        if (!$user || (int) $ilan->tenant_id !== (int) $user->tenant_id) {
+            return response()->json([
+                'message' => 'İlan bulunamadı',
+            ], 404);
+        }
+
+        if ($ilan->danisman_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bu ilana erişim izniniz yok',
+            ], 403);
+        }
+
+        return null;
     }
 }

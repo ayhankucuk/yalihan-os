@@ -3,7 +3,8 @@
 {{-- Yalıhan Bekçi kurallarına %100 uyumlu --}}
 
 @php
-    $pricing = $pricing ?? ['daily_price' => $villa->gunluk_fiyat ?? 0, 'currency' => 'TRY'];
+    $pricing = $pricing ?? [];
+    $dailyPrice = $pricing['daily_price'] ?? $pricing['daily_min'] ?? $villa->gunluk_fiyat ?? 0;
 @endphp
 
 <div x-data="bookingForm({{ json_encode(['villa_id' => $villa->id, 'pricing' => $pricing]) }})"
@@ -13,7 +14,7 @@
     <div class="mb-6 pb-6 border-b border-gray-200 dark:border-slate-800 dark:border-slate-700">
         <div class="flex items-end gap-2">
             <div class="text-3xl font-bold text-gray-900 dark:text-white dark:text-slate-100">
-                ₺{{ number_format($pricing['daily_price'], 0) }}
+                ₺{{ number_format($dailyPrice, 0) }}
             </div>
             <div class="text-gray-600 dark:text-gray-400 mb-1">/ gece</div>
         </div>

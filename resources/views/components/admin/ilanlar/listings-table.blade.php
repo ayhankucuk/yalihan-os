@@ -52,7 +52,7 @@
                             <div class="flex items-center gap-3">
                                 <div class="relative flex-shrink-0">
                                     <img class="h-10 w-10 rounded-lg object-cover border border-slate-200 dark:border-white/10"
-                                        src="{{ $listing->fotograflar?->first() ? Storage::url($listing->fotograflar->first()->dosya_yolu) : asset('images/default-property.jpg') }}"
+                                        src="{{ $listing->fotograflar?->first() ? \Illuminate\Support\Facades\Storage::url($listing->fotograflar->first()->dosya_yolu) : asset('images/default-property.jpg') }}"
                                         alt="{{ $listing->baslik }}" loading="lazy">
                                     @if($listing->goruntulenme > 100)
                                         <span class="absolute -top-1.5 -right-1.5 px-1 py-0.5 bg-rose-500 text-white text-[8px] font-bold rounded shadow-sm dark:shadow-none">HOT</span>
@@ -60,7 +60,7 @@
                                 </div>
                                 <div class="space-y-1">
                                     <div class="text-sm font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                                        {{ Str::limit($listing->baslik, 40) }}
+                                        {{ \Illuminate\Support\Str::limit($listing->baslik, 40) }}
                                     </div>
                                     <div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
                                         <span>#{{ $listing->id }}</span>
@@ -77,7 +77,10 @@
                         </td>
                         <td class="px-6 py-5 whitespace-nowrap">
                             @php
-                                $yayinDurumu = \App\Enums\IlanDurumu::tryFrom($listing->yayin_durumu);
+                                $rawDurum = $listing->yayin_durumu;
+                                $yayinDurumu = $rawDurum instanceof \App\Enums\IlanDurumu
+                                    ? $rawDurum
+                                    : \App\Enums\IlanDurumu::tryFrom($rawDurum ?? '');
                                 $yayinDurumuBadgeClass = match ($yayinDurumu?->color()) {
                                     'green' => 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
                                     'blue' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
@@ -154,7 +157,7 @@
                 <div class="group relative bg-white dark:bg-gray-950 rounded-xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm dark:shadow-none hover:shadow-md dark:hover:shadow-none transition-all duration-300 dark:bg-slate-900">
                     <div class="relative h-56 overflow-hidden">
                         <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                            src="{{ $listing->fotograflar?->first() ? Storage::url($listing->fotograflar->first()->dosya_yolu) : asset('images/default-property.jpg') }}" alt="{{ $listing->baslik }}">
+                            src="{{ $listing->fotograflar?->first() ? \Illuminate\Support\Facades\Storage::url($listing->fotograflar->first()->dosya_yolu) : asset('images/default-property.jpg') }}" alt="{{ $listing->baslik }}">
                         <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 dark:from-black/80 to-transparent"></div>
                         <div class="absolute top-4 left-4 flex gap-2">
                              <input type="checkbox" value="{{ $listing->id }}" x-model="selectedIds" class="rounded-lg border-white/20 dark:border-white/10 bg-black/20 text-indigo-500 dark:text-indigo-400 pointer-events-auto transition-colors">

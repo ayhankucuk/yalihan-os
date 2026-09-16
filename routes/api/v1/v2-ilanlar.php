@@ -19,13 +19,13 @@ Route::prefix('ilanlar')->group(function () {
     Route::get('{id}', [IlanController::class, 'show'])->name('api.ilanlar.show');
 
     // Protected endpoints (auth required for write operations)
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', 'tenant.context'])->group(function () {
         Route::post('/', [IlanController::class, 'store'])->name('api.ilanlar.store');
-        Route::put('{id}', [IlanController::class, 'update'])->name('api.ilanlar.update');
-        Route::delete('{id}', [IlanController::class, 'destroy'])->name('api.ilanlar.destroy');
+        Route::put('{ilan}', [IlanController::class, 'update'])->name('api.ilanlar.update');
+        Route::delete('{ilan}', [IlanController::class, 'destroy'])->name('api.ilanlar.destroy');
 
         // Publish/unpublish listing
-        Route::patch('{id}/publish', [IlanController::class, 'publish'])->name('api.ilanlar.publish');
-        Route::patch('{id}/unpublish', [IlanController::class, 'unpublish'])->name('api.ilanlar.unpublish');
+        Route::patch('{ilan}/publish', [IlanController::class, 'publish'])->name('api.ilanlar.publish');
+        Route::patch('{ilan}/unpublish', [IlanController::class, 'unpublish'])->name('api.ilanlar.unpublish');
     });
 });

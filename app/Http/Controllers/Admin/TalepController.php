@@ -2,6 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domain\CRM\DTOs\TalepListCriteria;
+use App\Domain\CRM\Services\CreateTalepUseCase;
+use App\Domain\CRM\Services\ListTaleplerUseCase;
+use App\Domain\CRM\Services\DeleteTalepUseCase;
+use App\Domain\CRM\Services\SearchTaleplerUseCase;
+use App\Domain\CRM\Services\UpdateTalepUseCase;
 use App\Http\Controllers\Controller;
 use App\Models\Talep;
 use App\Services\CRM\TalepAuthorityService;
@@ -18,8 +24,9 @@ use Illuminate\Http\RedirectResponse;
  * 🛰️ TalepController
  *
  * Thin proxy for Demand (Talep) management.
- * All complex filtering, stats, and coordination are delegated to TalepOrchestrator.
- * All mutations are handled via TalepAuthorityService or dedicated Actions.
+ * Strangler Fig: Delegates to Domain UseCases when config('crm.use_domain_talep') is true.
+ * Falls back to legacy orchestrator/authority service when false.
+ *
  * @sab-ignore-thin
  * @sab-ignore-catch
  */
@@ -30,7 +37,12 @@ class TalepController extends Controller
         private readonly TalepAuthorityService $authorityService,
         private readonly StoreTalepAction $storeTalepAction,
         private readonly DeleteTalepAction $deleteTalepAction,
-        private readonly \App\Repositories\TalepRepository $repository
+        private readonly \App\Repositories\TalepRepository $repository,
+        private readonly ?ListTaleplerUseCase $listTaleplerUseCase = null,
+        private readonly ?CreateTalepUseCase $createTalepUseCase = null,
+        private readonly ?UpdateTalepUseCase $updateTalepUseCase = null,
+        private readonly ?DeleteTalepUseCase $deleteTalepUseCase = null,
+        private readonly ?SearchTaleplerUseCase $searchTaleplerUseCase = null
     ) {}
 
     /**
@@ -39,6 +51,16 @@ class TalepController extends Controller
     public function index(Request $request): View
     {
         $this->authorize('viewAny', Talep::class);
+
+        if (config('crm.use_domain_talep', false) && $this->listTaleplerUseCase) {
+            $criteria = TalepListCriteria::fromArray($request->all());
+            return view('admin.talepler.index', [
+                'talepler'      => $this->listTaleplerUseCase->execute($criteria),
+                'istatistikler' => $this->listTaleplerUseCase->getSummaryStats(),
+                'statuslar'     => $this->listTaleplerUseCase->getAvailableStatuses(),
+                ...$this->listTaleplerUseCase->getFormData()
+            ]);
+        }
 
         return view('admin.talepler.index', [
             'talepler'      => $this->orchestrator->getTalepler($request->all()),
@@ -54,6 +76,10 @@ class TalepController extends Controller
     public function create(): View
     {
         $this->authorize('create', Talep::class);
+
+        if (config('crm.use_domain_talep', false) && $this->listTaleplerUseCase) {
+            return view('admin.talepler.create', $this->listTaleplerUseCase->getFormData());
+        }
 
         return view('admin.talepler.create', $this->orchestrator->getFormData());
     }
@@ -82,7 +108,11 @@ class TalepController extends Controller
         ]);
 
         try {
-            $talep = $this->storeTalepAction->handle($validated);
+            if (config('crm.use_domain_talep', false) && $this->createTalepUseCase) {
+                $talep = $this->createTalepUseCase->executeFromSpillover($validated, Auth::user());
+            } else {
+                $talep = $this->storeTalepAction->handle($validated);
+            }
 
             return redirect()
                 ->route('admin.talepler.show', $talep->id)
@@ -98,7 +128,11 @@ class TalepController extends Controller
      */
     public function show($id): View
     {
-        $talep = $this->repository->findOrFail($id);  // Layer 2: 404 concealment
+        if (config('crm.use_domain_talep', false) && $this->listTaleplerUseCase) {
+            $talep = $this->listTaleplerUseCase->findOrFail((int) $id);
+        } else {
+            $talep = $this->repository->findOrFail($id);
+        }
         $this->authorize('view', $talep);              // Layer 1: Capability check
 
         $talep->load(['kisi', 'danisman', 'kategori', 'altKategori', 'il', 'ilce', 'mahalle']);
@@ -111,14 +145,20 @@ class TalepController extends Controller
      */
     public function edit($id): View
     {
-        $talep = $this->repository->findOrFail($id);  // Layer 2: 404 concealment
+        if (config('crm.use_domain_talep', false) && $this->listTaleplerUseCase) {
+            $talep = $this->listTaleplerUseCase->findOrFail((int) $id);
+            $formData = $this->listTaleplerUseCase->getFormData();
+        } else {
+            $talep = $this->repository->findOrFail($id);
+            $formData = $this->orchestrator->getFormData();
+        }
         $this->authorize('update', $talep);            // Layer 1: Capability check
 
         $talep->load(['kisi', 'danisman', 'kategori', 'altKategori', 'il', 'ilce', 'mahalle']);
 
         return view('admin.talepler.edit', [
             'talep' => $talep,
-            ...$this->orchestrator->getFormData()
+            ...$formData
         ]);
     }
 
@@ -127,7 +167,11 @@ class TalepController extends Controller
      */
     public function update(Request $request, $id): RedirectResponse
     {
-        $talep = $this->repository->findOrFail($id);  // Layer 2: 404 concealment
+        if (config('crm.use_domain_talep', false) && $this->listTaleplerUseCase) {
+            $talep = $this->listTaleplerUseCase->findOrFail((int) $id);
+        } else {
+            $talep = $this->repository->findOrFail($id);
+        }
         $this->authorize('update', $talep);            // Layer 1: Capability check
 
         $validated = $request->validate([
@@ -148,7 +192,11 @@ class TalepController extends Controller
         ]);
 
         try {
-            $this->authorityService->updateTalep($talep, $validated, Auth::user());
+            if (config('crm.use_domain_talep', false) && $this->updateTalepUseCase) {
+                $this->updateTalepUseCase->execute($talep, $validated, Auth::user());
+            } else {
+                $this->authorityService->updateTalep($talep, $validated, Auth::user());
+            }
 
             return redirect()
                 ->route('admin.talepler.show', $talep->id)
@@ -164,12 +212,21 @@ class TalepController extends Controller
      */
     public function destroy($id): RedirectResponse
     {
-        $talep = $this->repository->findOrFail($id);  // Layer 2: 404 concealment
+        if (config('crm.use_domain_talep', false) && $this->listTaleplerUseCase) {
+            $talep = $this->listTaleplerUseCase->findOrFail((int) $id);
+        } else {
+            $talep = $this->repository->findOrFail($id);
+        }
         $this->authorize('delete', $talep);            // Layer 1: Capability check
 
         try {
             $talepBilgi = $talep->kisi ? ($talep->kisi->ad.' '.$talep->kisi->soyad) : 'Talep #'.$talep->id;
-            $this->deleteTalepAction->handle($talep);
+
+            if (config('crm.use_domain_talep', false) && $this->deleteTalepUseCase) {
+                $this->deleteTalepUseCase->execute($talep, Auth::user());
+            } else {
+                $this->deleteTalepAction->handle($talep);
+            }
 
             return redirect()
                 ->route('admin.talepler.index')
@@ -240,12 +297,18 @@ class TalepController extends Controller
     public function search(Request $request): \Illuminate\Http\JsonResponse
     {
         $query = $request->input('q', '');
-        $talepler = $this->repository->search($query, 20);
+
+        if (config('crm.use_domain_talep', false) && $this->searchTaleplerUseCase) {
+            $talepler = $this->searchTaleplerUseCase->execute($query, 20);
+        } else {
+            $talepler = $this->repository->search($query, 20);
+        }
 
         $mapped = $talepler->map(function ($talep) {
+            $kisiAd = $talep->kisi ? ($talep->kisi->tam_ad ?? ($talep->kisi->ad . ' ' . $talep->kisi->soyad)) : 'N/A';
             return [
                 'id'    => $talep->id,
-                'text'  => $talep->baslik . ' - ' . ($talep->kisi ? $talep->kisi->ad_soyad : 'N/A'),
+                'text'  => $talep->baslik . ' - ' . $kisiAd,
                 'value' => $talep->id
             ];
         });

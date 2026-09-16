@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Enums\GorevDurumu;
+use App\Enums\IlanDurumu;
 
 class TelegramBotService
 {
@@ -534,7 +535,7 @@ class TelegramBotService
         }
 
         $enIyiPerformans = TakimUyesi::with('user')
-            ->where('yayin_durumu', 'active')
+            ->where('yayin_durumu', IlanDurumu::YAYINDA->value)
             ->orderBy('performans_skoru', 'desc')
             ->limit(5)
             ->get();

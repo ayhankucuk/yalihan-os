@@ -56,8 +56,8 @@
                         <span>Yeni İlan</span>
                         <span class="ml-auto text-xs bg-green-500/20 text-green-600 dark:text-green-200 px-1.5 py-0.5 rounded">AI</span>
                     </a>
-                    <a href="{{ route('admin.listing-features.index') ?? '/admin/listing-features' }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.listing-features.*') ? 'bg-blue-500 text-white' : '' }}">
+                    <a href="{{ route('admin.ups.features.index') }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.ups.features.*') ? 'bg-blue-500 text-white' : '' }}">
                         <span>İlan Özellikleri</span>
                         <span class="ml-auto text-xs bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded">UPS</span>
                     </a>
@@ -105,10 +105,10 @@
                     </svg>
                 </button>
                 <div x-show="open" class="ml-6 mt-1 space-y-1">
-                    <a href="{{ route('admin.ups.governance.index') }}" class="flex items-center gap-2 h-8 px-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-xs {{ request()->routeIs('admin.ups.governance.*') ? 'text-blue-400' : '' }}">
+                    <a href="{{ route('admin.governance.feature-health') }}" class="flex items-center gap-2 h-8 px-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-xs {{ request()->routeIs('admin.governance.feature-health*') ? 'text-blue-400' : '' }}">
                         <span>LifeCycle & Governance</span>
                     </a>
-                    <a href="{{ route('admin.yayin-tipi-sablonlari.index') }}" class="flex items-center gap-2 h-8 px-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-xs {{ request()->routeIs('admin.yayin-tipi-sablonlari.*') ? 'text-blue-400' : '' }}">
+                    <a href="{{ route('admin.property-hub.yayin-tipi-sablonlari.index') }}" class="flex items-center gap-2 h-8 px-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-xs {{ request()->routeIs('admin.property-hub.yayin-tipi-sablonlari.*') ? 'text-blue-400' : '' }}">
                         <span>Template Manager</span>
                     </a>
                     <a href="{{ route('admin.ups.packs.index') }}" class="flex items-center gap-2 h-8 px-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-xs {{ request()->routeIs('admin.ups.packs.*') ? 'text-blue-400' : '' }}">
@@ -447,8 +447,8 @@
                         role="menuitem">
                         <span>Görevler</span>
                     </a>
-                    <a href="{{ route('admin.takim-yonetimi.takim.performans') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.takim-yonetimi.takim.performans') ? 'bg-blue-500 text-white' : '' }}"
+                    <a href="{{ route('admin.takim.performans') }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.takim.performans') ? 'bg-blue-500 text-white' : '' }}"
                         role="menuitem">
                         <span>Performans</span>
                     </a>
@@ -481,24 +481,71 @@
                         role="menuitem">
                         <span>Genel Analytics</span>
                     </a>
-                    @if (\Illuminate\Support\Facades\Route::has('admin.analytics.dashboard'))
-                        <a href="{{ route('admin.analytics.dashboard') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.analytics.dashboard') ? 'bg-blue-500 text-white' : '' }}"
-                            role="menuitem">
-                            <svg class="w-4 h-4 text-blue-500 dark:text-blue-300" fill="none"
-                                stroke="CurrentColor" viewBox="0 0 24 24">
-                                <rect x="3" y="3" width="7" height="9" />
-                                <rect x="14" y="3" width="7" height="5" />
-                                <rect x="14" y="12" width="7" height="9" />
-                                <rect x="3" y="16" width="7" height="5" />
-                            </svg>
-                            <span>Analytics Dashboard</span>
-                        </a>
-                    @endif
+                    {{-- Governance Dashboard linki kaldırıldı (2026-09-15) — admin.governance.dashboard kullanın --}}
                     <a href="{{ route('admin.reports.index') }}"
                         class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.reports.*') ? 'bg-blue-500 text-white' : '' }}"
                         role="menuitem" title="Raporlar">
                         <span>Raporlar</span>
+                    </a>
+                </div>
+            </li>
+
+            <!-- Governance Dropdown -->
+            <li x-show="!query || ($el.innerText||'').toLowerCase().includes(query.toLowerCase())"
+                x-data="{ open: {{ request()->routeIs('admin.governance.*') ? 'true' : 'false' }} }">
+                <button type="button" @click="open = !open" @keydown.enter.prevent="open = !open"
+                    x-bind:aria-expanded="open" aria-controls="governance-menu" aria-haspopup="true"
+                    class="flex items-center gap-3 h-11 px-3 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 w-full transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.*') ? 'bg-blue-600 text-white hover:bg-blue-700' : '' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Governance</span>
+                    <svg class="w-4 h-4 ml-auto transition-transform duration-200" :class="{ 'rotate-180': open }"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <div x-show="open" x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 transform scale-95"
+                    x-transition:enter-end="opacity-100 transform scale-100"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 transform scale-100"
+                    x-transition:leave-end="opacity-0 transform scale-95" id="governance-menu" role="menu"
+                    class="ml-6 mt-1 space-y-1">
+                    <a href="{{ route('admin.governance.dashboard') }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.dashboard') ? 'bg-blue-500 text-white' : '' }}"
+                        role="menuitem">
+                        <span>SAB Dashboard</span>
+                    </a>
+                    <a href="{{ route('admin.governance.review-queue') }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.review-queue') ? 'bg-blue-500 text-white' : '' }}"
+                        role="menuitem">
+                        <span>İnceleme Kuyruğu</span>
+                    </a>
+                    <a href="{{ route('admin.governance.intelligence-center') }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.intelligence-center') ? 'bg-blue-500 text-white' : '' }}"
+                        role="menuitem">
+                        <span>AI Kontrol Merkezi</span>
+                    </a>
+                    <a href="{{ route('admin.governance.autonomy-panel') }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.autonomy-panel') ? 'bg-blue-500 text-white' : '' }}"
+                        role="menuitem">
+                        <span>Otonom Kontrol</span>
+                    </a>
+                    <a href="{{ route('admin.governance.decision-history') }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.decision-history') ? 'bg-blue-500 text-white' : '' }}"
+                        role="menuitem">
+                        <span>Karar Geçmişi</span>
+                    </a>
+                    <a href="{{ route('admin.governance.feature-health') }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.feature-health*') ? 'bg-blue-500 text-white' : '' }}"
+                        role="menuitem">
+                        <span>Feature Health</span>
+                    </a>
+                    <a href="{{ route('admin.governance.suppression-list') }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.suppression-list') ? 'bg-blue-500 text-white' : '' }}"
+                        role="menuitem">
+                        <span>Bastırma Kuralları</span>
                     </a>
                 </div>
             </li>
@@ -622,12 +669,7 @@
                     <a href="{{ route('admin.telegram-bot.index') }}"
                         class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.telegram-bot.index') ? 'bg-blue-500 text-white' : '' }}"
                         role="menuitem">
-                        <span>Genel</span>
-                    </a>
-                    <a href="{{ route('admin.telegram-bot.durum') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.telegram-bot.durum') ? 'bg-blue-500 text-white' : '' }}"
-                        role="menuitem">
-                        <span>Durum</span>
+                        <span>Genel & Durum</span>
                     </a>
                     <a href="{{ route('admin.telegram-bot.webhook-info') }}"
                         class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.telegram-bot.webhook-info') ? 'bg-blue-500 text-white' : '' }}"
@@ -819,20 +861,7 @@
                     @endif
                 </div>
             </li>
-            <!-- Smart Calculator -->
-            @if (\Illuminate\Support\Facades\Route::has('admin.smart-calculator'))
-                <li x-show="!query || ($el.innerText||'').toLowerCase().includes(query.toLowerCase())">
-                    <a href="{{ route('admin.smart-calculator') }}"
-                        class="flex items-center gap-3 h-11 px-3 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 {{ request()->routeIs('admin.smart-calculator') ? 'bg-blue-600 text-white hover:bg-blue-700' : '' }}"
-                        role="menuitem">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                        <span>Akıllı Hesaplayıcı</span>
-                    </a>
-                </li>
-            @endif
+
             <!-- System Tools / Developer Tools -->
             <li x-show="!query || ($el.innerText||'').toLowerCase().includes(query.toLowerCase())"
                 x-data="{ open: false }">
@@ -860,11 +889,11 @@
                     class="ml-6 mt-1 space-y-1">
 
                     <!-- Laravel Horizon (Queue Monitoring) -->
-                    <a href="/horizon" target="_blank" rel="noopener noreferrer"
+                    <a href="{{ url('/horizon') }}" target="_blank" rel="noopener noreferrer"
                         class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm group transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                         role="menuitem">
                         <svg class="w-4 h-4 text-purple-500 dark:text-purple-300" fill="none"
-                            stroke="CurrentColor" viewBox="0 0 24 24">
+                            stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
@@ -875,7 +904,7 @@
 
                     <!-- Laravel Telescope (Dev Debug) -->
                     @if (config('app.debug'))
-                        <a href="/telescope" target="_blank" rel="noopener noreferrer"
+                        <a href="{{ url('/telescope') }}" target="_blank" rel="noopener noreferrer"
                             class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm group transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                             role="menuitem">
                             <svg class="w-4 h-4 text-blue-500 dark:text-blue-300" fill="none"

@@ -53,11 +53,11 @@
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-4">
                                 <img class="h-12 w-12 rounded-lg object-cover"
-                                    src="{{ $listing->fotograflar?->first() ? Storage::url($listing->fotograflar->first()->dosya_yolu) : asset('images/default-property.jpg') }}"
+                                    src="{{ $listing->fotograflar?->first() ? \Illuminate\Support\Facades\Storage::url($listing->fotograflar->first()->dosya_yolu) : asset('images/default-property.jpg') }}"
                                     alt="{{ $listing->baslik }}" loading="lazy">
                                 <div>
                                     <div class="text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">
-                                        {{ Str::limit($listing->baslik, 40) }}
+                                        {{ \Illuminate\Support\Str::limit($listing->baslik, 40) }}
                                     </div>
                                     <div class="text-xs text-gray-500 dark:text-gray-400">
                                         #{{ $listing->id }}
@@ -74,7 +74,10 @@
                         <!-- Status -->
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
-                                $durum = \App\Enums\IlanDurumu::tryFrom($listing->yayin_durumu);
+                                $rawDurum = $listing->yayin_durumu;
+                                $durum = $rawDurum instanceof \App\Enums\IlanDurumu
+                                    ? $rawDurum
+                                    : \App\Enums\IlanDurumu::tryFrom($rawDurum ?? '');
                                 $durumBadgeClass = match ($durum?->color()) {
                                     'green' => 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
                                     'blue' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',

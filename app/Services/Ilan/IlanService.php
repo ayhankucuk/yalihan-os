@@ -138,37 +138,42 @@ class IlanService
             'office'  => 'beklemede', // context7-ignore
         ];
 
-        $activeTab = $filters['tab'] ?? '';
+        $activeTab = $filters['tab'] ?? (empty($filters['yayin_durumu']) ? 'active' : '');
         if ($activeTab && isset($tabMapping[$activeTab])) {
             $query->where('yayin_durumu', $tabMapping[$activeTab]);
         }
 
         $ilanlar = $query->paginate(20);
 
-        // Tab counts — bypass model global scopes for aggregate queries
+        // Tab counts — bypass VisibilitySorting scope only (not tenant scoping).
+        // TenantScope MUST remain active for tenant isolation (SAB Kural #1).
+        $tenantId = $this->getCurrentTenantId();
+
         $statusCounts = Ilan::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->selectRaw("yayin_durumu, count(*) as cnt")
             ->groupBy('yayin_durumu')
             ->pluck('cnt', 'yayin_durumu');
 
         $tabCounts = [
-            'active'  => $statusCounts->get('yayinda', 0), // context7-ignore
-            'passive' => $statusCounts->get('pasif', 0), // context7-ignore
-            'drafts'  => $statusCounts->get('taslak', 0), // context7-ignore
-            'expired' => $statusCounts->get('arsiv', 0), // context7-ignore
-            'office'  => $statusCounts->get('beklemede', 0), // context7-ignore
-            'deleted' => Ilan::withoutGlobalScopes()->whereNotNull('deleted_at')->count(),
+            'active'  => (int) $statusCounts->get('yayinda', 0), // context7-ignore
+            'passive' => (int) $statusCounts->get('pasif', 0), // context7-ignore
+            'drafts'  => (int) $statusCounts->get('taslak', 0), // context7-ignore
+            'expired' => (int) $statusCounts->get('arsiv', 0), // context7-ignore
+            'office'  => (int) $statusCounts->get('beklemede', 0), // context7-ignore
+            'deleted' => Ilan::withoutGlobalScopes()->where('tenant_id', $tenantId)->whereNotNull('deleted_at')->count(),
         ];
 
         $stats = [
-            'total'     => Ilan::withoutGlobalScopes()->whereNull('deleted_at')->count(),
-            'active'    => $statusCounts->get('yayinda', 0), // context7-ignore
+            'total'     => Ilan::withoutGlobalScopes()->where('tenant_id', $tenantId)->whereNull('deleted_at')->count(),
+            'active'    => (int) $statusCounts->get('yayinda', 0), // context7-ignore
             'this_month' => Ilan::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
                 ->whereNull('deleted_at')
                 ->where('created_at', '>=', now()->startOfMonth())
                 ->count(),
-            'pending'   => $statusCounts->get('beklemede', 0),
+            'pending'   => (int) $statusCounts->get('beklemede', 0),
         ];
 
         $kategoriler = IlanKategori::active()->whereNull('parent_id')->orderBy('name')->get(); // context7-ignore
@@ -611,7 +616,7 @@ class IlanService
             ->get();
 
         $kisiler = Kisi::active()
-            ->select(['id', 'ad', 'soyad', 'telefon', 'email'])
+            ->select(['id', 'ad', 'soyad', 'telefon', 'eposta'])
             ->orderBy('ad') // context7-ignore
             ->orderBy('soyad') // context7-ignore
             ->get();
@@ -624,17 +629,19 @@ class IlanService
         $autoSaveData = $this->getAutoSaveData();
 
         return [
+            'anaKategoriler' => $kategoriler,
             'kategoriler' => $kategoriler,
             'danismanlar' => $danismanlar,
             'iller' => $iller,
-            'durumSecenekleri' => $durumSecenekleri,
+            'durumSecenekleri' => IlanDurumu::options(),
             'taslak' => false,
-            'etiketler' => $etiketler,
+            'etiketler' => [],
             'ulkeler' => $ulkeler,
             'kisiler' => $kisiler,
             'sites' => $sites,
             'autoSaveData' => $autoSaveData,
-            'ilanId' => null,
+            'ilanId' => $ilan->id,
+            'ilan' => $ilan,
         ];
     }
 
@@ -710,11 +717,13 @@ class IlanService
 
                 // V1.4/V1.5 sinyallerini zenginleştir
                 $advisorPayload = $pricingInsight->toArray();
+                $advisorPayload['listing_id'] = (int) $ilan->id;
+                $advisorPayload['ilan_id'] = (int) $ilan->id;
 
                 $priorityService = app(\App\Services\MarketIntelligence\PortfolioPrioritizationService::class);
                 $priority = $priorityService->evaluateListing($advisorPayload);
-                $advisorPayload['priority_score'] = $priority['priority_score'] ?? 0;
-                $advisorPayload['priority_label'] = $priority['priority_label'] ?? 'LOW';
+                $advisorPayload['priority_score'] = $priority->priority_score ?? 0;
+                $advisorPayload['priority_label'] = $priority->priority_label ?? 'LOW';
 
                 $workflowService = app(\App\Services\MarketIntelligence\WorkflowDecisionService::class);
                 $decision = $workflowService->decide($advisorPayload);
@@ -875,6 +884,21 @@ class IlanService
         $config['feature_groups'] = $featureGroups;
 
         return $config;
+    }
+
+    /**
+     * Resolve effective tenant ID for queries.
+     */
+    private function getCurrentTenantId(): int
+    {
+        if (app()->bound(\App\Services\SaaS\TenantContextService::class)) {
+            $tenantService = app(\App\Services\SaaS\TenantContextService::class);
+            if ($tenantService->hasTenant()) {
+                return (int) $tenantService->getTenant()->id;
+            }
+        }
+
+        return (int) (\Illuminate\Support\Facades\Auth::user()?->tenant_id ?? session('tenant_id', 1));
     }
 }
 

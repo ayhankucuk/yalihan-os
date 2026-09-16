@@ -187,7 +187,8 @@ bootstrap/cache/*.php
 /test-results/
 /test_results*.log
 
-.kilo/worktrees/
+.kilo/
+.kilocode/
 
 # Agent/LSP audit logs
 .laravel-mcp-audit.jsonl
@@ -196,3 +197,38 @@ bootstrap/cache/*.php
 memory/ydl/state/
 memory/ydl/snapshots/
 /yalihanai_v2_production
+
+# Worktree directories (local only, not tracked)
+/worktrees/
+/yalihan-os.worktrees/
+/kilo-release-merge/
+/kilo-stale-ref-cleanup/
+/kilo-yayintipi-fillable-fix/
+/yalihanai_clone
+
+# Stray empty files from failed migrations/tests
+/assignable_type
+/source_type
+
+# Storage temp
+/storage/tmp/
+
+# Tenant photo uploads — NEVER commit user data
+/storage/app/public/ilan-fotograflari/
+
+# Agent/LSP/IDE generated memory and test state (local pipeline artifacts)
+/storage/testing/
+
+# MCP audit log and governance artifacts (auto-generated per session)
+/storage/app/governance/
+
+# MCP audit log (auto-generated per session)
+.laravel-mcp-audit.jsonl
+
+# Agent scratch & one-off test scripts (KRONIK-1/3 Guard)
+/scripts/tools/test-*.php
+/scripts/tools/temp-*.php
+/scripts/tools/check-*.php
+/scripts/tools/sync-parity-*.php
+/scratch/
+

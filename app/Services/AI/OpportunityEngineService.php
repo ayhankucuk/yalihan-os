@@ -30,13 +30,15 @@ class OpportunityEngineService
     {
         // Query the read model
         $query = ListingSearchProjection::query()
-            ->select(['listing_id', 'title', 'price', 'city', 'district', 'property_type', 'portfolio_health', 'seo_score']);
+            ->select(['listing_id', 'price', 'city', 'district', 'property_type', 'portfolio_health', 'seo_score']);
 
         $listings = $query->get();
 
         $opportunities = collect();
 
         foreach ($listings as $listing) {
+            // BelongsToTenant global scope automatically filters by tenant_id
+            // when TenantContextService has an active tenant.
             $buyerSignal = BuyerInterestProjection::where('listing_id', $listing->listing_id)->first();
             $marketSignal = MarketTrendProjection::where('city', $listing->city)
                 ->where('district', $listing->district)
@@ -57,7 +59,7 @@ class OpportunityEngineService
                 $opportunities->push([
                     'id' => uniqid('opp_'),
                     'listing_id' => $listing->listing_id,
-                    'title' => $listing->title ?? 'İlan #' . $listing->listing_id,
+                    'title' => 'İlan #' . $listing->listing_id,
                     'price' => $listing->price,
                     'opportunity_score' => $scores['composite'],
                     'opportunity_type' => $opportunityType,

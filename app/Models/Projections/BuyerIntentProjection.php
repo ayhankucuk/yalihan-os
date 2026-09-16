@@ -4,19 +4,23 @@ namespace App\Models\Projections;
 
 use App\Models\BaseModel;
 use App\Models\Kisi;
+use App\Traits\BelongsToTenant;
 use App\Traits\HasCountryScope;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
+ * ️ SAB SEALED
  * 🔎 READ MODEL
- * Buyer Intent Projection — Alıcı niyetini ve tercihlerini tutar.
+ * Buyer Intent Projection — Alıcı niyetini ve tercihlerini tutar (CQRS).
  */
 class BuyerIntentProjection extends BaseModel
 {
+    use BelongsToTenant;
     use HasCountryScope;
     protected $table = 'buyer_intent_projection';
 
     protected $fillable = [
+        'tenant_id',
         'buyer_id',
         'locale',
         'preferred_city',

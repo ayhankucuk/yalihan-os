@@ -77,7 +77,7 @@ export default defineConfig({
                 'resources/js/wizard/step1-cascade.js',
                 'resources/js/wizard/step2-category.js',
                 'resources/js/wizard/step2-features.js',
-                'resources/js/wizard/schema-field-renderer.js',
+                // 'resources/js/wizard/schema-field-renderer.js', // Removed in 911e4e3c dead code cleanup
                 // 'public/js/advanced-leaflet-integration.js', // ❌ Dosya bulunamadı - geçici olarak devre dışı
 
                 // Advanced UPS & Matrix Components

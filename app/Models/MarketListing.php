@@ -3,15 +3,18 @@
 namespace App\Models;
 
 use App\Models\BaseModel;
+use App\Traits\BelongsToTenant;
 use App\Traits\HasCountryScope;
 
 /**
- * Market Listing Model
+ * Market Listing Model — proj_listings CQRS projection.
  *
- * Third-party market listing data (Sahibinden, Hürriyet Emlak, etc.)
- * Context7 Compliant: ✅
+ * ADR-042: BelongsToTenant added 2026-09-09.
+ * Fail-closed: queries without active tenant context return 0 records.
+ * Third-party market listing data (Sahibinden, Hürriyet Emlak, etc.).
  *
  * @property int $id
+ * @property int|null $tenant_id
  * @property int|null $ilan_id Harici ilan ID
  * @property string|null $baslik
  * @property float|null $fiyat
@@ -25,11 +28,12 @@ use App\Traits\HasCountryScope;
  */
 class MarketListing extends BaseModel
 {
-    use HasCountryScope;
+    use BelongsToTenant, HasCountryScope;
 
     protected $table = 'proj_listings';
 
     protected $fillable = [
+        'tenant_id',
         'ilan_id',
         'baslik',
         'yayin_durumu',
@@ -42,6 +46,7 @@ class MarketListing extends BaseModel
     ];
 
     protected $casts = [
+        'tenant_id' => 'integer',
         'fiyat' => 'float',
         'para_birimi' => 'integer',
         'danisman_id' => 'integer',

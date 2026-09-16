@@ -478,11 +478,11 @@ class YdlPublishOrchestratorTest extends TestCase
 
         // Set scores + yayin_tipi_id via raw DB update to bypass GuardsAgentWrites trait.
         // This makes the ilan publish-ready without triggering model events.
+        // ilan_sahibi_id is set by IlanFactory (Kisi) — no override needed.
         \Illuminate\Support\Facades\DB::table('ilanlar')
             ->where('id', $ilan->id)
             ->update([
                 'yayin_tipi_id'   => 1,
-                'ilan_sahibi_id'  => 1,
                 'completion_score' => 100,
                 'quality_score'    => 68,
             ]);

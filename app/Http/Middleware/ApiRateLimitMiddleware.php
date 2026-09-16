@@ -6,14 +6,17 @@ use App\Services\Api\ApiResponseService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\RateLimiter;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * API Rate Limiting Middleware
  * Tüm API endpoint'leri için genel rate limiting sağlar
  *
- * @version 1.0
+ * Atomic increment via Laravel RateLimiter facade.
+ * Fixes TOCTOU race condition (BACKLOG-6).
+ *
+ * @version 1.1
  *
  * @author EmlakPro Team
  */
@@ -35,22 +38,27 @@ class ApiRateLimitMiddleware
         // Cache anahtarı oluştur
         $key = $this->resolveRequestSignature($request, $identifier, $type);
 
-        // Mevcut istek sayısını al
-        $attempts = Cache::get($key, 0);
+        // Atomik rate limit kontrolü — RateLimiter::attempt() atomic increment garantisi verir
+        $executed = RateLimiter::attempt(
+            $key,
+            $limits['max_attempts'],
+            function () {},
+            $limits['decay_minutes'] * 60
+        );
 
-        if ($attempts >= $limits['max_attempts']) {
+        if (! $executed) {
+            $retryAfter = RateLimiter::availableIn($key);
+
             return ApiResponseService::rateLimitExceeded(
                 'Rate limit exceeded. Try again in '.$limits['decay_minutes'].' minutes.'
-            )->header('Retry-After', $limits['decay_minutes'] * 60);
+            )->header('Retry-After', $retryAfter);
         }
-
-        // İstek sayısını artır
-        Cache::put($key, $attempts + 1, now()->addMinutes($limits['decay_minutes']));
 
         $response = $next($request);
 
         // Response header'larına rate limit bilgilerini ekle
-        $this->addRateLimitHeaders($response, $limits, $attempts);
+        $remaining = RateLimiter::remaining($key, $limits['max_attempts']);
+        $this->addRateLimitHeaders($response, $limits, $remaining);
 
         return $response;
     }
@@ -109,11 +117,13 @@ class ApiRateLimitMiddleware
 
     /**
      * Rate limit header'larını ekle
+     *
+     * @param  int  $remaining  RateLimiter::remaining() sonucu
      */
-    private function addRateLimitHeaders($response, array $limits, int $attempts): void
+    private function addRateLimitHeaders($response, array $limits, int $remaining): void
     {
         $response->headers->set('X-RateLimit-Limit', $limits['max_attempts']);
-        $response->headers->set('X-RateLimit-Remaining', max(0, $limits['max_attempts'] - $attempts - 1));
+        $response->headers->set('X-RateLimit-Remaining', max(0, $remaining));
         $response->headers->set('X-RateLimit-Reset', now()->addMinutes($limits['decay_minutes'])->timestamp);
         $response->headers->set('X-RateLimit-Type', 'API');
     }

@@ -3,6 +3,7 @@
 namespace App\Services\CRM;
 
 use App\Models\Lead;
+use App\Services\SaaS\TenantContextService;
 use App\Models\AILeadScore;
 use App\Services\AI\LeadScoreCalculator;
 use App\Services\AI\NextActionRecommender;
@@ -115,9 +116,14 @@ class LeadAuthorityService
         $this->blockAgentWrite(__FUNCTION__);
 
         return DB::transaction(function () use ($platform, $platformUserId, $messageText, $nlpResult, $meta) {
-            // 1. Find or create lead
+            /** @var \App\Services\SaaS\TenantContextService $tenantService */
+            $tenantService = app(TenantContextService::class);
+            $tenantId = $tenantService->hasTenant() ? $tenantService->getTenant()->id : null;
+
+            // 1. Find or create lead — tenant-scoped unique match
             $lead = Lead::firstOrCreate( // governance-bypass: LeadAuthorityService IS the single write authority
                 [
+                    'tenant_id' => $tenantId,
                     'platform' => $platform,
                     'platform_user_id' => $platformUserId,
                 ],
@@ -132,6 +138,12 @@ class LeadAuthorityService
             );
 
             $isNew = $lead->wasRecentlyCreated;
+
+            // Sprint 12D: wasRecentlyCreated block — enforce tenant isolation on new leads
+            if ($isNew && $tenantService->hasTenant()) {
+                $lead->tenant_id = $tenantService->getTenant()->id;
+                $lead->save();
+            }
             $oldConfidence = $lead->confidence;
 
             // 2. Authoritative Mutation
@@ -297,6 +309,9 @@ class LeadAuthorityService
      */
     private function ensureScoreExists(Lead $lead): AILeadScore
     {
+        // Tenant safety: $lead->id is already scoped by Lead's global TenantScope.
+        // ai_lead_scores has no tenant_id; FK constraint lead_id -> leads.id
+        // guarantees row belongs to the same tenant as the lead.
         $score = AILeadScore::where('lead_id', $lead->id)->first();
 
         if (!$score) {

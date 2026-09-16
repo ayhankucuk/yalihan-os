@@ -19,6 +19,14 @@ use Illuminate\Support\Facades\Log;
  */
 class DynamicFieldValueMapper
 {
+    /** @var array<string> Canonical truthy values for boolean fields (write = DB storage).
+     *  All entries are mutually non-substring-safe to prevent 'no' matching 'on' etc. */
+    private const BOOL_TRUTHY = ['1', 'true', 'yes', 'evet', 'on'];
+
+    /** @var array<string> Strictly affirmative values for read-path type casting.
+     *  Same as BOOL_TRUTHY — the read path has the same truthy semantics. */
+    private const BOOL_READ_TRUTHY = ['1', 'true', 'yes', 'evet', 'on'];
+
     public function __construct(
         private readonly EffectiveWizardSchemaResolver $schemaResolver,
         private readonly DependencyRuleEvaluator $dependencyEvaluator = new DependencyRuleEvaluator(),
@@ -136,9 +144,7 @@ class DynamicFieldValueMapper
      */
     private function normalizeBoolean(mixed $value): string
     {
-        $truthy = ['1', 'true', 'yes', 'evet', 'on'];
-
-        return in_array(strtolower((string) $value), $truthy, true) ? '1' : '0';
+        return in_array(strtolower((string) $value), self::BOOL_TRUTHY, true) ? '1' : '0';
     }
 
     /**
@@ -313,7 +319,7 @@ class DynamicFieldValueMapper
 
         return match ($type) {
             'number' => is_numeric($value) ? (float) $value : $value,
-            'boolean' => in_array($value, ['1', 'true', 'yes'], true),
+            'boolean' => in_array(strtolower((string) $value), self::BOOL_READ_TRUTHY, true),
             'multiselect' => json_decode($value, true) ?? [],
             default => $value,
         };

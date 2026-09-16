@@ -8,27 +8,18 @@ use Illuminate\Support\Facades\Schema;
  * Seed villa-specific feature data into feature_categories, features,
  * and feature_assignments tables.
  *
- * Provenance: source_type = 'villa_migration_2026_08_25'
- * Rollback Safety: Deletes ONLY villa_migration_2026_08_25 records.
- *   Does NOT affect seeder records (source_type = 'canonical_seed').
+ * Coverage:
+ *   Villa Satilik  (main=1, sub=8, listing_type=1) = 34 fields
+ *   Villa Kiralik  (main=1, sub=8, listing_type=2) =  1 field (depozito)
+ *   Villa Gunluk   (main=1, sub=8, listing_type=5) = 34 fields (explicit, NOT inherited)
+ *   Konut Global   (main=1, sub=null, lt=null)     =  8 fields @ main_category
+ *   Global         (main=null, sub=null, lt=null)   =  5 fields @ global
  *
- * Coverage (this migration — Villa tiers only):
- *   Villa Satilik   (main=1, sub=8, listing_type=1)   = 35 fields
- *   Villa Kiralik   (main=1, sub=8, listing_type=2)   = 36 fields (G3 scope + aidat + depozito)
- *   Villa Gunluk    (main=1, sub=8, listing_type=5)   = 35 fields
+ * Total: feature_categories=7, features=36, feature_assignments=82
  *
- * Total: feature_categories=7, features=36, feature_assignments=106
- *
- * NOTE: G1 (global) and G2 (Konut) are NOT seeded by this migration.
- * They are handled by FeatureAssignmentSeeder or a separate repair migration.
- *
- * G4 canonical scope (2026-09-02 fix):
- *   Villa Kiralik = G3 Villa özellikleri + aidat (suggested) + depozito (required) = 36 total
- *   Aidat required=false: domain kararı bekleniyor — ayrı SAAB kararı gerekir.
- *
- * Provenance separation:
- *   Migration seed:  source_type = 'villa_migration_2026_08_25'
- *   Legacy repair:   assignable_id = 0 (source_type = 'canonical_seed' — NOT touched)
+ * IMPORTANT: Villa sub_category_id = 8 (NOT 36). Kategori 36 does not exist.
+ *   Sub-category 8 = Villa in ilan_kategorileri table (parent=1, seviye=1).
+ *   Main category = 1 (Konut), NOT 11 (Ofis).
  *
  * Run: php artisan migrate
  * Rollback: php artisan migrate:rollback --step=1
@@ -44,19 +35,64 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Delete ONLY villa migration records (provenance separation from seeder)
-        // Seeder uses source_type='canonical_seed', migration uses source_type='villa_migration_2026_08_25'
-        DB::table('feature_assignments')
-            ->where('source_type', 'villa_migration_2026_08_25')
+        // Rollback ONLY records produced by this migration.
+        //
+        // Rollback order: assignments → features → categories
+        // Each step is scoped to avoid touching pre-existing data.
+        //
+        // Assignments:
+        //   source_type = 'villa_seed_2026_08_25' identifies this migration's records.
+        //
+        // Features & Categories:
+        //   source_type does NOT exist on these tables.
+        //   We scope to id IN 1-36 / 1-7 only when those IDs are exclusively
+        //   owned by this migration (no pre-existing records reference them).
+        //   If ownership is ambiguous, skip the feature/category deletion and warn.
+        //
+        // G1 scope (scope_type=global, main_category_id=null):
+        //   Assignments attach to IlanKategori::class id=1 (Konut).
+        //   Safe to delete: this migration's source_type tag scopes exactly.
+
+        // 1. Assignments — exact scope via source_type
+        $deletedAssignments = DB::table('feature_assignments')
+            ->where('source_type', 'villa_seed_2026_08_25')
             ->delete();
-        DB::table('features')
-            ->where('id', '>=', 1)
-            ->where('id', '<=', 36)
-            ->delete();
-        DB::table('feature_categories')
-            ->where('id', '>=', 1)
-            ->where('id', '<=', 7)
-            ->delete();
+
+        // 2. Features — only if exclusively this migration's provenance.
+        //    Conditions to DELETE a feature id IN 1-36:
+        //    (a) No assignments remain from OTHER migrations (source_type != 'villa_seed_2026_08_25' OR source_type IS NULL)
+        //    (b) No assignments from THIS migration either — feature must be orphaned
+        //    Safety: source_type IS NULL records are preserved (pre-existing data).
+        $orphanedFeatureIds = DB::table('features')
+            ->whereIn('id', range(1, 36))
+            ->whereNotExists(function ($q) {
+                $q->selectRaw('1')
+                    ->from('feature_assignments')
+                    ->whereColumn('feature_id', 'features.id')
+                    ->where(function ($r) {
+                        $r->where('source_type', '!=', 'villa_seed_2026_08_25')
+                            ->orWhereNull('source_type');
+                    });
+            })
+            ->pluck('id');
+
+        if ($orphanedFeatureIds->isNotEmpty()) {
+            DB::table('features')->whereIn('id', $orphanedFeatureIds)->delete();
+        }
+
+        // 3. Feature categories — only if no features reference them.
+        $orphanedCategoryIds = DB::table('feature_categories')
+            ->whereIn('id', range(1, 7))
+            ->whereNotExists(function ($q) {
+                $q->selectRaw('1')
+                    ->from('features')
+                    ->whereColumn('feature_category_id', 'feature_categories.id');
+            })
+            ->pluck('id');
+
+        if ($orphanedCategoryIds->isNotEmpty()) {
+            DB::table('feature_categories')->whereIn('id', $orphanedCategoryIds)->delete();
+        }
     }
 
     private function seedFeatureCategories(): void
@@ -157,199 +193,219 @@ return new class extends Migration
 
     private function seedAssignments(): void
     {
-        // Resolve YayinTipiSablonu IDs from DB using kategori_id + yayin_tipi_id.
-        // Falls back to null (skip) if the template does not exist yet.
-        $resolve = fn(?int $kategoriId, ?int $yayinTipiId): ?int => DB::table('yayin_tipi_sablonlari')
-            ->where('kategori_id', $kategoriId)
-            ->where('yayin_tipi_id', $yayinTipiId)
-            ->value('id');
-
-        // [feature_id, main_cat, sub_cat, listing_type, group_name, required, visible, order, scope_type]
-        $rows = [
-            // Villa Satilik (kategori_id=8, yayin_tipi=1) — 34 fields
-            [1,  1, 8, 1, 'Temel Bilgiler',    true,   true,   1],
-            [2,  1, 8, 1, 'Temel Bilgiler',    false,  true,   2],
-            [3,  1, 8, 1, 'Temel Bilgiler',    true,   true,   3],
-            [4,  1, 8, 1, 'Temel Bilgiler',    false,  true,   4],
-            [5,  1, 8, 1, 'Temel Bilgiler',    false,  true,   5],
-            [6,  1, 8, 1, 'Temel Bilgiler',    false,  true,   6],
-            [7,  1, 8, 1, 'Temel Bilgiler',    false,  true,   7],
-            [8,  1, 8, 1, 'Konum ve Arsa',    false,  true,   1],
-            [9,  1, 8, 1, 'Konum ve Arsa',   false,  true,   2],
-            [10, 1, 8, 1, 'Konum ve Arsa',     false,  true,   3],
-            [11, 1, 8, 1, 'Konum ve Arsa',     false,  true,   4],
-            [12, 1, 8, 1, 'Konum ve Arsa',    false,  true,   5],
-            [13, 1, 8, 1, 'Yapı Özellikleri', false,  true,   1],
-            [14, 1, 8, 1, 'Yapı Özellikleri', false,  true,   2],
-            [15, 1, 8, 1, 'Yapı Özellikleri', false,  true,   3],
-            [16, 1, 8, 1, 'Yapı Özellikleri', false,  true,   4],
-            [17, 1, 8, 1, 'Yapı Özellikleri', false,  true,   5],
-            [18, 1, 8, 1, 'Yapı Özellikleri', false,  true,   6],
-            [19, 1, 8, 1, 'Yapı Özellikleri', false,  true,   7],
-            [20, 1, 8, 1, 'Yapı Özellikleri', false,  false,  8],
-            [21, 1, 8, 1, 'Dış Özellikler',   false,  true,   1],
-            [22, 1, 8, 1, 'Dış Özellikler',   false,  true,   2],
-            [23, 1, 8, 1, 'Dış Özellikler',   false,  true,   3],
-            [24, 1, 8, 1, 'Dış Özellikler',   false,  true,   4],
-            [25, 1, 8, 1, 'İç Özellikler',    false,  true,   1],
-            [26, 1, 8, 1, 'İç Özellikler',    false,  true,   2],
-            [27, 1, 8, 1, 'İç Özellikler',    false,  true,   3],
-            [28, 1, 8, 1, 'İç Özellikler',    false,  true,   4],
-            [29, 1, 8, 1, 'İç Özellikler',    false,  true,   5],
-            [30, 1, 8, 1, 'İç Özellikler',    false,  false,  6],
-            [31, 1, 8, 1, 'Maliyet ve Aidat', false,  false,  1],
-            [33, 1, 8, 1, 'Maliyet ve Aidat', false,  true,   3],
-            [34, 1, 8, 1, 'Maliyet ve Aidat', false,  true,   4],
-            [35, 1, 8, 1, 'Tapu ve İmar',    false,  true,   1],
-            [36, 1, 8, 1, 'Tapu ve İmar',    false,  false,  2],
-
-            // Villa Kiralik (yayin_tipi=2) — 36 fields (G3 scope + aidat required + depozito required)
-            [1,  1, 8, 2, 'Temel Bilgiler',    true,   true,   1],
-            [2,  1, 8, 2, 'Temel Bilgiler',    false,  true,   2],
-            [3,  1, 8, 2, 'Temel Bilgiler',    true,   true,   3],
-            [4,  1, 8, 2, 'Temel Bilgiler',    false,  true,   4],
-            [5,  1, 8, 2, 'Temel Bilgiler',    false,  true,   5],
-            [6,  1, 8, 2, 'Temel Bilgiler',    false,  true,   6],
-            [7,  1, 8, 2, 'Temel Bilgiler',    false,  true,   7],
-            [8,  1, 8, 2, 'Konum ve Arsa',    false,  true,   1],
-            [9,  1, 8, 2, 'Konum ve Arsa',    false,  true,   2],
-            [10, 1, 8, 2, 'Konum ve Arsa',     false,  true,   3],
-            [11, 1, 8, 2, 'Konum ve Arsa',     false,  true,   4],
-            [12, 1, 8, 2, 'Konum ve Arsa',     false,  true,   5],
-            [13, 1, 8, 2, 'Yapı Özellikleri', false,  true,   1],
-            [14, 1, 8, 2, 'Yapı Özellikleri', false,  true,   2],
-            [15, 1, 8, 2, 'Yapı Özellikleri', false,  true,   3],
-            [16, 1, 8, 2, 'Yapı Özellikleri', false,  true,   4],
-            [17, 1, 8, 2, 'Yapı Özellikleri', false,  true,   5],
-            [18, 1, 8, 2, 'Yapı Özellikleri', false,  true,   6],
-            [19, 1, 8, 2, 'Yapı Özellikleri', false,  true,   7],
-            [20, 1, 8, 2, 'Yapı Özellikleri', false,  false, 8],
-            [21, 1, 8, 2, 'Dış Özellikler',   false,  true,   1],
-            [22, 1, 8, 2, 'Dış Özellikler',   false,  true,   2],
-            [23, 1, 8, 2, 'Dış Özellikler',   false,  true,   3],
-            [24, 1, 8, 2, 'Dış Özellikler',   false,  true,   4],
-            [25, 1, 8, 2, 'İç Özellikler',    false,  true,   1],
-            [26, 1, 8, 2, 'İç Özellikler',    false,  true,   2],
-            [27, 1, 8, 2, 'İç Özellikler',    false,  true,   3],
-            [28, 1, 8, 2, 'İç Özellikler',    false,  true,   4],
-            [29, 1, 8, 2, 'İç Özellikler',    false,  true,   5],
-            [30, 1, 8, 2, 'İç Özellikler',    false,  false, 6],
-            [31, 1, 8, 2, 'Maliyet ve Aidat', false,  false,  1], // aidat: G4-specific suggested (domain kararı bekleniyor)
-            [32, 1, 8, 2, 'Maliyet ve Aidat', true,   false,  2], // depozito: G4-specific required
-            [33, 1, 8, 2, 'Maliyet ve Aidat', false,  true,   3],
-            [34, 1, 8, 2, 'Maliyet ve Aidat', false,  true,   4],
-            [35, 1, 8, 2, 'Tapu ve İmar',     false,  true,   1],
-            [36, 1, 8, 2, 'Tapu ve İmar',     false,  false, 2],
-
-            // Villa Gunluk (yayin_tipi=5) — 34 fields (explicit)
-            [1,  1, 8, 5, 'Temel Bilgiler',    true,   true,   1],
-            [2,  1, 8, 5, 'Temel Bilgiler',    false,  true,   2],
-            [3,  1, 8, 5, 'Temel Bilgiler',    true,   true,   3],
-            [4,  1, 8, 5, 'Temel Bilgiler',    false,  true,   4],
-            [5,  1, 8, 5, 'Temel Bilgiler',    false,  true,   5],
-            [6,  1, 8, 5, 'Temel Bilgiler',    false,  true,   6],
-            [7,  1, 8, 5, 'Temel Bilgiler',    false,  true,   7],
-            [8,  1, 8, 5, 'Konum ve Arsa',    false,  true,   1],
-            [9,  1, 8, 5, 'Konum ve Arsa',    false,  true,   2],
-            [10, 1, 8, 5, 'Konum ve Arsa',    false,  true,   3],
-            [11, 1, 8, 5, 'Konum ve Arsa',    false,  true,   4],
-            [12, 1, 8, 5, 'Konum ve Arsa',    false,  true,   5],
-            [13, 1, 8, 5, 'Yapı Özellikleri', false,  true,   1],
-            [14, 1, 8, 5, 'Yapı Özellikleri', false,  true,   2],
-            [15, 1, 8, 5, 'Yapı Özellikleri', false,  true,   3],
-            [16, 1, 8, 5, 'Yapı Özellikleri', false,  true,   4],
-            [17, 1, 8, 5, 'Yapı Özellikleri', false,  true,   5],
-            [18, 1, 8, 5, 'Yapı Özellikleri', false,  true,   6],
-            [19, 1, 8, 5, 'Yapı Özellikleri', false,  true,   7],
-            [20, 1, 8, 5, 'Yapı Özellikleri', false,  false,  8],
-            [21, 1, 8, 5, 'Dış Özellikler',   false,  true,   1],
-            [22, 1, 8, 5, 'Dış Özellikler',   false,  true,   2],
-            [23, 1, 8, 5, 'Dış Özellikler',   false,  true,   3],
-            [24, 1, 8, 5, 'Dış Özellikler',   false,  true,   4],
-            [25, 1, 8, 5, 'İç Özellikler',    false,  true,   1],
-            [26, 1, 8, 5, 'İç Özellikler',    false,  true,   2],
-            [27, 1, 8, 5, 'İç Özellikler',    false,  true,   3],
-            [28, 1, 8, 5, 'İç Özellikler',    false,  true,   4],
-            [29, 1, 8, 5, 'İç Özellikler',    false,  true,   5],
-            [30, 1, 8, 5, 'İç Özellikler',    false,  false,  6],
-            [31, 1, 8, 5, 'Maliyet ve Aidat', false,  false,  1],
-            [33, 1, 8, 5, 'Maliyet ve Aidat', false,  true,   3],
-            [34, 1, 8, 5, 'Maliyet ve Aidat', false,  true,   4],
-            [35, 1, 8, 5, 'Tapu ve İmar',    false,  true,   1],
-            [36, 1, 8, 5, 'Tapu ve İmar',    false,  false,  2],
-
-            // Konut Global (main=1, sub=null, lt=null) — 8 fields
-            [1,  1, null, null, 'Temel Bilgiler', true,   true,   1, 'main_category'],
-            [2,  1, null, null, 'Temel Bilgiler', false,  true,   2, 'main_category'],
-            [3,  1, null, null, 'Temel Bilgiler', true,   true,   3, 'main_category'],
-            [4,  1, null, null, 'Temel Bilgiler', false,  true,   4, 'main_category'],
-            [27, 1, null, null, 'İç Özellikler', false,  true,   1, 'main_category'],
-            [25, 1, null, null, 'İç Özellikler', false,  true,   2, 'main_category'],
-            [35, 1, null, null, 'Tapu ve İmar',  false,  true,   1, 'main_category'],
-            [29, 1, null, null, 'İç Özellikler', false,  true,   3, 'main_category'],
-
-            // Global (all categories) — 5 fields
-            [33, null, null, null, 'Maliyet ve Aidat', false,  true,   1, 'global'],
-            [34, null, null, null, 'Maliyet ve Aidat', false,  true,   2, 'global'],
-            [23, null, null, null, 'Dış Özellikler', false,  true,   1, 'global'],
-            [10, null, null, null, 'Konum ve Arsa',   false,  true,   1, 'global'],
-            [21, null, null, null, 'Dış Özellikler', false,  true,   2, 'global'],
-        ];
-
         $ts = now()->toDateTimeString();
         $hasTenantId = Schema::hasColumn('feature_assignments', 'tenant_id');
 
-        foreach ($rows as $i => $r) {
-            $fi = $r[0];
-            $mc = $r[1];
-            $sc = $r[2];
-            $lt = $r[3];
-            $gn = $r[4];
-            $req = $r[5];
-            $vis = $r[6];
-            $ord = $r[7];
-            $scope = $r[8] ?? 'listing_type';
+        // ── Phase 2 SAAB 3E: resolve assignable targets ──────────────────────
+        //
+        // Three mapping tiers:
+        //   G3/G4/G5 (listing_type scope, sub=8, lt=1/2/5)
+        //     → YayinTipiSablonu where kategori_id=8 AND yayin_tipi_id=lt
+        //   G2 (main_category scope, sub=null, lt=null)
+        //     → YayinTipiSablonu for both konut-satilik AND konut-kiralik (SAAB 2A)
+        //     → assignable_type = YayinTipiSablonu::class
+        //   G1 (global scope, main=null, sub=null, lt=null)
+        //     → IlanKategori id=1 (SAAB 1B — Phase 1 inheritance)
+        //     → assignable_type = IlanKategori::class
+        //
+        // Bug fixed: $resolve(null, null) silently skipped rows.
+        // Now each tier has explicit DB lookup logic; no null-parameter query.
+        // Null-check: if required template/kategori does not exist, skip silently
+        // (avoids orphan records when prerequisites are not yet seeded).
 
-            // Skip if feature doesn't exist in DB yet (auto-increment IDs may differ)
+        $villaSatilik = DB::table('yayin_tipi_sablonlari')
+            ->where('kategori_id', 8)->where('yayin_tipi_id', 1)->value('id');
+        $villaKiralik = DB::table('yayin_tipi_sablonlari')
+            ->where('kategori_id', 8)->where('yayin_tipi_id', 2)->value('id');
+        $villaGunluk  = DB::table('yayin_tipi_sablonlari')
+            ->where('kategori_id', 8)->where('yayin_tipi_id', 5)->value('id');
+        $konutSatilik = DB::table('yayin_tipi_sablonlari')
+            ->where('kategori_id', 1)->where('yayin_tipi_id', 1)->value('id');
+        $konutKiralik = DB::table('yayin_tipi_sablonlari')
+            ->where('kategori_id', 1)->where('yayin_tipi_id', 2)->value('id');
+
+        $konutKategoriId = DB::table('ilan_kategorileri')->where('id', 1)->value('id');
+
+        // Helper: upsert one assignment row
+        // Returns early if feature does not exist (avoids orphan keys).
+        $upsert = function (
+            int $fi,
+            string $assignableType,
+            int $assignableId,
+            ?int $mc,
+            ?int $sc,
+            ?int $lt,
+            string $scope,
+            string $gn,
+            bool $req,
+            bool $vis,
+            int $ord,
+        ) use ($ts, $hasTenantId): void {
             if (!DB::table('features')->where('id', $fi)->exists()) {
-                continue;
+                return;
             }
 
-            // Resolve YayinTipiSablonu ID from DB; skip if template doesn't exist yet.
-            // This prevents orphan assignable_type=Ilan / assignable_id=0 records.
-            $sablonId = $resolve($sc, $lt);
-            if ($sablonId === null) {
-                continue;
-            }
-
+            $fieldSlug = DB::table('features')->where('id', $fi)->value('slug');
             $match = [
-                    'feature_id'        => $fi,
-                    'main_category_id'  => $mc,
-                    'sub_category_id'   => $sc,
-                    'listing_type_id'   => $lt,
+                'feature_id'       => $fi,
+                'main_category_id' => $mc,
+                'sub_category_id'  => $sc,
+                'listing_type_id'  => $lt,
             ];
-            $values = [
-                    'assignable_type'   => 'App\\Models\\YayinTipiSablonu',
-                    'assignable_id'     => $sablonId,
-                    'scope_type'        => $scope,
-                    'source_type'       => 'villa_migration_2026_08_25',
-                    'group_name'        => $gn,
-                    'field_slug'        => DB::table('features')->where('id', $fi)->value('slug'),
+                $values = [
+                    'assignable_type'  => $assignableType,
+                    'assignable_id'    => $assignableId,
+                    'scope_type'       => $scope,
+                    'source_type'      => 'villa_seed_2026_08_25',
+                    'group_name'       => $gn,
+                    'field_slug'       => $fieldSlug,
                     'is_required'      => $req,
-                    'is_visible'       => $vis,
-                    'aktiflik_durumu'  => 1,
-                    'display_order'     => $ord,
-                    'created_at'       => $ts,
-                    'updated_at'       => $ts,
-            ];
-
-            // tenant_id is added by the following migration.
+                    'is_visible'      => $vis,
+                    'aktiflik_durumu' => 1,
+                    'display_order'    => $ord,
+                    'created_at'      => $ts,
+                    'updated_at'      => $ts,
+                ];
             if ($hasTenantId) {
-                $match['tenant_id'] = null;
-                $values['tenant_id'] = null;
+                $match['tenant_id']   = null;
+                $values['tenant_id']  = null;
             }
 
             DB::table('feature_assignments')->updateOrInsert($match, $values);
+        };
+
+        // ── G3: Villa Satılık (assignable_type = YayinTipiSablonu, id = $villaSatilik) ──
+        // Skip tier if template not found (null = prerequisites not seeded yet)
+        if ($villaSatilik !== null) {
+            $villaFields = [
+                // [feature_id, group_name, required, visible, order_within_group]
+                [1,  'Temel Bilgiler',    true,   true,   1],
+                [2,  'Temel Bilgiler',    false,  true,   2],
+                [3,  'Temel Bilgiler',    true,   true,   3],
+                [4,  'Temel Bilgiler',    false,  true,   4],
+                [5,  'Temel Bilgiler',    false,  true,   5],
+                [6,  'Temel Bilgiler',    false,  true,   6],
+                [7,  'Temel Bilgiler',    false,  true,   7],
+                [8,  'Konum ve Arsa',    false,  true,   1],
+                [9,  'Konum ve Arsa',   false,  true,   2],
+                [10, 'Konum ve Arsa',     false,  true,   3],
+                [11, 'Konum ve Arsa',     false,  true,   4],
+                [12, 'Konum ve Arsa',    false,  true,   5],
+                [13, 'Yapı Özellikleri', false,  true,   1],
+                [14, 'Yapı Özellikleri', false,  true,   2],
+                [15, 'Yapı Özellikleri', false,  true,   3],
+                [16, 'Yapı Özellikleri', false,  true,   4],
+                [17, 'Yapı Özellikleri', false,  true,   5],
+                [18, 'Yapı Özellikleri', false,  true,   6],
+                [19, 'Yapı Özellikleri', false,  true,   7],
+                [20, 'Yapı Özellikleri', false,  false,  8],
+                [21, 'Dış Özellikler',   false,  true,   1],
+                [22, 'Dış Özellikler',   false,  true,   2],
+                [23, 'Dış Özellikler',   false,  true,   3],
+                [24, 'Dış Özellikler',   false,  true,   4],
+                [25, 'İç Özellikler',    false,  true,   1],
+                [26, 'İç Özellikler',    false,  true,   2],
+                [27, 'İç Özellikler',    false,  true,   3],
+                [28, 'İç Özellikler',    false,  true,   4],
+                [29, 'İç Özellikler',    false,  true,   5],
+                [30, 'İç Özellikler',    false,  false,  6],
+                [31, 'Maliyet ve Aidat', false,  false,  1],
+                [33, 'Maliyet ve Aidat', false,  true,   3],
+                [34, 'Maliyet ve Aidat', false,  true,   4],
+                [35, 'Tapu ve İmar',    false,  true,   1],
+                [36, 'Tapu ve İmar',    false,  false,  2],
+            ];
+            foreach ($villaFields as $vf) {
+                [$fi, $gn, $req, $vis, $ord] = $vf;
+                $upsert($fi, 'App\\Models\\YayinTipiSablonu', $villaSatilik, 1, 8, 1, 'listing_type', $gn, $req, $vis, $ord);
+            }
+        }
+
+        // ── G4: Villa Kiralık (depozito only) ──
+        if ($villaKiralik !== null) {
+            $upsert(32, 'App\\Models\\YayinTipiSablonu', $villaKiralik, 1, 8, 2, 'listing_type', 'Maliyet ve Aidat', true, false, 2);
+        }
+
+        // ── G5: Villa Günlük (explicit, NOT inherited) ──
+        if ($villaGunluk !== null) {
+            $gunlukFields = [
+                [1,  'Temel Bilgiler',    true,   true,   1],
+                [2,  'Temel Bilgiler',    false,  true,   2],
+                [3,  'Temel Bilgiler',    true,   true,   3],
+                [4,  'Temel Bilgiler',    false,  true,   4],
+                [5,  'Temel Bilgiler',    false,  true,   5],
+                [6,  'Temel Bilgiler',    false,  true,   6],
+                [7,  'Temel Bilgiler',    false,  true,   7],
+                [8,  'Konum ve Arsa',    false,  true,   1],
+                [9,  'Konum ve Arsa',    false,  true,   2],
+                [10, 'Konum ve Arsa',    false,  true,   3],
+                [11, 'Konum ve Arsa',    false,  true,   4],
+                [12, 'Konum ve Arsa',    false,  true,   5],
+                [13, 'Yapı Özellikleri', false,  true,   1],
+                [14, 'Yapı Özellikleri', false,  true,   2],
+                [15, 'Yapı Özellikleri', false,  true,   3],
+                [16, 'Yapı Özellikleri', false,  true,   4],
+                [17, 'Yapı Özellikleri', false,  true,   5],
+                [18, 'Yapı Özellikleri', false,  true,   6],
+                [19, 'Yapı Özellikleri', false,  true,   7],
+                [20, 'Yapı Özellikleri', false,  false,  8],
+                [21, 'Dış Özellikler',   false,  true,   1],
+                [22, 'Dış Özellikler',   false,  true,   2],
+                [23, 'Dış Özellikler',   false,  true,   3],
+                [24, 'Dış Özellikler',   false,  true,   4],
+                [25, 'İç Özellikler',    false,  true,   1],
+                [26, 'İç Özellikler',    false,  true,   2],
+                [27, 'İç Özellikler',    false,  true,   3],
+                [28, 'İç Özellikler',    false,  true,   4],
+                [29, 'İç Özellikler',    false,  true,   5],
+                [30, 'İç Özellikler',    false,  false,  6],
+                [31, 'Maliyet ve Aidat', false,  false,  1],
+                [33, 'Maliyet ve Aidat', false,  true,   3],
+                [34, 'Maliyet ve Aidat', false,  true,   4],
+                [35, 'Tapu ve İmar',    false,  true,   1],
+                [36, 'Tapu ve İmar',    false,  false,  2],
+            ];
+            foreach ($gunlukFields as $gf) {
+                [$fi, $gn, $req, $vis, $ord] = $gf;
+                $upsert($fi, 'App\\Models\\YayinTipiSablonu', $villaGunluk, 1, 8, 5, 'listing_type', $gn, $req, $vis, $ord);
+            }
+        }
+
+        // ── G2: Konut Global — copied to BOTH konut-satilik AND konut-kiralik (SAAB 2A) ──
+        // assignable_type = YayinTipiSablonu::class (NOT IlanKategori)
+        if ($konutSatilik !== null && $konutKiralik !== null) {
+            $konutFields = [
+                [1,  'Temel Bilgiler',    true,   true,   1],
+                [2,  'Temel Bilgiler',    false,  true,   2],
+                [3,  'Temel Bilgiler',    true,   true,   3],
+                [4,  'Temel Bilgiler',    false,  true,   4],
+                [27, 'İç Özellikler',    false,  true,   1],
+                [25, 'İç Özellikler',    false,  true,   2],
+                [35, 'Tapu ve İmar',     false,  true,   1],
+                [29, 'İç Özellikler',    false,  true,   3],
+            ];
+            foreach ($konutFields as $kf) {
+                [$fi, $gn, $req, $vis, $ord] = $kf;
+                // Copy to konut-satilik
+                $upsert($fi, 'App\\Models\\YayinTipiSablonu', $konutSatilik, 1, null, null, 'main_category', $gn, $req, $vis, $ord);
+                // Copy to konut-kiralik
+                $upsert($fi, 'App\\Models\\YayinTipiSablonu', $konutKiralik, 1, null, null, 'main_category', $gn, $req, $vis, $ord);
+            }
+        }
+
+        // ── G1: Global scope — ilanKategori::class (SAAB 1B, Phase 1 inheritance) ──
+        if ($konutKategoriId !== null) {
+            $globalFields = [
+                [33, 'Maliyet ve Aidat', false,  true,   1],
+                [34, 'Maliyet ve Aidat', false,  true,   2],
+                [23, 'Dış Özellikler',   false,  true,   1],
+                [10, 'Konum ve Arsa',   false,  true,   1],
+                [21, 'Dış Özellikler',   false,  true,   2],
+            ];
+            foreach ($globalFields as $glf) {
+                [$fi, $gn, $req, $vis, $ord] = $glf;
+                $upsert($fi, 'App\\Models\\IlanKategori', $konutKategoriId, null, null, null, 'global', $gn, $req, $vis, $ord);
+            }
         }
     }
 };

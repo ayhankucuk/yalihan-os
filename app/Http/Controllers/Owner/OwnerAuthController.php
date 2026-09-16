@@ -147,12 +147,13 @@ class OwnerAuthController extends Controller
                     ->first();
 
         if (! $record) {
-            LogService::warning('OwnerAuth: Geçersiz veya süresi dolmuş token', [
+            LogService::warning('OwnerAuth: Giriş linki reddedildi', [
                 'ip' => $request->ip(),
             ]);
 
+            // Generic message — do NOT enumerate whether token is invalid vs expired (security: no state enumeration)
             return redirect()->route('owner.login')
-                ->withErrors(['token' => 'Giriş linki geçersiz veya süresi dolmuş. Lütfen yeni bir link isteyin.']);
+                ->withErrors(['token' => 'Giriş linki geçersiz. Lütfen yeni bir link isteyin.']);
         }
 
         // Token kullanıldı olarak işaretle

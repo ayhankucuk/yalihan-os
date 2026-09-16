@@ -18,9 +18,10 @@ class ListingVelocityService
      */
     public function syncVelocity(Ilan $ilan): ListingVelocityProjection
     {
-        $projection = ListingVelocityProjection::firstOrCreate(
-            ['listing_id' => $ilan->id]
-        );
+        // Use withoutTenant to avoid scope-filtered lookup; trait's creating()
+        // callback will auto-assign tenant_id from TenantContextService.
+        $projection = ListingVelocityProjection::withoutTenant()
+            ->firstOrCreate(['listing_id' => $ilan->id]);
 
         // Simulation: In a real system, these would come from Analytics/Logs
         // For this phase, we use existing projection data or initial state

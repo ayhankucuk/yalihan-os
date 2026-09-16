@@ -46,8 +46,10 @@ class BuyerIntentExtractionService
                 'last_contact_at' => $buyer->last_contact_at,
             ];
 
-            BuyerIntentProjection::updateOrCreate(
-                ['buyer_id' => $buyer->id],
+            // Use withoutTenant to avoid scope-filtered lookup; trait's creating()
+            // callback will auto-assign tenant_id from TenantContextService.
+            BuyerIntentProjection::withoutTenant()
+                ->updateOrCreate(['buyer_id' => $buyer->id],
                 $intentData
             );
         } catch (\Exception $e) {
@@ -61,8 +63,10 @@ class BuyerIntentExtractionService
     public function syncTalepMatch(Talep $talep): void
     {
         try {
-            TalepMatchProjection::updateOrCreate(
-                ['talep_id' => $talep->id],
+            // Use withoutTenant to avoid scope-filtered lookup; trait's creating()
+            // callback will auto-assign tenant_id from TenantContextService.
+            TalepMatchProjection::withoutTenant()
+                ->updateOrCreate(['talep_id' => $talep->id],
                 [
                     'buyer_id' => $talep->kisi_id,
                     'city' => $talep->il?->il_adi,

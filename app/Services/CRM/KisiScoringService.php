@@ -95,10 +95,32 @@ class KisiScoringService
         return $kisi->referans_kisi_id ? 10 : 0;
     }
 
-    private function segmentSkoru(Kisi $kisi): int
+    /**
+     * Calculate segment bonus score based on kisi_tipi VIP keyword.
+     *
+     * @param Kisi|mixed $kisi  Accepts Kisi model or test double.
+     *                           Type relaxed from Kisi to mixed to enable unit testing
+     *                           with test doubles (avoids enum cast interference in tests).
+     */
+    private function segmentSkoru(object $kisi): int
     {
         // Context7: segment column is deprecated, using kisi_tipi for potential bonuses
-        return (str_contains(strtolower($kisi->kisi_tipi ?? ''), 'vip')) ? 10 : 0;
+        $kisiTipi = is_object($kisi->kisi_tipi) ? ($kisi->kisi_tipi->value ?? '') : (string) ($kisi->kisi_tipi ?? '');
+        // FIX: strtolower+str_contains was locale-dependent (Turkish İ/i) and matched substrings (PROVIP→VIP false-positive).
+        // Turkish dotted İ (U+0130) normalizes to I so mb_stripos finds "vip" correctly in "VİP".
+        // Boundary guard prevents "provip"/"antevip" false-positives.
+        $normalized = mb_strtolower(mb_ereg_replace('İ', 'I', $kisiTipi), 'UTF-8');
+        if (mb_stripos($normalized, 'vip') === false) {
+            return 0;
+        }
+        $vipPos  = mb_stripos($normalized, 'vip');
+        $after   = mb_substr($normalized, $vipPos + 3, 4, 'UTF-8');
+        $before  = mb_substr($normalized, 0, $vipPos, 'UTF-8');
+        // Reject if 'vip' is embedded in another word (alphanumeric on either side)
+        if (preg_match('/^[a-zA-Z0-9]/', $after) || preg_match('/[a-zA-Z0-9]$/', $before)) {
+            return 0;
+        }
+        return 10;
     }
 
     /**

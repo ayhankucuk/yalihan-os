@@ -29,6 +29,48 @@
         $fiyatGosterimModu = old('fiyat_gosterim_modu', $ilan->fiyat_gosterim_modu ?? 'exact');
     @endphp
 
+    <script>
+        if (typeof window.advancedPriceManager !== 'function') {
+            window.advancedPriceManager = function() {
+                return {
+                    mainPrice: {{ (float) ($ilan->fiyat ?? 0) }},
+                    mainPriceInput: '{{ $ilan->fiyat ?? '' }}',
+                    mainCurrency: '{{ $ilan->para_birimi ?? 'TRY' }}',
+                    fiyatGosterimModu: '{{ $fiyatGosterimModu }}',
+                    startingPrice: {{ (float) ($ilan->baslangic_fiyati ?? 0) }},
+                    dailyPrice: {{ (float) ($ilan->gunluk_fiyat ?? 0) }},
+                    metrekare: {{ (float) ($ilan->metrekare ?? 0) }},
+                    showStartingPrice: false,
+                    showDailyPrice: false,
+                    exchangeRates: { TRY: 1, USD: 34.5, EUR: 37.2, GBP: 43.8 },
+                    lastRateUpdate: '',
+                    convertedPrices: { TRY: 0, USD: 0, EUR: 0, GBP: 0 },
+                    aiSuggestions: [],
+                    get mainPriceFormatted() { return this.mainPrice ? this.mainPrice + ' ' + this.mainCurrency : ''; },
+                    get startingPriceFormatted() { return this.startingPrice ? this.startingPrice + ' ' + this.mainCurrency : ''; },
+                    get dailyPriceFormatted() { return this.dailyPrice ? this.dailyPrice + ' ' + this.mainCurrency : ''; },
+                    get mainPriceWords() { return this.numberToWords(this.mainPrice); },
+                    get pricePerSqm() { return (this.metrekare > 0 && this.mainPrice > 0) ? Math.round(this.mainPrice / this.metrekare) : '-'; },
+                    numberToWords(num) { return num ? String(num) : ''; },
+                    updateAllPrices() {},
+                    loadExchangeRates() {},
+                    calculatePricePerSqm() {},
+                    applySuggestion() {},
+                    refreshAISuggestions() {},
+                    formatStartingPrice() {},
+                    formatDailyPrice() {},
+                    formatPrice(amt, curr) { return amt + ' ' + (curr || 'TRY'); },
+                    onPriceInputChange() {},
+                    onPriceBlur() {},
+                    onCurrencyChange() {},
+                    onPriceChange() {},
+                    updateConvertedPrices() {},
+                    init() {}
+                };
+            };
+        }
+    </script>
+
     <div x-data="advancedPriceManager()" class="space-y-6">
         {{-- Ana Fiyat ve Para Birimi - Enhanced --}}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -45,7 +87,7 @@
                 <div class="relative">
                     <input type="text" name="fiyat" id="fiyat" x-model="mainPriceInput"
                         @input="onPriceInputChange()" @blur="onPriceBlur()"
-                        :required="(document.querySelector('[name=&quot;fiyat_gosterim_modu&quot;]')?.value || 'exact') === 'exact'"
+                        :required="fiyatGosterimModu === 'exact'"
                         @error('fiyat') aria-invalid="true" aria-describedby="fiyat-error" data-error="true" @enderror
                         placeholder="450000 veya 450-"
                         class="w-full px-5 py-4 pr-32
@@ -104,6 +146,7 @@
                         Fiyat Gösterim Stratejisi
                     </label>
                     <select name="fiyat_gosterim_modu" id="fiyat_gosterim_modu"
+                        x-model="fiyatGosterimModu"
                         @change="const f = document.getElementById('fiyat'); if (f) { if (($event.target.value || 'exact') === 'exact') { f.setAttribute('required', 'required'); } else { f.removeAttribute('required'); } }"
                         class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-slate-100 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500">
                         <option value="exact" {{ $fiyatGosterimModu === 'exact' ? 'selected' : '' }}>
@@ -179,13 +222,13 @@
                     </div>
                     <div
                         class="mt-2 pt-2 border-t border-yellow-200 dark:border-yellow-700 flex items-center justify-between">
-                        <div class="text-xs text-gray-500 dark:text-gray-400">
-                            <i class="fas fa-sync-alt mr-1"></i>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center">
+                            <svg class="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                             <span x-text="'Son güncelleme: ' + lastRateUpdate"></span>
                         </div>
                         <button type="button" @click="loadExchangeRates()"
-                            class="text-xs text-blue-600 dark:text-blue-400 hover:underline">
-                            <i class="fas fa-redo mr-1"></i>Yenile
+                            class="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center">
+                            <svg class="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>Yenile
                         </button>
                     </div>
                 </div>
@@ -199,8 +242,8 @@
                 <h4 class="text-sm font-semibold text-gray-800 dark:text-slate-200">🤖 AI Fiyat Önerileri
                 </h4>
                 <button type="button" @click="refreshAISuggestions()"
-                    class="text-xs text-blue-600 dark:text-blue-400 hover:underline">
-                    <i class="fas fa-sync-alt mr-1"></i>Yenile
+                    class="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center">
+                    <svg class="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>Yenile
                 </button>
             </div>
             <div class="space-y-2">

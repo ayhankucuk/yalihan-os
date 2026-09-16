@@ -1,5 +1,95 @@
 # Known Issues and Open Questions
 
+## Bekçi Gate Treshold Tutarsızlığı — 2026-09-12
+
+- **[GATE-THRESHOLD] `bekci:health` gate PASS/FAIL kararı skor eşiğiyle uyumsuz**
+  - `YalihanBekciHealthCommand`: MCP offline iken genel sağlık %59 `NEEDS ATTENTION` ama wrapper `PASS` döndürüyor
+  - `HealthCheckGate::passes()`: skoru 0–100 normalize edip karşılaştırmıyor; sadece `!$mcpOffline` kontrolü var
+  - Bekçi gate %70 hedefi var (bkz. .clinerules §7) ama eşik kontrolü eksik
+  - **Etki**: CI, %59 sağlık skoruyla PASS veriyor — yanlış negatif riski
+  - **Olası çözüm**: `HealthCheckGate::passes()` → `->value('overall_score')` karşılaştırması ekle
+  - **Durum**: AÇIK — ayrı görev
+
+## Acil — 2026-09-09
+
+- **[GÜVENLİK] `storage/app/public/ilan-fotograflari/` — `.gitignore` eklendi ama tarihi commit'te mevcut**
+  - ✅ `.gitignore`'a `/storage/app/public/ilan-fotograflari/` eklendi
+  - ✅ `git rm --cached` + reset yapıldı — şu an `git status`'ta görünmüyor
+  - ⚠️ Ancak dosyalar `01f8b84a` commit'inde tarihe girmiş — `.gitignore` gelecek commit'leri korur, tarihisilmez
+  - Tenant fotoğrafları hâlâ repo tarihinde mevcut — BFG-repo-cleaner ile temizlenebilir (ayrı onay gerekli)
+  - Kapsam: tüm dizinler (`1,3,4,55-92`) — 25 tenant klasörü
+  - Öncelik: **ORTA** (ACİL'den düştü — yeni commit riski engellendi)
+
+- **DEBT-04 — Ana RC2 Kirli ✅ TEMİZLENDİ**
+  - ✅ 83 dosya 5 commit'e ayrıldı ve push'landı
+  - ✅ Worktree artık clean — `rc2-release-certification-gate.sh` → `worktree: PASS` (ilk kez!)
+  - Commit'ler: `a742724a` (frontend), `38e16c4a` (governance), `c223e1a1` (docs), `36b3b296` (audit), `1349bcb6` (security tests)
+  - Öncelik: ~~ACİL~~ **ÇÖZÜLDÜ**
+
+## Orta — 2026-09-09
+
+- **37 worktree, çoğu muhtemelen terk edilmiş**
+  - Worktree listesi: `git worktree list` çıktısı
+  - Terk edilmiş olanları tespit için: son commit tarihi, son erişim, dirty durumu
+  - Otomatik silme yapılmıyor — sahiplik doğrulanacak
+  - Plan: her worktree için rapor → ayrı temizlik planı
+  - Öncelik: **ORTA**
+
+- **Skill / Gate dosyalarının Git commit'i yok — sahiplik belirsiz**
+  - 4 skill + gate scripti `.agents/skills/` ve `scripts/tools/`'e yazıldı ama Git commit edilmedi
+  - Kaynak: `codex/antigravity-browser-runtime-certification` worktree (commit: `4093e489`, `db43057f`, `9eb751c3`)
+  - Commit durumu: `REPO_VERIFIED` (worktree'de commitli)
+  - İnsan/ajan sahipliği: `UNKNOWN` (commit'i kimin ürettiği bilinmiyor)
+  - Cline skill entegrasyonu: `NOT_VERIFIED`
+  - Bu kayıt (KNOWN_ISSUES + BEKCI changelog): `DOCUMENTED` — Git'e commitlenmedi
+  - Öncelik: **ORTA** — commit yapılmadan önce kaynak teyit edilmeli
+
+- **DEBT-02 & DEBT-03 — Harita köprüsü + TC-GT-11 ✅ ÇÖZÜLDÜ**
+  - ✅ `edit.blade.php` map bridge uygulandı (satır ~613-665):
+    - `if (!this.map && window.mapManager?.map) this.map = window.mapManager.map`
+    - `already initialized` hata maskeleme eklendi
+  - ✅ `tab=drafts` desteği test dosyasına eklendi
+  - ✅ TC-GT-11: `id:067` ve `id:093` edit ekranı açıldı → `mapInitialized: true`, `failures: []`
+  - ✅ TC-GT-06: Step 1➔5 → edit'e redirect başarılı (yeni ilan ID:93)
+  - Kanıt seviyesi: **BROWSER_VERIFIED** — 2026-09-09
+  - ⚠️ Not: TC-GT-04/05 throttle HTTP 429 (Copilot AI rate limit) — kod hatası değil
+  - Öncelik: ~~ORTA~~ **ÇÖZÜLDÜ**
+
+## Düşük / Çözüldü — 2026-09-09
+
+- **SEC-08 ✅ ÇÖZÜLDÜ — V2 `PUT/DELETE/publish/unpublish` 404 Kök Neden**
+  - Kök Neden: Laravel Route Model Binding `IlanController` öncesi çalışır → `BelongsToTenant` trait → `TenantScope` global scope ekler → `TenantContextService::hasTenant() = FALSE` (test ortamında set edilmiyor) → `WHERE 1 = 0` (fail-closed) → `ModelNotFoundException` → 404
+  - Düzeltme: `update`, `destroy`, `publish`, `unpublish` method'larında implicit `Ilan $ilan` binding yerine explicit `Ilan::withoutGlobalScope(TenantScope::class)->find($id)` + 404 kontrolü. `authorizeIlanAccess()` auth kontrolü aynı kaldı.
+  - Commit: `83dd1e8a` (`release-candidate/RC2`)
+  - Kanıt: `V2RouteBindingCountryScopeTest` 3/3 PASS, `V2IlanAuthResearchTest` 2/2 PASS
+  - Kanıt seviyesi: **TEST_VERIFIED**
+
+- **Yeni yetenekler Antigravity worktree'inden kopyalandı — 2026-09-09**
+  - Kaynak: `codex/antigravity-browser-runtime-certification` worktree (commit: `4093e489`, `db43057f`, `9eb751c3`)
+  - Commit durumu: `REPO_VERIFIED` (worktree'de commitli)
+  - İnsan/ajan sahipliği: `UNKNOWN` (commit'i kimin ürettiği bilinmiyor)
+  - Cline skill entegrasyonu: `NOT_VERIFIED`
+  - Bu kayıt (KNOWN_ISSUES + BEKCI changelog): `DOCUMENTED` — Git'e commitlenmedi
+
+- **SKILL_INDEX güncellenmemişti — 2026-09-09 düzeltildi**
+  - 8 yeni file pattern satırı + 4 yeni skill tanımı eklendi
+  - Artık ajanlar yeni skill'leri otomatik seçebilir
+
+- **`rc2-release-certification-gate.sh` return/exit hatası — 2026-09-09 düzeltildi**
+  - `run_gate()` içinde `return 1` → `exit 1` olarak düzeltildi
+  - Artık `set -e` olmadan da doğru çalışıyor
+  - Kaynak: Antigravity `db43057f` düzeltmesi temel alındı
+
+- **`blade-alpine-runtime-guardian` Kural 7 normalize önerisi — 2026-09-09 uygulandı**
+  - "URL path normalize" ipucu skill'e eklendi
+  - "Sessiz fallback yasağı" netleştirildi
+
+- **`multi-agent-worktree-sandbox` temizlik komutu — 2026-09-09 düzeltildi**
+  - `git reset --hard` yasağı korundu
+  - `git restore -- <path>` / `git checkout HEAD -- <path>` alternatif olarak eklendi
+
+## Tarihi — Çözülmüş
+
 - `/yazliklar` had a recorded HTTP 500. The definitive current exception is not yet indexed.
 - Historical application logs show embedding requests failing against `localhost:11434`; container-localhost may not be the intended model-service address.
 - Some terminal output was accidentally pasted back as shell input, causing `command not found` and command-substitution errors. Keep commands separate from prompts and output.
@@ -26,7 +116,7 @@
 - Template edit read-only test 2026-08-27: Arsa & Arazi Kiralik template correctly identifies itself but its "active subcategories" list mixes Daire, Villa, Ofis, Otel, Pansiyon, Tatil Köyü and other domains. Verify category scoping/query joins before any master-template application.
 - Property Hub, Copilot modal, and admin listing page now accessible in authenticated session. Browser session established via Ayhan Küçük (ayhankucuk@gmail.com / admin123), verified 2026-08-26.
 - **Sprint 14 Blocker (2026-08-29):** `/admin/analytics/command-center` → HTTP 500. **RESOLVED** — commit `7d402de` fixed: `occurred_at` → `karar_tarihi` for decisions, `governance_events` query for violations. Semantic approved: `karar_tarihi` = decision date, `occurred_at` = event timestamp. No migration required. Test: PASS. G-04 timing: PENDING. Audit: `audits/COMMIT_B_MIGRATION_SCHEMA_SECURITY_AUDIT_2026-08-29.md`.
-- **TC-GT-05/06 Kök Neden Düzeltmesi (2026-08-30):** Location veri sorunu CLARIFIED — local DB zaten 81/13/20 canonical kayıtlara sahip. Kök neden: Alpine validation flood. `navigateStep4To5` testindeki `waitForFunction` polling döngüsü `validateStep(4)`'ü her ~100ms'de çağırıyor; `showNotification` deduplication olmadığından 100+ toast birikiyor ve browser çöküyor. Clone migration test (2026-08-26) doğruydu — 6/6 PASS. Rapor: `audits/golden-thread-evidence/tc-gt-05-06-root-cause-2026-08-30.md`. Düzeltme: test infrastructure (`navigateStep4To5`) + production UX (`showNotification` deduplication).
+- **TC-GT-05/06 Kök Neden Düzeltmesi — RESOLVED (2026-09-08):** `navigateStep4To5` test infrastructure zaten düzeltilmişti (tek seferlik evaluate). Şimdi production UX düzeltildi: `showNotification()` deduplication eklendi — aynı message+type kombinasyonu için mevcut toast yeniden kullanılıyor. Commit `ee1725a8`. Kök neden kanıtı: `audits/golden-thread-evidence/tc-gt-05-06-root-cause-2026-08-30.md`.
 - **Golden Thread E2E — TC-GT-05/06 BLOCKED (2026-08-30):** TC-GT-01/02/03/04 PASS (4/6). TC-GT-05/06 timeout — `validateStep(4)` 60sn içinde `nextStep()` başarısız. Page snapshot doğruladı: clone DB (`yalihanai_clone`) location verisi tamamen doğru (81 iller, 13 Muğla ilçesi, 20 Bodrum mahallesi). Kök neden location verisi değil — muhtemelen Step 4 form validation/API timeout veya Alpine reactive state deadlock. Production DB (`yalihanai_v2_production`): location tabloları tamamen BOŞ (0 kayıt). Clone DB seeded veri ile dolu. TC-GT-05/06 snapshot: il/ilçe/mahalle dropdown'ları doğru render ediliyor. Test hatası farklı bir kök nedeni işaret ediyor.
 - **Golden Thread E2E — TC-GT-05/06 Browser Flow Verified (2026-08-30):** Step 1→5 navigasyonu tüm 6 test PASS ✅ (34.1s). Kök neden: `waitForFunction()` polling döngüsü `validateStep(4)`'ü her ~100ms'de çağırıyordu; `showNotification` deduplication yok → 100+ toast → browser çöküyordu. Düzeltme: tek seferlik `evaluate()` çağrısı + `currentStep >= 5` guard. TC-GT-06 submit: HTTP 422 (minimal fixture, backend ulaştı — E2E zinciri işliyor). **Redirect veya DB persistence doğrulanamadı** — fixture eksik alanlar nedeniyle 422. Kanıt: `audits/golden-thread-evidence/certification-report.md`. Açık görev: fixture'ı tüm zorunlu alanlarla doldur → gerçek redirect + DB persistence doğrula.
 - **Checkout/Manuel Ödeme (2026-08-29):** Kod/test/deploy kayıtlı. Authenticated production browser kanıtı eksik — ödeme akışı tarayıcıda doğrulanmadı.

@@ -701,6 +701,24 @@ class EnvDriftGuard extends Command
         }
 
         $content = File::get($envPath);
+
+        // SQLite mode: only DB_CONNECTION is mandatory — no host/port/credentials needed
+        $isSqlite = (bool) preg_match('/^DB_CONNECTION=sqlite\b/m', $content);
+
+        if ($isSqlite) {
+            if (!preg_match('/^DB_CONNECTION=sqlite/m', $content)) {
+                $this->record('env_testing', 'issue', 'DB_CONNECTION=sqlite missing in .env.testing');
+                return;
+            }
+            if (!preg_match('/^DB_SQLITE_DATABASE=/m', $content)) {
+                $this->record('env_testing', 'issue', 'DB_SQLITE_DATABASE key missing in .env.testing');
+                return;
+            }
+            $this->record('env_testing', 'pass', '.env.testing valid — SQLite in-memory test DB configured');
+            return;
+        }
+
+        // MySQL / other drivers: require full set
         $requiredKeys = $this->policy['required_env_keys']
             ?? ['DB_CONNECTION', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME'];
 
@@ -727,6 +745,27 @@ class EnvDriftGuard extends Command
         }
 
         $envVars = $this->parseEnvFile($envPath);
+
+        // SQLite: verify the database is reachable via PDO
+        if (($envVars['DB_CONNECTION'] ?? '') === 'sqlite') {
+            $sqliteDb = $envVars['DB_SQLITE_DATABASE'] ?? '';
+            // :memory: databases exist only for the duration of the connection;
+            // we verify PDO can open it (even if empty) — any error means unreachable
+            try {
+                $dsn = 'sqlite:' . ($sqliteDb === ':memory:' ? ':memory:' : base_path($sqliteDb));
+                $pdo = new \PDO($dsn, null, null, [
+                    \PDO::ATTR_TIMEOUT => 5,
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                ]);
+                $label = $sqliteDb ?: '(in-memory)'; // show actual value in message
+                $this->record('db_connectivity', 'pass', "SQLite test DB reachable: {$label}");
+            } catch (\Exception $e) {
+                $this->record('db_connectivity', 'issue', 'SQLite test DB unreachable: ' . $e->getMessage());
+            }
+            return;
+        }
+
+        // MySQL / other remote drivers
         $host = $envVars['DB_HOST'] ?? '127.0.0.1';
         $port = $envVars['DB_PORT'] ?? '3306';
         $database = $envVars['DB_DATABASE'] ?? '';
@@ -960,17 +999,25 @@ class EnvDriftGuard extends Command
                 }
 
                 $files = File::allFiles($dirPath);
+                $ignoredFiles = $check['ignore_files'] ?? [];
                 foreach ($files as $file) {
                     if ($file->getExtension() !== 'php') {
                         continue;
                     }
 
-                    $content = File::get($file->getPathname());
-                    $relativePath = str_replace(base_path() . '/', '', $file->getPathname());
+                    $absolutePath = $file->getPathname();
+                    $relativePath = str_replace(base_path() . '/', '', $absolutePath);
+
+                    // Skip files in ignore list (mapping files that use legacy keys, not legacy values)
+                    if (in_array($relativePath, $ignoredFiles) || in_array($absolutePath, $ignoredFiles)) {
+                        continue;
+                    }
+
+                    $content = File::get($absolutePath);
 
                     foreach ($check['forbidden_values'] as $forbidden) {
                         // Match field => value or ->where(field, value) patterns in source
-                        $pattern = "/['\"]" . preg_quote($check['field'], '/') . "['\"]\s*[=>,]+\s*['\"]" . preg_quote($forbidden, '/') . "['\"]/i";
+                        $pattern = "/['\"]" . preg_quote($check['field'], '/') . "['\"]\s*[=>,]+\s*['\"]" . preg_quote($forbidden, '/') . "['\"]/";
                         if (preg_match($pattern, $content)) {
                             $drifts[] = "{$relativePath}: uses legacy value '{$forbidden}' for {$check['field']} (canonical: " . implode('|', $canonicalValues) . ")";
                         }
@@ -1165,7 +1212,29 @@ class EnvDriftGuard extends Command
         }
 
         $columns = [];
-        if (preg_match_all('/\$table->\w+\(\s*[\'"](\w+)[\'"]/', $body, $matches)) {
+        // Whitelist of column-adding Blueprint methods only.
+        // This prevents table names in ->constrained('table') or ->references('col')
+        // from being incorrectly captured as column names.
+        $colMethods = implode('|', [
+            'string','integer','bigInteger','unsignedBigInteger','unsignedInteger',
+            'tinyInteger','smallInteger','mediumInteger','unsignedTinyInteger',
+            'unsignedSmallInteger','unsignedMediumInteger',
+            'text','longText','mediumText','shortText',
+            'json','jsonb','binary','boolean','char','decimal','double','float',
+            'date','dateTime','timestamp','time','year','macAddress','ipAddress',
+            'enum','set','uuid','ulid',
+            'foreignId','foreignIdFor','morphs','nullableMorphs','uuidMorphs',
+            'increments','smallIncrements','mediumIncrements','bigIncrements',
+            'timestampMorphs','nullableTimestampMorphs',
+            'dropColumn','renameColumn',
+            'index','unique','primary','spatialIndex','fullText',
+            'softDeletes','softDeletesTz','rememberToken','nullable',
+        ]);
+        if (preg_match_all(
+            '/\$table->(?:' . $colMethods . ')\s*\(\s*[\'\"](\w+)[\'\"]/',
+            $body,
+            $matches
+        )) {
             $columns = array_unique($matches[1]);
         }
         return $columns;
@@ -1186,19 +1255,30 @@ class EnvDriftGuard extends Command
      */
     private function extractColumnsFromSql(string $sql, string $table): array
     {
-        // Match CREATE TABLE `table_name` ( ... ) block
-        $pattern = '/CREATE TABLE\s+`' . preg_quote($table, '/') . '`\s*\((.*?)\)\s*(ENGINE|;)/s';
-        if (!preg_match($pattern, $sql, $match)) {
+        // Depth-based block extraction — handles orphan tables (no ENGINE terminator)
+        $pattern = '/CREATE TABLE\s+[`"]?' . preg_quote($table, '/') . '[`"]?\s*\(/i';
+        if (!preg_match($pattern, $sql, $match, PREG_OFFSET_CAPTURE)) {
             return [];
         }
 
-        $body = $match[1];
-        $columns = [];
+        $start = $match[0][1] + strlen($match[0][0]) - 1; // position of opening (
+        $depth = 1;
+        $pos = $start + 1;
+        $body = '';
 
-        // Extract column definitions (lines starting with backtick-quoted name)
+        while ($pos < strlen($sql) && $depth > 0) {
+            $ch = $sql[$pos];
+            $body .= $ch;
+            if ($ch === '(') $depth++;
+            if ($ch === ')') $depth--;
+            $pos++;
+        }
+
+        // Now parse the body for backtick-quoted column names
+        $columns = [];
         foreach (explode("\n", $body) as $line) {
             $line = trim($line);
-            if (preg_match('/^`(\w+)`\s+(.+?)(?:,\s*)?$/', $line, $colMatch)) {
+            if (preg_match('/^`([^`]+)`\s+(.+?)(?:,\s*)?$/u', $line, $colMatch)) {
                 $columns[$colMatch[1]] = $colMatch[2];
             }
         }

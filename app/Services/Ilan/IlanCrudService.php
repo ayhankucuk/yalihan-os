@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use App\Services\SaaS\TenantContextService;
 
 /**
  * Ilan Crud Service
@@ -194,8 +195,8 @@ class IlanCrudService
      */
     private function mapCoreData(Ilan $ilan, array $data): void
     {
-        $ilan->baslik = $data['baslik'];
-        $ilan->aciklama = $data['aciklama'] ?? null;
+        $ilan->baslik = $data['baslik'] ?? $ilan->baslik;
+        $ilan->aciklama = $data['aciklama'] ?? $ilan->aciklama;
         // SAB §5: State Machine enforcement
         // İlan durumu doğrudan set edilmez, akışın sonunda YalihanLifecycle kullanılır.
         // Ham veri burada sadece yetki kontrolü veya başlangıç değeri için saklanabilir.
@@ -210,6 +211,15 @@ class IlanCrudService
             $ilan->ilgili_kisi_id = $data['ilgili_kisi_id'] ?: null;
         }
         $ilan->crm_only = $data['crm_only'] ?? false;
+
+        // SAB Kural 1: Multi-tenant isolation — persist tenant_id explicitly
+        if (empty($ilan->tenant_id)) {
+            $tenantService = app(TenantContextService::class);
+            $resolvedTenantId = $tenantService->hasTenant()
+                ? $tenantService->getTenant()->id
+                : (Auth::user()?->tenant_id ?? 1);
+            $ilan->tenant_id = $resolvedTenantId;
+        }
 
         // ======================================================================
         // RENTAL ENGINE FIELDS — guarded by schema check to prevent column-not-found

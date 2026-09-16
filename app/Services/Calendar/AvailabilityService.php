@@ -2,32 +2,51 @@
 
 namespace App\Services\Calendar;
 
-// ❌ DEPRECATED: IlanReservation table deprecated (2026-01-29)
-// use App\Models\Deprecated\IlanReservation;
+use App\Enums\ReservationState;
+use App\Models\PropertyReservation;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 /**
- * ❌ DEPRECATED SERVICE (2026-01-29)
- * IlanReservation table deprecated. Service returns stub values.
+ * Canonical availability conflict reader.
+ *
+ * This service deliberately reads PropertyReservation, the reservation SSOT.
+ * Callers must supply the already-authorized property's tenant identifier;
+ * availability must never be evaluated across tenant boundaries by ID alone.
  */
 class AvailabilityService
 {
     /**
-     * Returns true if there is any conflicting active reservation or block.
-     * ❌ STUB: Always returns false (IlanReservation deprecated)
+     * Returns true when an active, confirmed, pending, or blocked reservation
+     * overlaps the requested half-open interval [start, end).
      */
-    public function hasConflict(int $ilanId, Carbon $start, Carbon $end): bool
+    public function hasConflict(int $ilanId, Carbon $start, Carbon $end, int $tenantId): bool
     {
-        return false; // IlanReservation table deprecated
+        return $this->conflictQuery($ilanId, $start, $end, $tenantId)->exists();
     }
 
     /**
-     * Get conflicting reservations list for diagnostics.
-     * ❌ STUB: Returns empty collection (IlanReservation deprecated)
+     * Returns non-sensitive conflict windows for internal diagnostics.
+     *
+     * Guest identity, contact details, payment fields, notes, and external
+     * channel identifiers are intentionally never selected here.
      */
-    public function getConflicts(int $ilanId, Carbon $start, Carbon $end)
+    public function getConflicts(int $ilanId, Carbon $start, Carbon $end, int $tenantId): Collection
     {
-        return collect([]); // IlanReservation table deprecated
+        return $this->conflictQuery($ilanId, $start, $end, $tenantId)
+            ->orderBy('start_date')
+            ->get(['start_date', 'end_date', 'reservation_state']);
+    }
+
+    private function conflictQuery(int $ilanId, Carbon $start, Carbon $end, int $tenantId): Builder
+    {
+        return PropertyReservation::withoutGlobalScopes()
+            ->where('property_id', $ilanId)
+            ->where('tenant_id', $tenantId)
+            ->where('reservation_state', '!=', ReservationState::CANCELLED->value)
+            ->whereNull('cancelled_at')
+            ->where('start_date', '<', $end->toDateTimeString())
+            ->where('end_date', '>', $start->toDateTimeString());
     }
 }
-

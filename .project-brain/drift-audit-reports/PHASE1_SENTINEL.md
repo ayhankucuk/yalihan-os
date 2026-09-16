@@ -1,5 +1,7 @@
 # YALIHAN Drift Sentinel — Phase 1
 
+> **HISTORICAL / SUPERSEDED:** This Phase 1 snapshot predates the production repair and later branch fixes. Its ghost-table and `yayin_tipleri.adi` findings are historical context, not current production status. See `SUPERSEDED.md` and `../EVIDENCE_INDEX.md`.
+
 > Status: `REPO_VERIFIED` (Kilo, 2026-09-02)
 > Command: `php artisan yalihan:drift-audit`
 

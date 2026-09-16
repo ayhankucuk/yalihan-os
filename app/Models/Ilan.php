@@ -336,7 +336,6 @@ class Ilan extends BaseModel
         'yayin_tipi_id',            // ✅ REQUIRED: Yayın tipi (bigint unsigned, NULL allowed)
 
         // ✅ CONTEXT7: Canonical portfolio fields
-        'is_active',           // ✅ SAB: Canonical active/inactive
         'one_cikan',                 // ✅ SAB: Canonical featured
         'display_order',             // ✅ SAB: Canonical display_ordering
         'kategori',                  // Portfolio import: category string
@@ -423,9 +422,11 @@ class Ilan extends BaseModel
         'rental_currency',           // HYBRID: Para birimi (TRY vb.)
 
         // C3.1: Property Management Agreement
-        // ======================================================================
-        'management_model',           // C3.1: FULL_MANAGEMENT|CHECKIN_CHECKOUT|NONE|CUSTOM
-        'custom_commission_rate',    // C3.1: Custom rate for CUSTOM model (fraction, e.g. 0.1200)
+        // GHOST-FIELD-REMOVED-2026-09-10: management_model, custom_commission_rate
+        // Kanıt: mysql-schema.sql — ilanlar tablosunda bu kolonlar yok
+        //         database/migrations/2026_08_22_000001_add_management_agreement_snapshot.php
+        //         migration kolon ekliyor ama SSOT schema güncellenmedi (KRONIK-1 kronik)
+        //         Migration çalışmışsa DB'de var, SSOT'ta yok → drift guard WARN veriyor
 
         // ======================================================================
         // 🔵 OPTIONAL FIELDS - Opsiyonel Bilgiler
@@ -562,11 +563,10 @@ class Ilan extends BaseModel
         'aciklama' => 'string',                      // ✅ REQUIRED: text → string
 
         // ✅ CONTEXT7: Canonical portfolio fields
-        'is_active' => \App\Casts\CanonicalBooleanCast::class,
         'one_cikan' => 'boolean',                    // Context7: featured
         'display_order' => 'integer',                // Context7: display_ordering
         'metadata' => 'array',                       // JSON metadata (auto encode/decode)
-        'ekstra_ozellikler' => 'array',              // T-UPS-V2-FULL: Kategori bazlı dinamik alanlar (JSON)
+        'ekstra_ozellikler' => 'array',              // JSON ekstra ozellikler
         'visibility_score' => 'integer',
 
         // ======================================================================
@@ -761,8 +761,8 @@ class Ilan extends BaseModel
         'source_locale'             => 'string',
 
         // C3.1: Property Management Agreement
-        'management_model' => \App\Enums\ManagementModel::class,  // C3.1: enum cast
-        'custom_commission_rate' => 'float',          // C3.1: DECIMAL(5,4) → float
+        // GHOST-FIELD-REMOVED-2026-09-10: management_model, custom_commission_rate
+        // Kanıt: mysql-schema.sql — ilanlar tablosunda bu kolonlar yok
     ];
 
     // ======================================================================
@@ -859,6 +859,38 @@ class Ilan extends BaseModel
             ]);
     }
 
+    /**
+     * Bypasses column collision for il relation
+     */
+    public function getIlAttribute()
+    {
+        return $this->getRelationValue('il');
+    }
+
+    /**
+     * Bypasses column collision for ilce relation
+     */
+    public function getIlceAttribute()
+    {
+        return $this->getRelationValue('ilce');
+    }
+
+    /**
+     * Bypasses column collision for mahalle relation
+     */
+    public function getMahalleAttribute()
+    {
+        return $this->getRelationValue('mahalle');
+    }
+
+    /**
+     * Bypasses column collision for kategori relation
+     */
+    public function getKategoriAttribute()
+    {
+        return $this->getRelationValue('kategori');
+    }
+
     // --- Kategori İlişkileri ---
 
     public function anaKategori(): BelongsTo
@@ -953,14 +985,16 @@ class Ilan extends BaseModel
     {
         return $query->where(function ($q) use ($startDate, $endDate) {
             // 1. MUST HAVE: Active pricing for the period (at least partial overlap)
+            // BUGFIX-2026-09-10: is_active → aktiflik_durumu
+            // Kanıt: mysql-schema.sql satır 4759 — yazlik_fiyatlandirma.aktiflik_durumu mevcut, is_active yok
             $q->whereHas('yazlikFiyatlandirma', function ($subQ) use ($startDate, $endDate) {
-                $subQ->where('is_active', true)
+                $subQ->where('aktiflik_durumu', true)
                     ->where('baslangic_tarihi', '<=', $endDate)
                     ->where('bitis_tarihi', '>=', $startDate);
             })
             // 2. MUST NOT HAVE: Inactive/Blocked periods for the range
                 ->whereDoesntHave('yazlikFiyatlandirma', function ($subQ) use ($startDate, $endDate) {
-                    $subQ->where('is_active', false)
+                    $subQ->where('aktiflik_durumu', false)
                         ->where('baslangic_tarihi', '<=', $endDate)
                         ->where('bitis_tarihi', '>=', $startDate);
                 });
@@ -1020,7 +1054,7 @@ class Ilan extends BaseModel
      */
     public function featuredPhoto()
     {
-        return $this->hasOne(Photo::class)->where('one_cikan', true);
+        return $this->hasOne(Photo::class)->where('kapak_fotografi', true);
     }
 
 

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Log;
  * FieldResolver — DB'den FieldDefinition[] üretir.
  *
  * Sorumluluk:
- *  - kategori_yayin_tipi_field_dependencies tablosundan aktif field'ları çeker
+ *  - [Sistem B / Admin CRUD] kategori_yayin_tipi_field_dependencies tablosundan aktif field'ları çeker
  *  - Her satırı FieldDefinition DTO'ya çevirir
  *  - Fallback: alt kategori → parent kategori → boş set
  *  - Sonucu cache'ler (1 saat)
@@ -23,6 +23,11 @@ use Illuminate\Support\Facades\Log;
  *   $resolver = app(FieldResolver::class);
  *   $fields = $resolver->resolve(kategoriId: 5, yayinTipiId: 2);
  *   // $fields: FieldDefinition[]
+ *
+ * @deprecated 2026-09-08 — P2-DS-01: Bu sınıf Sistem B (Admin CRUD) altyapısıdır.
+ *   Wizard Step 2 engine artık FeatureTemplateResolver + feature_assignments
+ *   (Sistem A) kullanıyor. FieldResolver büyük olasılıkla kaldırılabilir
+ *   veya minimal düzeyde tutulmalıdır.
  */
 class FieldResolver
 {
@@ -58,6 +63,11 @@ class FieldResolver
      */
     private function doResolve(int $kategoriId, int $yayinTipiId): array
     {
+        // Strangler Fig: Feature flag check (default false)
+        if (config('feature-flags.use_domain_form_policy', false)) {
+            return app(\App\Application\Ilan\Services\DomainFieldResolverAdapter::class)->resolve($kategoriId, $yayinTipiId);
+        }
+
         // 1. Resolve slugs
         $kategori = IlanKategori::find($kategoriId);
         if (!$kategori) {
@@ -139,6 +149,11 @@ class FieldResolver
      */
     private function doResolveBySlug(string $kategoriSlug, string $yayinTipiSlug, int $publicationTypeId): array
     {
+        // Strangler Fig: Feature flag check (default false)
+        if (config('feature-flags.use_domain_form_policy', false)) {
+            return app(\App\Application\Ilan\Services\DomainFieldResolverAdapter::class)->resolveBySlug($kategoriSlug, $yayinTipiSlug);
+        }
+
         // Adım 1: Doğrudan eşleşme
         $rows = $this->queryFields($kategoriSlug, $yayinTipiSlug, $publicationTypeId);
         if ($rows->isNotEmpty()) {

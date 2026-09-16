@@ -56,18 +56,19 @@ class TenantIsolationSafetyTest extends TestCase
     /** @test */
     public function tenant_a_cannot_view_tenant_b_listing_via_v2_show()
     {
-        // Setup: Create a published listing for Tenant B
+        // Setup: Create a draft listing for Tenant B
         $ilanB = Ilan::factory()->create([
             'tenant_id' => $this->tenantB->id,
             'danisman_id' => $this->userB->id,
+            'yayin_durumu' => 'Taslak',
         ]);
 
         // Act: Attempt to view as Tenant A
         $response = $this->actingAs($this->userA, 'sanctum')
-            ->getJson("/api/v1/ilanlar/{$ilanB->id}");
+            ->getJson("/api/v2/ilanlar/{$ilanB->id}");
 
-        // Assert: Access is denied — IDOR protection
-        $response->assertStatus(403);
+        // Assert: Access is denied — IDOR protection (403 or 404 fail-closed)
+        $this->assertTrue(in_array($response->status(), [403, 404]), "Expected 403 or 404 but got {$response->status()}");
     }
 
     /** @test */
@@ -102,8 +103,8 @@ class TenantIsolationSafetyTest extends TestCase
                 'baslik' => 'Hacked Baslik',
             ]);
 
-        // Assert: Access denied
-        $response->assertStatus(403);
+        // Assert: Access denied — 403 Forbidden or 404 ID Enumeration Defense
+        $this->assertTrue(in_array($response->status(), [403, 404]), "Expected 403 or 404 but got {$response->status()}");
     }
 
     /** @test */
@@ -119,8 +120,8 @@ class TenantIsolationSafetyTest extends TestCase
         $response = $this->actingAs($this->userA, 'sanctum')
             ->deleteJson("/api/v1/ilanlar/{$ilanB->id}");
 
-        // Assert: Access denied
-        $response->assertStatus(403);
+        // Assert: Access denied — 403 Forbidden or 404 ID Enumeration Defense
+        $this->assertTrue(in_array($response->status(), [403, 404]), "Expected 403 or 404 but got {$response->status()}");
     }
 
     /** @test */

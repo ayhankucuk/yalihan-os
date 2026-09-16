@@ -109,4 +109,12 @@ class Feature extends BaseModel
     {
         return $query->whereDoesntHave('assignments');
     }
+
+    /**
+     * Accessor: label (backward compatibility / display alias for name)
+     */
+    public function getLabelAttribute(): string
+    {
+        return $this->name ?? '';
+    }
 }

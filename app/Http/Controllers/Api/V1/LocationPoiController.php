@@ -11,6 +11,8 @@ use App\Models\PointOfInterest;
 use App\Services\Location\PoiService;
 use App\Services\Logging\LogService;
 use App\Services\Response\ResponseService;
+use App\Domain\Location\Services\FindNearbyPoisUseCase;
+use App\Domain\Location\DTOs\PoiSearchCriteria;
 use Illuminate\Http\Request;
 
 /**
@@ -28,10 +30,12 @@ use Illuminate\Http\Request;
 class LocationPoiController extends Controller
 {
     private PoiService $poiService;
+    private FindNearbyPoisUseCase $findNearbyPoisUseCase;
 
-    public function __construct(PoiService $poiService)
+    public function __construct(PoiService $poiService, FindNearbyPoisUseCase $findNearbyPoisUseCase)
     {
         $this->poiService = $poiService;
+        $this->findNearbyPoisUseCase = $findNearbyPoisUseCase;
     }
 
     /**
@@ -91,45 +95,36 @@ class LocationPoiController extends Controller
             $kategori = $validated['kategori'] ?? null;
             $radiusKm = (float) ($validated['radius_km'] ?? 2);
 
-            // 1️⃣ Kategori bazlı POI filtreleri
-            $poiFilters = $this->getPoiFiltersByCategory($kategori);
+if (config('location.use_domain_poi_search', false)) {
+                // ✅ Strangler Fig: Domain Use Case
+                $criteria = PoiSearchCriteria::fromValidatedRequest($validated);
+                $result = $this->findNearbyPoisUseCase->execute($criteria);
+                $responsePayload = $result->toApiResponse();
+            } else {
+                // 🔴 Legacy: PoiService (Strangler Fig süresince korunur)
+                $poiFilters = $this->getPoiFiltersByCategory($kategori);
+                $pois = $this->poiService->findNearby($lat, $lng, $radiusKm, $poiFilters);
+                $sortedPois = $pois->sortBy(fn($poi) => $poi['distance_km'] ?? $poi['distance'] ?? 999)->values();
+                $summary = [
+                    'total_found' => $sortedPois->count(),
+                    'by_type' => $sortedPois->groupBy('poi_turu')->map->count(),
+                    'closest_poi' => $sortedPois->first(),
+                    'farthest_poi' => $sortedPois->last(),
+                ];
+                $responsePayload = [
+                    'pois' => $sortedPois->toArray(),
+                    'data' => $sortedPois->toArray(),
+                    'summary' => $summary,
+                    'sealed' => true,
+                ];
+                LogService::info('poi_distance_success', [
+                    'lat' => $lat, 'lng' => $lng, 'kategori' => $kategori,
+                    'radius_km' => $radiusKm, 'total_pois' => $sortedPois->count(),
+                    'duration_ms' => (int) LogService::stopTimer($t0),
+                ]);
+            }
 
-            // 2️⃣ Veritabanından POI'leri getir (raw query - Haversine)
-            $pois = $this->poiService->findNearby(
-                $lat,
-                $lng,
-                $radiusKm,
-                $poiFilters
-            );
-
-            // 3️⃣ Mesafelere göre sırala (distance_km veya distance)
-            $sortedPois = $pois->sortBy(function($poi) {
-                return $poi['distance_km'] ?? $poi['distance'] ?? 999;
-            })->values();
-
-            // 4️⃣ Summary istatistikleri
-            $summary = [
-                'total_found' => $sortedPois->count(),
-                'by_type' => $sortedPois->groupBy('poi_turu')->map->count(), // ✅ SAB: poi_turu
-                'closest_poi' => $sortedPois->first(),
-                'farthest_poi' => $sortedPois->last(),
-            ];
-
-            LogService::info('poi_distance_success', [
-                'lat' => $lat,
-                'lng' => $lng,
-                'kategori' => $kategori,
-                'radius_km' => $radiusKm,
-                'total_pois' => $sortedPois->count(),
-                'duration_ms' => (int) LogService::stopTimer($t0),
-            ]);
-
-            return ResponseService::success([
-                'pois' => $sortedPois,
-                'data' => $sortedPois, // Frontend compatibility: data.data
-                'summary' => $summary,
-                'sealed' => true, // Mühürlü veri (read-only)
-            ], 'POI mesafeleri başarıyla hesaplandı');
+            return ResponseService::success($responsePayload, 'POI mesafeleri başarıyla hesaplandı');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ResponseService::validationError($e->errors(), 'Validasyon hatası');
         } catch (\Exception $e) {
@@ -198,15 +193,22 @@ class LocationPoiController extends Controller
             $lng = (float) $validated['lng'];
 
             // 📊 Bölge özeti
+            $poiDensity = $this->calculatePoiDensity($lat, $lng);
+            $amenities = $this->getAmenitiesSummary($lat, $lng);
+
+            // Deterministic score estimation from POI and amenity density
+            $walkabilityScore = min(100, max(30, (int) ($poiDensity['density_score'] * 0.5 + ($amenities['shops'] + $amenities['parks']) * 5 + 40)));
+            $safetyScore = min(95, max(50, 75 + ($amenities['schools'] > 0 ? 10 : 0) + ($amenities['hospitals'] > 0 ? 5 : 0)));
+
             $profile = [
                 'location' => [
                     'lat' => $lat,
                     'lng' => $lng,
                 ],
-                'poi_density' => $this->calculatePoiDensity($lat, $lng),
-                'amenities' => $this->getAmenitiesSummary($lat, $lng),
-                'safety_score' => rand(65, 95), // Simulated data
-                'walkability_score' => rand(60, 90), // Simulated data
+                'poi_density' => $poiDensity,
+                'amenities' => $amenities,
+                'safety_score' => $safetyScore,
+                'walkability_score' => $walkabilityScore,
             ];
 
             LogService::info('neighborhood_profile_success', [

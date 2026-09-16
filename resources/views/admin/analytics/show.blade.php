@@ -9,18 +9,18 @@
                 <h1 class="text-3xl font-bold text-gray-800 flex items-center dark:text-slate-200">
                     <div
                         class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                        <i class="fas fa-chart-bar text-white text-xl"></i>
+                        <x-icon name="chart-bar" class="w-5 h-5 text-white" />
                     </div>
                     {{ $analyticsItem['name'] }}
                 </h1>
                 <p class="text-lg text-gray-600 mt-2">Analitik raporu detayları ve veriler</p>
             </div>
             <div class="flex gap-3">
-                <a href="{{ route('admin.analytics.edit', $analyticsItem['id']) }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 dark:shadow-none">
-                    <i class="fas fa-edit mr-2"></i>Düzenle
+                <a href="{{ route('admin.analytics.visibility.show', $analyticsItem['id']) }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 dark:shadow-none">
+                    <x-icon name="pencil" class="w-4 h-4 mr-2" />Düzenle
                 </a>
                 <a href="{{ route('admin.analytics.index') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm dark:shadow-none dark:text-slate-300">
-                    <i class="fas fa-arrow-left mr-2"></i>Geri Dön
+                    <x-icon name="arrow-left" class="w-4 h-4 mr-2" />Geri Dön
                 </a>
             </div>
         </div>
@@ -32,7 +32,7 @@
             <!-- Rapor Bilgileri -->
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center dark:text-slate-200">
-                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    <x-icon name="info" class="w-5 h-5 text-blue-500 mr-2" />
                     Rapor Bilgileri
                 </h2>
 
@@ -116,14 +116,14 @@
             <!-- Metrikler -->
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center dark:text-slate-200">
-                    <i class="fas fa-chart-line text-green-500 mr-2"></i>
+                    <x-icon name="chart-line" class="w-5 h-5 text-green-500 mr-2" />
                     Dahil Edilen Metrikler
                 </h2>
 
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                     @foreach ($analyticsItem['metrics'] as $metric)
                         <div class="flex items-center p-3 bg-blue-50 rounded-lg">
-                            <i class="fas fa-check-circle text-blue-500 mr-2"></i>
+                            <x-icon name="check" class="w-5 h-5 text-blue-500 mr-2" />
                             <span class="text-blue-900 font-medium">
                                 @switch($metric)
                                     @case('views')
@@ -158,16 +158,16 @@
             <!-- Rapor Verileri (Mock Chart) -->
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center dark:text-slate-200">
-                    <i class="fas fa-chart-area text-purple-500 mr-2"></i>
+                    <x-icon name="chart-area" class="w-5 h-5 text-purple-500 mr-2" />
                     Rapor Verileri
                 </h2>
 
                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-lg text-center">
-                    <i class="fas fa-chart-bar text-6xl text-blue-400 mb-4"></i>
+                    <x-icon name="chart-bar" class="w-16 h-16 text-blue-400 mb-4" />
                     <h3 class="text-xl font-semibold text-gray-700 mb-2 dark:text-slate-300">Grafik ve Veriler</h3>
                     <p class="text-gray-600 mb-4">Bu bölümde detaylı analitik grafikler ve tablolar gösterilecektir.</p>
                     <div class="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm">
-                        <i class="fas fa-info-circle mr-2"></i>
+                        <x-icon name="info" class="w-5 h-5 mr-2" />
                         Geliştirme Aşamasında
                     </div>
                 </div>
@@ -179,7 +179,7 @@
             <!-- Hızlı İstatistikler -->
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center dark:text-slate-200">
-                    <i class="fas fa-tachometer-alt text-blue-500 mr-2"></i>
+                    <x-icon name="dashboard" class="w-5 h-5 text-blue-500 mr-2" />
                     Hızlı İstatistikler
                 </h3>
 
@@ -196,7 +196,7 @@
                         <span class="text-sm font-medium text-gray-600">Durum</span>
                         <span
                             class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                            <i class="fas fa-check mr-1"></i>Aktif
+                            <x-icon name="check" class="w-4 h-4 mr-1" />Aktif
                         </span>
                     </div>
                 </div>
@@ -205,26 +205,26 @@
             <!-- İşlemler -->
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center dark:text-slate-200">
-                    <i class="fas fa-cogs text-gray-500 mr-2"></i>
+                    <x-icon name="settings" class="w-5 h-5 text-gray-500 mr-2" />
                     İşlemler
                 </h3>
 
                 <div class="space-y-3">
                     <button class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-offset-2-outline text-left" onclick="exportReport()">
-                        <i class="fas fa-download mr-2"></i>
+                        <x-icon name="download" class="w-5 h-5 mr-2" />
                         Raporu İndir
                     </button>
                     <button class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-offset-2-outline text-left" onclick="shareReport()">
-                        <i class="fas fa-share mr-2"></i>
+                        <x-icon name="share" class="w-5 h-5 mr-2" />
                         Raporu Paylaş
                     </button>
                     <button class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-offset-2-outline text-left" onclick="duplicateReport()">
-                        <i class="fas fa-copy mr-2"></i>
+                        <x-icon name="copy" class="w-5 h-5 mr-2" />
                         Raporu Kopyala
                     </button>
                     <hr class="my-2">
                     <button class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-offset-2-danger text-left" onclick="deleteReport()" id="deleteBtn">
-                        <i class="fas fa-trash mr-2"></i>
+                        <x-icon name="trash" class="w-5 h-5 mr-2" />
                         Raporu Sil
                     </button>
                 </div>

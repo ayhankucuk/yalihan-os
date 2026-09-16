@@ -285,7 +285,7 @@
 
                                 {{-- Sıra / ID --}}
                                 <td class="py-4 px-4 text-center font-mono text-slate-400 text-[11px]">
-                                    {{ $kategori->display_order ?? $kategori->id }}
+                                    {{ method_exists($kategoriler, 'firstItem') && $kategoriler->firstItem() ? ($kategoriler->firstItem() + $loop->index) : $loop->iteration }}
                                 </td>
 
                                 {{-- Kategori Adı & Slug --}}

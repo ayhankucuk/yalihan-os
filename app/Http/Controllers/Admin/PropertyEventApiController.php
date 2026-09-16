@@ -37,11 +37,13 @@ class PropertyEventApiController extends Controller
     }
 
     /**
-     * @param Ilan $ilan
+     * @param int|string $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Ilan $ilan)
+    public function index($id)
     {
+        $ilan = Ilan::findOrFail($id);
+
         // 1. Fetch Reservations (Manual Bookings / Blocks)
         $reservations = PropertyReservation::where('property_id', $ilan->id)
             ->where('reservation_state', '!=', ReservationState::CANCELLED)

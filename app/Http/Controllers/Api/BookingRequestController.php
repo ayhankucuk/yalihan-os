@@ -10,9 +10,11 @@ use App\Http\Controllers\Controller;
 use App\Mail\BookingRequestMail;
 use App\Models\BookingRequest;
 use App\Models\Ilan;
+use App\Services\Calendar\AvailabilityService;
 use App\Services\Response\ResponseService;
 use App\Traits\ValidatesApiRequests;
 use App\Enums\TaslakDurumu;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Services\Notification\NotificationDispatcher;
@@ -27,6 +29,10 @@ use App\Contracts\Notification\NotificationAuthorityInterface;
 class BookingRequestController extends Controller
 {
     use ValidatesApiRequests;
+
+    public function __construct(
+        private readonly AvailabilityService $availabilityService,
+    ) {}
 
     /**
      * Submit booking request
@@ -164,18 +170,12 @@ class BookingRequestController extends Controller
 
         $villa = Ilan::findOrFail($request->villa_id);
 
-        // Check for conflicts in events table
-        $hasConflict = $villa->events()
-            ->where(function ($q) use ($request) {
-                $q->whereBetween('check_in', [$request->check_in, $request->check_out])
-                    ->orWhereBetween('check_out', [$request->check_in, $request->check_out])
-                    ->orWhere(function ($q) use ($request) {
-                        $q->where('check_in', '<=', $request->check_in)
-                            ->where('check_out', '>=', $request->check_out);
-                    });
-            })
-            ->where('yayin_durumu', '!=', 'cancelled')
-            ->exists();
+        $hasConflict = $this->availabilityService->hasConflict(
+            $villa->id,
+            Carbon::parse($request->check_in),
+            Carbon::parse($request->check_out),
+            (int) $villa->tenant_id,
+        );
 
         if ($hasConflict) {
             // ✅ REFACTORED: Using ResponseService

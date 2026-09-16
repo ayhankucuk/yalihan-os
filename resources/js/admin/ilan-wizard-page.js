@@ -1533,7 +1533,20 @@ if (typeof window.poiSelector === 'undefined') {
             },
 
             showNotification(message, type = 'info') {
-                // ✅ Modern Toast Notification System
+                // ✅ TC-GT-06 FIX: Deduplication — skip if same message+type is already visible
+                const existingToast = document.querySelector(
+                    `.toast-notification[data-type="${type}"][data-message="${CSS.escape(message)}"]`
+                );
+                if (existingToast) {
+                    existingToast.classList.remove('translate-x-full', 'opacity-0');
+                    existingToast.classList.add('translate-x-0', 'opacity-100');
+                    const existingTimer = existingToast.dataset.removeTimer;
+                    if (existingTimer) clearTimeout(parseInt(existingTimer));
+                    const timer = setTimeout(() => this._removeToast(existingToast), 5000);
+                    existingToast.dataset.removeTimer = timer.toString();
+                    return;
+                }
+
                 const toast = document.createElement('div');
                 const toastId = `toast-${Date.now()}`;
                 toast.id = toastId;
@@ -1549,26 +1562,27 @@ if (typeof window.poiSelector === 'undefined') {
                 // Color mapping
                 const colors = {
                     error: 'bg-red-600 dark:bg-red-700 text-white border-red-700 dark:border-red-800',
-                    success:
-                        'bg-green-600 dark:bg-green-700 text-white border-green-700 dark:border-green-800',
-                    warning:
-                        'bg-yellow-600 dark:bg-yellow-700 text-white border-yellow-700 dark:border-yellow-800',
+                    success: 'bg-green-600 dark:bg-green-700 text-white border-green-700 dark:border-green-800',
+                    warning: 'bg-yellow-600 dark:bg-yellow-700 text-white border-yellow-700 dark:border-yellow-800',
                     info: 'bg-blue-600 dark:bg-blue-700 text-white border-blue-700 dark:border-blue-800',
                 };
 
-                toast.className = `fixed top-4 right-4 px-6 py-4 rounded-xl shadow-2xl z-[9999]
+                toast.className = `toast-notification fixed top-4 right-4 px-6 py-4 rounded-xl shadow-2xl z-[9999]
                     transition-all duration-300 ease-in-out transform translate-x-full opacity-0
                     ${colors[type] || colors.info}
                     border-2 min-w-[300px] max-w-[500px]
                     flex items-start gap-3`;
+                toast.dataset.type = type;
+                toast.dataset.message = message;
 
                 toast.innerHTML = `
                     <div class="flex-shrink-0 text-xl">${icons[type] || icons.info}</div>
                     <div class="flex-1">
                         <p class="text-sm font-medium leading-relaxed">${message}</p>
                     </div>
-                    <button onclick="document.getElementById('${toastId}').remove()"
-                        class="flex-shrink-0 text-white/80 hover:text-white transition-colors duration-200">
+                    <button
+                        class="flex-shrink-0 text-white/80 hover:text-white transition-colors duration-200"
+                        aria-label="Bildirimi kapat">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -1578,32 +1592,38 @@ if (typeof window.poiSelector === 'undefined') {
                 document.body.appendChild(toast);
 
                 // Animate in
-                setTimeout(() => {
+                requestAnimationFrame(() => {
                     toast.classList.remove('translate-x-full', 'opacity-0');
                     toast.classList.add('translate-x-0', 'opacity-100');
-                }, 10);
+                });
 
                 // Auto remove after 5 seconds
-                const autoRemove = setTimeout(() => {
-                    toast.classList.add('translate-x-full', 'opacity-0');
-                    setTimeout(() => {
-                        if (toast.parentNode) {
-                            toast.remove();
-                        }
-                    }, 300);
-                }, 5000);
+                const timer = setTimeout(() => this._removeToast(toast), 5000);
+                toast.dataset.removeTimer = timer.toString();
 
-                // Remove on click
+                // Remove on X button click
+                toast.querySelector('button').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    clearTimeout(parseInt(toast.dataset.removeTimer || '0'));
+                    this._removeToast(toast);
+                });
+
+                // Remove on toast body click
                 toast.addEventListener('click', () => {
-                    clearTimeout(autoRemove);
-                    toast.classList.add('translate-x-full', 'opacity-0');
-                    setTimeout(() => {
-                        if (toast.parentNode) {
-                            toast.remove();
-                        }
-                    }, 300);
+                    clearTimeout(parseInt(toast.dataset.removeTimer || '0'));
+                    this._removeToast(toast);
                 });
             },
+
+            // ✅ TC-GT-06 FIX: Shared toast removal helper — handles animation + DOM cleanup
+            _removeToast(toast) {
+                if (!toast || !toast.parentNode) return;
+                toast.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => {
+                    if (toast.parentNode) toast.remove();
+                }, 300);
+            },
+
 
             scrollToTop() {
                 window.scrollTo({
@@ -2015,7 +2035,10 @@ if (typeof window.poiSelector === 'undefined') {
                 // Step 3 photo check is handled by validateStep(3) via nextStep() inline logic.
                 const stepOrder = [1, 2, 3, 4, 5];
                 for (const step of stepOrder) {
-                    if (!this.validateStep(step)) {
+                    const stepValid = this.validateStep(step);
+                    console.log(`[WIZARD SUBMIT] validateStep(${step}) result:`, stepValid);
+                    if (!stepValid) {
+                        console.warn(`[WIZARD SUBMIT] Validation failed at Step ${step}`);
                         this.__submitting = false;
                         return;
                     }
@@ -2030,6 +2053,7 @@ if (typeof window.poiSelector === 'undefined') {
 
                 // Block if recommendation=block and no override
                 if (qualityResult?.recommendation === 'block' && !overrideBlock) {
+                    console.warn('[WIZARD SUBMIT] Blocked by AI quality gate without override');
                     this.showNotification(
                         '⚠️ Kalite kontrolü engelliyor. Lütfen "Override" checkbox\'unu işaretleyin.',
                         'error'
@@ -2041,17 +2065,22 @@ if (typeof window.poiSelector === 'undefined') {
                 // ✅ Phase V0: Require kategori/yayın tipi in UI before publish
                 const kategoriSlug = this.getSelectedKategoriSlug();
                 const yayinTipiSlug = this.getSelectedYayinTipiSlug();
+                console.log('[WIZARD SUBMIT] kategoriSlug:', kategoriSlug, 'yayinTipiSlug:', yayinTipiSlug);
 
                 if (!yayinTipiSlug) {
+                    console.warn('[WIZARD SUBMIT] Missing yayinTipiSlug');
                     this.showNotification('Yayın tipi seçmeden devam edemezsiniz.', 'error');
                     this.__submitting = false;
                     return;
                 }
                 if (!kategoriSlug) {
+                    console.warn('[WIZARD SUBMIT] Missing kategoriSlug');
                     this.showNotification('Kategori seçmeden devam edemezsiniz.', 'error');
                     this.__submitting = false;
                     return;
                 }
+
+                console.log('[WIZARD SUBMIT] Passed pre-submit checks, proceeding to create FormData and wizardFetch');
 
                 const submitBtn = form?.querySelector('button[type="submit"]');
 
@@ -2074,6 +2103,7 @@ if (typeof window.poiSelector === 'undefined') {
                 // P0-FIX: Photo sync — attach from native input (DataTransfer keeps in sync)
                 formData.delete('fotograflar[]');
                 formData.delete('fotograflar');
+                const photoInput = document.getElementById('fotograflar');
                 const photoFiles = (photoInput && photoInput.files && photoInput.files.length > 0)
                     ? Array.from(photoInput.files)
                     : (Array.isArray(window.__wizardUploadedPhotos) ? window.__wizardUploadedPhotos : []);

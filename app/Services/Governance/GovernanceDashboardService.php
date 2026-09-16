@@ -267,8 +267,8 @@ class GovernanceDashboardService
                         if ($today->greaterThan(\Illuminate\Support\Carbon::parse($reviewDate))) {
                             $staleCount++;
                         }
-                    } catch (\Throwable) {
-            \Illuminate\Support\Facades\Log::error("Silent catch: " . $e->getMessage());
+                    } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error("GovernanceDashboard: stale exclusion date parse error: " . $e->getMessage());
                         $staleCount++;
                     }
                 }

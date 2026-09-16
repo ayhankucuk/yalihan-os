@@ -2,6 +2,7 @@
 
 namespace App\Services\Analytics;
 
+use App\Enums\IlanDurumu;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 
@@ -71,7 +72,7 @@ class CortexAnalyticsService
     public function getGoldenVisaOpportunities(float $minInvestmentTRY): Collection
     {
         return DB::table('ilanlar')
-            ->where('yayin_durumu', 'active') // context7-ignore
+            ->where('yayin_durumu', IlanDurumu::YAYINDA->value)
             ->where('fiyat', '>=', $minInvestmentTRY)
             ->whereIn('ana_kategori_id', [1, 2, 3, 7]) // Konut, Yazlık, Villa, Golden Visa
             ->get();
@@ -84,9 +85,9 @@ class CortexAnalyticsService
     {
         return DB::table('ilanlar')
             ->selectRaw('il_id, COUNT(*) as count')
-            ->where('yayin_durumu', 'active') // context7-ignore
+            ->where('yayin_durumu', IlanDurumu::YAYINDA->value)
             ->groupBy('il_id')
-            ->orderByDesc('count') // context7-ignore
+            ->orderByDesc('count')
             ->limit($limit)
             ->get();
     }
@@ -98,7 +99,7 @@ class CortexAnalyticsService
     {
         return DB::table('ilanlar')
             ->whereIn('il_id', $premiumCities)
-            ->where('yayin_durumu', 'active') // context7-ignore
+            ->where('yayin_durumu', IlanDurumu::YAYINDA->value)
             ->count();
     }
 
@@ -126,8 +127,8 @@ class CortexAnalyticsService
     public function getRecentListings(int $limit = 5): Collection
     {
         return DB::table('ilanlar')
-            ->where('yayin_durumu', 'active') // context7-ignore
-            ->orderByDesc('created_at') // context7-ignore
+            ->where('yayin_durumu', IlanDurumu::YAYINDA->value)
+            ->orderByDesc('created_at')
             ->limit($limit)
             ->get();
     }

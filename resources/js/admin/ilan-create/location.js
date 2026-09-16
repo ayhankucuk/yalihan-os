@@ -728,6 +728,53 @@ function focusMapOnProvince(ilId) {
     }
 }
 
+function initializeLocation() {
+    console.log('📍 initializeLocation ready');
+}
+
+async function loadIlceler(ilId) {
+    if (!ilId) {
+        clearIlceler();
+        return Promise.resolve([]);
+    }
+
+    showLoading('İlçeler yükleniyor...');
+
+    try {
+        let result = null;
+        if (window.APIHelper?.request) {
+            result = await window.APIHelper.request('location.districts', {
+                args: [ilId],
+            });
+        } else {
+            const resp = await fetch(`/api/v1/location/districts/${ilId}`);
+            if (resp.ok) {
+                result = await resp.json();
+            }
+        }
+
+        hideLoading();
+
+        const districts = result && Array.isArray(result.data) ? result.data : [];
+        if (districts.length > 0) {
+            populateIlceler(districts);
+            return Promise.resolve(districts);
+        } else {
+            console.log("⚠️ DB'de ilçe bulunamadı");
+            populateIlceler([]);
+            return Promise.resolve([]);
+        }
+    } catch (error) {
+        hideLoading();
+        console.error('İlçe yükleme hatası:', error);
+        return Promise.reject(error);
+    }
+}
+
+window.initializeLocation = initializeLocation;
+window.loadIlceler = loadIlceler;
+window.loadMahalleler = loadMahalleler;
+
 function clearIlceler() {
     const ilceSelect = document.getElementById('ilce_id');
     const mahalleSelect = document.getElementById('mahalle_id'); // Context7: mahalle_id

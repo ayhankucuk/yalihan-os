@@ -5,17 +5,29 @@ namespace App\Console\Commands;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Http;
 
 class YalihanBekciHealthCommand extends Command
 {
-    protected $signature = 'bekci:health {--detailed : Show detailed health report}';
+    protected $signature = 'bekci:health {--detailed : Show detailed health report} {--no-mcp : Skip MCP server connectivity check}';
+
+    /** @var array<string, float> Base weights for the 5 health components */
+    private const BASE_WEIGHTS = [
+        'mcp' => 0.20,
+        'knowledge' => 0.15,
+        'learning' => 0.20,
+        'project' => 0.25,
+        'app' => 0.20,
+    ];
 
     protected $description = 'Yalıhan Bekçi AI sistemi genel sağlık durumunu görüntüler';
 
-    private string $mcpServerUrl = 'http://localhost:4001';
-
     private string $knowledgeBase;
+
+    /** @var string[] Available MCP server process names to check */
+    private const MCP_PROCESS_NAMES = [
+        'yalihan-bekci-mcp',
+        'mcp-server-yalihan',
+    ];
 
     public function __construct()
     {
@@ -26,27 +38,30 @@ class YalihanBekciHealthCommand extends Command
     public function handle()
     {
         $detailed = $this->option('detailed');
+        $skipMcp  = (bool) $this->option('no-mcp');
 
         $this->info('🏥 Yalıhan Bekçi Health Check');
         $this->line(str_repeat('=', 50));
 
-        // Check MCP Server
-        $mcpStatus = $this->checkMCPServer();
-        $this->displayStatus('MCP Server', $mcpStatus);
+        if ($skipMcp) {
+            $this->line('⚠️  MCP check skipped (--no-mcp mode)');
+        }
 
-        // Check Knowledge Base
+        // Collect scores — MCP is skipped when --no-mcp is given
+        $mcpStatus = $skipMcp ? null : $this->checkMCPServer();
+        if (! $skipMcp) {
+            $this->displayStatus('MCP Server', $mcpStatus);
+        }
+
         $knowledgeStatus = $this->checkKnowledgeBase();
         $this->displayStatus('Knowledge Base', $knowledgeStatus);
 
-        // Check Learning Activity
         $learningStatus = $this->checkLearningActivity();
         $this->displayStatus('Learning Activity', $learningStatus);
 
-        // Check Project Health
         $projectStatus = $this->checkProjectHealth();
         $this->displayStatus('Project Health', $projectStatus);
 
-        // Check App Runtime Health
         $appHealth = $this->checkAppHealth();
         $this->displayStatus('App Runtime Health', $appHealth);
 
@@ -54,32 +69,43 @@ class YalihanBekciHealthCommand extends Command
             $this->showDetailedReport();
         }
 
-        $this->showOverallScore();
+        $this->showOverallScore($skipMcp ? null : $mcpStatus);
     }
 
+    /**
+     * Check if the MCP server process is running (stdio transport — no HTTP).
+     *
+     * The MCP server runs as a subprocess of the AI client (Claude Desktop, Cursor, Windsurf)
+     * via stdio, NOT as a standalone HTTP server. We detect it by checking for running processes.
+     */
     private function checkMCPServer(): array
     {
         try {
-            $response = Http::timeout(3)->get($this->mcpServerUrl.'/health');
+            foreach (self::MCP_PROCESS_NAMES as $processName) {
+                $count = (int) trim((string) shell_exec(
+                    "pgrep -f '" . addslashes($processName) . "' 2>/dev/null | wc -l"
+                ));
 
-            if ($response->successful()) {
-                return [
-                    'saglik_durumu' => 'healthy',
-                    'message' => 'MCP Server responding',
-                    'score' => 100,
-                ];
+                if ($count > 0) {
+                    return [
+                        'saglik_durumu' => 'running',
+                        'message' => "MCP Server running (process: {$processName})",
+                        'score' => 100,
+                    ];
+                }
             }
 
             return [
-                'saglik_durumu' => 'unhealthy',
-                'message' => 'MCP Server not responding',
+                'saglik_durumu' => 'not_started',
+                'message' => 'MCP Server not running — start from Claude/Cursor plugin or: node mcp-servers/yalihan-bekci-mcp.js',
                 'score' => 0,
             ];
         } catch (\Exception $e) {
             report($e);
+
             return [
-                'saglik_durumu' => 'offline',
-                'message' => 'MCP Server offline or unreachable',
+                'saglik_durumu' => 'error',
+                'message' => 'MCP Server check failed: ' . $e->getMessage(),
                 'score' => 0,
             ];
         }
@@ -230,29 +256,40 @@ class YalihanBekciHealthCommand extends Command
         }
     }
 
-    private function showOverallScore(): void
+    private function showOverallScore(?array $mcpStatus): void
     {
-        // Calculate overall system health
-        $mcpStatus = $this->checkMCPServer();
+        // Normalize weights when MCP is skipped so remaining components sum to 1.0
+        $weights = self::BASE_WEIGHTS;
+        if ($mcpStatus === null) {
+            unset($weights['mcp']);
+            $total = array_sum($weights);
+            if ($total > 0) {
+                foreach ($weights as $k => $v) {
+                    $weights[$k] = round($v / $total, 4);
+                }
+            }
+        }
+
         $knowledgeStatus = $this->checkKnowledgeBase();
         $learningStatus = $this->checkLearningActivity();
-        $projectStatus = $this->checkProjectHealth();
-        $appHealth = $this->checkAppHealth();
+        $projectStatus  = $this->checkProjectHealth();
+        $appHealth      = $this->checkAppHealth();
 
-        $overallScore = (
-            $mcpStatus['score'] * 0.25 +
-            $knowledgeStatus['score'] * 0.15 +
-            $learningStatus['score'] * 0.25 +
-            $projectStatus['score'] * 0.15 +
-            $appHealth['score'] * 0.20
-        );
+        $overallScore = (($mcpStatus['score'] ?? 0) * ($weights['mcp'] ?? 0))
+            + ($knowledgeStatus['score'] * ($weights['knowledge'] ?? 0))
+            + ($learningStatus['score'] * ($weights['learning'] ?? 0))
+            + ($projectStatus['score'] * ($weights['project'] ?? 0))
+            + ($appHealth['score'] * ($weights['app'] ?? 0));
+
+        $overallScore = round($overallScore, 1);
 
         $this->line("\n".str_repeat('=', 50));
 
         $statusIcon = $overallScore > 80 ? '🟢' : ($overallScore > 60 ? '🟡' : '🔴');
         $durumMetni = $overallScore > 80 ? 'EXCELLENT' : ($overallScore > 60 ? 'GOOD' : 'NEEDS ATTENTION');
 
-        $this->line("{$statusIcon} Overall System Health: {$overallScore}% - {$durumMetni}");
+        $mcpNote = $mcpStatus === null ? ' (MCP skipped)' : '';
+        $this->line("{$statusIcon} Overall System Health: {$overallScore}%{$mcpNote} — {$durumMetni}");
     }
 
     private function getContext7Compliance(): int
@@ -364,9 +401,13 @@ class YalihanBekciHealthCommand extends Command
     {
         $recommendations = [];
 
-        $mcpStatus = $this->checkMCPServer();
-        if ($mcpStatus['saglik_durumu'] !== 'healthy') {
-            $recommendations[] = 'Start MCP server: ./scripts/services/start-bekci-server.sh';
+        // Only check MCP if --no-mcp was NOT set (avoid redundant HTTP calls)
+        $skipMcp = (bool) $this->option('no-mcp');
+        if (! $skipMcp) {
+            $mcpStatus = $this->checkMCPServer();
+            if ($mcpStatus['saglik_durumu'] !== 'running') {
+                $recommendations[] = 'Start MCP server: node mcp-servers/yalihan-bekci-mcp.js';
+            }
         }
 
         $knowledgeStatus = $this->checkKnowledgeBase();
@@ -376,7 +417,9 @@ class YalihanBekciHealthCommand extends Command
 
         $projectStatus = $this->checkProjectHealth();
         if ($projectStatus['score'] < 80) {
-            $recommendations[] = 'Run Context7 validation: php artisan context7:validate-migration --all';
+            // FIX: context7:validate-migration mevcut değil (authority.json REMOVED listesi).
+            // Kaldırıldı — öneri artık sab:integrity-scan (tek meşru komut).
+            $recommendations[] = 'Run Context7 validation: php artisan sab:integrity-scan';
         }
 
         if (empty($recommendations)) {

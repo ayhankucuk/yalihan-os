@@ -191,21 +191,4 @@ return [
         'notes'            => 'Removed from AuditSchemaAlignment. No model, no migration, no code usage.',
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Configuration Accessors
-    |--------------------------------------------------------------------------
-    */
-    'getByStatus' => function(string $status): array {
-        return array_filter($this, fn($entry) => is_array($entry) && ($entry['status'] ?? '') === $status);
-    },
-
-    'getCanonical' => function(): array {
-        return array_filter($this, fn($entry) => is_array($entry) && ($entry['status'] ?? '') === 'CANONICAL');
-    },
-
-    'getStaleReferences' => function(): array {
-        return array_filter($this, fn($entry) => is_array($entry) && ($entry['status'] ?? '') === 'STALE_REFERENCE');
-    },
-
 ];
