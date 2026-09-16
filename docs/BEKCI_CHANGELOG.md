@@ -6371,3 +6371,22 @@ Artık ajanlar bu dosyaları her açtığında otomatik olarak ilgili skill yük
 - `DynamicFieldValueMapper`: `BOOL_TRUTHY` and `BOOL_READ_TRUTHY` class constants replace duplicate inline arrays. `normalizeBoolean()` uses `strtolower()` consistently. `castValue()` now uses `BOOL_READ_TRUTHY` (was hardcoded). `'no'`/`'hayir'`/`'off'` removed from truthy set — prevented `'NO'`→`'on'` substring collision.
 - 5 new tests in `WizardSchemaStep2Test.php` — 88/88 suite PASS (501 assertions).
 - Full gate: 6/6 PASS.
+
+---
+
+#### SAAB-4.5 P0 Calendar PII — 3 CVSS Fix (fc0658c2) — 2026-09-16
+
+**Scope:** SAAB Executive Certification — Operational Calendar — P0 calendar PII exposure
+
+| Fix | Severity | File | Change |
+|-----|----------|------|--------|
+| **2.1** | PII Mask | `CalendarToolsController.php` | Tenant-bound `hasConflict()` + `conflicts` field removed; endpoint enforces `tenant.context` + `tenant_id` filter |
+| **2.2** | IDOR | `routes/admin.php` | `tenant.context`, `sab.write.guard`, `can:manage-ilanlar` middleware added to admin calendar routes |
+| **2.3** | SSOT Bridge | `VillaService.php` | `Event::hasConflict()` → `AvailabilityService::hasConflict()`; `Event` table replaced by `PropertyReservation` SSOT |
+
+- `AvailabilityService::hasConflict()`: deprecated stub → live implementation reading `PropertyReservation`
+- `IlanCalendarController`: `ensureReservationBelongsToIlan()` guards `cancel`/`confirm` mutations
+- `BookingRequestController::checkAvailability()`: same SSOT bridge applied
+- `routes/api/v1/ai.php`: `tenant.context` middleware added to calendar tools route
+- PR: https://github.com/ayhankucuk/yalihan-os/pull/4
+- Full gate: PASS | Tests: 109 passed (357 assertions)
