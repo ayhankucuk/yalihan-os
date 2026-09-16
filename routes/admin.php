@@ -1577,7 +1577,7 @@ Route::middleware(['web', 'auth', 'admin', 'role:admin', 'verified'])
     });
 
 // ✅ Ilan Calendar / Reservation (Phase P+R)
-Route::prefix('admin/ilanlar/{ilan}/calendar')->name('admin.ilanlar.calendar')->middleware(['web', 'auth', 'verified', 'throttle:30,1'])->group(function () {
+Route::prefix('admin/ilanlar/{ilan}/calendar')->name('admin.ilanlar.calendar')->middleware(['web', 'auth', 'verified', 'tenant.context', 'sab.write.guard', 'can:manage-ilanlar', 'throttle:30,1'])->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\IlanCalendarController::class, 'index']);
     Route::get('.json', [\App\Http\Controllers\Admin\IlanCalendarController::class, 'json'])->name('.json');
     Route::post('/', [\App\Http\Controllers\Admin\IlanCalendarController::class, 'store'])->name('.store');

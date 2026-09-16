@@ -240,7 +240,7 @@ Route::prefix('environment')->name('api.environment.')->middleware(['throttle:12
 });
 
 // Calendar Tools (Availability & Refund) - Sanctum + Throttle
-Route::prefix('ai/calendar')->name('api.ai.calendar.')->middleware(['auth:sanctum', 'throttle:30,1'])->group(function () {
+Route::prefix('ai/calendar')->name('api.ai.calendar.')->middleware(['auth:sanctum', 'tenant.context', 'throttle:30,1'])->group(function () {
     Route::post('/check-availability', [CalendarToolsController::class, 'checkAvailability'])->name('check-availability');
     Route::post('/calculate-refund', [CalendarToolsController::class, 'calculateRefund'])->name('calculate-refund');
 });
