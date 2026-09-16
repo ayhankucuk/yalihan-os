@@ -2,27 +2,33 @@
 
 namespace App\Models;
 
-use App\Enums\KisiDurumu;
+use App\Casts\NullableKisiDurumuCast;
+use App\Casts\NullableYatirimciProfiliCast;
 use App\Enums\KisiTipi;
 use App\Enums\YatirimciProfili;
 use App\Scopes\TenantScope;
 use App\Traits\BelongsToTenant;
 use App\Traits\HasActiveScope;
 use App\Traits\HasCountryScope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Crypt;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
+
 // ❌ Context7: Deprecated CRM models removed - tables don't exist
 
 /**
  * App\Models\Kisi
  *
  * @SAB SEALED 🛡️ (CRM Foundation Lock)
+ *
  * @SSOT: This is the definitive Kişi model for all domains (Finance, Task, AI, CRM).
  * ❌ DEPRECATED: App\Modules\Crm\Models\Kisi has been removed.
  *
@@ -32,7 +38,7 @@ use Spatie\Activitylog\LogOptions;
  * @property string|null $telefon
  * @property string|null $eposta
  * @property string|null $notlar
- * @property \App\Enums\KisiTipi|null $kisi_tipi Context7: Primary field (Enum)
+ * @property KisiTipi|null $kisi_tipi Context7: Primary field (Enum)
  * @property string|null $musteri_tipi Deprecated: Use kisi_tipi instead
  * @property bool $aktiflik_durumu Context7: tinyInteger(1) 0=inactive, 1=active (mapped to aktiflik_durumu column)
  * @property string|null $kaynak
@@ -52,10 +58,9 @@ use Spatie\Activitylog\LogOptions;
  * @property string|null $kurum_unvani
  * @property string|null $mersis_no
  * @property string|null $sicil_no
- *
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  *
  * // Accessors
  * @property-read string $tam_ad
@@ -67,21 +72,21 @@ use Spatie\Activitylog\LogOptions;
  * @property-read Il|null $il
  * @property-read Ilce|null $ilce
  * @property-read Mahalle|null $mahalle
- * @property-read \Illuminate\Database\Eloquent\Collection|Talep[] $talepler
+ * @property-read Collection|Talep[] $talepler
  * @property-read int|null $talepler_count
- * @property-read \Illuminate\Database\Eloquent\Collection|Ilan[] $ilanlarAsSahibi
+ * @property-read Collection|Ilan[] $ilanlarAsSahibi
  * @property-read int|null $ilanlar_as_sahibi_count
- * @property-read \Illuminate\Database\Eloquent\Collection|Ilan[] $ilanlarAsIlgili
+ * @property-read Collection|Ilan[] $ilanlarAsIlgili
  * @property-read int|null $ilanlar_as_ilgili_count
  */
 class Kisi extends BaseModel
 {
-    use HasFactory;
-    use SoftDeletes;
-    use HasActiveScope;
-    use LogsActivity;
-    use HasCountryScope;
     use BelongsToTenant;
+    use HasActiveScope;
+    use HasCountryScope;
+    use HasFactory;
+    use LogsActivity;
+    use SoftDeletes;
 
     protected $table = 'kisiler';
 
@@ -136,9 +141,9 @@ class Kisi extends BaseModel
         'karar_verici_mi' => 'boolean',
         'satis_potansiyeli' => 'integer',
         'aktiflik_durumu' => 'boolean', // ✅ SAB: Force boolean cast for tests
-        'kisi_tipi' => \App\Enums\KisiTipi::class, // Context7: Added enum cast
-        'crm_surec_asamasi' => KisiDurumu::class, // Context7: renamed from crm_aktiflik_durumu
-        'yatirimci_profili' => \App\Casts\NullableYatirimciProfiliCast::class, // PHP 8.4 safe cast
+        'kisi_tipi' => KisiTipi::class, // Context7: Added enum cast
+        'crm_surec_asamasi' => NullableKisiDurumuCast::class, // PHP 8.4 safe cast
+        'yatirimci_profili' => NullableYatirimciProfiliCast::class, // PHP 8.4 safe cast
         'ulke_id' => 'integer',
         'sesli_onay_verildi' => 'boolean',
         'tenant_id' => 'integer', // Sprint 12D: TenantScope enforcement
@@ -167,21 +172,19 @@ class Kisi extends BaseModel
             return str_repeat('*', max(0, $len));
         }
 
-        return str_repeat('*', $len - 4) . substr($v, -4);
+        return str_repeat('*', $len - 4).substr($v, -4);
     }
 
     /**
      * Context7: Legacy accessor removed in Phase 3A
      */
 
-
-
     /**
      * yatirimci_profili accessor: Veritabanındaki string'i Enum'a çevirir
      */
     public function getYatirimciProfiliAttribute($value): ?YatirimciProfili
     {
-        if (!$value) {
+        if (! $value) {
             return null;
         }
 
@@ -209,7 +212,7 @@ class Kisi extends BaseModel
 
     public function getTamAdAttribute(): string
     {
-        return trim($this->ad . ' ' . $this->soyad);
+        return trim($this->ad.' '.$this->soyad);
     }
 
     public function getTamAdresAttribute(): string
@@ -278,7 +281,7 @@ class Kisi extends BaseModel
      *
      * Pivot kolon: aktiflik_durumu (kanonik — ilan_favorileri.aktiflik_durumu)
      */
-    public function favoriIlanlar(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function favoriIlanlar(): BelongsToMany
     {
         return $this->belongsToMany(Ilan::class, 'ilan_favorileri', 'user_id', 'ilan_id', 'user_id')
             ->withTimestamps()
@@ -295,7 +298,7 @@ class Kisi extends BaseModel
      *
      * Pivot kolon: aktiflik_durumu (kanonik — ilan_favorileri.aktiflik_durumu)
      */
-    public function tumFavoriIlanlar(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function tumFavoriIlanlar(): BelongsToMany
     {
         return $this->belongsToMany(Ilan::class, 'ilan_favorileri', 'user_id', 'ilan_id', 'user_id')
             ->withTimestamps()
@@ -311,6 +314,11 @@ class Kisi extends BaseModel
     public function etkilesimler(): HasMany
     {
         return $this->hasMany(KisiEtkilesim::class, 'kisi_id');
+    }
+
+    public function latestEtkilesim(): HasOne
+    {
+        return $this->hasOne(KisiEtkilesim::class, 'kisi_id')->latestOfMany();
     }
 
     /**
@@ -331,6 +339,7 @@ class Kisi extends BaseModel
     {
         return $this->hasMany(Ilan::class, 'ilan_sahibi_id');
     }
+
     /**
      * CRM - Referans veren kişi
      */
@@ -405,8 +414,6 @@ class Kisi extends BaseModel
             ->withTimestamps();
     }
 
-
-
     // ======================================================================
     // SCOPES (Context7 Uyumlu)
     // ======================================================================
@@ -465,14 +472,11 @@ class Kisi extends BaseModel
      * Danışmana göre filtrele (Context7 uyumlu).
      */
     public function scopeByDanisman(
-        \Illuminate\Database\Eloquent\Builder $query,
+        Builder $query,
         int $danismanId
-    ): \Illuminate\Database\Eloquent\Builder
-    {
+    ): Builder {
         return $query->where('danisman_id', $danismanId);
     }
-
-
 
     /**
      * Kişi tipine göre filtrele (Context7 standard).
@@ -509,8 +513,8 @@ class Kisi extends BaseModel
     {
         return [
             'telefon' => $this->telefon,
-            'eposta'  => $this->eposta,
-            'adres'   => $this->tam_adres,
+            'eposta' => $this->eposta,
+            'adres' => $this->tam_adres,
         ];
     }
 
@@ -579,6 +583,7 @@ class Kisi extends BaseModel
     {
         // ✅ SAB: kisi_tipi preferred, musteri_tipi backward compat
         $tip = $this->kisi_tipi ?? $this->musteri_tipi;
+
         return in_array($tip, ['alici', 'kiraci']) &&
             $this->aktiflik_durumu === true;
     }
@@ -590,6 +595,7 @@ class Kisi extends BaseModel
     {
         // ✅ SAB: kisi_tipi preferred, musteri_tipi backward compat
         $tip = $this->kisi_tipi ?? $this->musteri_tipi;
+
         return in_array($tip, ['satici', 'ev_sahibi']) &&
             $this->aktiflik_durumu === true;
     }
@@ -599,7 +605,7 @@ class Kisi extends BaseModel
      */
     public function isLegalEntity(): bool
     {
-        return !empty($this->vergi_kimlik_no) || !empty($this->kurum_unvani);
+        return ! empty($this->vergi_kimlik_no) || ! empty($this->kurum_unvani);
     }
 
     /**
@@ -642,6 +648,7 @@ class Kisi extends BaseModel
 
         return implode(' - ', $parts);
     }
+
     /**
      * Advisor photos (Phase 5.3: Photo Intelligence System)
      */
@@ -674,7 +681,7 @@ class Kisi extends BaseModel
      * AI/Intelligence Embedding Relationship
      * Context7: CRM Intelligence Integration
      */
-    public function embedding(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function embedding(): HasOne
     {
         return $this->hasOne(LeadEmbedding::class, 'kisi_id');
     }
@@ -682,8 +689,6 @@ class Kisi extends BaseModel
     /**
      * Activity Log Configuration
      * Architectural Enhancement: Audit trail for all contact changes
-     *
-     * @return LogOptions
      */
     public function getActivitylogOptions(): LogOptions
     {
@@ -700,7 +705,7 @@ class Kisi extends BaseModel
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->setDescriptionForEvent(fn(string $eventName) => "Kişi {$eventName}")
+            ->setDescriptionForEvent(fn (string $eventName) => "Kişi {$eventName}")
             ->useLogName('kisiler');
     }
 }

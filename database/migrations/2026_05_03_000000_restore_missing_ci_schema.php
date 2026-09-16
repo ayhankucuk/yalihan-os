@@ -684,6 +684,8 @@ return new class extends Migration
         if (! Schema::hasTable('talepler')) {
             Schema::create('talepler', function (Blueprint $table) {
                 $table->id();
+                $table->string('baslik')->nullable();
+                $table->text('aciklama')->nullable();
                 $table->string('talep_tipi')->nullable();
                 $table->string('emlak_tipi')->nullable(); // Added for CI
                 $table->unsignedBigInteger('kisi_id')->nullable();
@@ -707,6 +709,7 @@ return new class extends Migration
                 $table->text('notlar')->nullable();
                 $table->string('talep_durumu')->default('Aktif'); // Added for CI
                 $table->string('oncelik')->nullable(); // Added for CI
+                $table->boolean('one_cikan')->default(false);
                 $table->string('durum')->default('aktif');
                 $table->boolean('aktiflik_durumu')->default(true);
                 $table->timestamps();
@@ -721,6 +724,24 @@ return new class extends Migration
         if (Schema::hasTable('talepler') && ! Schema::hasColumn('talepler', 'para_birimi')) {
             Schema::table('talepler', function (Blueprint $table) {
                 $table->string('para_birimi', 10)->default('TRY')->nullable();
+            });
+        }
+
+        if (Schema::hasTable('talepler') && ! Schema::hasColumn('talepler', 'one_cikan')) {
+            Schema::table('talepler', function (Blueprint $table) {
+                $table->boolean('one_cikan')->default(false);
+            });
+        }
+
+        if (Schema::hasTable('talepler') && ! Schema::hasColumn('talepler', 'baslik')) {
+            Schema::table('talepler', function (Blueprint $table) {
+                $table->string('baslik')->nullable();
+            });
+        }
+
+        if (Schema::hasTable('talepler') && ! Schema::hasColumn('talepler', 'aciklama')) {
+            Schema::table('talepler', function (Blueprint $table) {
+                $table->text('aciklama')->nullable();
             });
         }
 

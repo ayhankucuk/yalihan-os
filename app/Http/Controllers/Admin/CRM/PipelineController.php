@@ -14,9 +14,10 @@ namespace App\Http\Controllers\Admin\CRM;
  * @sab-ignore-thin
  */
 
+use App\Actions\CRM\Pipeline\QuickNoteAction;
+use App\Actions\CRM\Pipeline\UpdateCrmStageAction;
 use App\Http\Controllers\Controller;
 use App\Models\Kisi;
-use App\Models\KisiEtkilesim;
 use Illuminate\Http\Request;
 
 /**
@@ -40,13 +41,13 @@ class PipelineController extends Controller
      */
     public function index()
     {
-        // Get all active leads grouped by stage
+        // Get all active leads grouped by stage (Context7: KisiDurumu Enum values)
         $stages = [
-            'yeni' => 'Yeni Lead',
-            'iletisimde' => 'İletişimde',
-            'randevu' => 'Randevu',
-            'teklif' => 'Teklif',
-            'kapanış' => 'Kapanış'
+            'potansiyel' => 'Potansiyel Lead',
+            'ilgili' => 'İletişimde / İlgili',
+            'takipte' => 'Görüşme / Takipte',
+            'sicak' => 'Sıcak Fırsat / Teklif',
+            'islemyapmis' => 'Kapanış (İşlem Yapmış)',
         ];
 
         $pipeline = [];
@@ -55,7 +56,7 @@ class PipelineController extends Controller
             $pipeline[$key] = [
                 'label' => $label,
                 'count' => 0,
-                'people' => []
+                'people' => [],
             ];
         }
 
@@ -68,11 +69,23 @@ class PipelineController extends Controller
 
         // Group by stage
         foreach ($people as $person) {
-            $stage = $person->crm_surec_asamasi ?? 'yeni';
+            $rawStage = $person->crm_surec_asamasi;
+            if ($rawStage instanceof \BackedEnum) {
+                $stage = $rawStage->value;
+            } elseif ($rawStage instanceof \UnitEnum) {
+                $stage = $rawStage->name;
+            } elseif (is_object($rawStage) && isset($rawStage->value)) {
+                $stage = (string) $rawStage->value;
+            } else {
+                $stage = (string) ($rawStage ?? 'potansiyel');
+            }
 
             if (isset($pipeline[$stage])) {
                 $pipeline[$stage]['people'][] = $person;
                 $pipeline[$stage]['count']++;
+            } else {
+                $pipeline['potansiyel']['people'][] = $person;
+                $pipeline['potansiyel']['count']++;
             }
         }
 
@@ -82,12 +95,12 @@ class PipelineController extends Controller
     /**
      * Update person's pipeline stage (AJAX)
      */
-    public function updateStage(Request $request, Kisi $kisi, \App\Actions\CRM\Pipeline\UpdateCrmStageAction $action)
+    public function updateStage(Request $request, Kisi $kisi, UpdateCrmStageAction $action)
     {
         $this->authorize('update', $kisi);
 
         $validated = $request->validate([
-            'stage' => 'required|in:yeni,iletisimde,randevu,teklif,kapanış'
+            'stage' => 'required|in:potansiyel,ilgili,takipte,sicak,islemyapmis,soguk,pasif',
         ]);
 
         try {
@@ -100,16 +113,16 @@ class PipelineController extends Controller
                 'message' => 'Pipeline aşaması güncellendi',
                 'person' => [
                     'id' => $kisi->id,
-                    'name' => $kisi->ad_soyad,
+                    'name' => $kisi->tam_ad ?? ($kisi->ad.' '.$kisi->soyad),
                     'stage' => $newStage,
-                    'updated_at' => $kisi->fresh()->updated_at->diffForHumans()
-                ]
+                    'updated_at' => $kisi->fresh()->updated_at->diffForHumans(),
+                ],
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Güncelleme başarısız: ' . $e->getMessage()
+                'message' => 'Güncelleme başarısız: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -119,25 +132,34 @@ class PipelineController extends Controller
      */
     public function statistics()
     {
-        $stats = Kisi::selectRaw('
+        $since = now()->subDays(7)->toDateTimeString();
+
+        $rawStats = Kisi::selectRaw("
             crm_surec_asamasi,
             COUNT(*) as total,
             AVG(skor) as avg_score,
-            COUNT(CASE WHEN updated_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 END) as active_last_week
-        ')
-        ->where('aktiflik_durumu', true)
-        ->whereNotNull('crm_surec_asamasi')
-        ->groupBy('crm_surec_asamasi')
-        ->get()
-        ->keyBy('crm_surec_asamasi');
+            COUNT(CASE WHEN updated_at >= '{$since}' THEN 1 END) as active_last_week
+        ")
+            ->where('aktiflik_durumu', true)
+            ->whereNotNull('crm_surec_asamasi')
+            ->groupBy('crm_surec_asamasi')
+            ->get();
+
+        $stats = [];
+        foreach ($rawStats as $row) {
+            $k = $row->crm_surec_asamasi instanceof \BackedEnum
+                ? $row->crm_surec_asamasi->value
+                : (string) ($row->crm_surec_asamasi ?? '');
+            $stats[$k] = $row;
+        }
 
         // Calculate conversion rates
         $conversionRates = [];
-        $stages = ['yeni', 'iletisimde', 'randevu', 'teklif', 'kapanış'];
+        $stages = ['potansiyel', 'ilgili', 'takipte', 'sicak', 'islemyapmis'];
 
         for ($i = 0; $i < count($stages) - 1; $i++) {
-            $current = $stats[$stages[$i]]->total ?? 0;
-            $next = $stats[$stages[$i + 1]]->total ?? 0;
+            $current = isset($stats[$stages[$i]]) ? ($stats[$stages[$i]]->total ?? 0) : 0;
+            $next = isset($stats[$stages[$i + 1]]) ? ($stats[$stages[$i + 1]]->total ?? 0) : 0;
 
             $conversionRates[$stages[$i]] = $current > 0
                 ? round(($next / $current) * 100, 1)
@@ -147,46 +169,47 @@ class PipelineController extends Controller
         return response()->json([
             'success' => true,
             'statistics' => $stats,
-            'conversion_rates' => $conversionRates
+            'conversion_rates' => $conversionRates,
         ]);
     }
 
     /**
-     * Get person details for card preview
+     * Get person details for card preview & timeline
      */
     public function getPersonDetails(Kisi $kisi)
     {
         $kisi->load([
-            'talepler' => function($query) {
-                $query->latest()->limit(3);
+            'talepler' => function ($query) {
+                $query->latest()->limit(10);
             },
-            'etkilesimler' => function($query) {
-                $query->latest()->limit(5);
-            }
+            'etkilesimler' => function ($query) {
+                $query->with('kullanici:id,name')->latest()->limit(30);
+            },
         ]);
 
         return response()->json([
             'success' => true,
-            'person' => $kisi
+            'person' => $kisi,
         ]);
     }
 
     /**
-     * Quick action: Add note to person (from Kanban)
+     * Quick action: Add interaction / note to person (from Kanban & Detail Timeline)
      */
-    public function quickNote(Request $request, Kisi $kisi, \App\Actions\CRM\Pipeline\QuickNoteAction $action)
+    public function quickNote(Request $request, Kisi $kisi, QuickNoteAction $action)
     {
         $this->authorize('update', $kisi);
 
         $validated = $request->validate([
-            'note' => 'required|string|max:500'
+            'note' => 'required|string|max:1000',
+            'tip' => 'nullable|string|in:not,arama,gorusme,eposta,whatsapp,teklif,toplanti',
         ]);
 
-        $action->handle($kisi->id, $validated['note']);
+        $action->handle($kisi->id, $validated['note'], $validated['tip'] ?? 'not');
 
         return response()->json([
             'success' => true,
-            'message' => 'Not eklendi'
+            'message' => 'Aktivite kaydedildi',
         ]);
     }
 }
