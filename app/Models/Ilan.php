@@ -515,9 +515,7 @@ class Ilan extends BaseModel
         // See: docs/technical/legacy/ilan-model-legacy-fields-2025-12.md
 
         // T-UPS-V2-FULL: Kategori bazlı dinamik alan deposu
-        // GHOST-FIELD-REMOVED-2026-09-10: ekstra_ozellikler — $fillable ve $casts'dan kaldırıldı
-        // Kanıt: mysql-schema.sql — ilanlar tablosunda ekstra_ozellikler kolonu yok
-        // Not: Migration yerine kod düzeltmesi yapıldı (migration yasak)
+        'ekstra_ozellikler',
 
         // [YALIHAN_REPORTING_0206]
         'rapor_yolu',
@@ -568,7 +566,7 @@ class Ilan extends BaseModel
         'one_cikan' => 'boolean',                    // Context7: featured
         'display_order' => 'integer',                // Context7: display_ordering
         'metadata' => 'array',                       // JSON metadata (auto encode/decode)
-        // GHOST-FIELD-REMOVED-2026-09-10: ekstra_ozellikler — $fillable ve $casts'dan kaldırıldı
+        'ekstra_ozellikler' => 'array',              // JSON ekstra ozellikler
         'visibility_score' => 'integer',
 
         // ======================================================================
@@ -861,6 +859,38 @@ class Ilan extends BaseModel
             ]);
     }
 
+    /**
+     * Bypasses column collision for il relation
+     */
+    public function getIlAttribute()
+    {
+        return $this->getRelationValue('il');
+    }
+
+    /**
+     * Bypasses column collision for ilce relation
+     */
+    public function getIlceAttribute()
+    {
+        return $this->getRelationValue('ilce');
+    }
+
+    /**
+     * Bypasses column collision for mahalle relation
+     */
+    public function getMahalleAttribute()
+    {
+        return $this->getRelationValue('mahalle');
+    }
+
+    /**
+     * Bypasses column collision for kategori relation
+     */
+    public function getKategoriAttribute()
+    {
+        return $this->getRelationValue('kategori');
+    }
+
     // --- Kategori İlişkileri ---
 
     public function anaKategori(): BelongsTo
@@ -1024,7 +1054,7 @@ class Ilan extends BaseModel
      */
     public function featuredPhoto()
     {
-        return $this->hasOne(Photo::class)->where('one_cikan', true);
+        return $this->hasOne(Photo::class)->where('kapak_fotografi', true);
     }
 
 

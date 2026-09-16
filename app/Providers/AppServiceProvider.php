@@ -45,6 +45,12 @@ class AppServiceProvider extends ServiceProvider
             \App\Infrastructure\ChannelManager\Services\DefaultAvailabilitySynchronizer::class
         );
 
+        // 🤝 CRM Domain: Talep Repository Port & Adapter
+        $this->app->bind(
+            \App\Domain\CRM\Contracts\TalepRepositoryInterface::class,
+            \App\Infrastructure\CRM\EloquentTalepRepositoryAdapter::class
+        );
+
         // Modül servisini kaydediyoruz
         $this->app->register(ModuleServiceProvider::class);
 

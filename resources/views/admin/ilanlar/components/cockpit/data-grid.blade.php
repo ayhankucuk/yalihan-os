@@ -1,28 +1,111 @@
 {{-- 📦 Cockpit Data Grid (Technical Features Matrix) --}}
 @php
     $categories = $ilan->ozellikler->groupBy('category');
+    
+    // Core structural & zoning fields
+    $coreFields = [];
+    if (!empty($ilan->alan_m2) || !empty($ilan->m2_brut)) {
+        $coreFields['Alan'] = number_format($ilan->alan_m2 ?: $ilan->m2_brut, 0, ',', '.') . ' m²';
+    }
+    if (!empty($ilan->m2_net)) {
+        $coreFields['Net Alan'] = number_format($ilan->m2_net, 0, ',', '.') . ' m²';
+    }
+    if (!empty($ilan->imar_statusu) || !empty($ilan->imar_durumu)) {
+        $coreFields['İmar Durumu'] = $ilan->imar_statusu ?: $ilan->imar_durumu;
+    }
+    if (!empty($ilan->kaks)) {
+        $coreFields['Emsal (KAKS)'] = (string) $ilan->kaks;
+    }
+    if (!empty($ilan->taks)) {
+        $coreFields['Taban Alanı (TAKS)'] = (string) $ilan->taks;
+    }
+    if (!empty($ilan->ada_no)) {
+        $coreFields['Ada No'] = (string) $ilan->ada_no;
+    }
+    if (!empty($ilan->parsel_no)) {
+        $coreFields['Parsel No'] = (string) $ilan->parsel_no;
+    }
+    if (!empty($ilan->tapu_durumu)) {
+        $coreFields['Tapu Durumu'] = (string) $ilan->tapu_durumu;
+    }
+    if (!empty($ilan->oda_sayisi)) {
+        $coreFields['Oda Sayısı'] = (string) $ilan->oda_sayisi;
+    }
+    if (!empty($ilan->bina_yasi)) {
+        $coreFields['Bina Yaşı'] = (string) $ilan->bina_yasi;
+    }
+    if (!empty($ilan->kat_sayisi)) {
+        $coreFields['Kat Sayısı'] = (string) $ilan->kat_sayisi;
+    }
+    if (!empty($ilan->isinma_tipi)) {
+        $coreFields['Isınma Tipi'] = (string) $ilan->isinma_tipi;
+    }
+    if (isset($ilan->altyapi_elektrik) && $ilan->altyapi_elektrik) {
+        $coreFields['Elektrik Altyapısı'] = 'Var';
+    }
+    if (isset($ilan->altyapi_su) && $ilan->altyapi_su) {
+        $coreFields['Su Altyapısı'] = 'Var';
+    }
+    if (isset($ilan->altyapi_dogalgaz) && $ilan->altyapi_dogalgaz) {
+        $coreFields['Doğalgaz Altyapısı'] = 'Var';
+    }
+    if (isset($ilan->yola_cephesi) && ($ilan->yola_cephesi == '1' || $ilan->yola_cephesi === 1)) {
+        $coreFields['Yola Cephe'] = 'Var';
+    }
 @endphp
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    @forelse($categories as $categoryName => $features)
-        <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 transition-all dark:border-slate-700">
-            <div class="px-4 py-3 bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 flex justify-between items-center dark:border-slate-700">
-                <h4 class="text-xs font-semibold text-gray-900 dark:text-white dark:text-slate-100">{{ $categoryName ?:  'Genel Özellikler' }}</h4>
-                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ $features->count() }} Özellik</span>
+    {{-- 1. Temel Yapısal & İmar Özellikleri --}}
+    @if(count($coreFields) > 0)
+        <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm hover:border-[#C9A84C]/40 transition-all">
+            <div class="px-4 py-3 bg-gray-50/70 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <x-icon name="ev" class="w-4 h-4 text-[#C9A84C]" />
+                    <h4 class="text-xs font-bold text-gray-900 dark:text-white">Temel & İmar Bilgileri</h4>
+                </div>
+                <span class="text-xs font-semibold px-2 py-0.5 bg-[#C9A84C]/15 text-[#C9A84C] rounded border border-[#C9A84C]/30">{{ count($coreFields) }} Parametre</span>
             </div>
 
-            <div class="p-4 space-y-3">
+            <div class="p-4 space-y-2.5">
+                @foreach($coreFields as $label => $val)
+                    <div class="flex items-center justify-between gap-4 py-1 border-b border-gray-100 dark:border-slate-800/60 last:border-none">
+                        <span class="text-xs font-medium text-gray-600 dark:text-slate-400">{{ $label }}</span>
+                        <span class="text-xs font-bold text-gray-900 dark:text-slate-100 tabular-nums">
+                            @if($val === 'Var')
+                                <span class="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded text-[11px] font-bold border border-emerald-200 dark:border-emerald-800">Var</span>
+                            @else
+                                {{ $val }}
+                            @endif
+                        </span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    {{-- 2. Dinamik Kategori Özellikleri --}}
+    @forelse($categories as $categoryName => $features)
+        <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm hover:border-[#C9A84C]/40 transition-all">
+            <div class="px-4 py-3 bg-gray-50/70 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <x-icon name="liste" class="w-4 h-4 text-[#C9A84C]" />
+                    <h4 class="text-xs font-bold text-gray-900 dark:text-white">{{ $categoryName ?: 'Detay Özellikler' }}</h4>
+                </div>
+                <span class="text-xs font-medium text-gray-500 dark:text-slate-400">{{ $features->count() }} Özellik</span>
+            </div>
+
+            <div class="p-4 space-y-2.5">
                 @foreach($features as $feature)
-                    <div class="flex items-center justify-between gap-4">
-                        <span class="text-xs font-medium text-gray-700 dark:text-slate-200 truncate dark:text-slate-300">{{ $feature->name }}</span>
+                    <div class="flex items-center justify-between gap-4 py-1 border-b border-gray-100 dark:border-slate-800/60 last:border-none">
+                        <span class="text-xs font-medium text-gray-600 dark:text-slate-400 truncate">{{ $feature->name }}</span>
 
                         <div class="flex items-center gap-2 shrink-0">
                             @if($feature->pivot->value === '1' || $feature->pivot->value === 'on')
-                                <div class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold rounded border border-green-200 dark:border-green-800">
+                                <div class="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold rounded border border-emerald-200 dark:border-emerald-800">
                                     Var
                                 </div>
                             @elseif($feature->pivot->value)
-                                <span class="text-xs font-semibold text-gray-900 dark:text-white tabular-nums dark:text-slate-100">
+                                <span class="text-xs font-bold text-gray-900 dark:text-slate-100 tabular-nums">
                                     {{ $feature->pivot->value }}
                                 </span>
                             @else
@@ -34,11 +117,11 @@
             </div>
         </div>
     @empty
-        <div class="col-span-full py-20 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-slate-800 rounded-lg">
-            <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-            <p class="text-gray-500 dark:text-gray-400 font-medium">Bu ilan için özellik verisi bulunamadı.</p>
-        </div>
+        @if(count($coreFields) === 0)
+            <div class="col-span-full py-16 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-slate-800 rounded-xl">
+                <x-icon name="liste" class="w-10 h-10 text-gray-400 mb-3" />
+                <p class="text-xs font-medium text-gray-500 dark:text-slate-400">Bu ilan için detay özellik verisi bulunamadı.</p>
+            </div>
+        @endif
     @endforelse
 </div>

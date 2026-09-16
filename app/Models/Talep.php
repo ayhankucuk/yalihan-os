@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Ilan;
+use App\Traits\BelongsToTenant;
 use App\Traits\HasActiveScope;
 use App\Models\BaseModel;
 use App\Traits\HasCountryScope;
@@ -14,6 +15,7 @@ class Talep extends BaseModel
     use HasFactory;
     use SoftDeletes;
     use HasCountryScope;
+    use BelongsToTenant;
 
     protected $table = 'talepler';
 
@@ -23,6 +25,7 @@ class Talep extends BaseModel
      * @var array<int, string>
      */
     protected $fillable = [
+        'tenant_id',       // ✅ SAB Rule 1: Tenant Isolation
         'baslik',          // ✅ Added 2026-01-31
         'aciklama',        // ✅ Added 2026-01-31
         'talep_tipi',

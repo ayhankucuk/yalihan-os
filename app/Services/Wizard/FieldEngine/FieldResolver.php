@@ -63,6 +63,11 @@ class FieldResolver
      */
     private function doResolve(int $kategoriId, int $yayinTipiId): array
     {
+        // Strangler Fig: Feature flag check (default false)
+        if (config('feature-flags.use_domain_form_policy', false)) {
+            return app(\App\Application\Ilan\Services\DomainFieldResolverAdapter::class)->resolve($kategoriId, $yayinTipiId);
+        }
+
         // 1. Resolve slugs
         $kategori = IlanKategori::find($kategoriId);
         if (!$kategori) {
@@ -144,6 +149,11 @@ class FieldResolver
      */
     private function doResolveBySlug(string $kategoriSlug, string $yayinTipiSlug, int $publicationTypeId): array
     {
+        // Strangler Fig: Feature flag check (default false)
+        if (config('feature-flags.use_domain_form_policy', false)) {
+            return app(\App\Application\Ilan\Services\DomainFieldResolverAdapter::class)->resolveBySlug($kategoriSlug, $yayinTipiSlug);
+        }
+
         // Adım 1: Doğrudan eşleşme
         $rows = $this->queryFields($kategoriSlug, $yayinTipiSlug, $publicationTypeId);
         if ($rows->isNotEmpty()) {

@@ -1,4 +1,408 @@
+## Oturum 190 — 2026-09-15 | Ölü Blade Şablonları, Mükerrer Servisler, Listener ve Cron Görevlerinin Temizlenmesi
+
+**Kapsam:** Kullanıcının onayı ile kod tabanında mükerrer veya işlevsiz kalmış 3 ana alandaki gereksiz yapılar tamamen temizlendi:
+1. **Blade Şablonları (13 Adet):** `wizard/deprecated/` altındaki 6 eski step dosyası, `edit-elegant.blade.php`, `dashboard-minimal.blade.php`, `sidebar-optimized.blade.php`, `yayin-durumu-elegant.blade.php`, eski wizard step-4 konut/arsa dosyaları ve `tkgm-widget.blade.php` kaldırıldı.
+2. **Servisler:** Eski ve mükerrer olan `SmartFieldGenerationService.php` ile `app/Services/AI/AiTelemetryService.php` silindi; çağıran sınıflar (`CortexVoiceService`, `CortexNotificationService`) kanonik `App\Services\AI\Monitoring\AiTelemetryService` servisine yönlendirildi.
+3. **Listener & Cron Görevleri:** `EventServiceProvider.php` içinde `WizardSubmitted` event'ine mükerrer bağlı `FindMatchingDemands` listener'ı kaldırıldı (`IlanCreated` üzerinde zaten dinleniyor). `Kernel.php` içindeki mükerrer `quality:gate` günlük cron'u ve var olmayan `testsprite` / `context7-daily-check.sh` `exec` çağrıları temizlendi.
+4. **UI & İkon Uyumu:** `analytics/show.blade.php` ve `ai-governance/index.blade.php` içindeki Font Awesome kalıntıları SAB anayasasına uygun `<x-icon>` bileşenleri ile güncellendi.
+
+```
+KALİTE KAPISI:  4/4 Antigravity Gate PASS ✅ (Conflict Guard, Preflight Guard, Layout Validator, Route Guard)
+TESTLER:        145/145 PASSED (CRM 37/37, Hermes 108/108, 598 assertions)
+DURUM:          0 broken routes, 0 missing classes, temiz mimari ✅
+```
+
+---
+
+## Oturum 189 — 2026-09-15 | Dublikat, Yetim Route və Boş Stub Controller-lərin Təmizlənməsi
+
+**Kapsam:** Kod bazasında yüklənməyən, eyni işi təkrar edən və ya yarımçıq dummy/stub olaraq qalmış bütün yetim route faylları və controller-lər təhlükəsiz şəkildə təmizləndi.
+
+**Təmizlənən Komponentlər:**
+- **25 Yetim Route Faylı:** `routes/admin/` altındakı yüklənməyən 24 fayl (`adres_yonetimi.php`, `ayarlar.php`, `blog.php`, `crm.php`, `danismanlar.php`, `dashboard.php`, `eslesmeler.php`, `ilanlarim.php`, `integrations.php`, `intelligence.php`, `kisiler.php`, `kullanicilar.php`, `notifications.php`, `ozellikler.php`, `page_analyzer.php`, `profilim.php`, `property_hub.php`, `property_types.php`, `reports.php`, `site.php`, `takim.php`, `talepler.php`, `ups.php`, `wikimapia.php`) və `routes/web/admin/validation.php`.
+- **8 Ədəd İstifadəsiz / Stub Controller:** `ValidationController.php`, `FormValidationController.php`, `ProfileController.php`, `MapController.php` və `PropertyHubController` tərəfindən əvəzlənmiş `PropertyHub/` altındakı 4 controller (`DashboardController`, `FeatureController`, `PackController`, `TemplateController`).
+- **`routes/admin.php`:** `/auth-test`, `/test-simple`, `/test-minimal` və köhnə comment qalıqları silindi.
+- **`routes/api/v1/admin.php`:** İstifadəsiz `MapController` və `/nearby/preview` route-u təmizləndi.
+
+```
+KALİTE KAPISI:  4/4 Antigravity Gate PASS ✅ (Conflict Guard, Preflight Guard, Layout Validator, Route Guard)
+TESTLER:        145/145 PASSED (CRM 37/37, Hermes 108/108, 598 assertions)
+ROUTE GUARD:    0 duplicate routes, 0 missing classes ✅
+```
+
+---
+
+## Oturum 188 — 2026-09-15 | Governance Segment Temizlik & Sidebar Yeniden Yapılandırma
+
+**Kapsam:** `admin/governance` segmenti altındaki tüm sayfalar analiz edildi. Legacy/duplicate Livewire bileşenleri kaldırıldı, dağınık governance linkleri tek dropdown altında toplandı.
+
+**Değişiklikler:**
+- `GovernanceDashboardService.php:271` — `catch (\Throwable)` → `catch (\Throwable $e)` bug düzeltildi (PHP undefined variable)
+- `routes/admin.php` — 3 legacy route kaldırıldı: `admin.analytics.ai-governance`, `admin.analytics.governance.command-center`, `admin.analytics.governance.dashboard` (Livewire bileşenleri artık kullanım dışı)
+- `routes/admin.php` — UPS Governance redirect route'ları kaldırıldı (`admin.ups.governance.index` → redirect zinciri)
+- `sidebar-content.blade.php` — Analytics dropdown'daki stale "Governance Dashboard" linki kaldırıldı
+- `sidebar-content.blade.php` — UPS "LifeCycle & Governance" linki doğrudan `admin.governance.feature-health`'e bağlandı
+- `sidebar-content.blade.php` — Yeni `🏛️ Governance` dropdown eklendi: SAB Dashboard, İnceleme Kuyruğu, AI Kontrol Merkezi, Otonom Kontrol, Karar Geçmişi, Feature Health, Bastırma Kuralları
+- `property-hub/index.blade.php` — Orphan `admin.ups.governance.index` referansı `admin.governance.feature-health`'e düzeltildi
+
+**Korunan Sayfalar (9):** dashboard, review-queue, decisions/{id}, decision-history, intelligence-center, autonomy, feature-health, action-dashboard, suppressions
+
+**Silinerek Temizlenen:** GovernanceDashboard (Livewire), GovernanceCommandCenter (Livewire), AIGovernanceController JSON endpoint
+
+---
+
+## Oturum 187 — 2026-09-15 | İlan Yaşam Döngüsü Senkronizasyonu & /admin/ilanlar/3 Lüks Kokpit / Sosyal CRM / WhatsApp Entegrasyonu
+
+**Kapsam:** İlan ekle (`create-wizard`), ilan düzenle (`edit`), ilan listesi (`index`) ve ilan kokpiti (`show`) arasındaki veri kontratı, hiyerarşi ve Akdeniz Lüks Tasarım Sistemi senkronize edildi. `/admin/ilanlar/3` (Bodrum Gündoğan İmarlı Arsa) sayfası derinlemesine denetlenerek tüm 500 hataları, DTO uyumsuzlukları ve dağınık CRM/Site yapıları giderildi.
+
+**Düzeltme & İyileştirmeler:**
+- `PortfolioPrioritizationService.php` & `IlanService.php`: `listing_id` DTO tip dönüşümü ve `priority_score` nesne erişim hatası düzeltildi (500 çökmesi önlendi).
+- `IlanRepository.php`: `findById()` ve `findOrFail()` metotlarında `withoutGlobalScopes` ve `getEffectiveTenantId()` uygulanarak model bulmada fail-closed engellendi.
+- `Ilan.php` & `IlanKategori.php`: DB sütun isim çakışması (`il`, `ilce`, `mahalle`, `kategori`) için relation erişimci (`getRelationValue`) katmanı eklendi.
+- `social-crm.blade.php`: "Bilinmeyen Kişi", "Site kaydı yok" vb. karmaşık yapı yerine 3 sekmeli Akdeniz Lüks Alpine.js widget'ı (`👤 Mal Sahibi`, `💼 Danışman`, `🏢 Site / Parsel`) geliştirildi.
+- `data-grid.blade.php`: Arsa ve bağımsız parsellere ait imar, KAKS, TAKS, alan ve altyapı bilgileri dinamik matrise entegre edildi.
+- `show.blade.php` & `vitals.blade.php`: Hermes AI Publish Gate (`/admin/ilanlar/{id}/publish`) entegre edildi, Eşleşmiş Alıcılar için tek tıkla doğrudan WhatsApp özel portföy sunumu, arama ve metin kopyalama aksiyonları eklendi.
+- `create-wizard.blade.php`: Font Awesome kalıntıları giderildi, `<x-icon>` entegrasyonu ve Akdeniz Lüks butonları tamamlandı.
+
+```
+KALİTE KAPISI:  4/4 Antigravity Gate PASS ✅ (Conflict Guard, Preflight Guard, Layout Validator, Route Guard)
+TESTLER:        5/5 PASSED (IlanCrudTest 5/5, 15 assertions)
+DOĞRULAMA:     /admin/ilanlar/3 Kokpit, Sosyal CRM & WhatsApp Entegrasyonu Aktif ✅
+```
+
+---
+
+## Oturum 186 — 2026-09-14 | İlan Düzenleme (/admin/ilanlar/{id}/edit) Sekmeli Akdeniz Lüks Mimarisi & Konum Paritesi
+
+**Kapsam:** `/admin/ilanlar/{id}/edit` sayfası (2366 satırlık monolitik ve DOM'u bozan iç içe nested `<form>` yapısı) modernize edilerek 5/6 sekmeli Alpine.js lüks editöre dönüştürüldü. Lokasyon/Harita bileşeni turuncu temadan Akdeniz Lüks Altın (`#C9A84C`) ve Lacivert (`#0A1628`) temasına uyarlandı. Font Awesome (`fas fa-eye`, `fas fa-check` vb.) kalıntıları temizlenerek `<x-icon>` sistemine geçirildi.
+
+**Düzeltme & İyileştirmeler:**
+- `edit.blade.php`: Nested `<form>` DOM kırılması düzeltildi; 6 adet mantıksal ve temiz sekmeli (Temel Bilgiler, Konum & Harita, Özellikler, Medya, CRM/Yayın, Kiralama) Akdeniz Lüks arayüze kavuşturuldu.
+- `vitals.blade.php`: Sticky lüks başlık, geri dönüş butonu (`← Kokpite Dön`), ve referans no gösterim bug'ı (`UND` sorunu) düzeltildi.
+- `location-map.blade.php`: İlan ekleme sihirbazı (Step 4) ile %100 görsel ve işlevsel uyum (Gold `#C9A84C` marka kimliği, `<x-icon name="konum">`) sağlandı.
+- `icon.blade.php`: `'goz'` ikonu SVG eşleşmesi eklendi.
+- `success.blade.php` & `property-hub/templates/edit.blade.php`: Kural 1 ihlali Font Awesome ikonları ve `@extends` kalıpları temizlendi.
+
+```
+KALİTE KAPISI:  4/4 Antigravity Gate PASS ✅ (Conflict Guard, Preflight 10 Golden Rules, Layout Validator, Route Guard)
+TESTLER:        5/5 PASSED (IlanCrudTest 5/5, 15 assertions)
+DOĞRULAMA:     /admin/ilanlar/1/edit ve /admin/ilanlar/3/edit Akdeniz Lüks Sekmeli Editör Aktif ✅
+```
+
+---
+
+## Oturum 185 — 2026-09-14 | Admin İlan Kokpiti (/admin/ilanlar/1) Akdeniz Lüks Tasarım & Mimari İyileştirmesi
+
+**Kapsam:** `admin/ilanlar/show.blade.php` ve altındaki 10 modüler kokpit bileşeni `page-design-architecture-auditor` yeteneğiyle denetlendi ve Akdeniz Lüks Tasarım Sistemi (`#0A1628` Deep Navy, `#C9A84C` Warm Gold) standartlarına yükseltildi.
+
+**Düzeltme & İyileştirmeler:**
+- `vitals.blade.php`: `← İlanlar` hızlı dönüş navigasyon butonu, Akdeniz Lüks altın işlem butonları ve `<x-icon>` entegrasyonu.
+- `radar.blade.php`: Cortex AI tavsiye kartı Deep Navy gradyanı (`#0A1628` ➔ `#112240`), Altın rozet ve canlı durum göstergesiyle lüks kimliğe kavuşturuldu.
+- `social-crm.blade.php`: Mal sahibi avatarı, iletişim butonları ve tesis bileşeni Akdeniz Lüks paletine uyarlandı.
+- `show.blade.php`: Eşleşmiş Alıcılar bölümü, bildirim toast pencereleri ve galeri tasarımı modernize edildi.
+- `IlanRepository.php`: Test ve konsol ortamlarında yetkisiz query'lerin deterministik yönetiminde testing ortamı bypass'ı güncellendi.
+
+```
+KALİTE KAPISI:  4/4 Antigravity Gate PASS ✅ (Conflict Guard, Preflight Guard, Layout Validator, Route Guard)
+TESTLER:        11/11 PASSED (IlanCrudTest 5/5, IlanRepositoryWriteHardeningTest 6/6)
+DOĞRULAMA:     /admin/ilanlar/1 Akdeniz Lüks Kokpit Tasarımı Aktif ✅
+```
+
+---
+
+## Oturum 184 — 2026-09-14 | admin/ilanlar Zero-Results Bug Fix + IlanRepository TenantScope Bypass
+
+**Kök Neden:** İki ayrı katmanda aynı bug: (1) `IlanService::getAdminListingsWithStats()` — `groupBy` + `backedEnum` cast uyumsuzluğu; (2) `IlanRepository::getAdminListings()` — `TenantScope` + `CountryScope` aktifken `TenantContextService::hasTenant() = false` olunca `whereRaw('1=0')` tüm sonuçları sessizce yok sayıyordu.
+
+**Düzeltme:**
+- `IlanService`: Tüm count/groupBy sorguları → `DB::table()` facade + explicit `tenant_id` + `CAST(yayin_durumu AS CHAR)`
+- `IlanService`: Yeni `getCurrentTenantId()` private metodu — `TenantContextService > auth()->tenant_id > session > 1` öncelik sırası
+- `IlanRepository::getAdminListings()`: `withoutGlobalScopes()` + explicit `where('tenant_id', $tenantId)` + yeni `getEffectiveTenantId()` private metodu
+
+```
+KALİTE KAPISI:  6/6 Antigravity Gate PASS ✅
+TEST:          5/5 IlanServiceTest PASS
+TEST:          6/6 IlanRepositoryAuthorizationTest PASS
+TEST:          3 FAILED (pre-existing, getAdminListings dışında — findOrFail pasif saga için)
+DOĞRULAMA:    Auth context ile getAdminListings() → 3 satır geliyor ✅
+```
+
+---
+
+## Oturum 183 — 2026-09-14 | RC2 Dirty Tree Tasfiyesi & Otonom Hijyen Skill'leri
+
+**Kapsam:** `release-candidate/RC2` üzerindeki 83 dirty/untracked dosya sınıflandırıldı, proaktif Conflict Guard kilitleri ve schema parity denetimleri eşliğinde 14 atomic commit halinde temizlendi. Çalışma ağacı 100% temiz state'e getirildi. 3 yeni otonom yetenek (`git-worktree-hygiene`, `conflict-guard-preflight`, `dirty-inventory-generator`) çıkarılıp `.agents/skills/` altına kaydedildi ve indekslendi.
+
+```
+COMMITLER:        30ca0bc9 → 5997842d (14 atomic commit)
+İŞLENEN DOSYA:    83 dosya (65 safe/brain + 5 hot-spot + 13 review/refactor)
+YENİ SKILL'LER:   git-worktree-hygiene, conflict-guard-preflight, dirty-inventory-generator
+DURUM:            Clean Working Tree (0 dirty dosya) ✅
+MİMARİ KAZANIM:   Conflict Guard & Schema Parity Guard zincirleme pre-flight protokolü
+```
+
+---
+
+## Oturum 182 — 2026-09-12 | Data Contract Gate & FORM-CONTRACT-BRIDGE-01
+
+**Kapsam:** Yalıhan Bekçi mimarisine Data Contract Gate eklendi; Form Sözleşmesi ADR-043 kabul edildi, saf Domain katmanı (`FieldKey`, `ValidationRule`, `FieldDefinition`, `CategoryFieldPolicy`) ve Application Adaptörü (`DomainFieldResolverAdapter`) inşa edildi. `FieldResolver` içinde `use_domain_form_policy` runtime Strangler Fig anahtarı hem `doResolve` hem de `doResolveBySlug` girişlerine bağlandı. Eşdeğerlik Feature testi (`FormFieldContractParityTest`) ile tam parity (seçenek slug normalizasyonu ve tüm metadata zarfı) kanıtlandı.
+
+```
+MİMARİ ADR:     docs/adr/2026-09-12-adr043-canonical-form-contract-and-seeder-governance.md
+MİMARİ STANDART: docs/architecture/DATA_CONTRACT_AND_SEEDER_GOVERNANCE.md
+PAKET:          FORM-CONTRACT-BRIDGE-01
+ADAPTÖR:        App\Application\Ilan\Services\DomainFieldResolverAdapter
+FEATURE FLAG:   config/feature-flags.php -> use_domain_form_policy (default: false)
+RUNTIME SWITCH: App\Services\Wizard\FieldEngine\FieldResolver (doResolve + doResolveBySlug)
+PARITY TESTİ:   25/25 PASS (103 assertion) — Feature/Wizard & Unit/Domain/Ilan
+KALİTE KAPISI:  4/4 Antigravity Gate PASS ✅
+```
+
+---
+
+## Oturum 181 — 2026-09-12 | RC2 Paketleme — Talep Strangler Fig Commit + Tenant Bloke Paket
+
+**Kapsam:** RC2 dirty dosyaları iki pakete ayrıldı.
+
+```
+PAKET 1 — COMMIT EDİLDİ ✅
+Commit: 01eec131
+Dosyalar:
+  - config/crm.php          (feature flags)
+  - AppServiceProvider.php  (DI binding)
+  - EventServiceProvider.php (listener kayıtları)
+  - TalepController.php     (flag korumalı optional injection + CRUD/search)
+Test: 9/9 PASS (TalepControllerStranglerFigTest)
+
+PAKET 2 — BLOKE EDİLDİ ❌
+  - app/Models/Talep.php: tenant_id fillable
+  - Neden: BelongsToTenant trait eksik → mass-assignment yüzeyi genişler, koruma sağlamaz
+  - Sonraki görev: Talep tenant authority tasarımı (ayrı worktree)
+```
+
+**Kalan Dirty Dosyalar (RC2 kapsamı dışında — ayrı görev):**
+
+Bounded Context | Dosyalar
+---|---
+**Wizard Domain** | `IlanWizardController.php`, `app/Listeners/Wizard/`
+**Location Domain** | `LocationPoiController.php`, `PoiService.php`, `config/location.php`, `app/Domain/Location/`, `tests/Feature/Location/`
+**Database/Seeding** | `DatabaseSeeder.php`, `OzellikKategoriSeeder.php` (D), `PropertyHubOzelliklerSeeder.php` (D), `database/seeders/legacy/`
+**Cross-cutting** | `AGENTS.md`, `StoreOwnerIlanRequest.php`, `KisiScoringService.php`
+**Frontend/Views** | `app.js`, `show.blade.php`, `create.blade.php`
+**Routing** | `routes/admin.php`, `routes/admin/talepler.php`
+**Docs/Research** | `PROGRESS-TRACKER.md`, `YALIHAN_OS_RESEARCH/`, `docs/SAB/`, `docs/architecture/`
+
+**Sonraki Görev Öncelik Sırası:**
+1. **Talep tenant authority** — `BelongsToTenant` trait + domain test (ayrı worktree)
+2. **Wizard Domain** — ayrı branch
+3. **Location Domain** — ayrı branch
+4. Diğerleri — kapsam belirsiz, sahipleri tespit edilmeli
+
+---
+
+
 # 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
+
+## Oturum 180 — 2026-09-12 | RC2 Dirty State → Clean Commit
+
+**Kapsam:** Önceki oturumdan kalan dirty worktree temizlendi; 25 yeni dosya commit'lendi.
+
+```
+COMMIT: 557f79b7
+BRANCH: release-candidate/RC2
+TEST:   40/40 PASS (18 Feature + 22 Unit)
+GATE:   4/4 Antigravity PASS ✅
+```
+
+**Staged & Committed (25 dosya):**
+- Application/CRM/Services/MatchDemandsForListingUseCase
+- Domain/CRM/Contracts/TalepRepositoryInterface
+- Domain/CRM/DTOs/{DemandMatchResult, TalepCreateCommand, TalepListCriteria, TalepUpdateCommand}
+- Domain/CRM/Policies/DemandMatchingPolicy
+- Domain/CRM/Services/{Create,Delete,List,Match,Search,Update}TalepUseCase + DemandMatchingService
+- Events/CRM/DemandMatched
+- Infrastructure/CRM/EloquentTalepRepositoryAdapter
+- Listeners/CRM/{StartDemandMatchingSaga, CreateActionCenterTaskForMatchedDemand}
+- tests/Feature/CRM/{4 test dosyası}
+- tests/Unit/Domain/PropertyHub/CRM/TalepDomainCharacterizationTest
+
+**Kalan Dirty Dosyalar (ayrı görev):**
+- app/Http/Controllers/Admin/TalepController.php, Api/IlanWizardController.php, Api/V1/LocationPoiController.php
+- app/Models/Talep.php, app/Providers/{App,Event}ServiceProvider.php
+- config/crm.php, config/location.php, config/exchange.php
+- routes/admin.php, routes/admin/talepler.php
+- YALIHAN_OS_RESEARCH/, app/Domain/Location/, app/Listeners/Wizard/
+- database/seeders/legacy/, docs/SAB/, docs/architecture/
+
+---
+
+
+# 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
+
+## Oturum 179 — 2026-09-12 | Forensic Audit C→A Adımları (RC2)
+
+**Kapsam:** Forensic audit bulgularının kontrollü temizliği tamamlandı.
+
+#### 1. A.1 — GuardDocsDriftCommand gold-line.yml Fix
+```
+Dosya: app/Console/Commands/Guard/GuardDocsDriftCommand.php (satır 26-27)
+Bug:   'gold-line.yml' -> 'Doğru CI: gold-line.yml' (phantom referans)
+Fix:   'core-ci.yml'   -> 'Doğru CI: core-ci.yml'
+Kanıt: authority.json:280 zaten dogrusunu söylüyordu
+        -> "core-ci.yml is the single active CI pipeline"
+
+Etki: docs/yalihan-project-brain-v3.md:L93 drift uyarisi DÜZELDI ✅
+Commit: c74d12d6
+```
+
+#### 2. A.2 — docs/SAB.md DEPRECATED
+```
+Dosya: docs/SAB.md (satır 1-7)
+Eklendi: ⚠️ DEPRECATED header
+  -> Runtime Authority: .sab/authority.json (v6.1.1)
+  -> Mimari Anayasa:  docs/ysos/SAAB_V7.md (BR-2026-07-03)
+Icrik: DEYISDIRILMADI (referans veren dosyalar kırılmamalı)
+
+Commit: c74d12d6
+```
+
+#### 3. Bilinen Kalan Sorun
+```
+guard:docs-drift self-reference bug:
+  verifiedDrift[0]: 'sab:integrity-scan' -> 'sab:integrity-scan'
+  Ayri gorev olarak ele alinacak (öncelik: DÜŞÜK)
+```
+
+---
+
+## Oturum 178 — 2026-09-12 | CRM Subdomain — Talep Domain & Demand Matching Saga Kademeli Strangler Fig (RC2 CERTIFIED) ✅
+
+**Kapsam:** 6 Mimari İlke (KNOWLEDGE, DECISION, ACTION) doğrultusunda Talep Domain ve Demand Matching Saga refactoru tamamlandı; katı DDD katman ayrımı, decoupled event saga, tam idempotency ve multi-tenant izolasyonu kanıtlandı (40/40 TESTS PASS).
+
+#### 1. Tamamlanan Mimari Bileşenler 🏛️
+- **Application Layer:**
+  - `App\Application\CRM\Services\MatchDemandsForListingUseCase` (Saga Orkestrasyonu, Port erişimi, DB Transaction, Event Dispatch)
+  - `App\Domain\CRM\Services\ListTaleplerUseCase`, `CreateTalepUseCase`, `UpdateTalepUseCase`, `DeleteTalepUseCase`, `SearchTaleplerUseCase`
+- **Domain Layer (Pure Business Logic):**
+  - `App\Domain\CRM\Services\DemandMatchingService` (Saf matematiksel skorlama motoru — veritabanı/IO bağımsız)
+  - `App\Domain\CRM\Policies\DemandMatchingPolicy` (Lokasyon: %40, Bütçe: %35, Tip: %25; Eşikler: 0-49 Ignore, 50-69 Weak, 70-84 Good, 85-100 Strong)
+  - `App\Domain\CRM\DTOs\DemandMatchResult`, `TalepCreateCommand`, `TalepUpdateCommand`, `TalepListCriteria`
+  - Driven Port: `App\Domain\CRM\Contracts\TalepRepositoryInterface`
+- **Infrastructure / Adapter & Event Backbone:**
+  - `App\Infrastructure\CRM\EloquentTalepRepositoryAdapter`
+  - Event: `App\Events\CRM\DemandMatched`
+  - Decoupled Listener: `App\Listeners\CRM\StartDemandMatchingSaga` (IlanYayinlandiEvent / WizardSubmitted → MatchDemands)
+  - ActionCenter Listener: `App\Listeners\CRM\CreateActionCenterTaskForMatchedDemand` (Idempotency Key: `tenant_id:listing_id:talep_id:demand_match`)
+- **Rollout Güvenliği (Strangler Fig):**
+  - `config('crm.use_domain_talep')` & `config('crm.demand_matching_enabled')` bağımsız çift feature flag.
+
+#### 2. Doğrulama & Test Kanıtları 🧪
+- `tests/Feature/CRM/DemandMatchingTenantIsolationTest.php`: **1/1 PASS** (Tenant A ilanının Tenant B talebiyle eşleşmediği kanıtlandı).
+- `tests/Feature/CRM/DemandMatchingIdempotencyTest.php`: **1/1 PASS** (Mükerrer eventlerin tek görev ürettiği kanıtlandı).
+- `tests/Feature/CRM/TalepContractParityTest.php`: **4/4 PASS** (Legacy vs Domain path %100 sözleşme denkliği).
+- `tests/Feature/CRM/DemandMatchingSagaTest.php`: **3/3 PASS**.
+- `tests/Feature/CRM/TalepControllerStranglerFigTest.php`: **9/9 PASS**.
+- `tests/Unit/Domain/PropertyHub/CRM/TalepDomainCharacterizationTest.php`: **22/22 PASS**.
+- **Antigravity Full Quality Gate:** **4/4 PASS (0 failure)**.
+
+---
+
+
+**Kapsam:** `POST /api/v1/location/poi-distances` akışı için karakterizasyon testi yazıldı (`tests/Feature/Location/LocationPoiCharacterizationTest.php`), eski kodun davranış kusurları ve sözleşme detayları kilitlendi.
+
+#### 1. Keşfedilen Mimari & Çalışma Zamanı Bulguları 🔍
+- **Sessiz SQLite SQL Hatası (Fail-Closed İhlali):**
+  - Mevcut `PoiService::findNearby` raw query içinde `HAVING distance_km <= ?` kullanıyor. SQLite test ortamında non-aggregate HAVING `General error: 1` fırlatıyor.
+  - `PoiService` bu hatayı `catch (\Exception $e)` bloğunda yutup `collect([])` dönüyor; `LocationPoiController` ise bunu `200 OK — "POI mesafeleri başarıyla hesaplandı"` zarfına sarıp istemciye boş liste veriyor.
+  - **Karar:** Hexagonal Adaptör ile hem MySQL hem SQLite uyumlu güvenli filtreleme yazılacak; testlerin boş dönmesi "başarı" kabul edilmeyecek.
+- **Sözleşme Bütünlüğü:**
+  - `data.pois` ve `data.data` (frontend geriye dönük uyumluluk mirror) korunmalı.
+  - `data.summary` (`total_found`, `by_type`, `closest_poi`, `farthest_poi`) ve `sealed: true` alanları Application Use Case'e taşınacak.
+- **Mesafe ve Yuvarlama:**
+  - `distance_km` = 2 hane ondalık, `distance` = tam sayı metre (`round($km * 1000)`).
+- **Rollback Güvencesi:**
+  - `config('location.use_domain_poi_search', false)` toggle eklenecek, rollback talimatına `php artisan config:clear` zorunluluğu yazıldı.
+
+#### 3. Bekçi Mimarisi Öğrenme Mührü (Enterprise 7-Layer Taxonomy) 🏛️
+- **Canonical Model:** `YALIHAN OS` mimari taksonomisi 7 katman olarak mühürlendi:
+  1. `CORE` (Anayasa + Sistem Kuralları + Güvenlik)
+  2. `DATA` (Properties, Guests, Reservations, CRM, Finance — SSOT)
+  3. `CAPABILITIES` (Domain Use Cases & Driven Ports)
+  4. `WORKFLOWS` (Hermes Event Bus & Sagas)
+  5. `AI` (Cortex, GPT, Claude, DeepSeek)
+  6. `INTEGRATIONS` (Airbnb, Booking, Telegram, WhatsApp, Google)
+  7. `ARCHIVE` (Karantina & Tarihsel Kayıtlar)
+- **Bekçi Knowledge Base:** `laravel-bekci` `record_learning` MCP aracı ile `learning_architecture_decision_2026-09-12T06-39-57.json` olarak kaydedildi.
+- **Referans Belge:** `docs/architecture/YALIHAN_OS_ENTERPRISE_TAXONOMY.md` oluşturuldu.
+
+---
+
+## Oturum 176 — 2026-09-12 | FAZ 4B-3 + FAZ 5: LocationValidationCapability Boundary Migration (6/6 GATES PASS) ✅
+
+**Kapsam:** IlanWizardController coordinate validation boundary'si domain service'e taşındı; duplicate kod kaldırıldı.
+
+#### 1. FAZ 4B-3 Durumu: NO-OP ✅
+- **Bulgı:** `WizardStepExecutor` V1 context'te hiçbir controller tarafından kullanılmıyor. `IlanWizardController::submitWizard()` legacy session-tabanlı akışı kullanıyor.
+- **Karar:** FAZ 4B-3 delegation'ı şu anda uygulanabilir değil — `WizardStepExecutor`'ın tamamen prodüksiyona geçmesi gerekiyor. Atlandı.
+
+#### 2. FAZ 5: LocationValidationCapability Entegrasyonu ✅
+- **Sorun:** `IlanWizardController::validateAsama3()` kendi Turkey-wide bounds (36.1-42.1 / 26.1-44.8) kontrolü yapıyordu. `ListingStateMachine` ise `LocationValidationCapability` kullanıyor (Muğla-specific: 36.12-37.35 / 26.25-29.75).
+- **Çözüm:** `LocationValidationCapability` → `IlanWizardController`'a enjekte edildi. Eski `validateCoordinates()` method'u kaldırıldı. Artık tek bir domain validator tüm koordinat kontrollerinden sorumlu.
+
+#### 3. Değişiklikler ✅
+- `app/Http/Controllers/Api/IlanWizardController.php`
+  - `RealityCheckException` import eklendi
+  - `LocationValidationCapability` import + constructor injection eklendi
+  - `validateCoordinates()` → try/catch ile `locationValidator->validate()` çağrısı
+  - Eski `validateCoordinates()` method'u kaldırıldı
+
+#### 4. Test & Kalite Doğrulama ✅
+- PHP syntax kontrolü → **0 hata**
+- `./scripts/tools/antigravity-full-gate.sh` → **6/6 Gates PASS**
+
+---
+
+## Oturum 175 — 2026-09-12 | FAZ 4B: Wizard Event → Listener Entegrasyonu (6/6 GATES PASS) ✅
+# 🛡️ Yalıhan Bekçi — Geliştirme Günlüğü
+
+## Oturum 175 — 2026-09-12 | FAZ 4B: Wizard Event → Listener Entegrasyonu (6/6 GATES PASS) ✅
+
+**Kapsam:** EventServiceProvider'a WizardSubmitted ve WizardStepCompleted domain event listener'ları bağlandı.
+
+#### 1. Mimari Düzeltme ✅
+- **Sorun:** `WizardSubmitted` ve `WizardStepCompleted` domain event'leri oluşturulmuştu ancak `EventServiceProvider::$listen` içinde kayıtlı değillerdi. Sihirbaz tamamlandığında tersine talep eşleştirme (lead matching), analitik güncelleme ve Action Center görevleri **tetiklenmiyordu**.
+- **Çözüm:** Proxy listener pattern ile mevcut IlanCreated listener zincirine bağlantı kuruldu.
+
+#### 2. Yeni Dosyalar ✅
+- `app/Listeners/Wizard/HandleWizardSubmission.php` — `WizardSubmitted` event'ini yakalar, `IlanCreated` event'ine proxy yaparak mevcut listener'lardaki tip imzalarını bozmadan (`FindMatchingDemands`, `IlanCreatedActionListener`) lead matching, n8n bildirimi ve Action Center görevlerini tetikler. **Idempotent**: sadece `yayinda/yayinda_bekleyen` durumları için lead matching yapar, taslak aşamasında sadece cache + analytics güncellenir.
+- `app/Listeners/Wizard/HandleWizardStepCompleted.php` — `WizardStepCompleted` event'ini yakalar, her adım sonrası kısmi cache invalidation + analytics projection güncellenir.
+
+#### 3. EventServiceProvider Güncellemesi ✅
+- `WizardSubmitted` → `HandleWizardSubmission` (IlanCreated chain proxy, cache flush, analytics sync, Action Center)
+- `WizardStepCompleted` → `HandleWizardStepCompleted` (partial cache + analytics)
+
+#### 4. Test & Kalite Doğrulama ✅
+- `./scripts/tools/antigravity-full-gate.sh` — **6/6 Gates PASS**.
+- PHP syntax kontrolü: `HandleWizardSubmission`, `HandleWizardStepCompleted`, `EventServiceProvider` → **0 hata**.
+
+---
+
+## Oturum 174 — 2026-09-12 | Wizard & Feature System Architecture Stabilization + CQRS Auto-Sync (103/103 PASS) ✅
+
+**Kapsam:** Kategori, Özellik ve Şablon sistemlerinin tam mimari uyumlaştırması, CQRS okuma modellerinin senkronizasyonu, `ekstra_ozellikler` alanı onarımı ve frontend/public endpoint sertifikasyonu tamamlandı.
+
+#### 1. Tamamlanan Mimari ve Sistem İyileştirmeleri ✅
+- **Aşama 1 (`5f0b42b8`):** `FeatureTemplateResolver` hiyerarşik kategori kalıtımı (`global` + `main_category` + `sub_category` + `listing_type`) düzeltildi; şablon ID ve ham yayın tipi ID standartlaştırıldı.
+- **Aşama 2 (`18f8dc12`):** `FeatureAssignmentSeeder` içinde `Villa Kiralık` için 34 özelliklik tam parite ve `depozito` kuralı tanımlandı (toplam assignment sayısı 82'den 299'a çıkarıldı).
+- **Aşama 3 (`1bd829b1`):** `projections:hydrate` komutu (`ProjectionsHydrateCommand`) yazıldı ve `IlanObserver` hook'ları (`saved`, `deleted`) üzerinden `ilanlar_read_model` ve `listing_search_projection` gerçek zamanlı CQRS senkronizasyonuna bağlandı.
+- **Aşama 4 (`19f6994a`):** `PropertyHubOrchestrator`, `PropertyHubController` ve `SmartFieldGenerationService` içerisindeki ölü `Ozellik` çağrıları kanonik `Feature` ve `FeatureAssignment` modellerine taşındı.
+- **Aşama 5 (`dceda411`, `1bbd3927`):** SAB bütünlük kuralları tamamlandı, `Ilan.php` modelinde `ekstra_ozellikler` `$fillable` ve `$casts` alanlarına geri kazandırıldı.
+
+#### 2. Test & Kalite Doğrulama ✅
+- `php artisan test tests/Feature/WizardSchemaStep2Test.php tests/Feature/Frontend/VillaListingTest.php tests/Feature/Crud/IlanCrudFeatureNormalizationTest.php` — **103/103 PASS (536 assertions)**.
+- `./scripts/tools/antigravity-full-gate.sh` — **6/6 Gates PASS**.
+
+---
 
 ## Oturum 173 — 2026-09-11 | P2: Channel & iCal Güvenilirliği + P3: Lead Matching Integration (9/9 PASS) ✅
 
@@ -5883,7 +6287,37 @@ Ana RC2 (kirli) → BLOCKED_DIRTY → JSON kanıt üretildi → EXIT_CODE=1 ✅
 - **Çözüm:** RC2 alanında çalıştır (vendor mevcut)
 - **Öncelik:** ORTA
 
-### 3. Düzeltilen Hatalar — 2026-09-09 ✅
+### 3. Sprint 16 — Knowledge Core AI Phase 1 (2026-09-14) 🟡 IN_PROGRESS
+
+**Scope:** AI advisory modules → Action Center bridge; provenance, explainability, human-in-the-loop approval.
+
+| Bileşen | Dosya | Durum |
+|---------|-------|-------|
+| Migration | `2026_09_06_000001_add_action_center_fields_to_gorevler` | ✅ Çalıştırıldı |
+| Gorev durumu | `onay_bekliyor` → `getDurumlar()`, `onayBekliyorMu()` | ✅ |
+| AIRecommendationRecorder | `app/Services/ActionCenter/` | ✅ Yeni |
+| ActionExplainabilityService | `app/Services/ActionCenter/` | ✅ Yeni |
+| AIRecommendationManagementService | `app/Services/ActionCenter/` | ✅ Yeni |
+| AIRecommendationController | `app/Http/Controllers/Api/V1/` | ✅ Yeni (thin) |
+| Routes (4 endpoint) | `routes/api/v1/action-center.php` | ✅ → AIRecommendationController |
+| SAB Gate | 6/6 PASS ✅ | ✅ |
+| Unit tests | 10 PASS / 17 assertions ✅ | ✅ |
+| Evidence level | `REPO_VERIFIED` | ✅ |
+
+---
+
+### 4. MiniDemoIlanSeeder — Demo Portföy Verisi (2026-09-14) ✅
+
+| Değişiklik | Detay |
+|------------|--------|
+| `MiniDemoIlanSeeder` → `DatabaseSeeder` Section 3 | Local-only, idempotent, Context7 uyumlu |
+| Demo içerik | Bodrum Yalıkavak Villa + Türkbükü Daire + Gündoğan Arsa |
+| Seed sonucu | 3 ilan oluşturuldu (ilan sayısı: 0 → 3) |
+| Syntax | ✅ php -l clean |
+
+---
+
+### 5. Düzeltilen Hatalar — 2026-09-09 ✅
 
 | Hata | Dosya | Düzeltme |
 |------|--------|-----------|
@@ -5891,7 +6325,7 @@ Ana RC2 (kirli) → BLOCKED_DIRTY → JSON kanıt üretildi → EXIT_CODE=1 ✅
 | Kural 7 normalize eksik | `blade-alpine-runtime-guardian/SKILL.md` | "URL path normalize" ipucu eklendi (Cline — Antigravity kaynağından, `DOCUMENTED`) |
 | Temizlik komutu eksik | `multi-agent-worktree-sandbox/SKILL.md` | `git restore` alternatif olarak eklendi (Cline — Antigravity kaynağından, `DOCUMENTED`) |
 
-### 4. Yeni Yetenekler — SKILL_INDEX Kayıtları
+### 6. Yeni Yetenekler — SKILL_INDEX Kayıtları
 
 Artık ajanlar bu dosyaları her açtığında otomatik olarak ilgili skill yüklenecek:
 
@@ -5906,7 +6340,7 @@ Artık ajanlar bu dosyaları her açtığında otomatik olarak ilgili skill yük
 | `scripts/tools/rc2-release-certification-gate.sh` | `multi-agent-worktree-sandbox` |
 | `.git/worktree*`, `git worktree` komutları | `multi-agent-worktree-sandbox` |
 
-### 5. Ajan Uyarıları (Bu oturumdan itibaren geçerli)
+### 7. Ajan Uyarıları (Bu oturumdan itibaren geçerli)
 
 **TÜM AJANLAR OKUMALI:** `.project-brain/KNOWN_ISSUES.md` — ACİL bölümü
 
@@ -5937,3 +6371,22 @@ Artık ajanlar bu dosyaları her açtığında otomatik olarak ilgili skill yük
 - `DynamicFieldValueMapper`: `BOOL_TRUTHY` and `BOOL_READ_TRUTHY` class constants replace duplicate inline arrays. `normalizeBoolean()` uses `strtolower()` consistently. `castValue()` now uses `BOOL_READ_TRUTHY` (was hardcoded). `'no'`/`'hayir'`/`'off'` removed from truthy set — prevented `'NO'`→`'on'` substring collision.
 - 5 new tests in `WizardSchemaStep2Test.php` — 88/88 suite PASS (501 assertions).
 - Full gate: 6/6 PASS.
+
+---
+
+#### SAAB-4.5 P0 Calendar PII — 3 CVSS Fix (fc0658c2) — 2026-09-16
+
+**Scope:** SAAB Executive Certification — Operational Calendar — P0 calendar PII exposure
+
+| Fix | Severity | File | Change |
+|-----|----------|------|--------|
+| **2.1** | PII Mask | `CalendarToolsController.php` | Tenant-bound `hasConflict()` + `conflicts` field removed; endpoint enforces `tenant.context` + `tenant_id` filter |
+| **2.2** | IDOR | `routes/admin.php` | `tenant.context`, `sab.write.guard`, `can:manage-ilanlar` middleware added to admin calendar routes |
+| **2.3** | SSOT Bridge | `VillaService.php` | `Event::hasConflict()` → `AvailabilityService::hasConflict()`; `Event` table replaced by `PropertyReservation` SSOT |
+
+- `AvailabilityService::hasConflict()`: deprecated stub → live implementation reading `PropertyReservation`
+- `IlanCalendarController`: `ensureReservationBelongsToIlan()` guards `cancel`/`confirm` mutations
+- `BookingRequestController::checkAvailability()`: same SSOT bridge applied
+- `routes/api/v1/ai.php`: `tenant.context` middleware added to calendar tools route
+- PR: https://github.com/ayhankucuk/yalihan-os/pull/4
+- Full gate: PASS | Tests: 109 passed (357 assertions)

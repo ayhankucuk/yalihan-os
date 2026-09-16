@@ -132,4 +132,14 @@ return [
         'reservation_ids' => [],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Form Contract Domain Policy (FORM-CONTRACT-BRIDGE-01)
+    |--------------------------------------------------------------------------
+    | Default: false (Strangler Fig Bridge)
+    | Açıldığında: Wizard form resolver saf Domain CategoryFieldPolicy kullanır.
+    | Kapalıyken: Legacy DB FieldResolver çalışır.
+    */
+    'use_domain_form_policy' => (bool) env('FEATURE_DOMAIN_FORM_POLICY', false),
+
 ];

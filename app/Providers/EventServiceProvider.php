@@ -48,6 +48,20 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\IlanYayinlandiEvent::class => [
             \App\Listeners\NotifyLeadsOnNewListing::class,
             \App\Listeners\ActionCenter\IlanPublishedActionListener::class, // [Sprint 15] Action Center: lead matching check
+            \App\Listeners\CRM\StartDemandMatchingSaga::class, // CRM Decoupled Saga
+        ],
+        // Domain Wizard Events (Hexagonal / DDD Foundation)
+        \App\Domain\Ilan\Events\WizardSubmitted::class => [
+            \App\Listeners\InvalidateIlanCache::class,
+            \App\Listeners\UpdateAnalyticsProjections::class,
+            \App\Listeners\ActionCenter\IlanCreatedActionListener::class,
+            \App\Listeners\CRM\StartDemandMatchingSaga::class, // CRM Decoupled Saga
+        ],
+        \App\Events\CRM\DemandMatched::class => [
+            \App\Listeners\CRM\CreateActionCenterTaskForMatchedDemand::class,
+        ],
+        \App\Domain\Ilan\Events\WizardStepCompleted::class => [
+            \App\Listeners\InvalidateIlanCache::class,
         ],
         \App\Events\LeadOlusturuldu::class => [
             \App\Listeners\AutoReplyToLeadCreation::class,
@@ -196,6 +210,15 @@ class EventServiceProvider extends ServiceProvider
         ],
         \App\Events\Workforce\PublishingDecisionReady::class => [
             \App\Listeners\ActionCenter\PublishingDecisionActionListener::class, // review publication decision (+24h)
+        ],
+
+        // FAZ 4B: Wizard Domain Events — EventServiceProvider Entegrasyonu
+        // WizardStepExecutor tarafından fırlatılır; mevcut listener zincirini tetikler
+        \App\Domain\Ilan\Events\WizardSubmitted::class => [
+            \App\Listeners\Wizard\HandleWizardSubmission::class,          // Proxy → IlanCreated chain, cache, analytics, action center
+        ],
+        \App\Domain\Ilan\Events\WizardStepCompleted::class => [
+            \App\Listeners\Wizard\HandleWizardStepCompleted::class,      // Partial sync: cache + analytics
         ],
     ];
 

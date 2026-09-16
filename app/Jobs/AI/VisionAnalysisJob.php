@@ -17,13 +17,13 @@ class VisionAnalysisJob implements ShouldQueue
     public int $timeout = 60;
 
     public function __construct(
-        protected int $ilanId,
-        protected string $dosyaYolu
+        public int $ilanId,
+        public string $dosyaYolu
     ) {}
 
     public function handle(VisionService $service): void
     {
         // Bekçi onaylı VisionService'i çağır
-        $service->analizEt($this->ilanId, $this->dosyaYolu);
+        $service->analizEt($this->dosyaYolu, ['ilan_id' => $this->ilanId]);
     }
 }

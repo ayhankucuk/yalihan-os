@@ -34,6 +34,11 @@ class AuditMcpServer
     
     /**
      * Authority.json'dan mühürlü standartları yükle
+     *
+     * FIX v2: authority.json v6.1.1 yapısına uyumlu.
+     * - forbidden_fields → context7_standards.naming_conventions.canonical (keys = legacy/forbidden)
+     * - canonical → context7_standards.naming_conventions.canonical + governance.canonical
+     * - table_specific_guards → governance.table_specific_guards
      */
     protected function loadAuthorityRules(): void
     {
@@ -48,16 +53,21 @@ class AuditMcpServer
 
         $authority = json_decode(File::get($authorityPath), true);
 
-        // .sab/authority.json canonical field mapping
-        $forbiddenFields = $authority['governance']['forbidden_fields'] ?? [];
-        $canonicalMap    = $authority['governance']['canonical'] ?? [];
+        // canonical map: legacy name (forbidden) → kanonik name (sealed)
+        // context7_standards + governance altındaki canonical'ları birleştir
+        $context7Canonical = $authority['context7_standards']['naming_conventions']['canonical'] ?? [];
+        $governanceCanonical = $authority['governance']['canonical'] ?? [];
+        $canonicalMap = array_merge($context7Canonical, $governanceCanonical);
 
-        // Build forbidden_patterns from .sab structure
+        // forbidden_fields = keys of canonical map (legacy names that are forbidden)
+        $forbiddenFields = array_keys($canonicalMap);
+
         $this->forbiddenPatterns = [];
         foreach ($forbiddenFields as $field) {
-            $this->forbiddenPatterns[$field] = isset($canonicalMap[$field])
-                ? [$canonicalMap[$field]]
-                : ['UNKNOWN — check .sab/authority.json canonical map'];
+            $sealed = $canonicalMap[$field] ?? null;
+            if ($sealed) {
+                $this->forbiddenPatterns[$field] = [$sealed];
+            }
         }
 
         // sealed_columns from table-specific guards

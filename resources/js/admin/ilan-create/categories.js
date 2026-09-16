@@ -752,7 +752,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const anaKategoriId = window.ilanData.ana_kategori_id;
         const altKategoriId = window.ilanData.alt_kategori_id;
-        const yayinTipiId = window.ilanData.junction_id;
+        const yayinTipiId = window.ilanData.junction_id || window.ilanData.yayin_tipi_id;
 
         // Set ana kategori
         if (anaKategoriId && anaKategoriSelect) {

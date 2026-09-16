@@ -52,8 +52,8 @@
             // Para birimi dönüşümü (yaklaşık kur)
             $fiyatTRY = $ilan->fiyat ?? 0;
             $paraBirimi = strtoupper($ilan->para_birimi ?? 'TRY');
-            $eurKur = 38.5; // yaklaşık
-            $usdKur = 36.8; // yaklaşık
+            $eurKur = (float) config('exchange.eur_try', 38.5);
+            $usdKur = (float) config('exchange.usd_try', 36.8);
             $fiyatEUR = $paraBirimi === 'TRY' && $fiyatTRY > 0 ? round($fiyatTRY / $eurKur) : null;
             $fiyatUSD = $paraBirimi === 'TRY' && $fiyatTRY > 0 ? round($fiyatTRY / $usdKur) : null;
         @endphp

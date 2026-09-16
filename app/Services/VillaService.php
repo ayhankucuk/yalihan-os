@@ -4,12 +4,12 @@ namespace App\Services;
 
 use App\Enums\IlanDurumu;
 
-use App\Models\Event;
 use App\Models\Il;
 use App\Models\Ilan;
 use App\Models\Mahalle;
 use App\Models\IlanKategori;
 use App\Models\Season;
+use App\Services\Calendar\AvailabilityService;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -19,9 +19,13 @@ use Illuminate\Database\Eloquent\Collection;
  */
 class VillaService
 {
+    public function __construct(
+        private readonly AvailabilityService $availabilityService,
+    ) {}
+
     public function getYazlikKategori(): ?IlanKategori
     {
-        return IlanKategori::where('slug', 'yazlik-kiralama')->first();
+        return IlanKategori::where('slug', 'yazlik-kiralama')->orderBy('id')->first();
     }
 
     public function searchVillas(
@@ -58,8 +62,11 @@ class VillaService
             $checkIn = $filters['check_in'];
             $checkOut = $filters['check_out'];
 
-            $query->whereDoesntHave('events', function ($q) use ($checkIn, $checkOut) {
-                $q->where('rezervasyon_durumu', 'onaylandi')->betweenDates($checkIn, $checkOut);
+            $query->whereDoesntHave('reservations', function ($q) use ($checkIn, $checkOut) {
+                $q->where('reservation_state', '!=', 'cancelled')
+                    ->whereNull('cancelled_at')
+                    ->where('start_date', '<', $checkOut)
+                    ->where('end_date', '>', $checkIn);
             });
         }
 
@@ -91,14 +98,14 @@ class VillaService
             'price_low' => ['gunluk_fiyat', 'asc'],
             'price_high' => ['gunluk_fiyat', 'desc'],
             'newest' => ['created_at', 'desc'],
-            'popular' => ['view_count', 'desc'],
+            'popular' => ['goruntulenme', 'desc'],
         ];
 
         if (isset($sortMap[$sortBy])) {
             [$sortColumn, $sortDirection] = $sortMap[$sortBy];
             $query->orderBy($sortColumn, $sortDirection); // context7-ignore
         } else {
-            $query->sort($sortBy, $sortDirection, 'view_count');
+            $query->sort($sortBy, $sortDirection, 'goruntulenme');
         }
 
         return $query->paginate(24);
@@ -107,11 +114,14 @@ class VillaService
     public function getFilterLocations(int $kategoriId): Collection
     {
         // Mahalle bazında — sadece bu kategoride ilanı olan mahalleler, ilan sayısıyla birlikte
-        $mahalleler = Mahalle::withCount(['ilanlar as ilan_sayisi' => function ($q) use ($kategoriId) {
+        $mahalleler = Mahalle::whereHas('ilanlar', function ($q) use ($kategoriId) {
+                $q->where('ana_kategori_id', $kategoriId)
+                  ->whereIn('yayin_durumu', [IlanDurumu::YAYINDA->value, 'yayinda']);
+            })
+            ->withCount(['ilanlar as ilan_sayisi' => function ($q) use ($kategoriId) {
                 $q->where('ana_kategori_id', $kategoriId)
                   ->whereIn('yayin_durumu', [IlanDurumu::YAYINDA->value, 'yayinda']);
             }])
-            ->having('ilan_sayisi', '>', 0)
             ->orderByDesc('ilan_sayisi')
             ->orderBy('mahalle_adi')
             ->get(['id', 'mahalle_adi']);
@@ -132,7 +142,11 @@ class VillaService
             'events' => fn ($q) => $q->where('rezervasyon_durumu', 'onaylandi'),
         ])->where('yayin_durumu', 'yayinda')->findOrFail($id);
 
-        $villa->increment('view_count');
+        try {
+            $villa->increment('goruntulenme');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::debug('VillaService view increment skipped: ' . $e->getMessage(), ['villa_id' => $id]);
+        }
 
         return $villa;
     }
@@ -142,20 +156,26 @@ class VillaService
         $startDate = Carbon::now()->startOfMonth();
         $endDate = Carbon::now()->addMonths($months)->endOfMonth();
 
-        $events = Event::where('ilan_id', $villaId)
-            ->where('rezervasyon_durumu', 'onaylandi')
-            ->betweenDates($startDate, $endDate)
-            ->get(['check_in', 'check_out', 'rezervasyon_durumu']);
+        $villa = Ilan::select(['id', 'tenant_id'])->findOrFail($villaId);
+
+        $reservations = $this->availabilityService->getConflicts(
+            $villa->id,
+            $startDate,
+            $endDate->copy()->addDay(),
+            (int) $villa->tenant_id,
+        );
 
         $calendar = [];
-        foreach ($events as $event) {
-            $current = Carbon::parse($event->check_in);
-            $end = Carbon::parse($event->check_out);
+        foreach ($reservations as $reservation) {
+            $current = Carbon::parse($reservation->start_date);
+            $end = Carbon::parse($reservation->end_date);
 
-            while ($current->lte($end)) {
+            while ($current->lt($end)) {
                 $calendar[$current->format('Y-m-d')] = [
                     'available' => false,
-                    'durum' => $event->rezervasyon_durumu,
+                    'durum' => $reservation->reservation_state instanceof \App\Enums\ReservationState
+                        ? $reservation->reservation_state->value
+                        : (string) $reservation->reservation_state,
                 ];
                 $current->addDay();
             }
@@ -168,9 +188,13 @@ class VillaService
     {
         $seasons = $villa->seasons()->where('aktiflik_durumu', 1)->get();
 
+        $dailyMin = $seasons->min('daily_price') ?? $villa->gunluk_fiyat;
+        $dailyMax = $seasons->max('daily_price') ?? $villa->gunluk_fiyat;
+
         return [
-            'daily_min' => $seasons->min('daily_price') ?? $villa->gunluk_fiyat,
-            'daily_max' => $seasons->max('daily_price') ?? $villa->gunluk_fiyat,
+            'daily_price' => $dailyMin ?? $villa->gunluk_fiyat ?? 0,
+            'daily_min' => $dailyMin,
+            'daily_max' => $dailyMax,
             'weekly' => $seasons->first()->weekly_price ?? null,
             'monthly' => $seasons->first()->monthly_price ?? null,
             'currency' => $villa->para_birimi ?? 'TRY',
@@ -192,7 +216,13 @@ class VillaService
 
     public function checkAvailabilityAndPrice(int $villaId, string $checkIn, string $checkOut): array
     {
-        $hasConflict = Event::hasConflict($villaId, $checkIn, $checkOut);
+        $villa = Ilan::select(['id', 'tenant_id', 'gunluk_fiyat', 'para_birimi'])->findOrFail($villaId);
+        $hasConflict = $this->availabilityService->hasConflict(
+            $villa->id,
+            Carbon::parse($checkIn),
+            Carbon::parse($checkOut),
+            (int) $villa->tenant_id,
+        );
 
         if ($hasConflict) {
             return [
@@ -205,7 +235,6 @@ class VillaService
         $pricing = Season::calculatePriceForDateRange($villaId, $checkIn, $checkOut);
 
         if (! $pricing) {
-            $villa = Ilan::select('gunluk_fiyat', 'para_birimi')->findOrFail($villaId);
             $nightCount = Carbon::parse($checkOut)->diffInDays(Carbon::parse($checkIn));
             $pricing = [
                 'night_count' => $nightCount,
@@ -228,10 +257,11 @@ class VillaService
 
         return Ilan::where('ana_kategori_id', $kategoriId)
             ->where('yayin_durumu', 'yayinda')
-            ->whereDoesntHave('events', function ($q) use ($today) {
-                $q->where('rezervasyon_durumu', 'onaylandi')
-                    ->where('check_in', '<=', $today)
-                    ->where('check_out', '>', $today);
+            ->whereDoesntHave('reservations', function ($q) use ($today) {
+                $q->where('reservation_state', '!=', 'cancelled')
+                    ->whereNull('cancelled_at')
+                    ->where('start_date', '<=', $today)
+                    ->where('end_date', '>', $today);
             })
             ->count();
     }

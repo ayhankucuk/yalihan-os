@@ -149,14 +149,9 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
         // Project Health Dashboard
         Route::get('/context7', [AnalyticsDashboardController::class, 'index'])->name('context7');
 
-        // Phase 19.4: AI Prompt Governance Telemetry
-        Route::get('/ai-governance', [\App\Http\Controllers\Admin\AIGovernanceController::class, 'index'])->name('ai-governance');
-
-        // ✅ Phase 4: Governance Command Center (GCC)
-        Route::get('/command-center', \App\Http\Livewire\Admin\GovernanceCommandCenter::class)->name('governance.command-center');
-
-        // ✅ Phase 4C: Governance Health Dashboard
-        Route::get('/governance-dashboard', \App\Http\Livewire\Admin\GovernanceDashboard::class)->name('governance.dashboard');
+        // DEPRECATED 2026-09-15: ai-governance, governance.command-center, governance.dashboard
+        // → Karşılıkları: admin/governance (dashboard), admin/governance/autonomy (otonom panel)
+        // Bu route'lar kaldırıldı. Livewire bileşenleri: GovernanceDashboard, GovernanceCommandCenter
     });
 
     // ✅ Sprint 6.8: Property Configuration — Dynamic Field Schema
@@ -467,16 +462,6 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
         Route::post('/clear-cache', [\App\Http\Controllers\Admin\BlogController::class, 'clearSidebarCache'])->name('clear-cache');
     });
 
-    // DEBUG: Test auth durum
-    Route::get('/auth-test', function () {
-        return response()->json([
-            'authenticated' => Auth::check(),
-            'user' => Auth::check() ? Auth::user()->email : null,
-            'session_id' => session()->getId(),
-            'session_keys' => array_keys(session()->all()),
-        ]);
-    })->name('auth.test');
-
     // Legacy/alias routes for Context7 menu compatibility
     // AI Redirect Routes - REMOVED (Controller deleted, functionality moved to AI Settings)
 
@@ -574,14 +559,6 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
     Route::post('/ilanlar/{ilan}/restore', [\App\Http\Controllers\Admin\IlanCrudController::class, 'restore'])->name('ilanlar.restore');
     Route::post('/ilanlar/{ilan}/archive', [\App\Http\Controllers\Admin\IlanCrudController::class, 'archive'])->name('ilanlar.archive');
 
-
-    // Test route for category cascading
-    // Test route for category cascading
-    // DEPRECATED: Test route removed (kategori sistemi production'da test edildi)
-    // DEPRECATED: Test route removed (kategori sistemi production'da test edildi)
-    // Route::get('/ilanlar-test', [\App\Http\Controllers\Admin\IlanController::class, 'testCategories'])->name('ilanlar.test-categories');
-    // Route::get('/ilanlar-test', [\App\Http\Controllers\Admin\IlanController::class, 'testCategories'])->name('ilanlar.test-categories');
-
     // ✅ SAB: Draft Save Routes (Auth + Throttle required)
     Route::post('/ilanlar/draft', [\App\Http\Controllers\Admin\IlanDraftController::class, 'save'])
         ->name('ilanlar.draft')
@@ -619,12 +596,6 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
     });
 
     require __DIR__ . '/admin/ai.php';
-
-    // Test route
-    Route::get('/test-simple', function () {
-        return 'Simple route works!';
-    });
-    // Smart İlan routes removed - Use standard resource routes instead
 
     // İlan routes extracted to modular file
     require __DIR__ . '/admin/ilanlar.php';
@@ -862,6 +833,8 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
         Route::get('/', [TalepController::class, 'index'])->name('index');
         Route::get('/create', [TalepController::class, 'create'])->name('create');
         Route::post('/', [TalepController::class, 'store'])->name('store');
+        Route::get('/search', [TalepController::class, 'search'])->name('search');
+        Route::post('/bulk-action', [TalepController::class, 'bulkAction'])->name('talep.bulk.action');
         Route::get('/{talep}', [TalepController::class, 'show'])->name('show');
         Route::get('/{talep}/edit', [TalepController::class, 'edit'])->name('edit');
         Route::put('/{talep}', [TalepController::class, 'update'])->name('update');
@@ -869,8 +842,6 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
         Route::post('/{talep}/restore', [TalepController::class, 'restore'])->name('restore');
         Route::get('/{talep}/eslesen', [TalepController::class, 'eslesen'])->name('eslesen');
         Route::get('/{talep}/matches', [TalepController::class, 'showMatches'])->name('matches'); // 🎯 Eşleşme Kokpiti
-        Route::get('/search', [TalepController::class, 'search'])->name('search');
-        Route::post('/bulk-action', [TalepController::class, 'bulkAction'])->name('talep.bulk.action');
     });
 
     // Eşleştirme Sistemi
@@ -1034,14 +1005,6 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
         return redirect()->route('admin.ozellikler.index');
     })->name('module.ozellikler.index');
 
-
-    // Harita
-    Route::get('/harita', [\App\Http\Controllers\Admin\MapController::class, 'index'])->name('map.index');
-
-    // ❌ DEPRECATED: Smart Calculator (Removed 2026-01-12)
-    // Reason: SmartCalculatorService and SmartCalculatorController were stubs only.
-    // See routes/api/v1/admin.php for deprecation details.
-    // Route::get('/smart-calculator', [\App\Http\Controllers\Admin\SmartCalculatorController::class, 'index'])->name('smart-calculator');
 
     // Raporlama Sistemi
     Route::prefix('/reports')->name('reports.')->group(function () {
@@ -1291,26 +1254,6 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
         Route::get('/', [TalepController::class, 'index'])->name('index');
     });
 
-/*
-    Route::prefix('raporlarim')->name('raporlarim.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\ReportingController::class, 'raporlarim'])->name('index');
-    });
-*/
-
-/*
-    // User Özel Route'ları
-    Route::prefix('profilim')->name('profilim.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\ProfileController::class, 'index'])->name('index');
-        Route::put('/', [\App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('update');
-    });
-*/
-
-    // ✅ REMOVED: UserSettingsController placeholder - Use admin.ayarlar instead
-    // Route::prefix('ayarlarim')->name('ayarlarim.')->group(function () {
-    //     Route::get('/', [\App\Http\Controllers\Admin\UserSettingsController::class, 'index'])->name('index');
-    //     Route::put('/', [\App\Http\Controllers\Admin\UserSettingsController::class, 'update'])->name('update');
-    // });
-
     Route::prefix('adres-yonetimi')->name('adres-yonetimi.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\AdresYonetimiController::class, 'index'])->name('index');
 
@@ -1466,6 +1409,9 @@ Route::prefix('admin/ai-category')->group(function () {
 Route::prefix('admin/analytics')->name('admin.analytics.')->group(function () {
     Route::get('/', [AnalyticsController::class, 'index'])->name('index');
     Route::get('/data', [AnalyticsController::class, 'data'])->name('data');
+    // AI Governance Dashboard (Prompt Compliance Telemetry) - specific routes before wildcard
+    Route::get('/ai-governance', [\App\Http\Controllers\Admin\AIGovernanceController::class, 'index'])->name('ai-governance');
+    // Wildcard MUST be last
     Route::get('/{id}', [AnalyticsController::class, 'show'])->name('show');
 });
 
@@ -1537,16 +1483,9 @@ Route::prefix('api/admin')->name('admin.api.events.')->middleware(['web', 'auth'
     Route::delete('/events/{event}', [\App\Http\Controllers\Admin\PropertyEventApiController::class, 'destroy'])->name('destroy');
 });
 
-// Diagnostic Test Route (Yalıhan Bekçi)
-Route::get('/test-minimal', function () {
-    return view('admin.test-minimal');
-})->name('test-minimal');
-
-// ✅ UPS Governance Routes (Phase M)
+// UPS Routes (Phase M) — Governance redirect'leri kaldırıldı (2026-09-15)
 Route::prefix('admin/ups')->name('admin.ups.')->middleware(['web', 'auth', 'admin', 'role:admin', 'verified', 'throttle:30,1'])->group(function () {
-    Route::get('/governance', fn() => redirect()->route('admin.governance.feature-health'))->name('governance.index');
-    Route::post('/governance/generate-proposals', fn() => redirect()->route('admin.governance.feature-health.generate-proposals'))->name('governance.generate-proposals');
-    // Route::get('/advanced', [\App\Http\Controllers\Admin\UpsTemplateManagerController::class, 'advanced'])->name('advanced');
+
 
     // ❌ DEPRECATED (2026-01-25): UPS Feature Manager - Consolidated into Property Hub
     // ✅ REDIRECT: All /ups/features/* → /property-hub/features/*
@@ -1638,7 +1577,7 @@ Route::middleware(['web', 'auth', 'admin', 'role:admin', 'verified'])
     });
 
 // ✅ Ilan Calendar / Reservation (Phase P+R)
-Route::prefix('admin/ilanlar/{ilan}/calendar')->name('admin.ilanlar.calendar')->middleware(['web', 'auth', 'verified', 'throttle:30,1'])->group(function () {
+Route::prefix('admin/ilanlar/{ilan}/calendar')->name('admin.ilanlar.calendar')->middleware(['web', 'auth', 'verified', 'tenant.context', 'sab.write.guard', 'can:manage-ilanlar', 'throttle:30,1'])->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\IlanCalendarController::class, 'index']);
     Route::get('.json', [\App\Http\Controllers\Admin\IlanCalendarController::class, 'json'])->name('.json');
     Route::post('/', [\App\Http\Controllers\Admin\IlanCalendarController::class, 'store'])->name('.store');

@@ -42,24 +42,33 @@ class StoreOwnerIlanRequest extends FormRequest
             'ilce_id'           => ['nullable', 'integer', 'exists:ilceler,id'],
             'mahalle_id'        => ['nullable', 'integer', 'exists:mahalleler,id'],
             'adres'             => ['nullable', 'string', 'max:500'],
+            'lat'               => ['nullable', 'numeric', 'between:-90,90'],
+            'lng'               => ['nullable', 'numeric', 'between:-180,180'],
 
             // Mülk özellikleri (opsiyonel)
-            'metrekare'         => ['nullable', 'numeric', 'min:0'],
+            'net_m2'            => ['nullable', 'numeric', 'min:0'],
+            'brut_m2'           => ['nullable', 'numeric', 'min:0'],
             'oda_sayisi'        => ['nullable', 'string', 'max:50'],
+            'banyo_sayisi'      => ['nullable', 'integer', 'min:0', 'max:50'],
             'bina_yasi'         => ['nullable', 'integer', 'min:0', 'max:200'],
             'kat'               => ['nullable', 'string', 'max:50'],
+            'toplam_kat'        => ['nullable', 'integer', 'min:0', 'max:200'],
             'isitma_tipi'       => ['nullable', 'string', 'max:100'],
+            'esyali'            => ['nullable', 'boolean'],
+            'aidat'             => ['nullable', 'string', 'max:100'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'baslik.required'          => 'İlan başlığı zorunludur.',
-            'ana_kategori_id.required' => 'Kategori seçimi zorunludur.',
-            'il_id.required'           => 'İl seçimi zorunludur.',
-            'para_birimi.required'     => 'Para birimi seçimi zorunludur.',
+            'baslik.required'            => 'İlan başlığı zorunludur.',
+            'ana_kategori_id.required'   => 'Kategori seçimi zorunludur.',
+            'il_id.required'             => 'İl seçimi zorunludur.',
+            'para_birimi.required'       => 'Para birimi seçimi zorunludur.',
             'fiyat_gosterim_modu.required' => 'Fiyat gösterim modu seçimi zorunludur.',
+            'lat.between'                => 'Enlem değeri -90 ile 90 arasında olmalıdır.',
+            'lng.between'                => 'Boylam değeri -180 ile 180 arasında olmalıdır.',
         ];
     }
 

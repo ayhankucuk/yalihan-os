@@ -68,27 +68,27 @@ class IlanCrudController extends AdminController
         return to_route('admin.ilanlar.show', $res['id'])->with($res);
     }
 
-    public function show(int $id): View
+    public function show(int|string $id): View
     {
-        $ilan = $this->ilanRepository->findOrFail($id);  // Layer 2: 404 concealment
+        $ilan = $this->ilanRepository->findOrFail((int) $id);  // Layer 2: 404 concealment
         $this->authorize('view', $ilan);                  // Layer 1: Capability check
 
         $data = $this->ilanService->getDetailedListingAnalysis($ilan);
         return view('admin.ilanlar.show', $data);
     }
 
-    public function edit(int $id): View
+    public function edit(int|string $id): View
     {
-        $ilan = $this->ilanRepository->findOrFail($id);  // Layer 2: 404 concealment
+        $ilan = $this->ilanRepository->findOrFail((int) $id);  // Layer 2: 404 concealment
         $this->authorize('update', $ilan);                // Layer 1: Capability check
 
         $data = $this->ilanService->getEditFormData($ilan);
         return view('admin.ilanlar.edit', $data);
     }
 
-    public function update(UpdateIlanRequest $request, int $id): RedirectResponse|JsonResponse
+    public function update(UpdateIlanRequest $request, int|string $id): RedirectResponse|JsonResponse
     {
-        $ilan = $this->ilanRepository->findOrFail($id);  // Layer 2: 404 concealment
+        $ilan = $this->ilanRepository->findOrFail((int) $id);  // Layer 2: 404 concealment
         $this->authorize('update', $ilan);                // Layer 1: Capability check
 
         $input = $request->validated();
@@ -102,9 +102,9 @@ class IlanCrudController extends AdminController
         return to_route('admin.ilanlar.show', $ilan->id)->with($res);
     }
 
-    public function destroy(int $id): RedirectResponse
+    public function destroy(int|string $id): RedirectResponse
     {
-        $ilan = $this->ilanRepository->findOrFail($id);  // Layer 2: 404 concealment
+        $ilan = $this->ilanRepository->findOrFail((int) $id);  // Layer 2: 404 concealment
         $this->authorize('delete', $ilan);                // Layer 1: Capability check
 
         $this->ilanService->deleteListing($ilan);
@@ -117,9 +117,9 @@ class IlanCrudController extends AdminController
      * Sprint 4.2: Real CRUD Certification
      * P0 fix: Missing restore endpoint
      */
-    public function restore(int $id): RedirectResponse|JsonResponse
+    public function restore(int|string $id): RedirectResponse|JsonResponse
     {
-        $ilan = $this->ilanRepository->findOrFail($id);  // Layer 2: 404 concealment
+        $ilan = $this->ilanRepository->findOrFail((int) $id);  // Layer 2: 404 concealment
         $this->authorize('restore', $ilan);             // Layer 1: Capability check
 
         $ilan = $this->ilanService->restoreListing($ilan);
@@ -139,9 +139,9 @@ class IlanCrudController extends AdminController
      * Sprint 4.2: Real CRUD Certification
      * Adds route for repository archive() method
      */
-    public function archive(int $id): RedirectResponse|JsonResponse
+    public function archive(int|string $id): RedirectResponse|JsonResponse
     {
-        $ilan = $this->ilanRepository->findOrFail($id);  // Layer 2: 404 concealment
+        $ilan = $this->ilanRepository->findOrFail((int) $id);  // Layer 2: 404 concealment
         $this->authorize('archive', $ilan);             // Layer 1: Capability check
 
         $ilan = $this->ilanService->archiveListing($ilan);
@@ -163,26 +163,26 @@ class IlanCrudController extends AdminController
         return response()->json($res);
     }
 
-    public function getTypeConfig(Request $request, int $yayinTipiId): JsonResponse
+    public function getTypeConfig(Request $request, int|string $yayinTipiId): JsonResponse
     {
         $this->authorize('viewAny', Ilan::class);
 
-        $res = $this->ilanService->getTypeConfiguration($yayinTipiId);
+        $res = $this->ilanService->getTypeConfiguration((int) $yayinTipiId);
         return response()->json($res);
     }
 
-    public function ownerPrivate(int $id): JsonResponse
+    public function ownerPrivate(int|string $id): JsonResponse
     {
-        $ilan = $this->ilanRepository->findOrFail($id);           // Layer 2: 404 concealment
+        $ilan = $this->ilanRepository->findOrFail((int) $id);           // Layer 2: 404 concealment
         $this->authorize('viewPrivateListingData', $ilan);         // Layer 1: Capability check
 
         $res = $this->ilanService->getOwnerPrivateDetails($ilan);
         return response()->json($res);
     }
 
-    public function updatePortalIds(Request $request, int $id): JsonResponse
+    public function updatePortalIds(Request $request, int|string $id): JsonResponse
     {
-        $ilan = $this->ilanRepository->findOrFail($id);  // Layer 2: 404 concealment
+        $ilan = $this->ilanRepository->findOrFail((int) $id);  // Layer 2: 404 concealment
         $this->authorize('update', $ilan);                // Layer 1: Capability check
 
         $ids = $request->input('portal_ids', []);

@@ -92,7 +92,7 @@
     @foreach($villa->features as $index => $feature)
     {
       "@type": "LocationFeatureSpecification",
-      "name": "{{ $feature->label }}"
+      "name": "{{ $feature->name ?? $feature->label }}"
     }{{ $loop->last ? '' : ',' }}
     @endforeach
   ]
@@ -233,7 +233,7 @@
                         <div class="flex flex-wrap gap-4 mt-6 pt-6 border-t border-gray-100 dark:border-slate-700">
                             <span class="flex items-center text-sm text-gray-500 dark:text-gray-400">
                                 <span class="material-symbols-outlined mr-1.5" style="font-size:16px">visibility</span>
-                                {{ number_format($villa->view_count) }} görüntüleme
+                                {{ number_format($villa->goruntulenme) }} görüntüleme
                             </span>
                             <span class="flex items-center text-sm text-gray-500 dark:text-gray-400">
                                 <span class="material-symbols-outlined mr-1.5" style="font-size:16px">calendar_today</span>
@@ -273,7 +273,7 @@
                             @foreach($villa->features as $feature)
                             <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
                                 <span class="material-symbols-outlined" style="font-size:20px; color: #C9A84C;">check</span>
-                                <span class="text-gray-700 dark:text-slate-200 dark:text-slate-300">{{ $feature->label }}</span>
+                                <span class="text-gray-700 dark:text-slate-200 dark:text-slate-300">{{ $feature->name ?? $feature->label }}</span>
                             </div>
                             @endforeach
                         </div>
@@ -289,7 +289,7 @@
                         </h2>
                         <p class="text-gray-700 dark:text-slate-300 mb-4 flex items-center gap-2">
                             <span class="material-symbols-outlined" style="font-size:18px; color: #0A1628;">location_on</span>
-                            {{ $villa->adres }}@if($villa->ilce), {{ $villa->ilce->ilce_adi }}@endif@if($villa->il), {{ $villa->il->il_adi }}@endif
+                            {{ $villa->adres }}{{ $villa->ilce ? ', ' . $villa->ilce->ilce_adi : '' }}{{ $villa->il ? ', ' . $villa->il->il_adi : '' }}
                         </p>
                         @php
                             $mapQuery = urlencode(implode(', ', array_filter([

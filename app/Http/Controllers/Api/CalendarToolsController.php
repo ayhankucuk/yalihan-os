@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api;
  */
 
 use App\Http\Controllers\Controller;
+use App\Models\Ilan;
 use App\Services\Calendar\AvailabilityService;
 use App\Services\Calendar\CancellationPolicyService;
 use Carbon\Carbon;
@@ -14,6 +15,10 @@ use Illuminate\Http\Request;
 
 class CalendarToolsController extends Controller
 {
+    public function __construct(
+        private readonly AvailabilityService $availabilityService,
+    ) {}
+
     public function checkAvailability(Request $request)
     {
         $data = $request->validate([
@@ -22,18 +27,28 @@ class CalendarToolsController extends Controller
             'ends_at' => 'required|date|after:starts_at',
         ]);
 
-        $service = app(AvailabilityService::class);
         $start = Carbon::parse($data['starts_at']);
         $end = Carbon::parse($data['ends_at']);
 
-        $hasConflict = $service->hasConflict((int)$data['ilan_id'], $start, $end);
-        $conflicts = $hasConflict ? $service->getConflicts((int)$data['ilan_id'], $start, $end) : collect();
+        $user = $request->user('sanctum');
+        abort_unless($user?->tenant_id, 403, 'Kiracı bağlamı gerekli.');
+
+        $ilan = Ilan::withoutGlobalScopes()
+            ->whereKey($data['ilan_id'])
+            ->where('tenant_id', $user->tenant_id)
+            ->firstOrFail();
+
+        $hasConflict = $this->availabilityService->hasConflict(
+            $ilan->id,
+            $start,
+            $end,
+            (int) $user->tenant_id,
+        );
 
         return response()->json([
             'success' => true,
             'data' => [
                 'available' => !$hasConflict,
-                'conflicts' => $conflicts,
             ],
         ]);
     }

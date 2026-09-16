@@ -315,7 +315,7 @@ class IlanPublicController extends Controller
             $idArray = array_slice($idArray, 0, 4);
         }
 
-        $ilanlar = Ilan::with([
+        $ilanlar = Ilan::withoutGlobalScope(\App\Scopes\TenantScope::class)->with([
             'il:id,il_adi',
             'ilce:id,ilce_adi',
             'mahalle:id,mahalle_adi',
@@ -342,7 +342,7 @@ class IlanPublicController extends Controller
      */
     public function show($id, CurrencyConversionService $currencyConversionService)
     {
-        $ilan = Ilan::with([
+        $ilan = Ilan::withoutGlobalScope(\App\Scopes\TenantScope::class)->with([
             'il:id,il_adi',
             'ilce:id,ilce_adi',
             'mahalle:id,mahalle_adi',

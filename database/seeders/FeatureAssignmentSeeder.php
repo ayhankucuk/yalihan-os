@@ -211,8 +211,49 @@ class FeatureAssignmentSeeder extends Seeder
         $this->assign($f('tapu-durumu'),        1, 8, 1, 'Tapu ve İmar',       false, true,  1, 34);
         $this->assign($f('kullanim-durumu'),   1, 8, 1, 'Tapu ve İmar',       false, false, 2, 34);
 
-        // ── Villa Kiralık (yayin_tipi_id=2) — deposit visible
-        $this->assign($f('depozito'),           1, 8, 2, 'Maliyet ve Aidat',   true,  false, 2,  31);
+        // ── Villa Kiralık (yayin_tipi_id=2) — full parity with Satılık/Günlük + deposit
+        $this->assign($f('brut-alan'),          1, 8, 2, 'Temel Bilgiler',     true,  true,  1,  1);
+        $this->assign($f('net-alan'),           1, 8, 2, 'Temel Bilgiler',     false, true,  2,  1);
+        $this->assign($f('oda-sayisi'),          1, 8, 2, 'Temel Bilgiler',     true,  true,  3,  1);
+        $this->assign($f('banyo-sayisi'),        1, 8, 2, 'Temel Bilgiler',     false, true,  4,  1);
+        $this->assign($f('toplam-kat'),          1, 8, 2, 'Temel Bilgiler',     false, true,  5,  1);
+        $this->assign($f('balkon'),              1, 8, 2, 'Temel Bilgiler',     false, true,  6,  1);
+        $this->assign($f('kat'),                 1, 8, 2, 'Temel Bilgiler',     false, true,  7,  1);
+
+        $this->assign($f('arsa-alani'),          1, 8, 2, 'Konum ve Arsa',      false, true,  1,  8);
+        $this->assign($f('denize-mesafe'),       1, 8, 2, 'Konum ve Arsa',      false, true,  2,  8);
+        $this->assign($f('manzara'),             1, 8, 2, 'Konum ve Arsa',      false, true,  3,  8);
+        $this->assign($f('cephe'),               1, 8, 2, 'Konum ve Arsa',      false, true,  4,  8);
+        $this->assign($f('imar-durumu'),         1, 8, 2, 'Konum ve Arsa',      false, true,  5,  8);
+
+        $this->assign($f('havuz'),               1, 8, 2, 'Yapı Özellikleri',   false, true,  1, 13);
+        $this->assign($f('havuz-tip'),           1, 8, 2, 'Yapı Özellikleri',   false, true,  2, 13, 'listing_type', null, ['field' => 'havuz', 'operator' => 'truthy']);
+        $this->assign($f('ozel-havuz'),         1, 8, 2, 'Yapı Özellikleri',   false, true,  3, 13);
+        $this->assign($f('bahce'),               1, 8, 2, 'Yapı Özellikleri',   false, true,  4, 13);
+        $this->assign($f('bahce-alani'),         1, 8, 2, 'Yapı Özellikleri',   false, true,  5, 13);
+        $this->assign($f('akilli-ev'),          1, 8, 2, 'Yapı Özellikleri',   false, true,  6, 13);
+        $this->assign($f('teras'),              1, 8, 2, 'Yapı Özellikleri',   false, true,  7, 13);
+        $this->assign($f('veranda'),            1, 8, 2, 'Yapı Özellikleri',   false, false, 8, 13);
+
+        $this->assign($f('otopark'),            1, 8, 2, 'Dış Özellikler',     false, true,  1, 21);
+        $this->assign($f('guvenlik'),           1, 8, 2, 'Dış Özellikler',     false, true,  2, 21);
+        $this->assign($f('site-icerisinde'),   1, 8, 2, 'Dış Özellikler',     false, true,  3, 21);
+        $this->assign($f('spor-alani'),         1, 8, 2, 'Dış Özellikler',     false, true,  4, 21);
+
+        $this->assign($f('esyali'),             1, 8, 2, 'İç Özellikler',      false, true,  1, 25);
+        $this->assign($f('mutfak-tipi'),        1, 8, 2, 'İç Özellikler',      false, true,  2, 25);
+        $this->assign($f('isitma'),             1, 8, 2, 'İç Özellikler',      false, true,  3, 25);
+        $this->assign($f('sogutma'),            1, 8, 2, 'İç Özellikler',      false, true,  4, 25);
+        $this->assign($f('bina-yasi'),          1, 8, 2, 'İç Özellikler',      false, true,  5, 25);
+        $this->assign($f('kurutma-odasi'),     1, 8, 2, 'İç Özellikler',      false, false, 6, 25);
+
+        $this->assign($f('aidat'),              1, 8, 2, 'Maliyet ve Aidat',   false, false, 1, 31);
+        $this->assign($f('depozito'),           1, 8, 2, 'Maliyet ve Aidat',   true,  true,  2,  31);
+        $this->assign($f('kredi-uygunlugu'),   1, 8, 2, 'Maliyet ve Aidat',   false, false, 3, 31);
+        $this->assign($f('takas'),              1, 8, 2, 'Maliyet ve Aidat',   false, false, 4, 31);
+
+        $this->assign($f('tapu-durumu'),        1, 8, 2, 'Tapu ve İmar',       false, false, 1, 34);
+        $this->assign($f('kullanim-durumu'),   1, 8, 2, 'Tapu ve İmar',       false, true,  2, 34);
 
         // ── Villa Günlük (yayin_tipi_id=5) — explicit, NOT inherited
         // FeatureTemplateResolver does NOT cascade across listing_type values.

@@ -1,45 +1,132 @@
 ---
 name: multi-agent-worktree-sandbox
-description: Çoklu ajan geliştirmesinde Git worktree, test veritabanı, storage kanıtı ve staging sınırlarını izole eder; ajanlar arası diff ve kontrat sürüklenmesini engeller.
+description: Git worktree izolasyonu, test DB ayrımı ve ajanlar arası handoff. Multi-agent çakışmalarını önler, her ajanın kendi branch'te çalışmasını garantiler.
 ---
 
 # Multi Agent Worktree Sandbox
 
-Bu yetenek, Codex, Antigravity, Kilo veya yerel geliştirici aynı projede çalışırken kaynak kodu, test verisini ve kanıt dosyalarını birbirinden ayırır.
+Codex, Antigravity, Kilo veya yerel geliştirici aynı projede çalışırken kaynak kodu, test verisini ve kanıt dosyalarını birbirinden ayırır.
 
-## Başlangıç sözleşmesi
+---
 
-Her görev başlamadan önce şu kayıtları al:
+## Başlangıç Sözleşmesi (Her Görev Öncesi)
 
-- aktif branch ve worktree yolu
-- temiz/kirli Git durumu ve mevcut değişiklik sahibi
-- görev kapsamındaki dosya listesi
-- test DB yolu, storage yolu ve uygulama URL'si
-- beklenen HTTP/API/form kontratı ve kanıt seviyesi
+Her görev başlamadan **önce** şu kontrolü yap:
 
-Ana checkout başka bir ajan tarafından kullanılıyorsa yazma yapma. Her yazan ajan kendi worktree'sinde ve kendi branch'inde çalışmalıdır.
+```bash
+git branch --show-current
+git status --short
+git worktree list
+git rev-parse HEAD
+```
 
-## Test izolasyonu
+Çıktıyı yorumla:
+- **Dirty worktree** → üzerine yazma, sahibini belirle
+- **Başka agent'ın branch'i** → o branch'e dokunma
+- **Ana worktree'de kayıt varsa** → kapsamı ayır veya bekle
 
-- Aynı `database.sqlite` veya ortak MySQL test şemasını paralel testlerde kullanma.
-- Test koşusu başına hash'li geçici DB/şema ve ayrı storage kökü kullan; Laravel config/cache'in gerçekten bu hedefi kullandığını koşudan önce doğrula.
-- Fixture ID'lerini sabitleme. Oluşturulan kayıtların correlation ID'sini ve tenant'ını test çıktısında taşı.
-- Test tamamlandığında geçici DB/storage'ı temizle veya kanıt amacıyla saklandığını açıkça belirt; ana repo storage'ına dosya bırakma.
-- Bir koşu `422`, diğer koşu `200` bekliyorsa önce ortak API/form sözleşmesini belirle; iki sonucu da sessizce kabul eden assertion yazma.
+---
 
-## Staging ve commit sınırı
+## Worktree Kuralları
 
-- Sadece görev kapsamındaki dosyaları stage et; `git diff --staged --name-only` listesini beklenen kapsamla birebir karşılaştır.
-- Başka ajana ait değişiklik, evidence PNG/JSON, log veya storage dosyasını taşıma, silme veya stage etme.
-- Commit öncesi `git diff --check` ve secret scan çalıştır. Migration/seed/deploy üretim yetkisi gerektiriyorsa `BLOCKED_PENDING_PRODUCTION_AUTH` olarak bırak.
-- Worktree temizliği için `git restore -- <hedef-dosya>` veya `git checkout HEAD -- <hedef-dosya>` gibi yalnızca kapsamı kesin hedefleyen geri alma komutlarını kullan; `git reset --hard`, geniş `rm -rf` veya ortak DB silme yasaktır.
+### Yazma İzni
+| Durum | Yapabilir |
+|-------|----------|
+| Ana worktree (`/repos/yalihan-os`) | Read-only |
+| Kendi worktree'n + kendi branch | Full write |
+| Başka ajanın worktree/branch | **Asla yazma** |
 
-## Handoff ve kontrat mutabakatı
+### Commit Disiplini
+- Sadece **görev kapsamındaki dosyaları** stage et
+- `git diff --staged --name-only` → beklenen kapsamla birebir karşılaştır
+- Başka ajana ait değişiklik, kanıt PNG/JSON, log veya storage dosyasını **taşıma, silme, stage etme**
+- Commit öncesi `git diff --check` + secret scan çalıştır
 
-Handoff mesajı şu alanları içermeli: owner, worktree/branch, değişen dosyalar, commit, test komutu, ham sonuç yolu, bilinen blokaj ve sonraki doğrulama. Agent raporunu repository/test/browser/production kanıtı yerine koyma.
+### Geri Alma Komutları (Sadece Bunlar)
+```bash
+# ✅ İZİNLİ
+git restore -- <hedef-dosya>
+git checkout HEAD -- <hedef-dosya>
 
-Bir ajan runtime kodunu, diğeri E2E fixture'ını değiştirirse önce aynı commit veya exact diff üzerinde yeniden çalıştır. "Kod tamamlandı" ile "test doğrulandı" ve "canlıya çıktı" iddialarını ayrı tut.
+# ❌ YASAK
+git reset --hard
+git clean -fd        # Geniş silme
+rm -rf               # Folders
+```
+
+---
+
+## Test DB İzolasyonu
+
+```bash
+# ❌ YASAK — Aynı database.sqlite'da paralel test
+php artisan test
+
+# ✅ DOĞRU — Her test koşusu için ayrı geçici DB
+php artisan test --env=testing
+# veya
+DB_DATABASE=testing_db.sqlite php artisan test
+```
+
+Her test koşusu:
+1. Geçici DB/şema oluştur veya test:refresh-database kullan
+2. Fixture ID'lerini sabitle (hash'li geçici ID)
+3. Tenant correlation ID'yi test çıktısında taşı
+4. Test tamamlandığında geçici DB'yi temizle veya kanıt amacıyla saklandığını belirt
+
+---
+
+## Handoff Protokolü
+
+Handoff mesajı **şu alanları içermeli**:
+
+| Alan | İçerik |
+|------|--------|
+| Owner | Hangi ajan/session üretti |
+| Worktree/Branch | Hangi worktree ve branch |
+| Değişen Dosyalar | `git diff --staged --name-only` listesi |
+| Commit | Varsa commit hash |
+| Test Komutu | `php artisan test --filter=...` |
+| Sonuç | Ham test çıktısı veya kanıt dosyası |
+| Bilinen Blokaj | Ne bekliyor |
+| Sonraki Doğrulama | Kim ne yapmalı |
+
+```markdown
+## HANDOFF — [Görev Adı]
+
+**Branch:** feature/my-task
+**Commit:** abc123f
+**Worktree:** /repos/yalihan-os/worktree-agent-x/
+
+### Değişen Dosyalar (6)
+- app/Services/IlanCrudService.php
+- tests/Feature/Ilan/IlanCrudTest.php
+
+### Çalıştırılan Komut
+php artisan test --filter=IlanCrudTest
+
+### Test Sonucu
+PASS — 12/12 assertions
+
+### Bilinen Blokaj
+Yok
+
+### Sonraki Adım
+Bekçi: sab:integrity-scan sonucunu kontrol et → agent-y'ye devir
+```
+
+> Agent raporu repository/test/browser/production kanıtı **yerine geçmez**.
+
+---
+
+## İki Ajan Aynı Dosyada Çalışırsa
+
+1. **Dosyayı kilitle**: İlgili ajanın `PROJECT_STATE.md`'ye yazmasını iste
+2. **Conflict resolution**: Sadece ilgili ajan çözüm üretir, diğeri bekle
+3. **Ortak API sözleşmesi bozuksa**: İkisinin de testini ayrı çalıştır, `200` + `422` sonuçlarını sessizce kabul eden assertion **YASAK**
+
+---
 
 ## Sınırlar
 
-Bu yetenek ajanlar arasında koordinasyon ve izolasyon sağlar; kullanıcı adına production migration, seed, deploy, veri backfill veya silme yapmaz.
+Bu yetenek ajanlar arasında koordinasyon sağlar, **kullanıcı adına production migration, seed, deploy, veri backfill veya silme yapmaz**.

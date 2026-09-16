@@ -6,14 +6,14 @@
         class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-800 p-8 space-y-6">
         <div class="flex items-center gap-3 mb-4">
             <div
-                class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                class="w-10 h-10 rounded-xl bg-[#C9A84C]/20 dark:bg-[#C9A84C]/10 flex items-center justify-center text-[#C9A84C]">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
             </div>
             <div>
                 <h4 class="text-lg font-bold text-gray-900 dark:text-white dark:text-slate-100">Temel İlan Bilgileri</h4>
-                <p class="text-xs text-blue-600 dark:text-blue-400">Başlık zorunlu, açıklama opsiyonel; fiyat gösterim moduna göre zorunlu</p>
+                <p class="text-xs text-[#C9A84C]">Başlık zorunlu, açıklama opsiyonel; fiyat gösterim moduna göre zorunlu</p>
             </div>
         </div>
 
@@ -26,7 +26,7 @@
                 </label>
                 <input type="text" id="baslik" name="baslik" maxlength="200"
                     placeholder="Örn: Deniz Manzaralı 3+1 Lüks Daire"
-                    class="w-full px-4 py-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 dark:text-slate-100"
+                    class="w-full px-4 py-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-[#C9A84C]/50 focus:border-[#C9A84C] transition-all duration-200 dark:text-slate-100"
                     value="{{ old('baslik') }}">
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">En az 10, en fazla 200 karakter</p>
             </div>
@@ -50,7 +50,7 @@
                     Para Birimi
                 </label>
                 <select id="para_birimi" name="para_birimi"
-                    class="w-full px-4 py-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 dark:text-slate-100">
+                    class="w-full px-4 py-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#C9A84C]/50 focus:border-[#C9A84C] transition-all duration-200 dark:text-slate-100">
                     <option value="TRY" {{ old('para_birimi', 'TRY') === 'TRY' ? 'selected' : '' }}>₺ TRY</option>
                     <option value="USD" {{ old('para_birimi') === 'USD' ? 'selected' : '' }}>$ USD</option>
                     <option value="EUR" {{ old('para_birimi') === 'EUR' ? 'selected' : '' }}>€ EUR</option>
@@ -246,8 +246,11 @@
     {{-- Navigation Buttons --}}
     <div class="flex justify-between gap-4 mt-8">
         <button type="button" @click="wizard?.prevStep()"
-            class="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 hover:scale-105 active:scale-95 transition-all duration-200 font-medium dark:text-slate-300">
-            ← Geri
+            class="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105 active:scale-95 transition-all duration-200 font-bold text-sm">
+            <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Geri
         </button>
         <button type="button"
             @click="
@@ -292,8 +295,11 @@
             }
             wizard?.nextStep()
         "
-            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all duration-200 font-medium">
-            İleri →
+            class="inline-flex items-center gap-2 px-6 py-3 bg-[#0A1628] hover:bg-[#132238] text-[#C9A84C] rounded-xl shadow-md hover:scale-105 active:scale-95 transition-all duration-200 font-bold text-sm">
+            İleri
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
         </button>
     </div>
 </div>

@@ -70,11 +70,11 @@ class IlanReferansService
 
         // Lokasyon (İlçe veya Mahalle)
         if ($ilan->mahalle) {
-            $parts[] = $ilan->mahalle->mahalle_adi;
+            $parts[] = is_object($ilan->mahalle) ? ($ilan->mahalle->mahalle_adi ?? $ilan->mahalle->name ?? (string) $ilan->mahalle) : (string) $ilan->mahalle;
         } elseif ($ilan->ilce) {
-            $parts[] = $ilan->ilce->ilce_adi;
+            $parts[] = is_object($ilan->ilce) ? ($ilan->ilce->ilce_adi ?? $ilan->ilce->name ?? (string) $ilan->ilce) : (string) $ilan->ilce;
         } elseif ($ilan->il) {
-            $parts[] = $ilan->il->il_adi;
+            $parts[] = is_object($ilan->il) ? ($ilan->il->il_adi ?? $ilan->il->name ?? (string) $ilan->il) : (string) $ilan->il;
         }
 
         // Yayın Tipi (Satılık, Kiralık, vb.)
@@ -85,7 +85,7 @@ class IlanReferansService
 
         // Site/Apartman
         if ($ilan->site) {
-            $parts[] = $ilan->site->name;
+            $parts[] = is_object($ilan->site) ? ($ilan->site->name ?? (string) $ilan->site) : (string) $ilan->site;
         }
 
         // Mal Sahibi (Parantez içinde - EN SONDA)

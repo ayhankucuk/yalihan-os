@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\AI;
 
 use App\Services\AIService;
-use App\Services\AI\AiTelemetryService;
+use App\Services\AI\Monitoring\AiTelemetryService;
 use App\Services\Logging\LogService;
 use App\Services\NotificationService;
 use Exception;

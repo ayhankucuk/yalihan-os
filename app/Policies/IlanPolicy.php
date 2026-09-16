@@ -20,7 +20,7 @@ class IlanPolicy
      */
     public function view(User $user, Ilan $ilan): bool
     {
-        if ($user->hasRole(['admin', 'super-admin']) || (method_exists($user, 'isAdmin') && $user->isAdmin())) {
+        if ($user->hasRole(['admin', 'super-admin']) || (method_exists($user, 'isAdmin') && $user->isAdmin()) || in_array($user->role, ['admin', 'super-admin'])) {
             return true;
         }
 
@@ -40,7 +40,7 @@ class IlanPolicy
      */
     public function update(User $user, Ilan $ilan): bool
     {
-        if ($user->hasRole(['admin', 'super-admin']) || (method_exists($user, 'isAdmin') && $user->isAdmin())) {
+        if ($user->hasRole(['admin', 'super-admin']) || (method_exists($user, 'isAdmin') && $user->isAdmin()) || in_array($user->role, ['admin', 'super-admin'])) {
             return true;
         }
 
@@ -55,7 +55,7 @@ class IlanPolicy
      */
     public function delete(User $user, Ilan $ilan): bool
     {
-        if ($user->hasRole(['admin', 'super-admin']) || (method_exists($user, 'isAdmin') && $user->isAdmin())) {
+        if ($user->hasRole(['admin', 'super-admin']) || (method_exists($user, 'isAdmin') && $user->isAdmin()) || in_array($user->role, ['admin', 'super-admin'])) {
             return true;
         }
 
@@ -64,7 +64,7 @@ class IlanPolicy
 
     public function viewPrivateListingData(User $user, Ilan $ilan): bool
     {
-        if ($user->hasRole(['admin', 'super-admin'])) {
+        if ($user->hasRole(['admin', 'super-admin']) || in_array($user->role, ['admin', 'super-admin'])) {
             return true;
         }
 
@@ -76,7 +76,7 @@ class IlanPolicy
      */
     public function restore(User $user, Ilan $ilan): bool
     {
-        if ($user->hasRole(['admin', 'super-admin'])) {
+        if ($user->hasRole(['admin', 'super-admin']) || in_array($user->role, ['admin', 'super-admin'])) {
             return true;
         }
 
@@ -88,7 +88,7 @@ class IlanPolicy
      */
     public function archive(User $user, Ilan $ilan): bool
     {
-        if ($user->hasRole(['admin', 'super-admin'])) {
+        if ($user->hasRole(['admin', 'super-admin']) || in_array($user->role, ['admin', 'super-admin'])) {
             return true;
         }
 

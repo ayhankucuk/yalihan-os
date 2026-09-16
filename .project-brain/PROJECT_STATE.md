@@ -6,19 +6,20 @@ status: active
 canonical: true
   evidence_level: TEST_VERIFIED
   as_of_commit: 911e4e3c
-last_reviewed: 2026-09-08
-review_after: 2026-09-22
+last_reviewed: 2026-09-14
+review_after: 2026-09-28
 supersedes: null
 ---
 
 # YALIHAN OS — Project Brain State
 
 <!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
-- **Repository Commit:** `fe17dd5c` (HEAD) — fail-closed TenantScope + orphan ilan/user/ilan backfill
-- **Branch:** `integration/antigravity-kilo-takeover`
-- **Working Tree:** `Stash dirty (wip-pre-cherry-pick stashed)`
-- **Evidence Date:** 2026-09-08T14:57:00+03:00
-- **Evidence Level:** `TEST_VERIFIED` — TenantScope fail-closed + V2 isolation tests 30/30 PASS
+- **Repository Commit:** `e8a90cda` (HEAD) — RC2 dirty tree fully cleaned, 3 hygiene skills added
+- **Branch:** `release-candidate/RC2`
+- **Working Tree:** DIRTY — 2 dosya değişti (`app/Repositories/IlanRepository.php`, `docs/BEKCI_CHANGELOG.md`)
+- **Evidence Date:** 2026-09-14T14:00:00+03:00
+- **Evidence Level:** `TEST_VERIFIED` — `admin/ilanlar` zero-results root cause: `backedEnum + groupBy` + `TenantScope whereRaw('1=0')` — both layers fixed
+- **admin/ilanlar Fix:** `IlanService` stat sorguları → `DB::table()` facade + `CAST(yayin_durumu AS CHAR)`, `IlanRepository` → `withoutGlobalScopes()` + explicit `tenant_id`
 - **Production Authorization:** BACKFILL + FAIL_CLOSED AUTHORIZED (OPERATOR/Saab 2026-09-08)
 - **Production Authorization:** `NONE (Read-Only Gate)`
 <!-- ───────────────────────────────────────────────────────────── -->
@@ -38,10 +39,66 @@ YALIHAN OS is an AI-assisted real-estate and property-operations operating syste
 ## Current phase
 
 - ERA V Phase 2 — Autonomous Operations: ACTIVE.
+
+## Sprint 14 Certification — Hermes Hardening Findings (Oturum 184 — 2026-09-14)
+
+**Sprint 14:** `CONDITIONAL_CERTIFIED` (board-approved 2026-09-11) — G-01..G-04 Part 1 PASS
+- G-04 Part 2 (operator timing): BLOCKED — API yokluğu, production'da operator ölçümü bekleniyor
+
+**3 Critical Hermes Runtime Findings — STATUS:**
+| ID | Bulgu | Status | Kanıt |
+|----|-------|--------|-------|
+| H-01 | PropertyScoreAgent namespace/directory mismatch | ✅ RESOLVED (2026-08-28) | namespace Workforce→Workflow |
+| H-02 | DriveAgent constructor eksik DriveWebhookService | ✅ RESOLVED (2026-08-28) | ServiceProvider'a eklendi |
+| H-03 | NotificationAgent subscribesTo event mismatch | ✅ RESOLVED (2026-08-28) | subscribesTo: workforce.publishing.decision_ready |
+
+**Non-blocking / LOW:**
+| ID | Bulgu | Status |
+|----|-------|--------|
+| H-05 | PropertyScoreAgent in-memory buffer | ✅ RESOLVED — Cache 24h TTL + chain_id propagation |
+| H-07 | DriveAgent sync execution | ⏳ AÇIK — Non-blocking, queue'ya geçiş planlanacak |
+| H-10 | TelegramNotificationHandler stub | ⏳ AÇIK — Non-blocking, dış servis bağlantısı bekleniyor |
+
+**Sprint 14 Workforce Chain Tests:**
+- `WorkforceAgentsTest.php`: 22 PASS / 108 assertions ✅
+- E2E zincir: `workforce.workspace.created` → tüm ajanlar → notification ✅
+
+**Sprint 15 (Action Center):** LAUNCHED — 53 PASS (c44dc8ad) — Herme'siz bağımsız çalışıyor
+
+## RC2 Hygiene Skills (2026-09-14)
+
+Oturum 183'te öğrenilen 3 yeni agent skill:
+- `git-worktree-hygiene` — Dirty tree'yi temiz state'e getirir, kararları loglar
+- `conflict-guard-preflight` — Commit öncesi hot-spot taraması + lock kontrolü
+- `dirty-inventory-generator` — Dirty dosyaları otomatik sınıflandırma + önceliklendirme
+
+## Bekçi MCP — Stdio Transport (2026-09-14)
+
+MCP server `yalihan-bekci-mcp.js` **stdio subprocess** olarak çalışır (HTTP server değil).
+Health check artık `pgrep` ile process check yapıyor — eski HTTP probe yanlıştı.
+Overall score: **79%** (önceki 59% — MCP artık doğru algılanıyor).
+
+## BEKCI-IMMUNE-V1 Kararı (2026-09-14)
+
+KABUL EDİLDİ. Uygulama ayrı worktree'de yapılacak:
+`worktree-bekci-immune/feature/BEKCI-IMMUNE-V1`
+
+5'li öğrenme döngüsü: Incident → Bug Class → Rule Proposal → Approval Gate → Permanent Guard
+
+Kaynak: `.project-brain/DECISION_LOG.md` — "BEKCI-IMMUNE-V1" section.
+
+## Architect ↔ Bekçi MCP Entegrasyonu (2026-09-14)
+
+`yalihan-os-architect` skill'i artık Yalihan Bekçi MCP tool'larını çağırıyor:
+- `check_violation`, `get_authority`, `get_canonical`, `validate_file`, `get_project_health`, `record_learning`, `get_audit_report`, `get_learning_history`
+
+Entegrasyon noktası: `.agents/skills/yalihan-os-architect/SKILL.md` — "MCP Entegrasyon Noktaları" section.
+
+Agent pipeline artık: Architect skill → MCP tools → PHP Artisan → sonuç.
 - Sprint 13 — Channel Manager: documented as CERTIFIED.
 - Sprint 14 — Property Command Center: documented as LAUNCHED / ACTIVE.
 - Sprint 15 — Action Center: PLANNED.
-- Sprint 16 — Knowledge Core AI: PLANNED.
+- Sprint 16 — Knowledge Core AI: **IN_PROGRESS** (2026-09-14). Migration `2026_09_06_000001` çalıştırıldı. 4 yeni API endpoint + 3 service sınıfı eklendi.
 - Current engineering focus: production hardening of the listing/wizard flow, authentication/session continuity, category and publication-type data, and the `/yazliklar` public page.
 - Strategic decision: scope freeze and Golden Thread certification take priority over speculative feature expansion. The eight-step flow must pass code, automated, browser, and production evidence gates.
 
@@ -187,10 +244,13 @@ Never mark a feature complete from code or an automated test alone. Require code
 
 | Worktree | Branch | HEAD | Dirty | Sahip | Görev Amacı | Durum |
 |----------|--------|------|-------|-------|-------------|-------|
-| `/repos/yalihan-os` (main) | `integration/era-v-phase2a-e01` | `81be956` | 29 unstaged + 26 untracked | Kullanıcı + Kilo | Ana geliştirme | `ACTIVE_DIRTY` |
+| `/repos/yalihan-os` | `release-candidate/RC2` | `3638a978` | 53 dirty | Bu oturum | RC2 geliştirme (governance/dokümantasyon) | `ACTIVE_DIRTY` |
 | `.codex/worktrees/0584/...` | `cleanup/playwright-mcp-screenshots-2026-08-29` | `6967cb2` | 17 untracked | Codex | Playwright MCP screenshot kanıtları | `CLEAN_UNTRACKED` |
 | `.roo/worktrees/yalihan-os-9yphh` | `worktree/roo-9yphh` | `a5e14c1` | Temiz | Roo | Tamamlanmış/kullanım dışı | `CLEAN_INACTIVE` |
 | `.kilo/worktrees/confirmed-nigella` | `confirmed-nigella` | `6967cb2` | Temiz | Kilo | Tamamlanmış/kullanım dışı | `CLEAN_INACTIVE` |
+| `.worktrees/codex-security-wizard-01` | `codex/security-wizard-feature-suggestions-01` | `3638a978` | 1 untracked | Bu oturum | SECURITY-WIZARD-FEATURE-SUGGESTIONS-01 | `ACTIVE_DIRTY` |
+| `.worktrees/codex-bekci-agent-preflight` | `codex/bekci-agent-preflight` | `3638a978` | Temiz | Codex | Bekçi agent preflight | `CLEAN_INACTIVE` |
+| `.worktrees/codex-constitution-review-workflow` | `codex/constitution-review-workflow` | `67a07e43` | Temiz | Codex | Constitution review | `CLEAN_INACTIVE` |
 
 ### Commit Karşılaştırması
 
@@ -387,7 +447,29 @@ HOTSPOT_LOCK:database/migrations/2026_09_08_000001_add_tenant_id_to_cqrs_project
 
 ---
 
-## 2026-09-08 — Sprint 15/RC2 Mühürleme & Açık Madde Durumu
+## 2026-09-12 — Oturum 176: Wizard ERA V FAZ 4B-3 + FAZ 5
+
+**Commit:** `d592f404`
+**Evidence Level:** REPO_VERIFIED
+**Quality Gates:** 6/6 PASS (antigravity-full-gate)
+
+### Tamamlanan
+| Faz | Görev | Durum |
+|-----|-------|-------|
+| 4B-3 | Legacy submitWizard → WizardStepExecutor delegation | ⏸️ NO-OP — WizardStepExecutor prodüksiyonda kullanılmıyor |
+| 5 | LocationValidationCapability boundary migration | ✅ DONE — IlanWizardController coordinate validation → domain service |
+
+### Mimari Karar
+- `IlanWizardController::validateAsama3()` içindeki `validateCoordinates()` (Turkey-wide: 36.1-42.1 / 26.1-44.8) kaldırıldı.
+- `LocationValidationCapability` (Muğla-specific: 36.12-37.35 / 26.25-29.75) enjekte edildi. Artık tek yetkili domain validator.
+- `RealityCheckException` ile standardize error handling.
+
+### Değişen Dosyalar
+- `app/Http/Controllers/Api/IlanWizardController.php`
+
+---
+
+## 2026-09-08 — Sprint 15/RC2 Mühürleme & Açık Madre Durumu
 
 **Commit:** `911e4e3c` (P2-DS-01) + `331fd10a` (BACKLOG-02) + `8b1ca956` (E2E)
 **Lead Architect Review:** Antigravity — 2026-09-08T18:43
@@ -416,3 +498,167 @@ Mevcut sprint'te icra edilen tüm teknik borç maddeleri ya tamamlanmış ya da 
 2. `kategori_yayin_tipi_field_dependencies` → aktif admin kullanım analizi (Sistem B miras)
 3. FeatureTemplateResolver Faz 1 (shared trait)
 HOTSPOT_LOCK:database/migrations/2026_09_06_000001_add_ilceler_il_id_foreign_key.php:kilo-ilce-fk-fix:2026-09-10T21:07:36Z:7200
+
+HOTSPOT_LOCK:database/migrations/2026_09_06_000001_add_ilceler_il_id_foreign_key.php:kilo-ilce-fk-fix:2026-09-10T21:07:36Z:7200
+
+---
+
+## 2026-09-12 — Talep Domain Strangler Fig (Adım 2.1)
+
+**Branch:** `release-candidate/RC2` — unstaged artifacts
+
+### Açık P0 Güvenlik Görevleri
+| ID | Açıklama | Durum | Öncelik |
+|---|---|---|---|
+| `SECURITY-WIZARD-FEATURE-SUGGESTIONS-01` | Wizard approve/rollback: auth:sanctum + tenant.context + role:admin|super_admin + 2 savunma hattı | DESIGN_APPROVED | P0 |
+
+### Blokeli Ürün Kararları
+| ID | Karar | Blokeli | Öncelik |
+|---|---|---|---|
+| `TENANT-FEATURE-ASSIGNMENT-01A` | A/B ürün kararı | SECURITY-WIZARD-FEATURE-SUGGESTIONS-01 | P0 |
+
+### Önceki Kararlar (Düzeltilmiş)
+- `TENANT-FEATURE-ASSIGNMENT-01A` → `BLOCKED_PENDING_SECURITY` (önceki: `A — GLOBAL_TEMPLATE_ONLY`, hatalı)
+
+### Eklenen Artifact'lar — REPO_VERIFIED
+
+| Dosya | Tür | Açıklama |
+|-------|-----|----------|
+| `app/Domain/CRM/Contracts/TalepRepositoryInterface.php` | Driven Port | TalepRepository kontratı |
+| `app/Domain/CRM/DTOs/TalepCreateCommand.php` | DTO | Immutable creation input (spillover-aware) |
+| `app/Domain/CRM/DTOs/TalepListCriteria.php` | DTO | Immutable query criteria |
+| `app/Domain/CRM/Services/ListTaleplerUseCase.php` | Application Service | Listeleme + stats + form data |
+| `app/Domain/CRM/Services/CreateTalepUseCase.php` | Application Service | Oluşturma + Kişi spillover |
+| `app/Infrastructure/CRM/EloquentTalepRepositoryAdapter.php` | Adapter | Legacy repo → domain interface |
+| `tests/Unit/Domain/PropertyHub/CRM/TalepDomainCharacterizationTest.php` | Karakterizasyon | 21 PASS / 1 SKIP (KisiScoringService bug) |
+
+### Mimari Kararlar
+- `EloquentTalepRepositoryAdapter`: `search` → `q`, `status` → `talep_durumu`, `il_id` post-filter (legacy repo eksik)
+- `CreateTalepUseCase`: `kisi_tipi = 'lead'` → `KisiTipi::LEAD` (NOT 'Potansiyel')
+- `TalepCreateCommand::kisiId`: nullable (`?int`) — Kişi spillover gerekli durumlar için
+- Admin mock: `Mockery::mock` + `isAdmin()` + `hasRole()` → Spatie DB check bypass
+
+### Bilinen Gap'ler
+- `KisiScoringService::segmentSkoru` → `strtolower(KisiTipi)` pre-existing bug (line 101) — ayrı tracked
+- `talepler.tip` migration eksik → `TalepOrchestrationParityTest` SKIP
+
+### Strangler Fig Sonraki Adım
+Controller adapter → `config('crm.use_domain_talep', false)` feature flag ile aktif edilecek
+HOTSPOT_LOCK:config/feature-flags.php:cline:2026-09-14T07:22:09Z:3600
+HOTSPOT_LOCK:.sab/sab-baseline.json:cline:2026-09-14T07:23:04Z:3600
+HOTSPOT_LOCK:.sab/authority.json:cline:2026-09-14T07:23:04Z:3600
+HOTSPOT_LOCK:config/exchange.php:cline:2026-09-14T07:24:04Z:3600
+HOTSPOT_LOCK:config/location.php:cline:2026-09-14T07:24:04Z:3600
+HOTSPOT_LOCK:database/migrations/2026_08_04_230600_create_kategori_yayin_tipi_field_dependencies_table.php:cline:2026-09-14T07:24:04Z:3600
+HOTSPOT_LOCK:database/migrations/2026_08_23_000002_create_c51_settlement_domain_tables.php:cline:2026-09-14T07:24:05Z:3600
+HOTSPOT_LOCK:database/migrations/2026_09_04_173133_add_unique_composite_index_to_ilan_fotograflari.php:cline:2026-09-14T07:24:05Z:3600
+HOTSPOT_LOCK:database/migrations/2026_08_23_000004_create_bank_accounts_table.php:cline:2026-09-14T07:24:12Z:3600
+HOTSPOT_LOCK:database/migrations/2026_08_24_000001_create_workforce_executions_table.php:cline:2026-09-14T07:24:12Z:3600
+HOTSPOT_LOCK:database/schema/mysql-schema.sql:cline:2026-09-14T07:29:05Z:3600
+
+---
+
+## 2026-09-15 — İlan Edit Sayfası: Tabless Redesign
+
+**Branch:** `release-candidate/RC2` — commit `77518bb2`
+
+### Yapılan Değişiklikler
+- İlan Edit səhifəsi (admin/ilanlar/edit.blade.php) — 6 tab'dan 0 tab'a
+- Bütün sections eyni anda görünür:
+  - SECTION 1: Temel Bilgiler & Fiyat
+  - SECTION 2: Konum & Harita
+  - SECTION 3: İlan Özellikleri
+  - SECTION 4: Medya & Fotoğraflar
+  - SECTION 5: CRM, Portallar & Yayın
+  - SECTION 6: Kiralama & Rezervasyon (opsiyonel)
+- Tab Navigation Bar silindi
+- activeTab Alpine state çıxarıldı
+- x-show conditional wrappers silindi
+- Floating footer text: "Tüm sekmelerdeki" → "Tüm alanlardaki"
+
+### User Request
+"İlan ekleme, düzenleme, detay tüm verileri göstermeli, tab vs olmamalı"
+
+### Durum
+✅ REPO_VERIFIED — Antigravity Quality Gates 6/6 PASS
+
+---
+
+## [2026-09-15] GOVERNANCE SISTEMI — YAPI VE CALISMA PRENSIBI
+
+**Son Güncelleme:** 2026-09-15
+**Kaynak:** `docs/SAB.md` (deprecated), `app/Http/Controllers/Admin/DecisionEngineController.php`, codebase analizi
+
+### SAB Nedir?
+- **SAB = Standart Uygulama Bloğu** — projenin bağlayıcı teknik anayasası
+- Version: 24.2.0 (Phase 12: Monetization & Financial Seal)
+- **Deprecated (2026-09-12):** `docs/SAB.md` arşivlendi
+  - Güncel SSOT: `.sab/authority.json` (v6.1.1)
+  - Mimari Anayasa: `docs/ysos/SAAB_V7.md`
+
+### SAB Governorluk ile Iliskili Bilesenler
+
+| Kısaltma | Acikım | Fonksiyon | Ilgili Controller/Service |
+|---|---|---|---|
+| SAB2 | Cortex Decision Engine | AI kararlarinin olusturulmasi ve onay/red | DecisionEngineController::reviewQueue |
+| SAB3 | Decision Safety Layer | Rollback, suppression, override | RollbackService, SuppressionService |
+| SAB4 | Multi-Agent Intelligence Center | Agent öneri yönetimi | CortexFindingService |
+| SAB5 | Operator Intelligence | AI davranis kurallarini dinamik güncelleme | DecisionEngineController::toggleSafeMode |
+| SAB6 | Controlled Autonomy | AI özerklik seviyesi | AutonomyService, DecisionEngineController::autonomyPanel |
+| SAB8 | Decision → Action → Feedback Loop | Aksiyon sonuç feedback'i | ActionFeedbackService |
+
+### Mimari Dosya Yapisi
+```
+app/Services/Governance/
+├── GovernanceDashboardService.php
+├── GovernanceMetricsService.php
+├── GovernanceObservabilityService.php
+├── EloquentGovernanceAuditLogger.php
+└── Telemetry/
+
+app/Services/Intelligence/
+├── CortexFindingService.php     (SAB4)
+├── AutonomyService.php         (SAB6)
+├── ActionFeedbackService.php    (SAB8)
+├── RollbackService.php          (SAB3)
+└── SuppressionService.php       (SAB3)
+
+app/Http/Controllers/Admin/
+├── DecisionEngineController.php  ← SAB2/SAB3/SAB5/SAB6/SAB8
+├── GovernanceController.php       ← Ana dashboard
+└── UpsGovernanceController.php    ← Feature health matrix
+```
+
+### Admin Panel Route-Lari
+- `/admin/governance` → dashboard
+- `/admin/governance/telemetry` → Livewire real-time izleme
+- `/admin/governance/review-queue` → SAB2 karar onay kuyruğu
+- `/admin/governance/decision-history` → Gecmis kararlar
+- `/admin/governance/intelligence-center` → SAB4 agent önerileri
+- `/admin/governance/feature-health` → Feature saglik matrisi
+- `/admin/governance/autonomy` → SAB6 özerklik kontrolü
+- `/admin/governance/action-dashboard` → SAB8 feedback döngüsü
+- `/admin/yalihan-bekci` → Sistem saglik kontrolü
+- `/admin/audit-log` → Tüm operasyonlarin kaydi
+
+### Calısma Akısı
+```
+AI Agent karar üretir
+  → Review Queue (SAB2)
+    → Admin: Onayla / Reddet / Rollback
+      → Onay: Aksiyon hayata gecer
+      → Red: Loglanir
+      → Rollback: Önceki state'e döner (SAB3)
+    → Feedback kaydi (SAB8)
+    → Sistem öğrenir
+```
+
+### Güvenlik Kurallari
+- Core'a dogrudan write yasak → sadece Service katmani
+- Silent catch yasak → hata log + rethrow zorunlu
+- Governance bypass yasak → bypass eden kod merge edilemez
+- Multi-tenant tenant_id zorunlu
+- AI Circuit Breaker: her AI operasyonu AiBudgetGuard'a tabi
+
+### Etkilenen Dosyalar
+- `resources/views/admin/ilanlar/edit.blade.php` (-78 satır, +18 satır)
