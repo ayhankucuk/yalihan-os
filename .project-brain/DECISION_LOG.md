@@ -294,6 +294,47 @@ storage/bekci/
 
 ---
 
+## Karar #006 — 2026-09-17
+
+**Konu:** Proje Domain Bounded Context Ayrımı (`Takım Projesi` ≠ `Emlak Projesi`)
+
+**Gerekçe:**
+- Phase 1A & 1B repo discovery ve derin izleme sonuçlarına göre:
+  1. **Takım Projesi:** Fiziksel `projeler` tablosuna dayanır, `gorevler.proje_id` (FK) ile bağlıdır, `App\Models\Proje` canonical modeline sahiptir ve aktif UI/API rotalarına bağlıdır (`/admin/takim-yonetimi/projeler`).
+  2. **Emlak Projesi:** `App\Modules\Emlak\Models\Proje` taslağına dayanır, veritabanında karşılığı olmayan kolonlar (`gelistirici_adi`, `adres_il`, `lat`, `lng`) ve tablolar (`proje_translations`, `proje_gorselleri`) bekler; aktif HTTP rotası bulunmamaktadır.
+  3. `ilanlar.proje_id` alanı şu an fiziksel `projeler` (Takım Yönetimi) tablosuna bakmaktadır; semantik data migration riski içermektedir.
+
+**Status:** `IMPLEMENTED_AND_PRODUCTION_VERIFIED` (Canonical Commit: `3ced67c16f228f50ba1b375a0b15fcd9acf00718`)
+
+**Mimari Durum Ayrımı (Master Truth Principle):**
+
+```text
+PRODUCTION_VERIFIED (2026-09-18)
+  Takım Projesi:
+    - Table: projeler
+    - SSOT Model: App\Models\Proje
+    - Foreign Key: gorevler.proje_id → projeler.id
+
+  Emlak Projesi:
+    - Table: emlak_projeleri (created via migration 2026_09_17_000001)
+    - Model: App\Modules\Emlak\Models\Proje ($table = 'emlak_projeleri')
+    - Relation: Ilan::proje() → emlak_projeleri.id (ilanlar.proje_id added via migration 2026_09_17_000002)
+    - Production Status: ADR006_PRODUCTION_VERIFIED
+```
+
+**Karar Kuralları:**
+1. **Bounded Context Ayrımı:** `Takım Projesi` ve `Emlak Projesi` iki tamamen ayrı domain entity'si olarak tanımlanmıştır.
+2. **Takım Projesi Persistence:** `projeler` tablosu ve `App\Models\Proje` canonical authority olarak korunmuştur.
+3. **Emlak Projesi Persistence:** Emlak Proje domaini için `emlak_projeleri` adıyla ayrı tablo ve ilişki kolonları `ilanlar.proje_id` oluşturulmuştur (`PRODUCTION_VERIFIED`).
+4. **Sınıf Adlandırma Güvenliği:** PHP sınıflarında yüksek riskli toplu yeniden adlandırmadan kaçınılmış; `App\Models\Proje` Takım Yönetimi SSOT authority olarak bırakılmıştır.
+5. **Phase 1C & Production Compliance:** Path-constrained migrationlar production MySQL DB'de çalıştırılmış ve container DB sorgularıyla doğrulanmıştır.
+
+**Sahip:** Arch & User
+
+
+
+---
+
 ## Karar #007 — 2026-09-17
 
 **Konu:** G2.3 Router'ın Canonical Operational Routing Contract Olarak Kabul Edilmesi

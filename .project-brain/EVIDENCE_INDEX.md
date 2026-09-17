@@ -102,13 +102,45 @@ It does NOT establish runtime compatibility for all skills or for other agents.
 
 ## [2026-09-17] V2_USERS_API_TENANT_ISOLATION_SECURITY
 
-**Commit:** `a1f2d168` — "fix(security): secure V2 users API tenant boundaries"  
-**Session:** REMEDIATION_V2_USERS_API_SECURITY_01 + 01B  
-**Tool:** PHPUnit + Manual Security Contract Verification  
-**DB:** SQLite in-memory (`RefreshDatabase`)  
-**Evidence Level:** `TEST_VERIFIED`  
-**Evidence Type:** `AUTOMATED_TESTS`  
-**Production Status:** `UNKNOWN` (not deployed or verified on production VPS)
+**Commit:** `a1f2d1681c27961e641cb18604ad6cbe4904d813` — "fix(security): secure V2 users API tenant boundaries"  
+**Session:** REMEDIATION_V2_USERS_API_SECURITY_01 + PROD_V2_USERS_SECURITY_HOTFIX_DEPLOY_01  
+**Tool:** PHPUnit + Live Production HTTP Probes (`curl -i -s -k http://127.0.0.1:8010/api/v1/users`)  
+**DB:** SQLite in-memory (local) + MySQL Production (`yalihanai_v2_production`)  
+**Evidence Level:** `PRODUCTION_VERIFIED`  
+**Evidence Type:** `TOOL_RUNTIME` / `AUTOMATED_TEST_SUITE`  
+**Production Status:** `V2_USERS_SECURITY_PRODUCTION_VERIFIED` (Deployed and empirically verified on live production server `ubuntu-8gb-hel1-1`)
+
+### Live Production Empirical Evidence
+
+- `GET /api/v1/users` without authentication → **HTTP 401 Unauthorized** (`{"success":false,"data":null,"error":{"code":"AUTH_REQUIRED"}}`)
+- `GET /api/v1/users/1` without authentication → **HTTP 401 Unauthorized**
+- Zero PII exposed to unauthenticated callers.
+
+---
+
+## [2026-09-18] ADR006_EMLAK_PROJE_PRODUCTION_VERIFIED
+
+**Canonical Commit:** `3ced67c16f228f50ba1b375a0b15fcd9acf00718` — "fix(emlak): complete ADR #006 project context separation"  
+**Session:** ADR006_PRODUCTION_DEPLOY_01  
+**Tool:** Path-Constrained Laravel Migration + Container DB Tinker Probes + PHPUnit  
+**DB:** MySQL Production (`yalihanai_v2_production`)  
+**Evidence Level:** `PRODUCTION_VERIFIED`  
+**Evidence Type:** `DATABASE_SCHEMA` / `TOOL_RUNTIME`  
+**Production Status:** `ADR006_PRODUCTION_VERIFIED` (Deployed and empirically verified on live production server `ubuntu-8gb-hel1-1`)
+
+### Production Database Schema & Model Evidence
+
+- Table `emlak_projeleri` created via migration `2026_09_17_000001` → **PRESENT (`1`)**
+- Table `emlak_proje_translations` created via migration `2026_09_17_000001` → **PRESENT (`1`)**
+- Table `emlak_proje_gorselleri` created via migration `2026_09_17_000001` → **PRESENT (`1`)**
+- Column `ilanlar.proje_id` created via migration `2026_09_17_000002` → **PRESENT (`1`)**
+- Migration `2026_09_17_000001_create_emlak_projeleri_tables` recorded in `migrations` table → **RECORDED (`1`)**
+- Migration `2026_09_17_000002_add_proje_id_to_ilanlar_table` recorded in `migrations` table → **RECORDED (`1`)**
+- Model Binding `App\Modules\Emlak\Models\Proje` table → **`emlak_projeleri`**
+- Model Binding `App\Models\Proje` (Team Proje) table → **`projeler` (ISOLATED)**
+- Relation `Ilan::proje()` method → **EXISTS & RESOLVES TO EMLAK PROJE**
+- Security Hotfix Preservation → **HTTP 401 Unauthorized (`auth:sanctum` active)**
+
 
 ### Root Defect Fixed
 

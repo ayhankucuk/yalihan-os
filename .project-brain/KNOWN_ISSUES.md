@@ -143,7 +143,7 @@
 | `[RBAC-DEADLOCK]` | `routes/admin.php` | Tüm admin rotaları `role:admin` kilitli, danışman giremiyor | Danışman izolasyon kilidi |
 | `[LEDGER-LEAK]` | `FinancialLedgerService.php` | Ledger hesabı açılırken `tenant_id` verilmiyor | Kural 1 Tenant İzolasyon İhlali |
 | `[AI-CRASH]` | `IlanAIController.php:109` | `YayinTipiResolverTrait` import edilmemiş | Fatal Error Class Not Found |
-| `[PROJE-CONFLICT]` | `App\Models\Proje` | Aynı tabloya bağlanan 3 ayrı model sınıfı | Split-brain model kaosu |
+| `[PROJE-CONFLICT]` | `App\Models\Proje` vs `Emlak\Models\Proje` | ✅ **CLOSED / PRODUCTION_VERIFIED (3ced67c1)** — Domain split completed; `emlak_projeleri` table migrated, `projeler` preserved for Team Proje | ~~Split-brain model kaosu~~ |
 | `[FORM-BLOCKER]` | `StoreIlanRequest.php` | Formda olmayan `proje_id` alanı zorunlu tutulmuş | 422 Unprocessable Entity |
 | `[CHANNEL-MOCK]` | `CalendarSyncService.php` | Dış API yerine sahte mock success dönüyor | Kanal senkronizasyonu çalışmıyor |
 | `[RESERVATION-SPLIT]` | `yazlik_rezervasyonlar` vs `property_reservations` | İki ayrı rezervasyon tablosu var | Rezervasyon çakışması riski |
@@ -210,8 +210,8 @@
 | `[ADMIN-PHOTO-CROSS-TENANT-DATA-LEAK]` | `PhotoController.php:387-400`, `Photo.php:10-14` | `Photo` modelinde `BelongsToTenant` yok; admin galeri sorgusunda kiracı filtrelemesi yapılmadan tüm sistem fotoğrafları listeleniyor | Kural 1 Tenant İzolasyon İhlali / Veri Sızıntısı |
 | `[SUBSCRIPTION-GATE-COMPLETE-DISCONNECT]` | `SubscriptionMiddleware.php:27-35`, `Kernel.php:77-114` | SubscriptionMiddleware alias'larda yok, hiçbir rotaya bağlı değil; bağlı olsa bile App\Models\Tenant modelinde subscription metodu yok | Lisans ve Abonelik Kapılarının Tamamen Devre Dışı Olması |
 | `[SAAS-TENANT-MODEL-DUAL-SPLIT]` | `Tenant.php:13` vs `SaaS\Tenant.php:11` | İki ayrı Tenant modeli aynı tabloya bakıyor; biri BaseModel extend edip auth'ta kullanılırken diğeri izole kalıyor | Model Çatallanması & İlişki Uyuşmazlığı |
-| `[PUBLIC-API-USERS-DATA-EXPOSURE]` | `v2-users.php:36-38`, `UserController.php:32-49` | ✅ **RESOLVED (a1f2d168)** — Guest access blocked (401), tenant isolation enforced on index/show | ~~Kritik Veri Güvenliği Sızıntısı (KVKK/GDPR İhlali)~~ |
-| `[V2-USERS-ROUTE-MODEL-BINDING-MISMATCH]` | `v2-users.php:38, 43, 44`, `UserController.php:77, 88, 109` | ✅ **RESOLVED (a1f2d168)** — Route parameters corrected to `{user}`, Laravel implicit binding functional | ~~Boş Veri Dönüşü / Yanlış Kayıt Silme/Güncelleme~~ |
+| `[PUBLIC-API-USERS-DATA-EXPOSURE]` | `v2-users.php:36-38`, `UserController.php:32-49` | ✅ **CLOSED / PRODUCTION_VERIFIED (a1f2d168)** — Sanctum auth enforced, unauthenticated calls return 401 | ~~Kritik Veri Güvenliği Sızıntısı (KVKK/GDPR İhlali)~~ |
+| `[V2-USERS-ROUTE-MODEL-BINDING-MISMATCH]` | `v2-users.php:38, 43, 44`, `UserController.php:77, 88, 109` | ✅ **CLOSED / PRODUCTION_VERIFIED (a1f2d168)** — Route parameters corrected to `{user}`, implicit binding functional | ~~Boş Veri Dönüşü / Yanlış Kayıt Silme/Güncelleme~~ |
 | `[V2-DRAFTS-TABLE-SCHEMA-IMAGINARY-COLLISION]` | `DraftController.php:40-45`, `StoreDraftAction.php:11-19`, `AiIlanTaslagi.php:18-32` | Controller ve Action ilan_taslaklar tablosunda olmayan kullanici_id, ai_response kolonlarını sorgulayıp kaydediyor | SQL Column Not Found (1054) / Taslak Modülü Çökmesi |
 | `[OPENCLAW-CONFIG-KEY-DEADLOCK]` | `EnsureAgentScope.php:53-54` vs `config/openclaw.php:112-115` | Middleware var olmayan config('services.openclaw.agent_token') değerini okuyor; token her zaman boş kabul edilip 403 ile kilitleniyor | Tüm OpenClaw Otonom Ajan İsteklerinin Kilitlenmesi |
 | `[SCHEMA-DUMP-MIGRATION-DRIFT]` | `mysql-schema.sql:1985-2001` vs `database/migrations/` | mysql-schema.sql aylardır dump edilmemiş; core tablolardaki tenant_id ve proj_listings gibi 40+ yeni migration eksik | Test & Canlı Ortam Şema Uçurumu (Schema Drift) |

@@ -40,22 +40,19 @@ YALIHAN OS is an AI-assisted real-estate and property-operations operating syste
 
 - ERA V Phase 2 — Autonomous Operations: ACTIVE.
 
-## Active Architectural Gate — Proje Domain Status (2026-09-17)
+## Active Architectural Gate — Proje Domain Status (ADR #006 — 2026-09-17)
 
 - **ADR #006:** Accepted (`.project-brain/DECISION_LOG.md`).
-- **Takım Projesi Authority:** `REPO_VERIFIED` (`projeler` table, `App\Models\Proje`).
-- **Emlak Projesi Local Persistence:** `TEST_VERIFIED` (`emlak_projeleri`, `emlak_proje_translations`, `emlak_proje_gorselleri` tables migrated locally).
-- **Phase 1C Verification:** `COMPLETE` (`DB_VERIFIED` on `yalihanai_test`).
-- **Phase 2 Implementation:** `TEST_VERIFIED`
-  - Additive migration created (`2026_09_17_000001_create_emlak_projeleri_tables.php`).
-  - Migration rollback & re-apply verified (`100% PASS`).
-  - Duplicate model `app/Modules/TakimYonetimi/Models/Proje.php` deleted.
-  - Consumers (`TelegramAIBotService`, `GorevFactory`) migrated to `App\Models\Proje` (SSOT).
-  - Emlak `Proje` model updated (`$table = 'emlak_projeleri'`, `$fillable` populated).
-  - Emlak `ProjeController` routes registered in `app/Modules/Emlak/routes/web.php`.
-  - `Ilan.php` model updated with `proje()` relationship method.
-  - Quality Gate Pipeline: `4/4 GATES PASSED` (`./scripts/tools/antigravity-full-gate.sh --quick`).
-- **Production Status:** `BLOCKED_PENDING_PRODUCTION_AUTH` (Waiting for explicit operator approval before production deploy).
+- **Canonical Commit:** `3ced67c16f228f50ba1b375a0b15fcd9acf00718` — "fix(emlak): complete ADR #006 project context separation"
+- **Takım Projesi Authority:** `PRODUCTION_VERIFIED` (`projeler` table, `App\Models\Proje` isolated).
+- **Emlak Projesi Production Persistence:** `PRODUCTION_VERIFIED` (`emlak_projeleri`, `emlak_proje_translations`, `emlak_proje_gorselleri` tables created via path-constrained migration `2026_09_17_000001`).
+- **Ilan Relationship Column:** `PRODUCTION_VERIFIED` (`ilanlar.proje_id` added via path-constrained migration `2026_09_17_000002`).
+- **Production Status:** `ADR006_PRODUCTION_VERIFIED` (Deployed and empirically verified on live production server `ubuntu-8gb-hel1-1`).
+- **Production Verification Detail:**
+  - Migrations 000001 and 000002 executed cleanly via container path-constrained migration (`php artisan migrate --path=...`).
+  - Bounded application models (`App\Modules\Emlak\Models\Proje`, updated `App\Models\Ilan`), controllers (`ProjeController`), and web routes deployed to `/app`.
+  - Production database schema & model empirical probes verified: `emlak_projeleri` (1), `emlak_proje_translations` (1), `emlak_proje_gorselleri` (1), `ilanlar.proje_id` (1), `Ilan::proje()` contract (resolves to `App\Modules\Emlak\Models\Proje`).
+  - Pre-deploy Quality Gate & Local Regression Suite: `6/6 PASS` (`EmlakProjeBoundedContextTest.php`).
 
 ## Active Governance Gate — G2.3 Agent–Skill Router Status (2026-09-17)
 
@@ -73,10 +70,14 @@ YALIHAN OS is an AI-assisted real-estate and property-operations operating syste
 
 ## Active Security Gate — V2 Users API Tenant Isolation (2026-09-17)
 
-- **Commit:** `a1f2d168` — "fix(security): secure V2 users API tenant boundaries"
-- **Status:** `TEST_VERIFIED / COMMITTED`
-- **Production Status:** `UNKNOWN` (not yet deployed or verified on production VPS)
-- **Defect Resolved:** Tenant A POST `/api/v1/users` now correctly assigns `tenant_id` to created user
+- **Commit:** `a1f2d1681c27961e641cb18604ad6cbe4904d813` — "fix(security): secure V2 users API tenant boundaries"
+- **Status:** `PRODUCTION_VERIFIED / COMMITTED`
+- **Production Status:** `V2_USERS_SECURITY_PRODUCTION_VERIFIED` (Deployed and empirically verified on live production server `ubuntu-8gb-hel1-1`)
+- **Production Runtime Evidence:**
+  - Unauthenticated `GET /api/v1/users` → **HTTP 401 Unauthorized** (`{"success":false,"data":null,"error":{"code":"AUTH_REQUIRED"}}`)
+  - Unauthenticated `GET /api/v1/users/{user}` → **HTTP 401 Unauthorized**
+  - Zero PII / user data exposed to unauthenticated callers.
+- **Defect Resolved:** Tenant A POST `/api/v1/users` correctly assigns `tenant_id`; cross-tenant isolation enforced.
 - **Security Guarantees:**
   - Normal tenant users: created users inherit authenticated `tenant_id`
   - Client-supplied `tenant_id` injection: **BLOCKED** (server overwrites with auth tenant)
@@ -88,14 +89,18 @@ YALIHAN OS is an AI-assisted real-estate and property-operations operating syste
 - **Files Modified:**
   - `app/Http/Controllers/Api/V2/UserController.php` (tenant ownership enforcement in `store()`)
   - `app/Actions/Api/V2/User/StoreUserAction.php` (`tenant_id` parameter acceptance)
-  - `tests/Feature/Api/V2UsersApiSecurityTest.php` (new comprehensive security contract tests)
-  - `routes/api/v1/v2-users.php` (route corrections from predecessor remediation)
+  - `tests/Feature/Api/V2UsersApiSecurityTest.php` (comprehensive security contract tests)
+  - `routes/api/v1/v2-users.php` (route corrections)
 - **Known Issues Resolved:**
-  - `[PUBLIC-API-USERS-DATA-EXPOSURE]`: Guest access blocked (401), tenant isolation enforced
-  - `[V2-USERS-ROUTE-MODEL-BINDING-MISMATCH]`: Route binding corrected (`{user}` parameter)
+  - `[PUBLIC-API-USERS-DATA-EXPOSURE]`: `CLOSED / PRODUCTION_VERIFIED`
+  - `[V2-USERS-ROUTE-MODEL-BINDING-MISMATCH]`: `CLOSED / PRODUCTION_VERIFIED`
 
+## Effective Production Baseline State (2026-09-18)
 
-
+- **Base Git Commit:** `0f2489402d5b7882340bd4b485fba92b3a74f06b`
+- **Effective Production Runtime State:** `base 0f248940 + bounded deployed artifacts from a1f2d168 + 3ced67c1`
+- **Unrelated RC2 Commits Deployed:** `0` (Zero unrelated RC2 commits deployed)
+- **Production Local Backups:** Preserved (`LOCKED,`, `backups/`, `mysql-schema.sql.bak`)
 
 ## Sprint 14 Certification — Hermes Hardening Findings (Oturum 184 — 2026-09-14)
 
