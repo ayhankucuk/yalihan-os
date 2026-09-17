@@ -70,6 +70,9 @@ integration/era-v-phase2a-e01  ← main worktree (read-only for agents)
 2. Keep changes focused: stage only files relevant to the current task
 3. Verify `git diff --staged` before committing
 4. Never commit migration + code in one batch without explicit production authorization
+5. **Session Completion & Micro-Commit Hygiene**: Before completing a task or handing off to another agent, ALL verified code changes MUST be committed (`git commit`) or stashed (`git stash`).
+6. **No Uncommitted Handoffs**: NEVER leave uncommitted UI/architectural changes in the main working tree when completing a task or handing off to another agent.
+7. **Destructive Reset Protection**: Never run `git checkout -- .`, `git restore .`, or `git reset --hard` without checking `git status --short` first to prevent discarding uncommitted user or agent work.
 
 **Read-only agents:**
 - May operate in the main worktree or a dedicated worktree
