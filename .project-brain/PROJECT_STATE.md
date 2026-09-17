@@ -40,6 +40,40 @@ YALIHAN OS is an AI-assisted real-estate and property-operations operating syste
 
 - ERA V Phase 2 — Autonomous Operations: ACTIVE.
 
+## Active Architectural Gate — Proje Domain Status (2026-09-17)
+
+- **ADR #006:** Accepted (`.project-brain/DECISION_LOG.md`).
+- **Takım Projesi Authority:** `REPO_VERIFIED` (`projeler` table, `App\Models\Proje`).
+- **Emlak Projesi Local Persistence:** `TEST_VERIFIED` (`emlak_projeleri`, `emlak_proje_translations`, `emlak_proje_gorselleri` tables migrated locally).
+- **Phase 1C Verification:** `COMPLETE` (`DB_VERIFIED` on `yalihanai_test`).
+- **Phase 2 Implementation:** `TEST_VERIFIED`
+  - Additive migration created (`2026_09_17_000001_create_emlak_projeleri_tables.php`).
+  - Migration rollback & re-apply verified (`100% PASS`).
+  - Duplicate model `app/Modules/TakimYonetimi/Models/Proje.php` deleted.
+  - Consumers (`TelegramAIBotService`, `GorevFactory`) migrated to `App\Models\Proje` (SSOT).
+  - Emlak `Proje` model updated (`$table = 'emlak_projeleri'`, `$fillable` populated).
+  - Emlak `ProjeController` routes registered in `app/Modules/Emlak/routes/web.php`.
+  - `Ilan.php` model updated with `proje()` relationship method.
+  - Quality Gate Pipeline: `4/4 GATES PASSED` (`./scripts/tools/antigravity-full-gate.sh --quick`).
+- **Production Status:** `BLOCKED_PENDING_PRODUCTION_AUTH` (Waiting for explicit operator approval before production deploy).
+
+## Active Governance Gate — G2.3 Agent–Skill Router Status (2026-09-17)
+
+- **ADR #007:** Accepted (`.project-brain/DECISION_LOG.md`).
+- **Specification:** [`docs/architecture/AGENT_SKILL_ROUTER.md`](file:///Users/macbookpro/repos/yalihan-os/docs/architecture/AGENT_SKILL_ROUTER.md) (v2.0.0).
+- **Status:** `CANONICAL OPERATIONAL ROUTING CONTRACT` (Accepted by Human Decision Owner Ayhan).
+- **Authority Source:** `NO` (`AGENTS.md` and `.sab/authority.json` remain Authority SSOT).
+- **Evidence Level & Type:** `TEST_VERIFIED / TOOL_RUNTIME` (Empirically verified via G2.3 pilot, zero working tree mutations).
+- **Hierarchy Standard:**
+  - `Human Decision Owner`: Ayhan
+  - `Session Owner`: Antigravity Parent Agent
+  - `Router`: Engine (`CLASSIFY → ROUTE → CONSTRAIN → HANDOFF`)
+- **Actor-Aware Human Gate:** 6 critical AI side-effects guarded; human operator manual actions free.
+- **Model-Agnostic Roles:** Research, Forensic Research, Architect, Implementer, Verifier, Integrator.
+
+
+
+
 ## Sprint 14 Certification — Hermes Hardening Findings (Oturum 184 — 2026-09-14)
 
 **Sprint 14:** `CONDITIONAL_CERTIFIED` (board-approved 2026-09-11) — G-01..G-04 Part 1 PASS
@@ -77,6 +111,17 @@ Oturum 183'te öğrenilen 3 yeni agent skill:
 MCP server `yalihan-bekci-mcp.js` **stdio subprocess** olarak çalışır (HTTP server değil).
 Health check artık `pgrep` ile process check yapıyor — eski HTTP probe yanlıştı.
 Overall score: **79%** (önceki 59% — MCP artık doğru algılanıyor).
+## Workspace Execution Tenant Isolation (2026-09-17)
+
+**Session 20:** `WorkspaceExecutionTenantIsolationTest.php` — 17 PASS / 17 ✅
+- `WorkspaceExecutionController::cancel()`, `retry()`, `replay()` → policy tabanlı tenant kontrolü
+- `TenantScope` global scope + explicit `tenant_id` korunuyor
+- Super-admin cross-tenant erişim test edildi
+- Regression: `tests/Feature/Workspace/` → 28/28 PASS ✅
+
+---
+
+## Bekçi MCP — Stdio Transport (2026-09-14)
 
 ## BEKCI-IMMUNE-V1 Kararı (2026-09-14)
 
