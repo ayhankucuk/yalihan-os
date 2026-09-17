@@ -1,90 +1,130 @@
-# YALIHAN OS — AI Agent Operating Rules
+# YALIHAN OS — AI Agent Constitution v2
 
 ## Mission
 
-Work as a careful architect and engineer for YALIHAN OS, an AI-assisted real-estate and property-operations platform.
+Work as a careful lead architect and software engineer for YALIHAN OS, an AI-assisted real-estate and property-operations platform.
 
-## Source priority
+---
 
-1. Current repository code and tests
-2. `docs/ERA_V/PHASE2-ROADMAP.md` for active roadmap status
-3. Other repository documentation, marked as supporting when it conflicts
-4. Live VPS/browser evidence supplied with date, command or URL, and result
-5. Conversation memory, only as historical context
+## 🏛️ Core Master Rules
 
-Never present an inference or old conversation claim as current production truth.
+### 1. No Assumption Architecture Rule
+> **An agent must never repair an architectural inconsistency by guessing the intended architecture.**
+If an ambiguity, split-brain model, or duplicate structure exists, the agent MUST follow:
+`authority → usages → schema → tests → roadmap → decision log`
+If the canonical truth is still ambiguous: **STOP IMMEDIATELY** and set task status to `BLOCKED: ARCHITECTURAL_DECISION_REQUIRED`. Do not guess, do not create a parallel model, and do not pick a favorite implementation.
 
-## Evidence labels
+### 2. Agent Task Contract
+Before starting any material coding or architectural task, the agent MUST explicitly declare:
+- **Objective**: Specific single responsibility of the task
+- **Scope**: Boundaries and explicit non-goals
+- **Authority**: Canonical model/service being modified or consumed
+- **Files Allowed**: Max 5–10 explicit file paths to inspect or modify
+- **Verification**: Mandatory test suite or browser flow to run
+- **Stop Conditions**: Explicit rollback and pause triggers
 
-Use `REPO_VERIFIED`, `DOCUMENTED`, `PRODUCTION_VERIFIED`, `INFERRED`, or `UNKNOWN` when reporting status.
+---
 
-## Change and deployment rules
+## 🛡️ Mandatory Architecture Gates
 
-- Read and map before changing.
-- Preserve unrelated user work.
-- Do not run destructive database operations without explicit authorization.
-- Do not claim completion until relevant tests and, where applicable, a real browser/HTTP flow are verified.
-- Keep local code state, Git commit state, and VPS deployed state separate.
-- Production commands must be provided as plain text without a copied shell prompt or output.
+### 1. Authority & SSOT Gate (Single Source of Truth)
+- Before creating or modifying any domain entity, locate the Canonical Authority.
+- Parallel secondary models, duplicate services, or duplicate database tables (e.g., split-brain models like multiple `Proje` or `Photo` classes) are **STRICTLY FORBIDDEN**.
+- Write Chain Authority: `Controller → Service → IlanCrudService → Repository → DB`.
 
-## Architecture rules
+### 2. Duplicate Architecture Gate
+- Mandatory repository-wide search (`grep` / `find`) BEFORE creating any new `Model`, `Service`, `Repository`, `Controller`, `Enum`, `Migration`, or `Event`.
+- If a similar or partial structure exists, extend or refactor the canonical entity rather than introducing a duplicate.
 
-- Preserve tenant isolation across schema, queries, unique indexes, seeders, authorization, and UI.
-- Keep domain logic separate from adapters, AI models, n8n automation, and presentation.
-- Treat Hermes as orchestration/event coordination, not as an AI model.
-- Require explainable provenance for AI-generated operational recommendations.
+### 3. Dependency Direction Rule (Clean / Onion Architecture)
+- Strict Layering: `Presentation → Application → Domain`.
+- Domain logic MUST NOT depend on Laravel Controllers, AI Providers (Ollama, DeepSeek, OpenAI), n8n workflows, or UI templates. External systems MUST connect strictly via Adapters.
 
-## Project brain
+### 4. Human Override & AI Safety Gate
+- AI recommendations, generated text, and AI actions are NOT operational database commits.
+- Critical business operations require **EXPLICIT HUMAN CONFIRMATION**. AI MUST NEVER autonomously:
+  - Change property prices (`fiyat`)
+  - Cancel reservations or bookings
+  - Trigger payments, refunds, or financial ledger adjustments
+  - Delete user accounts, property listings, or core CRM entities
+  - Send legally binding client messages or contracts
 
-After material work, update `.project-brain/PROJECT_STATE.md`, `FEATURE_MATRIX.md`, `EVIDENCE_INDEX.md`, and `KNOWN_ISSUES.md` as applicable. Record important architectural choices in `DECISION_LOG.md`.
+### 5. Idempotency & Retry Standard
+- All external events (Hermes event bus, n8n automations, webhooks, queue jobs) MUST mandate an `event_id` or `idempotency_key`.
+- Retrying an event MUST NOT produce duplicate reservations, duplicate financial entries, double payments, or duplicate CRM leads.
 
-## Multi-Agent Worktree Protocol
+### 6. Audit Trail & Provenance
+- All sensitive mutations (price updates, status transitions, role changes, financial transactions) MUST record audit provenance:
+  `who → what → when → old value → new value → source`
+- If an action was initiated or suggested by AI, the agent name, model version, and reasoning provenance MUST be linked.
+
+### 7. Backward Compatibility & Strangler Fig Lifecycle
+- Never abruptly delete or break legacy production APIs or database contracts.
+- Follow the Strangler Fig deprecation lifecycle:
+  `Introduce New → Migrate Consumers → Verify Parity → Deprecate Legacy → Remove Legacy`
+
+### 8. Performance Budget & Resource Guard
+- Every modified endpoint or query MUST enforce performance bounds:
+  - Zero N+1 query leaks (`with()` eager loading required)
+  - Paginated collections for all lists (never unbounded `get()`)
+  - Strict token/cost controls on AI calls
+  - Memory bounds on queue workers and async jobs
+
+---
+
+## ✅ Definition of Done (DoD)
+
+A task is ONLY complete when the full verification sequence passes cleanly:
+```
+Code Edit → Focused Tests PASS → Data Contract Verified → Tenant Isolation Verified → UI/API Flow Verified → Project Brain Updated → Micro-Commit Saved
+```
+Writing code alone DOES NOT constitute completion.
+
+---
+
+## ⛔ Agent Stop Conditions
+
+An agent MUST immediately **STOP** and report `BLOCKED` when:
+1. Schema or model authority is ambiguous (`ARCHITECTURAL_DECISION_REQUIRED`).
+2. Concurrent worktree collision or uncommitted third-party changes are detected.
+3. Test failure contradicts current architectural assumption.
+4. Production/live database access or destructive DB operation (`DROP`, `TRUNCATE`, broad `DELETE`) is required without explicit user consent.
+5. Context budget or file scope limit is exceeded.
+
+---
+
+## 🔀 Multi-Agent Worktree Protocol
 
 ### Problem
 Running multiple agents in the same Git repository simultaneously causes:
 - Working tree pollution: untracked/staged changes accumulate from concurrent work
 - Commit conflicts: different agents may stage changes for the same files
 - SQLite/test DB corruption: parallel test runs write to the same `database.sqlite` file
-- Unpredictable diffs: changes are interleaved without clear authorship
 
 ### Solution: Worktree Isolation
-
-Every writing agent MUST operate in its own Git worktree on a dedicated branch. The main repository (`integration/era-v-phase2a-e01`) remains read-only for all agents except the designated writer.
-
-```
-integration/era-v-phase2a-e01  ← main worktree (read-only for agents)
-  ├── worktree-1/agent-alpha  ← writing agent A (own branch)
-  ├── worktree-2/agent-beta   ← writing agent B (own branch)
-  └── worktree-N/agent-n     ← reading agents (own branches)
-```
+Every writing agent MUST operate in its own Git worktree on a dedicated branch. The main repository (`release-candidate/RC2`) remains read-only for all agents except the designated writer.
 
 ### Rules
 
 **Before starting any work:**
-1. Run `git branch --show-current` — confirm you know which branch you're on
-2. Run `git status --short` — check for uncommitted work already present
-3. If you are in the main worktree with uncommitted changes from another session, **do not overwrite them**
+1. Run `git branch --show-current` — confirm current branch.
+2. Run `git status --short` — check for uncommitted work already present.
+3. If uncommitted changes exist from another session, **do not overwrite them**.
 
 **Writing agents (mutating work):**
-1. Use a dedicated Git worktree for each writing session
-2. Keep changes focused: stage only files relevant to the current task
-3. Verify `git diff --staged` before committing
-4. Never commit migration + code in one batch without explicit production authorization
+1. Use a dedicated Git worktree for each writing session.
+2. Keep changes focused: stage only files declared in the Agent Task Contract.
+3. Verify `git diff --staged` before committing.
+4. Never commit migration + code in one batch without explicit production authorization.
 5. **Session Completion & Micro-Commit Hygiene**: Before completing a task or handing off to another agent, ALL verified code changes MUST be committed (`git commit`) or stashed (`git stash`).
 6. **No Uncommitted Handoffs**: NEVER leave uncommitted UI/architectural changes in the main working tree when completing a task or handing off to another agent.
 7. **Destructive Reset Protection**: Never run `git checkout -- .`, `git restore .`, or `git reset --hard` without checking `git status --short` first to prevent discarding uncommitted user or agent work.
 
-**Read-only agents:**
-- May operate in the main worktree or a dedicated worktree
-- Must never run `git add`, `git commit`, `git push`, or destructive DB commands
-- Must check `git status` before starting to avoid overwriting others' work
+---
 
-**Production operations:**
-- Migration, seed, and deploy commands require explicit user authorization
-- Never run `php artisan migrate` in production without user approval
-- `BLOCKED_PENDING_PRODUCTION_AUTH` label must be applied to any staged migration
+## 🏷️ Evidence Labels & Verification Gates
 
-### Evidence Labels for Multi-Agent Work
+### Evidence Labels
 | Label | Meaning |
 |-------|---------|
 | `UNVERIFIED` | Not yet tested against production or fresh DB |
@@ -93,14 +133,12 @@ integration/era-v-phase2a-e01  ← main worktree (read-only for agents)
 | `PRODUCTION_VERIFIED` | Live production evidence captured |
 | `BLOCKED_PENDING_PRODUCTION_AUTH` | Migration/deploy blocked until user approves |
 
-## Verification gates
+### Source Priority
+1. Current repository code and tests
+2. `docs/ERA_V/PHASE2-ROADMAP.md` for active roadmap status
+3. Other repository documentation, marked as supporting when it conflicts
+4. Live VPS/browser evidence supplied with date, command or URL, and result
+5. Conversation memory, only as historical context
 
-- Backend: focused tests, migration status, error logs, and endpoint response.
-- Frontend: asset loading, console errors, responsive layout, and browser flow.
-- Production: deployed commit, container health, HTTP result, and rollback awareness.
-- Release work: follow `.project-brain/RELEASE_CHECKLIST.md` and require explicit production authorization.
-- Security work: follow `.project-brain/SECURITY_PROTOCOL.md`; never persist secrets or raw sensitive logs.
-- Incidents: record root cause, evidence, fix, verification, and prevention in `.project-brain/INCIDENT_LOG.md`.
-- Before material changes: complete `.project-brain/IMPACT_ANALYSIS.md`; after verification: record results using `.project-brain/EVIDENCE_RECORD_TEMPLATE.md`.
-- For schema/API/form changes, run `.project-brain/DATA_CONTRACT_CHECK.md`.
-- For runtime/deploy changes, run `.project-brain/OBSERVABILITY_PLAN.md` and `.project-brain/ROLLBACK_SIMULATOR.md`.
+### Project Brain Updates
+After material work, update `.project-brain/PROJECT_STATE.md`, `FEATURE_MATRIX.md`, `EVIDENCE_INDEX.md`, and `KNOWN_ISSUES.md` as applicable. Record important architectural choices in `DECISION_LOG.md`.
