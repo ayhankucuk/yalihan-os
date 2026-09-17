@@ -3,9 +3,24 @@ name: skill-index
 description: Yalıhan OS agent skill taxonomy — dosya yolu bazlı otomatik skill seçimi rehberi.
 ---
 
-# SKILL_INDEX — Automatic Skill Selection
+# SKILL_INDEX — Automatic Skill Selection & Agent Router
 
-Agent bir dosyayı açtığında veya değiştireceği zaman bu tabloya bakarak hangi skill'in gerekli olduğunu otomatik belirler.
+> **Mimari Şartname Referansı:** Detaylı routing matrisi ve rol tanımları için bkz. [AGENT_SKILL_ROUTER.md](file:///Users/macbookpro/repos/yalihan-os/docs/architecture/AGENT_SKILL_ROUTER.md).  
+> **Router Statüsü:** Router bir SKILL veya AUTHORITY değildir; Canonical Operational Routing Contract'tır (`TEST_VERIFIED / TOOL_RUNTIME`).
+
+Agent bir dosyayı açtığında veya değiştireceği zaman bu tabloya ve rol sınırlarına bakarak hangi skill'in ve yetkinin gerekli olduğunu otomatik belirler.
+
+---
+
+## 🤖 Desteklenen Agent Motorları (Tri-Engine Ecosystem)
+
+| Agent | Katman | Tüketim Kanıtı | Operasyonel Durum |
+|---|---|---|---|
+| **Antigravity** | Native IDE Discovery | `TEST_VERIFIED` (TOOL_RUNTIME) | 🟢 **Primary Agent** (Ana İcracı) |
+| **Cline** | `.clinerules` Adapter | `TEST_VERIFIED` (TOOL_RUNTIME) | 🟢 **Verified Fallback Agent** (Doğrulanmış Yedek) |
+| **Codex** | CLI / Bridge Config | `UNKNOWN` (Kredi bekleniyor) | 🟡 **Optional Agent** (Gelecek Ek Motor) |
+
+> **Not:** Üç motor da aynı kanonik SSOT zincirine (`AGENTS.md`, `.sab/authority.json`, `SKILL_INDEX.md`) bağlanır; yetki seviyeleri eşittir.
 
 ---
 

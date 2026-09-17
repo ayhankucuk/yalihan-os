@@ -52,6 +52,29 @@ It does NOT establish runtime compatibility for all skills or for other agents.
 
 ---
 
+## [2026-09-17] G2_3_ROUTER_RUNTIME_PILOT_VERIFICATION
+
+**Evidence ID:** EVIDENCE-G2.3-ROUTER-PILOT-001  
+**Task/Pilot:** G2.3 — MINIMAL ROUTER RUNTIME PILOT  
+**Date:** 2026-09-17  
+**Component:** Agent–Skill Router Contract (`docs/architecture/AGENT_SKILL_ROUTER.md`)  
+**Evidence Level:** `TEST_VERIFIED`  
+**Evidence Type:** `TOOL_RUNTIME`  
+**Executor:** Google Antigravity IDE → Parent / Native Subagent  
+**Human Decision Owner:** Ayhan  
+**Result:** `PASS`  
+
+| Metric / Aspect | Value / Observation |
+|---|---|
+| **Observed Runtime Chain** | `Task → Classification → 13-field Task Contract → Role/Executor/Skill → Governance Pointers → Parent→Native Subagent Handoff → Governance Read → Skill Read → Bounded Execution → STOP` |
+| **Mutation Boundary** | ZERO application code, migration, config, or authority modification; ZERO persistent write (`KNOWN_ISSUES.md` written zero bytes) |
+| **Scope Limitation** | Yalnızca test edilen `FORENSIC_RESEARCH` read-only pilotunu kapsar. Tüm skill'ler, tüm executor'lar, Codex veya production için genelleme yapılamaz. |
+| **Git Tree Integrity** | Router evidence-level hazırlık düzeltmesinden SONRA, runtime pilot execution başlamadan hemen önce alınan git status ile pilot execution sonrasındaki git status birebir aynıdır. |
+
+**Canonical Decision:** Human Decision Owner Ayhan has accepted `docs/architecture/AGENT_SKILL_ROUTER.md` as a **Canonical Operational Routing Contract** (`TEST_VERIFIED / TOOL_RUNTIME`). It is NOT an Authority Source (`AGENTS.md` and `.sab/authority.json` remain Authority SSOT).
+
+---
+
 ## [2026-09-17] WORKSPACE_EXECUTION_TENANT_ISOLATION
 
 **Commit:** dirty (test çalıştırıldı)

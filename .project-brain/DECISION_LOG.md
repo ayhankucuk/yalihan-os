@@ -294,5 +294,27 @@ storage/bekci/
 
 ---
 
-*Son güncelleme: 2026-09-14*
+## Karar #007 — 2026-09-17
+
+**Konu:** G2.3 Router'ın Canonical Operational Routing Contract Olarak Kabul Edilmesi
+
+**Gerekçe:**
+- G2.3 adli pilot çalıştırması başarıyla tamamlanmış ve `TEST_VERIFIED / TOOL_RUNTIME` seviyesinde ampirik kanıt üretilmiştir.
+- Router zinciri (`Task → Classification → Task Contract → Role/Executor/Skill → Governance Pointers → Parent→Subagent Handoff → Bounded Execution → STOP`) doğrulanmıştır.
+
+**Karar:**
+- `docs/architecture/AGENT_SKILL_ROUTER.md` adresi Human Decision Owner Ayhan tarafından **Canonical Operational Routing Contract** olarak kabul edilmiştir.
+- **Authority Source: NO.** Router yeni bir Otorite Kaynağı değildir. Yetki hiyerarşisi ve anayasa zinciri `AGENTS.md` ve `.sab/authority.json` üzerinde aynen kalır.
+- Router'ın görevi yalnız: `CLASSIFY → ROUTE → CONSTRAIN → HANDOFF` yapmaktır.
+
+**Decision Owner:** Ayhan  
+**Session Owner:** Antigravity Parent Agent  
+**Evidence:** `TEST_VERIFIED / TOOL_RUNTIME`  
+
+---
+
+*Son güncelleme: 2026-09-17*
+
+
+
 
