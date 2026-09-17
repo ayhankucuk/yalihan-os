@@ -2,6 +2,15 @@
 # Bu dosya Cline'ın her oturumda otomatik okuduğu kural dosyasıdır.
 # Kaynak: .cursorrules ile senkronize, Cline otonom davranışlarına göre genişletilmiştir.
 
+# -----------------------------------------------------------------------------
+# 🏛️ YALIHAN OS — CANONICAL GOVERNANCE & SKILL POINTERS (ADR #007 Pilot)
+# Cline MUST explicitly read and apply these canonical repository sources:
+# 1. Agent Behavioral Constitution: AGENTS.md
+# 2. Machine Authority: .sab/authority.json
+# 3. Canonical Skill Taxonomy: .agents/skills/SKILL_INDEX.md
+# 4. Shared Operational State & Evidence: .project-brain/
+# -----------------------------------------------------------------------------
+
 ---
 
 ## 1. 🏛️ OTORİTE SIRASI (Mutlak, Değiştirilemez)

@@ -30,6 +30,54 @@
 - `INFERRED`: reasoned from implementation; must not be presented as a fact.
 - `UNKNOWN`: requires a new check.
 
+## [2026-09-17] ADR_007_PHASE_G1_1_PILOT_VERIFICATION
+
+**Provenance:** LOCAL WORKING TREE / UNCOMMITTED
+**Session:** ADR #007 Phase G1.1 Multi-Agent Governance & Skill Authority Pilot
+**Tool:** Antigravity IDE (Native) + Cline (`.clinerules` Adapter)
+**Evidence Level:** `TEST_VERIFIED`
+**Evidence Type:** `TOOL_RUNTIME`
+
+| # | Step / Pilot | Target / File | Evidence Level | Evidence Type | Result |
+|---|--------------|---------------|----------------|---------------|--------|
+| 1 | G1.1a Antigravity Native Baseline | `AGENTS.md` + `.agents/skills/dirty-inventory-generator` | `TEST_VERIFIED` | `TOOL_RUNTIME` | `ANTIGRAVITY_NATIVE_SKILL_CONSUMPTION_VERIFIED` (6-category classification executed) |
+| 2 | G1.1b Cline Canonical Pointer | `.clinerules` (Additive pointer header) | `REPO_VERIFIED` | `TOOL_CONFIGURATION` | Additive header pointer added (`.clinerules:L5-12`); zero existing rules modified |
+| 3 | G1.1c Cline Canonical Consumption | `.clinerules` → `AGENTS.md` → `.sab/authority.json` → `SKILL_INDEX.md` → `dirty-inventory-generator/SKILL.md` | `TEST_VERIFIED` | `TOOL_RUNTIME` | `CLINE_CANONICAL_CONSUMPTION_VERIFIED` (Canonical skill instruction consumed & executed) |
+
+**Key Finding:** Provides TEST_VERIFIED evidence that the canonical `dirty-inventory-generator` skill can be discovered, read, and executed by both Antigravity and Cline through their respective native/adapter paths.
+
+This establishes initial cross-agent canonical skill portability evidence.
+
+It does NOT establish runtime compatibility for all skills or for other agents.
+
+---
+
+## [2026-09-17] WORKSPACE_EXECUTION_TENANT_ISOLATION
+
+**Commit:** dirty (test çalıştırıldı)
+**Session:** Session 20 — Workspace Execution Tenant Isolation
+**Tool:** PHPUnit `tests/Feature/Workspace/WorkspaceExecutionTenantIsolationTest.php`
+**DB:** SQLite in-memory (`RefreshDatabase`)
+**Evidence Level:** `TEST_VERIFIED`
+
+| # | Bulgu | Kaynak | Seviye | Öncelik |
+|---|-------|--------|--------|----------|
+| 1 | `WorkspaceExecutionController` cancel/retry/replay — tenant kontrolü policy üzerinden | Kod analizi | REPO_VERIFIED | CRITICAL |
+| 2 | TenantScope global scope + explicit `tenant_id` korunuyor | Test assertion | TEST_VERIFIED | CRITICAL |
+| 3 | Super-admin cross-tenant erişim (`actingAs`) | Test assertion | TEST_VERIFIED | HIGH |
+| 4 | Replay/Retry yeni execution oluşturur (tenant_id korunur) | Test assertion | TEST_VERIFIED | HIGH |
+
+**Test Sonuçları:**
+- Tenant isolation suite: **17/17 PASS** ✅
+- Workspace regression suite: **28/28 PASS / 87 assertions** ✅
+
+**Dosyalar:**
+- `tests/Feature/Workspace/WorkspaceExecutionTenantIsolationTest.php` — YENİ
+- `app/Policies/PortfolioDriveWorkspacePolicy.php` — mevcut (yeterli)
+
+---
+
+## Evidence levels
 ## Canonical sources
 
 - Product roadmap: `/Users/macbookpro/repos/yalihan-os/ROADMAP.md`
