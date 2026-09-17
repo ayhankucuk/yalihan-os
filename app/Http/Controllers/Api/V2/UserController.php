@@ -31,11 +31,17 @@ class UserController extends Controller
      */
     public function index(): JsonResponse
     {
-        $users = User::query()
+        $query = User::query()
             ->select(['id', 'name', 'email', 'telefon', 'aktiflik_durumu', 'created_at'])
             ->where('aktiflik_durumu', true)
-            ->latest('created_at')
-            ->paginate(20);
+            ->latest('created_at');
+
+        $authUser = auth()->user();
+        if ($authUser && $authUser->tenant_id && !$authUser->isSuperAdmin()) {
+            $query->where('tenant_id', $authUser->tenant_id);
+        }
+
+        $users = $query->paginate(20);
 
         return ResponseService::success([
             'data' => $users->items(),
@@ -61,6 +67,13 @@ class UserController extends Controller
             'sifre_hash' => 'required|string|min:6',
         ]);
 
+        $authUser = auth()->user();
+        
+        // Tenant ownership: Normal tenant users can only create users in their own tenant
+        if ($authUser && $authUser->tenant_id && !$authUser->isSuperAdmin()) {
+            $validated['tenant_id'] = $authUser->tenant_id;
+        }
+
         $user = $action->handle($validated);
 
         return ResponseService::success(
@@ -76,6 +89,13 @@ class UserController extends Controller
      */
     public function show(User $user): JsonResponse
     {
+        $authUser = auth()->user();
+        if ($authUser && $authUser->tenant_id && !$authUser->isSuperAdmin()) {
+            if ((int) $user->tenant_id !== (int) $authUser->tenant_id) {
+                return ResponseService::error('Kullanıcı bulunamadı', 404);
+            }
+        }
+
         return ResponseService::success(
             $user->only(['id', 'name', 'email', 'telefon', 'aktiflik_durumu', 'created_at'])
         );
@@ -87,6 +107,13 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user, \App\Actions\Api\V2\User\UpdateUserAction $action): JsonResponse
     {
+        $authUser = auth()->user();
+        if ($authUser && $authUser->tenant_id && !$authUser->isSuperAdmin()) {
+            if ((int) $user->tenant_id !== (int) $authUser->tenant_id) {
+                return ResponseService::error('Kullanıcı bulunamadı', 404);
+            }
+        }
+
         $validated = $request->validate([
             'name'            => 'sometimes|string|max:255',
             'email'           => 'sometimes|email|unique:users,email,' . $user->id,
@@ -108,6 +135,13 @@ class UserController extends Controller
      */
     public function destroy(User $user, \App\Actions\Api\V2\User\DestroyUserAction $action): JsonResponse
     {
+        $authUser = auth()->user();
+        if ($authUser && $authUser->tenant_id && !$authUser->isSuperAdmin()) {
+            if ((int) $user->tenant_id !== (int) $authUser->tenant_id) {
+                return ResponseService::error('Kullanıcı bulunamadı', 404);
+            }
+        }
+
         $action->handle($user);
 
         return ResponseService::success([], 'Kullanıcı başarıyla silindi');
