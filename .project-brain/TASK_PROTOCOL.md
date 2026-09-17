@@ -1,25 +1,73 @@
-# YALIHAN OS — Task Protocol & Execution Standard
+# YALIHAN OS — Task Protocol & Execution Standard (Level 2 Protocol)
 
-This document defines the operational execution standard for all AI agents working on YALIHAN OS.
+This document defines the task classification, execution lifecycle, and escalation protocols for AI agents working on YALIHAN OS.
 It complements the immutable **YALIHAN OS Agent Constitution v2.1** ([`AGENTS.md`](file:///Users/macbookpro/repos/yalihan-os/AGENTS.md)).
 
 ---
 
-## 1. Task Contract Standard (Before Starting Any Task)
+## 1. Task Classification: `QUICK` vs `MATERIAL`
 
-Every agent MUST output a structured `TASK CONTRACT` block before modifying code or performing material architectural work:
+Every incoming user request or task MUST be classified as either `QUICK` or `MATERIAL` before execution:
+
+### A. `MATERIAL` Task Criteria (Mandatory Task Contract)
+A task is automatically classified as `MATERIAL` if it involves ANY of the following:
+- Schema changes, database migrations, or table structure alterations.
+- Domain behavior changes, business logic refactoring, or state machine transitions.
+- Authorization, role permissions, or tenant isolation checks (`tenant_id`).
+- API contracts, DTOs, request validation rules, or JSON envelope signatures.
+- Financial operations, ledgers, commission calculations, or payment integrations.
+- Hermes events, queue listeners, async jobs, or webhook handlers.
+- AI operational actions, prompt pipelines, or AI recommendation flows.
+- Changes impacting more than a single isolated presentation file.
+
+> **RULE:** When in doubt between `QUICK` and `MATERIAL`, the task MUST default to **`MATERIAL`**.
+
+### B. `QUICK` Task Criteria (Exempt from Task Contract)
+A task is classified as `QUICK` ONLY if it meets ALL of the following:
+- Typo corrections, docblock fixes, or plain text label updates.
+- Pure CSS styling tweaks without DOM or state logic changes.
+- Read-only research, file viewing, or investigation queries.
+- Single-file local tweaks with zero behavioral or cross-layer impact.
+
+---
+
+## 2. Complexity Escalation Rule
+
+If an agent starts execution under a `QUICK` classification and discovers unexpected material impact during investigation (e.g., a simple view fix requires a migration, a tenant scope fix, or a domain authority change):
+
+```text
+QUICK
+  │ (Discovers unexpected material impact)
+  ▼
+RECLASSIFY → MATERIAL
+  │
+  ▼
+Output TASK CONTRACT
+  │
+  ▼
+Continue Execution
+```
+
+> **RULE:** An agent MUST NOT quietly expand a `QUICK` task to absorb material changes without formal reclassification.
+
+---
+
+## 3. Task Contract Format (`MATERIAL` Tasks Only)
+
+Before modifying code on a `MATERIAL` task, the agent MUST output the following structured `TASK CONTRACT`:
 
 ```text
 ======================================================================
 TASK CONTRACT
 ======================================================================
+Task Type:              MATERIAL
 Objective:              [Single specific responsibility of the task]
 Scope:                  [Boundaries and explicit non-goals]
 Canonical Authority:    [Primary canonical Model/Service/Repository being modified]
 Files Allowed to Modify:[Max 5-10 explicit file paths]
 Read Scope:             [Declared search/inspection scope — read-only repo-wide permitted]
 Expected Data Contracts:[Tables, DTOs, interfaces, or API envelopes affected]
-Tenant Impact:          [Tenant isolation verification plan & negative test requirement]
+Tenant Impact:          [Tenant isolation plan & negative test requirement: YES | NO]
 Security Impact:        [Secrets boundary, auth checks, or rate limiting verification]
 Production Impact:      [Migration status, deploy order, or human override triggers]
 Verification Plan:      [Automated PHPUnit tests, browser E2E flows, or gate scripts]
@@ -31,9 +79,9 @@ STATUS: READY | BLOCKED
 
 ---
 
-## 2. Completion Report Standard (Upon Task Completion)
+## 4. Completion Report Format (All Tasks)
 
-Upon completing execution, the agent MUST output a machine-auditable `COMPLETION REPORT` block:
+Upon completing execution of any `MATERIAL` task, the agent MUST output a machine-auditable `COMPLETION REPORT`:
 
 ```text
 ======================================================================
@@ -54,30 +102,3 @@ Remaining Risks:        [Any residual risk or pending migration]
 Known Issues Logged:    [Issue codes appended to KNOWN_ISSUES.md]
 ======================================================================
 ```
-
----
-
-## 3. Multi-Agent Orchestration Protocol (Inter-Agent Governance)
-
-When multiple agents run concurrently across Git Worktrees, the following role hierarchy and conflict resolution rules govern operations:
-
-### A. Role Division & Capabilities
-
-| Agent Role | Primary Duty | Write Authority | Merge Authority | Allowed Tools |
-|------------|--------------|-----------------|-----------------|---------------|
-| **Research Office (Alpha)** | Architecture audit, debt discovery, SAAB reviews | Read-Only (Docs/Brain only) | NONE | `grep`, `find`, `view_file`, `bekci:health` |
-| **Engineering Office (Beta)** | Code implementation, feature development | Dedicated Worktree | Local Branch | Code editing, unit testing, migrations |
-| **Verification Office (Gamma)** | E2E certification, preflight, gate checks | Quality Gates & Logs | RC2 Release Gate | `antigravity-full-gate.sh`, browser E2E |
-
-### B. Inter-Agent Conflict Resolution Rules
-
-1. **Evidence Hierarchy Overrules Inference:**
-   When two agents contradict regarding code behavior, the higher evidence level prevails:
-   `PRODUCTION_VERIFIED > BROWSER_VERIFIED > TEST_VERIFIED > REPO_VERIFIED > DOCUMENTED > INFERRED`
-
-2. **Authority Lock & Priority:**
-   - If Agent Alpha locks a module in `.project-brain/PROJECT_STATE.md`, Agent Beta MUST NOT modify that module in the main worktree.
-   - If two agents attempt to modify the same canonical entity simultaneously, the second agent MUST STOP and set status to `BLOCKED: MULTI_AGENT_COLLISION`.
-
-3. **Human Arbiter Override:**
-   - When evidence levels are equal and architecture is ambiguous, neither agent may guess. Both MUST halt and trigger `BLOCKED: ARCHITECTURAL_DECISION_REQUIRED`.
