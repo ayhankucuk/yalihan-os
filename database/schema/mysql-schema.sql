@@ -1324,6 +1324,58 @@ CREATE TABLE `development_velocity_metrics` (
   KEY `development_velocity_metrics_period_start_index` (`period_start`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `emlak_projeleri`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `emlak_projeleri` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `gelistirici_adi` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tamamlanma_tarihi` date DEFAULT NULL,
+  `yayin_durumu` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'taslak',
+  `one_cikan` tinyint(1) NOT NULL DEFAULT '0',
+  `adres_il` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `adres_ilce` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `adres_mahalle` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `lat` decimal(10,7) DEFAULT NULL,
+  `lng` decimal(10,7) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `emlak_proje_translations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `emlak_proje_translations` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `proje_id` bigint unsigned NOT NULL,
+  `locale` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `proje_adi` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `aciklama` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `emlak_proje_translations_proje_id_locale_unique` (`proje_id`,`locale`),
+  KEY `emlak_proje_translations_proje_id_foreign` (`proje_id`),
+  CONSTRAINT `emlak_proje_translations_proje_id_foreign` FOREIGN KEY (`proje_id`) REFERENCES `emlak_projeleri` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `emlak_proje_gorselleri`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `emlak_proje_gorselleri` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `proje_id` bigint unsigned NOT NULL,
+  `dosya_yolu` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sira` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `emlak_proje_gorselleri_proje_id_foreign` (`proje_id`),
+  CONSTRAINT `emlak_proje_gorselleri_proje_id_foreign` FOREIGN KEY (`proje_id`) REFERENCES `emlak_projeleri` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `error_memory`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -2300,6 +2352,7 @@ CREATE TABLE `ilanlar` (
   `goruntulenme` int NOT NULL DEFAULT '0',
   `lat` decimal(10,8) DEFAULT NULL,
   `lng` decimal(11,8) DEFAULT NULL,
+  `proje_id` bigint unsigned DEFAULT NULL,
   `geometry_type` enum('point','polygon') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'point',
   `geometry` json DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,

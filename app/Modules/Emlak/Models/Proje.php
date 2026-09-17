@@ -60,13 +60,21 @@ class Proje extends BaseModel
     /**
      * İlişkilendirilmiş tablo adı
      */
-    protected $table = 'projeler';
+    protected $table = 'emlak_projeleri';
 
     /**
      * Toplu atanabilir alanlar
      */
     protected $fillable = [
-        
+        'gelistirici_adi',
+        'tamamlanma_tarihi',
+        'yayin_durumu',
+        'one_cikan',
+        'adres_il',
+        'adres_ilce',
+        'adres_mahalle',
+        'lat',
+        'lng',
     ];
 
     /**

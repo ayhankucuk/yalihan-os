@@ -927,6 +927,14 @@ class Ilan extends BaseModel
                     ->withDefault(['ad' => '-', 'slug' => 'belirsiz']);
     }
 
+    /**
+     * Emlak Proje ilişkisi (Projeden Satış)
+     */
+    public function proje(): BelongsTo
+    {
+        return $this->belongsTo(\App\Modules\Emlak\Models\Proje::class, 'proje_id');
+    }
+
     public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');

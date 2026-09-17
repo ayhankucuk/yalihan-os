@@ -95,7 +95,7 @@ class ProjeController extends Controller
 
             DB::commit();
 
-            return redirect()->route('admin.projeler.index')
+            return redirect()->route('module.emlak-projeleri.index')
                 ->with('success', 'Proje başarıyla oluşturuldu.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -219,7 +219,7 @@ class ProjeController extends Controller
 
             DB::commit();
 
-            return redirect()->route('admin.projeler.index')
+            return redirect()->route('module.emlak-projeleri.index')
                 ->with('success', 'Proje başarıyla güncellendi.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -248,7 +248,7 @@ class ProjeController extends Controller
             // İlişkili kayıtları cascade ile silecek
             $proje->delete();
 
-            return redirect()->route('admin.projeler.index')
+            return redirect()->route('module.emlak-projeleri.index')
                 ->with('success', 'Proje başarıyla silindi.');
         } catch (\Exception $e) {
             return back()->with('error', 'Proje silinirken bir hata oluştu: '.$e->getMessage());

@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Emlak\Controllers\FeatureController;
+use App\Modules\Emlak\Controllers\ProjeController;
 use Illuminate\Support\Facades\Route;
 
 // Not: İlan rotaları ana Admin\IlanController tarafından yönetiliyor
@@ -9,6 +10,9 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['web', 'auth', 'admin', 'role:admin'])->prefix('admin/module')->name('module.')->group(function () {
     // Özellikler yönetimi
     Route::resource('ozellikler', FeatureController::class);
+
+    // Emlak Projeleri yönetimi (Projeden Satış)
+    Route::resource('emlak-projeleri', ProjeController::class);
 
     // Özellikler API rotaları
     Route::prefix('api')->name('api.')->group(function () {
