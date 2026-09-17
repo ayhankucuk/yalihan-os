@@ -100,6 +100,94 @@ It does NOT establish runtime compatibility for all skills or for other agents.
 
 ---
 
+## [2026-09-17] V2_USERS_API_TENANT_ISOLATION_SECURITY
+
+**Commit:** `a1f2d168` — "fix(security): secure V2 users API tenant boundaries"  
+**Session:** REMEDIATION_V2_USERS_API_SECURITY_01 + 01B  
+**Tool:** PHPUnit + Manual Security Contract Verification  
+**DB:** SQLite in-memory (`RefreshDatabase`)  
+**Evidence Level:** `TEST_VERIFIED`  
+**Evidence Type:** `AUTOMATED_TESTS`  
+**Production Status:** `UNKNOWN` (not deployed or verified on production VPS)
+
+### Root Defect Fixed
+
+**Original Issue:** Tenant A POST `/api/v1/users` created users with `tenant_id = NULL`, violating tenant ownership invariant.
+
+**Root Cause:** `StoreUserAction` did not assign `tenant_id`; controller did not enforce tenant ownership.
+
+### Security Contract Implementation
+
+| # | Security Guarantee | Implementation | Evidence |
+|---|-------------------|----------------|----------|
+| 1 | Normal tenant users: created users inherit authenticated `tenant_id` | Controller enforces `$validated['tenant_id'] = auth()->user()->tenant_id` | `test_tenant_a_post_creates_user_in_tenant_a` PASS |
+| 2 | Client-supplied `tenant_id` injection: BLOCKED | Server overwrites client payload with authenticated tenant | `test_tenant_a_cannot_inject_tenant_b_id_during_store` PASS |
+| 3 | Cross-tenant GET isolation | Index/show filtered by authenticated `tenant_id` | `test_tenant_a_user_index_excludes_tenant_b_users`, `test_tenant_a_cannot_access_tenant_b_user` PASS |
+| 4 | Cross-tenant UPDATE blocked + DB unchanged | 404 response + target record unmodified | `test_tenant_a_cross_tenant_update_blocked_and_db_unchanged` PASS |
+| 5 | Cross-tenant DELETE blocked + DB unchanged | 404 response + target record exists | `test_tenant_a_cross_tenant_delete_blocked_and_db_unchanged` PASS |
+| 6 | Guest access blocked | 401 Unauthenticated | `test_guest_cannot_access_user_index`, `test_guest_cannot_access_user_show` PASS |
+| 7 | Route binding correctness | Valid user ID returns correct data, invalid returns 404 | `test_valid_route_binding_returns_user_details`, `test_non_existent_user_returns_404` PASS |
+| 8 | Superadmin cross-tenant read preserved | Superadmin can access Tenant B user | `test_super_admin_can_access_cross_tenant_users` PASS |
+
+### Test Results
+
+```
+php artisan test tests/Feature/Api/V2UsersApiSecurityTest.php
+  Tests: 12 passed (29 assertions) ✅
+
+php artisan test tests/Feature/Admin/DanismanSeedTenantIntegrityTest.php
+  Tests: 8 passed (45 assertions) ✅
+```
+
+### Files Modified
+
+1. `app/Http/Controllers/Api/V2/UserController.php`
+   - Line 70-75: Tenant ownership enforcement in `store()` method
+   - Line 40-42: Tenant isolation in `index()` method (from predecessor remediation)
+   - Line 86-90, 104-108, 132-136: Cross-tenant checks in `show()`, `update()`, `destroy()`
+
+2. `app/Actions/Api/V2/User/StoreUserAction.php`
+   - Line 12: `tenant_id` parameter acceptance with null fallback
+
+3. `tests/Feature/Api/V2UsersApiSecurityTest.php` — **NEW FILE** (428 lines)
+   - 12 comprehensive security contract tests
+   - Full CRUD tenant isolation coverage
+   - Client injection attack defense tests
+   - Database integrity verification tests
+
+4. `routes/api/v1/v2-users.php`
+   - Route binding corrections (`{id}` → `{user}`) from predecessor remediation
+
+### Known Issues Resolved
+
+- **`[PUBLIC-API-USERS-DATA-EXPOSURE]`**: ✅ RESOLVED
+  - Guest access blocked (401)
+  - Tenant isolation enforced on index/show
+  - Cross-tenant data leakage eliminated
+
+- **`[V2-USERS-ROUTE-MODEL-BINDING-MISMATCH]`**: ✅ RESOLVED
+  - Route parameters corrected to `{user}`
+  - Laravel implicit binding functional
+  - Controller type hints match route parameters
+
+### Governance Results
+
+```bash
+./scripts/tools/antigravity-preflight.sh
+  ✅ PASS: All modified files comply with the 10 Golden Rules
+
+./scripts/tools/secret-scan.sh --ci
+  ✅ CI scan clean — no secrets detected
+```
+
+### Limitations
+
+- **Superadmin store semantics**: UNDEFINED (preserved existing behavior: creates users with `tenant_id = NULL`)
+- **Production deployment**: NOT AUTHORIZED
+- **Production verification**: REQUIRED before marking as `PRODUCTION_VERIFIED`
+
+---
+
 ## Evidence levels
 ## Canonical sources
 

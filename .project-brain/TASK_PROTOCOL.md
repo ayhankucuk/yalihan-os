@@ -102,3 +102,107 @@ Remaining Risks:        [Any residual risk or pending migration]
 Known Issues Logged:    [Issue codes appended to KNOWN_ISSUES.md]
 ======================================================================
 ```
+
+## 5. Parent Agent Session Recovery Protocol
+
+Before routing any new `MATERIAL` task to an Implementer or other executor, the Parent Agent (or Router) MUST perform **session recovery reconciliation** to prevent duplicate work and stale context execution.
+
+### A. Session Recovery Checklist
+
+The Parent Agent MUST reconcile the following sources:
+
+1. **Project Brain State:**
+   - `.project-brain/PROJECT_STATE.md` (active architectural gates, committed work)
+   - `.project-brain/EVIDENCE_INDEX.md` (test-verified or production-verified evidence)
+   - `.project-brain/KNOWN_ISSUES.md` (open issues and resolved issues)
+   - `.project-brain/DECISION_LOG.md` (accepted ADRs and architectural decisions)
+
+2. **Git Repository State:**
+   - `git status --short` (dirty working tree inspection)
+   - `git branch --show-current` (current branch verification)
+   - `git log -n 8 --oneline` (recent commit history)
+   - `git show <commit> --stat` (for specific commits referenced in task context)
+
+3. **Cross-Reference:**
+   - Compare task context references (commit SHAs, issue codes, file paths) with actual repository state
+   - Classify prior work status: `COMMITTED` | `VERIFIED_NOT_COMMITTED` | `IN_PROGRESS` | `STALE_FINDING` | `BLOCKED`
+
+### B. Reconciliation Decision Tree
+
+**RULE**: Every MATERIAL task MUST perform minimum reconciliation (Section 5.A) before routing. There is NO bypass path.
+
+```text
+Minimum reconciliation performed (Section 5.A)?
+  │
+  └─ YES → Classify task state:
+       │
+       ├─ Prior work COMMITTED + documented in Project Brain?
+       │    └─ YES → Skip duplicate implementation
+       │             Report: ALREADY_COMPLETE
+       │
+       ├─ Prior work COMMITTED but NOT documented in Project Brain?
+       │    └─ YES → Route to SYNC task (update Project Brain only)
+       │             Do NOT re-implement
+       │
+       ├─ Prior work IN_PROGRESS (dirty hunks)?
+       │    └─ YES → Verify scope alignment
+       │             Continue ONLY if bounded scope matches
+       │             STOP if scope conflicts
+       │
+       ├─ Task context references stale commit or non-existent file?
+       │    └─ YES → STOP immediately
+       │             Report: BLOCKED: STALE_TASK_CONTEXT
+       │             Do NOT route to executor
+       │
+       └─ New/valid task with no conflicts?
+            └─ YES → Route to executor normally
+```
+
+### C. Mandatory STOP Conditions
+
+The Parent Agent MUST immediately **STOP** and return `BLOCKED: STALE_TASK_CONTEXT` if:
+
+- Task references a commit SHA that does not exist (verify with `git cat-file -e <sha>^{commit}` or `git rev-parse --verify <sha>^{commit}` — absence from `git log` history is NOT sufficient proof of non-existence)
+- Task references files that have been moved, renamed, or deleted
+- Task assumes architectural state contradicted by current `PROJECT_STATE.md` or `DECISION_LOG.md`
+- Task requests duplicate implementation of already-committed work
+
+### D. Project Brain Update Protocol
+
+When routing a **Project Brain synchronization task** (updating documentation to reflect committed work):
+
+1. **Write Scope:** ONLY `.project-brain/` markdown files
+2. **Read Scope:** Repository-wide (for verification)
+3. **No Code Changes:** Application code, migrations, tests remain untouched
+4. **No New Decisions:** `DECISION_LOG.md` is READ-ONLY unless explicitly authorized
+5. **Evidence-Based Updates:** All claims must reference commit SHAs, test results, or file line numbers
+
+### E. Session Recovery Task Template
+
+When delegating a Project Brain sync task:
+
+```text
+TASK_ID: <ORIGINAL_TASK_ID>_RESUME
+INTENT: Resume/recover existing <ORIGINAL_TASK_ID>
+DO NOT blindly re-implement.
+CURRENT-STATE-FIRST.
+
+Inspect:
+  - .project-brain/PROJECT_STATE.md
+  - .project-brain/EVIDENCE_INDEX.md
+  - .project-brain/KNOWN_ISSUES.md
+  - git status --short
+  - git log -n 8 --oneline
+
+Classify prior work:
+  A) Already fully implemented & committed
+  B) Partially implemented (dirty hunks)
+  C) Not implemented
+  D) Stale/conflicting
+
+If (A): Update Project Brain ONLY. DO NOT re-implement.
+If (B): Continue bounded scope ONLY if aligned.
+If (C): Proceed with full implementation.
+If (D): STOP with BLOCKED: STALE_TASK_CONTEXT
+```
+

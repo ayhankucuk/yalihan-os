@@ -71,6 +71,29 @@ YALIHAN OS is an AI-assisted real-estate and property-operations operating syste
 - **Actor-Aware Human Gate:** 6 critical AI side-effects guarded; human operator manual actions free.
 - **Model-Agnostic Roles:** Research, Forensic Research, Architect, Implementer, Verifier, Integrator.
 
+## Active Security Gate — V2 Users API Tenant Isolation (2026-09-17)
+
+- **Commit:** `a1f2d168` — "fix(security): secure V2 users API tenant boundaries"
+- **Status:** `TEST_VERIFIED / COMMITTED`
+- **Production Status:** `UNKNOWN` (not yet deployed or verified on production VPS)
+- **Defect Resolved:** Tenant A POST `/api/v1/users` now correctly assigns `tenant_id` to created user
+- **Security Guarantees:**
+  - Normal tenant users: created users inherit authenticated `tenant_id`
+  - Client-supplied `tenant_id` injection: **BLOCKED** (server overwrites with auth tenant)
+  - Cross-tenant isolation: `GET/PUT/DELETE` operations remain blocked (404 for cross-tenant)
+  - Database integrity: Cross-tenant update/delete attempts leave target records unchanged
+- **Test Coverage:**
+  - `V2UsersApiSecurityTest.php`: 12 tests / 29 assertions — **100% PASS**
+  - `DanismanSeedTenantIntegrityTest.php`: 8 tests / 45 assertions — **100% PASS**
+- **Files Modified:**
+  - `app/Http/Controllers/Api/V2/UserController.php` (tenant ownership enforcement in `store()`)
+  - `app/Actions/Api/V2/User/StoreUserAction.php` (`tenant_id` parameter acceptance)
+  - `tests/Feature/Api/V2UsersApiSecurityTest.php` (new comprehensive security contract tests)
+  - `routes/api/v1/v2-users.php` (route corrections from predecessor remediation)
+- **Known Issues Resolved:**
+  - `[PUBLIC-API-USERS-DATA-EXPOSURE]`: Guest access blocked (401), tenant isolation enforced
+  - `[V2-USERS-ROUTE-MODEL-BINDING-MISMATCH]`: Route binding corrected (`{user}` parameter)
+
 
 
 
@@ -599,7 +622,6 @@ HOTSPOT_LOCK:database/migrations/2026_08_23_000002_create_c51_settlement_domain_
 HOTSPOT_LOCK:database/migrations/2026_09_04_173133_add_unique_composite_index_to_ilan_fotograflari.php:cline:2026-09-14T07:24:05Z:3600
 HOTSPOT_LOCK:database/migrations/2026_08_23_000004_create_bank_accounts_table.php:cline:2026-09-14T07:24:12Z:3600
 HOTSPOT_LOCK:database/migrations/2026_08_24_000001_create_workforce_executions_table.php:cline:2026-09-14T07:24:12Z:3600
-HOTSPOT_LOCK:database/schema/mysql-schema.sql:cline:2026-09-14T07:29:05Z:3600
 
 ---
 
@@ -707,3 +729,7 @@ AI Agent karar üretir
 
 ### Etkilenen Dosyalar
 - `resources/views/admin/ilanlar/edit.blade.php` (-78 satır, +18 satır)
+HOTSPOT_LOCK:database/migrations/2026_09_17_000001_create_emlak_projeleri_tables.php:antigravity:2026-09-17T13:53:56Z:3600
+HOTSPOT_LOCK:database/migrations/2026_09_17_000002_add_proje_id_to_ilanlar_table.php:antigravity:2026-09-17T13:53:56Z:3600
+HOTSPOT_LOCK:database/schema/mysql-schema.sql:antigravity:2026-09-17T13:54:36Z:3600
+HOTSPOT_LOCK:.sab/schema-checksum.sha256:antigravity:2026-09-17T13:54:36Z:3600
