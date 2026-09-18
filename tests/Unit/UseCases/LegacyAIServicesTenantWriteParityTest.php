@@ -8,6 +8,7 @@ use App\Exceptions\CountryOwnershipUnresolvableException;
 use App\Exceptions\CrossTenantIdentifierInjectionException;
 use App\Models\AI\AIContractDraft;
 use App\Models\AI\AIIlanTaslagi;
+use App\Models\AI\AIConversation;
 use App\Models\AI\AIMessage;
 use App\Models\Communication;
 use App\Models\Ilan;
@@ -58,7 +59,94 @@ class LegacyAIServicesTenantWriteParityTest extends TestCase
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // AIMessageService: write parity
+    // AIConversation: table + model contract
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function test_fresh_schema_creates_ai_conversations_table(): void
+    {
+        $this->assertTrue(
+            \Illuminate\Support\Facades\Schema::hasTable('ai_conversations'),
+            'ai_conversations table must exist after migration'
+        );
+    }
+
+    public function test_unique_communication_id_enforced(): void
+    {
+        $ulke = Ulke::create(['ulke_adi' => 'Test', 'ulke_kodu' => 'TT']);
+        $tenant = Tenant::create(['name' => 'Unique Test', 'domain' => 'unique.test']);
+
+        $user = User::withoutGlobalScopes()->create([
+            'name' => 'Unique User',
+            'email' => 'unique@test.com',
+            'ulke_id' => $ulke->id,
+            'tenant_id' => $tenant->id,
+            'password' => bcrypt('password'),
+        ]);
+
+        $ilan = Ilan::withoutGlobalScopes()->create([
+            'baslik' => 'Test',
+            'ulke_id' => $ulke->id,
+            'tenant_id' => $tenant->id,
+            'il_id' => 1,
+            'aktiflik_durumu' => true,
+        ]);
+
+        $comm = Communication::withoutGlobalScopes()->create([
+            'tenant_id' => $tenant->id,
+            'communicable_type' => Ilan::class,
+            'communicable_id' => $ilan->id,
+            'channel' => 'whatsapp',
+            'message' => 'Test',
+        ]);
+
+        AIConversation::withoutGlobalScopes()->create([
+            'communication_id' => $comm->id,
+            'channel' => 'whatsapp',
+            'tenant_id' => $tenant->id,
+            'ulke_id' => $ulke->id,
+        ]);
+
+        $this->expectException(\Illuminate\Database\QueryException::class);
+        AIConversation::withoutGlobalScopes()->create([
+            'communication_id' => $comm->id, // duplicate
+            'channel' => 'whatsapp',
+            'tenant_id' => $tenant->id,
+            'ulke_id' => $ulke->id,
+        ]);
+    }
+
+    public function test_ai_conversation_belongs_to_tenant(): void
+    {
+        $conversation = new AIConversation;
+        $this->assertTrue(
+            in_array(\App\Traits\BelongsToTenant::class, class_uses($conversation)),
+            'AIConversation must use BelongsToTenant trait'
+        );
+    }
+
+    public function test_ai_conversation_has_country_scope(): void
+    {
+        $conversation = new AIConversation;
+        $this->assertTrue(
+            in_array(\App\Traits\HasCountryScope::class, class_uses($conversation)),
+            'AIConversation must use HasCountryScope trait'
+        );
+    }
+
+    public function test_ai_conversation_fillable_includes_ownership_fields(): void
+    {
+        $fillable = (new AIConversation)->getFillable();
+        $this->assertContains('tenant_id', $fillable, 'tenant_id must be fillable');
+        $this->assertContains('ulke_id', $fillable, 'ulke_id must be fillable');
+        $this->assertContains('communication_id', $fillable, 'communication_id must be fillable');
+        $this->assertContains('channel', $fillable, 'channel must be fillable');
+        $this->assertNotContains('danisman_id', $fillable, 'danisman_id must NOT be fillable (OPTIONAL_OR_UNPROVEN)');
+        $this->assertNotContains('kisi_id', $fillable, 'kisi_id must NOT be fillable (OPTIONAL_OR_UNPROVEN)');
+        $this->assertNotContains('ilan_id', $fillable, 'ilan_id must NOT be fillable (OPTIONAL_OR_UNPROVEN)');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // AIMessageService: conversation + message write parity
     // ─────────────────────────────────────────────────────────────────────────
 
     public function test_legacy_ai_message_service_writes_correct_tenant_id(): void
@@ -222,6 +310,265 @@ class LegacyAIServicesTenantWriteParityTest extends TestCase
         $this->assertDatabaseMissing('ai_messages', [
             'communication_id' => $communication->id,
         ]);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // AIConversation canonical ownership (message service path)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function test_ai_message_service_creates_conversation_with_canonical_tenant_and_country(): void
+    {
+        $ilan = Ilan::withoutGlobalScopes()->create([
+            'baslik' => 'Conv Tenant Test',
+            'ulke_id' => $this->ulke->id,
+            'tenant_id' => $this->tenant->id,
+            'il_id' => 1,
+            'aktiflik_durumu' => true,
+        ]);
+
+        $communication = Communication::withoutGlobalScopes()->create([
+            'tenant_id' => $this->tenant->id,
+            'communicable_type' => Ilan::class,
+            'communicable_id' => $ilan->id,
+            'channel' => 'whatsapp',
+            'message' => 'Conv test',
+        ]);
+
+        Http::fake(['*' => Http::response(['content' => 'Conv test yanıtı'])]);
+
+        $service = app(AIMessageService::class);
+        $message = $service->generateDraftReply($communication->id);
+
+        // Conversation must have canonical ownership
+        $conversation = AIConversation::withoutGlobalScopes()
+            ->where('communication_id', $communication->id)
+            ->first();
+
+        $this->assertNotNull($conversation, 'AIConversation must be created');
+        $this->assertEquals($this->tenant->id, $conversation->tenant_id);
+        $this->assertEquals($this->ulke->id, $conversation->ulke_id);
+        $this->assertEquals($this->tenant->id, $message->tenant_id);
+        $this->assertEquals($this->ulke->id, $message->ulke_id);
+    }
+
+    public function test_ai_message_service_fails_closed_existing_conversation_wrong_tenant(): void
+    {
+        $ilan = Ilan::withoutGlobalScopes()->create([
+            'baslik' => 'Wrong Tenant Conv',
+            'ulke_id' => $this->ulke->id,
+            'tenant_id' => $this->tenant->id,
+            'il_id' => 1,
+            'aktiflik_durumu' => true,
+        ]);
+
+        $tenantB = Tenant::create(['name' => 'Tenant B', 'domain' => 'tenantb.test']);
+
+        $communication = Communication::withoutGlobalScopes()->create([
+            'tenant_id' => $this->tenant->id,
+            'communicable_type' => Ilan::class,
+            'communicable_id' => $ilan->id,
+            'channel' => 'whatsapp',
+            'message' => 'Wrong tenant test',
+        ]);
+
+        // Pre-create conversation with WRONG tenant_id (simulating historical NULL or wrong data)
+        AIConversation::withoutGlobalScopes()->create([
+            'communication_id' => $communication->id,
+            'channel' => 'whatsapp',
+            'tenant_id' => $tenantB->id, // wrong tenant
+            'ulke_id' => $this->ulke->id,
+        ]);
+
+        Http::fake(['*' => Http::response(['content' => 'Should not reach'])]);
+
+        $service = app(AIMessageService::class);
+
+        $this->expectException(TenantOwnershipUnresolvableException::class);
+        $service->generateDraftReply($communication->id);
+    }
+
+    public function test_ai_message_service_fails_closed_existing_conversation_wrong_country(): void
+    {
+        $ulkeB = Ulke::create(['ulke_adi' => 'Germany', 'ulke_kodu' => 'DE']);
+
+        $ilan = Ilan::withoutGlobalScopes()->create([
+            'baslik' => 'Wrong Country Conv',
+            'ulke_id' => $ulkeB->id,
+            'tenant_id' => $this->tenant->id,
+            'il_id' => 1,
+            'aktiflik_durumu' => true,
+        ]);
+
+        $communication = Communication::withoutGlobalScopes()->create([
+            'tenant_id' => $this->tenant->id,
+            'communicable_type' => Ilan::class,
+            'communicable_id' => $ilan->id,
+            'channel' => 'whatsapp',
+            'message' => 'Wrong country test',
+        ]);
+
+        // Pre-create conversation with WRONG ulke_id (simulating historical NULL or wrong data)
+        AIConversation::withoutGlobalScopes()->create([
+            'communication_id' => $communication->id,
+            'channel' => 'whatsapp',
+            'tenant_id' => $this->tenant->id,
+            'ulke_id' => $this->ulke->id, // wrong country (canonical is ulkeB)
+        ]);
+
+        Http::fake(['*' => Http::response(['content' => 'Should not reach'])]);
+
+        $service = app(AIMessageService::class);
+
+        $this->expectException(CountryOwnershipUnresolvableException::class);
+        $service->generateDraftReply($communication->id);
+    }
+
+    public function test_ai_message_service_fails_closed_existing_conversation_null_ownership(): void
+    {
+        $ilan = Ilan::withoutGlobalScopes()->create([
+            'baslik' => 'Null Conv',
+            'ulke_id' => $this->ulke->id,
+            'tenant_id' => $this->tenant->id,
+            'il_id' => 1,
+            'aktiflik_durumu' => true,
+        ]);
+
+        $communication = Communication::withoutGlobalScopes()->create([
+            'tenant_id' => $this->tenant->id,
+            'communicable_type' => Ilan::class,
+            'communicable_id' => $ilan->id,
+            'channel' => 'whatsapp',
+            'message' => 'Null ownership test',
+        ]);
+
+        // Pre-create conversation with NULL tenant_id (simulating historical record)
+        AIConversation::withoutGlobalScopes()->create([
+            'communication_id' => $communication->id,
+            'channel' => 'whatsapp',
+            'tenant_id' => null, // NULL ownership
+            'ulke_id' => null,  // NULL ownership
+        ]);
+
+        Http::fake(['*' => Http::response(['content' => 'Should not reach'])]);
+
+        $service = app(AIMessageService::class);
+
+        $this->expectException(TenantOwnershipUnresolvableException::class);
+        $service->generateDraftReply($communication->id);
+    }
+
+    public function test_ai_message_service_writes_zero_conversation_on_tenant_failure(): void
+    {
+        $ilan = Ilan::withoutGlobalScopes()->create([
+            'baslik' => 'No Conv Tenant Free',
+            'ulke_id' => $this->ulke->id,
+            'tenant_id' => null,
+            'il_id' => 1,
+            'aktiflik_durumu' => true,
+        ]);
+
+        $communication = Communication::withoutGlobalScopes()->create([
+            'tenant_id' => $this->tenant->id,
+            'communicable_type' => Ilan::class,
+            'communicable_id' => $ilan->id,
+            'channel' => 'telegram',
+            'message' => 'Test',
+        ]);
+
+        Http::fake(['*' => Http::response(['content' => 'Yanıt'])]);
+
+        $service = app(AIMessageService::class);
+
+        try {
+            $service->generateDraftReply($communication->id);
+        } catch (TenantOwnershipUnresolvableException) {
+            // Expected
+        }
+
+        // Zero AIConversation records created
+        $this->assertDatabaseMissing('ai_conversations', [
+            'communication_id' => $communication->id,
+        ]);
+    }
+
+    public function test_ai_message_service_writes_zero_conversation_on_country_failure(): void
+    {
+        $ilan = Ilan::withoutGlobalScopes()->create([
+            'baslik' => 'No Conv Country Free',
+            'ulke_id' => null,
+            'tenant_id' => $this->tenant->id,
+            'il_id' => 1,
+            'aktiflik_durumu' => true,
+        ]);
+
+        $communication = Communication::withoutGlobalScopes()->create([
+            'tenant_id' => $this->tenant->id,
+            'communicable_type' => Ilan::class,
+            'communicable_id' => $ilan->id,
+            'channel' => 'telegram',
+            'message' => 'Test',
+        ]);
+
+        Http::fake(['*' => Http::response(['content' => 'Yanıt'])]);
+
+        $service = app(AIMessageService::class);
+
+        try {
+            $service->generateDraftReply($communication->id);
+        } catch (CountryOwnershipUnresolvableException) {
+            // Expected
+        }
+
+        // Zero AIConversation records created
+        $this->assertDatabaseMissing('ai_conversations', [
+            'communication_id' => $communication->id,
+        ]);
+    }
+
+    public function test_ai_message_service_reuses_correct_existing_conversation(): void
+    {
+        $ilan = Ilan::withoutGlobalScopes()->create([
+            'baslik' => 'Reuse Conv',
+            'ulke_id' => $this->ulke->id,
+            'tenant_id' => $this->tenant->id,
+            'il_id' => 1,
+            'aktiflik_durumu' => true,
+        ]);
+
+        $communication = Communication::withoutGlobalScopes()->create([
+            'tenant_id' => $this->tenant->id,
+            'communicable_type' => Ilan::class,
+            'communicable_id' => $ilan->id,
+            'channel' => 'whatsapp',
+            'message' => 'Reuse test',
+        ]);
+
+        // Pre-create conversation with CORRECT ownership
+        $existingConv = AIConversation::withoutGlobalScopes()->create([
+            'communication_id' => $communication->id,
+            'channel' => 'whatsapp',
+            'tenant_id' => $this->tenant->id,
+            'ulke_id' => $this->ulke->id,
+        ]);
+
+        Http::fake(['*' => Http::response(['content' => 'Reuse yanıtı'])]);
+
+        $service = app(AIMessageService::class);
+        $message = $service->generateDraftReply($communication->id);
+
+        // Message should reference the existing conversation
+        $this->assertEquals($existingConv->id, $message->conversation_id);
+        $this->assertEquals($this->tenant->id, $message->tenant_id);
+        $this->assertEquals($this->ulke->id, $message->ulke_id);
+
+        // No duplicate conversation created
+        $this->assertEquals(
+            1,
+            AIConversation::withoutGlobalScopes()
+                ->where('communication_id', $communication->id)
+                ->count(),
+            'Exactly one AIConversation must exist for this communication'
+        );
     }
 
     // ─────────────────────────────────────────────────────────────────────────

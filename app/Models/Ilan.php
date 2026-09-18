@@ -438,7 +438,7 @@ class Ilan extends BaseModel
         'danisman_id',               // 🔵 OPTIONAL: Danışman (user_id) - NULL allowed
         // ❌ REMOVED: 'user_id' - LEGACY, use 'danisman_id' instead
         // 🔵 OPTIONAL: Proje ID - NULL allowed
-        // 🔵 OPTIONAL: Ülke ID - NULL allowed
+        'ulke_id',                    // 🔵 OPTIONAL: Ülke ID - NULL allowed
 
         // Adres Detayları
         'adres',                     // 🔵 OPTIONAL: Tam adres metni (varchar(255), NULL allowed)

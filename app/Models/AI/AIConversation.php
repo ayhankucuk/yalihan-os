@@ -2,16 +2,22 @@
 
 namespace App\Models\AI;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
+use App\Models\Communication;
+use App\Traits\BelongsToTenant;
+use App\Traits\HasCountryScope;
 
-class AIConversation extends Model
+class AIConversation extends BaseModel
 {
+    use BelongsToTenant, HasCountryScope;
+
     protected $table = 'ai_conversations';
 
     protected $fillable = [
-        'danisman_id',
-        'kisi_id',
-        'ilan_id',
+        'communication_id',
+        'channel',
+        'tenant_id',
+        'ulke_id',
         'aktiflik_durumu',
         'metadata',
     ];
@@ -20,4 +26,9 @@ class AIConversation extends Model
         'aktiflik_durumu' => 'boolean',
         'metadata' => 'array',
     ];
+
+    public function communication(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Communication::class, 'communication_id');
+    }
 }

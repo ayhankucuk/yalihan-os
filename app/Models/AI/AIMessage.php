@@ -3,10 +3,12 @@
 namespace App\Models\AI;
 
 use App\Models\BaseModel;
+use App\Traits\BelongsToTenant;
 use App\Traits\HasCountryScope;
 
 class AIMessage extends BaseModel
 {
+    use BelongsToTenant;
     use HasCountryScope;
     protected $table = 'ai_messages';
 
