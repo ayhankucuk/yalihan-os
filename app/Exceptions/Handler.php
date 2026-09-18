@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use App\Exceptions\CrossTenantIdentifierInjectionException;
 use App\Services\Logging\LogService;
 use App\Services\ErrorAutoRepairService;
 use Illuminate\Support\Facades\Storage;
@@ -87,6 +88,22 @@ class Handler extends ExceptionHandler
                     'error' => [
                         'code' => 'ACCESS_DENIED',
                         'message' => $e->getMessage() ?: 'Forbidden.',
+                    ],
+                ], 403);
+            }
+        });
+
+        // CrossTenantIdentifierInjectionException → 403 JSON (security: no entity IDs exposed)
+        $this->renderable(function (CrossTenantIdentifierInjectionException $e, $request) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bu işlem için yetkiniz bulunmamaktadır.',
+                    'data' => null,
+                    'meta' => null,
+                    'error' => [
+                        'code' => 'CROSS_TENANT_INJECTION',
+                        'message' => 'Güvenlik ihlali: işlem reddedildi.',
                     ],
                 ], 403);
             }

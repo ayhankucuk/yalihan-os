@@ -2,6 +2,7 @@
 
 namespace App\Services\N8n;
 
+use App\Exceptions\CrossTenantIdentifierInjectionException;
 use App\Exceptions\TenantOwnershipUnresolvableException;
 use App\Models\Communication;
 use App\Models\Ilan;
@@ -43,17 +44,41 @@ class TenantOwnershipResolver
      */
     public function resolveForIlanTaslagi(int $danismanId, ?int $ilanId = null): int
     {
-        // Primary: resolve via danisman (advisor)
-        $tenantId = $this->resolveViaDanisman($danismanId);
-        if ($tenantId !== null) {
-            return $tenantId;
-        }
+        $danismanTenantId = $this->resolveViaDanisman($danismanId);
 
-        // Fallback: resolve via ilan
+        // ilanId is optional fallback — when provided alongside danismanId, both MUST agree.
         if ($ilanId !== null) {
-            $tenantId = $this->resolveViaIlan($ilanId);
-            if ($tenantId !== null) {
-                return $tenantId;
+            $ilanTenantId = $this->resolveViaIlan($ilanId);
+
+            // If both resolve, they MUST be consistent — otherwise it is a cross-tenant injection.
+            if ($danismanTenantId !== null && $ilanTenantId !== null) {
+                if ($danismanTenantId !== $ilanTenantId) {
+                    $this->logCrossTenantInjection([
+                        'flow' => 'ilanTaslagi',
+                        'danisman_id' => $danismanId,
+                        'ilan_id' => $ilanId,
+                        'danisman_tenant_id' => $danismanTenantId,
+                        'ilan_tenant_id' => $ilanTenantId,
+                    ]);
+
+                    throw new CrossTenantIdentifierInjectionException;
+                }
+
+                return $danismanTenantId;
+            }
+
+            // Only one resolved — use whichever resolved.
+            // If neither resolved, fall through to exception below.
+            if ($danismanTenantId !== null) {
+                return $danismanTenantId;
+            }
+            if ($ilanTenantId !== null) {
+                return $ilanTenantId;
+            }
+        } else {
+            // No ilanId — must resolve via danisman.
+            if ($danismanTenantId !== null) {
+                return $danismanTenantId;
             }
         }
 
@@ -79,20 +104,35 @@ class TenantOwnershipResolver
      */
     public function resolveForSozlesmeTaslagi(?int $propertyId, ?int $kisiId): int
     {
-        if ($propertyId !== null) {
-            $tenantId = $this->resolveViaIlan($propertyId);
-            if ($tenantId !== null) {
-                return $tenantId;
+        // Both identifiers MUST agree on tenant — otherwise it is a cross-tenant injection.
+        $propertyTenantId = $propertyId !== null ? $this->resolveViaIlan($propertyId) : null;
+        $kisiTenantId = $kisiId !== null ? $this->resolveViaKisi($kisiId) : null;
+
+        if ($propertyTenantId !== null && $kisiTenantId !== null) {
+            if ($propertyTenantId !== $kisiTenantId) {
+                $this->logCrossTenantInjection([
+                    'flow' => 'sozlesmeTaslagi',
+                    'property_id' => $propertyId,
+                    'kisi_id' => $kisiId,
+                    'property_tenant_id' => $propertyTenantId,
+                    'kisi_tenant_id' => $kisiTenantId,
+                ]);
+
+                throw new CrossTenantIdentifierInjectionException;
             }
+
+            return $propertyTenantId;
         }
 
-        if ($kisiId !== null) {
-            $tenantId = $this->resolveViaKisi($kisiId);
-            if ($tenantId !== null) {
-                return $tenantId;
-            }
+        // Only one resolved — use it.
+        if ($propertyTenantId !== null) {
+            return $propertyTenantId;
+        }
+        if ($kisiTenantId !== null) {
+            return $kisiTenantId;
         }
 
+        // Neither resolved.
         LogService::warning('n8n tenant ownership: unresolvable for sozlesmeTaslagi', [
             'property_id' => $propertyId,
             'kisi_id' => $kisiId,
@@ -171,7 +211,7 @@ class TenantOwnershipResolver
      */
     private function resolveViaDanisman(int $danismanId): ?int
     {
-        $user = User::find($danismanId);
+        $user = User::withoutGlobalScopes()->find($danismanId);
 
         if ($user === null) {
             LogService::warning('n8n tenant resolver: user not found', [
@@ -260,5 +300,14 @@ class TenantOwnershipResolver
             User::class => $this->resolveViaDanisman($id),
             default => null,
         };
+    }
+
+    private function logCrossTenantInjection(array $context): void
+    {
+        LogService::auth(
+            'n8n: cross-tenant identifier injection blocked',
+            null,
+            $context
+        );
     }
 }
