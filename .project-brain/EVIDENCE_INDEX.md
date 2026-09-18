@@ -2,6 +2,29 @@
 
 ---
 
+## [2026-09-18] N8N_AI_USECASES_NAMESPACE_FIX
+
+**Commit:** `089fd72c` (release-candidate/RC2)
+**Session:** REMEDIATION_N8N_AI_USECASES_NAMESPACE_TEST_FINAL_01
+**Finding:** `N8N-AI-USECASES-UNQUALIFIED-MODEL-CRASH`
+**Evidence Level:** `REPO_VERIFIED` + `TEST_VERIFIED`
+
+| Dosya | Önce (yanlış) | Sonra (doğru) |
+|-------|---------------|---------------|
+| `ProcessAIIlanTaslagiUseCase.php` | `App\Models\AIIlanTaslagi` | `App\Models\AI\AIIlanTaslagi` |
+| `ProcessAIMesajTaslagiUseCase.php` | `App\Models\AIMessage` | `App\Models\AI\AIMessage` |
+| `ProcessAIContractDraftUseCase.php` | `App\Models\AIContractDraft` | `App\Models\AI\AIContractDraft` |
+
+**Regression test:** `tests/Unit/UseCases/N8nUseCasesModelImportTest.php`
+- ReflectionMethod-based; `handle()` return type'tan FQCN çıkarır
+- 3/3 PASS (12 assertions); persistence/coupling yok
+
+**Separate finding (NOT remediated here):**
+`N8N-AI-USECASES-MODEL-PERSISTENCE-CONTRACT-DRIFT`
+AIMessage/AIContractDraft `$fillable` gap + missing table migrations → ayrı görev.
+
+---
+
 ## [2026-09-12] TEMPLATE_HUB_AUDIT
 
 **Commit:** dirty (audit run)

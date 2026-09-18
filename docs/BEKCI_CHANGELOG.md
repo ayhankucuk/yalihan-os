@@ -1,3 +1,33 @@
+## Oturum 191 — 2026-09-18 | N8n AI UseCase Namespace Remediation
+
+**Finding:** `N8N-AI-USECASES-UNQUALIFIED-MODEL-CRASH`
+**Commit:** `089fd72c`
+**Durum:** KAPATILDI ✅
+
+Üç N8n AI UseCase'inde flat-namespace (yanlış) AI model import'ları düzeltildi:
+
+| UseCase | Önce (yanlış) | Sonra (doğru) |
+|---------|---------------|----------------|
+| `ProcessAIIlanTaslagiUseCase` | `App\Models\AIIlanTaslagi` | `App\Models\AI\AIIlanTaslagi` |
+| `ProcessAIMesajTaslagiUseCase` | `App\Models\AIMessage` | `App\Models\AI\AIMessage` |
+| `ProcessAIContractDraftUseCase` | `App\Models\AIContractDraft` | `App\Models\AI\AIContractDraft` |
+
+**Regression test:** `tests/Unit/UseCases/N8nUseCasesModelImportTest.php`
+- ReflectionMethod-based, persistence yok
+- 3/3 PASS (12 assertions)
+
+**Ayrı bulgu (ayrı görev):** `N8N-AI-USECASES-MODEL-PERSISTENCE-CONTRACT-DRIFT`
+- AIMessage ve AIContractDraft `$fillable` gap + tablo migration eksikliği
+- Persistence remediation ayrı yapılacak
+
+```
+KALİTE KAPISI:  4/4 Antigravity Gate PASS ✅
+TESTLER:        3/3 PASS (N8nUseCasesModelImportTest)
+DURUM:          N8N-AI-USECASES-UNQUALIFIED-MODEL-CRASH KAPATILDI ✅
+```
+
+---
+
 ## Oturum 190 — 2026-09-15 | Ölü Blade Şablonları, Mükerrer Servisler, Listener ve Cron Görevlerinin Temizlenmesi
 
 **Kapsam:** Kullanıcının onayı ile kod tabanında mükerrer veya işlevsiz kalmış 3 ana alandaki gereksiz yapılar tamamen temizlendi:
@@ -6371,3 +6401,33 @@ Artık ajanlar bu dosyaları her açtığında otomatik olarak ilgili skill yük
 - `DynamicFieldValueMapper`: `BOOL_TRUTHY` and `BOOL_READ_TRUTHY` class constants replace duplicate inline arrays. `normalizeBoolean()` uses `strtolower()` consistently. `castValue()` now uses `BOOL_READ_TRUTHY` (was hardcoded). `'no'`/`'hayir'`/`'off'` removed from truthy set — prevented `'NO'`→`'on'` substring collision.
 - 5 new tests in `WizardSchemaStep2Test.php` — 88/88 suite PASS (501 assertions).
 - Full gate: 6/6 PASS.
+---
+
+#### Session 20: Workspace Execution Tenant Isolation — 2026-09-17
+
+**Scope:** `WorkspaceExecutionController` tenant izolasyonu — cross-tenant erişim engeli + test suite
+
+**Bulgu & Çözüm:**
+
+| # | Bulgu | Kaynak | Çözüm |
+|---|-------|--------|-------|
+| 1 | `WorkspaceExecutionController` `cancel/retry/replay` action'larında tenant kontrolü eksik | Kod analizi | `WorkspacePolicy::canCancel/canRetry/canReplay` → 403/404 dönüyor |
+| 2 | `replay` endpoint yanlış `execution_type` kullandı → 422 | Unit test | `'execution_type' => 'replay'` → Service doğru field'ı kullanıyor |
+| 3 | Test assertion `assertContains($response->getStatusCode(), [403, 404])` yanlış — status code int, array içinde arıyor | PHPUnit hatası | `assertTrue(in_array(..., [...], true))` ile değiştirildi |
+| 4 | `assertJsonPath('execution.id', $executionB)` → `$executionB->id` eksik | Kod yazım hatası | `assertJsonPath('execution.id', $this->executionB->id)` düzeltildi |
+| 5 | API validation `'type' => 'test_run'` → `'execution_type' => 'test_run'` | Field name uyumsuzluğu | Test payload düzeltildi |
+
+**Test Suite:** `tests/Feature/Workspace/WorkspaceExecutionTenantIsolationTest.php`
+- 17 test / 17 PASS ✅
+- `TenantScope` global scope + explicit `tenant_id` kontrolü
+- Super-admin cross-tenant erişim
+- Tenant A kendi execution'ını görür, Tenant B'yi göremez
+- `cancel`, `retry`, `replay` → 403/404 (kendi değilse)
+- Replay/Retry yeni execution oluşturur (tenant_id korunur)
+
+**Regression:** `tests/Feature/Workspace/` → 28 tests / 87 assertions / 100% PASS ✅
+
+**Dosyalar:**
+- `tests/Feature/Workspace/WorkspaceExecutionTenantIsolationTest.php` — YENİ (17 test)
+- `app/Services/Workspace/WorkspaceExecutionService.php` — değişiklik yok (policy tabanlı)
+- `app/Policies/PortfolioDriveWorkspacePolicy.php` — mevcut policy yeterli
