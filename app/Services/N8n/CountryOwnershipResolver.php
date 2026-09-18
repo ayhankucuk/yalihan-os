@@ -123,7 +123,9 @@ class CountryOwnershipResolver
      */
     public function resolveForMesajTaslagi(int $communicationId): int
     {
-        $communication = \App\Models\Communication::withoutCountryScope()->find($communicationId);
+        // N8n webhook flows have no tenant context (TenantScope would return nothing)
+        // and no authenticated user (CountryScope would block).
+        $communication = \App\Models\Communication::withoutGlobalScopes()->find($communicationId);
 
         if ($communication === null) {
             LogService::warning('n8n country ownership: communication not found', [
@@ -136,21 +138,14 @@ class CountryOwnershipResolver
             );
         }
 
-        if ($communication->communicable === null) {
-            LogService::warning('n8n country ownership: communicable is null', [
-                'communication_id' => $communicationId,
-                'communicable_type' => $communication->communicable_type,
-                'communicable_id' => $communication->communicable_id,
-            ], LogService::CHANNEL_API);
-
-            throw new CountryOwnershipUnresolvableException(
-                "Country ownership could not be resolved for mesajTaslagi. " .
-                "communication_id={$communicationId}. " .
-                "Communication.communicable is null (orphaned record)."
-            );
-        }
-
-        $ulkeId = $communication->communicable->ulke_id ?? null;
+        // Resolve via direct query by type+ID.
+        // This completely bypasses morphTo() which re-applies CountryScope to Kisi
+        // (no auth user → CountryScope filters to WHERE ulke_id = NULL = nothing found).
+        // Direct queries avoid the scope re-application entirely.
+        $ulkeId = $this->resolveCommunicableUlkeId(
+            $communication->communicable_type,
+            $communication->communicable_id
+        );
 
         if ($ulkeId === null) {
             LogService::warning('n8n country ownership: communicable.ulke_id is null', [
@@ -202,7 +197,7 @@ class CountryOwnershipResolver
      */
     private function resolveViaIlan(int $ilanId): ?int
     {
-        $ilan = Ilan::find($ilanId);
+        $ilan = Ilan::withoutGlobalScopes()->find($ilanId);
 
         if ($ilan === null) {
             LogService::warning('n8n country resolver: ilan not found', [
@@ -228,7 +223,9 @@ class CountryOwnershipResolver
      */
     private function resolveViaKisi(int $kisiId): ?int
     {
-        $kisi = Kisi::find($kisiId);
+        // N8n webhook flows have no authenticated user (CountryScope would block)
+        // and no tenant context (TenantScope would return nothing).
+        $kisi = Kisi::withoutGlobalScopes()->find($kisiId);
 
         if ($kisi === null) {
             LogService::warning('n8n country resolver: kisi not found', [
@@ -245,5 +242,26 @@ class CountryOwnershipResolver
         }
 
         return $kisi->ulke_id;
+    }
+
+    /**
+     * Resolve ulke_id from a polymorphic target by type+id using direct queries.
+     *
+     * This bypasses morphTo() which applies scopes to the target model.
+     * Kisi has CountryScope that would block the lookup in N8n webhook context
+     * (no authenticated user, so CountryScope filters to WHERE ulke_id = NULL = nothing).
+     *
+     * @param string $type  FQCN of the polymorphic model
+     * @param int $id       ID of the polymorphic record
+     * @return int|null
+     */
+    private function resolveCommunicableUlkeId(string $type, int $id): ?int
+    {
+        return match ($type) {
+            Kisi::class => $this->resolveViaKisi($id),
+            Ilan::class => $this->resolveViaIlan($id),
+            User::class => $this->resolveViaDanisman($id),
+            default => null,
+        };
     }
 }

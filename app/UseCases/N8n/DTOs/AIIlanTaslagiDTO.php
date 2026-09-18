@@ -6,6 +6,7 @@ class AIIlanTaslagiDTO
 {
     public function __construct(
         public readonly int $danismanId,
+        public readonly ?int $ilanId,
         public readonly array $data,
         public readonly array $aiResponse,
         public readonly string $aiModelUsed,
@@ -17,6 +18,7 @@ class AIIlanTaslagiDTO
     {
         return new self(
             danismanId: $validated['danisman_id'],
+            ilanId: $validated['ilan_id'] ?? null,
             data: $validated['data'],
             aiResponse: $validated['ai_response'],
             aiModelUsed: $validated['ai_model_used'] ?? 'anythingllm',

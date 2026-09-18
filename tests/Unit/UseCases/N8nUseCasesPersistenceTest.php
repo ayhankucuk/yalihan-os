@@ -4,12 +4,14 @@ namespace Tests\Unit\UseCases;
 
 use App\Enums\KisiTipi;
 use App\Enums\TaslakDurumu;
+use App\Exceptions\TenantOwnershipUnresolvableException;
 use App\Models\AI\AIContractDraft;
 use App\Models\AI\AIIlanTaslagi;
 use App\Models\AI\AIMessage;
 use App\Models\Communication;
 use App\Models\Ilan;
 use App\Models\Kisi;
+use App\Models\SaaS\Tenant;
 use App\Models\Ulke;
 use App\Models\User;
 use App\UseCases\N8n\DTOs\AIContractDraftDTO;
@@ -22,15 +24,19 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Persistence regression tests for N8N-AI-USECASES-MODEL-PERSISTENCE-CONTRACT-DRIFT.
+ * Persistence regression tests for N8N_AI_TENANT_ID_MISSING_02.
  *
- * Verifies that handle() calls on all three N8n UseCases write records
- * to SQLite DB with correct ulke_id resolved from canonical ownership chains.
+ * Verifies that all three N8n UseCases write records with correct:
+ *   - ulke_id (from CountryOwnershipResolver — commit 3ae44b6b)
+ *   - tenant_id (from TenantOwnershipResolver — N8N_AI_TENANT_ID_MISSING_02)
  *
- * Country ownership resolution:
- *   - ilanTaslagi:    User(danisman_id).ulke_id OR Ilan(ilan_id).ulke_id
- *   - sozlesmeTaslagi: Ilan(property_id).ulke_id OR Kisi(kisi_id).ulke_id
- *   - mesajTaslagi:  Communication.communicable.ulke_id (polymorphic)
+ * Tenant ownership resolution:
+ *   - ilanTaslagi:    User(danisman_id).tenant_id OR Ilan(ilan_id).tenant_id
+ *   - sozlesmeTaslagi: Ilan(property_id).tenant_id OR Kisi(kisi_id).tenant_id
+ *   - mesajTaslagi:  Communication.communicable.tenant_id (polymorphic)
+ *
+ * Scope bypass: N8n webhook flows have no authenticated user and no tenant context.
+ * resolveViaKisi uses withoutGlobalScopes() to bypass CountryScope + TenantScope.
  */
 class N8nUseCasesPersistenceTest extends TestCase
 {
@@ -40,22 +46,119 @@ class N8nUseCasesPersistenceTest extends TestCase
     {
         parent::setUp();
 
-        // Shared country fixture — used across all three tests.
         $this->ulke = Ulke::create(['ulke_adi' => 'Türkiye', 'ulke_kodu' => 'TR']);
+        $this->tenant = Tenant::create(['name' => 'Test Tenant', 'domain' => 'test.local']);
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // COUNTRY + TENANT happy-path: ilanTaslagi
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function test_process_ai_ilan_taslagi_use_case_persists_all_attributes(): void
+    {
+        $danisman = User::withoutGlobalScopes()->create([
+            'name' => 'Test Danışman',
+            'email' => 'danisman@test.com',
+            'ulke_id' => $this->ulke->id,
+            'tenant_id' => $this->tenant->id,
+            'password' => bcrypt('password'),
+        ]);
+
+        $dto = new AIIlanTaslagiDTO(
+            danismanId: $danisman->id,
+            ilanId: null,
+            data: ['baslik' => 'Lüks Bodrum Villası'],
+            aiResponse: ['baslik' => 'Lüks Bodrum Villası', 'fiyat' => 15000000],
+            aiModelUsed: 'anythingllm',
+            aiPromptVersion: '2.0'
+        );
+
+        $useCase = app(ProcessAIIlanTaslagiUseCase::class);
+        $taslak = $useCase->handle($dto);
+
+        $this->assertInstanceOf(AIIlanTaslagi::class, $taslak);
+        $this->assertDatabaseHas('ai_ilan_taslaklari', [
+            'id' => $taslak->id,
+            'ulke_id' => $this->ulke->id,
+            'tenant_id' => $this->tenant->id,
+            'danisman_id' => $danisman->id,
+            'yayin_durumu' => TaslakDurumu::TASLAK->value,
+            'ai_model_used' => 'anythingllm',
+            'ai_prompt_version' => '2.0',
+        ]);
+        $this->assertEquals($this->ulke->id, $taslak->ulke_id);
+        $this->assertEquals($this->tenant->id, $taslak->tenant_id);
+        $this->assertNotNull($taslak->ai_generated_at);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // COUNTRY + TENANT happy-path: sozlesmeTaslagi
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function test_process_ai_contract_draft_use_case_persists_all_attributes(): void
+    {
+        $kisi = Kisi::withoutCountryScope()->create([
+            'ad' => 'Ahmet',
+            'soyad' => 'Yılmaz',
+            'kisi_tipi' => KisiTipi::ALICI->value,
+            'ulke_id' => $this->ulke->id,
+            'tenant_id' => $this->tenant->id,
+        ]);
+
+        $dto = new AIContractDraftDTO(
+            contractType: 'kira',
+            content: 'Kira Sözleşmesi Taslağı İçeriği',
+            propertyId: null,
+            kisiId: $kisi->id,
+            aiModelUsed: 'deepseek-r1'
+        );
+
+        $useCase = app(ProcessAIContractDraftUseCase::class);
+        $draft = $useCase->handle($dto);
+
+        $this->assertInstanceOf(AIContractDraft::class, $draft);
+        $this->assertDatabaseHas('ai_contract_drafts', [
+            'id' => $draft->id,
+            'ulke_id' => $this->ulke->id,
+            'tenant_id' => $this->tenant->id,
+            'contract_type' => 'kira',
+            'property_id' => null,
+            'kisi_id' => $kisi->id,
+            'content' => 'Kira Sözleşmesi Taslağı İçeriği',
+            'draft_content' => 'Kira Sözleşmesi Taslağı İçeriği',
+            'yayin_durumu' => TaslakDurumu::TASLAK->value,
+            'ai_model_used' => 'deepseek-r1',
+        ]);
+        $this->assertEquals($this->ulke->id, $draft->ulke_id);
+        $this->assertEquals($this->tenant->id, $draft->tenant_id);
+        $this->assertNotNull($draft->ai_generated_at);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // COUNTRY + TENANT happy-path: mesajTaslagi
+    // ─────────────────────────────────────────────────────────────────────────
 
     public function test_process_ai_mesaj_taslagi_use_case_persists_all_attributes(): void
     {
-        // Communication requires: polymorphic communicable (Kisi) + Ulke.
-        // Kisi.ulke_id column is confirmed present in mysql-schema.sql.
-        $kisi = Kisi::create([
+        $user = User::withoutGlobalScopes()->create([
+            'name' => 'Test Sahibi',
+            'email' => 'sahip@test.com',
+            'ulke_id' => $this->ulke->id,
+            'tenant_id' => $this->tenant->id,
+            'password' => bcrypt('password'),
+        ]);
+
+        $kisi = Kisi::withoutCountryScope()->create([
             'ad' => 'Müşteri',
             'soyad' => 'Test',
             'kisi_tipi' => KisiTipi::ALICI->value,
             'ulke_id' => $this->ulke->id,
+            'tenant_id' => $this->tenant->id,
+            'user_id' => $user->id,
         ]);
 
-        $communication = Communication::create([
+        $communication = Communication::withoutGlobalScopes()->create([
+            'tenant_id' => $this->tenant->id,
             'communicable_type' => Kisi::class,
             'communicable_id' => $kisi->id,
             'channel' => 'telegram',
@@ -76,6 +179,7 @@ class N8nUseCasesPersistenceTest extends TestCase
         $this->assertDatabaseHas('ai_messages', [
             'id' => $message->id,
             'ulke_id' => $this->ulke->id,
+            'tenant_id' => $this->tenant->id,
             'communication_id' => $communication->id,
             'channel' => 'telegram',
             'role' => 'assistant',
@@ -84,81 +188,13 @@ class N8nUseCasesPersistenceTest extends TestCase
             'ai_model_used' => 'ollama/llama3',
         ]);
         $this->assertEquals($this->ulke->id, $message->ulke_id);
+        $this->assertEquals($this->tenant->id, $message->tenant_id);
         $this->assertNotNull($message->ai_generated_at);
     }
 
-    public function test_process_ai_contract_draft_use_case_persists_all_attributes(): void
-    {
-        // Contract draft via Kisi (lead/person) — Kisi must have ulke_id.
-        $kisi = Kisi::create([
-            'ad' => 'Ahmet',
-            'soyad' => 'Yılmaz',
-            'kisi_tipi' => KisiTipi::ALICI->value, // 'alici' — not 'Müşteri'
-            'ulke_id' => $this->ulke->id,
-        ]);
-
-        $dto = new AIContractDraftDTO(
-            contractType: 'kira',
-            content: 'Kira Sözleşmesi Taslağı İçeriği',
-            propertyId: null,
-            kisiId: $kisi->id,
-            aiModelUsed: 'deepseek-r1'
-        );
-
-        $useCase = app(ProcessAIContractDraftUseCase::class);
-        $draft = $useCase->handle($dto);
-
-        $this->assertInstanceOf(AIContractDraft::class, $draft);
-        $this->assertDatabaseHas('ai_contract_drafts', [
-            'id' => $draft->id,
-            'ulke_id' => $this->ulke->id,
-            'contract_type' => 'kira',
-            'property_id' => null,
-            'ilan_id' => null,
-            'kisi_id' => $kisi->id,
-            'content' => 'Kira Sözleşmesi Taslağı İçeriği',
-            'draft_content' => 'Kira Sözleşmesi Taslağı İçeriği',
-            'yayin_durumu' => TaslakDurumu::TASLAK->value,
-            'ai_model_used' => 'deepseek-r1',
-        ]);
-        $this->assertEquals($this->ulke->id, $draft->ulke_id);
-        $this->assertNotNull($draft->ai_generated_at);
-    }
-
-    public function test_process_ai_ilan_taslagi_use_case_persists_all_attributes(): void
-    {
-        // ilanTaslagi resolves via User(danisman_id).ulke_id.
-        $danisman = User::create([
-            'name' => 'Test Danışman',
-            'email' => 'danisman@test.com',
-            'ulke_id' => $this->ulke->id,
-            'password' => bcrypt('password'),
-        ]);
-
-        $dto = new AIIlanTaslagiDTO(
-            danismanId: $danisman->id,
-            ilanId: null,
-            data: ['baslik' => 'Lüks Bodrum Villası'],
-            aiResponse: ['baslik' => 'Lüks Bodrum Villası', 'fiyat' => 15000000],
-            aiModelUsed: 'anythingllm',
-            aiPromptVersion: '2.0'
-        );
-
-        $useCase = app(ProcessAIIlanTaslagiUseCase::class);
-        $taslak = $useCase->handle($dto);
-
-        $this->assertInstanceOf(AIIlanTaslagi::class, $taslak);
-        $this->assertDatabaseHas('ai_ilan_taslaklari', [
-            'id' => $taslak->id,
-            'ulke_id' => $this->ulke->id,
-            'danisman_id' => $danisman->id,
-            'yayin_durumu' => TaslakDurumu::TASLAK->value,
-            'ai_model_used' => 'anythingllm',
-            'ai_prompt_version' => '2.0',
-        ]);
-        $this->assertEquals($this->ulke->id, $taslak->ulke_id);
-        $this->assertNotNull($taslak->ai_generated_at);
-    }
+    // ─────────────────────────────────────────────────────────────────────────
+    // COUNTRY fail-closed: existing tests (preserved)
+    // ─────────────────────────────────────────────────────────────────────────
 
     public function test_mesaj_taslagi_fails_closed_when_communication_not_found(): void
     {
@@ -170,22 +206,22 @@ class N8nUseCasesPersistenceTest extends TestCase
         );
 
         $useCase = app(ProcessAIMesajTaslagiUseCase::class);
-
         $this->expectException(\App\Exceptions\CountryOwnershipUnresolvableException::class);
         $useCase->handle($dto);
     }
 
     public function test_mesaj_taslagi_fails_closed_when_communicable_has_null_ulke(): void
     {
-        // Communication to a Kisi with null ulke_id should fail-closed.
-        $kisi = Kisi::create([
+        $kisi = Kisi::withoutCountryScope()->create([
             'ad' => 'Null',
             'soyad' => 'UlkeKisi',
-            'kisi_tipi' => KisiTipi::LEAD->value, // 'lead'
+            'kisi_tipi' => KisiTipi::LEAD->value,
             'ulke_id' => null,
+            'tenant_id' => $this->tenant->id,
         ]);
 
-        $communication = Communication::create([
+        $communication = Communication::withoutGlobalScopes()->create([
+            'tenant_id' => $this->tenant->id,
             'communicable_type' => Kisi::class,
             'communicable_id' => $kisi->id,
             'channel' => 'whatsapp',
@@ -200,8 +236,117 @@ class N8nUseCasesPersistenceTest extends TestCase
         );
 
         $useCase = app(ProcessAIMesajTaslagiUseCase::class);
-
         $this->expectException(\App\Exceptions\CountryOwnershipUnresolvableException::class);
+        $useCase->handle($dto);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TENANT fail-closed: ilanTaslagi
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function test_ilan_taslagi_fails_closed_when_danisman_has_null_tenant(): void
+    {
+        $danisman = User::withoutGlobalScopes()->create([
+            'name' => 'Tenant-free Danışman',
+            'email' => 'notenant@test.com',
+            'ulke_id' => $this->ulke->id,
+            'tenant_id' => null,
+            'password' => bcrypt('password'),
+        ]);
+
+        $dto = new AIIlanTaslagiDTO(
+            danismanId: $danisman->id,
+            ilanId: null,
+            data: ['baslik' => 'Bodrum Villası'],
+            aiResponse: ['baslik' => 'Bodrum Villası'],
+            aiModelUsed: 'anythingllm',
+            aiPromptVersion: '2.0'
+        );
+
+        $useCase = app(ProcessAIIlanTaslagiUseCase::class);
+        $this->expectException(TenantOwnershipUnresolvableException::class);
+        $useCase->handle($dto);
+    }
+
+    public function test_ilan_taslagi_fails_closed_when_both_danisman_and_ilan_have_null_tenant(): void
+    {
+        $danisman = User::withoutGlobalScopes()->create([
+            'name' => 'Tenant-free Danışman',
+            'email' => 'notenant2@test.com',
+            'ulke_id' => $this->ulke->id,
+            'tenant_id' => null,
+            'password' => bcrypt('password'),
+        ]);
+
+        $dto = new AIIlanTaslagiDTO(
+            danismanId: $danisman->id,
+            ilanId: null,
+            data: ['baslik' => 'Bodrum Villası'],
+            aiResponse: ['baslik' => 'Bodrum Villası'],
+            aiModelUsed: 'anythingllm',
+            aiPromptVersion: '2.0'
+        );
+
+        $useCase = app(ProcessAIIlanTaslagiUseCase::class);
+        $this->expectException(TenantOwnershipUnresolvableException::class);
+        $useCase->handle($dto);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TENANT fail-closed: sozlesmeTaslagi
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function test_sozlesme_taslagi_fails_closed_when_ilan_has_null_tenant(): void
+    {
+        // Ilan.tenant_id is nullable, so we can test the null-tenant fail-closed path.
+        // Kisi.tenant_id is NOT NULL (enforced by migration 2026_07_18) — cannot test null path.
+        $ilan = Ilan::factory()->create(['ulke_id' => $this->ulke->id, 'il_id' => 1]);
+        $ilan->update(['tenant_id' => null]);
+        $ilan->refresh();
+
+        $dto = new AIContractDraftDTO(
+            contractType: 'kira',
+            content: 'Kira Sözleşmesi',
+            propertyId: $ilan->id,
+            kisiId: null,
+            aiModelUsed: 'deepseek-r1'
+        );
+
+        $useCase = app(ProcessAIContractDraftUseCase::class);
+        $this->expectException(TenantOwnershipUnresolvableException::class);
+        $useCase->handle($dto);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TENANT fail-closed: mesajTaslagi
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function test_mesaj_taslagi_fails_closed_when_communicable_has_null_tenant(): void
+    {
+        // Ilan.tenant_id is nullable, so we can test the null-tenant fail-closed path.
+        // Kisi.tenant_id is NOT NULL (enforced by migration 2026_07_18) — cannot test null path.
+        $ilan = Ilan::factory()->create(['ulke_id' => $this->ulke->id, 'il_id' => 1]);
+        $ilan->update(['tenant_id' => null]);
+        $ilan->refresh();
+
+        $communication = Communication::withoutGlobalScopes()->create([
+            'tenant_id' => $this->tenant->id,
+            'communicable_type' => Ilan::class,
+            'communicable_id' => $ilan->id,
+            'channel' => 'telegram',
+            'message' => 'Test',
+        ]);
+
+        $dto = new AIMesajTaslagiDTO(
+            communicationId: $communication->id,
+            channel: 'telegram',
+            content: 'Test',
+            aiModelUsed: 'ollama'
+        );
+
+        $useCase = app(ProcessAIMesajTaslagiUseCase::class);
+        // Country resolves (ulke_id is set), tenant fails (tenant_id is null).
+        $this->expectException(TenantOwnershipUnresolvableException::class);
         $useCase->handle($dto);
     }
 }

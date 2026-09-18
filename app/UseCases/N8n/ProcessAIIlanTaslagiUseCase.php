@@ -6,13 +6,15 @@ use App\Models\AI\AIIlanTaslagi;
 use App\UseCases\N8n\DTOs\AIIlanTaslagiDTO;
 use App\Services\Logging\LogService;
 use App\Services\N8n\CountryOwnershipResolver;
+use App\Services\N8n\TenantOwnershipResolver;
 use App\Enums\TaslakDurumu;
 use Illuminate\Support\Facades\DB;
 
 class ProcessAIIlanTaslagiUseCase
 {
     public function __construct(
-        private readonly CountryOwnershipResolver $countryResolver
+        private readonly CountryOwnershipResolver $countryResolver,
+        private readonly TenantOwnershipResolver $tenantResolver
     ) {}
 
     public function handle(AIIlanTaslagiDTO $dto): AIIlanTaslagi
@@ -25,10 +27,15 @@ class ProcessAIIlanTaslagiUseCase
             $dto->danismanId,
             $dto->ilanId
         );
+        $tenantId = $this->tenantResolver->resolveForIlanTaslagi(
+            $dto->danismanId,
+            $dto->ilanId
+        );
 
-        return DB::transaction(function () use ($dto, $ulkeId) {
+        return DB::transaction(function () use ($dto, $ulkeId, $tenantId) {
             $taslak = AIIlanTaslagi::create([
                 'ulke_id' => $ulkeId,
+                'tenant_id' => $tenantId,
                 'danisman_id' => $dto->danismanId,
                 'ilan_id' => $dto->ilanId,
                 'yayin_durumu' => TaslakDurumu::TASLAK->value,
@@ -42,6 +49,7 @@ class ProcessAIIlanTaslagiUseCase
                 'taslak_id' => $taslak->id,
                 'danisman_id' => $dto->danismanId,
                 'ulke_id' => $ulkeId,
+                'tenant_id' => $tenantId,
             ], LogService::CHANNEL_API);
 
             return $taslak;

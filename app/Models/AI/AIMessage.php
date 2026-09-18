@@ -12,6 +12,7 @@ class AIMessage extends BaseModel
 
     protected $fillable = [
         'ulke_id',
+        'tenant_id',
         'communication_id',
         'conversation_id',
         'channel',

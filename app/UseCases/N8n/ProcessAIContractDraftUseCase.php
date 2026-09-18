@@ -6,13 +6,15 @@ use App\Models\AI\AIContractDraft;
 use App\UseCases\N8n\DTOs\AIContractDraftDTO;
 use App\Services\Logging\LogService;
 use App\Services\N8n\CountryOwnershipResolver;
+use App\Services\N8n\TenantOwnershipResolver;
 use App\Enums\TaslakDurumu;
 use Illuminate\Support\Facades\DB;
 
 class ProcessAIContractDraftUseCase
 {
     public function __construct(
-        private readonly CountryOwnershipResolver $countryResolver
+        private readonly CountryOwnershipResolver $countryResolver,
+        private readonly TenantOwnershipResolver $tenantResolver
     ) {}
 
     public function handle(AIContractDraftDTO $dto): AIContractDraft
@@ -24,10 +26,15 @@ class ProcessAIContractDraftUseCase
             $dto->propertyId,
             $dto->kisiId
         );
+        $tenantId = $this->tenantResolver->resolveForSozlesmeTaslagi(
+            $dto->propertyId,
+            $dto->kisiId
+        );
 
-        return DB::transaction(function () use ($dto, $ulkeId) {
+        return DB::transaction(function () use ($dto, $ulkeId, $tenantId) {
             $draft = AIContractDraft::create([
                 'ulke_id' => $ulkeId,
+                'tenant_id' => $tenantId,
                 'contract_type' => $dto->contractType,
                 'property_id' => $dto->propertyId,
                 'ilan_id' => $dto->propertyId,
@@ -43,6 +50,7 @@ class ProcessAIContractDraftUseCase
                 'draft_id' => $draft->id,
                 'contract_type' => $dto->contractType,
                 'ulke_id' => $ulkeId,
+                'tenant_id' => $tenantId,
             ], LogService::CHANNEL_API);
 
             return $draft;

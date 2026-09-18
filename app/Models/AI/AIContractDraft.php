@@ -12,6 +12,7 @@ class AIContractDraft extends BaseModel
 
     protected $fillable = [
         'ulke_id',
+        'tenant_id',
         'contract_type',
         'property_id',
         'ilan_id',

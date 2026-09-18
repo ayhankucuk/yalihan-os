@@ -12,6 +12,7 @@ class AIIlanTaslagi extends BaseModel
 
     protected $fillable = [
         'ulke_id',
+        'tenant_id',
         'danisman_id',
         'ilan_id',
         'yayin_durumu',
