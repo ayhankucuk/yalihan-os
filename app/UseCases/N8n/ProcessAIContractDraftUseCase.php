@@ -2,7 +2,7 @@
 
 namespace App\UseCases\N8n;
 
-use App\Models\AIContractDraft;
+use App\Models\AI\AIContractDraft;
 use App\UseCases\N8n\DTOs\AIContractDraftDTO;
 use App\Services\Logging\LogService;
 use App\Enums\TaslakDurumu;

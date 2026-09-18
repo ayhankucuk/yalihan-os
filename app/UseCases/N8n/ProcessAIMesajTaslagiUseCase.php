@@ -2,7 +2,7 @@
 
 namespace App\UseCases\N8n;
 
-use App\Models\AIMessage;
+use App\Models\AI\AIMessage;
 use App\UseCases\N8n\DTOs\AIMesajTaslagiDTO;
 use App\Services\Logging\LogService;
 use Illuminate\Support\Facades\DB;

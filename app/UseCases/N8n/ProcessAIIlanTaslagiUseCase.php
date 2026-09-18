@@ -2,7 +2,7 @@
 
 namespace App\UseCases\N8n;
 
-use App\Models\AIIlanTaslagi;
+use App\Models\AI\AIIlanTaslagi;
 use App\UseCases\N8n\DTOs\AIIlanTaslagiDTO;
 use App\Services\Logging\LogService;
 use App\Enums\TaslakDurumu;
