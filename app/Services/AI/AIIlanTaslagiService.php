@@ -5,6 +5,8 @@ namespace App\Services\AI;
 use App\Models\AI\AIIlanTaslagi;
 use App\Models\Ilan;
 use App\Services\Ilan\IlanCrudService;
+use App\Services\N8n\TenantOwnershipResolver;
+use App\Services\N8n\CountryOwnershipResolver;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +21,7 @@ use App\Enums\TaslakDurumu;
  *  - yayin_durumu ✅ (publication lifecycle)
  *  - aktiflik_durumu ✅ (system health)
  *
- * Phase: 19.5 Hardening
+ * Phase: LEGACY_AI_SERVICES_TENANT_PARITY_01
  * Bekçi: PASS (0 violation)
  */
 class AIIlanTaslagiService
@@ -36,6 +38,8 @@ class AIIlanTaslagiService
 
     public function __construct(
         private readonly IlanCrudService $ilanCrudService,
+        private readonly TenantOwnershipResolver $tenantResolver,
+        private readonly CountryOwnershipResolver $countryResolver,
     ) {
         $this->n8nWebhookUrl = config('services.n8n.webhook_url', '');
     }
@@ -56,10 +60,15 @@ class AIIlanTaslagiService
             ]);
 
             if (! $response->successful()) {
-                throw new \Exception('n8n webhook request failed: '.$response->{ 'st' . 'atus' }());
+                throw new \Exception('n8n webhook request failed: '.$response->getStatusCode());
             }
 
             $aiResponse = $response->json();
+
+            // Canonical ownership: resolve both country and tenant via danisman.
+            // Throws exception if unresolvable (fail-closed).
+            $ulkeId = $this->countryResolver->resolveForIlanTaslagi($danismanId, null);
+            $tenantId = $this->tenantResolver->resolveTenantViaDanisman($danismanId);
 
             // DB'ye kaydet (yayin_durumu=draft)
             $taslak = AIIlanTaslagi::create([
@@ -69,11 +78,15 @@ class AIIlanTaslagiService
                 'ai_model_used' => $aiResponse['model'] ?? 'anythingllm',
                 'ai_prompt_version' => $aiResponse['prompt_version'] ?? '1.0',
                 'ai_generated_at' => now(),
+                'ulke_id' => $ulkeId,
+                'tenant_id' => $tenantId,
             ]);
 
             Log::info('AI ilan taslağı oluşturuldu', [
                 'taslak_id' => $taslak->id,
                 'danisman_id' => $danismanId,
+                'ulke_id' => $ulkeId,
+                'tenant_id' => $tenantId,
             ]);
 
             return $taslak;

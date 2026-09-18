@@ -97,17 +97,29 @@ class TenantOwnershipResolver
     /**
      * Resolve tenant for sozlesmeTaslagi flow.
      *
-     * @param int|null $propertyId  Ilan id
-     * @param int|null $kisiId
+     * @param int|null $propertyId  nullable — Ilan (property)
+     * @param int|null $kisiId     nullable — Kisi (person/lead)
      * @return int tenant_id
      * @throws TenantOwnershipUnresolvableException
      */
     public function resolveForSozlesmeTaslagi(?int $propertyId, ?int $kisiId): int
     {
-        // Both identifiers MUST agree on tenant — otherwise it is a cross-tenant injection.
+        if ($propertyId === null && $kisiId === null) {
+            LogService::warning('n8n tenant ownership: unresolvable for sozlesmeTaslagi', [
+                'property_id' => $propertyId,
+                'kisi_id' => $kisiId,
+            ], LogService::CHANNEL_API);
+
+            throw new TenantOwnershipUnresolvableException(
+                'Tenant ownership could not be resolved for sozlesmeTaslagi. ' .
+                'Both propertyId and kisiId are null.'
+            );
+        }
+
         $propertyTenantId = $propertyId !== null ? $this->resolveViaIlan($propertyId) : null;
         $kisiTenantId = $kisiId !== null ? $this->resolveViaKisi($kisiId) : null;
 
+        // If both resolve, they MUST be consistent — cross-tenant injection.
         if ($propertyTenantId !== null && $kisiTenantId !== null) {
             if ($propertyTenantId !== $kisiTenantId) {
                 $this->logCrossTenantInjection([
@@ -124,7 +136,7 @@ class TenantOwnershipResolver
             return $propertyTenantId;
         }
 
-        // Only one resolved — use it.
+        // One resolved — use it.
         if ($propertyTenantId !== null) {
             return $propertyTenantId;
         }
@@ -132,31 +144,27 @@ class TenantOwnershipResolver
             return $kisiTenantId;
         }
 
-        // Neither resolved.
         LogService::warning('n8n tenant ownership: unresolvable for sozlesmeTaslagi', [
             'property_id' => $propertyId,
             'kisi_id' => $kisiId,
         ], LogService::CHANNEL_API);
 
         throw new TenantOwnershipUnresolvableException(
-            "Tenant ownership could not be resolved for sozlesmeTaslagi. " .
-            "property_id=" . ($propertyId ?? 'null') . ", kisi_id=" . ($kisiId ?? 'null') . ". " .
-            "Both Ilan.tenant_id and Kisi.tenant_id returned null."
+            'Tenant ownership could not be resolved for sozlesmeTaslagi. ' .
+            "property_id={$propertyId}, kisi_id={$kisiId}. " .
+            'Both Ilan.tenant_id and Kisi.tenant_id returned null.'
         );
     }
 
     /**
-     * Resolve tenant for mesajTaslagi flow.
+     * Resolve tenant for mesajTaslagi flow via polymorphic communicable chain.
      *
-     * Uses the polymorphic chain: Communication → communicable → tenant_id
-     * This mirrors the CountryOwnershipResolver pattern (communicable.ulke_id).
+     * Communication has NO direct tenant_id.
+     * It morphs to Ilan, Kisi, or User — all of which have tenant_id.
      *
-     * NOTE: Communication.tenant_id is NOT used as authoritative source here.
-     * Reasoning: Communication uses HasCountryScope (not TenantScope), meaning
-     * its own tenant_id is not auto-enforced by a global scope. The polymorphic
-     * communicable entity (Ilan|Kisi|User) is the canonical tenant source.
-     * Following the established pattern from CountryOwnershipResolver ensures
-     * consistency between country and tenant resolution chains.
+     * Resolution chain:
+     *   Communication.communicable_id + communicable_type
+     *     → Ilan[id].tenant_id  OR  Kisi[id].tenant_id  OR  User[id].tenant_id
      *
      * @param int $communicationId
      * @return int tenant_id
@@ -164,7 +172,8 @@ class TenantOwnershipResolver
      */
     public function resolveForMesajTaslagi(int $communicationId): int
     {
-        // N8n webhook flows have no tenant context (TenantScope would return nothing).
+        // withoutGlobalScopes: N8n webhook flows have no authenticated user;
+        // CountryScope would filter to WHERE ulke_id = NULL = nothing found.
         $communication = Communication::withoutGlobalScopes()->find($communicationId);
 
         if ($communication === null) {
@@ -173,31 +182,38 @@ class TenantOwnershipResolver
             ], LogService::CHANNEL_API);
 
             throw new TenantOwnershipUnresolvableException(
-                "Tenant ownership could not be resolved for mesajTaslagi. " .
-                "communication_id={$communicationId}. Communication not found."
+                "Communication #{$communicationId} not found. Cannot resolve tenant ownership."
             );
         }
 
-        // Resolve via direct query by type+ID.
-        // Bypasses morphTo() null-check to avoid CountryScope re-application on Kisi.
-        $tenantId = $this->resolveCommunicableTenantId(
-            $communication->communicable_type,
-            $communication->communicable_id
-        );
-
-        if ($tenantId === null) {
-            LogService::warning('n8n tenant ownership: communicable.tenant_id is null', [
+        if ($communication->communicable_type === null || $communication->communicable_id === null) {
+            LogService::warning('n8n tenant ownership: communication has no communicable', [
                 'communication_id' => $communicationId,
                 'communicable_type' => $communication->communicable_type,
                 'communicable_id' => $communication->communicable_id,
             ], LogService::CHANNEL_API);
 
             throw new TenantOwnershipUnresolvableException(
-                "Tenant ownership could not be resolved for mesajTaslagi. " .
-                "communication_id={$communicationId}. " .
-                "communicable_type={$communication->communicable_type} " .
-                "communicable_id={$communication->communicable_id} " .
-                "has null tenant_id."
+                "Communication #{$communicationId} has no communicable. Cannot resolve tenant ownership."
+            );
+        }
+
+        // Polymorphic lookup: bypass morphTo() which applies scopes to the target model.
+        $tenantId = $this->resolveCommunicableTenantId(
+            $communication->communicable_type,
+            $communication->communicable_id
+        );
+
+        if ($tenantId === null) {
+            LogService::warning('n8n tenant ownership: communicable has null tenant_id', [
+                'communication_id' => $communicationId,
+                'communicable_type' => $communication->communicable_type,
+                'communicable_id' => $communication->communicable_id,
+            ], LogService::CHANNEL_API);
+
+            throw new TenantOwnershipUnresolvableException(
+                "Communication #{$communicationId} points to a {$communication->communicable_type} " .
+                "with tenant_id=null. Cannot resolve tenant ownership."
             );
         }
 
@@ -309,5 +325,84 @@ class TenantOwnershipResolver
             null,
             $context
         );
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // LEGACY SERVICE PUBLIC API (Phase 3 — LEGACY_AI_SERVICES_TENANT_PARITY_01)
+    // These public helpers let legacy services derive tenant ownership from
+    // canonical domain entities without duplicating resolution logic.
+    // All throw TenantOwnershipUnresolvableException on failure (fail-closed).
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Resolve tenant_id via danisman (User) — public for legacy services.
+     *
+     * @param int $danismanId
+     * @return int
+     * @throws TenantOwnershipUnresolvableException
+     */
+    public function resolveTenantViaDanisman(int $danismanId): int
+    {
+        $tenantId = $this->resolveViaDanisman($danismanId);
+
+        if ($tenantId === null) {
+            LogService::warning('legacy service: tenant unresolvable via danisman', [
+                'danisman_id' => $danismanId,
+            ], LogService::CHANNEL_API);
+
+            throw new TenantOwnershipUnresolvableException(
+                "Legacy AI service: tenant_id unresolvable via danisman_id={$danismanId}"
+            );
+        }
+
+        return $tenantId;
+    }
+
+    /**
+     * Resolve tenant_id via ilan (property) — public for legacy services.
+     *
+     * @param int $ilanId
+     * @return int
+     * @throws TenantOwnershipUnresolvableException
+     */
+    public function resolveTenantViaIlan(int $ilanId): int
+    {
+        $tenantId = $this->resolveViaIlan($ilanId);
+
+        if ($tenantId === null) {
+            LogService::warning('legacy service: tenant unresolvable via ilan', [
+                'ilan_id' => $ilanId,
+            ], LogService::CHANNEL_API);
+
+            throw new TenantOwnershipUnresolvableException(
+                "Legacy AI service: tenant_id unresolvable via ilan_id={$ilanId}"
+            );
+        }
+
+        return $tenantId;
+    }
+
+    /**
+     * Resolve tenant_id via kisi (person) — public for legacy services.
+     *
+     * @param int $kisiId
+     * @return int
+     * @throws TenantOwnershipUnresolvableException
+     */
+    public function resolveTenantViaKisi(int $kisiId): int
+    {
+        $tenantId = $this->resolveViaKisi($kisiId);
+
+        if ($tenantId === null) {
+            LogService::warning('legacy service: tenant unresolvable via kisi', [
+                'kisi_id' => $kisiId,
+            ], LogService::CHANNEL_API);
+
+            throw new TenantOwnershipUnresolvableException(
+                "Legacy AI service: tenant_id unresolvable via kisi_id={$kisiId}"
+            );
+        }
+
+        return $tenantId;
     }
 }

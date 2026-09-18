@@ -5,6 +5,8 @@ namespace App\Services\AI;
 use App\Models\AI\AIContractDraft;
 use App\Models\Ilan;
 use App\Models\Kisi;
+use App\Services\N8n\TenantOwnershipResolver;
+use App\Services\N8n\CountryOwnershipResolver;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Enums\TaslakDurumu;
@@ -18,7 +20,7 @@ use App\Enums\TaslakDurumu;
  *  - yayin_durumu ✅ (publication lifecycle)
  *  - aktiflik_durumu ✅ (system health)
  *
- * Phase: 19.5 Hardening
+ * Phase: LEGACY_AI_SERVICES_TENANT_PARITY_01
  * Bekçi: PASS (0 violation)
  */
 class AIContractService
@@ -28,8 +30,10 @@ class AIContractService
      */
     protected string $n8nWebhookUrl;
 
-    public function __construct()
-    {
+    public function __construct(
+        private readonly TenantOwnershipResolver $tenantResolver,
+        private readonly CountryOwnershipResolver $countryResolver,
+    ) {
         $this->n8nWebhookUrl = config('services.n8n.webhook_url', '');
     }
 
@@ -48,27 +52,17 @@ class AIContractService
         array $additionalData = []
     ): AIContractDraft {
         try {
-            // İlan ve kişi bilgilerini al
-            $property = $propertyId ? Ilan::find($propertyId) : null;
-            $kisi = $kisiId ? Kisi::find($kisiId) : null;
+            // Canonical ownership: resolve both country and tenant via entity chain.
+            // Uses withoutGlobalScopes() internally — safe in all tenant/country contexts.
+            // Throws exception if unresolvable (fail-closed).
+            $ulkeId = $this->countryResolver->resolveForSozlesmeTaslagi($propertyId, $kisiId);
+            $tenantId = $this->tenantResolver->resolveForSozlesmeTaslagi($propertyId, $kisiId);
 
-            // n8n webhook'a istek gönder
+            // n8n webhook'a istek gönder (IDs only — n8n fetches full data if needed)
             $response = Http::timeout(30)->post($this->n8nWebhookUrl.'/ai/sozlesme-taslagi', [
                 'contract_type' => $contractType,
                 'property_id' => $propertyId,
                 'kisi_id' => $kisiId,
-                'property_data' => $property ? [
-                    'baslik' => $property->baslik,
-                    'fiyat' => $property->fiyat,
-                    'para_birimi' => $property->para_birimi,
-                    'adres' => $property->adres ?? '',
-                ] : null,
-                'kisi_data' => $kisi ? [
-                    'adi' => $kisi->adi,
-                    'soyadi' => $kisi->soyadi,
-                    'telefon' => $kisi->telefon,
-                    'email' => $kisi->email,
-                ] : null,
                 'additional_data' => $additionalData,
             ]);
 
@@ -87,12 +81,16 @@ class AIContractService
                 'content' => $aiResponse['content'] ?? '',
                 'ai_model_used' => $aiResponse['model'] ?? 'anythingllm',
                 'ai_generated_at' => now(),
+                'ulke_id' => $ulkeId,
+                'tenant_id' => $tenantId,
             ]);
 
             Log::info('AI sözleşme taslağı oluşturuldu', [
                 'draft_id' => $draft->id,
                 'contract_type' => $contractType,
                 'property_id' => $propertyId,
+                'ulke_id' => $ulkeId,
+                'tenant_id' => $tenantId,
             ]);
 
             return $draft;
