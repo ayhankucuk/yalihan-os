@@ -11,6 +11,7 @@ class AIIlanTaslagi extends BaseModel
     protected $table = 'ai_ilan_taslaklari';
 
     protected $fillable = [
+        'ulke_id',
         'danisman_id',
         'ilan_id',
         'yayin_durumu',

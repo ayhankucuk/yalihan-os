@@ -11,6 +11,7 @@ class AIContractDraft extends BaseModel
     protected $table = 'ai_contract_drafts';
 
     protected $fillable = [
+        'ulke_id',
         'contract_type',
         'property_id',
         'ilan_id',

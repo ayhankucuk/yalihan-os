@@ -11,6 +11,7 @@ class AIMessage extends BaseModel
     protected $table = 'ai_messages';
 
     protected $fillable = [
+        'ulke_id',
         'communication_id',
         'conversation_id',
         'channel',

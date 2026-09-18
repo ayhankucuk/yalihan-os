@@ -5328,6 +5328,7 @@ DROP TABLE IF EXISTS `ai_messages`;
 CREATE TABLE `ai_messages` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `tenant_id` bigint unsigned DEFAULT NULL,
+  `ulke_id` bigint unsigned DEFAULT NULL,
   `communication_id` bigint unsigned DEFAULT NULL,
   `conversation_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `channel` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'web',
@@ -5342,6 +5343,7 @@ CREATE TABLE `ai_messages` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `ai_messages_tenant_id_index` (`tenant_id`),
+  KEY `ai_messages_ulke_id_index` (`ulke_id`),
   KEY `ai_messages_communication_id_index` (`communication_id`),
   KEY `ai_messages_conversation_id_index` (`conversation_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -5350,6 +5352,7 @@ DROP TABLE IF EXISTS `ai_contract_drafts`;
 CREATE TABLE `ai_contract_drafts` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `tenant_id` bigint unsigned DEFAULT NULL,
+  `ulke_id` bigint unsigned DEFAULT NULL,
   `contract_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `property_id` bigint unsigned DEFAULT NULL,
   `ilan_id` bigint unsigned DEFAULT NULL,
@@ -5365,6 +5368,7 @@ CREATE TABLE `ai_contract_drafts` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `ai_contract_drafts_tenant_id_index` (`tenant_id`),
+  KEY `ai_contract_drafts_ulke_id_index` (`ulke_id`),
   KEY `ai_contract_drafts_property_id_index` (`property_id`),
   KEY `ai_contract_drafts_ilan_id_index` (`ilan_id`),
   KEY `ai_contract_drafts_kisi_id_index` (`kisi_id`),
@@ -5375,6 +5379,7 @@ DROP TABLE IF EXISTS `ai_ilan_taslaklari`;
 CREATE TABLE `ai_ilan_taslaklari` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `tenant_id` bigint unsigned DEFAULT NULL,
+  `ulke_id` bigint unsigned DEFAULT NULL,
   `danisman_id` bigint unsigned NOT NULL,
   `ilan_id` bigint unsigned DEFAULT NULL,
   `yayin_durumu` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'taslak',
@@ -5387,6 +5392,7 @@ CREATE TABLE `ai_ilan_taslaklari` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `ai_ilan_taslaklari_tenant_id_index` (`tenant_id`),
+  KEY `ai_ilan_taslaklari_ulke_id_index` (`ulke_id`),
   KEY `ai_ilan_taslaklari_danisman_id_index` (`danisman_id`),
   KEY `ai_ilan_taslaklari_ilan_id_index` (`ilan_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
