@@ -16,9 +16,11 @@ class ProcessAIContractDraftUseCase
             $draft = AIContractDraft::create([
                 'contract_type' => $dto->contractType,
                 'property_id' => $dto->propertyId,
+                'ilan_id' => $dto->propertyId,
                 'kisi_id' => $dto->kisiId,
                 'yayin_durumu' => TaslakDurumu::TASLAK->value,
                 'content' => $dto->content,
+                'draft_content' => $dto->content,
                 'ai_model_used' => $dto->aiModelUsed,
                 'ai_generated_at' => now(),
             ]);

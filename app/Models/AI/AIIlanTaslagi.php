@@ -2,10 +2,12 @@
 
 namespace App\Models\AI;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
+use App\Traits\HasCountryScope;
 
-class AIIlanTaslagi extends Model
+class AIIlanTaslagi extends BaseModel
 {
+    use HasCountryScope;
     protected $table = 'ai_ilan_taslaklari';
 
     protected $fillable = [

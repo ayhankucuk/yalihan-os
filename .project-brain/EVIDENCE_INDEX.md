@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-09-18] N8N_AI_USECASES_PERSISTENCE_DRIFT_FIX
+
+**Session:** REMEDIATION_N8N_AI_USECASES_PERSISTENCE_DRIFT_FINAL_01
+**Finding:** `N8N-AI-USECASES-MODEL-PERSISTENCE-CONTRACT-DRIFT`
+**Evidence Level:** `REPO_VERIFIED` + `TEST_VERIFIED`
+
+| Modül / Model | Yapılan Değişiklik | Kalıtım & Scope |
+|---------------|-------------------|------------------|
+| `AIMessage` | `$fillable` tamamlandı, `ai_generated_at` cast eklendi | `BaseModel` + `HasCountryScope` |
+| `AIContractDraft` | `$fillable` tamamlandı (`property_id`, `kisi_id`, `content`, vb.) | `BaseModel` + `HasCountryScope` |
+| `AIIlanTaslagi` | Kalıtım ve scope güncellendi | `BaseModel` + `HasCountryScope` |
+| `ProcessAIContractDraftUseCase` | `property_id`/`ilan_id` ve `content`/`draft_content` çiftleri beslendi | Clean write delegation |
+| `2026_09_18_110000_create_n8n_ai_persistence_tables.php` | `ai_messages`, `ai_contract_drafts`, `ai_ilan_taslaklari` tabloları eklendi | Migration |
+
+**Regression test:** `tests/Unit/UseCases/N8nUseCasesPersistenceTest.php`
+- SQLite in-memory DB üzerinde 3 UseCase için uçtan uca attribute persistence doğrulaması
+- 3/3 PASS (24 assertions)
+
+---
+
 ## [2026-09-18] N8N_AI_USECASES_NAMESPACE_FIX
 
 **Commit:** `089fd72c` (release-candidate/RC2)

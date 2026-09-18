@@ -1,3 +1,32 @@
+## Oturum 192 — 2026-09-18 | N8n AI UseCases Model-Persistence Contract Drift Remediation
+
+**Finding:** `N8N-AI-USECASES-MODEL-PERSISTENCE-CONTRACT-DRIFT`
+**Durum:** KAPATILDI ✅
+
+N8n AI UseCase'leri ve Eloquent modelleri arasındaki veritabanı yazma sözleşmesi uyumsuzluğu tamamen giderildi:
+
+1. **Modeller (`App\Models\AI\*`)**:
+   - `AIMessage`: `$fillable` alanlarına `communication_id`, `channel`, `mesaj_durumu`, `ai_model_used`, `ai_generated_at` eklendi; `HasCountryScope` ve `BaseModel` kalıtımı sağlandı.
+   - `AIContractDraft`: `$fillable` alanlarına `contract_type`, `property_id`, `ilan_id`, `kisi_id`, `danisman_id`, `content`, `draft_content`, `yayin_durumu`, `ai_model_used`, `ai_generated_at` eklendi; `HasCountryScope` ve `BaseModel` kalıtımı sağlandı.
+   - `AIIlanTaslagi`: `HasCountryScope` ve `BaseModel` kalıtımı sağlandı.
+
+2. **Migrasyon**:
+   - `database/migrations/2026_09_18_110000_create_n8n_ai_persistence_tables.php` ile `ai_messages`, `ai_contract_drafts`, `ai_ilan_taslaklari` tabloları eklendi.
+
+3. **Yazma Uyumlaştırması**:
+   - `ProcessAIContractDraftUseCase` üzerinde `property_id`/`ilan_id` ve `content`/`draft_content` alan çiftleri deterministik olarak beslendi.
+
+4. **Test & Sertifikasyon**:
+   - `tests/Unit/UseCases/N8nUseCasesPersistenceTest.php` eklendi. Tüm N8n use-case persistence ve reflection testleri basariyla gecti.
+
+```
+KALİTE KAPISI:  4/4 Antigravity Gate PASS ✅
+TESTLER:        8/8 PASS (N8n test suite, 24 assertions)
+DURUM:          N8N-AI-USECASES-MODEL-PERSISTENCE-CONTRACT-DRIFT KAPATILDI ✅
+```
+
+---
+
 ## Oturum 191 — 2026-09-18 | N8n AI UseCase Namespace Remediation
 
 **Finding:** `N8N-AI-USECASES-UNQUALIFIED-MODEL-CRASH`

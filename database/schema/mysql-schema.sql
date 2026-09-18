@@ -5324,6 +5324,73 @@ CONSTRAINT `ai_description_drafts_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFER
 CONSTRAINT `ai_description_drafts_rejected_by_foreign` FOREIGN KEY (`rejected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
 CONSTRAINT `ai_description_drafts_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
+DROP TABLE IF EXISTS `ai_messages`;
+CREATE TABLE `ai_messages` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint unsigned DEFAULT NULL,
+  `communication_id` bigint unsigned DEFAULT NULL,
+  `conversation_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `channel` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'web',
+  `role` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'assistant',
+  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `mesaj_durumu` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `ai_model_used` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ai_generated_at` timestamp NULL DEFAULT NULL,
+  `tokens_used` int DEFAULT NULL,
+  `metadata` json DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ai_messages_tenant_id_index` (`tenant_id`),
+  KEY `ai_messages_communication_id_index` (`communication_id`),
+  KEY `ai_messages_conversation_id_index` (`conversation_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `ai_contract_drafts`;
+CREATE TABLE `ai_contract_drafts` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint unsigned DEFAULT NULL,
+  `contract_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `property_id` bigint unsigned DEFAULT NULL,
+  `ilan_id` bigint unsigned DEFAULT NULL,
+  `kisi_id` bigint unsigned DEFAULT NULL,
+  `danisman_id` bigint unsigned DEFAULT NULL,
+  `content` text COLLATE utf8mb4_unicode_ci,
+  `draft_content` text COLLATE utf8mb4_unicode_ci,
+  `yayin_durumu` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'taslak',
+  `ai_model_used` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ai_generated_at` timestamp NULL DEFAULT NULL,
+  `metadata` json DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ai_contract_drafts_tenant_id_index` (`tenant_id`),
+  KEY `ai_contract_drafts_property_id_index` (`property_id`),
+  KEY `ai_contract_drafts_ilan_id_index` (`ilan_id`),
+  KEY `ai_contract_drafts_kisi_id_index` (`kisi_id`),
+  KEY `ai_contract_drafts_danisman_id_index` (`danisman_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `ai_ilan_taslaklari`;
+CREATE TABLE `ai_ilan_taslaklari` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint unsigned DEFAULT NULL,
+  `danisman_id` bigint unsigned NOT NULL,
+  `ilan_id` bigint unsigned DEFAULT NULL,
+  `yayin_durumu` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'taslak',
+  `taslak_durumu` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'taslak',
+  `ai_response` json NOT NULL,
+  `ai_model_used` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ai_prompt_version` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ai_generated_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ai_ilan_taslaklari_tenant_id_index` (`tenant_id`),
+  KEY `ai_ilan_taslaklari_danisman_id_index` (`danisman_id`),
+  KEY `ai_ilan_taslaklari_ilan_id_index` (`ilan_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `ai_security_logs` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
 `event_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'prompt_injection, sql_injection, spam_detected, high_anomaly_score, etc.',
