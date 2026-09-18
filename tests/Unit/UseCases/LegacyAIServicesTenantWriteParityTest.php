@@ -85,11 +85,11 @@ class LegacyAIServicesTenantWriteParityTest extends TestCase
 
         $ilan = Ilan::withoutGlobalScopes()->create([
             'baslik' => 'Test',
-            'ulke_id' => $ulke->id,
             'tenant_id' => $tenant->id,
             'il_id' => 1,
             'aktiflik_durumu' => true,
         ]);
+        $ilan->forceFill(['ulke_id' => $ulke->id])->save();
 
         $comm = Communication::withoutGlobalScopes()->create([
             'tenant_id' => $tenant->id,
@@ -161,11 +161,11 @@ class LegacyAIServicesTenantWriteParityTest extends TestCase
 
         $ilan = Ilan::withoutGlobalScopes()->create([
             'baslik' => 'Test İlan',
-            'ulke_id' => $this->ulke->id,
             'tenant_id' => $this->tenant->id,
             'il_id' => 1,
             'aktiflik_durumu' => true,
         ]);
+        $ilan->forceFill(['ulke_id' => $this->ulke->id])->save();
 
         $communication = Communication::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
@@ -195,11 +195,11 @@ class LegacyAIServicesTenantWriteParityTest extends TestCase
     {
         $ilan = Ilan::withoutGlobalScopes()->create([
             'baslik' => 'Test İlan 2',
-            'ulke_id' => $this->ulke->id,
             'tenant_id' => $this->tenant->id,
             'il_id' => 1,
             'aktiflik_durumu' => true,
         ]);
+        $ilan->forceFill(['ulke_id' => $this->ulke->id])->save();
 
         $communication = Communication::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
@@ -228,11 +228,11 @@ class LegacyAIServicesTenantWriteParityTest extends TestCase
         // Ilan with null tenant_id → tenant resolution fails
         $ilan = Ilan::withoutGlobalScopes()->create([
             'baslik' => 'Tenant-free İlan',
-            'ulke_id' => $this->ulke->id,
             'tenant_id' => null,
             'il_id' => 1,
             'aktiflik_durumu' => true,
         ]);
+        $ilan->forceFill(['ulke_id' => $this->ulke->id])->save();
 
         $communication = Communication::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
@@ -257,11 +257,11 @@ class LegacyAIServicesTenantWriteParityTest extends TestCase
 
         $ilan = Ilan::withoutGlobalScopes()->create([
             'baslik' => 'Country-free İlan',
-            'ulke_id' => null,
             'tenant_id' => $this->tenant->id,
             'il_id' => 1,
             'aktiflik_durumu' => true,
         ]);
+        // ulke_id intentionally left null for this test case
 
         $communication = Communication::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
@@ -283,11 +283,11 @@ class LegacyAIServicesTenantWriteParityTest extends TestCase
     {
         $ilan = Ilan::withoutGlobalScopes()->create([
             'baslik' => 'Tenant-free',
-            'ulke_id' => $this->ulke->id,
             'tenant_id' => null,
             'il_id' => 1,
             'aktiflik_durumu' => true,
         ]);
+        $ilan->forceFill(['ulke_id' => $this->ulke->id])->save();
 
         $communication = Communication::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
@@ -320,11 +320,11 @@ class LegacyAIServicesTenantWriteParityTest extends TestCase
     {
         $ilan = Ilan::withoutGlobalScopes()->create([
             'baslik' => 'Conv Tenant Test',
-            'ulke_id' => $this->ulke->id,
             'tenant_id' => $this->tenant->id,
             'il_id' => 1,
             'aktiflik_durumu' => true,
         ]);
+        $ilan->forceFill(['ulke_id' => $this->ulke->id])->save();
 
         $communication = Communication::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
@@ -355,11 +355,11 @@ class LegacyAIServicesTenantWriteParityTest extends TestCase
     {
         $ilan = Ilan::withoutGlobalScopes()->create([
             'baslik' => 'Wrong Tenant Conv',
-            'ulke_id' => $this->ulke->id,
             'tenant_id' => $this->tenant->id,
             'il_id' => 1,
             'aktiflik_durumu' => true,
         ]);
+        $ilan->forceFill(['ulke_id' => $this->ulke->id])->save();
 
         $tenantB = Tenant::create(['name' => 'Tenant B', 'domain' => 'tenantb.test']);
 
@@ -393,11 +393,11 @@ class LegacyAIServicesTenantWriteParityTest extends TestCase
 
         $ilan = Ilan::withoutGlobalScopes()->create([
             'baslik' => 'Wrong Country Conv',
-            'ulke_id' => $ulkeB->id,
             'tenant_id' => $this->tenant->id,
             'il_id' => 1,
             'aktiflik_durumu' => true,
         ]);
+        $ilan->forceFill(['ulke_id' => $ulkeB->id])->save();
 
         $communication = Communication::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
@@ -427,11 +427,11 @@ class LegacyAIServicesTenantWriteParityTest extends TestCase
     {
         $ilan = Ilan::withoutGlobalScopes()->create([
             'baslik' => 'Null Conv',
-            'ulke_id' => $this->ulke->id,
             'tenant_id' => $this->tenant->id,
             'il_id' => 1,
             'aktiflik_durumu' => true,
         ]);
+        $ilan->forceFill(['ulke_id' => $this->ulke->id])->save();
 
         $communication = Communication::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
@@ -461,11 +461,11 @@ class LegacyAIServicesTenantWriteParityTest extends TestCase
     {
         $ilan = Ilan::withoutGlobalScopes()->create([
             'baslik' => 'No Conv Tenant Free',
-            'ulke_id' => $this->ulke->id,
             'tenant_id' => null,
             'il_id' => 1,
             'aktiflik_durumu' => true,
         ]);
+        $ilan->forceFill(['ulke_id' => $this->ulke->id])->save();
 
         $communication = Communication::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
@@ -495,11 +495,11 @@ class LegacyAIServicesTenantWriteParityTest extends TestCase
     {
         $ilan = Ilan::withoutGlobalScopes()->create([
             'baslik' => 'No Conv Country Free',
-            'ulke_id' => null,
             'tenant_id' => $this->tenant->id,
             'il_id' => 1,
             'aktiflik_durumu' => true,
         ]);
+        // ulke_id intentionally left null for this test case
 
         $communication = Communication::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
@@ -529,11 +529,11 @@ class LegacyAIServicesTenantWriteParityTest extends TestCase
     {
         $ilan = Ilan::withoutGlobalScopes()->create([
             'baslik' => 'Reuse Conv',
-            'ulke_id' => $this->ulke->id,
             'tenant_id' => $this->tenant->id,
             'il_id' => 1,
             'aktiflik_durumu' => true,
         ]);
+        $ilan->forceFill(['ulke_id' => $this->ulke->id])->save();
 
         $communication = Communication::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,

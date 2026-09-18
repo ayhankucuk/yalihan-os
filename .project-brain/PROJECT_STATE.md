@@ -738,3 +738,6 @@ HOTSPOT_LOCK:database/migrations/2026_09_17_000001_create_emlak_projeleri_tables
 HOTSPOT_LOCK:database/migrations/2026_09_17_000002_add_proje_id_to_ilanlar_table.php:antigravity:2026-09-17T13:53:56Z:3600
 HOTSPOT_LOCK:database/schema/mysql-schema.sql:antigravity:2026-09-17T13:54:36Z:3600
 HOTSPOT_LOCK:.sab/schema-checksum.sha256:antigravity:2026-09-17T13:54:36Z:3600
+
+HOTSPOT_LOCK:database/migrations/2026_09_18_130000_create_ai_conversations_table.php:claude-opus:2026-09-18T19:15:00Z:7200
+HOTSPOT_LOCK:database/schema/mysql-schema.sql:claude-opus:2026-09-18T19:20:00Z:7200

@@ -6990,3 +6990,25 @@ CONSTRAINT `workspace_executions_workspace_id_foreign` FOREIGN KEY (`workspace_i
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+--
+-- Table: ai_conversations
+--
+CREATE TABLE IF NOT EXISTS `ai_conversations` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `communication_id` bigint unsigned NOT NULL,
+  `channel` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'telegram, whatsapp, instagram, email, web',
+  `tenant_id` bigint unsigned DEFAULT NULL,
+  `ulke_id` bigint unsigned DEFAULT NULL,
+  `aktiflik_durumu` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Conversation active status',
+  `metadata` json DEFAULT NULL COMMENT 'Additional conversation metadata',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ai_conversations_communication_id_unique` (`communication_id`),
+  KEY `ai_conversations_tenant_id_index` (`tenant_id`),
+  KEY `ai_conversations_ulke_id_index` (`ulke_id`),
+  KEY `ai_conversations_tenant_id_aktiflik_durumu_index` (`tenant_id`,`aktiflik_durumu`),
+  KEY `ai_conversations_ulke_id_aktiflik_durumu_index` (`ulke_id`,`aktiflik_durumu`),
+  CONSTRAINT `ai_conversations_communication_id_foreign` FOREIGN KEY (`communication_id`) REFERENCES `communications` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
