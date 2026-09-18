@@ -65,6 +65,45 @@ AIMessage/AIContractDraft `$fillable` gap + missing table migrations → ayrı g
 **Kanıt Dosyası:** `.project-brain/TEMPLATE_HUB_AUDIT.md`
 **Risk:** WRITE_GATE kapalı — sadece okuma
 
+---
+
+## [2026-09-18] LEGACY_AI_SERVICES_TENANT_PARITY_01 — AIConversation Write Parity
+
+**Commit:** `e13aa556` (release-candidate/RC2)
+**Session:** RESUMED — LEGACY_AI_SERVICES_TENANT_PARITY_01
+**Finding:** `AI-MESSAGE-SERVICE-ULKE-ID-FILLABLE-MISSING`
+**Evidence Level:** `REPO_VERIFIED` + `TEST_VERIFIED`
+
+### Root Cause
+`Ilan` modelinde `ulke_id` fillable array'de **eksikti** — sadece bir comment olarak kalmıştı.
+`Ilan::withoutGlobalScopes()->create(['ulke_id' => $value])` çağrıldığında,
+Laravel mass assignment koruması `ulke_id`'yi filtreliyordu.
+Bu yüzden `CountryOwnershipResolver::resolveForMesajTaslagi()` her zaman null ulke_id
+döndürüyordu → `CountryOwnershipUnresolvableException`.
+
+### Fix
+```diff
+-// 🔵 OPTIONAL: Ülke ID - NULL allowed
++'ulke_id',                    // 🔵 OPTIONAL: Ülke ID - NULL allowed
+```
+`app/Models/Ilan.php` fillable array'e eklendi.
+
+### Test Coverage (7 new tests)
+| Test | Senaryo | Durum |
+|------|---------|-------|
+| `test_ai_message_service_creates_conversation_with_canonical_tenant_and_country` | Happy path | PASS |
+| `test_ai_message_service_fails_closed_existing_conversation_wrong_tenant` | Wrong tenant | PASS |
+| `test_ai_message_service_fails_closed_existing_conversation_wrong_country` | Wrong country | PASS |
+| `test_ai_message_service_fails_closed_existing_conversation_null_ownership` | Null ownership | PASS |
+| `test_ai_message_service_writes_zero_conversation_on_tenant_failure` | Tenant fails | PASS |
+| `test_ai_message_service_writes_zero_conversation_on_country_failure` | Country fails | PASS |
+| `test_ai_message_service_reuses_correct_existing_conversation` | Reuse correct | PASS |
+
+**Full suite:** 27/27 PASS (50 assertions)
+
+---
+
+## Evidence levels
 ## Evidence levels
 
 - `REPO_VERIFIED`: observed in the current checkout.
