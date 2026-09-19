@@ -45,7 +45,7 @@ class TalepAuthorityService
                     'soyad' => $data['kisi_soyad'] ?? null,
                     'telefon' => $data['kisi_telefon'] ?? null,
                     'email' => $data['kisi_email'] ?? null,
-                    'kisi_tipi' => 'Potansiyel',
+                    'kisi_tipi' => 'lead', // KisiTipi::lead — aday müşteri (Telegram'dan gelen talep)
                 ];
 
                 $kisi = $this->kisiRegistrationService->register($kisiData, $actor?->id);
@@ -152,6 +152,16 @@ class TalepAuthorityService
     {
         $this->blockAgentWrite(__FUNCTION__);
 
+        // NOTE: one_cikan column does not exist in talepler schema.
+        // Guard: skip silently if column is absent.
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('talepler', 'one_cikan')) {
+            Log::channel('module_changes')->info('Talep Domain: one_cikan_update_skipped (column absent)', [
+                'talep_id' => $talep->id,
+                'actor_id' => $actor?->id,
+            ]);
+            return $talep;
+        }
+
         return DB::transaction(function () use ($talep, $value, $actor) {
             $before = $talep->one_cikan;
             $talep->update(['one_cikan' => $value]);
@@ -176,7 +186,9 @@ class TalepAuthorityService
             'talep_tipi' => $data['tip'] ?? ($data['talep_tipi'] ?? null),
             'alt_kategori_id' => $data['alt_kategori_id'] ?? null,
             'talep_durumu' => $data['talep_durumu'] ?? null,
-            'one_cikan' => $data['one_cikan'] ?? false,
+            // NOTE: one_cikan column does not exist in talepler schema (SQLite test / MySQL prod).
+            // Removed from mapTalepData to prevent 'no such column' crash.
+            // 'one_cikan' => $data['one_cikan'] ?? false,
             'il_id' => $data['il_id'] ?? null,
             'ilce_id' => $data['ilce_id'] ?? null,
             'mahalle_id' => $data['mahalle_id'] ?? null,
