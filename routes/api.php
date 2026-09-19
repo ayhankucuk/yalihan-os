@@ -93,6 +93,8 @@ Route::prefix('v1')->middleware([ThrottleApiRequests::class])->group(function ()
         ->name('api.webhook.email.verify');
 
     // 🤖 Telegram Integration (secured by X-Telegram-Bot-Api-Secret-Token)
+    Route::post('/telegram/webhook', [\App\Http\Controllers\Api\TelegramWebhookController::class, 'handleWebhook'])
+        ->name('api.telegram.webhook.native');
     Route::post('/integrations/telegram/webhook', [\App\Http\Controllers\Api\Integrations\TelegramAdvisorAdapterController::class, 'handleWebhook'])
         ->middleware('telegram.secret')
         ->name('api.telegram.webhook');

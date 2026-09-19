@@ -2,6 +2,38 @@
 
 ---
 
+## [2026-09-19] PHASE_1K_COMMAND_CENTER_SECURITY_FIX
+
+**Session:** PHASE_1K_COMMAND_CENTER_INDEPENDENT_VERIFIER_PASS
+**Finding:** `TENANT_ISOLATION_NOT_PROVEN` + `CURRENCY_BOUNDARY_VIOLATION` + `NUMERIC_PARSER_DEFECT`
+**Evidence Level:** `TEST_VERIFIED`
+
+### Root Causes Fixed
+
+1. **TENANT_ISOLATION**: `IlanSearchService::search()` uses `DB::table('ilanlar')` which bypasses `BelongsToTenant` trait + `TenantScope`. Added explicit `tenant_id` filter using `TenantContextService::hasTenant()` + fail-closed `WHERE 1=0` when no context. Mirrors `TenantScope::apply()` behavior.
+
+2. **CURRENCY_BOUNDARY**: `IntentRouter` hardcoded default `'EUR'`. Fixed: explicit `€`/`eur`/`euro` detection (with TRY and USD) and `IlanDurumu::YAYINDA->value` canonical enum. `IlanSearchService` currency authority: `array_keys(config('currency.supported'))`.
+
+3. **NUMERIC_PARSER**: Missing patterns for `k`/`K` (×1000) and `bin` (×1000, Turkish "thousand"). Added with `i` flag for uppercase M. Regression tests: 27/27 pass.
+
+### Files Modified
+- `app/Services/Ilan/IlanSearchService.php` — tenant isolation + currency authority fix
+- `app/Services/CommandCenter/Routing/IntentRouter.php` — parser + enum fix
+- `tests/Unit/CommandCenter/IlanSearchServiceTenantIsolationTest.php` — NEW (6 tests)
+- `tests/Unit/CommandCenter/IntentRouterParserTest.php` — NEW (27 tests)
+- `tests/Unit/CommandCenter/IlanSearchServiceCurrencyBoundaryTest.php` — updated helper
+- `tests/Feature/CommandCenter/TelegramIngressE2ETest.php` — added tenant_id
+
+### Test Results
+- CommandCenter suite: **52 PASS** (was 19 baseline)
+- IntentRouterParserTest: **27 PASS** (new)
+- IlanSearchServiceTenantIsolationTest: **6 PASS** (new)
+- IlanSearchServiceCurrencyBoundaryTest: **9 PASS** (updated)
+- SAB integrity: 0 new blocking violations from our files; 9 pre-existing
+- Bekçi health: 79.1% (target: 70%)
+
+---
+
 ## [2026-09-18] N8N_AI_USECASES_PERSISTENCE_DRIFT_FIX
 
 **Session:** REMEDIATION_N8N_AI_USECASES_PERSISTENCE_DRIFT_FINAL_01
@@ -1394,3 +1426,20 @@ Aktif kullanici dosyalari:
 | 3 | Bütün Talep testləri əvvəlki run-dakı spurious failure yox — ayrı işləyəndə hamısı keçirdi | test run | TEST_VERIFIED | INFO |
 
 **Sayılar:** 61/61 tests ✅, 187 assertions, 3 skipped, 6/6 quality gates ✅
+
+---
+
+## [2026-09-18] MCP_SERVER_ADDITIONS
+
+**Session:** MCP server ekleme (MySQL, Docker, Redis)
+**Files Modified:** `.vscode/mcp.json`
+**Evidence Level:** `REPO_VERIFIED`
+
+| MCP | Durum | Çözüm |
+|-----|-------|-------|
+| MySQL | ✅ Eklendi | `/Users/macbookpro/.local/bin/mysql-client` |
+| Docker | ✅ Eklendi | `/Users/macbookpro/.local/bin/docker-mcp-server` |
+| Redis | ✅ Eklendi | `npx @modelcontextprotocol/server-redis` |
+| n8n | ❌ Yok | npm registry'de bulunamadı |
+
+**Toplam MCP:** 8 (context7, filesystem, laravel-bekci, chrome-devtools, github, mysql, docker, redis)

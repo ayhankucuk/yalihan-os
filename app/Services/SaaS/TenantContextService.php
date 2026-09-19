@@ -43,4 +43,15 @@ class TenantContextService
     {
         return !is_null($this->currentTenant);
     }
+
+    /**
+     * Clear the current tenant context.
+     *
+     * Used for request lifecycle cleanup to prevent tenant context leakage
+     * in long-running workers or runtime environments.
+     */
+    public function clearTenant(): void
+    {
+        $this->currentTenant = null;
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services\Ilan;
 
+use App\Services\SaaS\TenantContextService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Collection;
@@ -35,6 +36,20 @@ class IlanSearchService
 
         $builder = DB::table('ilanlar');
 
+        // 🛡️ SAB §5 + §8: Enforce tenant isolation — DB::table() bypasses
+        // BelongsToTenant/TenantScope, so we must explicitly constrain here.
+        // TenantScope uses the same hasTenant() check; fail-closed behavior
+        // mirrors TenantScope::apply() WHERE 1=0 on unresolved context.
+        if (Schema::hasColumn('ilanlar', 'tenant_id')) {
+            $tenantService = app(TenantContextService::class);
+            if ($tenantService->hasTenant()) {
+                $builder->where('ilanlar.tenant_id', $tenantService->getTenant()->id);
+            } else {
+                // Fail-closed: no tenant context = return nothing
+                $builder->whereRaw('1 = 0');
+            }
+        }
+
         if ($id) {
             $builder->where('id', $id);
         }
@@ -61,6 +76,18 @@ class IlanSearchService
             }
             if ($maxFiyat !== null && $maxFiyat !== '') {
                 $builder->where('fiyat', '<=', (float) $maxFiyat);
+            }
+        }
+
+        // Phase 1j: same-currency boundary fix
+        // When currency is provided, restrict results to that currency only.
+        // This prevents cross-currency price comparison (e.g. EUR budget matching TRY listings).
+        $paraBirimi = isset($params['paraBirimi']) ? trim((string) $params['paraBirimi']) : '';
+        if ($paraBirimi !== '' && Schema::hasColumn('ilanlar', 'para_birimi')) {
+            $supported = array_keys(config('currency.supported', []));
+            $normalized = strtoupper($paraBirimi);
+            if (in_array($normalized, $supported, true)) {
+                $builder->where('para_birimi', $normalized);
             }
         }
 

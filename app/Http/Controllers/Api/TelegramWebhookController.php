@@ -8,8 +8,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Modules\TakimYonetimi\Services\TelegramBotService;
-use App\Services\Logging\LogService;
+use App\Services\CommandCenter\Adapters\TelegramChannelAdapter;
+use App\Services\CommandCenter\CommandGateway;
 use App\Services\Telegram\TelegramBrain;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -38,8 +40,7 @@ class TelegramWebhookController extends Controller
      * Telegram Bot API'den gelen tüm webhook isteklerini işler.
      * Mesajlar, komutlar, callback query'ler vb. bu endpoint'e gelir.
      *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function handleWebhook(Request $request)
     {
@@ -53,9 +54,18 @@ class TelegramWebhookController extends Controller
                 'callback_query' => isset($data['callback_query']) ? 'present' : 'missing',
             ]);
 
-            // Context7: Telegram Cortex Architecture - TelegramBrain kullan
-            $telegramBrain = app(TelegramBrain::class);
-            $telegramBrain->handle($data);
+            // Context7: YALIHAN Command Center Ingress Architecture
+            $adapter = app(TelegramChannelAdapter::class);
+            $commandInput = $adapter->normalize($data);
+
+            if ($commandInput && ! empty($commandInput->rawText)) {
+                $commandGateway = app(CommandGateway::class);
+                $commandGateway->process($commandInput);
+            } else {
+                // Fallback: Legacy TelegramBrain for non-text/voice/callback handling
+                $telegramBrain = app(TelegramBrain::class);
+                $telegramBrain->handle($data);
+            }
 
             // Telegram'a başarılı yanıt döndür
             return response()->json([
@@ -84,7 +94,7 @@ class TelegramWebhookController extends Controller
      *
      * Webhook endpoint'inin çalışıp çalışmadığını test eder.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function test()
     {
