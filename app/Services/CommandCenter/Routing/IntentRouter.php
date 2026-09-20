@@ -7,6 +7,7 @@ namespace App\Services\CommandCenter\Routing;
 use App\DTOs\Command\NormalizedCommandInput;
 use App\Enums\IlanDurumu;
 use App\Services\CommandCenter\Handlers\PropertySearchIntentHandler;
+use App\Services\CommandCenter\Handlers\TalepCreateIntentHandler;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -19,7 +20,8 @@ use Illuminate\Support\Facades\Log;
 class IntentRouter
 {
     public function __construct(
-        private PropertySearchIntentHandler $propertySearchHandler
+        private PropertySearchIntentHandler $propertySearchHandler,
+        private TalepCreateIntentHandler $talepCreateHandler
     ) {}
 
     /**
@@ -34,17 +36,25 @@ class IntentRouter
             'raw_text' => $input->rawText,
         ]);
 
-        // 1. Property / Listing Search Intent Detection
+        // 1. Talep Create Intent Detection (önce — talep_create öncelikli)
+        if ($this->isTalepCreateIntent($text)) {
+            $params = $this->extractTalepCreateParameters($text);
+
+            return $this->talepCreateHandler->handle($input, $params);
+        }
+
+        // 2. Property / Listing Search Intent Detection
         if ($this->isPropertySearchIntent($text)) {
             $params = $this->extractPropertySearchParameters($text);
 
             return $this->propertySearchHandler->handle($input, $params);
         }
 
-        // 2. Fallback / Unknown Intent
+        // 3. Fallback / Unknown Intent
         return "💡 *Yalıhan Command Center*\n\n".
                "Komut anlaşılamadı. Örnek sorgular:\n".
                "• \"Elimizde €1M'a ne var?\"\n".
+               "• \"Yeni talep var. Ahmet Yılmaz, 0532 123 45 67, Bodrum'da villa.\"\n".
                '• "500.000 EUR altındaki ilanlar"';
     }
 
@@ -129,5 +139,39 @@ class IntentRouter
             'paraBirimi' => $currency,
             'yayin_durumu' => IlanDurumu::YAYINDA->value,
         ];
+    }
+
+    /**
+     * Talep oluşturma niyeti mi?
+     */
+    private function isTalepCreateIntent(string $text): bool
+    {
+        $keywords = [
+            'yeni talep', 'yeni talep var', 'talep ekle', 'talep oluştur',
+            'yeni müşteri talep', 'talep aç', 'müşteri ekle',
+            'talep var', 'yeni demand',
+        ];
+
+        foreach ($keywords as $kw) {
+            if (str_contains($text, $kw)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Talep oluşturma parametrelerini çıkar.
+     *
+     * Bu metod IntentRouter'da tanımlanır, handler'a sadece ham metin gider.
+     * Handler extractParameters() ile kendi çıkarımını yapar.
+     * Router seviyesinde sadece intent detection yapılır.
+     */
+    private function extractTalepCreateParameters(string $text): array
+    {
+        // Router seviyesinde sadece intent flag döner.
+        // Gerçek parametre çıkarımı TalepCreateIntentHandler::extractParameters()'da yapılır.
+        return [];
     }
 }

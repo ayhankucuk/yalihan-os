@@ -19,7 +19,8 @@ class IntentRouterParserTest extends TestCase
     {
         parent::setUp();
         $this->router = new IntentRouter(
-            $this->app->make(\App\Services\CommandCenter\Handlers\PropertySearchIntentHandler::class)
+            $this->app->make(\App\Services\CommandCenter\Handlers\PropertySearchIntentHandler::class),
+            $this->app->make(\App\Services\CommandCenter\Handlers\TalepCreateIntentHandler::class)
         );
     }
 
