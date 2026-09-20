@@ -14,7 +14,7 @@ supersedes: null
 # YALIHAN OS — Project Brain State
 
 <!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
-- **Repository Commit:** `e346660c7bbcf19f0e72929fa346ef835b7a3539` (HEAD) — RC2 Deployed & Verified
+- **Repository Commit:** `3fbd937d` (HEAD) — RC2 + Queue Routing Fix (`e346660c` → `3fbd937d`)
 - **Branch:** `release-candidate/RC2`
 - **Working Tree:** CLEAN
 - **Evidence Date:** 2026-09-20T09:30:00+03:00

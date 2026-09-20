@@ -2,6 +2,41 @@
 
 ---
 
+## [2026-09-20] NOTIFICATIONS_QUEUE_ROUTING_REMEDIATION_01
+
+**Task ID:** `NOTIFICATIONS_QUEUE_ROUTING_REMEDIATION_01`
+**Commit:** `3fbd937d` (`release-candidate/RC2`)
+**Human Decision Owner:** Ayhan
+**Finding:** `QUEUE_ROUTING_CONFIGURATION_MISMATCH` — production worker only consumed `default`, missing `notifications` and `concierge`
+**Evidence Level:** `REPO_VERIFIED · TEST_VERIFIED · PRODUCTION_VERIFIED`
+
+### Queue Inventory (Canonical)
+| Queue | Producers | Consumed by Worker? |
+|---|---|---|
+| `default` | 52 jobs (no explicit `onQueue`) | ✅ |
+| `notifications` | `SendNotificationJob`, `SendWhatsAppMessageJob`, `SendAccessCredentialJob` | ✅ NOW (was blackout) |
+| `concierge` | `ResolveWhatsAppInboundJob`, `ProcessGuestMessageJob` | ✅ NOW (was blackout) |
+| `high`, `reports`, `ranking`, `projections`, `cortex-notifications` | Various | ❌ Separate activation tasks |
+| BC001 / Copilot / Hermes / Events | Various | ❌ Separate activation tasks |
+
+### Fix
+- `docker-compose.production.yml` line 146: `--queue=default` → `--queue=default,notifications,concierge`
+- `tests/Feature/Queue/QueueRoutingRegressionTest.php`: NEW — regression guard
+
+### Regression Guard
+- `test_production_worker_consumes_all_production_verified_queues`: fails if `notifications` or `concierge` missing from worker
+- `test_worker_queue_flag_is_valid_yaml`: validates queue name syntax
+- `test_known_explicit_job_queues_are_represented`: fails on unknown unconsumed queues (bounded skip-list documented)
+
+### Recommended Production Action
+```bash
+# After RC2+1 deploy (Ayhan gates)
+ssh ayhan@157.180.116.63
+docker compose -f /opt/yalihan-os/docker-compose.production.yml restart yalihanai-queue-v2
+```
+
+---
+
 ## [2026-09-20] RC2_PRODUCTION_RELEASE_VERIFICATION
 
 **Session:** RC2_PRODUCTION_INDEPENDENT_VERIFY_04
