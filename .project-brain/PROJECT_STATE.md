@@ -14,11 +14,11 @@ supersedes: null
 # YALIHAN OS — Project Brain State
 
 <!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
-- **Repository Commit:** `3fbd937d` (HEAD) — RC2 + Queue Routing Fix (`e346660c` → `3fbd937d`)
+- **Repository Commit:** `4074a27b` (HEAD) — SMS Fail-Closed Remediation (`429023be` → `4074a27b`)
 - **Branch:** `release-candidate/RC2`
-- **Working Tree:** CLEAN
-- **Evidence Date:** 2026-09-20T09:30:00+03:00
-- **Evidence Level:** `PRODUCTION_VERIFIED` — RC2 Deployed to Production Host 157.180.116.63 (`RC2_PRODUCTION_INDEPENDENT_VERIFY_04` = PASS)
+- **Working Tree:** CLEAN (tracked)
+- **Evidence Date:** 2026-09-20T14:54:00+03:00
+- **Evidence Level:** `PRODUCTION_VERIFIED` — SMS Fake-Success Defect Deployed & Verified on Production Host 157.180.116.63 (`SMS_FAIL_CLOSED_PRODUCTION_DEPLOY_05` = PASS)
 - **Production Status:** `PRODUCTION_VERIFIED`
 - **Migration Ledger:** Clean / 0 Pending Migrations
 <!-- ───────────────────────────────────────────────────────────── -->
@@ -39,6 +39,8 @@ Authority: repository + explicit production evidence
   - `Action Center Runtime`: `PRODUCTION_VERIFIED` (`ActionCenterService` bound & healthy)
   - `TalepCreate Runtime Code`: `PRODUCTION_VERIFIED` (`TalepCreateIntentHandler` & 4-state missing data atomicity verified)
   - `TalepCreate Business Workflow`: `UNKNOWN` (by design; synthetic production client creation skipped)
+  - `SMS Fake-Success Defect`: `CLOSED / PRODUCTION_VERIFIED` (Commit `4074a27b` · `NotificationService` returns `success => false`)
+  - `Real SMS Capability`: `NOT_IMPLEMENTED` (by design; provider activation blocked pending credential authorization)
 - **Container Infrastructure Health:** All containers healthy (`yalihanai-app-v2`, `yalihanai-nginx-v2`, `yalihanai-queue-v2`). Health endpoint `https://yalihanemlak.com.tr/api/health` HTTP 200 `{"status":"ok","environment":"production"}`.
 - **Recovery Artifacts Preserved:**
   - Worktree evidence archive: `/opt/yalihan2026/worktree_archives/dirty_worktree_evidence_20260920_054857.tar.gz` (195 MB)
