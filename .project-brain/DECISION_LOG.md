@@ -4,6 +4,26 @@ Mimari kararlar, bypass理由 ve kapsam değişiklikleri bu dosyada kaydedilir.
 
 ---
 
+## Karar #007 — 2026-09-20
+
+**Konu:** RC2 Production Release Closure
+
+**Gerekçe:**
+- 107 commitlik RC2 production release'i `e346660c` commit'inde tamamlandı
+- Bounded migration-contract remediation (`2026_09_06_000001_add_ilceler_il_id_foreign_key.php`) independently verified (`PASS`)
+- 4 adet release migration sorunsuz çalıştı
+- Bağımsız READ-ONLY production verification (`RC2_PRODUCTION_INDEPENDENT_VERIFY_04`) tüm kapılarda PASS verdi
+
+**Karar:**
+- RC2 release `CLOSED` ve production `PRODUCTION_VERIFIED` olarak mühürlendi
+- `ilceler.il_id` FK canonical `CASCADE` policy korundu
+- TalepCreate business workflow `UNKNOWN` kalarak kapatıldı (production'a sentetik veri yazılmadı)
+- ADR #006 ve mevcut anayasa kararları korundu
+
+**Sahip:** Primary Session (Ayhan onayıyla)
+
+---
+
 ## Karar #001 — 2026-09-06
 
 **Konu:** Context Cache Manager Skill Oluşturulması

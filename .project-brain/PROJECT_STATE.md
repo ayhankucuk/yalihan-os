@@ -14,17 +14,35 @@ supersedes: null
 # YALIHAN OS — Project Brain State
 
 <!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
-- **Repository Commit:** `e8a90cda` (HEAD) — RC2 dirty tree fully cleaned, 3 hygiene skills added
+- **Repository Commit:** `e346660c7bbcf19f0e72929fa346ef835b7a3539` (HEAD) — RC2 Deployed & Verified
 - **Branch:** `release-candidate/RC2`
-- **Working Tree:** DIRTY — 2 dosya değişti (`app/Repositories/IlanRepository.php`, `docs/BEKCI_CHANGELOG.md`)
-- **Evidence Date:** 2026-09-14T14:00:00+03:00
-- **Evidence Level:** `TEST_VERIFIED` — `admin/ilanlar` zero-results root cause: `backedEnum + groupBy` + `TenantScope whereRaw('1=0')` — both layers fixed
-- **admin/ilanlar Fix:** `IlanService` stat sorguları → `DB::table()` facade + `CAST(yayin_durumu AS CHAR)`, `IlanRepository` → `withoutGlobalScopes()` + explicit `tenant_id`
-- **Production Authorization:** BACKFILL + FAIL_CLOSED AUTHORIZED (OPERATOR/Saab 2026-09-08)
-- **Production Authorization:** `NONE (Read-Only Gate)`
+- **Working Tree:** CLEAN
+- **Evidence Date:** 2026-09-20T09:30:00+03:00
+- **Evidence Level:** `PRODUCTION_VERIFIED` — RC2 Deployed to Production Host 157.180.116.63 (`RC2_PRODUCTION_INDEPENDENT_VERIFY_04` = PASS)
+- **Production Status:** `PRODUCTION_VERIFIED`
+- **Migration Ledger:** Clean / 0 Pending Migrations
 <!-- ───────────────────────────────────────────────────────────── -->
 
 Authority: repository + explicit production evidence
+
+## Active Production Release — RC2 Release Closure (2026-09-20)
+
+- **Release Status:** `RC2_STATUS: CLOSED`
+- **Production HEAD Commit:** `e346660c7bbcf19f0e72929fa346ef835b7a3539`
+- **Independent Verification:** `PASS` (`RC2_PRODUCTION_INDEPENDENT_VERIFY_04`)
+- **Evidence Levels & Statuses:**
+  - `V2 Users Security`: `PRODUCTION_VERIFIED` (Tenant isolation enforced, HTTP 401 verified)
+  - `ilceler FK Canonical CASCADE`: `PRODUCTION_VERIFIED` (`ilceler_il_id_foreign` ON DELETE CASCADE, 0 orphans)
+  - `AI/N8n Schema Compatibility`: `PRODUCTION_VERIFIED` (`ai_messages`, `ai_contract_drafts`, `ai_ilan_taslaklari`, `ai_conversations` with `ulke_id`)
+  - `Command Center Runtime`: `PRODUCTION_VERIFIED` (`CommandGateway` & `IntentRouter` active)
+  - `PropertySearch Runtime`: `PRODUCTION_VERIFIED` (`PropertySearchIntentHandler` active)
+  - `Action Center Runtime`: `PRODUCTION_VERIFIED` (`ActionCenterService` bound & healthy)
+  - `TalepCreate Runtime Code`: `PRODUCTION_VERIFIED` (`TalepCreateIntentHandler` & 4-state missing data atomicity verified)
+  - `TalepCreate Business Workflow`: `UNKNOWN` (by design; synthetic production client creation skipped)
+- **Container Infrastructure Health:** All containers healthy (`yalihanai-app-v2`, `yalihanai-nginx-v2`, `yalihanai-queue-v2`). Health endpoint `https://yalihanemlak.com.tr/api/health` HTTP 200 `{"status":"ok","environment":"production"}`.
+- **Recovery Artifacts Preserved:**
+  - Worktree evidence archive: `/opt/yalihan2026/worktree_archives/dirty_worktree_evidence_20260920_054857.tar.gz` (195 MB)
+  - Pre-RC2 DB backup: `/opt/yalihan2026/backups/backup_pre_rc2_20260920_054942.sql` (479 KB)
 
 ## Operating capability added
 
