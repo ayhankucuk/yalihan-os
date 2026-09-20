@@ -2,6 +2,65 @@
 
 ---
 
+## [2026-09-20] COMMAND_CENTER_TENANT_PROPAGATION_FIX_05
+
+**Task ID:** `COMMAND_CENTER_TENANT_PROPAGATION_FIX_05`
+**Fix Commit:** `eca179f8` (`release-candidate/RC2`)
+**Human Decision Owner:** Ayhan
+**Finding:** `TENANT_RUNTIME_PROPAGATION` — Telegram kullanıcısı bulunuyor ancak TenantContextService::setTenant() çağrılmıyordu
+**Evidence Level:** `TEST_VERIFIED`
+
+### Canonical Tenant Resolution (SetTenantContext Middleware ile AYNEN)
+- Channel: `Illuminate\Support\Facades\Cache::remember("tenant:{$user->tenant_id}", 300, fn() => Tenant::find($user->tenant_id))`
+- NOT: `User::tenant()` relationship doğrudan (lazy load) — middleware pattern kullanılır
+- Cache: 5 dakika, long-running worker'lar için memory-safe
+
+### Context Establishment
+- `CommandGateway::establishTenantContext(User $user)` — `resolveActor()` sonrası, `intentRouter->route()` öncesi
+- `TenantContextService::setTenant($tenant)` ile singleton state kurulur
+
+### Context Cleanup
+- `finally { $this->tenantContextService->clearTenant(); }` — her komut sonrası
+- Uzun ömürlü worker/runtime senaryosunda tenant sızıntısını önler
+
+### Fail-Closed Behavior
+- `$user->tenant_id` boş → `RuntimeException` + governance log
+- `Tenant::find()` null döner → `RuntimeException` + governance log
+- `TenantContextService::getTenant()` null durumunda → `RuntimeException`
+
+### Regression Guard (6 tests)
+- `test_resolve_actor_tenant_uses_canonical_mechanism` — Cache::remember + Tenant::find
+- `test_tenant_a_actor_receives_only_own_listings` — Tenant A EUR listings incl, Tenant B excl
+- `test_actor_without_tenant_id_fails_closed` — null tenant_id → RuntimeException
+- `test_actor_with_invalid_tenant_id_fails_closed` — Tenant::find() null → RuntimeException
+- `test_tenant_context_cannot_leak_between_actors` — Tenant A context → Tenant B context isolation
+- `test_context_is_cleared_after_successful_command` — hasTenant() = false after command
+
+### SECURITY INVARIANT VERIFIED
+```
+Telegram Actor A / Tenant A
+        ↓
+CommandGateway
+        ↓
+TenantContext = Tenant A  ✅ (establishTenantContext)
+        ↓
+IlanSearchService (fail-closed: tenant_id required)
+        ↓
+tenant_id = Tenant A  ✅
+Tenant B rows inaccessible  ✅
+```
+
+### Test Result
+```
+php artisan test --filter=CommandCenter
+PASS  Tests\Feature\CommandCenter\CommandGatewayTenantPropagationTest
+6 passed (26 assertions) — 9.10s
+
+FULL SUITE: 97 passed (273 assertions) — 112.99s
+```
+
+---
+
 ## [2026-09-20] NOTIFICATIONS_QUEUE_ROUTING_REMEDIATION_01
 
 **Task ID:** `NOTIFICATIONS_QUEUE_ROUTING_REMEDIATION_01`
