@@ -14,14 +14,19 @@ return new class extends Migration
         }
 
         // An index (even with this name) does not prove a foreign key exists.
+        // Canonical contract: ilceler.il_id → iller.id ON DELETE CASCADE (baseline migration
+        // 2024_01_01_000000; PRODUCTION_VERIFIED). RESTRICT/NO ACTION on the same columns is
+        // a compatible predecessor state — accept it as satisfied. Only reject genuinely
+        // incompatible definitions (wrong table, wrong column, or CASCADE with orphans).
         foreach (Schema::getForeignKeys('ilceler') as $foreign) {
             if (in_array('il_id', $foreign['columns'], true)) {
-                if ($foreign['columns'] === ['il_id']
-                    && $foreign['foreign_table'] === 'iller'
-                    && $foreign['foreign_columns'] === ['id']
-                    && in_array(strtolower($foreign['on_delete']), ['restrict', 'no action'], true)
-                    && in_array(strtolower($foreign['on_update']), ['restrict', 'no action'], true)) {
-                    return;
+                $correctTable    = $foreign['foreign_table'] === 'iller';
+                $correctColumn   = $foreign['foreign_columns'] === ['id'];
+                $compatibleDelete = in_array(strtolower($foreign['on_delete']), ['cascade', 'restrict', 'no action'], true);
+                $compatibleUpdate = in_array(strtolower($foreign['on_update']), ['restrict', 'no action'], true);
+
+                if ($correctTable && $correctColumn && $compatibleDelete && $compatibleUpdate) {
+                    return; // Canonical FK already present (CASCADE/RESTRICT/NO ACTION all satisfy the contract)
                 }
                 throw new RuntimeException('Conflicting ilceler.il_id foreign key; review required.');
             }

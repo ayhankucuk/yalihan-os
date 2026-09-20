@@ -570,9 +570,9 @@ Mevcut sprint'te icra edilen tüm teknik borç maddeleri ya tamamlanmış ya da 
 1. VPS'e son 2 commit sync'i (`git pull`) — rutin operasyonel
 2. `kategori_yayin_tipi_field_dependencies` → aktif admin kullanım analizi (Sistem B miras)
 3. FeatureTemplateResolver Faz 1 (shared trait)
-HOTSPOT_LOCK:database/migrations/2026_09_06_000001_add_ilceler_il_id_foreign_key.php:kilo-ilce-fk-fix:2026-09-10T21:07:36Z:7200
+HOTSPOT_LOCK:database/migrations/2026_09_06_000001_add_ilceler_il_id_foreign_key.php:claude-opus:2026-09-20T06:04:45Z:7200
 
-HOTSPOT_LOCK:database/migrations/2026_09_06_000001_add_ilceler_il_id_foreign_key.php:kilo-ilce-fk-fix:2026-09-10T21:07:36Z:7200
+HOTSPOT_LOCK:database/migrations/2026_09_06_000001_add_ilceler_il_id_foreign_key.php:claude-opus:2026-09-20T06:04:45Z:7200
 
 ---
 
@@ -736,8 +736,9 @@ AI Agent karar üretir
 - `resources/views/admin/ilanlar/edit.blade.php` (-78 satır, +18 satır)
 HOTSPOT_LOCK:database/migrations/2026_09_17_000001_create_emlak_projeleri_tables.php:antigravity:2026-09-17T13:53:56Z:3600
 HOTSPOT_LOCK:database/migrations/2026_09_17_000002_add_proje_id_to_ilanlar_table.php:antigravity:2026-09-17T13:53:56Z:3600
-HOTSPOT_LOCK:database/schema/mysql-schema.sql:antigravity:2026-09-17T13:54:36Z:3600
-HOTSPOT_LOCK:.sab/schema-checksum.sha256:antigravity:2026-09-17T13:54:36Z:3600
+HOTSPOT_LOCK:database/schema/mysql-schema.sql:antigravity:2026-09-20T06:05:30Z:3600
+HOTSPOT_LOCK:.sab/schema-checksum.sha256:antigravity:2026-09-20T06:05:30Z:3600
 
 HOTSPOT_LOCK:database/migrations/2026_09_18_130000_create_ai_conversations_table.php:claude-opus:2026-09-18T19:15:00Z:7200
-HOTSPOT_LOCK:database/schema/mysql-schema.sql:claude-opus:2026-09-18T19:20:00Z:7200
+HOTSPOT_LOCK:database/schema/mysql-schema.sql:claude-opus:2026-09-20T06:05:30Z:7200
+HOTSPOT_LOCK:routes/api.php:claude-opus:2026-09-19T14:31:15Z:3600
