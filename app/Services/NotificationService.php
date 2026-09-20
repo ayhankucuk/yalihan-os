@@ -94,7 +94,7 @@ class NotificationService
                 $results[$channel] = $this->sendToChannel($userId, $type, $data, $channel, $priority);
             }
 
-            LogService::stopTimer($timerId);
+            $durationMs = LogService::stopTimer($timerId);
 
             $this->logService->logCortexDecision('notification_sent', [
                 'user_id' => $userId,
@@ -102,7 +102,7 @@ class NotificationService
                 'channels' => $channels,
                 'priority' => $priority,
                 'results' => $results,
-                'duration_ms' => LogService::getElapsedTime($timerId),
+                'duration_ms' => $durationMs,
             ]);
 
             // Broadcast WebSocket event
@@ -115,7 +115,7 @@ class NotificationService
                 'user_id' => $userId,
                 'type' => $type, // context7-ignore
                 'channels' => $results,
-                'processing_time' => LogService::getElapsedTime($timerId),
+                'processing_time' => $durationMs,
             ];
         } catch (Exception $e) {
             LogService::stopTimer($timerId);
@@ -246,18 +246,23 @@ class NotificationService
         try {
             $user = User::find($userId);
 
-            if (! $user || ! $user->phone) {
+            $userPhone = $user->telefon ?? $user->phone ?? null;
+            if (! $user || ! $userPhone) {
                 return ['success' => false, 'error' => 'User phone not found'];
             }
 
             $smsProvider = config('services.sms.provider', 'netgsm');
             $message = $data['message'] ?? '';
 
-            // SMS API integration (placeholder)
-            // \App\Services\SMSService::send($user->phone, $message);
+            Log::warning('SMS notification skipped: provider transport missing or unconfigured', [
+                'user_id' => $userId,
+                'type' => $type, // context7-ignore
+                'provider' => $smsProvider,
+            ]);
 
             return [
-                'success' => true,
+                'success' => false,
+                'error' => 'SMS provider transport missing or unconfigured',
                 'provider' => $smsProvider,
                 'phone' => $user->phone,
             ];
