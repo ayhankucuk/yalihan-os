@@ -121,7 +121,7 @@ class QueueRoutingRegressionTest extends TestCase
 
         // BOUNDED: Only check the queues PRODUCTION_VERIFIED as active blackout gaps.
         // Do NOT fail on bc001-*, copilot-*, projections, etc. — those are separate tasks.
-        $productionVerifiedGaps = ['notifications', 'concierge'];
+        $productionVerifiedGaps = ['notifications', 'concierge', 'hermes'];
 
         $missing = array_diff($productionVerifiedGaps, $workerQueues);
 
@@ -162,8 +162,8 @@ class QueueRoutingRegressionTest extends TestCase
                 'copilot-verification', 'copilot-governance', 'copilot-high', 'copilot-default',
                 // CQRS / Intelligence — separate projection pipeline
                 'projections', 'ranking', 'cortex-notifications',
-                // Hermes — event-driven internal routing
-                'events', 'hermes',
+                // Hermes internal event routing — 'events' queue not yet consumed
+                'events',
                 // HIGH / REPORTS — priority & async reporting workloads
                 // Not in current production worker topology; separate activation task
                 'high', 'reports',
