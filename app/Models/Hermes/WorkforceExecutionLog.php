@@ -112,6 +112,35 @@ class WorkforceExecutionLog extends BaseModel
         return $this;
     }
 
+    /**
+     * Atomically transition this record from PENDING to RUNNING.
+     *
+     * Uses a conditional UPDATE (WHERE id = ? AND status = 'pending')
+     * so exactly one caller can win the claim under concurrent contention.
+     *
+     * @return int Rows affected: 1 on successful claim, 0 if the record
+     *             was already claimed, completed, failed, or skipped.
+     */
+    public function claimForRun(): int
+    {
+        $now = now();
+
+        $affected = static::query()
+            ->where('id', $this->id)
+            ->where('status', self::STATUS_PENDING)
+            ->update([
+                'status'     => self::STATUS_RUNNING,
+                'started_at' => $now,
+            ]);
+
+        if ($affected === 1) {
+            $this->status = self::STATUS_RUNNING;
+            $this->started_at = $now;
+        }
+
+        return $affected;
+    }
+
     public function markCompleted(array $outputPayload = []): self
     {
         $completedAt = now();
