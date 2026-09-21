@@ -2,6 +2,30 @@
 
 ---
 
+## [2026-09-21] HERMES_QUEUE_SERIALIZATION_PRODUCTION_DEPLOY_04
+
+**Task ID:** `HERMES_QUEUE_SERIALIZATION_PRODUCTION_DEPLOY_04`
+**Fix Commit:** `55d58edf5156a4632b2b0199451d6b437b11589b` (`release-candidate/RC2`)
+**Human Decision Owner:** Ayhan
+**Finding:** `[HERMES-QUEUE-OBJECT-GRAPH-SERIALIZATION-EXPLOSION]` — AsyncHandlerDispatchJob stores `$handlerClass` string instead of object instance
+**Evidence Level:** `PRODUCTION_VERIFIED`
+**Production Host:** `root@157.180.116.63` (`/opt/yalihan2026/current`)
+
+### Remediation Details:
+- `AsyncHandlerDispatchJob`: Constructor property changed from `public readonly HermesHandlerContract $handler` to `public readonly string $handlerClass`.
+- Runtime Handler Resolution: `handle()` resolves `$handlerClass` fresh from Laravel container (`app($handlerClass)`), validating `instanceof HermesHandlerContract`.
+- `HermesDispatcher`: Dispatches `$handlerClass` string FQCN.
+- `HermesReplayService`: Dispatches `get_class($handler)` string FQCN.
+- Serialized Payload Impact: Measured payload size drops from 966B to 326B (zero nested service graph objects in Redis payload).
+
+### Production Post-Deploy Verification:
+- Production HEAD: `55d58edf5156a4632b2b0199451d6b437b11589b` verified.
+- Code Invariant: `AsyncHandlerDispatchJob.php:49` has `public readonly string $handlerClass`.
+- Production Worker: `queue:work redis --queue=default,notifications,concierge` (strictly preserved, `hermes` worker not activated).
+- HTTP Health Check: `http://127.0.0.1/` -> HTTP 200 OK.
+
+---
+
 ## [2026-09-20] COMMAND_CENTER_TENANT_PROPAGATION_FIX_05
 
 **Task ID:** `COMMAND_CENTER_TENANT_PROPAGATION_FIX_05`
