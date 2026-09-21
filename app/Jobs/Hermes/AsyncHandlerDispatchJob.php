@@ -21,8 +21,14 @@ use Illuminate\Support\Facades\Log;
  * This decouples heavy agents (Drive, Photo, Description) from the synchronous
  * event chain, preventing one slow agent from blocking the entire pipeline.
  *
+ * IMPORTANT: The job stores only the handler FQCN string, NOT the resolved
+ * handler/service instance. The handler is resolved fresh from the Laravel
+ * container at execution time. This prevents serializing the entire service
+ * dependency graph into the queue payload (see HERMES-QUEUE-OBJECT-GRAPH-
+ * SERIALIZATION-EXPLOSION).
+ *
  * Usage:
- *   AsyncHandlerDispatchJob::dispatch($handler, $event)->onQueue('hermes');
+ *   AsyncHandlerDispatchJob::dispatch(DriveAgent::class, $event)->onQueue('hermes');
  *
  * The job is idempotent via hermes_event_log_id tracking — if the event
  * was already processed, the job is a no-op.
@@ -40,7 +46,7 @@ class AsyncHandlerDispatchJob implements ShouldQueue
     public array $backoff = [10, 60, 300]; // 10s, 1m, 5m
 
     public function __construct(
-        public readonly HermesHandlerContract $handler,
+        public readonly string $handlerClass,
         public readonly HermesEventContract $event,
         public readonly ?int $hermesEventLogId = null,
     ) {}
@@ -55,11 +61,18 @@ class AsyncHandlerDispatchJob implements ShouldQueue
 
     /**
      * Execute the job.
+     *
+     * The handler is resolved fresh from the container at execution time,
+     * ensuring all dependencies are properly injected and no stale service
+     * state is carried over from the dispatch-time object graph.
      */
-    public function handle(HermesRegistry $registry): void
+    public function handle(): void
     {
-        $handlerClass = get_class($this->handler);
-        $eventName   = $this->event->eventName();
+        $handlerClass = $this->handlerClass;
+        $eventName    = $this->event->eventName();
+
+        // Resolve the handler fresh from the container
+        $handler = $this->resolveHandler($handlerClass);
 
         // Skip if this handler was already processed for this event
         if ($this->hermesEventLogId) {
@@ -74,9 +87,9 @@ class AsyncHandlerDispatchJob implements ShouldQueue
 
             if ($alreadyDone) {
                 Log::info('[AsyncHandlerDispatchJob] Skipping — handler already succeeded', [
-                    'log_id'   => $this->hermesEventLogId,
-                    'handler'   => $handlerClass,
-                    'event'     => $eventName,
+                    'log_id'  => $this->hermesEventLogId,
+                    'handler' => $handlerClass,
+                    'event'   => $eventName,
                 ]);
                 return;
             }
@@ -86,12 +99,12 @@ class AsyncHandlerDispatchJob implements ShouldQueue
             'handler' => $handlerClass,
             'event'   => $eventName,
             'log_id'  => $this->hermesEventLogId,
-            'attempt'  => $this->attempts(),
+            'attempt' => $this->attempts(),
         ]);
 
         $startTime = microtime(true);
 
-        $result = $this->handler->handle($this->event);
+        $result = $handler->handle($this->event);
         $duration = round((microtime(true) - $startTime) * 1000, 2);
 
         Log::info('[AsyncHandlerDispatchJob] Completed', [
@@ -119,8 +132,8 @@ class AsyncHandlerDispatchJob implements ShouldQueue
      */
     public function failed(?\Throwable $exception): void
     {
-        $handlerClass = get_class($this->handler);
-        $eventName   = $this->event->eventName();
+        $handlerClass = $this->handlerClass;
+        $eventName    = $this->event->eventName();
 
         Log::error('[AsyncHandlerDispatchJob] Permanently failed', [
             'handler' => $handlerClass,
@@ -153,8 +166,32 @@ class AsyncHandlerDispatchJob implements ShouldQueue
         return sprintf(
             '%s-%s-%s',
             $this->hermesEventLogId ?? 'no-log',
-            get_class($this->handler),
+            $this->handlerClass,
             $this->event->eventName()
         );
+    }
+
+    /**
+     * Resolve a handler from the Laravel container and verify it implements HermesHandlerContract.
+     *
+     * @throws \RuntimeException if the resolved object does not implement HermesHandlerContract
+     */
+    private function resolveHandler(string $handlerClass): HermesHandlerContract
+    {
+        if (!class_exists($handlerClass)) {
+            throw new \RuntimeException(
+                "[AsyncHandlerDispatchJob] Handler class does not exist: {$handlerClass}"
+            );
+        }
+
+        $handler = app($handlerClass);
+
+        if (!$handler instanceof HermesHandlerContract) {
+            throw new \RuntimeException(
+                "[AsyncHandlerDispatchJob] Resolved handler does not implement HermesHandlerContract: {$handlerClass}"
+            );
+        }
+
+        return $handler;
     }
 }

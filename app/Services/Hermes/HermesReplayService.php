@@ -84,7 +84,8 @@ class HermesReplayService
 
         foreach ($handlers as $handler) {
             if ($handler->isAsync()) {
-                AsyncHandlerDispatchJob::dispatch($handler, $event, $original->id)
+                // Pass handler FQCN string — handler resolved fresh at execution time
+                AsyncHandlerDispatchJob::dispatch(get_class($handler), $event, $original->id)
                     ->onQueue('hermes');
             }
         }
@@ -162,7 +163,8 @@ class HermesReplayService
         $handlers = $this->registry->getHandlers($hermesLog->event_name);
         $handler  = collect($handlers)->first(fn($h) => get_class($h) === $handlerClass);
 
-        AsyncHandlerDispatchJob::dispatch($handler, $event, $hermesEventLogId)
+        // Pass handler FQCN string — handler resolved fresh at execution time
+        AsyncHandlerDispatchJob::dispatch($handlerClass, $event, $hermesEventLogId)
             ->onQueue('hermes');
 
         Log::info('[HermesReplay] Async handler retry dispatched', [

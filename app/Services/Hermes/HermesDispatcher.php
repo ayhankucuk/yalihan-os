@@ -93,7 +93,8 @@ class HermesDispatcher
         ]);
 
         // Track exec log ID for the job to update
-        AsyncHandlerDispatchJob::dispatch($handler, $event, $hermesEventLogId)
+        // Pass handler FQCN string — handler resolved fresh at execution time
+        AsyncHandlerDispatchJob::dispatch($handlerClass, $event, $hermesEventLogId)
             ->onQueue('hermes');
 
         Log::info('[HermesDispatcher] Async handler queued', [
