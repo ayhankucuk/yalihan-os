@@ -61,6 +61,25 @@ class WorkforceExecutionLog extends BaseModel
     public const STATUS_FAILED = 'failed';
     public const STATUS_SKIPPED = 'skipped';
 
+    // ─── Lease Contract ────────────────────────────────────────────────
+    //
+    // A RUNNING record is not proof that a worker is alive. It is proof
+    // that a worker successfully claimed the record at `started_at`. The
+    // claim is only considered VALID until `started_at + LEASE_DURATION`.
+    // Beyond that window, the claim is considered STALE and any worker
+    // may atomically re-claim it via `reclaimIfStale()`.
+    //
+    // Derivation (see AsyncHandlerDispatchJob for authority):
+    //   - $timeout = 300s (max legitimate single-handler wall-clock)
+    //   - LEASE_DURATION = 2 * $timeout = 600s (100% safety margin)
+    //   - $uniqueFor  = 1800s (queue unique-lock TTL) > LEASE_DURATION,
+    //     so lease expiry is reachable within the unique-lock window.
+    //
+    // This constant is deliberately colocated with the state constants
+    // because it is a first-class property of the execution state
+    // machine, not a queue-layer concern.
+    public const LEASE_DURATION_SECONDS = 600;
+
     // ─── Scopes ────────────────────────────────────────────────────────
 
     public function scopeTenant($query, ?int $tenantId)
@@ -139,6 +158,92 @@ class WorkforceExecutionLog extends BaseModel
         }
 
         return $affected;
+    }
+
+    /**
+     * Atomically re-claim a STALE RUNNING record.
+     *
+     * A RUNNING record whose `started_at` is older than LEASE_DURATION_SECONDS
+     * is treated as abandoned (owner crashed, worker OOM-killed, network
+     * partition, etc.). This method attempts to refresh the lease by
+     * setting `started_at = now()` under a single conditional UPDATE:
+     *
+     *   UPDATE ... SET started_at = NOW()
+     *   WHERE id = ?
+     *     AND status = 'running'
+     *     AND started_at <= NOW() - LEASE_DURATION_SECONDS
+     *
+     * Because the compare-and-set is atomic on the row, exactly one caller
+     * can win the reclaim under concurrent recovery contention. Losers
+     * observe affected = 0 and back off.
+     *
+     * IMPORTANT: This does NOT change `status`. The record stays RUNNING;
+     * only its lease anchor moves forward. This preserves the existing
+     * duration-measurement contract (markCompleted / markFailed compute
+     * duration from `started_at`) — after a reclaim, that duration reflects
+     * the RECOVERED handler run, not the abandoned one.
+     *
+     * @return int Rows affected: 1 on successful reclaim, 0 if the lease
+     *             was still live, another worker reclaimed first, or the
+     *             record transitioned to a terminal state in the interim.
+     */
+    public function reclaimIfStale(): int
+    {
+        $now    = now();
+        $cutoff = $now->copy()->subSeconds(self::LEASE_DURATION_SECONDS);
+
+        $affected = static::query()
+            ->where('id', $this->id)
+            ->where('status', self::STATUS_RUNNING)
+            ->where('started_at', '<=', $cutoff)
+            ->update([
+                'started_at' => $now,
+            ]);
+
+        if ($affected === 1) {
+            $this->started_at = $now;
+        }
+
+        return $affected;
+    }
+
+    /**
+     * Compute remaining lease seconds for a RUNNING record.
+     *
+     * Returns 0 if the lease has already expired or `started_at` is null.
+     * Never returns a negative value — the return can be used directly as
+     * a queue release() delay without further bounds checking.
+     */
+    public function remainingLeaseSeconds(): int
+    {
+        if ($this->started_at === null) {
+            return 0;
+        }
+
+        // Direct integer arithmetic on Unix timestamps to avoid Carbon
+        // 2.x/3.x signed-diff behavior differences.
+        $expiresAtTs = $this->started_at->copy()
+            ->addSeconds(self::LEASE_DURATION_SECONDS)
+            ->getTimestamp();
+        $remaining   = $expiresAtTs - now()->getTimestamp();
+
+        return $remaining > 0 ? $remaining : 0;
+    }
+
+    /**
+     * Whether the current in-memory `started_at` anchor indicates an
+     * expired lease. Snapshot check only — production code paths must
+     * still guard concurrent race conditions via `reclaimIfStale()`.
+     */
+    public function isLeaseExpired(): bool
+    {
+        if ($this->started_at === null) {
+            return true;
+        }
+
+        return $this->started_at->copy()
+            ->addSeconds(self::LEASE_DURATION_SECONDS)
+            ->lte(now());
     }
 
     public function markCompleted(array $outputPayload = []): self

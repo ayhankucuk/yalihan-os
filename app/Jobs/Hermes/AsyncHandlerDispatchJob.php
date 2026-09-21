@@ -44,11 +44,32 @@ use Illuminate\Support\Facades\Log;
  *   already been picked up by another worker or reached a terminal state,
  *   and this job exits without invoking the handler again.
  *
+ * OWNERSHIP LEASE (TASK: HERMES_ASYNC_RUNNING_LEASE_REMEDIATION_04):
+ *   A RUNNING record is NOT proof that a worker is alive. It is proof that
+ *   a worker claimed the record at `started_at`. That claim is considered
+ *   VALID for WorkforceExecutionLog::LEASE_DURATION_SECONDS. Beyond that
+ *   window it is STALE and eligible for atomic re-claim via
+ *   `reclaimIfStale()`. This closes HERMES-ASYNC-RUNNING-STATE-RETRY-
+ *   SUPPRESSION: a worker crash between claim and completion no longer
+ *   permanently strands the execution.
+ *
+ *   Retry choreography:
+ *     - Live lease (owner may still be alive)
+ *         → release the queue job with a bounded delay so the retry fires
+ *           after the lease could have expired. Handler is NOT invoked.
+ *     - Expired lease (owner is presumed dead)
+ *         → atomic reclaim (compare-and-set on `started_at`). On success
+ *           the handler runs; on failure another worker beat us.
+ *
  * QUEUE-LEVEL UNIQUENESS:
  *   Implements ShouldBeUnique so the queue driver rejects a duplicate
  *   dispatch of the same logical execution (same hermesEventLogId +
  *   handlerClass + event) while an earlier instance is still in flight.
  *   Complements but does not replace the DB-side atomic claim above.
+ *
+ *   Ordering constraint: LEASE_DURATION_SECONDS (600s) < $uniqueFor
+ *   (1800s). The DB lease MUST be shorter than the queue unique-lock TTL
+ *   so lease-driven recovery is reachable before the unique lock expires.
  *
  * EXTERNAL SIDE-EFFECT NON-ATOMICITY (SEPARATE FINDING):
  *   External side effects (e.g., Telegram HTTP calls inside handlers) are
@@ -102,8 +123,10 @@ class AsyncHandlerDispatchJob implements ShouldBeUnique, ShouldQueue
      *      WorkforceExecutionLog and branch on its status:
      *        - COMPLETED / SKIPPED → idempotent no-op
      *        - FAILED              → terminal, do not re-run
-     *        - RUNNING             → another worker owns the claim, skip
-     *        - PENDING             → atomic claim then execute
+     *        - RUNNING + live lease   → release job for retry after lease
+     *                                  expiry (handler NOT invoked)
+     *        - RUNNING + stale lease  → atomic reclaim → execute (recovery)
+     *        - PENDING             → atomic claim → execute
      *   3. If untracked (hermesEventLogId null), execute without lifecycle
      *      transitions. This path exists for legacy/test dispatch only;
      *      production dispatch always passes a log id.
@@ -141,6 +164,11 @@ class AsyncHandlerDispatchJob implements ShouldBeUnique, ShouldQueue
             return;
         }
 
+        // Track whether this invocation owns the execution slot (either via
+        // fresh PENDING claim OR via stale-lease reclaim). Only owners run
+        // the handler.
+        $ownsExecution = false;
+
         switch ($execLog->status) {
             case WorkforceExecutionLog::STATUS_COMPLETED:
             case WorkforceExecutionLog::STATUS_SKIPPED:
@@ -161,17 +189,62 @@ class AsyncHandlerDispatchJob implements ShouldBeUnique, ShouldQueue
                 return;
 
             case WorkforceExecutionLog::STATUS_RUNNING:
-                // Another worker is already running the handler for this
-                // execution record. Do not invoke the handler concurrently.
-                Log::warning('[AsyncHandlerDispatchJob] Skipping — execution record already RUNNING under another worker', [
-                    'log_id'  => $this->hermesEventLogId,
-                    'handler' => $handlerClass,
-                    'event'   => $eventName,
+                // A RUNNING record indicates a prior claim at $execLog->started_at.
+                // That claim is honored only until it exceeds LEASE_DURATION_SECONDS.
+                //
+                //   - Live lease  → treat as "another worker may still be alive";
+                //                   release the job back to the queue with a delay
+                //                   that lets the lease plausibly expire before
+                //                   the retry pops. Handler is NOT invoked.
+                //   - Expired lease → attempt atomic reclaim; on success we own
+                //                   the execution slot and run the handler.
+                if ($execLog->isLeaseExpired()) {
+                    $reclaimed = $execLog->reclaimIfStale();
+
+                    if ($reclaimed !== 1) {
+                        Log::warning('[AsyncHandlerDispatchJob] Lost stale reclaim — another worker recovered first', [
+                            'log_id'  => $this->hermesEventLogId,
+                            'handler' => $handlerClass,
+                            'event'   => $eventName,
+                        ]);
+                        return;
+                    }
+
+                    Log::warning('[AsyncHandlerDispatchJob] Reclaimed stale RUNNING record — running recovery attempt', [
+                        'log_id'  => $this->hermesEventLogId,
+                        'handler' => $handlerClass,
+                        'event'   => $eventName,
+                        'attempt' => $this->attempts(),
+                    ]);
+
+                    $ownsExecution = true;
+                    break;
+                }
+
+                // Live lease: postpone the retry until after the lease could
+                // expire. `release()` re-queues the same job with the given
+                // delay; it counts against $tries. If $tries is exhausted
+                // before the lease actually expires, failed() will finalize
+                // the record to FAILED. `release()` is a no-op when
+                // $this->job is not bound (unit-test invocation of handle()).
+                $delaySeconds = max(
+                    $execLog->remainingLeaseSeconds() + 10,
+                    30
+                );
+
+                Log::info('[AsyncHandlerDispatchJob] Live lease detected — releasing job for retry after lease expiry', [
+                    'log_id'          => $this->hermesEventLogId,
+                    'handler'         => $handlerClass,
+                    'event'           => $eventName,
+                    'delay_seconds'   => $delaySeconds,
+                    'started_at'      => $execLog->started_at?->toIso8601String(),
                 ]);
+
+                $this->release($delaySeconds);
                 return;
 
             case WorkforceExecutionLog::STATUS_PENDING:
-                // Fall through to atomic claim + execution.
+                // Fall through to atomic PENDING → RUNNING claim.
                 break;
 
             default:
@@ -184,15 +257,18 @@ class AsyncHandlerDispatchJob implements ShouldBeUnique, ShouldQueue
                 return;
         }
 
-        // Atomic PENDING → RUNNING claim. Exactly one worker wins.
-        $claimed = $execLog->claimForRun();
-        if ($claimed !== 1) {
-            Log::warning('[AsyncHandlerDispatchJob] Lost claim — another worker transitioned the record first', [
-                'log_id'  => $this->hermesEventLogId,
-                'handler' => $handlerClass,
-                'event'   => $eventName,
-            ]);
-            return;
+        // PENDING path only: perform the atomic first-claim. The stale-reclaim
+        // path above already transitioned the record and set $ownsExecution.
+        if (!$ownsExecution) {
+            $claimed = $execLog->claimForRun();
+            if ($claimed !== 1) {
+                Log::warning('[AsyncHandlerDispatchJob] Lost claim — another worker transitioned the record first', [
+                    'log_id'  => $this->hermesEventLogId,
+                    'handler' => $handlerClass,
+                    'event'   => $eventName,
+                ]);
+                return;
+            }
         }
 
         Log::info('[AsyncHandlerDispatchJob] Processing', [
