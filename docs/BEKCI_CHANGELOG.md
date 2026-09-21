@@ -1,3 +1,31 @@
+## Oturum 194 — 2026-09-21 | Hermes Queue Consumer Production Activation
+
+**Task ID:** `HERMES_QUEUE_CONSUMER_PRODUCTION_DEPLOY_04`
+**Finding:** `HERMES-QUEUE-NOT-CONSUMED-IN-PRODUCTION`
+**Durum:** KAPATILDI / PRODUCTION_VERIFIED ✅
+**Commit:** `49c92f60154baf9be610623a7be8bb17df2ac037` (`release-candidate/RC2`)
+
+Hermes asenkron kuyruk tüketicisi canlı sunucuda devreye alındı ve doğrusal çalışma zamanı kanıtlandı:
+
+1. **SSOT Konfigürasyon Güncellemesi (`docker-compose.production.yml`)**:
+   - `yalihanai-queue-v2` servis komutu `--queue=default,notifications,concierge,hermes` olarak güncellendi.
+   - Kuyruk sırası (`default` → `notifications` → `concierge` → `hermes`) ve parametreler (`--timeout=60`, `--tries=3`, `--sleep=3`, `--max-time=3600`) aynen korundu.
+
+2. **Konteyner Yeniden Oluşturma & Çalışma Zamanı Doğrulaması**:
+   - Canlı sunucuda (`root@157.180.116.63`) `yalihanai-queue-v2` konteyneri `docker compose up -d --no-deps` ile yeniden oluşturuldu.
+   - `docker inspect` ile konteynerin etkin komut dizisinde `hermes` kuyruğunun yer aldığı ve konteyner sağlık durumunun `"healthy"` olduğu doğrulandı.
+
+3. **Gözlem & Sağlık**:
+   - `queues:hermes` uzunluğu = 0 (temiz). Hata alan Hermes job'ı yok. HTTP 200 OK.
+
+```
+KALİTE KAPISI:  Full Gate PASS ✅
+TESTLER:        19/19 PASS (Feature Queue Contract + Unit Serialization)
+DURUM:          HERMES-QUEUE-NOT-CONSUMED-IN-PRODUCTION KAPATILDI / PRODUCTION_VERIFIED ✅
+```
+
+---
+
 ## Oturum 193 — 2026-09-21 | Hermes Queue Serialization Remediation & Production Deployment
 
 **Task ID:** `HERMES_QUEUE_SERIALIZATION_PRODUCTION_DEPLOY_04`

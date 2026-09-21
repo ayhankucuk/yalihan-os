@@ -14,11 +14,11 @@ supersedes: null
 # YALIHAN OS — Project Brain State
 
 <!-- YALIHAN OS — ENGINEERING PROTOCOL HEADER -->
-- **Repository Commit:** `55d58edf` (HEAD) — Hermes Queue Object Graph Serialization Fix (`cc94a0a8` → `55d58edf`)
+- **Repository Commit:** `49c92f60` (HEAD) — Hermes Queue Consumer Worker Activation (`b5d7f433` → `49c92f60`)
 - **Branch:** `release-candidate/RC2`
 - **Working Tree:** CLEAN (tracked)
-- **Evidence Date:** 2026-09-21T11:37:00+03:00
-- **Evidence Level:** `PRODUCTION_VERIFIED` — Hermes Serialization Fix Deployed & Verified on Production Host 157.180.116.63 (`HERMES_QUEUE_SERIALIZATION_PRODUCTION_DEPLOY_04` = PASS)
+- **Evidence Date:** 2026-09-21T23:03:00+03:00
+- **Evidence Level:** `PRODUCTION_VERIFIED` — Hermes Queue Worker Consumer Activated & Verified on Production Host 157.180.116.63 (`HERMES_QUEUE_CONSUMER_PRODUCTION_DEPLOY_04` = PASS)
 - **Production Status:** `PRODUCTION_VERIFIED`
 - **Migration Ledger:** Clean / 0 Pending Migrations
 <!-- ───────────────────────────────────────────────────────────── -->
@@ -28,8 +28,8 @@ Authority: repository + explicit production evidence
 ## Active Production Release — RC2 Release Closure (2026-09-20)
 
 - **Release Status:** `RC2_STATUS: CLOSED`
-- **Production HEAD Commit:** `55d58edf5156a4632b2b0199451d6b437b11589b`
-- **Independent Verification:** `PASS` (`HERMES_QUEUE_SERIALIZATION_VERIFY_03` & `HERMES_QUEUE_SERIALIZATION_PRODUCTION_DEPLOY_04`)
+- **Production HEAD Commit:** `49c92f60154baf9be610623a7be8bb17df2ac037`
+- **Independent Verification:** `PASS` (`HERMES_QUEUE_CONSUMER_VERIFY_03` & `HERMES_QUEUE_CONSUMER_PRODUCTION_DEPLOY_04`)
 - **Evidence Levels & Statuses:**
   - `V2 Users Security`: `PRODUCTION_VERIFIED` (Tenant isolation enforced, HTTP 401 verified)
   - `ilceler FK Canonical CASCADE`: `PRODUCTION_VERIFIED` (`ilceler_il_id_foreign` ON DELETE CASCADE, 0 orphans)
@@ -42,7 +42,7 @@ Authority: repository + explicit production evidence
   - `SMS Fake-Success Defect`: `CLOSED / PRODUCTION_VERIFIED` (Commit `4074a27b` · `NotificationService` returns `success => false`)
   - `Real SMS Capability`: `NOT_IMPLEMENTED` (by design; provider activation blocked pending credential authorization)
   - `Hermes Serialization Explosion`: `CLOSED / PRODUCTION_VERIFIED` (Commit `55d58edf` · `AsyncHandlerDispatchJob` stores `$handlerClass` string; zero object graph serialization)
-  - `Hermes Queue Worker Consumption`: `NOT_CONSUMED_IN_PRODUCTION` (by design; worker listens to `default,notifications,concierge` — pending dedicated task)
+  - `Hermes Queue Worker Consumption`: `CLOSED / PRODUCTION_VERIFIED` (Commit `49c92f60` · Container `yalihanai-queue-v2` recreated with `--queue=default,notifications,concierge,hermes`; effective runtime verified)
 - **Container Infrastructure Health:** All containers healthy (`yalihanai-app-v2`, `yalihanai-nginx-v2`, `yalihanai-queue-v2`). Health endpoint `https://yalihanemlak.com.tr/api/health` HTTP 200 `{"status":"ok","environment":"production"}`.
 - **Recovery Artifacts Preserved:**
   - Worktree evidence archive: `/opt/yalihan2026/worktree_archives/dirty_worktree_evidence_20260920_054857.tar.gz` (195 MB)

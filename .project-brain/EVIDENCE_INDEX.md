@@ -2,6 +2,30 @@
 
 ---
 
+## [2026-09-21] HERMES_QUEUE_CONSUMER_PRODUCTION_DEPLOY_04
+
+**Task ID:** `HERMES_QUEUE_CONSUMER_PRODUCTION_DEPLOY_04`
+**Fix Commit:** `49c92f60154baf9be610623a7be8bb17df2ac037` (`release-candidate/RC2`)
+**Human Decision Owner:** Ayhan
+**Finding:** `[HERMES-QUEUE-NOT-CONSUMED-IN-PRODUCTION]` — Connect production worker to established Hermes queue boundary
+**Evidence Level:** `PRODUCTION_VERIFIED`
+**Production Host:** `root@157.180.116.63` (`/opt/yalihan2026/current`)
+
+### Remediation & Activation Details:
+- SSOT Specification: `docker-compose.production.yml` updated line 146: `command: ["php", "artisan", "queue:work", "redis", "--queue=default,notifications,concierge,hermes", "--sleep=3", "--tries=3", "--timeout=60", "--max-time=3600"]`.
+- Container Recreation: `yalihanai-queue-v2` docker service recreated via `docker compose -f docker-compose.production.yml up -d --no-deps yalihanai-queue-v2`.
+- Effective Runtime Verified: `docker inspect yalihanai-queue-v2` confirms active container command contains `--queue=default,notifications,concierge,hermes`.
+- Queue Order Preserved: `default` -> `notifications` -> `concierge` -> `hermes`.
+- Container Health: `yalihanai-queue-v2` status transitions cleanly to `"healthy"`.
+
+### Production Post-Deploy Verification:
+- Production HEAD: `49c92f60154baf9be610623a7be8bb17df2ac037` verified.
+- Redis Queue Length: `queues:hermes` length = 0.
+- Failed Jobs: 0.
+- HTTP Health Check: `http://127.0.0.1/` -> HTTP 200 OK.
+
+---
+
 ## [2026-09-21] HERMES_QUEUE_SERIALIZATION_PRODUCTION_DEPLOY_04
 
 **Task ID:** `HERMES_QUEUE_SERIALIZATION_PRODUCTION_DEPLOY_04`
