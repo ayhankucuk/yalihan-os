@@ -171,6 +171,15 @@ class ActionAssignmentService
      * Filters to active, non-deleted users within the tenant.
      * Uses both Spatie Permission system and legacy role_id FK.
      *
+     * Active-user contract: uses the canonical HasActiveScope::scopeActive()
+     * mechanism via ->aktif(), which detects the correct active column for
+     * the underlying table. For the users table this resolves to
+     * `aktiflik_durumu = true` (see database/schema/mysql-schema.sql and the
+     * core baseline migration). The legacy `is_active` column does not exist
+     * in the users schema, so a direct `where('is_active', true)` was silently
+     * bypassed by any Schema::hasColumn-guarded predecessor and left inactive
+     * users eligible for auto-assignment.
+     *
      * @param int $tenantId
      * @param string $role Role slug: danisman | temizlik | admin
      * @return Collection<User>
@@ -178,12 +187,9 @@ class ActionAssignmentService
     public function getAvailableAgents(int $tenantId, string $role): Collection
     {
         $query = User::query()
+            ->aktif()
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at');
-
-        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'is_active')) {
-            $query->where('is_active', true);
-        }
 
         return $query->get()
             ->filter(fn(User $user) => $user->hasRole($role));

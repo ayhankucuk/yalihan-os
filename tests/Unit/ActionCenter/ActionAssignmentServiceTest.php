@@ -240,4 +240,72 @@ class ActionAssignmentServiceTest extends TestCase
         $this->assertCount(1, $agents);
         $this->assertEquals($agent->id, $agents->first()->id);
     }
+
+    // ── Regression: aktiflik_durumu contract (canonical active-user filter) ──
+    //
+    // Canonical schema (mysql-schema.sql, testing-schema.sql, runtime SQLite):
+    //   users.aktiflik_durumu tinyint(1) NOT NULL DEFAULT 1
+    //   users.is_active                   — DOES NOT EXIST
+    //
+    // Canonical domain mechanism: HasActiveScope::scopeActive() / scopeAktif()
+    // matches aktiflik_durumu = true (precedence step 2 for the users table).
+    //
+    // Pre-fix drift: getAvailableAgents() guarded its filter behind
+    //   Schema::hasColumn('users', 'is_active'), which always evaluates false
+    //   in the current schema, so no active-user filter is ever applied and
+    //   inactive users remain eligible for automatic assignment.
+
+    public function test_get_available_agents_excludes_inactive_user_via_aktiflik_durumu(): void
+    {
+        $activeAgent = User::factory()->create(['tenant_id' => $this->tenantId]);
+        $activeAgent->assignRole('danisman');
+
+        $inactiveAgent = User::factory()->create(['tenant_id' => $this->tenantId]);
+        $inactiveAgent->forceFill(['aktiflik_durumu' => false])->save();
+        $inactiveAgent->assignRole('danisman');
+
+        // Sanity: schema contract — canonical column exists, legacy is_active does not.
+        $schema = \Illuminate\Support\Facades\Schema::getConnection()->getSchemaBuilder();
+        $this->assertTrue($schema->hasColumn('users', 'aktiflik_durumu'));
+        $this->assertFalse($schema->hasColumn('users', 'is_active'));
+
+        // Sanity: fixture actually persisted as inactive.
+        $this->assertFalse((bool) $inactiveAgent->fresh()->aktiflik_durumu);
+
+        $agents = $this->service->getAvailableAgents($this->tenantId, 'danisman');
+
+        $this->assertTrue(
+            $agents->contains('id', $activeAgent->id),
+            'Active danisman must remain eligible for assignment.'
+        );
+        $this->assertFalse(
+            $agents->contains('id', $inactiveAgent->id),
+            'Inactive danisman (aktiflik_durumu=false) must NOT be returned by getAvailableAgents.'
+        );
+    }
+
+    public function test_auto_assign_round_robin_never_selects_inactive_user(): void
+    {
+        // Only one danisman exists in the tenant, and that danisman is inactive.
+        // With the drift, round-robin will still assign to the inactive user.
+        // With the canonical fix, no eligible agent exists → gorev returned unassigned.
+        $inactiveAgent = User::factory()->create(['tenant_id' => $this->tenantId]);
+        $inactiveAgent->forceFill(['aktiflik_durumu' => false])->save();
+        $inactiveAgent->assignRole('danisman');
+
+        $gorev = Gorev::factory()->create([
+            'tenant_id' => $this->tenantId,
+            'ilan_id' => null,
+            'gorev_tipi' => 'contact_lead_sla',
+            'gorev_durumu' => 'bekliyor',
+            'atanan_user_id' => null,
+        ]);
+
+        $result = $this->service->autoAssign($gorev);
+
+        $this->assertNull(
+            $result->fresh()->atanan_user_id,
+            'Round-robin auto-assign must never route a task to an inactive user.'
+        );
+    }
 }
