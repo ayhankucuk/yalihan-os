@@ -149,6 +149,59 @@
     .dark .c7-tbody tr:hover {
         @apply bg-gray-800;
     }
+
+    /* YALIHAN Search & Filter Components */
+    .custom-checkbox {
+        appearance: none;
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 1.5px solid #E8E2D8;
+        border-radius: 4px;
+        outline: none;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s;
+        flex-shrink: 0;
+        background-color: #FFFFFF;
+    }
+    .custom-checkbox:checked {
+        border-color: var(--navy, #0A1628);
+        background-color: var(--navy, #0A1628);
+    }
+    .custom-checkbox:checked::after {
+        content: '';
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(45deg);
+        width: 0.35rem;
+        height: 0.6rem;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+    }
+
+    .pill-btn {
+        transition: all 0.2s;
+    }
+    .pill-btn input:checked + span {
+        background-color: var(--navy, #0A1628);
+        color: white;
+        border-color: var(--navy, #0A1628);
+    }
+    .pill-btn input:not(:checked) + span {
+        background-color: #FFFFFF;
+        color: #0A1628;
+        border-color: #E8E2D8;
+    }
+
+    .view-btn {
+        display: flex; align-items: center; justify-content: center;
+        width: 40px; height: 40px; border-radius: 8px;
+        transition: all 0.15s; cursor: pointer; border: none;
+    }
+    .view-btn.active { background: #0A1628; color: #FFFFFF; }
+    .view-btn:not(.active) { background: transparent; color: #6B7280; }
+    .view-btn:not(.active):hover { background: #F8F6F1; color: #0A1628; }
 }
 
 /* Utility Layer */

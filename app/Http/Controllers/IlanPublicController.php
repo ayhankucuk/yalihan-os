@@ -122,24 +122,30 @@ class IlanPublicController extends Controller
             ->withCount(['ilanlar as ilan_sayisi' => function ($q) use ($aktifDurum) {
                 $q->where('yayin_durumu', $aktifDurum);
             }])
+            ->whereHas('ilanlar', function ($q) use ($aktifDurum) {
+                $q->where('yayin_durumu', $aktifDurum);
+            })
             ->with(['ilceler' => function ($q) use ($aktifDurum) {
                 $q->select(['id', 'il_id', 'ilce_adi'])
                   ->withCount(['ilanlar as ilan_sayisi' => function ($qq) use ($aktifDurum) {
                       $qq->where('yayin_durumu', $aktifDurum);
                   }])
+                  ->whereHas('ilanlar', function ($qq) use ($aktifDurum) {
+                      $qq->where('yayin_durumu', $aktifDurum);
+                  })
                   ->with(['mahalleler' => function ($m) use ($aktifDurum) {
                       $m->select(['id', 'ilce_id', 'mahalle_adi', 'display_order'])
                         ->withCount(['ilanlar as ilan_sayisi' => function ($mm) use ($aktifDurum) {
                             $mm->where('yayin_durumu', $aktifDurum);
                         }])
-                        ->having('ilan_sayisi', '>', 0)
+                        ->whereHas('ilanlar', function ($mm) use ($aktifDurum) {
+                            $mm->where('yayin_durumu', $aktifDurum);
+                        })
                         ->orderBy('display_order')
                         ->orderBy('mahalle_adi');
                   }])
-                  ->having('ilan_sayisi', '>', 0)
                   ->orderByDesc('ilan_sayisi');
             }])
-            ->having('ilan_sayisi', '>', 0)
             ->orderByDesc('ilan_sayisi')
             ->orderBy('il_adi')
             ->get();
@@ -163,7 +169,12 @@ class IlanPublicController extends Controller
                     $q->where('ana_kategori_id', $bodrumKategoriId);
                 }
             }])
-            ->having('ilan_sayisi', '>', 0)
+            ->whereHas('ilanlar', function ($q) use ($aktifDurum, $bodrumKategoriId) {
+                $q->where('yayin_durumu', $aktifDurum);
+                if ($bodrumKategoriId) {
+                    $q->where('ana_kategori_id', $bodrumKategoriId);
+                }
+            })
             ->orderBy('display_order')
             ->orderByDesc('ilan_sayisi')
             ->orderBy('mahalle_adi')
