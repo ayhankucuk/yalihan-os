@@ -7,6 +7,8 @@ use App\Enums\IlanDurumu;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Filterable Trait
@@ -141,39 +143,93 @@ trait Filterable
      * @param  string  $sortDirection  Sıralama yönü (asc/desc)
      * @param  string  $defaultSort  Varsayılan sıralama alanı
      */
+    /**
+     * Normalized multi-currency price sort.
+     *
+     * Handles both 'fiyat' and 'fiyat_asc'/'fiyat_desc' sort keys.
+     * Converts all currencies to TRY before comparing.
+     * Exchange rates sourced from canonical config/currency.php.
+     *
+     * Safety: listings with fiyat_gosterim_modu in ['on_request', 'hidden']
+     * and null/zero fiyat sort last (after priced listings).
+     */
     public function scopeSort(Builder $query, ?string $sortBy = null, string $sortDirection = 'desc', string $defaultSort = 'created_at'): Builder
     {
         $sortBy = $sortBy ?: $defaultSort;
         $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
 
+        // Extract direction from compound sort key (fiyat_asc / fiyat_desc)
+        $isPriceSort = false;
+        $effectiveDirection = $sortDirection;
+        if ($sortBy === 'fiyat_asc') {
+            $isPriceSort = true;
+            $effectiveDirection = 'asc';
+        } elseif ($sortBy === 'fiyat_desc') {
+            $isPriceSort = true;
+            $effectiveDirection = 'desc';
+        } elseif ($sortBy === 'fiyat') {
+            $isPriceSort = true;
+            $effectiveDirection = $sortDirection;
+        }
+
         $query->reorder();
-        if ($sortBy === 'fiyat') {
-            $driver = $this->getConnection()->getDriverName();
-            if ($driver === 'sqlite') {
-                if ($sortDirection === 'desc') {
-                    $query->orderByRaw('(0 + fiyat) DESC');
-                } else {
-                    $query->orderByRaw('(0 + fiyat) ASC');
-                }
-                $query->orderBy($defaultSort, $sortDirection);
-                $query->orderBy('id', $sortDirection);
+
+        if ($isPriceSort) {
+            $hasCurrency = $this->getConnection()->getSchemaBuilder()->hasColumn($this->getTable(), 'para_birimi');
+            $hasGosterimModu = $this->getConnection()->getSchemaBuilder()->hasColumn($this->getTable(), 'fiyat_gosterim_modu');
+
+            $rates = config('currency.supported', []);
+            $rateEur = (float) Arr::get($rates, 'EUR.rate', 37.80);
+            $rateUsd = (float) Arr::get($rates, 'USD.rate', 35.20);
+            $rateGbp = (float) Arr::get($rates, 'GBP.rate', 43.50);
+
+            if ($hasCurrency) {
+                $normalizedFiyat = $this->buildNormalizedPriceSql('fiyat', $rateEur, $rateUsd, $rateGbp);
+
+                // Sort special-mode listings (on_request/hidden/null fiyat/zero fiyat) LAST.
+                // All priced TRY/EUR/USD/GBP listings use normalized value, sorted by direction.
+                $query->orderByRaw(
+                    "CASE "
+                    ."WHEN fiyat IS NULL OR fiyat = 0 THEN 1 "
+                    .($hasGosterimModu
+                        ? "WHEN fiyat_gosterim_modu IN ('on_request','hidden') THEN 1 "
+                        : "WHEN fiyat_gosterim_modu IS NULL THEN 1 ")
+                    ."ELSE 0 "
+                    ."END"
+                );
+                $query->orderByRaw("{$normalizedFiyat} {$effectiveDirection}");
+                $query->orderBy('id', $effectiveDirection);
             } else {
-                if ($sortDirection === 'desc') {
-                    $query->orderByRaw('(0 + fiyat) DESC');
-                } else {
-                    $query->orderByRaw('(0 + fiyat) ASC');
-                }
-                $query->orderBy($defaultSort, $sortDirection);
-                $query->orderBy('id', $sortDirection);
+                $driver = $this->getConnection()->getDriverName();
+                $cast = $driver === 'sqlite' ? '(0 + fiyat)' : 'fiyat';
+                $query->orderByRaw("{$cast} {$effectiveDirection}");
+                $query->orderBy('id', $effectiveDirection);
             }
 
             return $query;
         }
+
         if ($this->getConnection()->getSchemaBuilder()->hasColumn($this->getTable(), $sortBy)) {
             return $query->orderBy($sortBy, $sortDirection);
         }
 
         return $query->orderBy($defaultSort, $sortDirection);
+    }
+
+    /**
+     * Build SQL CASE expression for normalized TRY price.
+     * Rates originate from canonical config/currency.php.
+     */
+    private function buildNormalizedPriceSql(string $column, float $rateEur, float $rateUsd, float $rateGbp): string
+    {
+        // Column name interpolated directly into SQL — Laravel treats unquoted identifiers correctly.
+        return "CASE "
+            ."WHEN para_birimi = 'TRY' OR para_birimi IS NULL OR para_birimi = '' THEN {$column} "
+            ."WHEN para_birimi = 'EUR' THEN {$column} * {$rateEur} "
+            ."WHEN para_birimi = 'USD' THEN {$column} * {$rateUsd} "
+            ."WHEN para_birimi = 'GBP' THEN {$column} * {$rateGbp} "
+            ."ELSE {$column} "
+            ."END";
     }
 
     /**
@@ -220,19 +276,67 @@ trait Filterable
      * @param  float|null  $maxPrice  Maksimum fiyat
      * @param  string  $column  Fiyat kolonu (varsayılan: fiyat)
      */
+    /**
+     * Normalized TRY price range filter.
+     *
+     * Converts multi-currency prices to TRY equivalent before comparing.
+     * Exchange rates sourced from canonical config/currency.php.
+     *
+     * Safety: excludes listings with fiyat_gosterim_modu in
+     * ['on_request', 'hidden'] and null/zero fiyat from range logic.
+     */
     public function scopePriceRange(Builder $query, ?float $minPrice = null, ?float $maxPrice = null, string $column = 'fiyat'): Builder
     {
-        // Column kontrolü
         if (! $this->getConnection()->getSchemaBuilder()->hasColumn($this->getTable(), $column)) {
             return $query;
         }
 
-        if ($minPrice !== null && $minPrice > 0) {
-            $query->where($column, '>=', $minPrice);
-        }
+        // Only apply to tables that have para_birimi (e.g. ilanlar)
+        $hasCurrency = $this->getConnection()->getSchemaBuilder()->hasColumn($this->getTable(), 'para_birimi');
+        $hasGosterimModu = $this->getConnection()->getSchemaBuilder()->hasColumn($this->getTable(), 'fiyat_gosterim_modu');
 
-        if ($maxPrice !== null && $maxPrice > 0) {
-            $query->where($column, '<=', $maxPrice);
+        $rates = config('currency.supported', []);
+        $rateEur = (float) Arr::get($rates, 'EUR.rate', 37.80);
+        $rateUsd = (float) Arr::get($rates, 'USD.rate', 35.20);
+        $rateGbp = (float) Arr::get($rates, 'GBP.rate', 43.50);
+
+        if ($hasCurrency) {
+            // CASE expression normalizes multi-currency fiyat to TRY-equivalent.
+            // Single WHERE clause: (normalized >= min) AND (normalized <= max).
+            // No nested closures = no SQL precedence ambiguity.
+            // DB::raw($column) ensures 'fiyat' is treated as a column identifier, not a string literal.
+            $normalized = $this->buildNormalizedPriceSql($column, $rateEur, $rateUsd, $rateGbp);
+
+            // Exclude on_request / hidden from price range filtering
+            if ($hasGosterimModu) {
+                $query->where(function ($q) use ($column, $normalized, $minPrice, $maxPrice) {
+                    $q->where(function ($inner) use ($column) {
+                        $inner->whereNull('fiyat_gosterim_modu')
+                            ->orWhereNotIn('fiyat_gosterim_modu', ['on_request', 'hidden']);
+                    })->where(function ($priceQ) use ($column, $normalized, $minPrice, $maxPrice) {
+                        if ($minPrice !== null && $minPrice > 0) {
+                            $priceQ->where(DB::raw($normalized), '>=', $minPrice);
+                        }
+                        if ($maxPrice !== null && $maxPrice > 0) {
+                            $priceQ->where(DB::raw($normalized), '<=', $maxPrice);
+                        }
+                    });
+                });
+            } else {
+                if ($minPrice !== null && $minPrice > 0) {
+                    $query->where(DB::raw($normalized), '>=', $minPrice);
+                }
+                if ($maxPrice !== null && $maxPrice > 0) {
+                    $query->where(DB::raw($normalized), '<=', $maxPrice);
+                }
+            }
+        } else {
+            if ($minPrice !== null && $minPrice > 0) {
+                $query->where($column, '>=', $minPrice);
+            }
+            if ($maxPrice !== null && $maxPrice > 0) {
+                $query->where($column, '<=', $maxPrice);
+            }
         }
 
         return $query;

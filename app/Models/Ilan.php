@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
@@ -1775,47 +1776,73 @@ class Ilan extends BaseModel
         return $query;
     }
 
+    /**
+     * Normalized multi-currency price sort.
+     *
+     * Handles 'fiyat', 'fiyat_asc', and 'fiyat_desc' sort keys.
+     * Converts TRY/EUR/USD/GBP to TRY-equivalent before comparing.
+     * Exchange rates sourced from canonical config/currency.php.
+     *
+     * Safety: listings with fiyat_gosterim_modu in ['on_request','hidden']
+     * and null/zero fiyat sort last (after priced listings).
+     */
     public function scopeSort(
         Builder $query,
         ?string $sortBy = null,
         string $sortDirection = 'desc',
         string $defaultSort = 'created_at'
-    )
-    {
+    ) {
         $sortBy = $sortBy ?: $defaultSort;
-        $dir = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
+        $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
+
+        // Extract direction from compound sort key (fiyat_asc / fiyat_desc)
+        $isPriceSort = false;
+        $effectiveDirection = $sortDirection;
+        if ($sortBy === 'fiyat_asc') {
+            $isPriceSort = true;
+            $effectiveDirection = 'asc';
+        } elseif ($sortBy === 'fiyat_desc') {
+            $isPriceSort = true;
+            $effectiveDirection = 'desc';
+        } elseif ($sortBy === 'fiyat') {
+            $isPriceSort = true;
+            $effectiveDirection = $sortDirection;
+        }
+
         $query->reorder();
-        if ($sortBy === 'fiyat') {
-            try {
-                $driver = \Illuminate\Support\Facades\DB::getDriverName();
-            } catch (\Throwable $e) {
-                $driver = 'mysql';
-            }
-            if ($driver === 'sqlite') {
-                if ($dir === 'desc') {
-                    $query->orderByRaw('(0 + fiyat) DESC'); // context7-ignore
-                } else {
-                    $query->orderByRaw('(0 + fiyat) ASC'); // context7-ignore
-                }
-                $query->orderBy($defaultSort, $dir); // context7-ignore
-                $query->orderBy('id', $dir); // context7-ignore
-            } else {
-                if ($dir === 'desc') {
-                    $query->orderByRaw('(0 + fiyat) DESC'); // context7-ignore
-                } else {
-                    $query->orderByRaw('(0 + fiyat) ASC'); // context7-ignore
-                }
-                $query->orderBy($defaultSort, $dir); // context7-ignore
-                $query->orderBy('id', $dir); // context7-ignore
-            }
+
+        if ($isPriceSort) {
+            $rates = config('currency.supported', []);
+            $rateEur = (float) Arr::get($rates, 'EUR.rate', 37.80);
+            $rateUsd = (float) Arr::get($rates, 'USD.rate', 35.20);
+            $rateGbp = (float) Arr::get($rates, 'GBP.rate', 43.50);
+
+            // Normalized CASE expression for TRY-equivalent comparison
+            $normalized = "CASE "
+                ."WHEN para_birimi = 'TRY' OR para_birimi IS NULL OR para_birimi = '' THEN fiyat "
+                ."WHEN para_birimi = 'EUR' THEN fiyat * {$rateEur} "
+                ."WHEN para_birimi = 'USD' THEN fiyat * {$rateUsd} "
+                ."WHEN para_birimi = 'GBP' THEN fiyat * {$rateGbp} "
+                ."ELSE fiyat END";
+
+            // Special-mode listings (on_request/hidden/null fiyat/zero) sort last
+            $query->orderByRaw(
+                "CASE "
+                ."WHEN fiyat IS NULL OR fiyat = 0 THEN 1 "
+                ."WHEN fiyat_gosterim_modu IN ('on_request','hidden') THEN 1 "
+                ."ELSE 0 END"
+            );
+            $query->orderByRaw("{$normalized} {$effectiveDirection}");
+            $query->orderBy('id', $effectiveDirection);
 
             return $query;
         }
+
         if ($this->getConnection()->getSchemaBuilder()->hasColumn($this->getTable(), $sortBy)) {
-            return $query->orderBy($sortBy, $dir); // context7-ignore
+            return $query->orderBy($sortBy, $sortDirection); // context7-ignore
         }
 
-        return $query->orderByDesc($defaultSort); // context7-ignore
+        return $query->orderBy($defaultSort, $sortDirection); // context7-ignore
     }
 
     protected static function boot()
