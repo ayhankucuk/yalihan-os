@@ -106,4 +106,100 @@ class DeepSeekServiceTest extends SimpleTestCase
         $this->assertFalse($response->success);
         $this->assertEquals('AI_MODEL_MISMATCH', $response->errorCode);
     }
+
+    public function test_deepseek_provider_records_telemetry_on_http_500_exception()
+    {
+        Http::fake([
+            'api.deepseek.com/*' => Http::response(
+                [
+                    'error' => [
+                        'message' => 'Internal server error',
+                        'type' => 'server_error',
+                    ],
+                ],
+                500
+            ),
+        ]);
+
+        $telemetryMock = \Mockery::mock(\App\Services\AI\Monitoring\AiTelemetryService::class);
+        $telemetryMock->shouldReceive('logFailure')
+            ->once()
+            ->with(
+                'deepseek',
+                'text_generation',
+                \Mockery::type('string'),
+                500,
+                \Mockery::type('array'),
+                1
+            );
+        $this->app->instance(\App\Services\AI\Monitoring\AiTelemetryService::class, $telemetryMock);
+
+
+        $tenantContext = new TenantContext(1, 1, 'test-request');
+        $messages = [
+            0 => [
+                'role' => 'user',
+                'content' => 'test',
+            ],
+        ];
+        $request = new CortexRequestData(
+            AITaskType::ANALYZE_PROPERTY,
+            ['messages' => $messages],
+            $tenantContext,
+            [],
+            config('services.deepseek.model', 'deepseek-v4-flash'),
+            []
+        );
+
+        $provider = app(DeepSeekCortexProvider::class);
+
+        $response = $provider->execute($request);
+
+        // Controlled failure response
+        $this->assertFalse($response->success);
+        $this->assertEquals('AI_EXCEPTION', $response->errorCode);
+    }
+
+    public function test_deepseek_provider_records_telemetry_on_connection_exception()
+    {
+        Http::fake(function () {
+            throw new \Illuminate\Http\Client\ConnectionException('cURL error 28: Connection timed out');
+        });
+
+        $telemetryMock = \Mockery::mock(\App\Services\AI\Monitoring\AiTelemetryService::class);
+        $telemetryMock->shouldReceive('logFailure')
+            ->once()
+            ->with(
+                'deepseek',
+                'text_generation',
+                \Mockery::type('string'),
+                500,
+                \Mockery::type('array'),
+                1
+            );
+        $this->app->instance(\App\Services\AI\Monitoring\AiTelemetryService::class, $telemetryMock);
+
+        $tenantContext = new TenantContext(1, 1, 'test-request');
+        $messages = [
+            0 => [
+                'role' => 'user',
+                'content' => 'test',
+            ],
+        ];
+        $request = new CortexRequestData(
+            AITaskType::ANALYZE_PROPERTY,
+            ['messages' => $messages],
+            $tenantContext,
+            [],
+            config('services.deepseek.model', 'deepseek-v4-flash'),
+            []
+        );
+
+        $provider = app(DeepSeekCortexProvider::class);
+
+        $response = $provider->execute($request);
+
+        $this->assertFalse($response->success);
+        $this->assertEquals('AI_EXCEPTION', $response->errorCode);
+    }
 }

@@ -136,8 +136,27 @@ class DeepSeekCortexProvider implements CortexServiceInterface
         } catch (\Exception $e) {
             $this->circuitBreaker->failure($provider);
             Log::error("DeepSeek Provider Error: " . $e->getMessage());
+
+            $statusCode = 500;
+            if ($e instanceof \Illuminate\Http\Client\RequestException && $e->response) {
+                $statusCode = $e->response->status();
+            }
+
+            $this->telemetry->logFailure(
+                $provider,
+                $request->getCapability()->value,
+                $e->getMessage(),
+                $statusCode,
+                [
+                    'exception_class' => get_class($e),
+                    'model' => $actualModel ?? config('services.deepseek.model', 'deepseek-chat'),
+                ],
+                $request->getTenantId()
+            );
+
             return $this->errorResponse('AI_EXCEPTION', $e->getMessage());
         }
+
     }
 
     public function supports(CortexCapability $capability): bool
