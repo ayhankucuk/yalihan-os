@@ -142,50 +142,50 @@ return [
         ],
         'vars' => [
             // Ana renkler
-            '--primary'              => '#004ac6',
-            '--primary-container'    => '#2563eb',
+            '--primary'              => '#0A1628',
+            '--primary-container'    => '#0F1E38',
             '--on-primary'           => '#ffffff',
-            '--on-primary-container' => '#eeefff',
+            '--on-primary-container' => '#F5F0E8',
 
             // Yüzey sistemi
-            '--surface'              => '#faf8ff',
-            '--surface-low'          => '#f3f3fe',
-            '--surface-container'    => '#ededf9',
-            '--surface-high'         => '#e7e7f3',
-            '--surface-highest'      => '#e1e2ed',
+            '--surface'              => '#F8F6F1',
+            '--surface-low'          => '#F5F2ED',
+            '--surface-container'    => '#E8E2D8',
+            '--surface-high'         => '#DDD6C9',
+            '--surface-highest'      => '#D1C8B8',
             '--surface-white'        => '#ffffff',
             '--surface-muted'        => '#F8FAFC',
 
             // Metin
-            '--on-surface'           => '#191b23',
+            '--on-surface'           => '#0A1628',
             '--on-surface-variant'   => '#434655',
-            '--text-muted'           => '#737686',
+            '--text-muted'           => '#6B7280',
 
             // Kenarlık
             '--outline'              => '#737686',
-            '--outline-variant'      => '#c3c6d7',
-            '--border-subtle'        => '#E2E8F0',
+            '--outline-variant'      => '#E8E2D8',
+            '--border-subtle'        => '#E8E2D8',
 
             // Durum renkleri
-            '--status-sale'          => '#10B981',
-            '--status-rent'          => '#F59E0B',
-            '--status-sold'          => '#EF4444',
+            '--status-sale'          => '#15803D',
+            '--status-rent'          => '#B45309',
+            '--status-sold'          => '#6B7280',
 
-            // Secondary
-            '--secondary'            => '#565e74',
-            '--secondary-container'  => '#dae2fd',
+            // Secondary / Gold
+            '--secondary'            => '#C9A84C',
+            '--secondary-container'  => 'rgba(201,168,76,0.15)',
 
             // Geriye dönük uyumluluk (eski var adları)
-            '--navy'                 => '#004ac6',
-            '--navy-mid'             => '#003ea8',
-            '--navy-light'           => '#2563eb',
-            '--gold'                 => '#2563eb',
-            '--gold-light'           => '#dbe1ff',
-            '--gold-dim'             => 'rgba(0,74,198,0.10)',
-            '--cream'                => '#faf8ff',
-            '--cream-border'         => '#c3c6d7',
-            '--cream-text'           => '#eeefff',
-            '--text-primary'         => '#191b23',
+            '--navy'                 => '#0A1628',
+            '--navy-mid'             => '#0F1E38',
+            '--navy-light'           => '#162240',
+            '--gold'                 => '#C9A84C',
+            '--gold-light'           => '#D4B96A',
+            '--gold-dim'             => 'rgba(201,168,76,0.15)',
+            '--cream'                => '#F8F6F1',
+            '--cream-border'         => '#E8E2D8',
+            '--cream-text'           => '#F5F0E8',
+            '--text-primary'         => '#0A1628',
         ],
     ],
 

@@ -1,3 +1,126 @@
+## Oturum 202 — 2026-09-22 | Design Foundation Code Compliance & Remediation
+
+**Task ID:** `WEB_DESIGN_CODE_COMPLIANCE_REMEDIATION_03`
+**Focus:** Formal adoption of verified YALIHAN Design Foundation tokens and PropertyCard component
+**Status:** SUCCESS — SELECTIVELY STAGED & COMMITTED ✅
+
+### Özet
+- `WEB_DESIGN_ARCHITECTURE_V1_01` aşamasında güncellenen `config/themes.php` ve `resources/views/components/property-card.blade.php` değişiklikleri resmen üstlenildi.
+- Bağımsız verifier `WEB_DESIGN_FOUNDATION_VERIFY_02` raporu doğrultusunda renk ve ikon SSOT uyumu onaylandı.
+- Kirli ağaçtaki ilintisiz `FinanceProcessorTest.php` korunarak sadece yetkili 2 uygulama dosyası ve changelog seçici olarak stage edildi.
+- `antigravity-full-gate.sh --quick` (4/4 PASS), `IlanPublicResourceTest` (2/2 PASS), `VillaListingTest` (6/6 PASS) testleri başarıyla tamamlandı.
+- `SEARCH_RESULTS_IMPLEMENTATION_GATE` `OPEN` durumuna getirildi.
+
+---
+
+## Oturum 201 — 2026-09-22 | AI Runtime Architecture Gaps Forensic Verification
+
+**Task ID:** `AI_RUNTIME_ARCHITECTURE_GAPS_VERIFY_01`
+**Finding:** `AI_PHANTOM_METHOD_GAP_A_B` + `STALE_ROUTING_MIGRATION_GAP_C`
+**Durum:** READ-ONLY FORENSIC VERIFICATION TAMAMLANDI ✅
+**Commit:** `dc49396b` (read-only analysis, no code changes)
+
+### Özet
+
+Ayhan'ın talebi üzerine Gap A, B ve C bağımsız forensic doğrulaması yapıldı.
+
+### Gap A — `generateIlanTitle()` → **REAL_ACTIVE_DEFECT**
+- `DanismanAIService::generateListingTitle()` (satır 337) phantom method çağırıyor
+- `YalihanCortex` sınıfında `generateIlanTitle()` **implementasyonu yok**
+- `__call()`, trait, inheritance, dynamic dispatch **yok**
+- Admin title endpoint (`admin/ilan-ai/title`) **%100 kırık**
+
+### Gap B — `generateStructuredTitle()` → **REAL_ACTIVE_DEFECT**
+- `DataDrivenAIContentService::generateTitle()` (satır 58) phantom method çağırıyor
+- Aynı `YalihanCortex` instance — method mevcut değil
+- Data-driven title path **%100 kırık**
+
+### Gap C — Routing Pipeline → **STALE_FINDING**
+- Routing pipeline **SAĞLAM** ama **BAĞLI DEĞİL**
+- `RoutedCortexExecutor → AIProviderRouter → ProviderRegistry → 4 Adapter` → üretim hazır
+- `YalihanCortex` direkt `ollamaService` çağırıyor → routing pipeline'ı atlıyor
+- `AIOrchestrator` ayrı bir 3. orchestrator olarak paralel çalışıyor
+- **Mimari karar verilmemiş** — tam entegrasyon, kısmi entegrasyon veya kaldırma seçenekleri mevcut
+
+### Mimari Durum
+
+```
+SYSTEM 1: RoutedCortexExecutor Pipeline ✅ SAĞLAM ama BAĞLI DEĞİL
+  CortexServiceInterface → CortexOrchestrator → RoutedCortexExecutor → AIProviderRouter → 4 Adapters
+
+SYSTEM 2: YalihanCortex → ollamaService (DİREKT) ❌ GAP A/B
+  Tüm AI operasyonları Ollama-only, hiçbir routing kullanmıyor
+
+SYSTEM 3: AIOrchestrator → DeepSeek/OpenAI (AYRI PARALEL) ⚠️
+  Üçüncü orchestrator, kendi hardcoded provider seçimi
+```
+
+### DeepSeek Durumu → DORMANT
+- `DeepSeekCortexAdapter` routing pipeline'da **mevcut ama yönlendirilmiyor**
+- `DeepSeekProvider` AIOrchestrator'da **mevcut ama ayrı orchestrator**
+- Hiçbiri `YalihanCortex` path'inde **DEĞİL**
+
+### Önerilen Remediation Sırası
+
+1. **GAP A** → Bounded fix, düşük risk, yüksek etki
+2. **GAP B** → Bounded fix, orta risk, format kontratı açıklığa kavuşturulmalı
+3. **GAP C** → ⚠️ Ayhan kararı gerekli — blast radius yüksek, mimari karar verilmemiş
+
+### Döküman
+
+Tam Forensic Rapor: `docs/AI_RUNTIME_ARCHITECTURE_GAPS_VERIFY_01.md`
+
+---
+
+## Oturum 200 — 2026-09-22 | AI Configuration Map — DeepSeek Remediation Hazırlık
+
+**Task ID:** `AI_CONFIGURATION_MAP_SESS_20`
+**Finding:** `AI_PHANTOM_METHOD_GAP_A_B`
+**Durum:** READ-ONLY HARİTALANDIRMA TAMAMLANDI ✅
+
+### Özet
+
+YALIHAN OS AI mimarisinin tam yapılandırma haritası çıkarıldı — DeepSeek remediation öncesi gerçek durumu tespit etmek için.
+
+### Kritik Bulgular
+
+**🚨 PHANTOM GAP A: `YalihanCortex::generateIlanTitle()` MEVCUT DEĞİL**
+- `DanismanAIService::generateListingTitle()` (satır 337) bu metodu çağırıyor
+- `grep -rn 'public.*function.*generateIlanTitle' app/` → **0 sonuç**
+- **Etki:** Admin title üretim endpoint'i `BadMethodCallException` fırlatır
+- **Dosya:** `app/Services/AI/DanismanAIService.php:337`
+
+**🚨 PHANTOM GAP B: `YalihanCortex::generateStructuredTitle()` MEVCUT DEĞİL**
+- `DataDrivenAIContentService::generateTitle()` (satır 58) bu metodu çağırıyor
+- **Etki:** Data-driven title üretimi `BadMethodCallException` fırlatır
+- **Dosya:** `app/Services/AI/DataDrivenAIContentService.php:58`
+
+**⚠️ GAP C: Routing Pipeline Bağlı Değil**
+- `AIProviderRouter` + `RoutedCortexExecutor` yapısı **devre dışı**
+- `YalihanCortex` doğrudan `ollamaService` çağırıyor
+- DeepSeek ve diğer provider'lar routing üzerinden hiçbir zaman çağrılmıyor
+
+### Mimari Harita
+
+```
+ROUTES:
+  admin/ilan-ai/title     → IlanAITitleDescriptionController → GenerateIlanTitleAction → DanismanAIService → ❌ PHANTOM
+  admin/ilanai/description → IlanAITitleDescriptionController → GenerateIlanDescriptionAction → DataDrivenAI → Cortex → ollama ✅
+  api/v1/cortex/ai/...   → CortexSmartAPIController → YalihanCortex → ollama ✅
+
+PROVIDERS:
+  Ollama      → DIRECT (YalihanCortex doğrudan çağırıyor)
+  DeepSeek    → CONFIGURED but UNUSED (routing pipeline devre dışı)
+  OpenAI      → CONFIGURED but UNUSED (routing pipeline devre dışı)
+  Gemini      → CONFIGURED but UNUSED (routing pipeline devre dışı)
+```
+
+### Döküman
+
+Tam AI Configuration Map: `docs/AI_CONFIGURATION_MAP.md`
+
+---
+
 ## Oturum 194 — 2026-09-21 | Hermes Queue Consumer Production Activation
 
 **Task ID:** `HERMES_QUEUE_CONSUMER_PRODUCTION_DEPLOY_04`
