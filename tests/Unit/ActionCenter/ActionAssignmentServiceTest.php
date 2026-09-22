@@ -308,4 +308,50 @@ class ActionAssignmentServiceTest extends TestCase
             'Round-robin auto-assign must never route a task to an inactive user.'
         );
     }
+
+    public function test_auto_assign_ilan_owner_admin_fallback_skips_inactive_admin(): void
+    {
+        // Fallback branch trigger: ilan has danisman_id=null → resolveIlanOwnerId()
+        // reaches the admin fallback query. Only one admin exists in the tenant and
+        // that admin is inactive (aktiflik_durumu=false).
+        //
+        // Pre-fix drift: resolveIlanOwnerId() guards its active filter with
+        //   Schema::hasColumn('users','is_active') — always false in the current
+        //   schema, so the inactive admin is still returned and auto-assigned.
+        //
+        // Post-fix (canonical): ->aktif() (HasActiveScope) resolves to
+        //   aktiflik_durumu=true for the users table, so no eligible admin exists
+        //   → gorev returned unassigned.
+        $inactiveAdmin = User::factory()->create(['tenant_id' => $this->tenantId]);
+        $inactiveAdmin->forceFill(['aktiflik_durumu' => false])->save();
+        $inactiveAdmin->assignRole('admin');
+
+        // Sanity: fixture actually persisted as inactive.
+        $this->assertFalse((bool) $inactiveAdmin->fresh()->aktiflik_durumu);
+
+        $ilan = Ilan::factory()->create([
+            'tenant_id' => $this->tenantId,
+            'danisman_id' => null,
+        ]);
+
+        $gorev = Gorev::factory()->create([
+            'tenant_id' => $this->tenantId,
+            'ilan_id' => $ilan->id,
+            'gorev_tipi' => 'ilan_foto_yukle',
+            'gorev_durumu' => 'bekliyor',
+            'atanan_user_id' => null,
+        ]);
+
+        $result = $this->service->autoAssign($gorev);
+
+        $this->assertNotEquals(
+            $inactiveAdmin->id,
+            $result->fresh()->atanan_user_id,
+            'Ilan-owner admin fallback must NOT auto-assign to an inactive admin.'
+        );
+        $this->assertNull(
+            $result->fresh()->atanan_user_id,
+            'With no active admin in the tenant, the fallback must return the gorev unassigned.'
+        );
+    }
 }

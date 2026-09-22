@@ -282,14 +282,18 @@ class ActionAssignmentService
             return (int) $ilan->danisman_id;
         }
 
-        // Fallback: find admin in same tenant
+        // Fallback: first active admin in same tenant.
+        //
+        // Active-user contract: uses the canonical HasActiveScope::scopeActive()
+        // mechanism via ->aktif(), which resolves to `aktiflik_durumu = true` for
+        // the users table. The previous Schema::hasColumn('users','is_active')
+        // guard was silently ineffective (canonical column is aktiflik_durumu,
+        // is_active does not exist), so an inactive admin could be auto-assigned
+        // as an ilan-owner fallback. See sibling fix in getAvailableAgents().
         $query = User::query()
+            ->aktif()
             ->where('tenant_id', $ilan?->tenant_id ?? $gorev->tenant_id)
             ->whereNull('deleted_at');
-
-        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'is_active')) {
-            $query->where('is_active', true);
-        }
 
         return $query->get()
             ->filter(fn(User $u) => $u->hasRole('admin'))
