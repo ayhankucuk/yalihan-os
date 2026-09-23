@@ -391,46 +391,62 @@ PRODUCTION_VERIFIED (2026-09-18)
 
 ---
 
-## PRENSİP #11 — Canonicalization + Legacy Cleanup Standard (2026-09-23)
+## PRENSİP #11 — Domain Convergence Contract (2026-09-23)
 
 **Karar Sahibi:** Ayhan
 **Kaynak:** TASK_34 retrospektif — görev tamamlandıktan sonra human review sırasında oluşturuldu
+**AGENTS.md:** Rule 14 (canon kaynak)
 **Etki:** Tüm gelecek remediation görevleri (_35, _36, _37, _38, ...)
 
-### Özet
+### Temel Özet
 "Fix tamamlandı" artık yalnız yeni kodun çalışması anlamına gelmiyor.
 Her görevde hedef: ilgili domain/surface'i **tek canonical akışa** indirmek.
 
-### Prensip Detayı
+### ⭕ Primary Fix Scope + Cleanup Radius
+Her görev iki kapsamla tanımlanır:
+- **Primary Fix Scope:** agent task contract'ta "Files Allowed to Modify"
+- **Cleanup Radius:** Canonical path'ten bağımsız olarak etkilenen alan
+  Örnek: International = route → controller/service → model/query → Blade → component/assets → tests
+- Cleanup Radius **dışında:** CRM, finans, Hermes, auth — forensics bataklığına girilmez
 
-**6 Alan Araştırılır:**
-1. **Legacy Implementations** — Eski controller/service/component/view, superseded code path, eski route
-2. **Duplicate Implementations** — Aynı işi yapan birden fazla yapı, paralel data source'lar
-3. **Dead/Orphan Candidates** — Referanssız Blade/component, kullanılmayan asset, orphan route/controller/service
-4. **Spaghetti/Split-Brain** — Aynı kavram için farklı query contract'ları, birbirini bypass eden code paths
-5. **Connection Residue** — Eski endpoint, dead href, eski API integration, orphan binding
-6. **Design Residue** — Eski component, paralel UI implementasyonu, legacy gradient/CSS
+### 12 Alan Araştırılır (Cleanup Radius içinde)
+1. **Authority Convergence** — Aynı kavramın iki otoritesi olmamalı. SOURCE_OF_TRUTH_COUNT > 1 = cleanup debt
+2. **Data-Contract Drift** — Model↔Migration↔Enum↔Request↔Controller↔UI aynı dili konuşmalı
+3. **Fallback Audit** — REQUIRED | SAFE | LEGACY | MOCK | MASKING_FAILURE sınıflandırması zorunlu. MOCK production UI'da kalmamalı
+4. **Placeholder/Test-Data Leakage** — test, demo, lorem ipsum, fake data, href="#", dummy değerler taranmalı
+5. **Route/API Convergence** — /v1–/v2 kalıntıları, eski route names, redirect zincirleri
+6. **Frontend Asset Convergence** — Blade düzeltip eski CSS/JS bırakılmamalı. Vite, inline styles, legacy scripts
+7. **Dependency Hygiene** — composer.json/npm'de var ≠ gerekiyor. Import+runtime+build kullanımı doğrulanmalı
+8. **Database Residue** ⛨ — Column/table/FK silmeden önce model+query+runtime+production araştırması. Ayrı Human Gate zorunlu
+9. **Error-State Integrity** — empty/partial/error/offline durumları da canonical contract'ın parçası
+10. **Security Residue** — Auth/authorization/tenant isolation cleanup sırasında kaybolmamalı. Duplicate endpoint = güvenlik riski olabilir
+11. **Observability Residue** — Log channel, event, metric, scheduler eski path'i izliyor olabilir
+12. **Documentation Truth** — Authoritative doküman güncellenmeli; tarihsel kanıt silinmemeli ama PROJECT_STATE/EVIDENCE_INDEX çelişmemeli
 
-**Evidence Rule:** grep/reference bulunmaması tek başına DEAD CODE kanıtı DEĞİLDİR.
-Silmeden önce kontrol: routes, controllers, Blade includes, service bindings, imports, JS, Vite, events, jobs, scheduler, tests, config.
+### 🛡️ SAFE_REMOVAL_EVIDENCE Kanıt Paketi
+Bir artifact'ı silmek için tek grep sonucu YETMEZ. 8 noktada negatif kanıt:
+route_reference | import_reference | blade_include | container_binding | event_job | build_entry | test_dependency | runtime_reference
+→ SAFE_REMOVAL: ≥5 NO | PROBABLE_REMOVAL: ≥3 NO (WHY kalanlar dokümante edilmeli)
+→ Hiçbir kanıt toplanamıyorsa → UNKNOWN_USAGE → silinmez
 
-**Klasifikasyon:** CANONICAL | LEGACY_REFERENCED | DUPLICATE | PROVEN_ORPHAN | PARTIAL_IMPLEMENTATION | SPLIT_BRAIN | UNKNOWN_USAGE
+### 🔄 Replacement-Before-Deletion Protokolü
+Invariant: Canonical replacement, eski davranışın gerekli kısmını karşılıyor mu?
+Sıra: Discover → Classify → Establish Canonical Authority → Fix/Converge → Regression → Prove Replacement → Remove Legacy → Regression Again → Independent Verify
 
-**Bounded Cleanup:** Scope içinde, replacement doğrulanmış, evidence yeterliyse → kaldırılabilir.
-Scope dışında → dokunma, ayrı remediation oluştur.
+### 📊 Final DoD Raporu
+IMPLEMENTER/VERIFIER şunları raporlar:
+DOMAIN_STATE: CANONICAL_CLEAN | WITH_DOCUMENTED_LEGACY | FUNCTIONALLY_FIXED_CLEANUP_REMAINS | BLOCKED
++ SOURCE_OF_TRUTH_COUNT, LEGACY_PATHS, DUPLICATE_IMPL, PROVEN_ORPHANS,
+  MOCK_RESIDUE, FALLBACKS, ROUTE_API_DRIFT, MODEL_SCHEMA_DRIFT,
+  DESIGN_SYSTEM_DRIFT, SECURITY_BOUNDARY_REGRESSION, OBSERVABILITY_ALIGNMENT,
+  REGRESSION, RUNTIME, PRODUCTION
 
-**No Parallel Old System Hedefi:** SOURCE_OF_TRUTH_COUNT = 1
-
-**Regression Gereksinimi:** Sadece happy-path değil; legacy path artık reachable olmamalı, public routes render, required assets load, no broken links, existing tests remain PASS.
-
-### Gelecek Görevlere Uygulama
-`_37` (Trust Claims), `_35` (Konut Test), `_36` (International), `_38` (AI Widget) — tüm prompt'lara standart olarak dahil edilecek.
+"Test geçti" ≠ "bu domain gerçekten toparlandı" — CANONICAL_CLEAN kapanış kriteridir.
 
 ### Örnek Uygulama Senaryosu
 > International'ı düzeltirken artık sadece query düzeltilmez.
 > Eski `ulke_id` yolu + `yurt-disi` category yolu + keyword araması + hardcoded fallback + mock yield kartları birlikte incelenir.
 > Canonical belirlendikten sonra eski mekanizma gerçekten gereksizse bırakılmaz.
 
-**Evidence:** DECISION_LOG kaydı + Ayhan onayı
-
+**Evidence:** Ayhan onayı 2026-09-23 + AGENTS.md commit 840e7f2a
 
