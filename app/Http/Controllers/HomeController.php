@@ -152,10 +152,10 @@ class HomeController extends Controller
             ->take(3)
             ->get();
 
-        // Popüler mahalleler — ilan sayısına göre sıralı, max 6 kart
-        // SQLite uyumlu: has+withCount+orderByDesc, HAVING yerine PHP-side filter
+        // Popüler mahalleler — YAYINDA ilanı olan mahalleler, ilan sayısına göre sıralı, max 6 kart
+        // SQLite uyumlu: whereHas (yayinda filter) + withCount + orderByDesc
         $populerMahalleler = \App\Models\Mahalle::withCount(['ilanlar as ilan_sayisi' => fn ($q) => $q->where('yayin_durumu', IlanDurumu::YAYINDA->value)])
-            ->has('ilanlar')
+            ->whereHas('ilanlar', fn ($q) => $q->where('yayin_durumu', IlanDurumu::YAYINDA->value))
             ->orderByDesc('ilan_sayisi')
             ->with('ilce:id,ilce_adi')
             ->take(6)
