@@ -1,3 +1,18 @@
+## [2026-09-22] DeepSeek Non-2xx Telemetry Fix — BLOCKED
+
+- **Task:** `AI_TELEMETRY_ARG_MISMATCH_REMEDIATION_02`
+- **Status:** BLOCKED
+- **Baseline:** `1172824699243659c87977ccca8a9b0c307101fa` (clean)
+- **Block reason:** `DeepSeekCortexProvider.php:78` malformed `logFailure()` is dead code — Laravel 10 retry mechanism converts all non-2xx responses to thrown `RequestException` before the `$response->failed()` branch can execute
+- **Static defect:** REPO_VERIFIED — argument shift confirmed (arg 3=int, arg 4=array, arg 5=int, arg 6=missing)
+- **Runtime:** UNVERIFIED — unreachable via public `execute()` API
+- **Fix blocked by:** Task forbids retry logic modification; retry is the gate that makes the branch unreachable
+- **Next:** Architectural decision from Ayhan required — either authorize retry strategy change or close as wontfix (outer catch already handles the failure)
+- **Evidence:** `EVIDENCE_INDEX.md`, `KNOWN_ISSUES.md`
+
+---
+
+
 ---
 document_id: BRAIN-STATE-001
 document_owner: engineering-lead
@@ -22,6 +37,15 @@ supersedes: null
 - **Production Status:** `PRODUCTION_VERIFIED`
 - **Migration Ledger:** Clean / 0 Pending Migrations
 <!-- ───────────────────────────────────────────────────────────── -->
+
+## AI Mimari Durumu (Oturum 200 — 2026-09-22)
+
+- **AI Configuration Map:** `docs/AI_CONFIGURATION_MAP.md` oluşturuldu ✅
+- **PHANTOM GAP A:** `YalihanCortex::generateIlanTitle()` **MEVCUT DEĞİL** — Admin title üretim endpoint'i `BadMethodCallException` fırlatır
+- **PHANTOM GAP B:** `YalihanCortex::generateStructuredTitle()` **MEVCUT DEĞİL** — Data-driven title üretimi `BadMethodCallException` fırlatır
+- **GAP C:** Routing pipeline (`AIProviderRouter` → `RoutedCortexExecutor`) **bağlı değil** — `YalihanCortex` doğrudan `ollamaService` çağırıyor
+- **DeepSeek:** Config mevcut (`services.deepseek.*`) ama `enabled=false` (default) ve routing pipeline devre dışı olduğundan **hiç kullanılmıyor**
+- **DeepSeek Remediation Öncesi Durum:** READ-ONLY HARİTALANDIRMA TAMAMLANDI ✅ — Gap A/B/C çözümü gerekiyor
 
 Authority: repository + explicit production evidence
 
@@ -758,9 +782,49 @@ AI Agent karar üretir
 - `resources/views/admin/ilanlar/edit.blade.php` (-78 satır, +18 satır)
 HOTSPOT_LOCK:database/migrations/2026_09_17_000001_create_emlak_projeleri_tables.php:antigravity:2026-09-17T13:53:56Z:3600
 HOTSPOT_LOCK:database/migrations/2026_09_17_000002_add_proje_id_to_ilanlar_table.php:antigravity:2026-09-17T13:53:56Z:3600
-HOTSPOT_LOCK:database/schema/mysql-schema.sql:antigravity:2026-09-20T06:05:30Z:3600
 HOTSPOT_LOCK:.sab/schema-checksum.sha256:antigravity:2026-09-20T06:05:30Z:3600
 
 HOTSPOT_LOCK:database/migrations/2026_09_18_130000_create_ai_conversations_table.php:claude-opus:2026-09-18T19:15:00Z:7200
-HOTSPOT_LOCK:database/schema/mysql-schema.sql:claude-opus:2026-09-20T06:05:30Z:7200
 HOTSPOT_LOCK:routes/api.php:claude-opus:2026-09-19T14:31:15Z:3600
+HOTSPOT_LOCK:database/migrations/2026_09_22_000001_add_ilan_id_kaynak_to_talepler.php:Cline-Claude-19:2026-09-23T06:32:32Z:3600
+HOTSPOT_LOCK:routes/web.php:Cline-Claude-19:2026-09-23T06:32:32Z:3600
+HOTSPOT_LOCK:database/schema/mysql-schema.sql:Cline-Claude-19:2026-09-23T06:35:31Z:3600
+HOTSPOT_LOCK:config/company.php:Cline-Session-2026-09-23:2026-09-23T17:35:38Z:3600
+
+---
+
+## [2026-09-23] TASK_34 Kapanışı — Public Identity SSOT
+
+- **Commit:** `e2e98afd`
+- **Durum:** `CANONICAL_CLEAN` — closed
+- **Canonical Authority:** `config/company.php`
+- **Scope:** phone, email, address, whatsapp_url
+- **Test:** 15/15 PASS ✅
+- **Source of Truth:** 1 (✅ tek kaynak)
+- **Dead values removed:** +90(252)316 00 00, kurumsal@, info@yalihanemlak.com, Marina Çökertme
+- **Post-canonical-clean kuralı:** Bu domain forensic backlog'a taşınmayacak; yeni evidence çürütürse yeniden açılacak
+
+---
+
+## [2026-09-23] Governance Roadmap (Oturum)
+
+| Sıra | Görev | Durum | Not |
+|---|---|---|---|
+| 1 | _34 → independent verification | ✅ CLOSED | `e2e98afd` |
+| 2 | Rule 14 — SAFE_REMOVAL_EVIDENCE threshold düzeltmesi | BACKLOG | ≥5/≥3 skor sistemi → dependency-aware checklist |
+| 3 | Post-canonical-clean kuralı → AGENTS.md Rule 14'e ekleme | BACKLOG | _34 kapanışı ile birlikte yapılacak |
+| 4 | _37 Domain Convergence remediation | NEXT | Agent önceliği |
+| 5 | _35 Domain Convergence remediation | QUEUED | |
+| 6 | _36 Domain Convergence remediation | QUEUED | |
+| 7 | _38 Domain Convergence remediation | QUEUED | |
+| 8 | Fine Design / visual convergence | QUEUED | |
+
+**Commit sırası:**
+```
+e2e98afd  TASK_34 (2026-09-23) ← ✅ TAMAMLANDI
+4e0537e9  DECISION_LOG Prensip 11 (2026-09-23) ← governance
+840e7f2a  AGENTS.md Rule 14 genişletme (2026-09-23) ← governance
+3387db0f  AGENTS.md Rule 14 initial (2026-09-23) ← governance
+```
+
+**Kural:** Governance commit'leri implementation commit'lerinin ardından gelir. _34 kapatıldıktan sonra governance + _37 birlikte ele alınabilir.
