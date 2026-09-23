@@ -40,6 +40,8 @@ class Talep extends BaseModel
         'il_id',
         'ilce_id',
         'mahalle_id',      // ✅ Added 2026-01-31
+        'ilan_id',         // Frontend contact form — property listing context for Talep
+        'kaynak',         // Frontend contact form — 'frontend_ilan_form'
         'min_fiyat',
         'max_fiyat',
         // Context7: Talep reformu - 2025-11-24

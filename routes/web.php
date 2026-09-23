@@ -646,10 +646,13 @@ Route::prefix('api/ai')->middleware('throttle:30,1')->group(function () {
 // Reference: API environment monitoring (internal documentation only)
 // This endpoint has been centralized in the API system
 
-// Dummy Contact Route for AgentCard Component
-Route::post('/contact/submit', function () {
-    return back()->with('success', 'Mesajınız başarıyla gönderildi.');
-})->name('frontend.forms.contact.submit');
+use App\Http\Controllers\Frontend\FrontendFormController;
+
+// Property Contact Form — unauthenticated users
+// SAB Rule #1: tenant context resolved from Ilan (set before any CRM write)
+Route::post('/contact/submit', [FrontendFormController::class, 'submit'])
+    ->middleware(['throttle:5,1']) // 5 requests per minute per IP
+    ->name('frontend.forms.contact.submit');
 
 /*
 |--------------------------------------------------------------------------
