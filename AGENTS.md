@@ -105,34 +105,185 @@ Before starting any material coding or architectural task, the agent MUST explic
 **"Fix tamamlandı" artık yalnız yeni kodun çalışması anlamına gelmiyor.**
 Her görevde hedef: ilgili domain/surface'i mümkün olduğunca **tek canonical akışa** indirmek.
 
-#### 6 Alan Araştırılır:
-1. **Legacy Implementations** — Eski controller/service/component/view, superseded code path, eski route
-2. **Duplicate Implementations** — Aynı işi yapan birden fazla yapı, paralel data source'lar
-3. **Dead/Orphan Candidates** — Referanssız Blade/component, kullanılmayan asset, orphan route/controller/service
-4. **Spaghetti/Split-Brain** — Aynı kavram için farklı query contract'ları, birbirini bypass eden code paths
-5. **Connection Residue** — Eski endpoint, dead href, eski API integration, orphan binding
-6. **Design Residue** — Eski component, paralel UI implementasyonu, legacy gradient/CSS
+---
 
-#### Evidence Rule
+#### ⭕ Primary Fix Scope + Cleanup Radius
+Her görev iki kapsamla tanımlanır:
+- **Primary Fix Scope:** Doğrudan değiştirilecek dosyalar (agent task contract'ta `Files Allowed to Modify`)
+- **Cleanup Radius:** Canonical path'ten bağımsız olarak etkilenen ve araştırılması gereken alan
+
+Cleanup Radius örneği (_36 International):
+`International route → controller/service → model/query contract → ilgili Blade → kullanılan component/assets → bounded tests`
+
+Cleanup Radius **dışında:** CRM, finans, Hermes, auth子系统 — forensics/report bataklığına girilmez.
+
+---
+
+#### 🔍 12 Alan Araştırılır (Cleanup Radius içinde)
+
+**1. Authority Convergence**
+Aynı kavramın iki otoritesi olmamalı. Telefon: config + üç Blade. International: `ulke_id` + `yurt-disi` kategori.
+Remediation sonunda: "Bu kavramın gerçek source of truth'u nedir?" sorusuna **tek cevap** olmalı.
+`SOURCE_OF_TRUTH_COUNT > 1` = teknik çalışsa bile cleanup debt kalmıştır.
+
+**2. Data-Contract Drift**
+Model ↔ Migration ↔ Enum ↔ Request Validation ↔ Controller/Service ↔ UI aynı dili konuşuyor mu?
+Örnek: bir yerde `satilik`, başka yerde `baslikdan %satılık% aramak` spaghetti'dir.
+Alan isimleri, enumlar, nullable davranışı, FK'ler ve relation'lar çapraz kontrol edilmeli.
+Model ↔ Migration ↔ Relation Contract Guard (mevcut) bu kontrolü destekler.
+
+**3. Fallback Audit**
+Fallback'ler özellikle tehlikeli — gerçek problemi saklarlar.
+Her fallback sınıflandırılmalı:
+| Sınıf | Anlamı |
+|---|---|
+| `REQUIRED` | Sistemin doğal davranışı, edge case'i coverage altına alıyor |
+| `SAFE` | Config/ENV yokluğunda makul default |
+| `LEGACY` | Eski yapıdan kalan, artık ihtiyaç yok ama zararı da yok |
+| `MOCK` | Test/demo verisi — **production customer-facing UI'da kalmamalı** |
+| `MASKING_FAILURE` | Hatayı örtbas ediyor — log + alarm gerektirir |
+
+**4. Placeholder / Test-Data Leakage**
+Sadece Konut Test değil; test, demo, example, lorem ipsum, fake sayı, mock country, placeholder fotoğraf, `href="#"`, dummy email/telefon, TODO ile bırakılmış customer-facing davranış taranmalı.
+Seed/test verisinin public'e çıkmasını engelleyen **contract** olmalı.
+
+**5. Route / API Convergence**
+Aynı işi yapan eski ve yeni endpoint'ler, `/v1–/v2` kalıntıları, eski route names, redirect zincirleri, duplicate controller action'ları incelenmeli.
+Eski endpoint gerekiyorsa: neden yaşadığı belli olmalı.
+Gerekmiyorsa: kontrollü kaldırılmalı (Strangler Fig lifecycle).
+
+**6. Frontend Asset Convergence**
+Blade düzeltilip eski CSS/JS bırakılmamalı.
+Vite entrypoints, global JS injection, unused component CSS, eski design token'lar, duplicate icons/fonts, inline styles, legacy scripts incelenmeli.
+_38 AI Widget mor placeholder bunun örneği.
+
+**7. Dependency Hygiene**
+`composer.json'da var` ≠ `gerekiyor`.
+Ama paket silmeden önce **import + runtime + build kullanımı** doğrulanmalı.
+Kullanılmayan dependency kanıtlanırsa ayrı bounded cleanup task.
+
+**8. Database Residue** ⛨ **En Riskli Alan**
+Eski column/table/FK/index migration gördük diye **silinmez**.
+Önce: model/query/runtime/production read-only kullanım araştırması.
+Local'de unused görünmesi production'da unused olduğunu **kanıtlamaz**.
+DB cleanup **mutlaka ayrı Human Gate'e** kadar gitmeli.
+
+**9. Error-State Integrity**
+Yeni canonical yapı sadece başarılı durumda değil; `empty`, `partial`, `error`, `offline/unavailable` durumlarında da doğru davranmalı.
+Örnek: `/arsadaki "Konum verisi bulunamadı"` — teknik doğru ama UX kötü.
+Empty state'in kendisi de **contract'ın parçası** olmalı.
+
+**10. Security Residue**
+Eski route kaldırılırken veya yeni canonical service'e geçilirken `auth/authorization/tenant isolation` kaybolmuş mu kontrol edilmeli.
+`Duplicate endpoint` bazen **güvenlik bypass'ıdır**.
+Cleanup yalnız code-quality değil, **güvenlik meselesi**.
+
+**11. Observability Residue**
+Artık kullanılmayan log channel, event, metric, scheduler/job, webhook kalmış olabilir.
+Tersi de önemli: canonical path'e geçildi ama **monitoring eski path'i izliyor**.
+Böyle olursa sistem çalışır ama Bekçi/Hermes yanlış şeyi gözler.
+
+**12. Documentation Truth**
+Kod canonical hale geldikten sonra yalnız **gerçekten authoritative doküman** güncellenmeli.
+Eski ADR/task/report tarihsel kanıt — rastgele silinmemeli.
+Ama `PROJECT_STATE`, `EVIDENCE_INDEX`, `KNOWN_ISSUES` **yeni gerçekle çelişmemeli**.
+
+---
+
+#### 🛡️ SAFE_REMOVAL_EVIDENCE (Kanıt Paketi)
+Mevcut `REPO_VERIFIED / TEST_VERIFIED` Evidence Level sistemini **bozmaz**.
+Bir artifact'ı silmek için tek bir grep sonucu yetmez. Şu negatif kanıtların mümkün olduğunca fazlası toplanmalı:
+
+```
+NEGATIVE_EVIDENCE_PACKAGE:
+  route_reference:      YES / NO
+  import_reference:     YES / NO
+  blade_include:        YES / NO
+  container_binding:    YES / NO
+  event_job:            YES / NO
+  build_entry:          YES / NO
+  test_dependency:      YES / NO
+  runtime_reference:     YES / NO
+
+  SAFE_REMOVAL: YES requires ≥5 NO
+  PROBABLE_REMOVAL: YES requires ≥3 NO (must document WHY remaining checks could not run)
+```
+
+**Hiçbir negatif kanıt toplanamıyorsa** → `UNKNOWN_USAGE` → **silinmez**.
+
+---
+
+#### 🔄 Replacement-Before-Deletion Protokolü
+Eski bir sistemi silmeden önce şu invariant **kanıtlanmalı**:
+
+> Canonical replacement, eski davranışın **gerekli kısmını** karşılıyor mu?
+
+Sıra:
+1. **Discover** → cleanup radius içinde tüm artifact'ları bul
+2. **Classify** → 12 alan kapsamında sınıflandır
+3. **Establish Canonical Authority** → SSOT'yi belirle
+4. **Fix/Converge** → Canonical path'i kur
+5. **Regression** → Mevcut testler geçiyor mu?
+6. **Prove Replacement** → Replacement-before-deletion invariant sağlandı mı?
+7. **Remove Legacy** → Kanıtlanmış gereksiz artifact'ları kaldır
+8. **Regression Again** → Cleanup sonrası testler geçiyor mu?
+9. **Independent Verify** → Farklı perspective ile doğrula
+
+---
+
+#### 📋 Evidence Rule
 `grep/reference bulunmaması tek başına DEAD CODE kanıtı DEĞİLDİR.`
 Silmeden önce kontrol: routes, controllers, Blade includes, service bindings, imports, JS, Vite entrypoints, events, jobs, scheduler, tests, config, dynamic resolution.
 
-#### Klasifikasyon
+#### 📐 Klasifikasyon
 `CANONICAL | LEGACY_REFERENCED | DUPLICATE | PROVEN_ORPHAN | PARTIAL_IMPLEMENTATION | SPLIT_BRAIN | UNKNOWN_USAGE`
 `UNKNOWN_USAGE` → silinmez.
 
-#### Bounded Cleanup
+#### 🎯 Bounded Cleanup
 Scope içinde + replacement doğrulanmış + evidence yeterli = kaldırılabilir.
 Scope dışında → dokunma, ayrı remediation oluştur.
 
-#### Final Doğrulama — Zorunlu Kontroller
+#### 📊 Final DoD Raporu (Domain Convergence)
+
+**IMPLEMENTER / VERIFIER şunları raporlar:**
+
 ```
-OLD_PATH_STILL_ACTIVE:          YES / NO / UNKNOWN
-DUPLICATE_IMPLEMENTATION_REMAINS: YES / NO / UNKNOWN
-LEGACY_DESIGN_REMAINS_IN_SCOPE:   YES / NO / UNKNOWN
-ORPHAN_ASSETS_REMAIN_IN_SCOPE:     YES / NO / UNKNOWN
-SOURCE_OF_TRUTH_COUNT:             1 / >1 / UNKNOWN   ← Hedef: 1
+DOMAIN_CONVERGENCE:
+
+CANONICAL_AUTHORITY:         <path / mechanism>
+CANONICAL_EXECUTION_PATH:    <path>
+
+SOURCE_OF_TRUTH_COUNT:       1 / >1 / UNKNOWN
+
+LEGACY_PATHS:                NONE / <list>
+DUPLICATE_IMPLEMENTATIONS:   NONE / <list>
+PROVEN_ORPHANS:              NONE / <list>
+UNKNOWN_USAGE:               NONE / <list>
+MOCK_OR_PLACEHOLDER_RESIDUE: NONE / <list>
+
+FALLBACKS:                   REQUIRED / SAFE / LEGACY / MOCK / MASKING_FAILURE
+
+ROUTE_API_DRIFT:             NONE / <list>
+MODEL_SCHEMA_CONTRACT_DRIFT: NONE / <list>
+DESIGN_SYSTEM_DRIFT:         NONE / <list>
+
+SECURITY_BOUNDARY_REGRESSION: PASS / FAIL / NOT_APPLICABLE
+OBSERVABILITY_ALIGNMENT:     PASS / FAIL / NOT_APPLICABLE
+
+REGRESSION:                  PASS / FAIL
+
+RUNTIME:                     TEST_VERIFIED / UNKNOWN
+PRODUCTION:                  PRODUCTION_VERIFIED / UNKNOWN
+
+DOMAIN_STATE:
+  CANONICAL_CLEAN                     ← en iyi kapanış
+  CANONICAL_WITH_DOCUMENTED_LEGACY   ← bazı legacy kaçınılmaz
+  FUNCTIONALLY_FIXED_CLEANUP_REMAINS ← teknik çalışıyor ama temizlenmemiş debt var
+  BLOCKED                             ← karar/insan gerekli
 ```
+
+**`CANONICAL_CLEAN` çok değerli bir kapanış kriteridir.**
+"Test geçti" ile "bu domain gerçekten toparlandı" birbirinden ayrılır.
 
 #### Regression Gereksinimi
 Happy-path testi tek başına YETERLİ DEĞİLDIR. Doğrula:
@@ -143,7 +294,7 @@ Happy-path testi tek başına YETERLİ DEĞİLDIR. Doğrula:
 - no broken links/includes
 - existing bounded regression tests remain PASS
 
-#### Cleanup Rapor Formatı
+#### Cleanup Rapor Formatı (Her Candidate İçin)
 ```
 CLEANUP_CANDIDATE:
   artifact:
