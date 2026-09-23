@@ -101,6 +101,62 @@ Before starting any material coding or architectural task, the agent MUST explic
   - Strict token/cost controls on AI calls
   - Memory bounds on queue workers and async jobs
 
+### 14. Canonicalization + Legacy Cleanup Standard
+**"Fix tamamlandı" artık yalnız yeni kodun çalışması anlamına gelmiyor.**
+Her görevde hedef: ilgili domain/surface'i mümkün olduğunca **tek canonical akışa** indirmek.
+
+#### 6 Alan Araştırılır:
+1. **Legacy Implementations** — Eski controller/service/component/view, superseded code path, eski route
+2. **Duplicate Implementations** — Aynı işi yapan birden fazla yapı, paralel data source'lar
+3. **Dead/Orphan Candidates** — Referanssız Blade/component, kullanılmayan asset, orphan route/controller/service
+4. **Spaghetti/Split-Brain** — Aynı kavram için farklı query contract'ları, birbirini bypass eden code paths
+5. **Connection Residue** — Eski endpoint, dead href, eski API integration, orphan binding
+6. **Design Residue** — Eski component, paralel UI implementasyonu, legacy gradient/CSS
+
+#### Evidence Rule
+`grep/reference bulunmaması tek başına DEAD CODE kanıtı DEĞİLDİR.`
+Silmeden önce kontrol: routes, controllers, Blade includes, service bindings, imports, JS, Vite entrypoints, events, jobs, scheduler, tests, config, dynamic resolution.
+
+#### Klasifikasyon
+`CANONICAL | LEGACY_REFERENCED | DUPLICATE | PROVEN_ORPHAN | PARTIAL_IMPLEMENTATION | SPLIT_BRAIN | UNKNOWN_USAGE`
+`UNKNOWN_USAGE` → silinmez.
+
+#### Bounded Cleanup
+Scope içinde + replacement doğrulanmış + evidence yeterli = kaldırılabilir.
+Scope dışında → dokunma, ayrı remediation oluştur.
+
+#### Final Doğrulama — Zorunlu Kontroller
+```
+OLD_PATH_STILL_ACTIVE:          YES / NO / UNKNOWN
+DUPLICATE_IMPLEMENTATION_REMAINS: YES / NO / UNKNOWN
+LEGACY_DESIGN_REMAINS_IN_SCOPE:   YES / NO / UNKNOWN
+ORPHAN_ASSETS_REMAIN_IN_SCOPE:     YES / NO / UNKNOWN
+SOURCE_OF_TRUTH_COUNT:             1 / >1 / UNKNOWN   ← Hedef: 1
+```
+
+#### Regression Gereksinimi
+Happy-path testi tek başına YETERLİ DEĞİLDIR. Doğrula:
+- canonical path works
+- legacy path is no longer reachable where removal was intended
+- public routes still render
+- required assets still load
+- no broken links/includes
+- existing bounded regression tests remain PASS
+
+#### Cleanup Rapor Formatı
+```
+CLEANUP_CANDIDATE:
+  artifact:
+  classification:   (CANONICAL / LEGACY_REFERENCED / DUPLICATE / PROVEN_ORPHAN / PARTIAL_IMPLEMENTATION / SPLIT_BRAIN / UNKNOWN_USAGE)
+  replacement_path:
+  evidence:
+  risk:
+  suggested_task:  (IN_SCOPE_CLEANUP / OUT_OF_SCOPE_CREATE_SEPARATE_TASK)
+```
+
+#### Uygulama Önceliği
+Gelecek tüm domain remediation görevlerinde (_35, _36, _37, _38...) prompt'a standart dahil.
+
 ---
 
 ## ✅ Definition of Done (DoD)

@@ -1,3 +1,16 @@
+## [2026-09-22] AI_TELEMETRY_ARG_MISMATCH_REMEDIATION_02 — BLOCKED
+
+- **Task:** `AI_TELEMETRY_ARG_MISMATCH_REMEDIATION_02`
+- **Actor:** IMPLEMENTER (Cline → Claude Opus 4.7)
+- **Decision:** STOP — BLOCKED
+- **Reason:** `DeepSeekCortexProvider.php:78` non-2xx `logFailure()` branch is dead code — Laravel 10 `Http::retry(3, 100, callback)` converts non-2xx to `RequestException` before `$response->failed()` guard executes. Fix scope forbids retry modification → regression test cannot reach fixed code path.
+- **Bypass attempted:** None — blocking condition is architectural, not workaround-eligible
+- **Evidence:** `EVIDENCE_INDEX.md`, `KNOWN_ISSUES.md`
+- **Next action:** Escalate to Ayhan for architectural decision on retry strategy change
+
+---
+
+
 # DECISION LOG — Yalıhan OS
 
 Mimari kararlar, bypass理由 ve kapsam değişiklikleri bu dosyada kaydedilir.
@@ -376,6 +389,48 @@ PRODUCTION_VERIFIED (2026-09-18)
 
 *Son güncelleme: 2026-09-17*
 
+---
 
+## PRENSİP #11 — Canonicalization + Legacy Cleanup Standard (2026-09-23)
+
+**Karar Sahibi:** Ayhan
+**Kaynak:** TASK_34 retrospektif — görev tamamlandıktan sonra human review sırasında oluşturuldu
+**Etki:** Tüm gelecek remediation görevleri (_35, _36, _37, _38, ...)
+
+### Özet
+"Fix tamamlandı" artık yalnız yeni kodun çalışması anlamına gelmiyor.
+Her görevde hedef: ilgili domain/surface'i **tek canonical akışa** indirmek.
+
+### Prensip Detayı
+
+**6 Alan Araştırılır:**
+1. **Legacy Implementations** — Eski controller/service/component/view, superseded code path, eski route
+2. **Duplicate Implementations** — Aynı işi yapan birden fazla yapı, paralel data source'lar
+3. **Dead/Orphan Candidates** — Referanssız Blade/component, kullanılmayan asset, orphan route/controller/service
+4. **Spaghetti/Split-Brain** — Aynı kavram için farklı query contract'ları, birbirini bypass eden code paths
+5. **Connection Residue** — Eski endpoint, dead href, eski API integration, orphan binding
+6. **Design Residue** — Eski component, paralel UI implementasyonu, legacy gradient/CSS
+
+**Evidence Rule:** grep/reference bulunmaması tek başına DEAD CODE kanıtı DEĞİLDİR.
+Silmeden önce kontrol: routes, controllers, Blade includes, service bindings, imports, JS, Vite, events, jobs, scheduler, tests, config.
+
+**Klasifikasyon:** CANONICAL | LEGACY_REFERENCED | DUPLICATE | PROVEN_ORPHAN | PARTIAL_IMPLEMENTATION | SPLIT_BRAIN | UNKNOWN_USAGE
+
+**Bounded Cleanup:** Scope içinde, replacement doğrulanmış, evidence yeterliyse → kaldırılabilir.
+Scope dışında → dokunma, ayrı remediation oluştur.
+
+**No Parallel Old System Hedefi:** SOURCE_OF_TRUTH_COUNT = 1
+
+**Regression Gereksinimi:** Sadece happy-path değil; legacy path artık reachable olmamalı, public routes render, required assets load, no broken links, existing tests remain PASS.
+
+### Gelecek Görevlere Uygulama
+`_37` (Trust Claims), `_35` (Konut Test), `_36` (International), `_38` (AI Widget) — tüm prompt'lara standart olarak dahil edilecek.
+
+### Örnek Uygulama Senaryosu
+> International'ı düzeltirken artık sadece query düzeltilmez.
+> Eski `ulke_id` yolu + `yurt-disi` category yolu + keyword araması + hardcoded fallback + mock yield kartları birlikte incelenir.
+> Canonical belirlendikten sonra eski mekanizma gerçekten gereksizse bırakılmaz.
+
+**Evidence:** DECISION_LOG kaydı + Ayhan onayı
 
 
