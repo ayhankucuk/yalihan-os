@@ -51,13 +51,13 @@
 
         <!-- Form -->
         <form :action="`{{ $action }}`" method="GET" class="px-6 sm:px-8 py-6 space-y-6">
-            <input type="hidden" name="ilan_turu" :value="queryValue">
+            <input type="hidden" name="yayin_tipi" :value="queryValue">
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- Location -->
+                <!-- Location / District -->
                 <div class="space-y-2">
                     <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Lokasyon</label>
-                    <select name="location"
+                    <select name="ilce"
                         class="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500/60 focus:border-amber-500 transition dark:bg-slate-900/90">
                         @foreach ($locations as $location)
                             <option value="{{ $location['value'] }}">{{ $location['label'] }}</option>
@@ -65,10 +65,10 @@
                     </select>
                 </div>
 
-                <!-- Property Type -->
+                <!-- Property Type / Category -->
                 <div class="space-y-2">
                     <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Emlak Türü</label>
-                    <select name="emlak_turu"
+                    <select name="kategori"
                         class="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500/60 focus:border-amber-500 transition dark:bg-slate-900/90">
                         @foreach ($propertyTypes as $type)
                             <option value="{{ $type['value'] }}">{{ $type['label'] }}</option>

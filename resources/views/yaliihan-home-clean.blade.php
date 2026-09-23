@@ -121,7 +121,7 @@
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                 @foreach($populerMahalleler as $mahalle)
-                <a href="{{ route('ilanlar.index', ['mahalle' => $mahalle->mahalle_adi]) }}"
+                <a href="{{ route('ilanlar.index', ['mahalle' => $mahalle->id]) }}"
                    class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 dark:from-emerald-700 dark:to-teal-800 p-5 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
                     <div class="font-semibold text-sm mb-1 group-hover:underline">{{ $mahalle->mahalle_adi }}</div>
                     @if($mahalle->ilce)
