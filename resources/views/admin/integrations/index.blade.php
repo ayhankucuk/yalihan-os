@@ -108,7 +108,7 @@
                                     Ayarlar
                                 </a>
                             @elseif($key === 'notifications')
-                                <a href="{{ route('admin.notifications.settings') }}"
+                                <a href="{{ route('admin.ayarlar.index') }}#bildirim"
                                     class="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-center text-sm font-medium text-white transition-all duration-200 ease-in-out hover:scale-105 hover:bg-blue-700 active:scale-95">
                                     Ayarlar
                                 </a>
@@ -147,7 +147,7 @@
                     </div>
                 </a>
 
-                <a href="{{ route('admin.notifications.settings') }}"
+                <a href="{{ route('admin.ayarlar.index') }}#bildirim"
                     class="flex items-center space-x-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-md active:scale-95 dark:border-gray-700 dark:bg-gray-800">
                     <span class="text-2xl">🔔</span>
                     <div>

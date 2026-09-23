@@ -248,13 +248,13 @@
                                             class="mb-1 block text-sm font-medium text-gray-900 dark:text-slate-100 dark:text-white">
                                             E-posta Bildirimleri
                                         </label>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">Önemli sistem olayları için
-                                            e-posta bildirimleri gönder</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">Rezervasyon ve sistem uyarıları için e-posta gönder</p>
                                     </div>
                                     <label class="relative inline-flex cursor-pointer items-center">
+                                        <input type="hidden" name="email_notifications" value="0">
                                         <input type="checkbox" id="email_notifications" name="email_notifications"
                                             value="1"
-                                            {{ $settings['email_notifications'] ?? false ? 'checked' : '' }}
+                                            {{ filter_var($settings['email_notifications'] ?? true, FILTER_VALIDATE_BOOLEAN) ? 'checked' : '' }}
                                             class="peer sr-only">
                                         <div
                                             class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:peer-focus:ring-blue-800">
@@ -265,16 +265,38 @@
                                 <div
                                     class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-200 hover:shadow-md dark:border-gray-600 dark:border-slate-700 dark:bg-gray-700/50 dark:bg-slate-900">
                                     <div class="flex-1">
-                                        <label for="sms_notifications"
+                                        <label for="whatsapp_notifications"
                                             class="mb-1 block text-sm font-medium text-gray-900 dark:text-slate-100 dark:text-white">
-                                            SMS Bildirimleri
+                                            WhatsApp Bildirimleri
                                         </label>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">Acil durumlar için SMS
-                                            bildirimleri gönder</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">Rezervasyon ve operasyonel akışlar için WhatsApp mesajı gönder</p>
                                     </div>
                                     <label class="relative inline-flex cursor-pointer items-center">
-                                        <input type="checkbox" id="sms_notifications" name="sms_notifications"
-                                            value="1" {{ $settings['sms_notifications'] ?? false ? 'checked' : '' }}
+                                        <input type="hidden" name="whatsapp_notifications" value="0">
+                                        <input type="checkbox" id="whatsapp_notifications" name="whatsapp_notifications"
+                                            value="1"
+                                            {{ filter_var($settings['whatsapp_notifications'] ?? true, FILTER_VALIDATE_BOOLEAN) ? 'checked' : '' }}
+                                            class="peer sr-only">
+                                        <div
+                                            class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:peer-focus:ring-blue-800">
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div
+                                    class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all duration-200 hover:shadow-md dark:border-gray-600 dark:border-slate-700 dark:bg-gray-700/50 dark:bg-slate-900">
+                                    <div class="flex-1">
+                                        <label for="telegram_notifications"
+                                            class="mb-1 block text-sm font-medium text-gray-900 dark:text-slate-100 dark:text-white">
+                                            Telegram Bildirimleri
+                                        </label>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">VIP sinyaller ve sistem logları için Telegram bildirimleri gönder</p>
+                                    </div>
+                                    <label class="relative inline-flex cursor-pointer items-center">
+                                        <input type="hidden" name="telegram_notifications" value="0">
+                                        <input type="checkbox" id="telegram_notifications" name="telegram_notifications"
+                                            value="1"
+                                            {{ filter_var($settings['telegram_notifications'] ?? true, FILTER_VALIDATE_BOOLEAN) ? 'checked' : '' }}
                                             class="peer sr-only">
                                         <div
                                             class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:peer-focus:ring-blue-800">
@@ -912,6 +934,16 @@
                     }
                 });
             });
+
+            // Check URL hash on load (support #notifications and #bildirim)
+            const hash = window.location.hash.replace('#', '');
+            if (hash) {
+                const targetButton = document.querySelector(`.tab-button[data-tab="${hash}"]`) ||
+                    (hash === 'notifications' ? document.querySelector('.tab-button[data-tab="bildirim"]') : null);
+                if (targetButton) {
+                    targetButton.click();
+                }
+            }
         });
 
         // Toggle Password Visibility

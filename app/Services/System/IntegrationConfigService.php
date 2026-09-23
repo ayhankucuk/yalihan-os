@@ -22,7 +22,7 @@ class IntegrationConfigService
             Setting::set('voice_provider', $validated['voice_provider'], 'voice');
             Setting::set('voice_language', $validated['voice_language'], 'voice');
 
-            if (!empty($validated['voice_api_key']) && $validated['voice_api_key'] !== '••••••••••••••••') {
+            if (! empty($validated['voice_api_key']) && $validated['voice_api_key'] !== '••••••••••••••••') {
                 Setting::set('voice_api_key', $validated['voice_api_key'], 'voice');
 
                 if ($validated['voice_provider'] === 'openai_whisper') {
@@ -36,16 +36,5 @@ class IntegrationConfigService
         });
 
         $this->aiCache->invalidateProviderAndVoice();
-    }
-
-    /**
-     * Update notification settings.
-     */
-    public function updateNotifications(array $data): void
-    {
-        // Reserved for future DB transactions
-        DB::transaction(function () use ($data) {
-            // Context7: Ayarları kaydetme simülasyonu
-        });
     }
 }

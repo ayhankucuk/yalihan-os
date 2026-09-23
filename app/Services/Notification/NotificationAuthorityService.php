@@ -3,15 +3,21 @@
 namespace App\Services\Notification;
 
 use App\Contracts\Notification\NotificationAuthorityInterface;
+use App\Contracts\Settings\ConfigurationRegistryInterface;
 use App\DTOs\Notification\GenericNotification;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 class NotificationAuthorityService implements NotificationAuthorityInterface
 {
+    protected ConfigurationRegistryInterface $configRegistry;
+
     public function __construct(
-        protected NotificationDispatcher $dispatcher
-    ) {}
+        protected NotificationDispatcher $dispatcher,
+        ?ConfigurationRegistryInterface $configRegistry = null
+    ) {
+        $this->configRegistry = $configRegistry ?? app(ConfigurationRegistryInterface::class);
+    }
 
     /**
      * Map events to notification policies.
@@ -67,15 +73,23 @@ class NotificationAuthorityService implements NotificationAuthorityInterface
 
         if (empty($policy)) {
             Log::warning("NotificationAuthority: No policy found for event '{$event}'");
+
             return;
         }
 
-        $resolver = app(\App\Services\Notification\TemplateResolver::class);
+        $resolver = app(TemplateResolver::class);
 
         foreach ($policy['channels'] as $channel) {
             try {
+                // N3: Operational channel kill-switch — skip if channel is disabled via admin toggle
+                if (! $this->isChannelEnabled($channel)) {
+                    Log::info("NotificationAuthority: Skipping '{$channel}' for event '{$event}' — channel disabled via admin toggle.");
+
+                    continue;
+                }
+
                 $recipients = $this->resolveRecipients($channel, $data, $actor);
-                
+
                 // N3: Resolve content from template system
                 $resolved = $resolver->resolve(
                     $policy['template'],
@@ -89,7 +103,7 @@ class NotificationAuthorityService implements NotificationAuthorityInterface
                     'subject' => $resolved['subject'],
                     'body' => $resolved['body'],
                     'provider_template_id' => $resolved['provider_template_id'],
-                    'template_metadata' => $resolved['metadata'] ?? []
+                    'template_metadata' => $resolved['metadata'] ?? [],
                 ]);
 
                 foreach ($recipients as $recipient) {
@@ -103,7 +117,7 @@ class NotificationAuthorityService implements NotificationAuthorityInterface
                     $this->dispatcher->dispatch($notification);
                 }
             } catch (\Exception $e) {
-                Log::error("NotificationAuthority: Failed to dispatch '{$event}' for channel '{$channel}': " . $e->getMessage());
+                Log::error("NotificationAuthority: Failed to dispatch '{$event}' for channel '{$channel}': ".$e->getMessage());
             }
         }
     }
@@ -144,5 +158,23 @@ class NotificationAuthorityService implements NotificationAuthorityInterface
         }
 
         return array_unique(array_filter($recipients));
+    }
+
+    /**
+     * Check if an operational channel is enabled.
+     *
+     * Missing setting defaults to true (backward-compatible).
+     * Technical transports (webhook, instagram) always return true.
+     * Unknown channels fail closed (return false).
+     */
+    public function isChannelEnabled(string $channel): bool
+    {
+        return match ($channel) {
+            'email' => (bool) $this->configRegistry->get('email_notifications', true),
+            'whatsapp' => (bool) $this->configRegistry->get('whatsapp_notifications', true),
+            'telegram' => (bool) $this->configRegistry->get('telegram_notifications', true),
+            'webhook', 'instagram' => true,
+            default => false,
+        };
     }
 }

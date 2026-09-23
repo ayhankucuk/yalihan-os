@@ -382,10 +382,14 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
         Route::post('/settings', [\App\Http\Controllers\Admin\IntegrationsController::class, 'updateVoiceSearchSettings'])->name('settings.update');
     });
 
-    // Notification Settings
+    // Notification Settings (Legacy redirect to canonical /admin/ayarlar#bildirim)
     Route::prefix('/notifications')->name('notifications.')->group(function () {
-        Route::get('/settings', [\App\Http\Controllers\Admin\IntegrationsController::class, 'notificationSettings'])->name('settings');
-        Route::post('/settings', [\App\Http\Controllers\Admin\IntegrationsController::class, 'updateNotificationSettings'])->name('settings.update');
+        Route::get('/settings', function () {
+            return redirect()->to(route('admin.ayarlar.index').'#bildirim');
+        })->name('settings');
+        Route::post('/settings', function () {
+            return redirect()->to(route('admin.ayarlar.index').'#bildirim');
+        })->name('settings.update');
     });
 
     // Performance routes

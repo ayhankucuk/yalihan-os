@@ -4,21 +4,21 @@ namespace App\Services\Settings;
 
 use App\Contracts\Settings\SettingsAuthorityInterface;
 use App\Models\Setting;
-use Illuminate\Support\Facades\Cache;
-use App\Services\Logging\LogService;
 use App\Services\Cache\CacheService;
+use App\Services\Logging\LogService;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * 🛡️ SAB SEALED: Settings Authority Service
- * 
+ *
  * Canonical write authority for Settings.
  * Centralizes cache invalidation and database mutations to prevent split-brain issues.
  */
 class SettingsAuthorityService implements SettingsAuthorityInterface
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function set(string $key, mixed $value, string $group = 'general', ?string $type = null, ?string $description = null): void
     {
@@ -44,7 +44,7 @@ class SettingsAuthorityService implements SettingsAuthorityInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function bulkUpdate(array $settings): void
     {
@@ -57,6 +57,7 @@ class SettingsAuthorityService implements SettingsAuthorityInterface
                 } elseif (in_array($key, ['qrcode_durumu', 'qrcode_show_on_cards', 'qrcode_show_on_detail',
                     'navigation_durumu', 'navigation_show_similar',
                     'email_notifications', 'sms_notifications',
+                    'whatsapp_notifications', 'telegram_notifications',
                     'ai_auto_description', 'ai_smart_tags',
                     'user_registration', 'password_strength', 'maintenance_mode'])) {
                     $type = 'boolean';
@@ -77,8 +78,8 @@ class SettingsAuthorityService implements SettingsAuthorityInterface
                     || str_starts_with($key, 'ollama_')
                 ) {
                     $group = 'ai';
-                } elseif (str_starts_with($key, 'email_') || str_starts_with($key, 'smtp_')) {
-                    $group = 'email';
+                } elseif (str_starts_with($key, 'email_') || str_starts_with($key, 'smtp_') || str_contains($key, '_notifications')) {
+                    $group = 'notification';
                 } elseif (str_starts_with($key, 'social_')) {
                     $group = 'social';
                 } elseif (str_starts_with($key, 'seo_') || str_starts_with($key, 'google_analytics')) {
@@ -125,7 +126,7 @@ class SettingsAuthorityService implements SettingsAuthorityInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function flushCache(): void
     {
@@ -135,7 +136,7 @@ class SettingsAuthorityService implements SettingsAuthorityInterface
             Cache::forget('setting.'.$key); // Legacy cleanup
             Cache::forget('setting_'.$key); // Legacy cleanup
         }
-        
+
         Cache::forget(ConfigurationRegistry::getCacheKey('groups'));
         Cache::forget('settings.groups'); // Legacy cleanup
 

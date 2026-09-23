@@ -10,12 +10,15 @@ namespace App\Http\Controllers\Admin;
  * @sab-ignore-thin
  */
 
+use App\Contracts\Settings\ConfigurationRegistryInterface;
+use App\Enums\AktiflikDurumu;
 use App\Http\Controllers\Controller;
 use App\Services\AI\AiSettingsCacheService;
+use App\Services\System\IntegrationConfigService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Enums\AktiflikDurumu;
 
 /**
  * Integrations Controller - AI Automation Settings
@@ -29,7 +32,7 @@ class IntegrationsController extends Controller
 {
     public function __construct(
         private readonly AiSettingsCacheService $aiCache,
-        private readonly \App\Services\System\IntegrationConfigService $configService
+        private readonly IntegrationConfigService $configService
     ) {}
 
     /**
@@ -47,7 +50,7 @@ class IntegrationsController extends Controller
             ],
             'telegram' => [
                 'name' => 'Telegram AI Bot',
-                'aktiflik_durumu' => !empty(config('services.telegram.bot_token')) ? 'aktif' : 'pasif',
+                'aktiflik_durumu' => ! empty(config('services.telegram.bot_token')) ? 'aktif' : 'pasif',
                 'bot_username' => config('services.telegram.bot_username'),
                 'commands_count' => 11,
                 'icon' => '✈️',
@@ -122,7 +125,7 @@ class IntegrationsController extends Controller
      */
     public function voiceSearchSettings()
     {
-        $config = app(\App\Contracts\Settings\ConfigurationRegistryInterface::class);
+        $config = app(ConfigurationRegistryInterface::class);
 
         return view('admin.integrations.voice-search-settings', [
             'voiceSearchEnabled' => $config->get('voice_search_enabled', true),
@@ -151,8 +154,8 @@ class IntegrationsController extends Controller
         ]);
 
         $this->configService->updateVoiceSearch(
-            $validated, 
-            $request->has('voice_search_enabled'), 
+            $validated,
+            $request->has('voice_search_enabled'),
             $request->has('auto_submit')
         );
 
@@ -160,21 +163,19 @@ class IntegrationsController extends Controller
     }
 
     /**
-     * Display notification settings
+     * Display notification settings (deprecated — canonical surface is /admin/ayarlar#bildirim).
      */
     public function notificationSettings()
     {
-        return view('admin.integrations.notification-settings');
+        return redirect()->to(route('admin.ayarlar.index').'#bildirim');
     }
 
     /**
-     * Update notification settings
+     * Update notification settings (deprecated — canonical surface is /admin/ayarlar#bildirim).
      */
     public function updateNotificationSettings(Request $request)
     {
-        $this->configService->updateNotifications($request->all());
-
-        return back()->with('success', 'Bildirim ayarları başarıyla güncellendi.');
+        return redirect()->to(route('admin.ayarlar.index').'#bildirim');
     }
 
     /**
@@ -194,7 +195,7 @@ class IntegrationsController extends Controller
             // Update config cache
             $this->aiCache->putIntegrationSettings($integration, $validated);
 
-            Log::info("Integration settings updated", [
+            Log::info('Integration settings updated', [
                 'integration' => $integration,
                 'updated_fields' => array_keys($validated),
             ]);
@@ -204,7 +205,7 @@ class IntegrationsController extends Controller
                 'message' => 'Entegrasyon ayarları güncellendi.',
             ]);
         } catch (\Exception $e) {
-            Log::error("Integration update failed", [
+            Log::error('Integration update failed', [
                 'integration' => $integration,
                 'error' => $e->getMessage(),
             ]);
@@ -232,14 +233,14 @@ class IntegrationsController extends Controller
 
             return response()->json($result);
         } catch (\Exception $e) {
-            Log::error("Integration test failed", [
+            Log::error('Integration test failed', [
                 'integration' => $integration,
                 'error' => $e->getMessage(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Test sırasında hata oluştu: ' . $e->getMessage(),
+                'message' => 'Test sırasında hata oluştu: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -267,8 +268,8 @@ class IntegrationsController extends Controller
         }
 
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(5)
-                ->post($webhookUrl . '/test', [
+            $response = Http::timeout(5)
+                ->post($webhookUrl.'/test', [
                     'test' => true,
                     'timestamp' => now()->toIso8601String(),
                 ]);
@@ -277,12 +278,12 @@ class IntegrationsController extends Controller
                 'success' => $response->successful(),
                 'message' => $response->successful()
                     ? 'n8n bağlantısı başarılı.'
-                    : 'n8n bağlantısı başarısız: ' . $response->toPsrResponse()->getStatusCode(),
+                    : 'n8n bağlantısı başarısız: '.$response->toPsrResponse()->getStatusCode(),
             ];
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => 'n8n bağlantı hatası: ' . $e->getMessage(),
+                'message' => 'n8n bağlantı hatası: '.$e->getMessage(),
             ];
         }
     }
@@ -302,7 +303,7 @@ class IntegrationsController extends Controller
         }
 
         try {
-            $response = \Illuminate\Support\Facades\Http::get(
+            $response = Http::get(
                 "https://api.telegram.org/bot{$botToken}/getMe"
             );
 
@@ -317,7 +318,7 @@ class IntegrationsController extends Controller
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => 'Telegram bağlantı hatası: ' . $e->getMessage(),
+                'message' => 'Telegram bağlantı hatası: '.$e->getMessage(),
             ];
         }
     }
@@ -361,7 +362,7 @@ class IntegrationsController extends Controller
 
         return [
             'success' => true,
-            'message' => 'Bildirim sistemi aktif (' . count($channels) . ' kanal).',
+            'message' => 'Bildirim sistemi aktif ('.count($channels).' kanal).',
         ];
     }
 }
