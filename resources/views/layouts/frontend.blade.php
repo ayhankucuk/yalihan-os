@@ -325,7 +325,7 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <x-icon name="gonder" class="w-4 h-4 shrink-0" style="color: #C9A84C;" />
-                            <a href="mailto:info@yalihanemlak.com" class="text-sm hover:opacity-100 transition-opacity" style="color: rgba(255,255,255,0.5);">info@yalihanemlak.com</a>
+                            <a href="mailto:{{ config('company.email') }}" class="text-sm hover:opacity-100 transition-opacity" style="color: rgba(255,255,255,0.5);">{{ config('company.email') }}</a>
                         </div>
                     </div>
                 </div>

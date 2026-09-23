@@ -82,7 +82,7 @@
                             <div>
                                 <h3 class="text-xl font-bold mb-2 dark:text-white">Merkez Ofis (Bodrum)</h3>
                                 <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
-                                    Yalıkavak Marina, Çökertme Cd. No:14<br>
+                                    {{ config('company.address') }}<br>
                                     48400 Bodrum / Muğla, Türkiye
                                 </p>
                             </div>
@@ -95,8 +95,8 @@
                             <div>
                                 <h3 class="text-xl font-bold mb-2 dark:text-white">Telefon</h3>
                                 <div class="space-y-1">
-                                    <p class="text-slate-600 dark:text-slate-300">+90 (252) 316 00 00</p>
-                                    <a href="#" class="inline-flex items-center gap-2 font-bold hover:underline" style="color: var(--gold);">
+                                    <p class="text-slate-600 dark:text-slate-300">{{ config('company.phone') }}</p>
+                                    <a href="{{ config('company.whatsapp_url') }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 font-bold hover:underline" style="color: var(--gold);">
                                         <x-icon name="gonder" class="w-4 h-4" /> WhatsApp Hattı
                                     </a>
                                 </div>
@@ -109,7 +109,7 @@
                             </div>
                             <div>
                                 <h3 class="text-xl font-bold mb-2 dark:text-white">E-posta</h3>
-                                <p class="text-slate-600 dark:text-slate-300">kurumsal@yalihanemlak.com</p>
+                                <p class="text-slate-600 dark:text-slate-300">{{ config('company.email') }}</p>
                             </div>
                         </div>
                     </div>

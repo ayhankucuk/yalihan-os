@@ -66,7 +66,7 @@
                 <div class="space-y-3">
                     <p class="flex items-center">
                         <span class="material-symbols-outlined mr-3" style="font-size:20px;vertical-align:middle">location_on</span>
-                        Yalıkavak, Şeyhül İslam Ömer Lütfi Cd. No:10 D:C, 48400 Bodrum/Muğla
+                        {{ config('company.address') }}
                     </p>
                     <p class="flex items-center">
                         <span class="material-symbols-outlined mr-3" style="font-size:20px;vertical-align:middle">call</span>
@@ -74,7 +74,7 @@
                     </p>
                     <p class="flex items-center">
                         <span class="material-symbols-outlined mr-3" style="font-size:20px;vertical-align:middle">mail</span>
-                        <a href="mailto:info@yalihanemlak.com" class="hover:underline">info@yalihanemlak.com</a>
+                        <a href="mailto:{{ config('company.email') }}" class="hover:underline">{{ config('company.email') }}</a>
                     </p>
                 </div>
             </div>
