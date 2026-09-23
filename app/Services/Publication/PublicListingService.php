@@ -23,6 +23,15 @@ class PublicListingService
     {
         $query = Ilan::query()->byYayinDurumu(IlanDurumu::YAYINDA->value);
 
+        // Yayın tipi filtresi (satilik | kiralik) — maps to yayin_tipi_id FK
+        if (!empty($filters['yayin_tipi'])) {
+            $yayinTipiSlug = $filters['yayin_tipi'];
+            $yayinTipi = \App\Models\YayinTipi::where('slug', $yayinTipiSlug)->orderBy('id')->first();
+            if ($yayinTipi) {
+                $query->where('yayin_tipi_id', $yayinTipi->id);
+            }
+        }
+
         // Kategori ID filtresi
         if (!empty($filters['kategori'])) {
             $catId = $filters['kategori'];

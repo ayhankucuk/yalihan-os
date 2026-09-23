@@ -70,7 +70,7 @@
                     <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Yazlık & Kiralık</h2>
                     <p class="mt-2 text-gray-500 dark:text-gray-400">Sezonluk kiralık yazlıklar, tatil villalar</p>
                 </div>
-                <a href="{{ route('ilanlar.index', ['kategori' => 'yazlik-kiralama']) }}"
+                <a href="{{ route('ilanlar.index', ['kategori' => 4]) }}"
                    class="text-sm font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 transition-colors">
                     Tümünü Gör →
                 </a>
@@ -95,7 +95,7 @@
                     <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Arsa & Parsel</h2>
                     <p class="mt-2 text-gray-500 dark:text-gray-400">Bodrum bölgesinde yatırımlık arsa ve arazi fırsatları</p>
                 </div>
-                <a href="{{ route('ilanlar.index', ['kategori' => 'arsa-arazi']) }}"
+                <a href="{{ route('ilanlar.index', ['kategori' => 3]) }}"
                    class="text-sm font-semibold text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 transition-colors">
                     Tümünü Gör →
                 </a>
@@ -148,7 +148,7 @@
                         {{ count($yurtDisiUlkeler) }} ülkede seçkin gayrimenkul fırsatları
                     </p>
                 </div>
-                <a href="{{ route('ilanlar.index', ['kategori' => 'yurt-disi']) }}"
+                <a href="{{ route('ilanlar.index', ['kategori_slug' => 'yurt-disi']) }}"
                    class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
                     Tümünü Gör →
                 </a>

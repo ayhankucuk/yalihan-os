@@ -5,22 +5,8 @@
         ['id' => 'sale', 'label' => 'Satılık', 'query' => 'satilik'],
         ['id' => 'rent', 'label' => 'Kiralık', 'query' => 'kiralik'],
     ],
-    'locations' => [
-        ['value' => '', 'label' => 'Lokasyon Seçin'],
-        ['value' => 'Bodrum', 'label' => 'Bodrum'],
-        ['value' => 'İstanbul', 'label' => 'İstanbul'],
-        ['value' => 'Ankara', 'label' => 'Ankara'],
-        ['value' => 'İzmir', 'label' => 'İzmir'],
-        ['value' => 'Yalıkavak', 'label' => 'Yalıkavak'],
-    ],
-    'propertyTypes' => [
-        ['value' => '', 'label' => 'Emlak Türü'],
-        ['value' => 'villa', 'label' => 'Villa'],
-        ['value' => 'konut', 'label' => 'Konut'],
-        ['value' => 'arsa', 'label' => 'Arsa'],
-        ['value' => 'isyeri', 'label' => 'İşyeri'],
-        ['value' => 'yazlik', 'label' => 'Yazlık Kiralık'],
-    ],
+    'locations' => [], // Rendered from controller via :locations prop
+    'propertyTypes' => [], // Bypassed — rendered from controller via prop (see below)
 ])
 
 <div
@@ -59,6 +45,7 @@
                     <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Lokasyon</label>
                     <select name="ilce"
                         class="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500/60 focus:border-amber-500 transition dark:bg-slate-900/90">
+                        <option value="">Lokasyon Seçin</option>
                         @foreach ($locations as $location)
                             <option value="{{ $location['value'] }}">{{ $location['label'] }}</option>
                         @endforeach
@@ -70,6 +57,7 @@
                     <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Emlak Türü</label>
                     <select name="kategori"
                         class="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500/60 focus:border-amber-500 transition dark:bg-slate-900/90">
+                        <option value="">Emlak Türü</option>
                         @foreach ($propertyTypes as $type)
                             <option value="{{ $type['value'] }}">{{ $type['label'] }}</option>
                         @endforeach
