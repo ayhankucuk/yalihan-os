@@ -56,7 +56,7 @@ class SettingsAuthorityService implements SettingsAuthorityInterface
                     $type = 'integer';
                 } elseif (in_array($key, ['qrcode_durumu', 'qrcode_show_on_cards', 'qrcode_show_on_detail',
                     'navigation_durumu', 'navigation_show_similar',
-                    'email_notifications', 'sms_notifications',
+                    'email_notifications',
                     'whatsapp_notifications', 'telegram_notifications',
                     'ai_auto_description', 'ai_smart_tags',
                     'user_registration', 'password_strength', 'maintenance_mode'])) {
