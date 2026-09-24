@@ -182,42 +182,54 @@
                                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Sitenin ana başlığı</p>
                                 </div>
 
+                                @php
+                                    $defaultCurr = $currencies->firstWhere('varsayilan_durumu', true) ?? $currencies->firstWhere('code', 'TRY');
+                                    $defaultLang = $languages->firstWhere('varsayilan_durumu', true) ?? $languages->firstWhere('code', 'tr');
+                                @endphp
                                 <div class="space-y-2">
-                                    <label for="default_currency"
-                                        class="block text-sm font-medium text-gray-900 dark:text-slate-100 dark:text-white">
-                                        Varsayılan Para Birimi <span class="text-red-500">*</span>
+                                    <label class="block text-sm font-medium text-gray-900 dark:text-slate-100 dark:text-white">
+                                        Varsayılan Para Birimi
                                     </label>
-                                    <select style="color-scheme: light dark;" id="default_currency"
-                                        name="default_currency"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 shadow-sm transition-all duration-200 hover:shadow-md focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-900 dark:text-slate-100 dark:text-white dark:shadow-none">
-                                        @foreach ($currencies as $curr)
-                                            <option value="{{ $curr->code }}"
-                                                {{ ($settings['default_currency'] ?? 'TRY') == $curr->code ? 'selected' : '' }}>
-                                                {{ $curr->symbol }} {{ $curr->code }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Sistem genelinde kullanılacak
-                                        para birimi</p>
+                                    <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-slate-800/60">
+                                        <div class="flex items-center gap-2">
+                                            <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                                                {{ $defaultCurr->symbol ?? '₺' }}
+                                            </span>
+                                            <span class="text-sm font-medium text-gray-900 dark:text-slate-100">
+                                                {{ $defaultCurr->code ?? 'TRY' }}
+                                            </span>
+                                            <span class="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                                                VARSAYILAN
+                                            </span>
+                                        </div>
+                                        <button type="button" onclick="document.querySelector('.tab-button[data-tab=\'paralar\']').click()" class="text-xs font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                                            Yönet &rarr;
+                                        </button>
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Para birimi ayarları <button type="button" onclick="document.querySelector('.tab-button[data-tab=\'paralar\']').click()" class="text-blue-600 underline dark:text-blue-400">Para Birimleri</button> sekmesinden yönetilir.</p>
                                 </div>
 
                                 <div class="space-y-2">
-                                    <label for="default_language"
-                                        class="block text-sm font-medium text-gray-900 dark:text-slate-100 dark:text-white">
-                                        Varsayılan Dil <span class="text-red-500">*</span>
+                                    <label class="block text-sm font-medium text-gray-900 dark:text-slate-100 dark:text-white">
+                                        Varsayılan Dil
                                     </label>
-                                    <select style="color-scheme: light dark;" id="default_language"
-                                        name="default_language"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 shadow-sm transition-all duration-200 hover:shadow-md focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-900 dark:text-slate-100 dark:text-white dark:shadow-none">
-                                        @foreach ($languages as $lang)
-                                            <option value="{{ $lang->code }}"
-                                                {{ ($settings['default_language'] ?? 'tr') == $lang->code ? 'selected' : '' }}>
-                                                {{ $lang->name }} ({{ strtoupper($lang->code) }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Sistem genelinde kullanılacak
-                                        birincil dil</p>
+                                    <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-slate-800/60">
+                                        <div class="flex items-center gap-2">
+                                            <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
+                                                {{ strtoupper($defaultLang->code ?? 'TR') }}
+                                            </span>
+                                            <span class="text-sm font-medium text-gray-900 dark:text-slate-100">
+                                                {{ $defaultLang->name ?? 'Türkçe' }}
+                                            </span>
+                                            <span class="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
+                                                VARSAYILAN
+                                            </span>
+                                        </div>
+                                        <button type="button" onclick="document.querySelector('.tab-button[data-tab=\'diller\']').click()" class="text-xs font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                                            Yönet &rarr;
+                                        </button>
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Sistem dili ayarları <button type="button" onclick="document.querySelector('.tab-button[data-tab=\'diller\']').click()" class="text-blue-600 underline dark:text-blue-400">Diller</button> sekmesinden yönetilir.</p>
                                 </div>
                             </div>
                         </div>
