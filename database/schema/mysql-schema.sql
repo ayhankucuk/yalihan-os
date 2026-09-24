@@ -2036,6 +2036,7 @@ DROP TABLE IF EXISTS `ilan_fotograflari`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ilan_fotograflari` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint unsigned DEFAULT NULL,
   `ilan_id` bigint unsigned NOT NULL,
   `dosya_adi` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `dosya_yolu` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -2048,6 +2049,7 @@ CREATE TABLE `ilan_fotograflari` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
+  KEY `ilan_fotograflari_tenant_id_index` (`tenant_id`),
   KEY `ilan_fotograflari_ilan_id_kapak_fotografi_index` (`ilan_id`,`kapak_fotografi`),
   CONSTRAINT `ilan_fotograflari_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2404,7 +2406,6 @@ CREATE TABLE `ilanlar` (
   `tapu_id` bigint unsigned DEFAULT NULL COMMENT 'FK to tapu_kayitlari',
   `metadata` json DEFAULT NULL COMMENT 'JSON metadata (MySQL json)',
   `kategori_id` bigint unsigned DEFAULT NULL,
-  `proje_id` bigint unsigned DEFAULT NULL,
   `ilgili_kisi_id` bigint unsigned DEFAULT NULL,
   `ulke_id` bigint unsigned DEFAULT NULL,
   `country_code` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TR',
@@ -2700,9 +2701,9 @@ DROP TABLE IF EXISTS `komisyonlar`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `komisyonlar` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint unsigned DEFAULT NULL,
   `ilan_id` bigint unsigned NOT NULL,
   `kisi_id` bigint unsigned NOT NULL,
-  `ilan_id` bigint unsigned NOT NULL,
   `danisman_id` bigint unsigned DEFAULT NULL,
   `satici_danisman_id` bigint unsigned DEFAULT NULL,
   `alici_danisman_id` bigint unsigned DEFAULT NULL,
@@ -2723,6 +2724,7 @@ CREATE TABLE `komisyonlar` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
+  KEY `komisyonlar_tenant_id_index` (`tenant_id`),
   KEY `komisyonlar_ilan_id_index` (`ilan_id`),
   KEY `komisyonlar_kisi_id_index` (`kisi_id`),
   KEY `komisyonlar_danisman_id_index` (`danisman_id`),
@@ -2828,6 +2830,7 @@ DROP TABLE IF EXISTS `leads`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `leads` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint unsigned DEFAULT NULL,
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Customer name (extracted from platform or message)',
   `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -2863,6 +2866,7 @@ CREATE TABLE `leads` (
   `interaction_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'message',
   `sesli_onay_verildi` tinyint unsigned NOT NULL DEFAULT '0' COMMENT 'Sesli görüşme onayı (Context7 boolean)',
   PRIMARY KEY (`id`),
+  KEY `leads_tenant_id_index` (`tenant_id`),
   UNIQUE KEY `leads_platform_platform_user_id_unique` (`platform`,`platform_user_id`),
   KEY `leads_crm_durumu_index` (`crm_durumu`),
   KEY `leads_interested_location_id_index` (`interested_location_id`),
@@ -3932,6 +3936,7 @@ DROP TABLE IF EXISTS `property_reservations`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `property_reservations` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint unsigned DEFAULT NULL,
   `property_id` bigint unsigned NOT NULL,
   `start_date` date NOT NULL,
   `end_date` date NOT NULL,
@@ -4382,6 +4387,7 @@ DROP TABLE IF EXISTS `talepler`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `talepler` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint unsigned DEFAULT NULL,
   `baslik` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `aciklama` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `kisi_id` bigint unsigned NOT NULL,
@@ -4408,6 +4414,7 @@ CREATE TABLE `talepler` (
   `mahalle_id` bigint unsigned DEFAULT NULL,
   `kaynak` varchar(100) DEFAULT NULL COMMENT 'Talep origin source',
   PRIMARY KEY (`id`),
+  KEY `talepler_tenant_id_index` (`tenant_id`),
   KEY `talepler_ilce_id_foreign` (`ilce_id`),
   KEY `talepler_talep_durumu_index` (`talep_durumu`),
   KEY `talepler_talep_tipi_index` (`talep_tipi`),
@@ -4656,6 +4663,7 @@ DROP TABLE IF EXISTS `users`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -4689,7 +4697,8 @@ CREATE TABLE `users` (
   `profile_photo_path` varchar(2048) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `role` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `users_email_unique` (`email`)
+  UNIQUE KEY `users_email_unique` (`email`),
+  KEY `users_tenant_id_foreign` (`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `valuation_signal_logs`;
@@ -5249,7 +5258,8 @@ PRIMARY KEY (`id`),
 KEY `access_credentials_tenant_id_ilan_id_is_active_index` (`tenant_id`,`ilan_id`,`is_active`),
 KEY `access_credentials_ilan_id_foreign` (`ilan_id`),
 CONSTRAINT `access_credentials_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE,
-CONSTRAINT `access_credentials_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
+CONSTRAINT `access_credentials_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `admin_activity_events` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5268,7 +5278,8 @@ KEY `admin_activity_events_user_id_foreign` (`user_id`),
 KEY `admin_act_entity_idx` (`entity_type`,`entity_id`),
 KEY `admin_act_action_source_idx` (`action`,`source`),
 KEY `admin_act_created_idx` (`created_at`),
-CONSTRAINT `admin_activity_events_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+CONSTRAINT `admin_activity_events_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `admin_notifications` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5284,7 +5295,8 @@ CREATE TABLE `admin_notifications` (
 PRIMARY KEY (`id`),
 KEY `admin_notif_user_read_idx` (`user_id`,`is_read`),
 KEY `admin_notif_user_created_idx` (`user_id`,`created_at`),
-CONSTRAINT `admin_notifications_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+CONSTRAINT `admin_notifications_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `ai_credit_balances` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5297,7 +5309,8 @@ CREATE TABLE `ai_credit_balances` (
 `updated_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
 UNIQUE KEY `ai_credit_balances_tenant_id_unique` (`tenant_id`),
-CONSTRAINT `ai_credit_balances_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`);
+CONSTRAINT `ai_credit_balances_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `ai_description_drafts` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5326,7 +5339,8 @@ KEY `ai_description_drafts_ilan_id_created_at_index` (`ilan_id`,`created_at`),
 CONSTRAINT `ai_description_drafts_approved_by_foreign` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
 CONSTRAINT `ai_description_drafts_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE,
 CONSTRAINT `ai_description_drafts_rejected_by_foreign` FOREIGN KEY (`rejected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-CONSTRAINT `ai_description_drafts_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+CONSTRAINT `ai_description_drafts_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 DROP TABLE IF EXISTS `ai_messages`;
 CREATE TABLE `ai_messages` (
@@ -5415,7 +5429,8 @@ UNIQUE KEY `ai_security_logs_current_hash_unique` (`current_hash`),
 KEY `idx_user_event_time` (`user_id`,`event_type`,`created_at`),
 KEY `ai_security_logs_event_type_index` (`event_type`),
 KEY `ai_security_logs_user_id_index` (`user_id`),
-CONSTRAINT `ai_security_logs_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+CONSTRAINT `ai_security_logs_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `ai_storages` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5428,7 +5443,8 @@ CREATE TABLE `ai_storages` (
 PRIMARY KEY (`id`),
 UNIQUE KEY `ai_storages_storage_key_unique` (`storage_key`),
 KEY `ai_storage_type_idx` (`type`),
-KEY `ai_storage_context_idx` (`context`);
+KEY `ai_storage_context_idx` (`context`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `ai_telemetry` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5458,7 +5474,8 @@ KEY `ai_telemetry_provider_index` (`provider`),
 KEY `ai_telemetry_feature_index` (`feature`),
 KEY `ai_telemetry_response_time_ms_index` (`response_time_ms`),
 KEY `ai_telemetry_aktiflik_kodu_index` (`aktiflik_kodu`),
-KEY `ai_telemetry_created_at_index` (`created_at`);
+KEY `ai_telemetry_created_at_index` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `belgeler` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5479,7 +5496,8 @@ KEY `belgeler_user_id_foreign` (`user_id`),
 KEY `belgeler_ilan_id_foreign` (`ilan_id`),
 CONSTRAINT `belgeler_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE SET NULL,
 CONSTRAINT `belgeler_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
-CONSTRAINT `belgeler_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+CONSTRAINT `belgeler_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `billing_ledger_entries` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5496,7 +5514,8 @@ CREATE TABLE `billing_ledger_entries` (
 `updated_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
 KEY `billing_ledger_entries_tenant_id_foreign` (`tenant_id`),
-CONSTRAINT `billing_ledger_entries_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`);
+CONSTRAINT `billing_ledger_entries_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `bonuses` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5515,7 +5534,8 @@ PRIMARY KEY (`id`),
 UNIQUE KEY `unique_bonus_per_agent_month` (`agent_id`,`target_month`),
 KEY `bonuses_agent_id_index` (`agent_id`),
 KEY `idx_bonuses_tenant_id` (`tenant_id`),
-CONSTRAINT `fk_bonuses_tenant_id` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
+CONSTRAINT `fk_bonuses_tenant_id` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `channel_sync_executions` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5546,7 +5566,8 @@ KEY `channel_sync_executions_property_id_status_index` (`property_id`,`status`),
 KEY `channel_sync_executions_tenant_id_reservation_id_index` (`tenant_id`,`reservation_id`),
 KEY `channel_sync_executions_correlation_id_index` (`correlation_id`),
 KEY `channel_sync_executions_processed_at_index` (`processed_at`),
-KEY `channel_sync_executions_tenant_channel_idx` (`tenant_id`,`channel`);
+KEY `channel_sync_executions_tenant_channel_idx` (`tenant_id`,`channel`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `commissions` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5575,7 +5596,8 @@ UNIQUE KEY `unique_commission_tenant_listing_agent` (`tenant_id`,`ilan_id`,`agen
 KEY `commissions_ilan_id_index` (`ilan_id`),
 KEY `commissions_agent_id_index` (`agent_id`),
 KEY `idx_commissions_tenant_id` (`tenant_id`),
-CONSTRAINT `fk_commissions_tenant_id` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
+CONSTRAINT `fk_commissions_tenant_id` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `communications` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5617,7 +5639,8 @@ KEY `communications_resolved_by_foreign` (`resolved_by`),
 CONSTRAINT `communications_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
 CONSTRAINT `communications_reservation_id_foreign` FOREIGN KEY (`reservation_id`) REFERENCES `property_reservations` (`id`) ON DELETE SET NULL,
 CONSTRAINT `communications_resolved_by_foreign` FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-CONSTRAINT `communications_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE SET NULL;
+CONSTRAINT `communications_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `config_options` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5639,7 +5662,8 @@ KEY `config_options_yayin_tipi_id_foreign` (`yayin_tipi_id`),
 KEY `config_opt_key_kat_yay_idx` (`option_key`,`kategori_id`,`yayin_tipi_id`),
 KEY `config_opt_aktif_order_idx` (`aktiflik_durumu`,`display_order`),
 CONSTRAINT `config_options_kategori_id_foreign` FOREIGN KEY (`kategori_id`) REFERENCES `ilan_kategorileri` (`id`) ON DELETE SET NULL,
-CONSTRAINT `config_options_yayin_tipi_id_foreign` FOREIGN KEY (`yayin_tipi_id`) REFERENCES `yayin_tipi_sablonlari` (`id`) ON DELETE SET NULL;
+CONSTRAINT `config_options_yayin_tipi_id_foreign` FOREIGN KEY (`yayin_tipi_id`) REFERENCES `yayin_tipi_sablonlari` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `cortex_neural_connections` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5663,7 +5687,8 @@ PRIMARY KEY (`id`),
 KEY `cortex_neural_connections_source_module_target_module_index` (`source_module`,`target_module`),
 KEY `cortex_neural_connections_connection_type_aktiflik_durumu_index` (`connection_type`,`aktiflik_durumu`),
 KEY `cortex_neural_connections_ulke_id_index` (`ulke_id`),
-KEY `cortex_neural_connections_aktiflik_durumu_index` (`aktiflik_durumu`);
+KEY `cortex_neural_connections_aktiflik_durumu_index` (`aktiflik_durumu`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `danisman_yorumlar` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5678,7 +5703,8 @@ CREATE TABLE `danisman_yorumlar` (
 PRIMARY KEY (`id`),
 KEY `danisman_yorumlar_danisman_id_index` (`danisman_id`),
 KEY `danisman_yorumlar_onay_durumu_index` (`onay_durumu`),
-CONSTRAINT `danisman_yorumlar_danisman_id_foreign` FOREIGN KEY (`danisman_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+CONSTRAINT `danisman_yorumlar_danisman_id_foreign` FOREIGN KEY (`danisman_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `demirbas_kategorileri` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5691,7 +5717,8 @@ CREATE TABLE `demirbas_kategorileri` (
 `updated_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
 UNIQUE KEY `demirbas_kategorileri_slug_unique` (`slug`),
-KEY `dk_aktif_order_idx` (`aktiflik_durumu`,`display_order`);
+KEY `dk_aktif_order_idx` (`aktiflik_durumu`,`display_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `demirbaslar` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5715,7 +5742,8 @@ KEY `demirbaslar_ulke_id_index` (`ulke_id`),
 KEY `demirbaslar_kategori_id_index` (`kategori_id`),
 KEY `demirbaslar_ilan_kategori_id_index` (`ilan_kategori_id`),
 KEY `demirbaslar_yayin_tipi_id_index` (`yayin_tipi_id`),
-KEY `demirbaslar_aktiflik_durumu_index` (`aktiflik_durumu`);
+KEY `demirbaslar_aktiflik_durumu_index` (`aktiflik_durumu`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `etki_alani_olaylari` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5739,7 +5767,8 @@ KEY `etki_alani_olaylari_created_at_index` (`created_at`),
 KEY `etki_alani_olaylari_user_id_foreign` (`user_id`),
 KEY `etki_alani_olaylari_tenant_id_index` (`tenant_id`),
 CONSTRAINT `etki_alani_olaylari_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
-CONSTRAINT `etki_alani_olaylari_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+CONSTRAINT `etki_alani_olaylari_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `etki_alani_olaylari_hatali` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5757,7 +5786,8 @@ KEY `idx_tenant_event_type` (`tenant_id`,`olay_turu`),
 KEY `etki_alani_olaylari_hatali_islem_durumu_index` (`islem_durumu`),
 KEY `etki_alani_olaylari_hatali_olusturulma_zamani_index` (`olusturulma_zamani`),
 KEY `etki_alani_olaylari_hatali_tenant_id_index` (`tenant_id`),
-CONSTRAINT `etki_alani_olaylari_hatali_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT;
+CONSTRAINT `etki_alani_olaylari_hatali_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `feature_category_translations` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5769,7 +5799,8 @@ CREATE TABLE `feature_category_translations` (
 `updated_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
 UNIQUE KEY `fct_category_locale_unique` (`feature_category_id`,`locale`),
-CONSTRAINT `feature_category_translations_feature_category_id_foreign` FOREIGN KEY (`feature_category_id`) REFERENCES `feature_categories` (`id`) ON DELETE CASCADE;
+CONSTRAINT `feature_category_translations_feature_category_id_foreign` FOREIGN KEY (`feature_category_id`) REFERENCES `feature_categories` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `feature_flags` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5780,7 +5811,8 @@ CREATE TABLE `feature_flags` (
 `created_at` timestamp NULL DEFAULT NULL,
 `updated_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
-UNIQUE KEY `feature_flags_key_unique` (`key`);
+UNIQUE KEY `feature_flags_key_unique` (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `feature_translations` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5792,7 +5824,8 @@ CREATE TABLE `feature_translations` (
 `updated_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
 UNIQUE KEY `ft_feature_locale_unique` (`feature_id`,`locale`),
-CONSTRAINT `feature_translations_feature_id_foreign` FOREIGN KEY (`feature_id`) REFERENCES `features` (`id`) ON DELETE CASCADE;
+CONSTRAINT `feature_translations_feature_id_foreign` FOREIGN KEY (`feature_id`) REFERENCES `features` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `feature_values` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5807,7 +5840,8 @@ PRIMARY KEY (`id`),
 KEY `feature_values_valuable_type_valuable_id_index` (`valuable_type`,`valuable_id`),
 KEY `feature_values_feature_id_foreign` (`feature_id`),
 KEY `fv_valuable_feature_idx` (`valuable_type`,`valuable_id`,`feature_id`),
-CONSTRAINT `feature_values_feature_id_foreign` FOREIGN KEY (`feature_id`) REFERENCES `features` (`id`) ON DELETE CASCADE;
+CONSTRAINT `feature_values_feature_id_foreign` FOREIGN KEY (`feature_id`) REFERENCES `features` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `financial_settings` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5822,7 +5856,8 @@ CREATE TABLE `financial_settings` (
 `updated_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
 KEY `financial_settings_tenant_id_foreign` (`tenant_id`),
-CONSTRAINT `financial_settings_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`);
+CONSTRAINT `financial_settings_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `governance_alerts` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5839,7 +5874,8 @@ KEY `governance_alerts_tip_created_at_index` (`tip`,`created_at`),
 KEY `governance_alerts_tip_index` (`tip`),
 KEY `governance_alerts_acknowledged_index` (`acknowledged`),
 KEY `governance_alerts_acknowledged_by_foreign` (`acknowledged_by`),
-CONSTRAINT `governance_alerts_acknowledged_by_foreign` FOREIGN KEY (`acknowledged_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+CONSTRAINT `governance_alerts_acknowledged_by_foreign` FOREIGN KEY (`acknowledged_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `governance_audit_logs` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5862,7 +5898,8 @@ KEY `idx_gov_audit_actor_id` (`actor_id`),
 KEY `idx_gov_audit_created_at` (`created_at`),
 KEY `governance_audit_logs_ulke_id_index` (`ulke_id`),
 CONSTRAINT `governance_audit_logs_actor_id_foreign` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-CONSTRAINT `governance_audit_logs_ulke_id_foreign` FOREIGN KEY (`ulke_id`) REFERENCES `ulkeler` (`id`) ON DELETE SET NULL;
+CONSTRAINT `governance_audit_logs_ulke_id_foreign` FOREIGN KEY (`ulke_id`) REFERENCES `ulkeler` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `governance_events` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5881,7 +5918,8 @@ KEY `governance_events_tenant_id_is_violation_index` (`tenant_id`,`is_violation`
 KEY `governance_events_metric_index` (`metric`),
 KEY `governance_events_tenant_id_index` (`tenant_id`),
 KEY `governance_events_is_violation_index` (`is_violation`),
-KEY `governance_events_occurred_at_index` (`occurred_at`);
+KEY `governance_events_occurred_at_index` (`occurred_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `guest_messages` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5917,7 +5955,8 @@ KEY `guest_messages_response_mode_index` (`response_mode`),
 KEY `guest_messages_gorev_id_index` (`gorev_id`),
 KEY `guest_messages_escalated_index` (`escalated`),
 CONSTRAINT `guest_messages_gorev_id_foreign` FOREIGN KEY (`gorev_id`) REFERENCES `gorevler` (`id`) ON DELETE SET NULL,
-CONSTRAINT `guest_messages_reservation_id_foreign` FOREIGN KEY (`reservation_id`) REFERENCES `property_reservations` (`id`) ON DELETE SET NULL;
+CONSTRAINT `guest_messages_reservation_id_foreign` FOREIGN KEY (`reservation_id`) REFERENCES `property_reservations` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `hermes_analytics` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5936,7 +5975,8 @@ KEY `hermes_analytics_event_name_tenant_id_date_index` (`event_name`,`tenant_id`
 KEY `hermes_analytics_tenant_id_date_index` (`tenant_id`,`date`),
 KEY `hermes_analytics_event_name_index` (`event_name`),
 KEY `hermes_analytics_tenant_id_index` (`tenant_id`),
-KEY `hermes_analytics_date_index` (`date`);
+KEY `hermes_analytics_date_index` (`date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `hermes_event_logs` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5956,7 +5996,8 @@ KEY `hermes_event_logs_event_name_tenant_id_index` (`event_name`,`tenant_id`),
 KEY `hermes_event_logs_status_occurred_at_index` (`status`,`occurred_at`),
 KEY `hermes_event_logs_event_name_index` (`event_name`),
 KEY `hermes_event_logs_tenant_id_index` (`tenant_id`),
-KEY `hermes_event_logs_status_index` (`status`);
+KEY `hermes_event_logs_status_index` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `ilan_arsa_details` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5970,7 +6011,8 @@ CREATE TABLE `ilan_arsa_details` (
 `updated_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
 UNIQUE KEY `ilan_arsa_details_ilan_id_unique` (`ilan_id`),
-CONSTRAINT `ilan_arsa_details_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE;
+CONSTRAINT `ilan_arsa_details_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `ilan_calendar_feeds` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -5986,7 +6028,8 @@ UNIQUE KEY `ilan_calendar_feeds_token_unique` (`token`),
 KEY `ilan_calendar_feeds_created_by_user_id_foreign` (`created_by_user_id`),
 KEY `ilan_calendar_feeds_ilan_id_aktiflik_durumu_index` (`ilan_id`,`aktiflik_durumu`),
 CONSTRAINT `ilan_calendar_feeds_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-CONSTRAINT `ilan_calendar_feeds_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE;
+CONSTRAINT `ilan_calendar_feeds_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `ilan_demirbas` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6003,7 +6046,8 @@ CREATE TABLE `ilan_demirbas` (
 PRIMARY KEY (`id`),
 UNIQUE KEY `ilan_demirbas_ilan_id_demirbas_id_unique` (`ilan_id`,`demirbas_id`),
 KEY `ilan_demirbas_ilan_id_index` (`ilan_id`),
-KEY `ilan_demirbas_demirbas_id_index` (`demirbas_id`);
+KEY `ilan_demirbas_demirbas_id_index` (`demirbas_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `ilan_no_sequences` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6015,7 +6059,8 @@ CREATE TABLE `ilan_no_sequences` (
 `updated_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
 UNIQUE KEY `idx_sequence_unique` (`tip_kodu`,`kategori_kodu`,`yil`),
-KEY `idx_sequence_lookup` (`tip_kodu`,`kategori_kodu`,`yil`);
+KEY `idx_sequence_lookup` (`tip_kodu`,`kategori_kodu`,`yil`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `ilan_notlari` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6036,7 +6081,8 @@ KEY `ilan_notlari_ulke_id_index` (`ulke_id`),
 KEY `ilan_notlari_ilan_id_index` (`ilan_id`),
 KEY `ilan_notlari_user_id_index` (`user_id`),
 KEY `ilan_notlari_not_tipi_index` (`not_tipi`),
-KEY `ilan_notlari_is_ai_generated_index` (`is_ai_generated`);
+KEY `ilan_notlari_is_ai_generated_index` (`is_ai_generated`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `ilan_ticari_details` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6054,7 +6100,8 @@ CREATE TABLE `ilan_ticari_details` (
 `updated_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
 UNIQUE KEY `ilan_ticari_details_ilan_id_unique` (`ilan_id`),
-CONSTRAINT `ilan_ticari_details_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE;
+CONSTRAINT `ilan_ticari_details_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `ilan_turizm_details` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6072,7 +6119,8 @@ CREATE TABLE `ilan_turizm_details` (
 `updated_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
 UNIQUE KEY `ilan_turizm_details_ilan_id_unique` (`ilan_id`),
-CONSTRAINT `ilan_turizm_details_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE;
+CONSTRAINT `ilan_turizm_details_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `ilan_videolari` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6084,7 +6132,8 @@ CREATE TABLE `ilan_videolari` (
 `updated_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
 KEY `ilan_videolari_ilan_id_foreign` (`ilan_id`),
-CONSTRAINT `ilan_videolari_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE;
+CONSTRAINT `ilan_videolari_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `ilanlar_read_model` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6149,7 +6198,8 @@ KEY `ilanlar_read_model_sahip_id_index` (`sahip_id`),
 KEY `ilanlar_read_model_sorumlu_danisman_id_index` (`sorumlu_danisman_id`),
 KEY `ilanlar_read_model_display_order_index` (`display_order`),
 CONSTRAINT `ilanlar_read_model_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE,
-CONSTRAINT `ilanlar_read_model_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
+CONSTRAINT `ilanlar_read_model_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `kisiler_read_model` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6170,7 +6220,8 @@ UNIQUE KEY `kisiler_read_model_uuid_unique` (`uuid`),
 KEY `idx_tenant_aktif_segment` (`tenant_id`,`aktiflik_durumu`,`musteri_segmenti`),
 KEY `kisiler_read_model_uuid_index` (`uuid`),
 KEY `kisiler_read_model_telefon_numarasi_index` (`telefon_numarasi`),
-CONSTRAINT `kisiler_read_model_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT;
+CONSTRAINT `kisiler_read_model_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `leads_read_model` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6201,7 +6252,8 @@ KEY `leads_read_model_crm_durumu_index` (`crm_durumu`),
 KEY `leads_read_model_assigned_to_index` (`assigned_to`),
 KEY `leads_read_model_aktiflik_durumu_index` (`aktiflik_durumu`),
 CONSTRAINT `leads_read_model_assigned_to_foreign` FOREIGN KEY (`assigned_to`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-CONSTRAINT `leads_read_model_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
+CONSTRAINT `leads_read_model_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `mesajlar` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6222,7 +6274,8 @@ KEY `mesajlar_ilan_id_foreign` (`ilan_id`),
 CONSTRAINT `mesajlar_alici_id_foreign` FOREIGN KEY (`alici_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
 CONSTRAINT `mesajlar_gonderen_id_foreign` FOREIGN KEY (`gonderen_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
 CONSTRAINT `mesajlar_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE SET NULL,
-CONSTRAINT `mesajlar_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
+CONSTRAINT `mesajlar_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `notification_templates` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6241,7 +6294,8 @@ CREATE TABLE `notification_templates` (
 PRIMARY KEY (`id`),
 UNIQUE KEY `notification_templates_key_channel_language_unique` (`key`,`channel`,`language`),
 KEY `notification_templates_key_index` (`key`),
-KEY `notification_templates_channel_index` (`channel`);
+KEY `notification_templates_channel_index` (`channel`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `oauth_tokens` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6255,7 +6309,8 @@ CREATE TABLE `oauth_tokens` (
 PRIMARY KEY (`id`),
 UNIQUE KEY `oauth_tokens_service_tenant_unique` (`service`,`tenant_id`),
 KEY `oauth_tokens_tenant_id_index` (`tenant_id`),
-CONSTRAINT `oauth_tokens_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
+CONSTRAINT `oauth_tokens_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `openclaw_audit_logs` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6282,7 +6337,8 @@ KEY `openclaw_audit_logs_correlation_id_index` (`correlation_id`),
 KEY `openclaw_audit_logs_event_type_olusturma_tarihi_index` (`event_type`,`olusturma_tarihi`),
 KEY `openclaw_audit_logs_agent_source_olusturma_tarihi_index` (`agent_source`,`olusturma_tarihi`),
 KEY `openclaw_audit_logs_basarili_olusturma_tarihi_index` (`basarili`,`olusturma_tarihi`),
-KEY `openclaw_audit_logs_token_hash_olusturma_tarihi_index` (`token_hash`,`olusturma_tarihi`);
+KEY `openclaw_audit_logs_token_hash_olusturma_tarihi_index` (`token_hash`,`olusturma_tarihi`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `outbound_notifications` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6309,7 +6365,8 @@ PRIMARY KEY (`id`),
 KEY `outbound_notifications_channel_index` (`channel`),
 KEY `outbound_notifications_recipient_index` (`recipient`),
 KEY `outbound_notifications_template_key_index` (`template_key`),
-KEY `outbound_notifications_gonderim_durumu_index` (`gonderim_durumu`);
+KEY `outbound_notifications_gonderim_durumu_index` (`gonderim_durumu`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `outbox_entries` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6325,7 +6382,8 @@ CREATE TABLE `outbox_entries` (
 PRIMARY KEY (`id`),
 UNIQUE KEY `outbox_entries_idempotency_key_unique` (`idempotency_key`),
 KEY `outbox_entries_event_key_index` (`event_key`),
-KEY `outbox_entries_yayin_durumu_index` (`yayin_durumu`);
+KEY `outbox_entries_yayin_durumu_index` (`yayin_durumu`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `owner_login_tokens` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6344,7 +6402,8 @@ KEY `owner_login_tokens_tenant_id_foreign` (`tenant_id`),
 KEY `owner_login_tokens_user_id_kullanildi_index` (`user_id`,`kullanildi`),
 KEY `owner_login_tokens_gecerlilik_bitis_index` (`gecerlilik_bitis`),
 CONSTRAINT `owner_login_tokens_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
-CONSTRAINT `owner_login_tokens_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+CONSTRAINT `owner_login_tokens_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `payments` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6374,7 +6433,8 @@ KEY `payments_ulke_id_index` (`ulke_id`),
 CONSTRAINT `payments_recorded_by_foreign` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`),
 CONSTRAINT `payments_reservation_id_foreign` FOREIGN KEY (`reservation_id`) REFERENCES `property_reservations` (`id`) ON DELETE CASCADE,
 CONSTRAINT `payments_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
-CONSTRAINT `payments_verified_by_foreign` FOREIGN KEY (`verified_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+CONSTRAINT `payments_verified_by_foreign` FOREIGN KEY (`verified_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `plans` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6388,7 +6448,8 @@ CREATE TABLE `plans` (
 `created_at` timestamp NULL DEFAULT NULL,
 `updated_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
-UNIQUE KEY `plans_slug_unique` (`slug`);
+UNIQUE KEY `plans_slug_unique` (`slug`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `portfolio_drive_workspaces` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6418,7 +6479,8 @@ KEY `portfolio_drive_workspaces_ilan_id_index` (`ilan_id`),
 KEY `portfolio_drive_workspaces_tenant_id_index` (`tenant_id`),
 KEY `portfolio_drive_workspaces_workspace_status_index` (`workspace_status`),
 KEY `portfolio_drive_workspaces_portfolio_no_index` (`portfolio_no`),
-KEY `idx_workspace_lifecycle_state` (`lifecycle_state`);
+KEY `idx_workspace_lifecycle_state` (`lifecycle_state`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `proj_activity_stream` (
 `id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -6429,7 +6491,8 @@ CREATE TABLE `proj_activity_stream` (
 `payload` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
 `created_at` timestamp NULL DEFAULT NULL,
 `updated_at` timestamp NULL DEFAULT NULL,
-PRIMARY KEY (`id`);
+PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `proj_event_offsets` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6438,7 +6501,8 @@ CREATE TABLE `proj_event_offsets` (
 `processed_at` timestamp NULL DEFAULT NULL,
 `created_at` timestamp NULL DEFAULT NULL,
 `updated_at` timestamp NULL DEFAULT NULL,
-PRIMARY KEY (`id`);
+PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `properties` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6456,7 +6520,8 @@ PRIMARY KEY (`id`),
 UNIQUE KEY `properties_uuid_unique` (`uuid`),
 UNIQUE KEY `properties_canonical_reference_unique` (`canonical_reference`),
 KEY `properties_tenant_state_idx` (`tenant_id`,`lifecycle_state`),
-KEY `properties_tenant_canonical_idx` (`tenant_id`,`canonical_reference`);
+KEY `properties_tenant_canonical_idx` (`tenant_id`,`canonical_reference`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `property_access_assets` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6476,7 +6541,8 @@ KEY `idx_paa_property_status` (`property_id`,`durum`),
 KEY `idx_paa_tenant` (`tenant_id`),
 CONSTRAINT `property_access_assets_olusturan_id_foreign` FOREIGN KEY (`olusturan_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
 CONSTRAINT `property_access_assets_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
-CONSTRAINT `property_access_assets_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT;
+CONSTRAINT `property_access_assets_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `property_documents` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6502,7 +6568,8 @@ KEY `idx_pd_tenant` (`tenant_id`),
 KEY `idx_pd_expiry` (`son_gecerlilik_tarihi`,`durum`),
 CONSTRAINT `property_documents_olusturan_id_foreign` FOREIGN KEY (`olusturan_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
 CONSTRAINT `property_documents_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
-CONSTRAINT `property_documents_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT;
+CONSTRAINT `property_documents_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `property_engine_shadow_events` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6526,7 +6593,8 @@ KEY `property_engine_shadow_events_match_created_at_index` (`match`,`created_at`
 KEY `property_engine_shadow_events_mode_env_created_at_index` (`mode`,`env`,`created_at`),
 KEY `property_engine_shadow_events_ulke_id_index` (`ulke_id`),
 KEY `property_engine_shadow_events_context_hash_index` (`context_hash`),
-KEY `property_engine_shadow_events_match_index` (`match`);
+KEY `property_engine_shadow_events_match_index` (`match`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `property_key_custodies` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6550,7 +6618,8 @@ KEY `idx_pkc_tenant_v2` (`tenant_id`),
 CONSTRAINT `property_key_custodies_v2_asset_id_foreign` FOREIGN KEY (`asset_id`) REFERENCES `property_access_assets` (`id`) ON DELETE RESTRICT,
 CONSTRAINT `property_key_custodies_v2_kisi_id_foreign` FOREIGN KEY (`kisi_id`) REFERENCES `kisiler` (`id`) ON DELETE SET NULL,
 CONSTRAINT `property_key_custodies_v2_olusturan_id_foreign` FOREIGN KEY (`olusturan_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
-CONSTRAINT `property_key_custodies_v2_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT;
+CONSTRAINT `property_key_custodies_v2_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `property_ownerships` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6578,7 +6647,8 @@ KEY `idx_po_tenant` (`tenant_id`),
 CONSTRAINT `property_ownerships_kisi_id_foreign` FOREIGN KEY (`kisi_id`) REFERENCES `kisiler` (`id`) ON DELETE RESTRICT,
 CONSTRAINT `property_ownerships_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
 CONSTRAINT `property_ownerships_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT,
-CONSTRAINT `property_ownerships_yetkili_temsilci_id_foreign` FOREIGN KEY (`yetkili_temsilci_id`) REFERENCES `kisiler` (`id`) ON DELETE SET NULL;
+CONSTRAINT `property_ownerships_yetkili_temsilci_id_foreign` FOREIGN KEY (`yetkili_temsilci_id`) REFERENCES `kisiler` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `property_readiness` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6600,7 +6670,8 @@ KEY `property_readiness_tenant_id_ilan_id_index` (`tenant_id`,`ilan_id`),
 KEY `property_readiness_ilan_id_foreign` (`ilan_id`),
 CONSTRAINT `property_readiness_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE,
 CONSTRAINT `property_readiness_reservation_id_foreign` FOREIGN KEY (`reservation_id`) REFERENCES `property_reservations` (`id`) ON DELETE CASCADE,
-CONSTRAINT `property_readiness_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
+CONSTRAINT `property_readiness_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `property_representatives` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6623,7 +6694,8 @@ KEY `idx_pr_tenant` (`tenant_id`),
 KEY `idx_pr_type_active` (`property_id`,`temsil_yetu_tipi`,`bitis_tarihi`),
 CONSTRAINT `property_representatives_kisi_id_foreign` FOREIGN KEY (`kisi_id`) REFERENCES `kisiler` (`id`) ON DELETE RESTRICT,
 CONSTRAINT `property_representatives_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
-CONSTRAINT `property_representatives_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT;
+CONSTRAINT `property_representatives_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `property_workspaces` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6641,7 +6713,8 @@ UNIQUE KEY `property_workspaces_workspace_uuid_unique` (`workspace_uuid`),
 UNIQUE KEY `property_workspaces_property_id_unique` (`property_id`),
 KEY `property_workspaces_tenant_id_ilan_id_index` (`tenant_id`),
 KEY `property_workspaces_tenant_id_state_index` (`tenant_id`,`state`),
-KEY `property_workspaces_tenant_id_index` (`tenant_id`);
+KEY `property_workspaces_tenant_id_index` (`tenant_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `provider_settlements` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6674,7 +6747,8 @@ KEY `ps_t_rsv_idx` (`tenant_id`,`reservation_id`),
 KEY `ps_t_status_idx` (`tenant_id`,`settlement_status`),
 KEY `provider_settlements_tenant_id_index` (`tenant_id`),
 KEY `provider_settlements_provider_index` (`provider`),
-KEY `provider_settlements_reservation_id_index` (`reservation_id`);
+KEY `provider_settlements_reservation_id_index` (`reservation_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `settlement_allocations` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6692,7 +6766,8 @@ CREATE TABLE `settlement_allocations` (
 `deleted_at` timestamp NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
 KEY `settlement_allocations_provider_settlement_id_foreign` (`provider_settlement_id`),
-CONSTRAINT `settlement_allocations_provider_settlement_id_foreign` FOREIGN KEY (`provider_settlement_id`) REFERENCES `provider_settlements` (`id`) ON DELETE CASCADE;
+CONSTRAINT `settlement_allocations_provider_settlement_id_foreign` FOREIGN KEY (`provider_settlement_id`) REFERENCES `provider_settlements` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `subscriptions` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6709,7 +6784,8 @@ PRIMARY KEY (`id`),
 KEY `subscriptions_tenant_id_foreign` (`tenant_id`),
 KEY `subscriptions_plan_id_foreign` (`plan_id`),
 CONSTRAINT `subscriptions_plan_id_foreign` FOREIGN KEY (`plan_id`) REFERENCES `plans` (`id`),
-CONSTRAINT `subscriptions_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
+CONSTRAINT `subscriptions_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `system_learning_transactions` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6743,7 +6819,8 @@ KEY `system_learning_transactions_related_type_index` (`related_type`),
 KEY `system_learning_transactions_related_id_index` (`related_id`),
 KEY `system_learning_transactions_success_index` (`success`),
 KEY `system_learning_transactions_user_id_index` (`user_id`),
-KEY `system_learning_transactions_executed_at_index` (`executed_at`);
+KEY `system_learning_transactions_executed_at_index` (`executed_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `teklifler` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6764,7 +6841,8 @@ KEY `teklifler_ilan_id_foreign` (`ilan_id`),
 KEY `teklifler_kisi_id_foreign` (`kisi_id`),
 CONSTRAINT `teklifler_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE,
 CONSTRAINT `teklifler_kisi_id_foreign` FOREIGN KEY (`kisi_id`) REFERENCES `kisiler` (`id`) ON DELETE CASCADE,
-CONSTRAINT `teklifler_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
+CONSTRAINT `teklifler_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `template_audit_logs` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6786,7 +6864,8 @@ KEY `template_audit_logs_ulke_id_index` (`ulke_id`),
 KEY `template_audit_logs_auditable_type_index` (`auditable_type`),
 KEY `template_audit_logs_auditable_id_index` (`auditable_id`),
 KEY `template_audit_logs_event_index` (`event`),
-KEY `template_audit_logs_user_id_index` (`user_id`);
+KEY `template_audit_logs_user_id_index` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `tenants` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6801,7 +6880,8 @@ CREATE TABLE `tenants` (
 `deleted_at` timestamp NULL DEFAULT NULL,
 `durum` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
 PRIMARY KEY (`id`),
-UNIQUE KEY `tenants_domain_unique` (`domain`);
+UNIQUE KEY `tenants_domain_unique` (`domain`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `test_entities` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6812,7 +6892,8 @@ CREATE TABLE `test_entities` (
 `ulke_id` bigint unsigned DEFAULT NULL,
 `created_at` timestamp NULL DEFAULT NULL,
 `updated_at` timestamp NULL DEFAULT NULL,
-PRIMARY KEY (`id`);
+PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `tkgm_learning_patterns` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6839,7 +6920,8 @@ KEY `tkgm_learning_patterns_pattern_type_index` (`pattern_type`),
 KEY `tkgm_learning_patterns_il_id_index` (`il_id`),
 KEY `tkgm_learning_patterns_ilce_id_index` (`ilce_id`),
 KEY `tkgm_learning_patterns_mahalle_id_index` (`mahalle_id`),
-KEY `tkgm_learning_patterns_pattern_aktiflik_durumu_index` (`pattern_aktiflik_durumu`);
+KEY `tkgm_learning_patterns_pattern_aktiflik_durumu_index` (`pattern_aktiflik_durumu`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `tkgm_queries` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6875,7 +6957,8 @@ KEY `tkgm_queries_ilan_id_index` (`ilan_id`),
 KEY `tkgm_queries_query_source_index` (`query_source`),
 KEY `tkgm_queries_user_id_index` (`user_id`),
 KEY `tkgm_queries_queried_at_index` (`queried_at`),
-KEY `tkgm_queries_islem_durumu_index` (`islem_durumu`);
+KEY `tkgm_queries_islem_durumu_index` (`islem_durumu`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `transactions` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6904,7 +6987,8 @@ KEY `transactions_verified_by_foreign` (`verified_by`),
 CONSTRAINT `transactions_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE SET NULL,
 CONSTRAINT `transactions_recorded_by_foreign` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`),
 CONSTRAINT `transactions_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
-CONSTRAINT `transactions_verified_by_foreign` FOREIGN KEY (`verified_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+CONSTRAINT `transactions_verified_by_foreign` FOREIGN KEY (`verified_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `workforce_execution_logs` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6935,7 +7019,8 @@ KEY `workforce_execution_logs_ilan_id_index` (`ilan_id`),
 KEY `workforce_execution_logs_tenant_id_index` (`tenant_id`),
 KEY `workforce_execution_logs_chain_id_index` (`chain_id`),
 KEY `workforce_execution_logs_agent_name_index` (`agent_name`),
-KEY `workforce_execution_logs_status_index` (`status`);
+KEY `workforce_execution_logs_status_index` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `workspace_executions` (
 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -6983,7 +7068,8 @@ KEY `workspace_executions_job_id_index` (`job_id`),
 CONSTRAINT `workspace_executions_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE SET NULL,
 CONSTRAINT `workspace_executions_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT,
 CONSTRAINT `workspace_executions_triggered_by_user_id_foreign` FOREIGN KEY (`triggered_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-CONSTRAINT `workspace_executions_workspace_id_foreign` FOREIGN KEY (`workspace_id`) REFERENCES `portfolio_drive_workspaces` (`id`) ON DELETE CASCADE;
+CONSTRAINT `workspace_executions_workspace_id_foreign` FOREIGN KEY (`workspace_id`) REFERENCES `portfolio_drive_workspaces` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 /*!40101 SET character_set_client = @saved_cs_client */;
