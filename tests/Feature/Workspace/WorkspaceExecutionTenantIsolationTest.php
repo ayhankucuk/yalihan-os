@@ -424,6 +424,33 @@ class WorkspaceExecutionTenantIsolationTest extends TestCase
         $response->assertJsonPath('execution.id', $this->executionB->id);
     }
 
+    // ─── Policy Contract (WORKSPACE_TENANT_AUTHORIZATION_REMEDIATION_03) ───
+
+    /** @test */
+    public function policy_allows_tenant_admin_to_view_own_workspace(): void
+    {
+        $this->assertTrue($this->userA->can('view', $this->workspaceA));
+    }
+
+    /** @test */
+    public function policy_denies_tenant_admin_from_viewing_foreign_workspace(): void
+    {
+        $this->assertFalse($this->userA->can('view', $this->workspaceB));
+    }
+
+    /** @test */
+    public function policy_allows_super_admin_to_view_foreign_workspace(): void
+    {
+        $superAdmin = User::factory()->create([
+            'email' => 'super-admin-policy@test.com',
+            'tenant_id' => $this->tenantA->id,
+        ]);
+        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
+        $superAdmin->assignRole($superAdminRole);
+
+        $this->assertTrue($superAdmin->can('view', $this->workspaceB));
+    }
+
     // ─── Helpers ────────────────────────────────────────────────────────────
 
     private function makeAdminUser(Tenant $tenant, string $email): User

@@ -17,19 +17,32 @@ class PortfolioDriveWorkspacePolicy
 {
     /**
      * Admin-only access for cockpit views.
+     *
+     * Rule 1: super-admin preserves global cross-tenant platform authority.
+     * Rule 2: tenant admin is restricted strictly to their own tenant workspace.
+     * Rule 3: cross-tenant access is strictly forbidden (SAB Rule 1).
+     * Rule 4: null-tenant workspace behavior is preserved.
      */
     public function view(User $user, PortfolioDriveWorkspace $workspace): bool
     {
-        if ($user->hasRole(['admin', 'super-admin']) || (method_exists($user, 'isAdmin') && $user->isAdmin())) {
+        // 1. Super-admin preserves global cross-tenant platform authority
+        if ($user->hasRole('super-admin')) {
             return true;
         }
 
-        // Tenant isolation — SAB Rule 1
+        // 2. Tenant isolation — SAB Rule 1: Cross-tenant access is strictly forbidden
         if ($workspace->tenant_id !== null) {
-            return $user->tenant_id === $workspace->tenant_id;
+            if ($user->tenant_id !== $workspace->tenant_id) {
+                return false;
+            }
         }
 
-        return true;
+        // 3. Within own tenant (or null-tenant workspace): must be admin
+        if ($user->hasRole('admin') || (method_exists($user, 'isAdmin') && $user->isAdmin())) {
+            return true;
+        }
+
+        return $workspace->tenant_id === null;
     }
 
     public function viewAny(User $user): bool
@@ -49,6 +62,6 @@ class PortfolioDriveWorkspacePolicy
 
     public function delete(User $user, PortfolioDriveWorkspace $workspace): bool
     {
-        return $user->hasRole(['admin', 'super-admin']);
+        return $this->view($user, $workspace);
     }
 }
