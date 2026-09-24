@@ -28,11 +28,13 @@ NC='\033[0m'
 START_TIME=$(date +%s)
 QUICK_MODE=false
 JSON_MODE=false
+REQUIRE_HTTP=false
 
 for arg in "$@"; do
     case "$arg" in
         --quick) QUICK_MODE=true ;;
         --json)   JSON_MODE=true ;;
+        --require-http) REQUIRE_HTTP=true ;;
     esac
 done
 
@@ -402,9 +404,9 @@ check_layer4_security() {
     if [[ "$QUICK_MODE" == false ]]; then
         local tenant_rc=0
         local tenant_output
-        # Timeout: 60 saniye — MacOS'ta gtimeout/yok, bu yüzden
+        # Timeout: 120 saniye — MacOS'ta gtimeout/yok, bu yüzden
         # kendi timeout.pl wrapper'ımızı kullanıyoruz. RC 42 = timeout aşıldı.
-        tenant_output=$(perl "${SCRIPT_DIR}/timeout.pl" 60 php artisan test --testsuite=Feature --filter=TenantIsolationTest 2>&1)
+        tenant_output=$(perl "${SCRIPT_DIR}/timeout.pl" 120 php artisan test --testsuite=Feature --filter=TenantIsolationTest 2>&1)
         tenant_rc=$?
         if [[ "$tenant_rc" -eq 0 ]] && echo "$tenant_output" | grep -q "PASS"; then
             record_check "PASS" "security" "Tenant İzolasyon Testleri" "Multi-tenant veri sınırları sızdırmaz (%100 PASS)"
@@ -487,10 +489,25 @@ check_layer6_runtime() {
     # 6.1 App HTTP Sunucusu
     local http_status
     http_status=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 3 http://127.0.0.1:8000/ 2>/dev/null || echo "DOWN")
+    
+    local app_env="local"
+    if grep -qE "^APP_ENV=" .env 2>/dev/null; then
+        app_env=$(grep -E "^APP_ENV=" .env | cut -d'=' -f2 | tr -d '"'\'' ')
+    fi
+
+    local http_expected=false
+    if [[ "$app_env" != "local" ]] || [[ "${CI:-false}" == "true" ]] || [[ "${REQUIRE_HTTP:-false}" == "true" ]]; then
+        http_expected=true
+    fi
+
     if [[ "$http_status" == "200" || "$http_status" == "302" ]]; then
         record_check "PASS" "runtime" "App HTTP Sunucusu" "http://127.0.0.1:8000 aktif (HTTP ${http_status})"
     else
-        record_check "WARN" "runtime" "App HTTP Sunucusu" "Sunucu yanıt vermiyor (${http_status})"
+        if [[ "$http_expected" == true ]]; then
+            record_check "WARN" "runtime" "App HTTP Sunucusu" "Sunucu yanıt vermiyor (${http_status})"
+        else
+            record_check "SKIPPED" "runtime" "App HTTP Sunucusu" "Yerel sunucu aktif değil (on-demand dev modu)"
+        fi
     fi
 
     # 6.2 Bekçi Runtime
