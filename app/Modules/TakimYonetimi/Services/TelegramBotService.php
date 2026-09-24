@@ -1141,19 +1141,27 @@ class TelegramBotService
     }
 
     /**
+     * Invalidate Telegram operational settings cache.
+     */
+    public function clearSettingsCache(): void
+    {
+        Cache::forget('telegram_settings');
+    }
+
+    /**
      * Ayarları güncelle
      *
      * Note: Telegram bot credentials are strictly deployment-managed (env/config).
-     * Runtime .env mutation is prohibited.
+     * Database-level team mappings are persisted by their respective authorities (e.g. Setting::set).
+     * This service method invalidates runtime cache and reports cache state.
      */
-    public function updateSettings(array $settings): array
+    public function updateSettings(array $settings = []): array
     {
-        // Cache'i temizle
-        Cache::forget('telegram_settings');
+        $this->clearSettingsCache();
 
         return [
             'success' => true,
-            'message' => 'Ayarlar güncellendi',
+            'message' => 'Ayarlar önbelleği temizlendi',
         ];
     }
 

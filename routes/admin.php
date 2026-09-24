@@ -645,9 +645,9 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
     // Analytics (Duplicate route removed - Logic handled by AnalyticsController::index)
     // See: Route::prefix('/analytics') group above
 
-    // Telegram Bot
+    // Telegram Bot (Strangler Fig compatibility: redirect legacy route to canonical Telegram Bot management)
     Route::get('/telegram', function () {
-        return view('admin.telegram.index');
+        return redirect()->route('admin.telegram-bot.index');
     })->name('telegram.index');
 
     // Ayarlar

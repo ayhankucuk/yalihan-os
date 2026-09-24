@@ -143,4 +143,34 @@ class TelegramCredentialAuthorityContractTest extends TestCase
 
         $this->assertEquals('-100987654321', Setting::get('team:1:telegram_channel_id'));
     }
+
+    /**
+     * Contract 8 (F4): TelegramBotService explicitly supports cache invalidation.
+     */
+    public function test_telegram_bot_service_clear_settings_cache(): void
+    {
+        \Illuminate\Support\Facades\Cache::put('telegram_settings', ['test' => 123], 3600);
+        $this->assertTrue(\Illuminate\Support\Facades\Cache::has('telegram_settings'));
+
+        $botService = app(TelegramBotService::class);
+        $botService->clearSettingsCache();
+
+        $this->assertFalse(\Illuminate\Support\Facades\Cache::has('telegram_settings'));
+
+        $result = $botService->updateSettings();
+        $this->assertTrue($result['success']);
+        $this->assertEquals('Ayarlar önbelleği temizlendi', $result['message']);
+    }
+
+    /**
+     * Contract 9 (F5): Legacy /admin/telegram redirects to canonical /admin/telegram-bot.
+     */
+    public function test_legacy_admin_telegram_route_redirects_to_canonical(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->get(route('admin.telegram.index'));
+
+        $response->assertRedirect(route('admin.telegram-bot.index'));
+    }
 }
