@@ -1,3 +1,21 @@
+## AI_TELEMETRY_ARG_MISMATCH — BLOCKED: Dead Code — 2026-09-22
+
+- **[BLOCKED] `DeepSeekCortexProvider::generateText()` — line 78 malformed `logFailure()` unreachable via public API**
+  - **Task ID:** `AI_TELEMETRY_ARG_MISMATCH_REMEDIATION_02`
+  - **Finding:** `REPO_VERIFIED` — argument shift at line 78 confirmed via static analysis
+  - **Baseline:** `1172824699243659c87977ccca8a9b0c307101fa` (= origin/RC2)
+  - **Root Cause:** Laravel 10 `Http::retry(3, 100, callback)` with default `$throw=true` converts every non-2xx response into a `RequestException` thrown before the `$response->failed()` guard executes. The non-2xx `logFailure()` branch (line 78) is **dead code** under all normal HTTP failure scenarios.
+  - **Empirical Evidence:** `Http::fake(['api.deepseek.com/*' => Http::response([...], 500)])` → `errorCode='AI_EXCEPTION'` (outer catch), NOT `'AI_PROVIDER_ERROR'` (inner branch). Log: `"DeepSeek Provider Error: HTTP request returned status code 500"`.
+  - **Static Defect Confirmed:** `logFailure($provider, $capability, $response->status(), [], $tenantId)` — args 3–5 are shifted. Even in weak-typing mode, `array→int` (arg 4) raises `TypeError`. However this is unreachable via public `execute()`.
+  - **Why Blocked:** Fix scope requires modifying the retry mechanism to allow 500 to return as a response instead of an exception. The task explicitly forbids modifying retry logic. The regression test cannot reach the fixed branch without retry change.
+  - **Laravel Source (PendingRequest.php:918-924):** Line 918 retries throw, line 922 exhaust throws
+  - **Recovery Audit:** Declared files (DeepSeekCortexProvider.php, DeepSeekServiceTest.php) clean, no overlap, test rolled back
+  - **Decision:** BLOCKED — requires architectural decision on retry strategy change before fix can proceed
+  - **Priority:** **ORTA**
+
+---
+
+
 # Known Issues and Open Questions
 
 ## Bekçi Gate Treshold Tutarsızlığı — 2026-09-12
@@ -229,7 +247,7 @@
 | `[LARAVEL-CORS-CONFIG-ABSENT]` | `Kernel.php:18`, `config/cors.php` | Global middleware'de HandleCors aktif ancak config/cors.php dosyası yok; varsayılan framework fallback kurallarıyla çalışıyor | Öngörülemeyen CORS Politikası & Çapraz İstek Sızıntısı |
 | `[REF-SEQUENCE-CONCURRENT-INSERT-COLLISION]` | `RefSequence.php:65-81`, `IlanNoGenerator.php:86-96` | Sequence tablosunda kayıt yokken lockForUpdate() null dönüyor; eşzamanlı iki işlem aynı anda create/insert deneyerek Duplicate Key (1062) ile çöküyor | Eşzamanlı İlan No Üretim Kilitlenmesi / Duplicate Key |
 | `[HERMES-CORRELATION-CAUSATION-CHAIN-VOID]` | `HermesEventContract.php:11-32`, `HermesEventLog.php:24-35` | Hermes kontratında ve log tablosunda correlation_id ve causation_id kolonları yok; asenkron ajan zincirlerinde kök neden izleme (distributed tracing) yapılamıyor | Olay İzsizliği & Kök Neden Analiz Körlüğü |
-| `[ACTION-CENTER-IDEMPOTENCY-RACE-CONDITION]` | `ActionCenterService.php:591-629`, `2026_09_06_000001_add_action_center_fields_to_gorevler.php:97-118` | İdempotency kontrolü exists() + create() ile yapılıyor fakat DB seviyesinde benzersiz (unique) indeks yok; eşzamanlı iki event geldiğinde çift görev oluşuyor | Çift Görev Oluşumu & İş Yükü Çoğalması |
+| `[ACTION-CENTER-IDEMPOTENCY-RACE-CONDITION]` | `ActionCenterService.php:591-629`, `2026_09_06_000001_add_action_center_fields_to_gorevler.php:97-118` | İdempotency kontrolü exists() + create() ile yapılıyor fakat DB seviyesinde benzersiz (unique) indeks yok; race window mevcut ancak reproduction yok. REDDEDİLEN: UNIQUE(source_event,tenant_id,ilan_id) — tek IlanCreated 3 meşru Gorev (ilan_aciklama + ilan_fiyatlandirma + ?) prefix'li üretiyor; bu constraint meşru 2./3. gorev'ü engeller. Finding KAPALI DEĞİL — remediation tasarımı çözülmedi. Idempotency identity muhtemelen source_event + tenant + ilan + action_type prefix'i olmalı; ayrı ActionCenter contract task gerektirir. | Çift Görev Oluşumu Riski (teorik) / **REMEDIATION_DESIGN_UNRESOLVED** |
 | `[ACTION-ASSIGNMENT-STATUS-COLUMN-DRIFT]` | `ActionAssignmentService.php:184-186`, `User.php:27` | Kullanıcı aktiflik kontrolünde Schema::hasColumn('is_active') aranıyor; User tablosunda Context7 standardı 'aktiflik_durumu' olduğundan bu kontrol daima atlanıyor ve pasif danışmanlara görev atanabiliyor | Pasif/Ayrılmış Danışmana Görev Atanması (SLA İhlali) |
 | `[ADVISOR-COMMAND-CENTER-STATELESS-DRIFT]` | `AdvisorCommandCenterService.php:116-178`, `ActionCenterService.php:33` | AI Komuta Merkezi öncelikli aksiyonları her istekte RAM'de hesaplıyor ancak Action Center / Gorevler tablosuna kaydetmiyor; üretilen aksiyonlar görev havuzunda izlenemiyor ve atanamıyor | Eylemsiz AI Önerileri & Görev Takip Kopukluğu |
 | `[OPPORTUNITY-ENGINE-GHOST-PROJECTION-VOID]` | `OpportunityEngineService.php:32-35`, `ListingSearchProjection.php:14-16` | OpportunityEngineService listing_search_projection tablosunu okuyor; ancak bu projection tablosu hiçbir sistem tarafından doldurulmuyor (@deprecated), sonuçlar boş dönüyor | Fırsat Havuzu Sıfır Veri / Boş Ekran (Ghost Projection) |

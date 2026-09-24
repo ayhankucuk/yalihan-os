@@ -1,3 +1,36 @@
+## Oturum 206 — 2026-09-24 | Defect Hunt F001-F005 Adversarial Verification Complete
+
+**Task ID:** `YALIHAN_DEEP_REPOSITORY_DEFECT_HUNT_01` (adversarial verification)
+**Baseline:** `5818a684`
+**Focus:** Adversarial self-challenge of 5 defect hunt findings
+
+### YAPILANLAR
+- Tüm 5 bulguya tam adversarial trace uygulandı (git state, call-chain, schema analizi)
+- Kendi önceki iddialarım 3 noktada geri çekildi (F001 unvalidated mass assignment, F003 schema dump stale, F005 unique key önerisi)
+- F001: "is_active" stale artifact → LOW / LEGACY_RESIDUE
+- F002: HermesDashboard orphan → HIGH / PARTIAL_IMPLEMENTATION (PROVEN_ORPHAN fazla güçlüydü)
+- F003: Untracked migration conflict → HIGH / UNTRACKED_SCHEMA_MUTATION_CONFLICT
+- F004: aktiflik_durumu contract → HIGH / BLOCKED — production audit required
+- F005: ActionCenter race window → MEDIUM / REPO_VERIFIED — unique key önerisi REDDETİLDİ (LIKE-based deduplication 3 meşru Gorev/IlanCreated'a izin veriyor)
+- F003+F004 birleşik kök neden: her ikisi de `users.aktiflik_durumu` column type sorunu
+- Project brain güncellendi: EVIDENCE_INDEX + PROJECT_STATE + KNOWN_ISSUES
+
+### BULUNANLAR
+- 070521+070630 untracked = git state'te var, repo'da commit'li değil → canonical authority değil
+- F005 `createActionIfNotExists` LIKE-based deduplication: "ilan_aciklama" prefix'li 3 ayrı Gorev'e izin vermek için tasarlanmış → 3-kolona UNIQUE constraint yanlış olur
+- Service katmanında `storeDanisman()` raw `$request->all()` rebuild yapıyor ama allowlist üzerinden gittiği için veri bozulması yok
+
+### SONRAKİ ADIMLAR
+- `DANISMAN_USER_PRODUCTION_CONTRACT_AUDIT_03`: F003+F004'ü production read-only audit ile çöz
+- F001: Bounded cleanup candidate — `is_active` fillable'dan kaldırma (backlog)
+- F002: Hermes dashboard intent/history investigation (backlog)
+- F005: Idempotency identity redesign sonra unique index yazılabilir
+
+### BLOKE EDEN UNSUR: Yok
+
+---
+
+
 ## Oturum 205 — 2026-09-22 | Mixed Currency Price Filter & Sorting Remediation Isolated Commit
 
 **Task ID:** `WEB_PUBLIC_PRICE_CURRENCY_FILTER_ISOLATED_COMMIT_11`

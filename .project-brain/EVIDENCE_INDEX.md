@@ -1,3 +1,153 @@
+## [2026-09-24] YALIHAN_DEEP_REPOSITORY_DEFECT_HUNT_01 — ADVERSARIAL VERIFICATION_COMPLETE
+
+**Task ID:** `YALIHAN_DEEP_REPOSITORY_DEFECT_HUNT_01`
+**Mode:** ADVERSARIAL VERIFIER (self-challenging, adversarial)
+**Evidence Level:** `REPO_VERIFIED` (git state, call-chain tracing, schema analysis)
+**Baseline:** `5818a684`
+
+### Summary
+5 findings from the Defect Hunt were subjected to full adversarial trace. Claims that did not survive are explicitly documented.
+
+### Findings Verdict Table
+
+| Finding | Original Severity | Survives? | Refined Severity | Reason |
+|---|---|---|---|---|
+| F001 `is_active` fillable | CRITICAL | **PARTIAL** | LOW | Controller validation EXISTS; `is_active` is stale artifact, not active corruption path |
+| F002 Hermes Dashboard orphan | HIGH | **YES** | HIGH | Zero routes; `route('admin.hermes.api.stats')` broken; classification adjusted to `PARTIAL_IMPLEMENTATION/UNREACHABLE_SURFACE` |
+| F003 Repository schema mismatch | HIGH | **YES** | HIGH | `070521`+`070630` untracked; but "schema dump stale" conclusion is UNJUSTIFIED — untracked migration ≠ production applied |
+| F004 aktiflik contract | HIGH | **YES** | HIGH | AktiflikDurumu int-cast vs potential 070521 VARCHAR column type mismatch confirmed; production state UNKNOWN |
+| F005 ActionCenter race | CONFIRMED | **YES** | MEDIUM | Race window confirmed; unique index proposal REJECTED; 3-meşru-Gorev/IlanCreated identity needs canonical redesign; **REMEDIATION_DESIGN_UNRESOLVED** — not CLOSED |
+
+### Corrections to Prior Claims
+
+1. **F001 "unvalidated mass assignment"** — CLAIM REJECTED. `DanismanController:88` validates. Service builds explicit allowlist. `User::create()` receives clean array.
+2. **F003 "schema dump stale"** — PREMATURE. Canonical authority must be established first. Untracked migration is NOT more authoritative than tracked schema dump.
+3. **F005 unique index proposal** — PREMATURE. `UNIQUE(source_event,tenant_id,ilan_id)` would block legitimate second Gorev creation (ilan_aciklama + ilan_fiyatlandirma from single IlanCreated). Idempotency identity needs redesign first.
+
+### Cross-Finding Evidence
+- F003 and F004 are the same root-cause family: both concern `users.aktiflik_durumu` type and the untracked 070521 migration that alters it
+- F003: which schema is canonical — tracked or untracked?
+- F004: what is the actual production column type?
+
+### Required Next Step
+`DANISMAN_USER_PRODUCTION_CONTRACT_AUDIT_03` — READ-ONLY production schema+data audit to resolve F003+F004 simultaneously. No migration, no remediation, pure evidence gathering.
+
+---
+
+## [2026-09-23] SCHEDULED_TASK_RELIABILITY_VERIFICATION_02 — VERIFICATION_COMPLETE
+
+**Task ID:** `SCHEDULED_TASK_RELIABILITY_VERIFICATION_02`
+**Mode:** INDEPENDENT VERIFIER (STRICT READ-ONLY)
+**Evidence Level:** `REPO_VERIFIED`
+**Baseline:** `7d320a44` (HEAD)
+**Report:** `.project-brain/FORENSIC/SCHEDULED_TASK_RELIABILITY_VERIFICATION_02.md`
+
+**Key Findings:**
+| Metric | Value |
+|---|---|
+| TOTAL_SCHEDULE_ENTRIES | 32 |
+| REAL_IMPLEMENTATIONS | 18 |
+| BROKEN_REFERENCES | **14** (non-existent commands) |
+| BEHAVIORALLY_TESTED | 4 (out of 18) |
+| NEEDS_REMEDIATION | 11 |
+| READY | 6 |
+
+**🔴 CRITICAL:** 14 broken entries (`exchange:update`, `testsprite:auto-learn`, `context7:*` x8, `gorevler:check-deadlines` x2, `cortex:hunt` no pagination) + `daily-tenant-snapshots` duplicate risk
+**🟠 HIGH:** `ranking:recalculate-all` no overlap, `channex:sync-revisions` silent success, `telemetry:detect-anomalies` silent failure + stub
+**🟡 MEDIUM:** 6 additional tasks need overlap protection or tenant audit
+**🟢 READY:** `reservation:complete`, `governance-alert-check`, `ranking:validate-invariants`, `rental:sync-airbnb`, `quality:gate`, `standard:check`
+
+**Evidence Contradictions Found & Resolved:**
+  1. `cortex:hunt` frequency: prior audit said "everyMinute()", actual is "hourly()" → severity DOWNGRADED (still HIGH due to unbounded O(n×m))
+  2. `standard:check --type=context7`: prior audit said "BROKEN", actual WORKS → reclassified
+
+**AYHAN HUMAN GATE REQUIRED FOR:**
+  - `exchange:update` (MISSING_ENTRYPOINT_RESTORE) — TCMBCurrencyService exists, CLI wrapper missing
+  - `gorevler:deadline` (CANONICAL_REPLACEMENT) — deadline capability exists via n8n; Ayhan decides if scheduled check needed
+  - `context7:query-scan` (INTENT_UNKNOWN) — purpose unclear; Ayhan decides removal
+
+**Triage Report:** `.project-brain/FORENSIC/SCHEDULER_BROKEN_REFERENCE_TRIAGE_03.md`
+
+**Next:** Ayhan approves 9-entry SAFE_REMOVAL_SET → implementation task
+**Production status:** UNKNOWN — no production scheduler verification performed.
+
+---
+
+## [2026-09-23] TASK_CONTEXT_CORRECTION — Stale Guard Verdict
+
+**Verdict:** STALE_TASK_CONTEXT was CORRECT. COMMIT_04 re-ran after its own commit advanced HEAD.
+
+| Item | Value |
+|------|-------|
+| TASK_ID | TELEGRAM_CREDENTIAL_AUTHORITY_COMMIT_04 |
+| FIRST_RUN | Produced commit `7d320a44` |
+| SECOND_RUN | HEAD was already `7d320a44` |
+| Stale Guard verdict | STALE_TASK_CONTEXT ✅ — prevented duplicate commit |
+| Root cause | Eski task promptu ikinci kez çalıştırıldı, HEAD değişince guard tetiklendi |
+
+**Conclusion:**
+- TELEGRAM_CREDENTIAL_AUTHORITY_COMMIT_04 = COMMITTED ✅
+- TELEGRAM_CREDENTIAL_AUTHORITY_VERIFY_03 = PASS ✅
+- Do NOT rerun COMMIT_04
+- Do NOT recommit credential files
+- Bot-token remediation = CLOSED
+- Production status = UNKNOWN
+
+---
+
+## [2026-09-23] NOTIFICATION_DOMAIN_CONVERGENCE — CANONICAL_CLEAN
+## [2026-09-23] NOTIFICATION_DOMAIN_CONVERGENCE — CANONICAL_CLEAN
+
+**Task ID:** `NOTIFICATION_DOMAIN_CONVERGENCE`
+**Mode:** IMPLEMENTATION → COMPLETE
+**Evidence Level:** `REPO_VERIFIED`, `TEST_VERIFIED`
+**Baseline:** `f0248022` (= HEAD before this session)
+**Commit:** `4bfd1d9c`
+
+### Domain Convergence Report
+
+| Check | Result |
+|-------|--------|
+| CANONICAL_AUTHORITY | `NotificationAuthorityService::isChannelEnabled()` |
+| CANONICAL_EXECUTION_PATH | Blade Toggle → `AyarlarController::bulkUpdate()` → `BulkUpdateSettingAction` → `SettingsAuthorityService::bulkUpdate()` → Settings DB → `ConfigurationRegistry` (read) → `NotificationAuthorityService::isChannelEnabled()` (runtime guard) |
+| SOURCE_OF_TRUTH_COUNT | 1 |
+| LEGACY_PATHS | NONE |
+| DUPLICATE_IMPLEMENTATIONS | NONE |
+| PROVEN_ORPHANS | NONE |
+| UNKNOWN_USAGE | NONE |
+| MOCK_OR_PLACEHOLDER_RESIDUE | NONE |
+| FALLBACKS | REQUIRED (missing setting → true for email/WhatsApp/Telegram) |
+| ROUTE_API_DRIFT | NONE (legacy routes redirect to canonical) |
+| MODEL_SCHEMA_CONTRACT_DRIFT | NONE |
+| DESIGN_SYSTEM_DRIFT | NONE |
+| SECURITY_BOUNDARY_REGRESSION | PASS |
+| OBSERVABILITY_ALIGNMENT | PASS |
+| REGRESSION | PASS |
+
+### Fix Applied
+- `SettingsAuthorityService::bulkUpdate()`: Removed `sms_notifications` from boolean type list (line 59) — dead code elimination
+- Confirmed: `sms_notifications` NOT present in Blade, NOT in service boolean type list, NOT in any runtime path
+
+### Test Results
+| Suite | Result | Assertions |
+|-------|--------|------------|
+| SmsFailClosedRemediationTest | ✅ 2 passed | 6 |
+| NotificationSettingsContractTest | ✅ 8 passed | 24 |
+| TelegramNotificationHandlerTest | ✅ 6 passed | 14 |
+| GovernanceNotificationHandlerTest | ✅ 7 passed | 16 |
+| antigravity-full-gate --quick | ✅ 4/4 PASS | — |
+
+### Contract Summary
+- **Admin surface:** `/admin/ayarlar#bildirim`
+- **Toggles:** Email | WhatsApp | Telegram (3 operational channels)
+- **NOT exposed:** SMS (fail-closed, no provider)
+- **Default behavior:** All 3 channels default to `true` when missing
+- **Legacy routes:** `admin.notifications.settings` redirects to canonical surface
+
+DOMAIN_STATE: **CANONICAL_CLEAN**
+
+---
+
 ## [2026-09-22] MIXED_CURRENCY_PRICE_FILTER_TEST_FIX
 
 **Task ID:** `MIXED_CURRENCY_PRICE_FILTER_TEST_FIX`
@@ -1757,5 +1907,61 @@ Aktif kullanici dosyalari:
 | Docker | ✅ Eklendi | `/Users/macbookpro/.local/bin/docker-mcp-server` |
 | Redis | ✅ Eklendi | `npx @modelcontextprotocol/server-redis` |
 | n8n | ❌ Yok | npm registry'de bulunamadı |
+
+
+
+---
+
+## [2026-09-23] TELEGRAM_OPERATIONAL_CONFIGURATION_CONVERGENCE_TRIAGE_05 — TRIAGE_COMPLETE
+
+**Task ID:** `TELEGRAM_OPERATIONAL_CONFIGURATION_CONVERGENCE_TRIAGE_05`
+**Mode:** FORENSIC (STRICT READ-ONLY)
+**Evidence Level:** `REPO_VERIFIED`
+**Baseline:** `7d320a44` (credential authority commit — already committed)
+
+### Bot Token Authority: CLOSED ✅
+
+| Check | Status |
+|-------|--------|
+| Canonical source | `config('services.telegram.bot_token')` |
+| DB token override | REMOVED |
+| .env mutation | BLOCKED |
+| Admin mutation | REJECTED (422) |
+| Raw token exposure | REMOVED |
+| Test file | COMMITTED in `7d320a44` |
+
+### Findings (5 real issues)
+
+| # | Severity | Type | Issue | Location |
+|---|----------|------|-------|----------|
+| F1 | **HIGH** | SPLIT_BRAIN | `sendTestMessage` reads DB+config; `NotificationAuthority` reads config ONLY → routes diverge | `TelegramBotService.php:1104-1106`, `NotificationAuthorityService.php:153` |
+| F2 | **MEDIUM** | LEGACY_OVERRIDE | `telegram_admin_chat_id` DB override STILL PRESENT despite comment to remove | `TelegramService.php:45-48` |
+| F3 | **MEDIUM** | SPLIT_BRAIN | 4-way cascade for admin_chat_id | `TelegramService.php:33-66` |
+| F4 | **LOW** | MISLEADING_NO_OP | `updateSettings()` returns success:true despite no persistence | `TelegramBotService.php:1149-1158` |
+| F5 | **LOW** | PROVEN_ORPHAN | `/admin/telegram` route → Blade no layout, no nav link | `routes/admin.php:649-651` |
+
+### Classification Summary
+
+| Domain | State |
+|--------|-------|
+| Bot token authority | CANONICAL_CLEAN (closed at 7d320a44) |
+| Notification boundary | CANONICAL ✅ |
+| Team channel ID routing | SPLIT_BRAIN ⚠️ (F1) |
+| Admin chat ID cascade | SPLIT_BRAIN ⚠️ (F2+F3) |
+| updateSettings | MISLEADING_NO_OP (F4) |
+| /admin/telegram | PROVEN_ORPHAN (F5) |
+
+### Recommended Fix
+
+**Scope: `TELEGRAM_OPERATIONAL_CONFIGURATION_FIX_06`**
+
+| Fix | Scope | Files |
+|-----|-------|-------|
+| F1 (HIGH) | Add Setting DB lookup in NotificationAuthority before config | `NotificationAuthorityService.php` |
+| F4 (LOW) | Rename to `clearTelegramSettingsCache()` | `TelegramBotService.php` |
+| F5 (LOW) | Redirect `/admin/telegram` → `/admin/telegram-bot` | `routes/admin.php` |
+| F2+F3 (MEDIUM) | Architectural decision needed — Ayhan must choose | `TelegramService.php` |
+
+**ONE bounded task feasible for F1+F4+F5. F2+F3 requires decision.**
 
 **Toplam MCP:** 8 (context7, filesystem, laravel-bekci, chrome-devtools, github, mysql, docker, redis)

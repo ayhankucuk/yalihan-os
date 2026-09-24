@@ -1,3 +1,52 @@
+## [2026-09-24] Defect Hunt Findings F001-F005 — Adversarial Verification Results
+
+**Baseline:** `5818a684`
+**Mode:** ADVERSARIAL VERIFIER (self-challenging)
+**Evidence Level:** REPO_VERIFIED
+
+### Findings State
+
+| ID | Title | Classification | Severity | Status |
+|---|---|---|---|---|
+| F001 | `is_active` stale fillable artifact | LEGACY_RESIDUE | LOW | BACKLOG_CANDIDATE — bounded cleanup without migration |
+| F002 | HermesDashboardController unreachable | `PARTIAL_IMPLEMENTATION/UNREACHABLE_SURFACE` | HIGH | BACKLOG — intent/history investigation before wire/delete decision |
+| F003 | Untracked migration conflict (070521+070630) | `UNTRACKED_SCHEMA_MUTATION_CONFLICT` | HIGH | BLOCKED — `DANISMAN_USER_PRODUCTION_CONTRACT_AUDIT_03` required |
+| F004 | aktiflik_durumu contract drift (cast vs DB type) | `SCHEMA_TYPE_INVARIANT_BREAK` | HIGH | BLOCKED — same audit as F003 |
+| F005 | ActionCenter idempotency race window | `REPO_VERIFIED_RACE_WINDOW` | MEDIUM | **REMEDIATION_DESIGN_UNRESOLVED** — unique index rejected; 3-meşru-Gorev/IlanCreated identity needs canonical redesign; separate ActionCenter contract task required |
+
+### Key Corrections Applied
+- **F001**: "unvalidated mass assignment" claim REJECTED — controller validation EXISTS at `DanismanController:88`
+- **F003**: "schema dump stale" conclusion PREMATURE — canonical authority must be established via production audit
+- **F005**: `UNIQUE(source_event,tenant_id,ilan_id)` proposal REJECTED — would block legitimate 2nd Gorev per IlanCreated
+
+### F003+F004 Unified Root Cause
+Both findings concern `users.aktiflik_durumu` column type:
+- Tracked: `tinyint(1)` + `AktiflikDurumu` int enum cast (consistent)
+- Untracked `070521`: attempts `VARCHAR(20)` type change (unsafe split-brain attempt)
+- Production: UNKNOWN — could match either, could be neither
+
+**Resolution requires production evidence — not git archaeology.**
+
+### Canonical Remediation Priority Order (Ayhan-agreed)
+
+| # | Focus | Next Action | Blocker |
+|---|---|---|---|
+| 1 | Database/schema restore + `property_reservations.tenant_id` | Continue structural-integrity audit | None |
+| 2 | Danışman production contract audit (F003+F004) | `DANISMAN_USER_PRODUCTION_CONTRACT_AUDIT_03` — READ-ONLY production evidence | None |
+| 3 | Bounded remediation (post-audit) | Canonical contract → controlled migration or 070521/070630 redesign | Ayhan gate (post-audit) |
+| 4 | ActionCenter idempotency (F005) | Canonical idempotency identity + concurrency-safe implementation design | Ayhan gate |
+| 5 | F001 bounded cleanup | `is_active` consumer/writer audit → safe removal | Ayhan gate |
+| 6 | F002 Hermes investigation | Dashboard intent/history investigation | Ayhan gate |
+
+### DANISMAN_USER_PRODUCTION_CONTRACT_AUDIT_03
+- **Type:** READ-ONLY production audit
+- **Purpose:** Resolve F003+F004 simultaneously
+- **Scope:** `migrate:status`, `SHOW COLUMNS FROM users`, column data aggregates
+- **Constraint:** NO migration, NO schema mutation, NO remediation
+- **Output:** Canonical contract recommendation with evidence
+
+---
+
 ## [2026-09-22] DeepSeek Non-2xx Telemetry Fix — BLOCKED
 
 - **Task:** `AI_TELEMETRY_ARG_MISMATCH_REMEDIATION_02`
@@ -48,6 +97,23 @@ supersedes: null
 - **DeepSeek Remediation Öncesi Durum:** READ-ONLY HARİTALANDIRMA TAMAMLANDI ✅ — Gap A/B/C çözümü gerekiyor
 
 Authority: repository + explicit production evidence
+
+## Scheduler Reliability Verification (2026-09-23)
+
+- **Task:** `SCHEDULED_TASK_RELIABILITY_VERIFICATION_02` → `SCHEDULER_BROKEN_REFERENCE_TRIAGE_03`
+- **Status:** `TRIAGE_COMPLETE` ✅
+- **Baseline:** `7d320a44`
+- **Report:** `.project-brain/FORENSIC/SCHEDULER_BROKEN_REFERENCE_TRIAGE_03.md`
+- **Summary:** 14 broken entries → **13 unique commands** (standard:check fixed); 9 SAFE_REMOVAL; 1 MISSING_ENTRYPOINT; 1 CANONICAL_REPLACEMENT; 1 INTENT_UNKNOWN
+- **🔴 CRITICAL → 🟠 HIGH corrected:** `cortex:hunt` = **hourly()**, not everyMinute() (evidence contradiction resolved)
+- **✅ CORRECTED:** `standard:check --type=context7` = WORKS (not broken)
+- **🟢 READY:** `reservation:complete`, `governance-alert-check`, `ranking:validate-invariants`, `rental:sync-airbnb`, `quality:gate`, `standard:check`
+- **AYHAN GATE:** exchange:update (restore CLI), gorevler:deadline (Ayhan scope decision), context7:query-scan (Ayhan intent decision)
+- **SAFE_REMOVAL pending:** 9 entries ready for implementation (Ayhan approval needed)
+- **Production:** UNKNOWN — no production scheduler verification performed
+- **Evidence:** `EVIDENCE_INDEX.md`
+
+---
 
 ## Active Production Release — RC2 Release Closure (2026-09-20)
 
@@ -827,4 +893,37 @@ e2e98afd  TASK_34 (2026-09-23) ← ✅ TAMAMLANDI
 3387db0f  AGENTS.md Rule 14 initial (2026-09-23) ← governance
 ```
 
+
+
+---
+
+## [2026-09-23] TASK_CONTEXT_CORRECTION + TRIAGE_05 CLOSURE
+
+### Telegram Credential Authority — CLOSED ✅
+
+| Task | Status |
+|------|--------|
+| TELEGRAM_CREDENTIAL_AUTHORITY_VERIFY_03 | PASS ✅ |
+| TELEGRAM_CREDENTIAL_AUTHORITY_COMMIT_04 | COMMITTED ✅ (7d320a44) |
+| Stale Task Guard verdict | CORRECT — prevented duplicate commit |
+| Bot-token remediation | CLOSED |
+| Production status | UNKNOWN |
+
+### Telegram Operational Configuration — TRIAGE_COMPLETE ✅
+
+**Baseline:** `7d320a44`
+
+| # | Severity | Type | Issue | Status |
+|---|----------|------|-------|--------|
+| F1 | HIGH | SPLIT_BRAIN | Team channel routing diverge (DB vs config) | Recommended fix: FIX_06 |
+| F2 | MEDIUM | LEGACY_OVERRIDE | `telegram_admin_chat_id` DB override still present | Recommended fix: FIX_06 (decision needed) |
+| F3 | MEDIUM | SPLIT_BRAIN | 4-way admin_chat_id cascade | Recommended fix: FIX_06 (decision needed) |
+| F4 | LOW | MISLEADING_NO_OP | `updateSettings()` false-success | Recommended fix: FIX_06 |
+| F5 | LOW | PROVEN_ORPHAN | `/admin/telegram` orphan route | Recommended fix: FIX_06 |
+
+**Recommended next task:** `TELEGRAM_OPERATIONAL_CONFIGURATION_FIX_06`
+- F1+F4+F5 bounded in one task
+- F2+F3 requires Ayhan architectural decision
+
 **Kural:** Governance commit'leri implementation commit'lerinin ardından gelir. _34 kapatıldıktan sonra governance + _37 birlikte ele alınabilir.
+HOTSPOT_LOCK:routes/admin.php:TELEGRAM_COMMIT_08:2026-09-24T18:07:45Z:3600
