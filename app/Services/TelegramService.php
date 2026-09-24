@@ -37,18 +37,8 @@ class TelegramService
             return;
         }
 
-        // Settings tablosundan override etme (eğer varsa)
-        try {
-            // Check if connection is available and tables exist
-            if (\Schema::hasTable('settings')) {
-                $telegramBotToken = Setting::get('telegram_bot_token');
-                if ($telegramBotToken) {
-                    $this->botToken = $telegramBotToken;
-                }
-            }
-        } catch (\Throwable $e) {
-            Log::notice('TelegramService settings override skipped', ['error' => $e->getMessage()]);
-        }
+        // Note: Bot token is strictly deployment-managed via config('services.telegram.bot_token').
+        // DB settings table override is removed to prevent split-brain with TelegramBotService.
 
         // Settings tablosundan override etme (eğer varsa)
         try {

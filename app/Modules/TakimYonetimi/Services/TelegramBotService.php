@@ -1085,7 +1085,7 @@ class TelegramBotService
     public function getSettings(): array
     {
         return [
-            'bot_token' => $this->botToken,
+            'bot_token_configured' => ! empty($this->botToken),
             'bot_username' => $this->botUsername,
             'chat_id' => config('services.telegram.chat_id', ''),
             'auto_notifications' => config('services.telegram.auto_notifications', true),
@@ -1116,7 +1116,6 @@ class TelegramBotService
             $response = Http::post("{$this->apiBaseUrl}/sendMessage", [
                 'chat_id' => $chatId,
                 'text' => "🧪 Test Mesajı:\n\n{$message}",
-                'text' => "🧪 Test Mesajı:\n\n{$message}",
                 'parse_mode' => 'HTML',
             ]);
 
@@ -1143,63 +1142,19 @@ class TelegramBotService
 
     /**
      * Ayarları güncelle
+     *
+     * Note: Telegram bot credentials are strictly deployment-managed (env/config).
+     * Runtime .env mutation is prohibited.
      */
     public function updateSettings(array $settings): array
     {
-        try {
-            // .env dosyasını güncelle
-            $envFile = base_path('.env');
-            $envContent = file_get_contents($envFile);
+        // Cache'i temizle
+        Cache::forget('telegram_settings');
 
-            $updates = [];
-
-            if (isset($settings['bot_token'])) {
-                $updates['TELEGRAM_BOT_TOKEN'] = $settings['bot_token'];
-            }
-            if (array_key_exists('bot_username', $settings)) {
-                $updates['TELEGRAM_BOT_USERNAME'] = $settings['bot_username'] ?? '';
-            }
-            if (isset($settings['chat_id'])) {
-                $updates['TELEGRAM_CHAT_ID'] = $settings['chat_id'];
-            }
-            if (array_key_exists('auto_notifications', $settings)) {
-                $updates['TELEGRAM_AUTO_NOTIFICATIONS'] = $settings['auto_notifications'] ? 'true' : 'false';
-            }
-            if (array_key_exists('task_assignments', $settings)) {
-                $updates['TELEGRAM_TASK_ASSIGNMENTS'] = $settings['task_assignments'] ? 'true' : 'false';
-            }
-            if (array_key_exists('performance_reports', $settings)) {
-                $updates['TELEGRAM_PERFORMANCE_REPORTS'] = $settings['performance_reports'] ? 'true' : 'false';
-            }
-            if (isset($settings['telegram_channel_id'])) {
-                $updates['TELEGRAM_TEAM_CHANNEL_ID'] = $settings['telegram_channel_id'];
-            }
-
-            foreach ($updates as $key => $value) {
-                if (strpos($envContent, $key . '=') !== false) {
-                    $envContent = preg_replace("/^{$key}=.*/m", "{$key}={$value}", $envContent);
-                } else {
-                    $envContent .= "\n{$key}={$value}";
-                }
-            }
-
-            file_put_contents($envFile, $envContent);
-
-            // Cache'i temizle
-            Cache::forget('telegram_settings');
-
-            return [
-                'success' => true,
-                'message' => 'Ayarlar güncellendi',
-            ];
-        } catch (\Exception $e) {
-            Log::error('Telegram ayarları güncelleme hatası: ' . $e->getMessage());
-
-            return [
-                'success' => false,
-                'message' => $e->getMessage(),
-            ];
-        }
+        return [
+            'success' => true,
+            'message' => 'Ayarlar güncellendi',
+        ];
     }
 
     /**

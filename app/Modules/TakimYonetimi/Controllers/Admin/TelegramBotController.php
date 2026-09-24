@@ -134,12 +134,19 @@ class TelegramBotController extends Controller
 
     public function updateSettings(Request $request)
     {
-        $request->validate([
-            'bot_token' => 'sometimes|string',
-            'chat_id' => 'sometimes|string',
-            'auto_notifications' => 'sometimes|boolean',
-            'task_assignments' => 'sometimes|boolean',
-            'performance_reports' => 'sometimes|boolean',
+        // Deployment credentials like bot_token cannot be mutated via HTTP/Admin
+        if ($request->has('bot_token')) {
+            $msg = 'Telegram bot token is deployment-managed and cannot be modified via the admin panel.';
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $msg,
+                ], 422);
+            }
+            return redirect()->back()->with('error', $msg);
+        }
+
+        $validated = $request->validate([
             'team_id' => 'sometimes|integer',
             'telegram_channel_id' => 'sometimes|string',
         ]);
@@ -158,7 +165,7 @@ class TelegramBotController extends Controller
                 );
             }
 
-            $result = $this->telegramService->updateSettings($request->all());
+            $result = $this->telegramService->updateSettings($validated);
 
             if ($request->wantsJson() || $request->ajax()) {
                 if ($result['success']) {
