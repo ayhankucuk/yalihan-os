@@ -331,4 +331,70 @@ class IlanAgentAccessTest extends TestCase
         $this->assertNotEquals(37.123456, $coordinates['lat'],
             'S7: Anonim tam koordinat görmemeli');
     }
+    // ─────────────────────────────────────────────────────────────────────
+    // SENARYO 8: NULL koordinat korunması — lat/lng null iken 0/0.0 dönmez
+    //
+    // Canonical contract: V2Ilan lat/lng are nullable.
+    // Resource MUST return null, NOT 0.0, when DB value is null.
+    // Regression guard against accidental (float) null → 0.0 coercion.
+    // ─────────────────────────────────────────────────────────────────────
+
+    public function test_s8_null_coordinates_serialize_as_null(): void
+    {
+        // Create ilan with explicit null coordinates — not defaulting to 0
+        $ilanNullCoords = V2Ilan::withoutEvents(function () {
+            return V2Ilan::create([
+                'tenant_id' => $this->tenantA->id,
+                'ulke_id' => self::TEST_ULKE_ID,
+                'user_id' => $this->userA->id,
+                'danisman_id' => $this->userA->id,
+                'baslik' => 'Null Coord Test ' . uniqid(),
+                'slug' => 'null-coord-test-' . uniqid(),
+                'yayin_durumu' => IlanDurumu::YAYINDA->value,
+                'ilan_no' => 'NULL-COORD-' . uniqid(),
+                // Explicitly null — not omitted, not 0
+                'lat' => null,
+                'lng' => null,
+                'il_id' => 1,
+                'ilce_id' => 1,
+                'mahalle_id' => 1,
+            ]);
+        });
+
+        try {
+            // ── IlanDetailResource (owner / authenticated) ──
+            $this->actingAs($this->userA, 'sanctum');
+            $response = $this->getJson("/api/v1/ilanlar/{$ilanNullCoords->id}");
+
+            $this->assertEquals(200, $response->status());
+
+            // IlanDetailResource: both location.coordinates and top-level coordinates
+            $locationCoords = $response->json('data.location.coordinates');
+            $topCoords = $response->json('data.coordinates');
+
+            $this->assertNull($locationCoords['lat'] ?? null,
+                'S8: IlanDetailResource location.coordinates.lat must be null, not 0 or 0.0');
+            $this->assertNull($locationCoords['lng'] ?? null,
+                'S8: IlanDetailResource location.coordinates.lng must be null, not 0 or 0.0');
+            $this->assertNull($topCoords['lat'] ?? null,
+                'S8: IlanDetailResource top-level coordinates.lat must be null, not 0 or 0.0');
+            $this->assertNull($topCoords['lng'] ?? null,
+                'S8: IlanDetailResource top-level coordinates.lng must be null, not 0 or 0.0');
+
+            // ── IlanPublicDetailResource (anonim) ──
+            $ilan = V2Ilan::withoutGlobalScopes()
+                ->with(['fotograflar', 'danisman', 'anaKategori', 'il', 'ilce', 'mahalle'])
+                ->find($ilanNullCoords->id);
+            $publicResource = new \App\Http\Resources\IlanPublicDetailResource($ilan);
+            $publicArray = $publicResource->toArray(request());
+
+            $publicCoords = $publicArray['coordinates'];
+            $this->assertNull($publicCoords['lat'] ?? null,
+                'S8: IlanPublicDetailResource coordinates.lat must be null, not 0 or 0.0');
+            $this->assertNull($publicCoords['lng'] ?? null,
+                'S8: IlanPublicDetailResource coordinates.lng must be null, not 0 or 0.0');
+        } finally {
+            V2Ilan::withoutGlobalScopes()->forceDelete($ilanNullCoords->id);
+        }
+    }
 }
