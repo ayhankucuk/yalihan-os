@@ -4,7 +4,6 @@ const crypto = require('crypto');
 
 const BASELINE_FILE = '.sab/canonical_seeders.json';
 const CANONICAL_SEEDERS = [
-    'database/seeders/PropertyHubOzelliklerSeeder.php',
     'database/seeders/KategoriYayinTipiPivotSeeder.php',
     'database/seeders/SmartFormsCanonicalSeeder.php',
 ];
