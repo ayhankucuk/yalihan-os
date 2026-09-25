@@ -96,10 +96,10 @@ class SentinelConsoleCommand extends Command
             $healthScore = $this->checkBekciHealth();
 
             if ($healthScore < 70) {
-                $this->warn("  ⚠ Sistem sağlığı düşük: {$healthScore}%");
-            } else {
-                $this->info("  ✓ Sistem sağlığı: {$healthScore}% (GOOD)");
+                $this->error("  ✗ Sistem sağlığı düşük: {$healthScore}% (threshold: 70%)");
+                return Command::FAILURE;
             }
+            $this->info("  ✓ Sistem sağlığı: {$healthScore}% (GOOD)");
 
             // ═══════════════════════════════════════════════════════════
             // MODÜL 4: Accelerated Test Suite (Mutation-Aware)
