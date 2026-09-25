@@ -89,8 +89,8 @@ class AdminUserSeeder extends Seeder
             );
 
             foreach ([$admin, $yalihan] as $user) {
-                // getRoleNames() uses Spatie model_has_roles pivot
-                if (! $user->hasRole('super-admin')) {
+                // Ensure model_has_roles pivot is populated directly without legacy role_id masking
+                if (! $user->roles()->where('name', 'super-admin')->exists()) {
                     $user->assignRole($spatieRole);
                 }
             }

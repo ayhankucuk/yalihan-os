@@ -9,6 +9,7 @@ use Database\Seeders\TenantBaselineSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -55,7 +56,18 @@ class AdminUserSeederContractTest extends TestCase
         $this->seed(AdminUserSeeder::class);
     }
 
-    public function test_seeder_succeeds_with_configured_credential_and_validates_auth_and_roles(): void
+    public function test_seeder_fails_closed_in_production_environment(): void
+    {
+        Config::set('auth.admin_password', 'Valid_Secret_123!');
+        $this->app['env'] = 'production';
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('AdminUserSeeder cannot be executed in production environment');
+
+        (new AdminUserSeeder())->run();
+    }
+
+    public function test_seeder_succeeds_and_persists_canonical_spatie_pivot_and_auth(): void
     {
         $testPassword = 'Test_Secure_Bootstrap_Credential_2026!';
         Config::set('auth.admin_password', $testPassword);
@@ -65,16 +77,26 @@ class AdminUserSeederContractTest extends TestCase
         $users = User::whereIn('email', ['ayhankucuk@gmail.com', 'yalihanemlak@gmail.com'])->get();
         $this->assertCount(2, $users);
 
+        // Prove exactly 2 pivot assignments exist in model_has_roles
+        $this->assertEquals(2, DB::table('model_has_roles')->count());
+
         foreach ($users as $user) {
             // 1. Password stored as valid bcrypt hash
             $this->assertNotEquals($testPassword, $user->password);
             $this->assertTrue(Hash::check($testPassword, $user->password));
 
-            // 2. Tenant ID is valid
+            // 2. Tenant ID and role_id compatibility values are valid
             $this->assertEquals(1, $user->tenant_id);
+            $this->assertEquals(1, $user->role_id);
 
-            // 3. Spatie super-admin role assigned
-            $this->assertTrue($user->hasRole('super-admin'));
+            // 3. Direct Spatie Pivot Persistence (cannot fall back to legacy role_id)
+            $this->assertTrue($user->roles()->where('name', 'super-admin')->exists());
+            $this->assertContains('super-admin', $user->getRoleNames()->map(fn ($r) => strtolower(trim($r)))->toArray());
+            $this->assertDatabaseHas('model_has_roles', [
+                'model_id' => $user->id,
+                'role_id' => 1,
+                'model_type' => $user->getMorphClass(),
+            ]);
 
             // 4. Invalid credential fails Auth::attempt
             $this->assertFalse(Auth::attempt([
@@ -90,5 +112,21 @@ class AdminUserSeederContractTest extends TestCase
 
             Auth::logout();
         }
+    }
+
+    public function test_seeder_is_idempotent_and_does_not_duplicate_pivot_assignments(): void
+    {
+        $testPassword = 'Test_Secure_Bootstrap_Credential_2026!';
+        Config::set('auth.admin_password', $testPassword);
+
+        // Run 1st time
+        $this->seed(AdminUserSeeder::class);
+        $this->assertEquals(2, User::count());
+        $this->assertEquals(2, DB::table('model_has_roles')->count());
+
+        // Run 2nd time
+        $this->seed(AdminUserSeeder::class);
+        $this->assertEquals(2, User::count());
+        $this->assertEquals(2, DB::table('model_has_roles')->count());
     }
 }
