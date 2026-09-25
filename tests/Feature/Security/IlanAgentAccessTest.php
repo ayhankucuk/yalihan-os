@@ -244,11 +244,14 @@ class IlanAgentAccessTest extends TestCase
         // IlanPublicDetailResource'u test etmek için IlanController show()'un
         // anonymous path'ini test ediyoruz — zaten S1'de kapsandı.
         // Bu test, IlanPublicDetailResource'un agent içermediğini doğrudan kontrol eder.
-
-        // IlanPublicDetailResource doğrudan kullanarak agent alanı olmadığını doğrula
+        // Public resource — agent bilgi alanı olmamalı
+        // TenantScope fires in isolated resource context: setUp ends with tenantB
+        // in singleton; explicitly establish tenantA so scoped query returns ilanA
+        app(TenantContextService::class)->setTenant($this->tenantA);
         $ilan = V2Ilan::with(['il', 'ilce', 'mahalle', 'fotograflar', 'danisman', 'anaKategori'])
             ->find($this->ilanA_Yayinlanmis->id);
 
+        // IlanPublicDetailResource doğrudan kullanarak agent alanı olmadığını doğrula
         $resource = new \App\Http\Resources\IlanPublicDetailResource($ilan);
         $array = $resource->toArray(request());
 
