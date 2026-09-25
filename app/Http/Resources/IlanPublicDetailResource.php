@@ -18,10 +18,9 @@ class IlanPublicDetailResource extends JsonResource
     public function toArray($request): array
     {
         // Yaklaşık koordinat: 0.01° ≈ 1km (anonimlik garantisi değil, yaklaşık konum)
-        $lat = $this->lat ?? $this->latitude;
-        $lng = $this->lng ?? $this->longitude;
-        $approxLat = $lat !== null ? round((float) $lat, 2) : null;
-        $approxLng = $lng !== null ? round((float) $lng, 2) : null;
+        // Canonical field only — lat/lng are nullable; null propagates through round() unchanged
+        $approxLat = $this->lat !== null ? round((float) $this->lat, 2) : null;
+        $approxLng = $this->lng !== null ? round((float) $this->lng, 2) : null;
 
         // Kapak fotoğrafı
         $cover = $this->fotograflar?->where('kapak_fotografi', true)->first()

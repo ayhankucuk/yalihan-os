@@ -42,13 +42,13 @@ class IlanDetailResource extends JsonResource
                 'district' => $this->ilce->ilce_adi ?? null,
                 'neighborhood' => $this->mahalle->mahalle_adi ?? null,
                 'coordinates' => [
-                    'lat' => (float) ($this->latitude ?? $this->lat),
-                    'lng' => (float) ($this->longitude ?? $this->lng),
+                    'lat' => $this->lat !== null ? (float) $this->lat : null,
+                    'lng' => $this->lng !== null ? (float) $this->lng : null,
                 ],
             ],
             'coordinates' => [
-                'lat' => (float) ($this->latitude ?? $this->lat),
-                'lng' => (float) ($this->longitude ?? $this->lng),
+                'lat' => $this->lat !== null ? (float) $this->lat : null,
+                'lng' => $this->lng !== null ? (float) $this->lng : null,
             ],
             'baslik' => $this->baslik,
             'aciklama' => $this->aciklama,
