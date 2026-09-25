@@ -20,6 +20,15 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
+        if (app()->environment('production')) {
+            throw new \RuntimeException('AdminUserSeeder cannot be executed in production environment.');
+        }
+
+        $adminPassword = (string) config('auth.admin_password', '');
+        if (trim($adminPassword) === '') {
+            throw new \RuntimeException('AdminUserSeeder failed: ADMIN_LOCAL_PASSWORD (config auth.admin_password) is not configured. Seeder fails closed.');
+        }
+
         // Resolve canonical super-admin tenant (id=1 from TenantBaselineSeeder)
         $tenantId = DB::table('tenants')->where('id', 1)->value('id') ?? 1;
 
@@ -32,13 +41,13 @@ class AdminUserSeeder extends Seeder
         $admin = User::firstOrCreate(
             ['email' => 'ayhankucuk@gmail.com'],
             [
-                'name'               => 'Ayhan Küçük',
-                'password'           => Hash::make('admin123'),
-                'email_verified_at'  => now(),
-                'ulke_id'            => 1,
-                'tenant_id'          => $tenantId,
-                'role_id'            => $superAdminRoleId,
-                'aktiflik_durumu'    => 1,
+                'name' => 'Ayhan Küçük',
+                'password' => Hash::make($adminPassword),
+                'email_verified_at' => now(),
+                'ulke_id' => 1,
+                'tenant_id' => $tenantId,
+                'role_id' => $superAdminRoleId,
+                'aktiflik_durumu' => 1,
             ]
         );
 
@@ -46,13 +55,13 @@ class AdminUserSeeder extends Seeder
         $yalihan = User::firstOrCreate(
             ['email' => 'yalihanemlak@gmail.com'],
             [
-                'name'               => 'Yalıhan Emlak',
-                'password'           => Hash::make('admin123'),
-                'email_verified_at'  => now(),
-                'ulke_id'            => 1,
-                'tenant_id'          => $tenantId,
-                'role_id'            => $superAdminRoleId,
-                'aktiflik_durumu'    => 1,
+                'name' => 'Yalıhan Emlak',
+                'password' => Hash::make($adminPassword),
+                'email_verified_at' => now(),
+                'ulke_id' => 1,
+                'tenant_id' => $tenantId,
+                'role_id' => $superAdminRoleId,
+                'aktiflik_durumu' => 1,
             ]
         );
 
@@ -68,7 +77,7 @@ class AdminUserSeeder extends Seeder
                 $dirty['role_id'] = $superAdminRoleId;
             }
 
-            if (!empty($dirty)) {
+            if (! empty($dirty)) {
                 $user->forceFill($dirty)->saveQuietly();
             }
         }
@@ -81,12 +90,12 @@ class AdminUserSeeder extends Seeder
 
             foreach ([$admin, $yalihan] as $user) {
                 // getRoleNames() uses Spatie model_has_roles pivot
-                if (!$user->hasRole('super-admin')) {
+                if (! $user->hasRole('super-admin')) {
                     $user->assignRole($spatieRole);
                 }
             }
         }
 
-        $this->command->info('✅ AdminUserSeeder: tenant_id=' . $tenantId . ', role_id=' . ($superAdminRoleId ?? 'NULL'));
+        $this->command->info('✅ AdminUserSeeder: tenant_id='.$tenantId.', role_id='.($superAdminRoleId ?? 'NULL'));
     }
 }
