@@ -163,6 +163,7 @@ class ChannexReservationIngestService
 
         try {
             $reservation = $this->reservationService->modifyReservation(
+                $tenantId,
                 $row->id,
                 $newStartDate,
                 $newEndDate,
@@ -233,7 +234,7 @@ class ChannexReservationIngestService
         }
 
         try {
-            $this->reservationService->cancelReservation($row->id);
+            $this->reservationService->cancelReservation($row->id, $tenantId);
 
             $reservation = PropertyReservation::withoutGlobalScopes()->findOrFail($row->id);
 

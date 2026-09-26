@@ -543,7 +543,7 @@ class YdlReservationOrchestrator
         $service = $reservationService ?? new ReservationService();
 
         try {
-            $service->cancelReservation($token->reservationId);
+            $service->cancelReservation($token->reservationId, $token->tenantId);
 
             $evidence = YdlCancellationEvidence::success(
                 reservationId:  $token->reservationId,

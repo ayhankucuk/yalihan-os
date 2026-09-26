@@ -116,6 +116,7 @@ class BookingModificationProcessor
         BookingModificationPayload $payload,
     ): PropertyReservation {
         return $this->reservationService->modifyReservation(
+            $ref->tenantId,
             $this->findReservationId($ref->tenantId, $payload->externalReservationId),
             $payload->arrivalDate,
             $payload->departureDate,

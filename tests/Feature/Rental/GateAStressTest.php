@@ -150,7 +150,7 @@ class GateAStressTest extends TestCase
         $this->assertEquals(6, $blocked);
 
         // Cancel
-        $service->cancelReservation($res1->id);
+        $service->cancelReservation($res1->id, $ilan->tenant_id);
         $res1->refresh();
         $this->assertEquals(ReservationState::CANCELLED, $res1->reservation_state);
 

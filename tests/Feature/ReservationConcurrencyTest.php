@@ -79,7 +79,7 @@ class ReservationConcurrencyTest extends TestCase
             ->count());
 
         // Cancel
-        $this->service->cancelReservation($res->id);
+        $this->service->cancelReservation($res->id, $ilan->tenant_id);
 
         // Assert dates are free
         $this->assertEquals(2, PropertyAvailability::where('property_id', $ilan->id)

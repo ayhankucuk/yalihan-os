@@ -81,7 +81,7 @@ class BookingCancellationProcessor
 
         // Apply cancellation via canonical ReservationService
         try {
-            $this->applyCancellation($reservation->id);
+            $this->applyCancellation($reservation->id, $tenantId);
         } catch (\Exception $e) {
             Log::error('BookingCancellationProcessor: cancellation failed', [
                 'reservation_id' => $reservation->id,
@@ -104,9 +104,9 @@ class BookingCancellationProcessor
         return $reservation->fresh();
     }
 
-    private function applyCancellation(int $reservationId): void
+    private function applyCancellation(int $reservationId, int $tenantId): void
     {
-        $this->reservationService->cancelReservation($reservationId);
+        $this->reservationService->cancelReservation($reservationId, $tenantId);
     }
 
     private function safeAcknowledge(int $ilanId, string $extResId, int $reservationId): void

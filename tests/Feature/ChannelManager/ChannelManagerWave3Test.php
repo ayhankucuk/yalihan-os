@@ -292,7 +292,7 @@ class ChannelManagerWave3Test extends TestCase
         $this->expectExceptionMessageMatches('/conflict/i');
 
         // Try to modify 09b to overlap with 09a
-        $reservationService->modifyReservation($idToModify, '2045-09-01', '2045-09-05');
+        $reservationService->modifyReservation($this->tenant->id, $idToModify, '2045-09-01', '2045-09-05');
     }
 
     // =========================================================================

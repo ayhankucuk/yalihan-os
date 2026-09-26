@@ -95,7 +95,7 @@ class GuestCommunicationWave2CancellationTest extends TestCase
         );
 
         // Cancel it
-        $this->service->cancelReservation($reservation->id);
+        $this->service->cancelReservation($reservation->id, $this->ilan->tenant_id);
 
         // Verify the cancellation notification job was dispatched
         Queue::assertPushed(SendCancellationNotificationJob::class, function ($job) use ($reservation) {
@@ -229,7 +229,7 @@ class GuestCommunicationWave2CancellationTest extends TestCase
         );
 
         // Cancel tenant B's reservation
-        $this->service->cancelReservation($resB->id);
+        $this->service->cancelReservation($resB->id, $ilanB->tenant_id);
 
         // Verify cancellation notification for tenant B only
         Queue::assertPushed(SendCancellationNotificationJob::class, function ($job) use ($ilanB) {

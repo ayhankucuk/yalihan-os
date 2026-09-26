@@ -269,7 +269,7 @@ class C1FinancialCompletionTest extends TestCase
         $reservation = $this->_createConfirmedReservation();
 
         // Cancel it (reservation_state set synchronously; finansal_durum=CANCELLED set by async job)
-        $this->reservationService->cancelReservation($reservation->id);
+        $this->reservationService->cancelReservation($reservation->id, $this->ilan->tenant_id);
 
         $cancelledEvent = \App\Events\Reservation\ReservationCancelledEvent::fromModel(
             PropertyReservation::withoutGlobalScopes()->find($reservation->id), 'user', 'C1 test'
@@ -415,7 +415,7 @@ class C1FinancialCompletionTest extends TestCase
         $this->assertEquals(2, $initialLedgerCount, 'Initial booking creates 2 ledger entries');
 
         // Cancel
-        $this->reservationService->cancelReservation($reservation->id);
+        $this->reservationService->cancelReservation($reservation->id, $this->ilan->tenant_id);
 
         $fresh = PropertyReservation::withoutGlobalScopes()->find($reservation->id);
         $this->assertTrue($fresh->reservation_state === ReservationState::CANCELLED);

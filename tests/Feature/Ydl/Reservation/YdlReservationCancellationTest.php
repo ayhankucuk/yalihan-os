@@ -274,7 +274,7 @@ class YdlReservationCancellationTest extends TestCase
         $res = $this->makeConfirmedReservation($this->ilan, $start, $end);
 
         // Cancel first
-        (new ReservationService())->cancelReservation($res->id);
+        (new ReservationService())->cancelReservation($res->id, $this->ilan->tenant_id);
 
         // Try to cancel again
         $output = $this->orchestrator->evaluateCancellationReadiness($res->id, $this->ilan->tenant_id);

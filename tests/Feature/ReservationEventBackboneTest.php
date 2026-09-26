@@ -114,7 +114,7 @@ class ReservationEventBackboneTest extends TestCase
 
         Queue::assertPushed(ProcessReservationCreated::class, 1);
 
-        $this->service->cancelReservation($reservation->id);
+        $this->service->cancelReservation($reservation->id, $this->ilan->tenant_id);
 
         Queue::assertPushed(ProcessReservationCancelled::class, function ($job) use ($reservation) {
             return $job->event->reservationId === $reservation->id
@@ -137,11 +137,11 @@ class ReservationEventBackboneTest extends TestCase
             $this->user->id,
         );
 
-        $this->service->cancelReservation($reservation->id);
+        $this->service->cancelReservation($reservation->id, $this->ilan->tenant_id);
         Queue::assertPushed(ProcessReservationCancelled::class, 1);
 
         // Second cancel — idempotent
-        $this->service->cancelReservation($reservation->id);
+        $this->service->cancelReservation($reservation->id, $this->ilan->tenant_id);
         Queue::assertPushed(ProcessReservationCancelled::class, 1);
     }
 
@@ -160,6 +160,7 @@ class ReservationEventBackboneTest extends TestCase
         Queue::assertNotPushed(ProcessReservationModified::class);
 
         $this->service->modifyReservation(
+            $this->ilan->tenant_id,
             $reservation->id,
             now()->addDays(22)->format('Y-m-d'),
             now()->addDays(26)->format('Y-m-d'),
@@ -263,11 +264,12 @@ class ReservationEventBackboneTest extends TestCase
             $this->user->id,
         );
 
-        $this->service->cancelReservation($reservation->id);
+        $this->service->cancelReservation($reservation->id, $this->ilan->tenant_id);
         $modifyCountBefore = 0;
 
         // Modify cancelled reservation — ADR-008: silently ignored
         $result = $this->service->modifyReservation(
+            $this->ilan->tenant_id,
             $reservation->id,
             now()->addDays(70)->format('Y-m-d'),
             now()->addDays(72)->format('Y-m-d'),

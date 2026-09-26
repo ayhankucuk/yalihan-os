@@ -38,7 +38,7 @@ class RentalCancelTest extends TestCase
         ]);
 
         // 2. Cancel it
-        $service->cancelReservation($reservation->id);
+        $service->cancelReservation($reservation->id, $ilan->tenant_id);
 
         $reservation->refresh();
         $this->assertEquals(ReservationState::CANCELLED, $reservation->reservation_state);

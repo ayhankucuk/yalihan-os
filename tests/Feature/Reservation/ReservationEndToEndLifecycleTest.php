@@ -165,7 +165,7 @@ class ReservationEndToEndLifecycleTest extends TestCase
         $this->assertEquals(2, $initialLedgerCount);
 
         // 1. Cancel Reservation
-        $this->reservationService->cancelReservation($reservation->id);
+        $this->reservationService->cancelReservation($reservation->id, $this->ilan->tenant_id);
 
         $freshReservation = PropertyReservation::withoutGlobalScopes()->find($reservation->id);
         $stateValue = $freshReservation->reservation_state instanceof ReservationState

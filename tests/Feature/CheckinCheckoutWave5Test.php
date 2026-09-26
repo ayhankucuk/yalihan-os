@@ -251,7 +251,7 @@ class CheckinCheckoutWave5Test extends TestCase
     public function test_cancelled_reservation_cannot_check_in(): void
     {
         $reservation = $this->createCheckInReadyReservation();
-        $this->reservationService->cancelReservation($reservation->id);
+        $this->reservationService->cancelReservation($reservation->id, $reservation->tenant_id);
 
         $response = $this->actingAs($this->adminUser)
             ->post(route('admin.yazlik-kiralama.bookings.check-in', $reservation->id));

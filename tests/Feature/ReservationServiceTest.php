@@ -116,7 +116,7 @@ class ReservationServiceTest extends TestCase
             'source_system' => 'airbnb_ical'
         ]);
 
-        $this->reservationService->cancelReservation($reservation->id);
+        $this->reservationService->cancelReservation($reservation->id, $this->ilan->tenant_id);
 
         $this->assertEquals(ReservationState::CANCELLED, $reservation->fresh()->reservation_state);
 

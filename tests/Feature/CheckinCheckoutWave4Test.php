@@ -167,7 +167,7 @@ class CheckinCheckoutWave4Test extends TestCase
         $reservation = $this->createCheckInReadyReservation();
 
         // Cancel the reservation
-        $this->reservationService->cancelReservation($reservation->id);
+        $this->reservationService->cancelReservation($reservation->id, $reservation->tenant_id);
 
         $this->expectException(\Exception::class);
         $this->expectExceptionMessageMatches('/cancelled|not found/i');

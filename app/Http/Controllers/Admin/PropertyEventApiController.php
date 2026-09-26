@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use App\Enums\ReservationState;
 use App\Actions\Admin\Reservation\UpdateReservationStateAction;
 use App\Actions\Admin\Reservation\UpdateReservationAction;
+use App\Application\Shared\Services\TenantContextResolver;
 
 /**
  * Property Event API Controller
@@ -30,10 +31,14 @@ use App\Actions\Admin\Reservation\UpdateReservationAction;
 class PropertyEventApiController extends Controller
 {
     private ReservationService $reservationService;
+    private TenantContextResolver $tenantContextResolver;
 
-    public function __construct(ReservationService $reservationService)
-    {
+    public function __construct(
+        ReservationService $reservationService,
+        TenantContextResolver $tenantContextResolver,
+    ) {
         $this->reservationService = $reservationService;
+        $this->tenantContextResolver = $tenantContextResolver;
     }
 
     /**
@@ -194,7 +199,8 @@ class PropertyEventApiController extends Controller
     public function destroy(PropertyReservation $event)
     {
         try {
-            $this->reservationService->cancelReservation($event->id);
+            $tenantId = $this->tenantContextResolver->resolve()->tenantId;
+            $this->reservationService->cancelReservation($event->id, $tenantId);
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             return response()->json([

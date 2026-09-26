@@ -384,7 +384,7 @@ class C3OwnerPayableAccrualTest extends TestCase
         );
 
         // Cancel immediately (before completion)
-        $this->reservationService->cancelReservation($reservation->id);
+        $this->reservationService->cancelReservation($reservation->id, $ilan->tenant_id);
 
         $fresh = PropertyReservation::withoutGlobalScopes()->find($reservation->id);
         $cancelEvent = ReservationCancelledEvent::fromModel($fresh, 'user', 'C3.2 test');

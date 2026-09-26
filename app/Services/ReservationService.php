@@ -287,7 +287,7 @@ class ReservationService
             // idempotency: if conflict is already cancelled, cancelReservationInternal()
             // returns null and no availability is released (already free). The new
             // reservation then proceeds to create and lock — correct behavior.
-            $cancelledConflict = $this->cancelReservationInternal($conflictReservationId);
+            $cancelledConflict = $this->cancelReservationInternal($conflictReservationId, $ilan->tenant_id);
 
             // ── 3. Create new reservation (same logic as createReservation) ─────
             $dates = [];
@@ -519,9 +519,9 @@ class ReservationService
      *
      * @throws Exception
      */
-    public function cancelReservation(int $reservationId): void
+    public function cancelReservation(int $reservationId, int $tenantId): void
     {
-        $result = $this->cancelReservationInternal($reservationId);
+        $result = $this->cancelReservationInternal($reservationId, $tenantId);
 
         if ($result === null) {
             return; // Idempotent — was already cancelled
@@ -563,12 +563,15 @@ class ReservationService
      *
      * @throws Exception
      */
-    private function cancelReservationInternal(int $reservationId): ?PropertyReservation
+    private function cancelReservationInternal(int $reservationId, int $tenantId): ?PropertyReservation
     {
         $result = null;
 
-        DB::transaction(function () use ($reservationId, &$result) {
-            $reservation = PropertyReservation::lockForUpdate()->findOrFail($reservationId);
+        DB::transaction(function () use ($reservationId, $tenantId, &$result) {
+            $reservation = PropertyReservation::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->lockForUpdate()
+                ->findOrFail($reservationId);
 
             $state = $reservation->reservation_state instanceof ReservationState
                 ? $reservation->reservation_state->value
@@ -617,6 +620,7 @@ class ReservationService
      * @throws Exception on conflict or invalid dates
      */
     public function modifyReservation(
+        int    $tenantId,
         int    $reservationId,
         string $newStartDate,
         string $newEndDate,
@@ -624,8 +628,11 @@ class ReservationService
     ): PropertyReservation {
         $resultData = null;
 
-        DB::transaction(function () use ($reservationId, $newStartDate, $newEndDate, $guestData, &$resultData) {
-            $reservation = PropertyReservation::withoutGlobalScopes()->lockForUpdate()->findOrFail($reservationId);
+        DB::transaction(function () use ($tenantId, $reservationId, $newStartDate, $newEndDate, $guestData, &$resultData) {
+            $reservation = PropertyReservation::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->lockForUpdate()
+                ->findOrFail($reservationId);
 
             // ADR-008: terminal state → silently ignore modification
             $state = $reservation->reservation_state instanceof ReservationState

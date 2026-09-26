@@ -341,7 +341,7 @@ class AirbnbInboundLifecycleTest extends TestCase
         $reservation = $this->service->ingest($createPayload, $this->ilan->tenant_id);
 
         // Cancel it via service
-        app(ReservationService::class)->cancelReservation($reservation->id);
+        app(ReservationService::class)->cancelReservation($reservation->id, $this->ilan->tenant_id);
 
         Queue::assertPushed(SendCancellationNotificationJob::class, function ($job) use ($reservation) {
             return $job->event->reservationId === $reservation->id;
@@ -377,7 +377,7 @@ class AirbnbInboundLifecycleTest extends TestCase
         $this->assertEquals(3, $blockedBefore, 'Precondition: dates must be blocked');
 
         // Cancel
-        app(ReservationService::class)->cancelReservation($reservation->id);
+        app(ReservationService::class)->cancelReservation($reservation->id, $this->ilan->tenant_id);
 
         // Dates must be released
         $releasedAfter = PropertyAvailability::where('property_id', $this->ilan->id)
@@ -411,7 +411,7 @@ class AirbnbInboundLifecycleTest extends TestCase
         $reservation = $this->service->ingest($createPayload, $this->ilan->tenant_id);
 
         // Cancel via service
-        app(ReservationService::class)->cancelReservation($reservation->id);
+        app(ReservationService::class)->cancelReservation($reservation->id, $this->ilan->tenant_id);
 
         // A2: SendCancellationNotificationJob must be queued
         Queue::assertPushed(SendCancellationNotificationJob::class, function ($job) use ($reservation) {
