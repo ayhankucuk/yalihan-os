@@ -317,6 +317,9 @@ class BulkListingController extends Controller
      */
     private function prepareIlanData(array $record, int $kategoriId, array $template): array
     {
+        $lat = $record['lat'] ?? $record['latitude'] ?? null;
+        $lng = $record['lng'] ?? $record['longitude'] ?? null;
+
         return [
             'alt_kategori_id' => $kategoriId,
             'yayin_tipi_id' => $record['yayin_tipi_id'] ?? null,
@@ -327,8 +330,8 @@ class BulkListingController extends Controller
             'il' => $record['il'] ?? null,
             'ilce' => $record['ilce'] ?? null,
             'mahalle' => $record['mahalle'] ?? null,
-            'lat' => floatval($record['lat'] ?? $record['latitude'] ?? 0),
-            'lng' => floatval($record['lng'] ?? $record['longitude'] ?? 0),
+            'lat' => ($lat !== null && $lat !== '' && is_numeric($lat)) ? (float) $lat : null,
+            'lng' => ($lng !== null && $lng !== '' && is_numeric($lng)) ? (float) $lng : null,
             'user_id' => auth()->id(),
             'danisman_id' => auth()->id(),
             'aktiflik_durumu' => true,

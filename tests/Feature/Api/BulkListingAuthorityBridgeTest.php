@@ -11,6 +11,7 @@ use App\Services\NotificationService;
 use App\Services\Performance\PerformanceScoringService;
 use App\Services\Template\TemplateService;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class BulkListingAuthorityBridgeTest extends TestCase
@@ -43,12 +44,13 @@ class BulkListingAuthorityBridgeTest extends TestCase
             $mock->shouldReceive('store')->once()->andReturnUsing(function (array $data) {
                 $ilan = new Ilan($data);
                 $ilan->id = 999001;
+
                 return $ilan;
             });
         });
 
         $this->mock(PerformanceScoringService::class, function ($mock) {
-            $mock->shouldReceive('scoreIlan')->once()->andReturnUsing(fn() => \Mockery::mock('App\Models\DanismanlarPerformanceMetrics'));
+            $mock->shouldReceive('scoreIlan')->once()->andReturnUsing(fn () => \Mockery::mock('App\Models\DanismanlarPerformanceMetrics'));
         });
 
         $this->mock(MatchingFeedbackService::class, function ($mock) {
@@ -105,16 +107,18 @@ class BulkListingAuthorityBridgeTest extends TestCase
                     $this->assertSame('Eski Baslik', $payload['baslik']);
                     $this->assertSame('Eski Aciklama', $payload['aciklama']);
                     $this->assertSame(777777, (int) $payload['fiyat']);
+
                     return true;
                 })
                 ->andReturnUsing(function (Ilan $model, array $payload) {
                     $model->fill($payload);
+
                     return $model;
                 });
         });
 
         $this->mock(PerformanceScoringService::class, function ($mock) {
-            $mock->shouldReceive('scoreIlan')->once()->andReturnUsing(fn() => \Mockery::mock('App\Models\DanismanlarPerformanceMetrics'));
+            $mock->shouldReceive('scoreIlan')->once()->andReturnUsing(fn () => \Mockery::mock('App\Models\DanismanlarPerformanceMetrics'));
         });
 
         $this->mock(TemplateService::class, function ($mock) {
@@ -161,12 +165,13 @@ class BulkListingAuthorityBridgeTest extends TestCase
                 ->andReturnUsing(function (Ilan $model, array $payload) use (&$capturedPayload) {
                     $capturedPayload = $payload;
                     $model->fill($payload);
+
                     return $model;
                 });
         });
 
         $this->mock(PerformanceScoringService::class, function ($mock) {
-            $mock->shouldReceive('scoreIlan')->once()->andReturnUsing(fn() => \Mockery::mock('App\Models\DanismanlarPerformanceMetrics'));
+            $mock->shouldReceive('scoreIlan')->once()->andReturnUsing(fn () => \Mockery::mock('App\Models\DanismanlarPerformanceMetrics'));
         });
 
         $this->mock(TemplateService::class, function ($mock) {
@@ -201,6 +206,129 @@ class BulkListingAuthorityBridgeTest extends TestCase
         $this->assertTrue($capturedPayload['il'] === '' || $capturedPayload['il'] === null, 'il field must be empty or null');
         $this->assertNull($capturedPayload['ilce']);
         $this->assertSame('Torba', $capturedPayload['mahalle']);
+    }
+
+    public function test_bulk_import_persists_null_for_missing_or_empty_coordinates(): void
+    {
+        $user = User::factory()->create();
+        $kategori = IlanKategori::factory()->create();
+
+        $record = [
+            'kategori_id' => $kategori->id,
+            'baslik' => 'Bulk Ilan Without Coordinates',
+            'aciklama' => 'Test Aciklama',
+            'fiyat' => 1250000,
+            'il' => 'Mugla',
+            'ilce' => 'Bodrum',
+            'mahalle' => 'Yalikavak',
+            // lat and lng omitted
+        ];
+
+        $jsonFile = UploadedFile::fake()->createWithContent(
+            'bulk_null_coords.json',
+            json_encode([$record], JSON_UNESCAPED_UNICODE)
+        );
+
+        $this->mock(TemplateService::class, function ($mock) {
+            $mock->shouldReceive('autoSelectTemplate')->andReturn([]);
+        });
+
+        $this->mock(PerformanceScoringService::class, function ($mock) {
+            $mock->shouldReceive('scoreIlan')->andReturnUsing(fn () => \Mockery::mock('App\Models\DanismanlarPerformanceMetrics'));
+        });
+
+        $this->mock(MatchingFeedbackService::class, function ($mock) {
+            $mock->shouldReceive('getHighScoreMatches')->andReturn(collect());
+        });
+
+        $this->mock(NotificationService::class, function ($mock) {
+            $mock->shouldIgnoreMissing();
+        });
+
+        // Use real unmocked IlanCrudService to assert actual database persistence
+        $response = $this->actingAs($user, 'sanctum')->post(route('bulk.import'), [
+            'file' => $jsonFile,
+            'validation_only' => false,
+        ], [
+            'Accept' => 'application/json',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.successful', 1);
+
+        $createdId = $response->json('data.created_listing_ids.0');
+        $this->assertNotNull($createdId);
+
+        $persisted = Ilan::find($createdId);
+        $this->assertNotNull($persisted);
+        $this->assertNull($persisted->lat, 'Model lat must be null when coordinates are not provided, NOT 0 or 0.0');
+        $this->assertNull($persisted->lng, 'Model lng must be null when coordinates are not provided, NOT 0 or 0.0');
+
+        $raw = DB::table('ilanlar')->where('id', $createdId)->orderBy('id')->first(['id', 'lat', 'lng']);
+        $this->assertNull($raw->lat, 'DB column lat must be NULL, NOT 0.00000000 (Null Island)');
+        $this->assertNull($raw->lng, 'DB column lng must be NULL, NOT 0.00000000 (Null Island)');
+    }
+
+    public function test_bulk_import_persists_valid_coordinates_when_provided(): void
+    {
+        $user = User::factory()->create();
+        $kategori = IlanKategori::factory()->create();
+
+        $record = [
+            'kategori_id' => $kategori->id,
+            'baslik' => 'Bulk Ilan With Coordinates',
+            'aciklama' => 'Test Aciklama',
+            'fiyat' => 1250000,
+            'il' => 'Mugla',
+            'ilce' => 'Bodrum',
+            'mahalle' => 'Yalikavak',
+            'lat' => 37.03440000,
+            'lng' => 27.43050000,
+        ];
+
+        $jsonFile = UploadedFile::fake()->createWithContent(
+            'bulk_valid_coords.json',
+            json_encode([$record], JSON_UNESCAPED_UNICODE)
+        );
+
+        $this->mock(TemplateService::class, function ($mock) {
+            $mock->shouldReceive('autoSelectTemplate')->andReturn([]);
+        });
+
+        $this->mock(PerformanceScoringService::class, function ($mock) {
+            $mock->shouldReceive('scoreIlan')->andReturnUsing(fn () => \Mockery::mock('App\Models\DanismanlarPerformanceMetrics'));
+        });
+
+        $this->mock(MatchingFeedbackService::class, function ($mock) {
+            $mock->shouldReceive('getHighScoreMatches')->andReturn(collect());
+        });
+
+        $this->mock(NotificationService::class, function ($mock) {
+            $mock->shouldIgnoreMissing();
+        });
+
+        $response = $this->actingAs($user, 'sanctum')->post(route('bulk.import'), [
+            'file' => $jsonFile,
+            'validation_only' => false,
+        ], [
+            'Accept' => 'application/json',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.successful', 1);
+
+        $createdId = $response->json('data.created_listing_ids.0');
+        $this->assertNotNull($createdId);
+
+        $persisted = Ilan::find($createdId);
+        $this->assertEquals(37.0344, (float) $persisted->lat);
+        $this->assertEquals(27.4305, (float) $persisted->lng);
+
+        $raw = DB::table('ilanlar')->where('id', $createdId)->orderBy('id')->first(['id', 'lat', 'lng']);
+        $this->assertEquals(37.0344, (float) $raw->lat);
+        $this->assertEquals(27.4305, (float) $raw->lng);
     }
 
     public function test_bulk_controller_contains_no_direct_model_write_calls(): void
