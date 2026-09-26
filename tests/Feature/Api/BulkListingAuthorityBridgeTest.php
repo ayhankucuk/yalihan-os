@@ -331,6 +331,156 @@ class BulkListingAuthorityBridgeTest extends TestCase
         $this->assertEquals(27.4305, (float) $raw->lng);
     }
 
+    public function test_bulk_import_persists_null_for_explicit_null_coordinates(): void
+    {
+        [$persisted, $raw] = $this->executeBulkImportWithCoordinates([
+            'lat' => null,
+            'lng' => null,
+        ]);
+
+        $this->assertNotNull($persisted);
+        $this->assertNull($persisted->lat, 'Model lat must be null for explicit null input');
+        $this->assertNull($persisted->lng, 'Model lng must be null for explicit null input');
+
+        $this->assertNotNull($raw);
+        $this->assertNull($raw->lat, 'DB column lat must be NULL for explicit null input');
+        $this->assertNull($raw->lng, 'DB column lng must be NULL for explicit null input');
+    }
+
+    public function test_bulk_import_persists_null_for_empty_string_coordinates(): void
+    {
+        [$persisted, $raw] = $this->executeBulkImportWithCoordinates([
+            'lat' => '',
+            'lng' => '',
+        ]);
+
+        $this->assertNotNull($persisted);
+        $this->assertNull($persisted->lat, 'Model lat must be null for empty string input');
+        $this->assertNull($persisted->lng, 'Model lng must be null for empty string input');
+
+        $this->assertNotNull($raw);
+        $this->assertNull($raw->lat, 'DB column lat must be NULL for empty string input');
+        $this->assertNull($raw->lng, 'DB column lng must be NULL for empty string input');
+    }
+
+    public function test_bulk_import_preserves_explicit_numeric_zero_coordinates(): void
+    {
+        [$persisted, $raw] = $this->executeBulkImportWithCoordinates([
+            'lat' => 0,
+            'lng' => 0,
+        ]);
+
+        $this->assertNotNull($persisted);
+        $this->assertNotNull($persisted->lat, 'Model lat must not be null for numeric zero');
+        $this->assertNotNull($persisted->lng, 'Model lng must not be null for numeric zero');
+        $this->assertEquals(0.0, (float) $persisted->lat);
+        $this->assertEquals(0.0, (float) $persisted->lng);
+
+        $this->assertNotNull($raw);
+        $this->assertNotNull($raw->lat, 'DB column lat must not be NULL for numeric zero');
+        $this->assertNotNull($raw->lng, 'DB column lng must not be NULL for numeric zero');
+        $this->assertEquals(0.0, (float) $raw->lat);
+        $this->assertEquals(0.0, (float) $raw->lng);
+    }
+
+    public function test_bulk_import_preserves_string_numeric_zero_coordinates(): void
+    {
+        [$persisted, $raw] = $this->executeBulkImportWithCoordinates([
+            'lat' => '0',
+            'lng' => '0',
+        ]);
+
+        $this->assertNotNull($persisted);
+        $this->assertNotNull($persisted->lat, 'Model lat must not be null for string numeric zero');
+        $this->assertNotNull($persisted->lng, 'Model lng must not be null for string numeric zero');
+        $this->assertEquals(0.0, (float) $persisted->lat);
+        $this->assertEquals(0.0, (float) $persisted->lng);
+
+        $this->assertNotNull($raw);
+        $this->assertNotNull($raw->lat, 'DB column lat must not be NULL for string numeric zero');
+        $this->assertNotNull($raw->lng, 'DB column lng must not be NULL for string numeric zero');
+        $this->assertEquals(0.0, (float) $raw->lat);
+        $this->assertEquals(0.0, (float) $raw->lng);
+    }
+
+    public function test_bulk_import_maps_and_preserves_legacy_latitude_longitude_keys(): void
+    {
+        [$persisted, $raw] = $this->executeBulkImportWithCoordinates([
+            'latitude' => 37.0344,
+            'longitude' => 27.4305,
+        ]);
+
+        $this->assertNotNull($persisted);
+        $this->assertEquals(37.0344, (float) $persisted->lat);
+        $this->assertEquals(27.4305, (float) $persisted->lng);
+
+        $this->assertNotNull($raw);
+        $this->assertEquals(37.0344, (float) $raw->lat);
+        $this->assertEquals(27.4305, (float) $raw->lng);
+    }
+
+    /**
+     * Helper to exercise actual bulk import path with coordinates payload.
+     *
+     * @param  array<string, mixed>  $coordinateFields
+     * @return array{Ilan, object}
+     */
+    private function executeBulkImportWithCoordinates(array $coordinateFields): array
+    {
+        $user = User::factory()->create();
+        $kategori = IlanKategori::factory()->create();
+
+        $record = array_merge([
+            'kategori_id' => $kategori->id,
+            'baslik' => 'Bulk Ilan Coordinate Regression',
+            'aciklama' => 'Test Aciklama',
+            'fiyat' => 1250000,
+            'il' => 'Mugla',
+            'ilce' => 'Bodrum',
+            'mahalle' => 'Yalikavak',
+        ], $coordinateFields);
+
+        $jsonFile = UploadedFile::fake()->createWithContent(
+            'bulk_coord_regression.json',
+            json_encode([$record], JSON_UNESCAPED_UNICODE)
+        );
+
+        $this->mock(TemplateService::class, function ($mock) {
+            $mock->shouldReceive('autoSelectTemplate')->andReturn([]);
+        });
+
+        $this->mock(PerformanceScoringService::class, function ($mock) {
+            $mock->shouldReceive('scoreIlan')->andReturnUsing(fn () => \Mockery::mock('App\Models\DanismanlarPerformanceMetrics'));
+        });
+
+        $this->mock(MatchingFeedbackService::class, function ($mock) {
+            $mock->shouldReceive('getHighScoreMatches')->andReturn(collect());
+        });
+
+        $this->mock(NotificationService::class, function ($mock) {
+            $mock->shouldIgnoreMissing();
+        });
+
+        $response = $this->actingAs($user, 'sanctum')->post(route('bulk.import'), [
+            'file' => $jsonFile,
+            'validation_only' => false,
+        ], [
+            'Accept' => 'application/json',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.successful', 1);
+
+        $createdId = $response->json('data.created_listing_ids.0');
+        $this->assertNotNull($createdId);
+
+        $persisted = Ilan::find($createdId);
+        $raw = DB::table('ilanlar')->where('id', $createdId)->orderBy('id')->first(['id', 'lat', 'lng']);
+
+        return [$persisted, $raw];
+    }
+
     public function test_bulk_controller_contains_no_direct_model_write_calls(): void
     {
         $content = file_get_contents(app_path('Http/Controllers/Api/BulkListingController.php'));
