@@ -434,10 +434,11 @@ class BulkListingController extends Controller
             'lat' => $ilan->lat,
             'lng' => $ilan->lng,
             'adres' => $ilan->adres,
-            // Keep legacy text location fields stable for parity.
-            'il' => $ilan->il,
-            'ilce' => $ilan->ilce,
-            'mahalle' => $ilan->mahalle,
+            // NOTE: il/ilce/mahalle excluded — Ilan accessors return relation objects
+            // (Il/Ilce/Mahalle models), not the raw text stored in those columns.
+            // mapCoreData handles il_id/ilce_id/mahalle_id FK resolution from text input;
+            // the text columns are non-authoritative legacy fallbacks and do not need to
+            // be in the baseline for partial-update parity.
         ];
 
         return array_replace($baseline, $safeData);

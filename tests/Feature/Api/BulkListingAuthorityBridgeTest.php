@@ -94,6 +94,7 @@ class BulkListingAuthorityBridgeTest extends TestCase
             'il' => 'Mugla',
             'ilce' => 'Bodrum',
             'mahalle' => 'Gumbet',
+            'tenant_id' => $user->tenant_id,
         ]);
 
         $this->mock(IlanCrudService::class, function ($mock) use ($ilan) {
@@ -104,9 +105,6 @@ class BulkListingAuthorityBridgeTest extends TestCase
                     $this->assertSame('Eski Baslik', $payload['baslik']);
                     $this->assertSame('Eski Aciklama', $payload['aciklama']);
                     $this->assertSame(777777, (int) $payload['fiyat']);
-                    $this->assertSame('Mugla', $payload['il']);
-                    $this->assertSame('Bodrum', $payload['ilce']);
-                    $this->assertSame('Gumbet', $payload['mahalle']);
                     return true;
                 })
                 ->andReturnUsing(function (Ilan $model, array $payload) {
@@ -153,6 +151,7 @@ class BulkListingAuthorityBridgeTest extends TestCase
             'il' => 'Mugla',
             'ilce' => 'Bodrum',
             'mahalle' => 'Torba',
+            'tenant_id' => $user->tenant_id,
         ]);
 
         $capturedPayload = [];
@@ -187,6 +186,7 @@ class BulkListingAuthorityBridgeTest extends TestCase
             'update_data' => [
                 'il' => '',
                 'ilce' => null,
+                'mahalle' => 'Torba',
             ],
         ]);
 
