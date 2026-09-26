@@ -112,7 +112,7 @@ class Kernel extends ConsoleKernel
 
         // 🛡️ Yalıhan Bekçi: MCP Audit Server - Otonom Context7 izleme
         // Her saat başı Telescope ve kod tabanını tara
-        $schedule->command('bekci:audit --report')
+        $schedule->command('bekci:mcp-audit --report')
             ->hourly()
             ->appendOutputTo(storage_path('logs/bekci-audit.log'))
             ->onFailure(function () {

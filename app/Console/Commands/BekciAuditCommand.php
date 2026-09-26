@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\File;
  */
 class BekciAuditCommand extends Command
 {
-    protected $signature = 'bekci:audit 
+    protected $signature = 'bekci:mcp-audit
                             {--telescope : Sadece Telescope entry\'lerini tara}
                             {--code : Sadece kod dosyalarını tara}
                             {--report : Detaylı rapor oluştur}
