@@ -110,15 +110,22 @@ class RestoreTenantContext
             throw $e;
         } finally {
             // KRİTİK: Context Bleeding önleme
-            // Daemon worker'da bir sonraki işe veri sızmasını engelle
-            if ($originalTenantId) {
-                $originalTenant = Tenant::find($originalTenantId);
-                if ($originalTenant) {
-                    $this->tenantContextService->setTenant($originalTenant);
+            // Daemon worker'da job sonrası tenant context'i temizlenmelidir.
+            // Kaynak: Forensic evidence QA-2026-09-27 — TEST_VERIFIED
+            // Aynı TenantContextService singleton instance'ı üzerinde:
+            //   originalTenantId === null → temiz başlayan worker → clearTenant()
+            //   originalTenantId !== null → önceki tenant vardı → restore et
+            if ($originalTenantId !== null) {
+                $previousTenant = Tenant::find($originalTenantId);
+                if ($previousTenant) {
+                    $this->tenantContextService->setTenant($previousTenant);
+                } else {
+                    $this->tenantContextService->clearTenant();
                 }
+            } else {
+                // Worker temiz başlamış — job sonrası da temiz kalmalı
+                $this->tenantContextService->clearTenant();
             }
-            // Not: Context'i tamamen null yapmıyoruz çünkü HTTP request'ler
-            // aynı worker'da çalışabilir ve mevcut context'e ihtiyaç duyabilir
         }
     }
 }
