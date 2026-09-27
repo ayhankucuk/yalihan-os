@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace App\Services\CommandCenter\Handlers;
 
 use App\DTOs\Command\NormalizedCommandInput;
+use App\Enums\TalepDurumu;
+use App\Exceptions\AgentWriteViolationException;
+use App\Models\IlanKategori;
+use App\Models\Talep;
 use App\Models\User;
-use App\Services\CRM\TalepAuthorityService;
 use App\Services\CRM\KisiRegistrationService;
+use App\Services\CRM\TalepAuthorityService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * TalepCreateIntentHandler
@@ -40,6 +45,7 @@ class TalepCreateIntentHandler
                 'channel' => $input->channel,
                 'external_actor_id' => $input->externalActorId,
             ]);
+
             return $this->clarificationResponse([
                 'title' => 'Yetkilendirme Hatası',
                 'message' => 'Talep oluşturma yetkiniz doğrulanamadı.',
@@ -73,14 +79,16 @@ class TalepCreateIntentHandler
             ]);
 
             // Combine first+last name for successResponse fallback
-            $extracted['kisi_ad'] = trim(($extracted['kisi_ad'] ?? '') . ' ' . ($extracted['kisi_soyad'] ?? '')) ?: null;
+            $extracted['kisi_ad'] = trim(($extracted['kisi_ad'] ?? '').' '.($extracted['kisi_soyad'] ?? '')) ?: null;
+
             return $this->successResponse($talep, $extracted);
 
-        } catch (\App\Exceptions\AgentWriteViolationException $e) {
+        } catch (AgentWriteViolationException $e) {
             Log::critical('TalepCreateIntentHandler: Agent write violation', [
                 'actor_id' => $actor->id,
                 'exception' => $e->getMessage(),
             ]);
+
             return $this->clarificationResponse([
                 'title' => 'İşlem Reddedildi',
                 'message' => 'Talep oluşturma şu an kullanılamıyor. Lütfen daha sonra tekrar deneyin.',
@@ -98,7 +106,7 @@ class TalepCreateIntentHandler
                 return $this->clarificationResponse([
                     'title' => 'Müşteri Zaten Kayıtlı',
                     'message' => 'Bu telefon veya e-posta ile kayıtlı bir müşteri bulunmaktadır. '
-                               . 'Lütfen mevcut müşteri üzerinden talep oluşturun.',
+                               .'Lütfen mevcut müşteri üzerinden talep oluşturun.',
                 ]);
             }
 
@@ -106,15 +114,15 @@ class TalepCreateIntentHandler
             if (str_contains($e->getMessage(), 'telefon') || str_contains($e->getMessage(), 'required')) {
                 return $this->clarificationResponse([
                     'title' => 'Telefon Numarası Gerekli',
-                    'message' => "Talep oluşturmak için telefon numarası zorunludur. "
-                               . "Örnek: \"Yeni talep var. Ahmet Yılmaz, 0532 123 45 67, Bodrum'da villa arıyor.\"",
+                    'message' => 'Talep oluşturmak için telefon numarası zorunludur. '
+                               ."Örnek: \"Yeni talep var. Ahmet Yılmaz, 0532 123 45 67, Bodrum'da villa arıyor.\"",
 
                 ]);
             }
 
             return $this->clarificationResponse([
                 'title' => 'Talep Oluşturulamadı',
-                'message' => 'Talep kaydedilirken bir hata oluştu: ' . $e->getMessage(),
+                'message' => 'Talep kaydedilirken bir hata oluştu: '.$e->getMessage(),
             ]);
         }
     }
@@ -185,7 +193,7 @@ class TalepCreateIntentHandler
             '/5[0-9]{2}(?:[ -]?[0-9]{2}){2}(?:[ -]?[0-9]{2}){2}/',   // 3-3-2-2
         ] as $fmtPattern) {
             if (preg_match($fmtPattern, $stripped, $m)) {
-                $candidate = '0' . preg_replace('/[^0-9]/', '', $m[0]);
+                $candidate = '0'.preg_replace('/[^0-9]/', '', $m[0]);
                 if (strlen($candidate) === 11) { // 0 + 10 digits
                     $mobile = $candidate;
                     break;
@@ -195,7 +203,7 @@ class TalepCreateIntentHandler
 
         // Fallback: plain 10-digit starting with 5 (e.g. 5381234567)
         if (! $mobile && preg_match('/5[0-9]{9}/', $stripped, $m)) {
-            $mobile = '0' . $m[0];
+            $mobile = '0'.$m[0];
         }
 
         if ($mobile) {
@@ -248,8 +256,7 @@ class TalepCreateIntentHandler
                 || str_contains($text, '$') || str_contains($text, 'usd')
                 || str_contains($text, 'bin') || str_contains($text, 'milyon')
                 || str_contains($text, 'bütçe') || str_contains($text, 'butce')
-                || str_contains($text, 'bütçesi') || str_contains($text, 'butcesi')))
-        {
+                || str_contains($text, 'bütçesi') || str_contains($text, 'butcesi'))) {
             $maxFiyat = (float) $m[1];
         }
 
@@ -291,11 +298,11 @@ class TalepCreateIntentHandler
         if ($params['kisi_ad']) {
             $titleParts[] = $params['kisi_ad'];
             if ($params['kisi_soyad']) {
-                $titleParts[0] .= ' ' . $params['kisi_soyad'];
+                $titleParts[0] .= ' '.$params['kisi_soyad'];
             }
         }
         if ($params['property_type']) {
-            $titleParts[] = $params['property_type'] . ' talebi';
+            $titleParts[] = $params['property_type'].' talebi';
         }
         if ($params['ilce_adi']) {
             $titleParts[] = $params['ilce_adi'];
@@ -377,8 +384,8 @@ class TalepCreateIntentHandler
             // IlanKategori tablosundan slug ile bul (fail-safe)
             $kategoriSlug = $typeToKategori[$params['property_type']] ?? null;
             if ($kategoriSlug) {
-                $kategori = \App\Models\IlanKategori::where('slug', \Illuminate\Support\Str::slug($kategoriSlug))
-                    ->orWhere('ad', 'like', '%' . $kategoriSlug . '%')
+                $kategori = IlanKategori::where('slug', Str::slug($kategoriSlug))
+                    ->orWhere('ad', 'like', '%'.$kategoriSlug.'%')
                     ->first();
                 if ($kategori) {
                     $data['alt_kategori_id'] = $kategori->id;
@@ -389,20 +396,20 @@ class TalepCreateIntentHandler
         // Açıklama oluştur
         $descParts = [];
         if ($params['property_type']) {
-            $descParts[] = ucfirst($params['property_type']) . ' aranıyor.';
+            $descParts[] = ucfirst($params['property_type']).' aranıyor.';
         }
         if ($params['ilce_adi']) {
-            $descParts[] = $params['ilce_adi'] . ' bölgesinde.';
+            $descParts[] = $params['ilce_adi'].' bölgesinde.';
         }
         if ($params['max_fiyat']) {
             $fmt = number_format($params['max_fiyat'], 0, ',', '.');
-            $descParts[] = 'Bütçe: ' . $fmt . ' ' . ($params['para_birimi'] ?? 'EUR') . "'a kadar.";
+            $descParts[] = 'Bütçe: '.$fmt.' '.($params['para_birimi'] ?? 'EUR')."'a kadar.";
         }
         if (! empty($descParts)) {
             $data['aciklama'] = implode(' ', $descParts);
         }
 
-        $data['talep_durumu'] = \App\Enums\TalepDurumu::AKTIF->value;
+        $data['talep_durumu'] = TalepDurumu::AKTIF->value;
         $data['talep_tipi'] = 'Satılık';
 
         return $data;
@@ -414,9 +421,7 @@ class TalepCreateIntentHandler
     protected function resolveActor(NormalizedCommandInput $input): ?User
     {
         if ($input->channel === 'telegram') {
-            return User::where('telegram_chat_id', $input->externalActorId)
-                ->orWhere('id', (int) $input->externalActorId)
-                ->first();
+            return User::where('telegram_chat_id', (string) $input->externalActorId)->first();
         }
 
         return null;
@@ -425,12 +430,12 @@ class TalepCreateIntentHandler
     /**
      * Başarılı talep oluşturma yanıtı.
      */
-    protected function successResponse(\App\Models\Talep $talep, array $params): string
+    protected function successResponse(Talep $talep, array $params): string
     {
-        $baslik = e($talep->baslik ?? 'Talep #' . $talep->id);
+        $baslik = e($talep->baslik ?? 'Talep #'.$talep->id);
         $kisiAd = $talep->kisi?->tam_ad ?? $params['kisi_ad'] ?? 'Müşteri';
 
-        $msg = "✅ *Talep Oluşturuldu*\\n\\n";
+        $msg = '✅ *Talep Oluşturuldu*\\n\\n';
         $msg .= "📋 *{$baslik}*\\n";
         $msg .= "👤 {$kisiAd}\\n";
 
@@ -441,11 +446,11 @@ class TalepCreateIntentHandler
         }
 
         if ($talep->aciklama) {
-            $msg .= "📝 " . e($talep->aciklama) . "\\n";
+            $msg .= '📝 '.e($talep->aciklama).'\\n';
         }
 
-        $msg .= "\\n⏱️ Oluşturulma: " . $talep->created_at?->format('d.m.Y H:i') . "\\n";
-        $msg .= "🔗 [Talebi Görüntüle](" . config('app.url') . "/admin/talepler/{$talep->id})";
+        $msg .= '\\n⏱️ Oluşturulma: '.$talep->created_at?->format('d.m.Y H:i').'\\n';
+        $msg .= '🔗 [Talebi Görüntüle]('.config('app.url')."/admin/talepler/{$talep->id})";
 
         return trim($msg);
     }
@@ -459,11 +464,11 @@ class TalepCreateIntentHandler
         $message = $data['message'] ?? 'Lütfen aşağıdaki bilgileri sağlayın:';
 
         $msg = "📋 *{$title}*\\n\\n";
-        $msg .= e($message) . "\\n";
+        $msg .= e($message).'\\n';
 
         if (! empty($data['fields'])) {
             foreach ($data['fields'] as $field) {
-                $msg .= "\\n• " . e($field);
+                $msg .= '\\n• '.e($field);
             }
         }
 

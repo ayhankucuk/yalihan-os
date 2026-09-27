@@ -77,9 +77,7 @@ class CommandGateway
     private function resolveActor(NormalizedCommandInput $input): ?User
     {
         if ($input->channel === 'telegram') {
-            return User::where('telegram_chat_id', $input->externalActorId)
-                ->orWhere('id', (int) $input->externalActorId)
-                ->first();
+            return User::where('telegram_chat_id', (string) $input->externalActorId)->first();
         }
 
         return null;
@@ -103,7 +101,7 @@ class CommandGateway
         $tenant = Cache::remember(
             "tenant:{$user->tenant_id}",
             300,
-            fn() => Tenant::find($user->tenant_id)
+            fn () => Tenant::find($user->tenant_id)
         );
 
         if (! $tenant) {

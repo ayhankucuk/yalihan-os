@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\CommandCenter;
 
+use App\Models\SaaS\Tenant;
 use App\Models\User;
 use App\Modules\TakimYonetimi\Services\TelegramBotService;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,7 @@ class TelegramIngressE2ETest extends TestCase
 
         // Get the default tenant from TestCase::injectDefaultTenantContext()
         // so the listing's tenant_id matches the tenant-isolated search context.
-        $tenant = \App\Models\SaaS\Tenant::firstOrFail();
+        $tenant = Tenant::firstOrFail();
 
         // Insert test listing under max price — tenant_id required by Phase 1k tenant isolation.
         DB::table('ilanlar')->insert([
@@ -59,7 +60,13 @@ class TelegramIngressE2ETest extends TestCase
             ],
         ];
 
-        $response = $this->postJson(route('api.telegram.webhook.native'), $payload);
+        config(['services.telegram.webhook_secret' => 'test-webhook-secret-token']);
+
+        $response = $this->postJson(
+            route('api.telegram.webhook.native'),
+            $payload,
+            ['X-Telegram-Bot-Api-Secret-Token' => 'test-webhook-secret-token']
+        );
 
         $response->assertStatus(200);
         $response->assertJson(['success' => true]);
