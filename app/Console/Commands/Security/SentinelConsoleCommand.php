@@ -18,8 +18,6 @@ use Symfony\Component\Process\Process;
  * - Madde 2: Fail-Fast Validation — İlk kritik hatada dur
  * - Madde 3: Self-Healing Capability — Otomatik onarım desteği
  * - Madde 4: Mutation-Aware Testing — Git delta bazlı akıllı test triage
- *
- * @package App\Console\Commands\Security
  */
 class SentinelConsoleCommand extends Command
 {
@@ -38,15 +36,13 @@ class SentinelConsoleCommand extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
     public function handle(): int
     {
-        $this->info("╔═══════════════════════════════════════════════════════════╗");
-        $this->info("║   YALIHAN CORTEX SENTINEL — Unified Protection Console   ║");
-        $this->info("║   SAB Phase 15: Multi-Layer Security & Quality Gate      ║");
-        $this->info("╚═══════════════════════════════════════════════════════════╝");
+        $this->info('╔═══════════════════════════════════════════════════════════╗');
+        $this->info('║   YALIHAN CORTEX SENTINEL — Unified Protection Console   ║');
+        $this->info('║   SAB Phase 15: Multi-Layer Security & Quality Gate      ║');
+        $this->info('╚═══════════════════════════════════════════════════════════╝');
         $this->newLine();
 
         $startTime = microtime(true);
@@ -54,49 +50,62 @@ class SentinelConsoleCommand extends Command
 
         try {
             // ═══════════════════════════════════════════════════════════
+            // FAST GATE: Canonical SSOT Gates (Migration, Secret, Seeder)
+            // ═══════════════════════════════════════════════════════════
+            $this->comment('→ Fast Gate: Kanonik bütünlük ve güvenlik kontrolleri...');
+            if (! $this->runFastGate()) {
+                $this->error('  ✗ Fast Gate kontrolleri başarısız. Yürütme durduruldu.');
+
+                return Command::FAILURE;
+            }
+
+            // ═══════════════════════════════════════════════════════════
             // MODÜL 1: Git Delta Analysis & Mutation Detection
             // ═══════════════════════════════════════════════════════════
-            $this->comment("→ Modül 1: Git delta ve değişiklik analizi...");
+            $this->comment('→ Modül 1: Git delta ve değişiklik analizi...');
             $modifiedFiles = $this->getModifiedFiles();
 
             if (empty($modifiedFiles)) {
-                $this->info("  ✓ Delta yok. Tam tarama moduna geçiliyor...");
+                $this->info('  ✓ Delta yok. Tam tarama moduna geçiliyor...');
             } else {
-                $this->info("  ✓ " . count($modifiedFiles) . " dosya değişikliği tespit edildi.");
+                $this->info('  ✓ '.count($modifiedFiles).' dosya değişikliği tespit edildi.');
             }
 
             // ═══════════════════════════════════════════════════════════
             // MODÜL 2: SAB Integrity Scan (Context7 & AST)
             // ═══════════════════════════════════════════════════════════
-            $this->comment("→ Modül 2: SAB Integrity & Context7 doğrulaması...");
+            $this->comment('→ Modül 2: SAB Integrity & Context7 doğrulaması...');
 
-            if (!$this->runIntegrityScan($modifiedFiles)) {
+            if (! $this->runIntegrityScan($modifiedFiles)) {
                 if ($this->option('fix')) {
-                    $this->warn("  ⚠ İhlaller tespit edildi. Otomatik onarım deneniyor...");
+                    $this->warn('  ⚠ İhlaller tespit edildi. Otomatik onarım deneniyor...');
                     $this->runAutoFix();
 
                     // Onarımdan sonra tekrar tara
-                    if (!$this->runIntegrityScan($modifiedFiles)) {
-                        $this->error("  ✗ Otomatik onarım başarısız. Manuel müdahale gerekli.");
+                    if (! $this->runIntegrityScan($modifiedFiles)) {
+                        $this->error('  ✗ Otomatik onarım başarısız. Manuel müdahale gerekli.');
+
                         return Command::FAILURE;
                     }
-                    $this->info("  ✓ Otomatik onarım başarılı.");
+                    $this->info('  ✓ Otomatik onarım başarılı.');
                 } else {
-                    $this->error("  ✗ SAB ihlalleri tespit edildi. --fix ile otomatik onarım deneyin.");
+                    $this->error('  ✗ SAB ihlalleri tespit edildi. --fix ile otomatik onarım deneyin.');
+
                     return Command::FAILURE;
                 }
             } else {
-                $this->info("  ✓ SAB Integrity: PASS");
+                $this->info('  ✓ SAB Integrity: PASS');
             }
 
             // ═══════════════════════════════════════════════════════════
             // MODÜL 3: Bekçi Health Check
             // ═══════════════════════════════════════════════════════════
-            $this->comment("→ Modül 3: Bekçi sistem sağlığı kontrolü...");
+            $this->comment('→ Modül 3: Bekçi sistem sağlığı kontrolü...');
             $healthScore = $this->checkBekciHealth();
 
             if ($healthScore < 70) {
                 $this->error("  ✗ Sistem sağlığı düşük: {$healthScore}% (threshold: 70%)");
+
                 return Command::FAILURE;
             }
             $this->info("  ✓ Sistem sağlığı: {$healthScore}% (GOOD)");
@@ -104,25 +113,26 @@ class SentinelConsoleCommand extends Command
             // ═══════════════════════════════════════════════════════════
             // MODÜL 4: Accelerated Test Suite (Mutation-Aware)
             // ═══════════════════════════════════════════════════════════
-            if (!$this->option('skip-tests')) {
-                $this->comment("→ Modül 4: Hızlandırılmış test suite (mutation-aware)...");
+            if (! $this->option('skip-tests')) {
+                $this->comment('→ Modül 4: Hızlandırılmış test suite (mutation-aware)...');
 
-                if (!$this->runAcceleratedTests($modifiedFiles, $mode)) {
-                    $this->error("  ✗ Test suite başarısız.");
+                if (! $this->runAcceleratedTests($modifiedFiles, $mode)) {
+                    $this->error('  ✗ Test suite başarısız.');
+
                     return Command::FAILURE;
                 }
 
-                $this->info("  ✓ Test Suite: PASS");
+                $this->info('  ✓ Test Suite: PASS');
             } else {
-                $this->warn("  ⊘ Test suite atlandı (--skip-tests)");
+                $this->warn('  ⊘ Test suite atlandı (--skip-tests)');
             }
 
             // ═══════════════════════════════════════════════════════════
             // MODÜL 5: Cache Invalidation & Optimization
             // ═══════════════════════════════════════════════════════════
-            $this->comment("→ Modül 5: Cache invalidation ve optimizasyon...");
+            $this->comment('→ Modül 5: Cache invalidation ve optimizasyon...');
             Artisan::call('cache:clear');
-            $this->info("  ✓ Cache temizlendi.");
+            $this->info('  ✓ Cache temizlendi.');
 
             // ═══════════════════════════════════════════════════════════
             // FINAL REPORT
@@ -130,10 +140,10 @@ class SentinelConsoleCommand extends Command
             $duration = round(microtime(true) - $startTime, 2);
 
             $this->newLine();
-            $this->info("╔═══════════════════════════════════════════════════════════╗");
-            $this->info("║              SENTINEL GATE: ALL CHECKS PASSED            ║");
+            $this->info('╔═══════════════════════════════════════════════════════════╗');
+            $this->info('║              SENTINEL GATE: ALL CHECKS PASSED            ║');
             $this->info("║  Execution Time: {$duration}s | Mode: {$mode}                    ║");
-            $this->info("╚═══════════════════════════════════════════════════════════╝");
+            $this->info('╚═══════════════════════════════════════════════════════════╝');
 
             return Command::SUCCESS;
 
@@ -144,10 +154,10 @@ class SentinelConsoleCommand extends Command
                 'line' => $exception->getLine(),
             ]);
 
-            $this->error("╔═══════════════════════════════════════════════════════════╗");
-            $this->error("║           SENTINEL CRASHED: EXECUTION ABORTED            ║");
+            $this->error('╔═══════════════════════════════════════════════════════════╗');
+            $this->error('║           SENTINEL CRASHED: EXECUTION ABORTED            ║');
             $this->error("║  Error: {$exception->getMessage()}");
-            $this->error("╚═══════════════════════════════════════════════════════════╝");
+            $this->error('╚═══════════════════════════════════════════════════════════╝');
 
             return Command::FAILURE;
         }
@@ -163,23 +173,19 @@ class SentinelConsoleCommand extends Command
         $process = new Process(['git', 'diff', '--name-only', 'HEAD']);
         $process->run();
 
-        if (!$process->isSuccessful()) {
+        if (! $process->isSuccessful()) {
             return [];
         }
 
         $output = array_filter(explode("\n", trim($process->getOutput())));
 
-        return array_filter($output, fn($file) =>
-            str_ends_with($file, '.php') &&
+        return array_filter($output, fn ($file) => str_ends_with($file, '.php') &&
             (str_starts_with($file, 'app/') || str_starts_with($file, 'database/'))
         );
     }
 
     /**
      * SAB Integrity Scan çalıştırır
-     *
-     * @param array $modifiedFiles
-     * @return bool
      */
     private function runIntegrityScan(array $modifiedFiles): bool
     {
@@ -190,13 +196,11 @@ class SentinelConsoleCommand extends Command
         $output = Artisan::output();
 
         // "FAIL" içeriyorsa başarısız
-        return !str_contains($output, 'FAIL');
+        return ! str_contains($output, 'FAIL');
     }
 
     /**
      * Otomatik onarım çalıştırır
-     *
-     * @return void
      */
     private function runAutoFix(): void
     {
@@ -205,8 +209,6 @@ class SentinelConsoleCommand extends Command
 
     /**
      * Bekçi sistem sağlığını kontrol eder
-     *
-     * @return float
      */
     private function checkBekciHealth(): float
     {
@@ -223,16 +225,12 @@ class SentinelConsoleCommand extends Command
 
     /**
      * Mutation-aware test suite çalıştırır
-     *
-     * @param array $modifiedFiles
-     * @param string $mode
-     * @return bool
      */
     private function runAcceleratedTests(array $modifiedFiles, string $mode): bool
     {
         $cmd = ['php', 'artisan', 'test'];
 
-        if ($mode === 'turbo' && !empty($modifiedFiles)) {
+        if ($mode === 'turbo' && ! empty($modifiedFiles)) {
             // Mutation-aware: Sadece etkilenen domain'leri test et
             $affectedDomains = $this->detectAffectedDomains($modifiedFiles);
 
@@ -263,7 +261,6 @@ class SentinelConsoleCommand extends Command
     /**
      * Değişen dosyalardan etkilenen domain'leri tespit eder
      *
-     * @param array $modifiedFiles
      * @return array<int, string>
      */
     private function detectAffectedDomains(array $modifiedFiles): array
@@ -281,5 +278,52 @@ class SentinelConsoleCommand extends Command
         }
 
         return array_unique($domains);
+    }
+
+    /**
+     * Fast Gate: Kanonik SSOT kontrollerini (Migration boundary, Secret scan, Seeder gate) çalıştırır.
+     */
+    protected function runFastGate(): bool
+    {
+        $checks = [
+            'Migration Boundary' => ['bash', base_path('scripts/tools/verify-migration-boundary.sh')],
+            'Secret Scan' => ['bash', base_path('scripts/tools/secret-scan.sh'), '--ci', 'HEAD'],
+            'Seeder Authority' => [$this->resolveNodeBinary(), base_path('scripts/guards/seeder-gate.cjs')],
+        ];
+
+        foreach ($checks as $name => $cmd) {
+            $process = new Process($cmd);
+            $process->setWorkingDirectory(base_path());
+            $process->setTimeout(30);
+            $process->run();
+
+            if (! $process->isSuccessful()) {
+                $this->error("  ✗ {$name}: FAIL (exit: {$process->getExitCode()})");
+                $err = trim($process->getErrorOutput() ?: $process->getOutput());
+                if ($err !== '') {
+                    $this->line('    '.str_replace("\n", "\n    ", $err));
+                }
+
+                return false;
+            }
+
+            $this->info("  ✓ {$name}: PASS");
+        }
+
+        return true;
+    }
+
+    /**
+     * Node binary yolunu tespit eder.
+     */
+    private function resolveNodeBinary(): string
+    {
+        foreach (['/opt/homebrew/bin/node', '/usr/local/bin/node', '/usr/bin/node'] as $path) {
+            if (is_executable($path)) {
+                return $path;
+            }
+        }
+
+        return 'node';
     }
 }

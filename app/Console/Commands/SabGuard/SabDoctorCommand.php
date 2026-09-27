@@ -4,6 +4,7 @@ namespace App\Console\Commands\SabGuard;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use Symfony\Component\Process\Process;
 
 class SabDoctorCommand extends Command
 {
@@ -23,9 +24,12 @@ class SabDoctorCommand extends Command
             ['sab:scan', [], true],
             ['sab:integrity-scan', ['--path' => $path], true],
             ['sab:audit', ['--output' => $output], true],
+            ['tests/Feature/Contract/SchedulerSignatureIntegrityTest.php', [], false],
         ];
 
         if ((bool) $this->option('strict')) {
+            $steps[] = ['tests/Feature/Schema/ModelSchemaContractTest.php', [], false];
+            $steps[] = ['tests/Feature/Contract/BootstrapLocalCanonicalContractTest.php', [], false];
             $steps[] = ['sab:guard', [], false];
         }
 
@@ -34,11 +38,15 @@ class SabDoctorCommand extends Command
         foreach ($steps as [$command, $arguments, $advisory]) {
             $this->line("Running: {$command}");
 
-            $exitCode = Artisan::call($command, $arguments);
-            $outputText = trim(Artisan::output());
+            if ($this->isTestContract($command)) {
+                $exitCode = $this->runTestContract($command);
+            } else {
+                $exitCode = Artisan::call($command, $arguments);
+                $outputText = trim(Artisan::output());
 
-            if ($outputText !== '') {
-                $this->line($outputText);
+                if ($outputText !== '') {
+                    $this->line($outputText);
+                }
             }
 
             $results[] = [
@@ -47,9 +55,10 @@ class SabDoctorCommand extends Command
                 'mode' => $advisory ? 'advisory' : 'blocking',
             ];
 
-            if (!$advisory && $exitCode !== 0) {
+            if (! $advisory && $exitCode !== 0) {
                 $this->error("Blocking failure at {$command} (exit={$exitCode}).");
                 $this->renderSummary($results, $output);
+
                 return $exitCode;
             }
         }
@@ -85,9 +94,37 @@ class SabDoctorCommand extends Command
         if ($failed->isEmpty()) {
             $this->info('SAB doctor result: healthy.');
         } else {
-            $this->warn('SAB doctor result: issues detected in -> ' . $failed->implode(', '));
+            $this->warn('SAB doctor result: issues detected in -> '.$failed->implode(', '));
         }
 
         $this->line("Latest audit report path: {$auditPath}");
+    }
+
+    private function isTestContract(string $command): bool
+    {
+        return str_starts_with($command, 'tests/') || str_ends_with($command, '.php');
+    }
+
+    private function runTestContract(string $testPath): int
+    {
+        $process = new Process([PHP_BINARY, 'artisan', 'test', $testPath]);
+        $process->setWorkingDirectory(base_path());
+        $process->setEnv([
+            'DB_CONNECTION' => 'sqlite',
+            'DB_DATABASE' => ':memory:',
+        ]);
+        $process->setTimeout(300);
+        $process->run();
+
+        $outputText = trim($process->getOutput());
+        if ($outputText === '') {
+            $outputText = trim($process->getErrorOutput());
+        }
+
+        if ($outputText !== '') {
+            $this->line($outputText);
+        }
+
+        return $process->getExitCode() ?? ($process->isSuccessful() ? 0 : 1);
     }
 }
