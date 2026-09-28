@@ -3288,11 +3288,13 @@ DROP TABLE IF EXISTS `opportunities`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `opportunities` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `ilan_id` bigint unsigned DEFAULT NULL,
+  `ilan_id` bigint unsigned NOT NULL,
   `lead_id` bigint unsigned DEFAULT NULL COMMENT 'Lead/Kisi reference',
+  `tenant_id` bigint unsigned DEFAULT NULL,
   `firsat_skoru` double(8,2) NOT NULL DEFAULT '0.00' COMMENT 'Opportunity score (0-100)',
   `skor_detayi` json DEFAULT NULL COMMENT 'Score details JSON',
   `firsat_nedeni` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'Opportunity reason/description',
+  `ikna_metni` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'AI-generated persuasive text',
   `firsat_durumu` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'yeni' COMMENT 'Opportunity phase: yeni,teklif,gorusme,tamamlandi',
   `aktiflik_durumu` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Active/inactive state',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display ordering',
@@ -3300,11 +3302,14 @@ CREATE TABLE `opportunities` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `opportunities_tenant_listing_lead_unique` (`tenant_id`,`ilan_id`,`lead_id`),
   KEY `opportunities_ilan_id_foreign` (`ilan_id`),
   KEY `opportunities_firsat_skoru_index` (`firsat_skoru`),
   KEY `opportunities_firsat_durumu_index` (`firsat_durumu`),
   KEY `opportunities_aktiflik_durumu_index` (`aktiflik_durumu`),
-  CONSTRAINT `opportunities_ilan_id_foreign` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE SET NULL
+  KEY `opportunities_tenant_id_index` (`tenant_id`),
+  CONSTRAINT `opportunities_ibfk_1` FOREIGN KEY (`ilan_id`) REFERENCES `ilanlar` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `opportunities_ibfk_2` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `optimizer_suggestions`;
