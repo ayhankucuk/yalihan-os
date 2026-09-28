@@ -300,13 +300,13 @@ Mevcut kapatılmış ve doğrulanmış görevlerden çıkarılan sözleşmeler:
 | **C08** | `AUTHORIZATION_SINGLE_AUTHORITY` | `b4765cd9` | Rol/yetki denetimi legacy integer `role_id` üzerinden yapılamaz; tek kanonik otorite Spatie RBAC olmalıdır. | Sentinel (FAST) / Tests (DEEP) | **PROMOTED** (`REPO_VERIFIED` + `TEST_VERIFIED`) |
 | **C09** | `FINANCIAL_SNAPSHOT_IMMUTABILITY` | Bekleyen (C3 finding) | Rezervasyon oluştuktan sonra geriye dönük hesaplama değişse bile mühürlenmiş finansal snapshot verisi değiştirilemez. | Tests (DEEP) | **CANDIDATE — NOT PROMOTED** (`WARN / BLOCKED`) |
 | **C10** | `SCHEDULER_COMMAND_INTEGRITY` | Bekleyen (Task 9 finding) | Kernel schedule içindeki komut ve job'lar container'da kayıtlı ve çalıştırılabilir olmalıdır. | Doktor (DEEP) | **CANDIDATE — NOT PROMOTED** (`UNKNOWN`) |
-| **C11** | `CANONICAL_BOOTSTRAP_INTEGRITY` | CDA-004 / TENANT_CANONICAL_AUTHORITY_RESOLVE_01 | YALIHAN OS, canonical baseline'dan temiz bir veritabanına deterministik olarak kurulabilmeli; oluşan veri Model ve Runtime tarafından aynı anlamla okunabilmeli. Seeder hiçbir zaman bağımsız schema veya business authority değildir. | Doktor (DEEP) | **ACTIVE — PRENSİP #12** (`REPO_VERIFIED`) |
+| **C11** | `CANONICAL_BOOTSTRAP_INTEGRITY` | CDA-006 / TENANT_CANONICAL_AUTHORITY_RESOLVE_01 | YALIHAN OS, canonical baseline'dan temiz bir veritabanına deterministik olarak kurulabilmeli; oluşan veri Model ve Runtime tarafından aynı anlamla okunabilmeli. Seeder hiçbir zaman bağımsız schema veya business authority değildir. | Doktor (DEEP) | **ACTIVE — PRENSİP #12** (`REPO_VERIFIED`) |
 
 ---
 
 ## PRENSİP #12 — CANONICAL_BOOTSTRAP_INTEGRITY (2026-09-28)
 
-**Kaynak:** CDA-004 (TenantBaselineSeeder forensics) — TENANT_CANONICAL_AUTHORITY_RESOLVE_01
+**Kaynak:** CDA-006 (TenantBaselineSeeder forensics) — TENANT_CANONICAL_AUTHORITY_RESOLVE_01
 **Decision:** DECISION_LOG.md PrENSİP #12
 **Etki:** Tüm bootstrap, seeder, migration ve model canonicalization görevleri
 

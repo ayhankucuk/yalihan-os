@@ -30,7 +30,7 @@ Her bulgu 5N1K formatında raporlanır:
 
 ---
 
-## CDA-004: AUTHORITY_MODEL_DRIFT + AUTHORITY_CONTRACT_DRIFT — Tenant Split-Brain (CRITICAL)
+## CDA-006: AUTHORITY_MODEL_DRIFT + AUTHORITY_CONTRACT_DRIFT — Tenant Split-Brain (CRITICAL)
 
 ### 5N1K Raporu
 

@@ -12,10 +12,10 @@
 ### Blokeli
 | Görev | Durum | Neden |
 |---|---|---|
-| `TenantBaselineSeeder` | BLOCKED | CDA-004: `uuid` + `status` yazıyor, physical DB `durum` bekliyor, `uuid` yok |
+| `TenantBaselineSeeder` | BLOCKED | CDA-006: `uuid` + `status` yazıyor, physical DB `durum` bekliyor, `uuid` yok |
 | `AdminUserSeeder` | HELD | TenantBaselineSeeder'a bağlı |
 
-### Root Cause (CDA-004)
+### Root Cause (CDA-006)
 ```
 App\Models\SaaS\Tenant (fillable: status) ≠ Physical DB (kolon: durum)
 App\Models\Tenant (fillable: durum)       = Physical DB ✅
@@ -35,7 +35,7 @@ Domain convergence çalışması devam ediyor. Tenant drift'ten bağımsız.
 
 ## 🏛️ Mimari Durum
 
-### Tenant Split-Brain (CDA-004 — OPEN)
+### Tenant Split-Brain (CDA-006 — OPEN)
 - `App\Models\Tenant` ← schema-uyumlu (durum)
 - `App\Models\SaaS\Tenant` ← schema-dışı (status) — RUNTIME'da aktif kullanılıyor
 - Middleware + BillingLedgerService + SubscriptionService → SaaS\Tenant'a bağlı

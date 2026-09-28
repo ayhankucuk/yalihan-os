@@ -521,5 +521,5 @@ Seeder tekrar çalıştığında duplicate/orphan üretmemeli ve mevcut business
 
 Model ↔ Migration ↔ Relation Contract Guard backlog adayı, CANONICAL_BOOTSTRAP_INTEGRITY invariant'ın önemli bir alt kümesini kapsar. Ayrı bir sistem yaratmak yerine mevcut Guard yapısına compose edilir.
 
-**Evidence:** Ayhan onayı 2026-09-28 + DECISION_LOG.md commit. Kaynak: TENANT_CANONICAL_AUTHORITY_RESOLVE_01 forensic sonucu (CDA-004)
+**Evidence:** Ayhan onayı 2026-09-28 + DECISION_LOG.md commit. Kaynak: TENANT_CANONICAL_AUTHORITY_RESOLVE_01 forensic sonucu (CDA-006)
 
