@@ -281,8 +281,14 @@ class IlanCrudService
      */
     private function handlePricing(Ilan $ilan, array $data, bool $isNew): void
     {
-        $newPrice = (float)($data['fiyat_raw'] ?? (isset($data['fiyat']) ? str_replace('.', '', $data['fiyat']) : 0));
-        $currency = $data['para_birimi'] ?? 'TRY';
+        $hasPrice = array_key_exists('fiyat', $data) || array_key_exists('fiyat_raw', $data);
+
+        if (!$isNew && !$hasPrice) {
+            return;
+        }
+
+        $newPrice = (float)($data['fiyat_raw'] ?? (isset($data['fiyat']) ? str_replace('.', '', $data['fiyat']) : ($isNew ? 0 : $ilan->fiyat)));
+        $currency = $data['para_birimi'] ?? ($isNew ? 'TRY' : ($ilan->para_birimi ?? 'TRY'));
 
         $ilan->fiyat = $newPrice;
         $ilan->para_birimi = $currency;

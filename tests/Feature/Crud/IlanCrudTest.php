@@ -5,6 +5,9 @@ namespace Tests\Feature\Crud;
 use Tests\TestCase;
 use App\Models\Ilan;
 use App\Models\User;
+use App\Models\IlanPriceHistory;
+use App\Models\V2\Ilan as V2Ilan;
+use App\Actions\Api\V2\Ilan\UnpublishIlanAction;
 use App\Services\Ilan\IlanCrudService;
 use App\Enums\IlanDurumu;
 use Illuminate\Support\Facades\Bus;
@@ -247,6 +250,220 @@ class IlanCrudTest extends TestCase
 
         $historyCountAfter = \App\Models\IlanPriceHistory::where('ilan_id', $ilan->id)->count();
         $this->assertEquals($historyCountBefore, $historyCountAfter, 'Unchanged price MUST produce zero new history records');
+    }
+
+    /**
+     * Test A: Partial title update preserves price and currency and does not append price history
+     *
+     * @test
+     * @group crud
+     */
+    public function test_partial_update_title_preserves_price_and_currency_and_does_not_append_history(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ilan = Ilan::factory()->create([
+            'baslik'       => 'Orijinal Baslik',
+            'fiyat'        => 2500000,
+            'para_birimi'  => 'EUR',
+            'yayin_durumu' => 'taslak',
+        ]);
+
+        $historyCountBefore = IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+
+        $service = app(IlanCrudService::class);
+        $service->update($ilan, [
+            'baslik' => 'Guncel Baslik',
+        ]);
+
+        $ilan->refresh();
+        $this->assertEquals('Guncel Baslik', $ilan->baslik);
+        $this->assertEquals(2500000.0, (float) $ilan->fiyat);
+        $this->assertEquals('EUR', $ilan->para_birimi);
+
+        $historyCountAfter = IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+        $this->assertEquals($historyCountBefore, $historyCountAfter, 'Partial title update must not write any price history record');
+    }
+
+    /**
+     * Test B: Partial description update preserves price and currency and does not append price history
+     *
+     * @test
+     * @group crud
+     */
+    public function test_partial_update_description_preserves_price_and_currency_and_does_not_append_history(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ilan = Ilan::factory()->create([
+            'aciklama'     => 'Orijinal Aciklama',
+            'fiyat'        => 2500000,
+            'para_birimi'  => 'EUR',
+            'yayin_durumu' => 'taslak',
+        ]);
+
+        $historyCountBefore = IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+
+        $service = app(IlanCrudService::class);
+        $service->update($ilan, [
+            'aciklama' => 'Yeni Aciklama Metni',
+        ]);
+
+        $ilan->refresh();
+        $this->assertEquals('Yeni Aciklama Metni', $ilan->aciklama);
+        $this->assertEquals(2500000.0, (float) $ilan->fiyat);
+        $this->assertEquals('EUR', $ilan->para_birimi);
+
+        $historyCountAfter = IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+        $this->assertEquals($historyCountBefore, $historyCountAfter, 'Partial description update must not write any price history record');
+    }
+
+    /**
+     * Test C: UnpublishIlanAction preserves price and currency and does not append price history
+     *
+     * @test
+     * @group crud
+     */
+    public function test_unpublish_action_preserves_price_and_currency_and_does_not_append_history(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ilan = Ilan::factory()->create([
+            'baslik'       => 'Yayindaki Ilan',
+            'fiyat'        => 2500000,
+            'para_birimi'  => 'EUR',
+            'yayin_durumu' => 'yayinda',
+        ]);
+
+        $historyCountBefore = IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+
+        $v2Ilan = V2Ilan::findOrFail($ilan->id);
+        $action = app(UnpublishIlanAction::class);
+        $action->handle($v2Ilan);
+
+        $ilan->refresh();
+        $this->assertEquals(IlanDurumu::PASIF, $ilan->yayin_durumu);
+        $this->assertEquals(2500000.0, (float) $ilan->fiyat);
+        $this->assertEquals('EUR', $ilan->para_birimi);
+
+        $historyCountAfter = IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+        $this->assertEquals($historyCountBefore, $historyCountAfter, 'Unpublish action must not write any price history record');
+    }
+
+    /**
+     * Test D: Explicit price change updates price and records exactly one price history record
+     *
+     * @test
+     * @group crud
+     */
+    public function test_explicit_price_change_updates_price_and_records_exactly_one_history(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ilan = Ilan::factory()->create([
+            'fiyat'        => 2500000,
+            'para_birimi'  => 'EUR',
+            'yayin_durumu' => 'taslak',
+        ]);
+
+        $historyCountBefore = IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+
+        $service = app(IlanCrudService::class);
+        $service->update($ilan, [
+            'fiyat'               => 2750000,
+            'price_change_reason' => 'Fiyat artisi',
+        ]);
+
+        $ilan->refresh();
+        $this->assertEquals(2750000.0, (float) $ilan->fiyat);
+        $this->assertEquals('EUR', $ilan->para_birimi);
+
+        $historyCountAfter = IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+        $this->assertEquals($historyCountBefore + 1, $historyCountAfter, 'Explicit price change must write exactly one price history record');
+
+        $latestHistory = IlanPriceHistory::where('ilan_id', $ilan->id)->latest('id')->first();
+        $this->assertEquals(2500000.0, (float) $latestHistory->old_price);
+        $this->assertEquals(2750000.0, (float) $latestHistory->new_price);
+        $this->assertEquals('EUR', $latestHistory->currency);
+        $this->assertEquals('Fiyat artisi', $latestHistory->change_reason);
+        $this->assertEquals($user->id, $latestHistory->changed_by);
+    }
+
+    /**
+     * Test E: Explicit zero price is treated as explicit price update, not omitted
+     *
+     * @test
+     * @group crud
+     */
+    public function test_explicit_zero_price_is_treated_as_explicit_price_update(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ilan = Ilan::factory()->create([
+            'fiyat'        => 2500000,
+            'para_birimi'  => 'EUR',
+            'yayin_durumu' => 'taslak',
+        ]);
+
+        $historyCountBefore = IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+
+        $service = app(IlanCrudService::class);
+        $service->update($ilan, [
+            'fiyat'               => 0,
+            'price_change_reason' => 'Fiyat sifirlandi',
+        ]);
+
+        $ilan->refresh();
+        $this->assertEquals(0.0, (float) $ilan->fiyat);
+        $this->assertEquals('EUR', $ilan->para_birimi);
+
+        $historyCountAfter = IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+        $this->assertEquals($historyCountBefore + 1, $historyCountAfter, 'Explicit zero price must write a price history record');
+
+        $latestHistory = IlanPriceHistory::where('ilan_id', $ilan->id)->latest('id')->first();
+        $this->assertEquals(2500000.0, (float) $latestHistory->old_price);
+        $this->assertEquals(0.0, (float) $latestHistory->new_price);
+        $this->assertEquals('EUR', $latestHistory->currency);
+    }
+
+    /**
+     * Test F: Explicit price with omitted currency preserves existing currency
+     *
+     * @test
+     * @group crud
+     */
+    public function test_explicit_price_with_omitted_currency_preserves_existing_currency(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ilan = Ilan::factory()->create([
+            'fiyat'        => 2500000,
+            'para_birimi'  => 'EUR',
+            'yayin_durumu' => 'taslak',
+        ]);
+
+        $historyCountBefore = IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+
+        $service = app(IlanCrudService::class);
+        $service->update($ilan, [
+            'fiyat' => 3000000,
+        ]);
+
+        $ilan->refresh();
+        $this->assertEquals(3000000.0, (float) $ilan->fiyat);
+        $this->assertEquals('EUR', $ilan->para_birimi, 'Existing EUR currency must be preserved when para_birimi is omitted');
+
+        $historyCountAfter = IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+        $this->assertEquals($historyCountBefore + 1, $historyCountAfter);
+
+        $latestHistory = IlanPriceHistory::where('ilan_id', $ilan->id)->latest('id')->first();
+        $this->assertEquals('EUR', $latestHistory->currency);
     }
 }
 
