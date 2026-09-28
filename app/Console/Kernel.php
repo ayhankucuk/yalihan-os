@@ -24,59 +24,12 @@ class Kernel extends ConsoleKernel
             ->dailyAt('06:00')
             ->appendOutputTo(storage_path('logs/drive-channel-renewal.log'));
 
-        // TestSprite otomatik öğrenme - Her gün 03:00'da
-        $schedule->command('testsprite:auto-learn')
-            ->dailyAt('03:00')
-            ->appendOutputTo(storage_path('logs/testsprite-auto-learn.log'));
-
-        // Context7: Query String Scanner - Her saat taraması (Controller/Route queries)
-        $schedule->command('context7:query-scan --persist')
-            ->hourly()
-            ->appendOutputTo(storage_path('logs/context7-query-scan.log'));
-
         // Unified Quality Gate - Her 6 saatte bir derin doğrulama
         $schedule->command('quality:gate --with-context7')
             ->everySixHours()
             ->appendOutputTo(storage_path('logs/quality-gate-deep-check.log'));
 
-        // Context7: Hot-Fix Real-time Scanner - Her saat başı (Dev modunda CPU tasarrufu)
-        $schedule->command('context7:hot-fix --auto-repair')
-            ->hourly()
-            ->appendOutputTo(storage_path('logs/context7-hot-fix.log'));
 
-        // 🤖 Context7: Smart Pattern Detection - Her 2 saatte bir
-        $schedule->command('context7:smart-detect')
-            ->everyTwoHours()
-            ->appendOutputTo(storage_path('logs/context7-smart-detect.log'));
-
-        // 🔍 Context7: Dependency Audit - Her gün 04:00'te
-        $schedule->command('context7:dependency-audit')
-            ->dailyAt('04:00')
-            ->appendOutputTo(storage_path('logs/context7-dependency-audit.log'));
-
-        // 👃 Context7: Code Smell Detection - Her gün 04:30'da
-        $schedule->command('context7:smell-detect')
-            ->dailyAt('04:30')
-            ->appendOutputTo(storage_path('logs/context7-smell-detect.log'));
-
-        // 📊 Context7: Compliance Score Report - Haftalık Pazartesi 02:00
-        $schedule->command('context7:score-report')
-            ->weekly()
-            ->mondays()
-            ->at('02:00')
-            ->appendOutputTo(storage_path('logs/context7-score-report.log'));
-
-        // 📋 Context7: Phase-Based Scan - Her gün 05:00'te
-        $schedule->command('context7:phase-scan --all')
-            ->dailyAt('05:00')
-            ->appendOutputTo(storage_path('logs/context7-phase-scan.log'));
-
-        // 📈 Context7: Trend Analysis - Haftalık Cuma 03:00'te
-        $schedule->command('context7:trends --days=30')
-            ->weekly()
-            ->fridays()
-            ->at('03:00')
-            ->appendOutputTo(storage_path('logs/context7-trends.log'));
 
         // Context7 standard check - Haftalık
         $schedule->command('standard:check --type=context7')
