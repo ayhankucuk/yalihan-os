@@ -789,7 +789,7 @@ class Ilan extends BaseModel
      */
     public function dealPredictions(): HasMany
     {
-        return $this->hasMany(DealPredictionLog::class, 'ilan_id');
+        return $this->hasMany(DealPredictionLog::class, 'listing_id');
     }
 
     /**
@@ -797,7 +797,7 @@ class Ilan extends BaseModel
      */
     public function dealPredictionSnapshots(): HasMany
     {
-        return $this->hasMany(DealPredictionSnapshot::class, 'ilan_id');
+        return $this->hasMany(DealPredictionSnapshot::class, 'listing_id');
     }
 
     /**
