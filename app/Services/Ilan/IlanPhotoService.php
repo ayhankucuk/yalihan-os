@@ -146,8 +146,8 @@ class IlanPhotoService
     {
         $this->blockAgentWrite('updatePhotoSequence');
         $validator = Validator::make(['photo_sequences' => $photoSequences], [
-            'photo_sequences' => 'required|array',
-            'photo_sequences.*' => 'required|integer',
+            'photo_sequences' => 'required|array|min:1',
+            'photo_sequences.*' => 'required|integer|min:1',
         ]);
 
         if ($validator->fails()) {
@@ -157,13 +157,59 @@ class IlanPhotoService
             ];
         }
 
+        // Validate uniqueness of target sequences in the input
+        $targetOrders = array_values($photoSequences);
+        if (count($targetOrders) !== count(array_unique($targetOrders))) {
+            return [
+                'success' => false,
+                'errors' => 'Hedef sıralama değerleri benzersiz olmalıdır.',
+            ];
+        }
+
         DB::beginTransaction();
         try {
-            foreach ($photoSequences as $photoId => $sequence) {
-                IlanFotografi::where('id', $photoId)
-                    ->where('ilan_id', $ilan->id)
-                    ->update(['display_order' => (int) $sequence]);
+            // Lock parent ilan to serialize concurrent reorders
+            Ilan::where('id', $ilan->id)->lockForUpdate()->exists();
+
+            // Find all valid photo IDs belonging strictly to this listing
+            $photoIds = array_keys($photoSequences);
+            $validPhotos = IlanFotografi::where('ilan_id', $ilan->id)
+                ->whereIn('id', $photoIds)
+                ->get()
+                ->keyBy('id');
+
+            if ($validPhotos->isEmpty()) {
+                DB::rollBack();
+
+                return [
+                    'success' => false,
+                    'errors' => 'Güncellenecek geçerli fotoğraf bulunamadı.',
+                ];
             }
+
+            // Phase 1: Set collision-free temporary offset values to avoid UNIQUE(ilan_id, display_order) intermediate collisions
+            $maxCurrentOrder = (int) (IlanFotografi::where('ilan_id', $ilan->id)->max('display_order') ?? 0);
+            $tempBase = max($maxCurrentOrder, 10000) + 10000;
+            $tempIndex = 1;
+
+            foreach ($photoSequences as $photoId => $targetSequence) {
+                if (isset($validPhotos[$photoId])) {
+                    IlanFotografi::where('id', $photoId)
+                        ->where('ilan_id', $ilan->id)
+                        ->update(['display_order' => $tempBase + $tempIndex]);
+                    $tempIndex++;
+                }
+            }
+
+            // Phase 2: Set final deterministic target sequence values
+            foreach ($photoSequences as $photoId => $targetSequence) {
+                if (isset($validPhotos[$photoId])) {
+                    IlanFotografi::where('id', $photoId)
+                        ->where('ilan_id', $ilan->id)
+                        ->update(['display_order' => (int) $targetSequence]);
+                }
+            }
+
             DB::commit();
 
             return [

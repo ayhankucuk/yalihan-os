@@ -324,4 +324,171 @@ class PhotoDisplayOrderRaceConditionTest extends TestCase
         $this->assertEquals([1, 2, 3, 4, 5], $orders);
         $this->assertEquals(count($orders), count(array_unique($orders)));
     }
+
+    /**
+     * ILAN-04 Remediation Test: Reordering photos (A=1, B=2, C=3 -> C=1, A=2, B=3)
+     * does not trigger UNIQUE(ilan_id, display_order) integrity constraint violation.
+     *
+     * @test
+     */
+    public function reorder_photos_swaps_positions_without_unique_constraint_violation(): void
+    {
+        Storage::fake('public');
+
+        $ilan = Ilan::factory()->create();
+
+        $photoA = IlanFotografi::create([
+            'ilan_id' => $ilan->id,
+            'dosya_adi' => 'a.jpg',
+            'dosya_yolu' => 'ilan-fotograflari/a.jpg',
+            'display_order' => 1,
+        ]);
+        $photoB = IlanFotografi::create([
+            'ilan_id' => $ilan->id,
+            'dosya_adi' => 'b.jpg',
+            'dosya_yolu' => 'ilan-fotograflari/b.jpg',
+            'display_order' => 2,
+        ]);
+        $photoC = IlanFotografi::create([
+            'ilan_id' => $ilan->id,
+            'dosya_adi' => 'c.jpg',
+            'dosya_yolu' => 'ilan-fotograflari/c.jpg',
+            'display_order' => 3,
+        ]);
+
+        $service = app(IlanPhotoService::class);
+
+        // Reorder: C -> 1, A -> 2, B -> 3
+        $result = $service->updatePhotoSequence($ilan, [
+            $photoC->id => 1,
+            $photoA->id => 2,
+            $photoB->id => 3,
+        ]);
+
+        $this->assertTrue($result['success']);
+
+        // DB readback: exact deterministic sequence
+        $this->assertEquals(1, $photoC->fresh()->display_order);
+        $this->assertEquals(2, $photoA->fresh()->display_order);
+        $this->assertEquals(3, $photoB->fresh()->display_order);
+
+        // Relationship order check
+        $ordered = $ilan->fotograflar()->get();
+        $this->assertEquals($photoC->id, $ordered[0]->id);
+        $this->assertEquals($photoA->id, $ordered[1]->id);
+        $this->assertEquals($photoB->id, $ordered[2]->id);
+    }
+
+    /**
+     * ILAN-04 Remediation Test: Direct 2-photo swap (A=1, B=2 -> A=2, B=1)
+     *
+     * @test
+     */
+    public function reorder_photos_direct_two_photo_swap(): void
+    {
+        Storage::fake('public');
+
+        $ilan = Ilan::factory()->create();
+
+        $photoA = IlanFotografi::create([
+            'ilan_id' => $ilan->id,
+            'dosya_adi' => 'swap_a.jpg',
+            'dosya_yolu' => 'ilan-fotograflari/swap_a.jpg',
+            'display_order' => 1,
+        ]);
+        $photoB = IlanFotografi::create([
+            'ilan_id' => $ilan->id,
+            'dosya_adi' => 'swap_b.jpg',
+            'dosya_yolu' => 'ilan-fotograflari/swap_b.jpg',
+            'display_order' => 2,
+        ]);
+
+        $service = app(IlanPhotoService::class);
+
+        $result = $service->updatePhotoSequence($ilan, [
+            $photoA->id => 2,
+            $photoB->id => 1,
+        ]);
+
+        $this->assertTrue($result['success']);
+        $this->assertEquals(2, $photoA->fresh()->display_order);
+        $this->assertEquals(1, $photoB->fresh()->display_order);
+    }
+
+    /**
+     * ILAN-04 Remediation Test: Cross-listing safety
+     * Passing another listing's photo ID does not modify the other listing's photo.
+     *
+     * @test
+     */
+    public function reorder_photos_ignores_foreign_listing_photos(): void
+    {
+        Storage::fake('public');
+
+        $ilanA = Ilan::factory()->create();
+        $ilanB = Ilan::factory()->create();
+
+        $photoA = IlanFotografi::create([
+            'ilan_id' => $ilanA->id,
+            'dosya_adi' => 'photo_a.jpg',
+            'dosya_yolu' => 'ilan-fotograflari/photo_a.jpg',
+            'display_order' => 1,
+        ]);
+        $photoB = IlanFotografi::create([
+            'ilan_id' => $ilanB->id,
+            'dosya_adi' => 'photo_b.jpg',
+            'dosya_yolu' => 'ilan-fotograflari/photo_b.jpg',
+            'display_order' => 5,
+        ]);
+
+        $service = app(IlanPhotoService::class);
+
+        // Attempt to reorder listing A while injecting photo B's ID
+        $result = $service->updatePhotoSequence($ilanA, [
+            $photoA->id => 2,
+            $photoB->id => 1, // foreign photo
+        ]);
+
+        $this->assertTrue($result['success']);
+        $this->assertEquals(2, $photoA->fresh()->display_order);
+        $this->assertEquals(5, $photoB->fresh()->display_order, 'Foreign photo must remain unchanged at display_order=5');
+    }
+
+    /**
+     * ILAN-04 Remediation Test: Duplicate target sequence rejection
+     *
+     * @test
+     */
+    public function reorder_photos_rejects_duplicate_target_sequences(): void
+    {
+        Storage::fake('public');
+
+        $ilan = Ilan::factory()->create();
+
+        $photoA = IlanFotografi::create([
+            'ilan_id' => $ilan->id,
+            'dosya_adi' => 'photo_dup_a.jpg',
+            'dosya_yolu' => 'ilan-fotograflari/photo_dup_a.jpg',
+            'display_order' => 1,
+        ]);
+        $photoB = IlanFotografi::create([
+            'ilan_id' => $ilan->id,
+            'dosya_adi' => 'photo_dup_b.jpg',
+            'dosya_yolu' => 'ilan-fotograflari/photo_dup_b.jpg',
+            'display_order' => 2,
+        ]);
+
+        $service = app(IlanPhotoService::class);
+
+        // Assign both photos to position 1
+        $result = $service->updatePhotoSequence($ilan, [
+            $photoA->id => 1,
+            $photoB->id => 1,
+        ]);
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('benzersiz', (string) $result['errors']);
+        $this->assertEquals(1, $photoA->fresh()->display_order);
+        $this->assertEquals(2, $photoB->fresh()->display_order);
+    }
 }
