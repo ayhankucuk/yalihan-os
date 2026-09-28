@@ -130,4 +130,90 @@ class SchedulerSignatureIntegrityTest extends TestCase
         $this->assertNotSame($governance->getName(), $mcp->getName());
         $this->assertNotSame(get_class($governance), get_class($mcp));
     }
+
+    /**
+     * 6. quality:gate resolves to App\Console\Commands\QualityGateCommand.
+     */
+    public function test_quality_gate_resolves_to_quality_gate_command(): void
+    {
+        /** @var Kernel $kernel */
+        $kernel = $this->app->make(Kernel::class);
+        $commands = $kernel->all();
+
+        $this->assertArrayHasKey('quality:gate', $commands, 'Command quality:gate must be registered.');
+        $this->assertInstanceOf(
+            \App\Console\Commands\QualityGateCommand::class,
+            $commands['quality:gate'],
+            'quality:gate must resolve to App\Console\Commands\QualityGateCommand.'
+        );
+    }
+
+    /**
+     * 7. The Quality Gate scheduler entry in Kernel references quality:gate without invalid --with-context7 flag.
+     */
+    public function test_quality_gate_scheduler_entry_in_kernel_references_quality_gate_without_invalid_flags(): void
+    {
+        /** @var Schedule $schedule */
+        $schedule = $this->app->make(Schedule::class);
+        $events = collect($schedule->events());
+
+        $qualityGateEvents = $events->filter(function (Event $event): bool {
+            return is_string($event->command) && str_contains($event->command, 'quality:gate');
+        });
+
+        $this->assertCount(
+            1,
+            $qualityGateEvents,
+            'Exactly one scheduled event must run quality:gate.'
+        );
+
+        /** @var Event $event */
+        $event = $qualityGateEvents->first();
+        $this->assertSame(
+            '0 */6 * * *',
+            $event->expression,
+            'quality:gate must be scheduled every 6 hours (0 */6 * * *).'
+        );
+
+        $this->assertStringNotContainsString(
+            '--with-context7',
+            $event->command,
+            'Scheduled quality:gate must not include the non-existent --with-context7 option.'
+        );
+    }
+
+    /**
+     * 8. Scheduled quality:gate command options are accepted by owning command definition.
+     */
+    public function test_scheduled_quality_gate_options_are_accepted_by_command_definition(): void
+    {
+        /** @var Kernel $kernel */
+        $kernel = $this->app->make(Kernel::class);
+        $command = $kernel->all()['quality:gate'];
+        $definition = $command->getDefinition();
+
+        /** @var Schedule $schedule */
+        $schedule = $this->app->make(Schedule::class);
+        $events = collect($schedule->events());
+
+        /** @var Event $event */
+        $event = $events->first(function (Event $event): bool {
+            return is_string($event->command) && str_contains($event->command, 'quality:gate');
+        });
+
+        $this->assertNotNull($event, 'quality:gate scheduled event must exist.');
+
+        // Extract command line arguments passed in schedule
+        // Command string is formatted like: '/path/to/php' 'artisan' quality:gate
+        // Extract raw artisan parameters
+        $commandStr = $event->command;
+        $parts = explode('quality:gate', $commandStr, 2);
+        $optionsPart = trim($parts[1] ?? '');
+
+        // If options are supplied, ensure Symfony input parser accepts them
+        $stringInput = new \Symfony\Component\Console\Input\StringInput($optionsPart);
+        $stringInput->bind($definition);
+
+        $this->assertTrue(true, 'Scheduled options are valid and accepted by command definition.');
+    }
 }

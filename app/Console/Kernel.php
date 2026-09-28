@@ -25,7 +25,7 @@ class Kernel extends ConsoleKernel
             ->appendOutputTo(storage_path('logs/drive-channel-renewal.log'));
 
         // Unified Quality Gate - Her 6 saatte bir derin doğrulama
-        $schedule->command('quality:gate --with-context7')
+        $schedule->command('quality:gate')
             ->everySixHours()
             ->appendOutputTo(storage_path('logs/quality-gate-deep-check.log'));
 
