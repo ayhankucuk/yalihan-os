@@ -34,6 +34,24 @@ class YalihanLifecycle
 {
     use GuardsAgentWrites;
     public static bool $isAuthorized = false;
+    private static int $authDepth = 0;
+
+    /**
+     * Reentrancy call depth getter
+     */
+    public static function getAuthDepth(): int
+    {
+        return self::$authDepth;
+    }
+
+    /**
+     * Emergency / test reset helper
+     */
+    public static function resetAuthorization(): void
+    {
+        self::$authDepth = 0;
+        self::$isAuthorized = false;
+    }
 
     public function __construct(
         private readonly ListingStateMachine $stateMachine,
@@ -54,6 +72,7 @@ class YalihanLifecycle
     ): Ilan {
         $this->blockAgentWrite(__FUNCTION__);
 
+        self::$authDepth++;
         self::$isAuthorized = true;
 
         try {
@@ -119,7 +138,8 @@ class YalihanLifecycle
                 return $ilan->fresh();
             });
         } finally {
-            self::$isAuthorized = false;
+            self::$authDepth = max(0, self::$authDepth - 1);
+            self::$isAuthorized = (self::$authDepth > 0);
         }
     }
 

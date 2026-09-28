@@ -145,6 +145,26 @@ class ListingLifecycleFinalSealTest extends TestCase
     }
 
     /** @test */
+    public function taslak_to_yayinda_auto_chain_flow_succeeds()
+    {
+        $ilan = $this->createPublishableListing(auth()->user(), [
+            'yayin_durumu' => IlanDurumu::TASLAK
+        ]);
+
+        $mock = Mockery::mock(ListingScoreService::class);
+        $mock->shouldReceive('computeCompletionScore')->andReturn(100);
+        $mock->shouldReceive('computeQualityScore')->andReturn(85);
+        $this->app->instance(ListingScoreService::class, $mock);
+
+        $lifecycle = app(YalihanLifecycle::class);
+        $lifecycle->transition($ilan, IlanDurumu::YAYINDA);
+
+        $this->assertEquals(IlanDurumu::YAYINDA->value, $ilan->fresh()->yayin_durumu->value);
+        $this->assertFalse(YalihanLifecycle::$isAuthorized);
+        $this->assertSame(0, YalihanLifecycle::getAuthDepth());
+    }
+
+    /** @test */
     public function publish_gate_controller_smoke_test()
     {
         $ilan = $this->createPublishableListing(auth()->user());
