@@ -113,6 +113,8 @@ class IlanCrudService
         $this->blockAgentWrite('update');
 
         $ilan = DB::transaction(function () use ($ilan, $data) {
+            $oldPrice = (float) ($ilan->getOriginal('fiyat') ?? $ilan->fiyat ?? 0);
+
             // 1. Map core data
             $this->mapCoreData($ilan, $data);
 
@@ -130,7 +132,7 @@ class IlanCrudService
             $ilan->ensureDetailTableExists();
 
             // 5. Record Price History
-            $this->recordPriceHistory($ilan, $data, false);
+            $this->recordPriceHistory($ilan, $data, false, $oldPrice);
 
             // 6. Re-seal SEO names if needed
             $this->handleReference($ilan);
@@ -290,13 +292,13 @@ class IlanCrudService
     /**
      * PRIVATE: Record price history if changed
      */
-    private function recordPriceHistory(Ilan $ilan, array $data, bool $isNew): void
+    private function recordPriceHistory(Ilan $ilan, array $data, bool $isNew, ?float $previousPrice = null): void
     {
-        $oldPrice = $isNew ? 0 : $ilan->getOriginal('fiyat');
-        $newPrice = $ilan->fiyat;
-        $currency = $ilan->para_birimi;
+        $oldPrice = $isNew ? 0.0 : ($previousPrice ?? (float) $ilan->getOriginal('fiyat'));
+        $newPrice = (float) $ilan->fiyat;
+        $currency = $ilan->para_birimi ?? 'TRY';
 
-        if ($isNew || $oldPrice != $newPrice) {
+        if ($isNew || (float) $oldPrice !== (float) $newPrice) {
             IlanPriceHistory::create([
                 'ilan_id' => $ilan->id,
                 'old_price' => $oldPrice,

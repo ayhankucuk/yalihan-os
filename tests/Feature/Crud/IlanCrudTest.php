@@ -182,4 +182,71 @@ class IlanCrudTest extends TestCase
         // Assert: Can find with normal query
         $this->assertNotNull(Ilan::find($ilan->id));
     }
+
+    /**
+     * Test: Price change on update appends exactly one price history record
+     *
+     * @test
+     * @group crud
+     */
+    public function test_price_change_appends_price_history_record_on_update(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ilan = Ilan::factory()->create([
+            'fiyat' => 1000000,
+            'para_birimi' => 'TRY',
+            'yayin_durumu' => 'taslak',
+        ]);
+
+        $historyCountBefore = \App\Models\IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+
+        $service = app(IlanCrudService::class);
+        $service->update($ilan, [
+            'fiyat' => 1500000,
+            'price_change_reason' => 'Piyasa guncellemesi',
+        ]);
+
+        $historyCountAfter = \App\Models\IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+        $this->assertEquals($historyCountBefore + 1, $historyCountAfter, 'Price change MUST append exactly one history record');
+
+        $latestHistory = \App\Models\IlanPriceHistory::where('ilan_id', $ilan->id)->latest('id')->first();
+        $this->assertEquals(1000000.0, (float) $latestHistory->old_price);
+        $this->assertEquals(1500000.0, (float) $latestHistory->new_price);
+        $this->assertEquals('TRY', $latestHistory->currency);
+        $this->assertEquals('Piyasa guncellemesi', $latestHistory->change_reason);
+        $this->assertEquals($user->id, $latestHistory->changed_by);
+    }
+
+    /**
+     * Test: Unchanged price on update produces zero new price history records
+     *
+     * @test
+     * @group crud
+     */
+    public function test_unchanged_price_does_not_append_history_on_update(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ilan = Ilan::factory()->create([
+            'fiyat' => 2000000,
+            'para_birimi' => 'TRY',
+            'baslik' => 'Eski Baslik',
+            'yayin_durumu' => 'taslak',
+        ]);
+
+        $historyCountBefore = \App\Models\IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+
+        $service = app(IlanCrudService::class);
+        $service->update($ilan, [
+            'baslik' => 'Sadece Baslik Degisti',
+            'fiyat' => 2000000,
+        ]);
+
+        $historyCountAfter = \App\Models\IlanPriceHistory::where('ilan_id', $ilan->id)->count();
+        $this->assertEquals($historyCountBefore, $historyCountAfter, 'Unchanged price MUST produce zero new history records');
+    }
 }
+
