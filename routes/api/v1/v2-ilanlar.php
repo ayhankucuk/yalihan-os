@@ -16,7 +16,9 @@ Route::prefix('ilanlar')->group(function () {
     Route::get('/', [IlanController::class, 'index'])->name('api.ilanlar.index');
     // Search route must be defined BEFORE {id} to avoid collision
     Route::get('/search', [\App\Http\Controllers\Admin\IlanSearchController::class, 'search'])->name('api.ilanlar.search');
-    Route::get('{id}', [IlanController::class, 'show'])->name('api.ilanlar.show');
+    Route::get('{id}', [IlanController::class, 'show'])
+        ->name('api.ilanlar.show')
+        ->whereNumber('id');
 
     // Protected endpoints (auth required for write operations)
     Route::middleware(['auth:sanctum', 'tenant.context'])->group(function () {
