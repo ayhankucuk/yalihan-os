@@ -450,3 +450,76 @@ DOMAIN_STATE: CANONICAL_CLEAN | WITH_DOCUMENTED_LEGACY | FUNCTIONALLY_FIXED_CLEA
 
 **Evidence:** Ayhan onayı 2026-09-23 + AGENTS.md commit 840e7f2a
 
+---
+
+## PRENSİP #12 — CANONICAL_BOOTSTRAP_INTEGRITY (2026-09-28)
+
+**Karar Sahibi:** Ayhan
+**Kaynak:** TENANT_CANONICAL_AUTHORITY_RESOLVE_01 retrospektif — TenantBaselineSeeder forensics sonucu
+**AGENTS.md:** Rule 14 (canon kaynak)
+**Etki:** Tüm gelecek bootstrap, seeder, migration ve model canonicalization görevleri
+
+### Temel Özet
+
+YALIHAN OS, canonical baseline'dan temiz bir veritabanına deterministik olarak kurulabilmeli; oluşan veri Model ve Runtime tarafından aynı anlamla okunabilmeli.
+
+Seeder hiçbir zaman bağımsız schema veya business authority değildir. Her canonical seeder'ın yazdığı tablo, kolon, ilişki, state ve identifier; canonical physical schema, migration boundary, model/relation contract ve effective runtime authority ile uyumlu olmalıdır.
+
+**Tam authority zinciri:**
+
+```
+Domain Authority → Physical Schema → Migration Lineage → Seeder/Bootstrap → Model/Relations → Runtime Consumers → Tests → Production
+```
+
+**Tenant vakası örneği:**
+
+TenantBaselineSeeder `uuid` + `status` yazıyordu. Ama physical schema `durum` bekliyordu, `uuid` kolonu yoktu. Runtime middleware `App\Models\SaaS\Tenant` kullanıyordu — fillable'da `status` vardı. Mevcut `App\Models\Tenant` fillable'da `durum` vardı — schema-uyumlu ama runtime'da aktif değildi. → Seeder otorite değildir. Önce runtime authority, sonra model, sonra schema, sonra seeder kontrol edilir.
+
+### 5 Zorunlu Invariant
+
+**1. SEEDER_IS_NOT_AUTHORITY**
+Seeder schema/model/runtime'dan bağımsız ikinci truth oluşturamaz. Seeder bir authority değildir; physical schema ve runtime authority uyumlu olmalıdır. Seeder ancak o uyuma hizmet eder.
+
+**2. WRITE_READ_CONSISTENCY**
+Seeder'ın yazdığı field/state/pivot, canonical model ve runtime'ın okuduğu contract ile aynı olmalıdır. Field name drift, state vocabulary drift, pivot column drift. Seeder otoritesi değildir — model ve runtime otoritedir.
+
+**3. MIGRATION_BOUNDARY_CONSISTENCY**
+Physical baseline otoritedir. Post-baseline migration yalnız forward evolution'dır. Historical migration yeniden runtime authority olamaz. İki migration aynı tabloyu farklı schema ile oluşturmaya çalışıyorsa → authority çatışması.
+
+**4. DETERMINISTIC_CLEAN_BOOTSTRAP**
+Disposable boş DB: canonical baseline → post-baseline migrations → canonical seeders → valid runtime-readable state üretebilmelidir. Bu invariant clean-room bootstrap doğrulaması gerektirir; mevcut local DB'nin tarihsel kalıntıları sonucu maskelemez.
+
+**5. NON_DESTRUCTIVE_IDEMPOTENCY**
+Seeder tekrar çalıştığında duplicate/orphan üretmemeli ve mevcut business verisini yanlış lookup/ID varsayımıyla sessizce değiştirmemeli. updateOrInsert/updateOrCreate kullanımında lookup key doğru olmalıdır.
+
+### 12 Kontrol Noktası (Clean-Room Audit için)
+
+1. Seeder execution order / FK dependencies
+2. updateOrInsert/updateOrCreate destructive potential
+3. Hard-coded numeric ID assumptions
+4. Enum/state vocabulary drift
+5. Mass-assignment silent drops
+6. Pivot write/read contracts
+7. Role ↔ Permission bootstrap completeness
+8. Idempotent execution safety
+9. Clean-room bootstrap readiness
+10. Schema checkpoint / migration boundary integrity
+11. Foreign-key orphan detection
+12. Hidden config/env dependency inventory
+
+### Otomasyon Kararı
+
+| Katman | Mekanizma | Kapsam |
+|---|---|---|
+| Sentinel / FAST | Statik, ucuz — AST + schema check | Seeder missing column, stale pivot field, boundary ihlali |
+| Doctor / DEEP | Disposable DB clean-room bootstrap + runtime contract test | Full chain validation |
+| Bekçi | Gözlem/telemetry | Production/local bootstrap motoru değil; monitoring tarafında kalır |
+
+**Yeni "Seeder Guard" motoru kurulmaz.** Mevcut Sentinel + Doctor + Bekçi yapısına compose edilir.
+
+### Model ↔ Migration ↔ Relation Contract Guard İlişkisi
+
+Model ↔ Migration ↔ Relation Contract Guard backlog adayı, CANONICAL_BOOTSTRAP_INTEGRITY invariant'ın önemli bir alt kümesini kapsar. Ayrı bir sistem yaratmak yerine mevcut Guard yapısına compose edilir.
+
+**Evidence:** Ayhan onayı 2026-09-28 + DECISION_LOG.md commit. Kaynak: TENANT_CANONICAL_AUTHORITY_RESOLVE_01 forensic sonucu (CDA-004)
+
