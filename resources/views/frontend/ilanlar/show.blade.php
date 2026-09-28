@@ -360,7 +360,7 @@
                 {{-- Features / Özellikler --}}
                 @php
                     $ozellikler = $ilan->ozellikler ?? collect();
-                    $activeOzellikler = $ozellikler->filter(fn($o) => $o->pivot->deger ?? false);
+                    $activeOzellikler = $ozellikler->filter(fn($o) => $o->pivot->value ?? false);
                 @endphp
                 @if($activeOzellikler->count() > 0)
                 <section class="mb-10" aria-labelledby="features-heading">

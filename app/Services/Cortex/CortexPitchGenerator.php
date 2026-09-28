@@ -108,9 +108,9 @@ class CortexPitchGenerator
         $ilan->loadMissing(['ilce', 'mahalle', 'ozellikler', 'danisman']);
 
         // Cortex Features
-        $roiScore = $ilan->ozellikler->where('name', 'Sezonluk ROI')->first()?->pivot->deger ?? 'N/A';
-        $yield = $ilan->ozellikler->where('name', 'Getiri')->first()?->pivot->deger ?? 'N/A';
-        $benchmark = $ilan->ozellikler->where('name', 'Benchmark')->first()?->pivot->deger ?? 'N/A';
+        $roiScore = $ilan->ozellikler->where('name', 'Sezonluk ROI')->first()?->pivot->value ?? 'N/A';
+        $yield = $ilan->ozellikler->where('name', 'Getiri')->first()?->pivot->value ?? 'N/A';
+        $benchmark = $ilan->ozellikler->where('name', 'Benchmark')->first()?->pivot->value ?? 'N/A';
 
         return [
             'listing' => [
