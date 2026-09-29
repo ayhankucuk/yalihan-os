@@ -7,9 +7,11 @@ namespace App\Services\Kisi;
  */
 
 use App\Models\Kisi;
+use App\Services\CRM\KisiRegistrationService;
+use App\Traits\GuardsAgentWrites;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Traits\GuardsAgentWrites;
 
 /**
  * BulkKisiService — Application Service
@@ -29,18 +31,16 @@ class BulkKisiService
 {
     use GuardsAgentWrites;
 
-    /**
-     * @param \App\Services\CRM\KisiRegistrationService $registrationService
-     */
     public function __construct(
-        protected \App\Services\CRM\KisiRegistrationService $registrationService
+        protected KisiRegistrationService $registrationService
     ) {}
 
     /**
      * Toplu kişi oluşturma
      * 🏛️ Authority aligned via KisiRegistrationService
-      
-     * @param int|null $userId İşlemi yapan kullanıcı
+
+     *
+     * @param  int|null  $userId  İşlemi yapan kullanıcı
      * @return array{created: array, errors: array}
      */
     public function bulkCreate(array $kisiler, ?int $userId = null): array
@@ -52,12 +52,19 @@ class BulkKisiService
 
         DB::beginTransaction();
         try {
-            // N+1 koruması: tüm email ve TC'leri tek query'de kontrol et
-            $emails = array_filter(array_column($kisiler, 'email'));
-            $tcKimlikler = array_filter(array_column($kisiler, 'tc_kimlik'));
+            // N+1 koruması: tüm eposta ve TC'leri tek query'de kontrol et
+            $epostalar = [];
+            foreach ($kisiler as $k) {
+                $val = $k['eposta'] ?? $k['email'] ?? null;
+                if ($val) {
+                    $epostalar[] = $val;
+                }
+            }
+            $epostalar = array_unique(array_filter($epostalar));
+            $tcKimlikler = array_unique(array_filter(array_column($kisiler, 'tc_kimlik')));
 
-            $existingByEmail = Kisi::whereIn('email', $emails)
-                ->pluck('email', 'id')
+            $existingByEmail = Kisi::whereIn('eposta', $epostalar)
+                ->pluck('eposta', 'id')
                 ->toArray();
             $existingByTc = Kisi::whereIn('tc_kimlik', $tcKimlikler)
                 ->pluck('tc_kimlik', 'id')
@@ -65,6 +72,12 @@ class BulkKisiService
 
             foreach ($kisiler as $index => $kisiData) {
                 try {
+                    // Boundary normalization: email -> eposta
+                    if (isset($kisiData['email']) && ! isset($kisiData['eposta'])) {
+                        $kisiData['eposta'] = $kisiData['email'];
+                    }
+                    unset($kisiData['email']);
+
                     // ✅ 🏛️ Authority Delegation: Use central duplicate logic
                     $duplicateCheck = $this->registrationService->validateDuplicate($kisiData);
 
@@ -73,6 +86,7 @@ class BulkKisiService
                             'index' => $index,
                             'message' => 'KISI_DUPLICATE_ERROR',
                         ];
+
                         continue;
                     }
 
@@ -83,7 +97,7 @@ class BulkKisiService
                 } catch (\Exception $e) {
                     $errors[] = [
                         'index' => $index,
-                        'message' => 'Kayıt hatası: ' . $e->getMessage(),
+                        'message' => 'Kayıt hatası: '.$e->getMessage(),
                     ];
                 }
             }
@@ -112,9 +126,6 @@ class BulkKisiService
     /**
      * Toplu kişi güncelleme
      *
-     * @param array $kisiIds
-     * @param array $updates
-     * @param int|null $userId
      * @return int Updated count
      */
     public function bulkUpdate(array $kisiIds, array $updates, ?int $userId = null): int
@@ -122,7 +133,7 @@ class BulkKisiService
         $this->blockAgentWrite(__FUNCTION__);
 
         return DB::transaction(function () use ($kisiIds, $updates, $userId) {
-            $filteredUpdates = array_filter($updates, fn($value) => $value !== null);
+            $filteredUpdates = array_filter($updates, fn ($value) => $value !== null);
 
             $updatedCount = Kisi::whereIn('id', $kisiIds)->update($filteredUpdates);
 
@@ -140,9 +151,6 @@ class BulkKisiService
     /**
      * Toplu kişi silme
      *
-     * @param array $kisiIds
-     * @param bool $forceDelete
-     * @param int|null $userId
      * @return int Deleted count
      */
     public function bulkDelete(array $kisiIds, bool $forceDelete = false, ?int $userId = null): int
@@ -170,8 +178,7 @@ class BulkKisiService
     /**
      * CSV'den kişi import et
      *
-     * @param array $csvData Parsed CSV rows (header'sız)
-     * @param int|null $userId
+     * @param  array  $csvData  Parsed CSV rows (header'sız)
      * @return array{created: array, errors: array}
      */
     public function importFromCsv(array $csvData, ?int $userId = null): array
@@ -191,11 +198,11 @@ class BulkKisiService
                     // ✅ CRM-LOCK: Hardened normalization (No-Bypass Policy)
                     $rawStatus = strtolower(trim((string) ($row[6] ?? 'aktif')));
                     $isAktif = in_array($rawStatus, ['aktif', '1', 'true', 'yes', 'evet']) || str_starts_with($rawStatus, 'act');
-                    
+
                     $kisiData = [
                         'ad' => $row[0] ?? '',
                         'soyad' => $row[1] ?? '',
-                        'email' => ! empty($row[2]) ? $row[2] : null,
+                        'eposta' => ! empty($row[2]) ? $row[2] : null,
                         'telefon' => ! empty($row[3]) ? $row[3] : null,
                         'tc_kimlik' => ! empty($row[4]) ? $row[4] : null,
                         'kisi_tipi' => $row[5] ?? 'musteri',
@@ -208,6 +215,7 @@ class BulkKisiService
                             'row' => $index + 1,
                             'message' => 'Ad ve Soyad alanları zorunludur',
                         ];
+
                         continue;
                     }
 
@@ -219,6 +227,7 @@ class BulkKisiService
                             'row' => $index + 1,
                             'message' => 'KISI_DUPLICATE_ERROR',
                         ];
+
                         continue;
                     }
 
@@ -228,7 +237,7 @@ class BulkKisiService
                 } catch (\Exception $e) {
                     $errors[] = [
                         'row' => $index + 1,
-                        'message' => 'Import hatası: ' . $e->getMessage(),
+                        'message' => 'Import hatası: '.$e->getMessage(),
                     ];
                 }
             }
@@ -256,8 +265,6 @@ class BulkKisiService
 
     /**
      * Get statistics for the bulk kisi dashboard.
-     *
-     * @return array
      */
     public function getDashboardStats(): array
     {
@@ -274,13 +281,10 @@ class BulkKisiService
 
     /**
      * Get data for kisi export.
-     *
-     * @param array $filters
-     * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getExportData(array $filters = []): \Illuminate\Database\Eloquent\Collection
+    public function getExportData(array $filters = []): Collection
     {
-        $query = Kisi::select(['id', 'ad', 'soyad', 'email', 'telefon', 'tc_kimlik', 'kisi_tipi', 'aktiflik_durumu', 'created_at']);
+        $query = Kisi::select(['id', 'ad', 'soyad', 'eposta', 'telefon', 'tc_kimlik', 'kisi_tipi', 'aktiflik_durumu', 'created_at']);
 
         if (isset($filters['kisi_tipi'])) {
             $query->where('kisi_tipi', $filters['kisi_tipi']);

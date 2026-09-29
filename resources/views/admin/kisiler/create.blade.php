@@ -83,12 +83,12 @@
 
                         <!-- E-posta -->
                         <div class="mb-6">
-                            <label for="email" class="block text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">
+                            <label for="eposta" class="block text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">
                                 E-posta
                             </label>
-                            <input type="email" name="email" id="email"
+                            <input type="email" name="eposta" id="eposta"
                                 class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 dark:text-slate-100"
-                                placeholder="ornek@email.com" x-model="formData.email">
+                                placeholder="ornek@email.com" x-model="formData.eposta">
                         </div>
 
                         <!-- Kişi Tipi -->
@@ -335,7 +335,7 @@
                     ad: '{{ old('ad') }}',
                     soyad: '{{ old('soyad') }}',
                     telefon: '{{ old('telefon') }}',
-                    email: '{{ old('email') }}',
+                    eposta: '{{ old('eposta', old('email')) }}',
                     kisi_tipi: '{{ old('kisi_tipi') }}',
                     crm_surec_asamasi: '{{ old('crm_surec_asamasi', 'yeni') }}',
                     danisman_id: '{{ old('danisman_id') }}',
@@ -344,7 +344,7 @@
                 },
                 resetForm() {
                     if (confirm('Emin misiniz?')) {
-                        this.formData = { ad: '', soyad: '', telefon: '', email: '', kisi_tipi: '', crm_surec_asamasi: 'yeni', danisman_id: '', adres_detay: '', notlar: '' };
+                        this.formData = { ad: '', soyad: '', telefon: '', eposta: '', kisi_tipi: '', crm_surec_asamasi: 'yeni', danisman_id: '', adres_detay: '', notlar: '' };
                     }
                 }
             };

@@ -87,7 +87,7 @@
                     </div>
                     <div class="flex items-center">
                         <span class="w-24 font-medium text-gray-700 dark:text-slate-300">E-posta:</span>
-                        <span class="text-gray-900 font-semibold dark:text-slate-100 dark:text-white">{{ $kisi->email ?? '-' }}</span>
+                        <span class="text-gray-900 font-semibold dark:text-slate-100 dark:text-white">{{ $kisi->eposta ?? '-' }}</span>
                     </div>
                     <div class="flex items-center">
                         <span class="w-24 font-medium text-gray-700 dark:text-slate-300">Adres:</span>

@@ -172,7 +172,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900 dark:text-white dark:text-slate-100">{{ $kisi->telefon }}</div>
-                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ $kisi->email }}</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ $kisi->eposta }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($kisi->aktiflik_durumu === 'Aktif')

@@ -146,16 +146,16 @@
 
                         <!-- E-posta -->
                         <div class="mb-6">
-                            <label for="email" class="block text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">
+                            <label for="eposta" class="block text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">
                                 <span class="block text-sm font-medium text-gray-900 dark:text-white-text dark:text-slate-100">E-posta</span>
                             </label>
-                            <input type="email" name="email" id="email"
+                            <input type="email" name="eposta" id="eposta"
                                 class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 dark:text-slate-100"
-                                placeholder="ornek@email.com" x-model="formData.email"
-                                @input.debounce.500ms="checkDuplicate('email', $event.target.value)">
+                                placeholder="ornek@email.com" x-model="formData.eposta"
+                                @input.debounce.500ms="checkDuplicate('eposta', $event.target.value)">
 
                             <!-- Email Duplicate Warning -->
-                            <div x-show="duplicateWarnings.email" class="mt-2">
+                            <div x-show="duplicateWarnings.eposta" class="mt-2">
                                 <div class="flex items-start space-x-2 p-2 bg-red-50 border border-red-200 rounded">
                                     <svg class="w-4 h-4 text-red-500 mt-0.5" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
@@ -165,8 +165,8 @@
                                     <div>
                                         <p class="text-red-800 text-sm font-medium">Bu e-posta adresi başka bir müşteriye
                                             kayıtlı!</p>
-                                        <p class="text-red-600 text-xs" x-text="duplicateWarnings.email"></p>
-                                        <a :href="duplicateLinks.email" target="_blank"
+                                        <p class="text-red-600 text-xs" x-text="duplicateWarnings.eposta"></p>
+                                        <a :href="duplicateLinks.eposta" target="_blank"
                                             class="text-red-700 underline text-xs">Kayıtlı müşteriyi görüntüle</a>
                                     </div>
                                 </div>
@@ -490,7 +490,7 @@
                     ad: '{{ old('ad', $kisi->ad) }}',
                     soyad: '{{ old('soyad', $kisi->soyad) }}',
                     telefon: '{{ old('telefon', $kisi->telefon) }}',
-                    email: '{{ old('email', $kisi->email) }}',
+                    eposta: '{{ old('eposta', old('email', $kisi->eposta)) }}',
                     kisi_tipi: '{{ old('kisi_tipi', $kisi->kisi_tipi) }}',
                     crm_surec_asamasi: '{{ old('crm_surec_asamasi', $kisi->crm_surec_asamasi?->value ?? $kisi->crm_surec_asamasi) }}',
                     danisman_id: '{{ old('danisman_id', $kisi->danisman_id ?? '') }}',
@@ -501,10 +501,12 @@
                 isRestoringData: false, // Flag to prevent double loading
                 duplicateWarnings: {
                     telefon: false,
+                    eposta: false,
                     email: false
                 },
                 duplicateLinks: {
                     telefon: '',
+                    eposta: '',
                     email: ''
                 },
 

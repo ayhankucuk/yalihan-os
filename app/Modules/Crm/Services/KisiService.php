@@ -2,8 +2,12 @@
 
 namespace App\Modules\Crm\Services;
 
+use App\Models\Ilan;
 use App\Models\Kisi;
+use App\Repositories\KisiRepository;
 use App\Traits\GuardsAgentWrites;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 
 class KisiService
@@ -11,8 +15,9 @@ class KisiService
     use GuardsAgentWrites;
 
     public function __construct(
-        private readonly \App\Repositories\KisiRepository $kisiRepository
+        private readonly KisiRepository $kisiRepository
     ) {}
+
     /**
      * Yeni bir kişi oluşturur veya email/telefon eşleşiyorsa mevcut olanı döndürür (Idempotency Patch).
      * ✅ SAB: kisi_tipi required field kontrolü
@@ -22,7 +27,8 @@ class KisiService
     {
         $this->blockAgentWrite('createKisi');
 
-        Log::info('Kişi upsert işlemi başlatılıyor (Duplicate Guard).', ['email' => $data['email'] ?? null, 'telefon' => $data['telefon'] ?? null]);
+        $eposta = $data['eposta'] ?? $data['email'] ?? null;
+        Log::info('Kişi upsert işlemi başlatılıyor (Duplicate Guard).', ['eposta' => $eposta, 'telefon' => $data['telefon'] ?? null]);
 
         // ✅ SAB: kisi_tipi default değer ataması
         if (empty($data['kisi_tipi'])) {
@@ -33,12 +39,12 @@ class KisiService
         $query = Kisi::query();
         $matchFound = false;
 
-        if (!empty($data['email'])) {
-            $query->orWhere('email', $data['email']);
+        if (! empty($eposta)) {
+            $query->orWhere('eposta', $eposta);
             $matchFound = true;
         }
 
-        if (!empty($data['telefon'])) {
+        if (! empty($data['telefon'])) {
             $query->orWhere('telefon', $data['telefon']);
             $matchFound = true;
         }
@@ -47,10 +53,16 @@ class KisiService
             $existing = $query->first();
             if ($existing) {
                 Log::info('Duplicate Entry Guard tetiklendi. Varolan kişi döndürülüyor.', ['kisi_id' => $existing->id]);
+
                 // Güncellenmesi gereken alanlar varsa burada güncellenebilir
                 return $existing;
             }
         }
+
+        if (isset($data['email']) && ! isset($data['eposta'])) {
+            $data['eposta'] = $data['email'];
+        }
+        unset($data['email']);
 
         return Kisi::create($data);
     }
@@ -61,6 +73,11 @@ class KisiService
     public function updateKisi(Kisi $kisi, array $data): Kisi
     {
         $this->blockAgentWrite('updateKisi');
+
+        if (isset($data['email']) && ! isset($data['eposta'])) {
+            $data['eposta'] = $data['email'];
+        }
+        unset($data['email']);
 
         Log::info("{$kisi->id} ID'li kişi güncelleniyor.", $data);
         $kisi->update($data);
@@ -82,9 +99,6 @@ class KisiService
 
     /**
      * Sprint 4.2: Restore Kisi from soft delete
-     *
-     * @param int $id
-     * @return bool
      */
     public function restoreKisi(int $id): bool
     {
@@ -104,7 +118,7 @@ class KisiService
     /**
      * Tüm kişileri listeler.
      *
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection
+     * @return LengthAwarePaginator|Collection
      */
     public function getAllKisiler(array $filters = [], int $paginate = 15)
     {
@@ -116,7 +130,7 @@ class KisiService
             $isAdmin = (method_exists($currentUser, 'isAdmin') && $currentUser->isAdmin()) ||
                        (method_exists($currentUser, 'hasRole') && $currentUser->hasRole(['admin', 'super-admin']));
 
-            if (!$isAdmin) {
+            if (! $isAdmin) {
                 // Non-admin: sadece kendi atanmış kişileri
                 $query->where('danisman_id', $currentUser->id);
             }
@@ -131,7 +145,7 @@ class KisiService
             $query->where(function ($q) use ($search) {
                 $q->whereRaw("CONCAT(ad, ' ', soyad) LIKE ?", ["%{$search}%"])
                     ->orWhere('telefon', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('eposta', 'like', "%{$search}%");
             });
         }
 
@@ -202,7 +216,7 @@ class KisiService
     /**
      * İlan sahibi olarak uygun kişileri getir
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public static function getPotentialOwners(?string $searchTerm = null, int $limit = 10)
     {
@@ -244,7 +258,7 @@ class KisiService
         if ($kisi->telefon) {
             $score += 5;
         }
-        if ($kisi->email) {
+        if ($kisi->eposta) {
             $score += 5;
         }
 
@@ -264,7 +278,7 @@ class KisiService
         }
 
         // İletişim bilgileri
-        if ($kisi->telefon && $kisi->email) {
+        if ($kisi->telefon && $kisi->eposta) {
             $score += 5;
         }
 
@@ -299,7 +313,7 @@ class KisiService
             return [];
         }
 
-        $ilanlar = \App\Models\Ilan::where('owner_id', $kisiId)
+        $ilanlar = Ilan::where('owner_id', $kisiId)
             ->with(['kategori', 'danisman'])
             ->get();
 

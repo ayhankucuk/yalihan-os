@@ -16,6 +16,13 @@ class KisiStoreRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('email') && ! $this->has('eposta')) {
+            $this->merge(['eposta' => $this->input('email')]);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -23,7 +30,8 @@ class KisiStoreRequest extends FormRequest
             'ad' => 'required|string|max:255',
             'soyad' => 'required|string|max:255',
             'telefon' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255|unique:kisiler,email',
+            'eposta' => 'nullable|email|max:255|unique:kisiler,eposta',
+            'email' => 'nullable|email|max:255',
             'tc_kimlik' => 'nullable|string|size:11',
             'kisi_tipi' => 'nullable|string|max:50',
             'aktiflik_durumu' => 'boolean',
@@ -37,11 +45,26 @@ class KisiStoreRequest extends FormRequest
         ];
     }
 
+    public function validated($key = null, $default = null)
+    {
+        $validated = parent::validated($key, $default);
+        if (is_array($validated)) {
+            if (isset($validated['email']) && ! isset($validated['eposta'])) {
+                $validated['eposta'] = $validated['email'];
+            }
+            unset($validated['email']);
+        }
+
+        return $validated;
+    }
+
     public function messages(): array
     {
         return [
             'ad.required' => 'Ad alanı zorunludur.',
             'soyad.required' => 'Soyad alanı zorunludur.',
+            'eposta.email' => 'Geçerli bir e-posta adresi giriniz.',
+            'eposta.unique' => 'Bu e-posta adresi zaten kullanılmaktadır.',
             'email.email' => 'Geçerli bir e-posta adresi giriniz.',
             'email.unique' => 'Bu e-posta adresi zaten kullanılmaktadır.',
             'tc_kimlik.size' => 'TC Kimlik No 11 haneli olmalıdır.',
