@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 
 class RoleSeeder extends Seeder
 {
@@ -51,14 +51,34 @@ class RoleSeeder extends Seeder
         ];
 
         foreach ($roles as $roleData) {
-            Role::firstOrCreate(
-                ['name' => $roleData['name'], 'guard_name' => $roleData['guard_name']],
-                $roleData
-            );
+            // Find existing role by name+guard_name using raw query to bypass all Eloquent
+            // global scopes (CountryScope). CountryScope adds WHERE ulke_id=... when
+            // roles table has ulke_id AND user is authenticated. Using raw query ensures
+            // we always find historical roles regardless of ulke_id mismatches.
+            $existing = \Illuminate\Support\Facades\DB::table('roles')
+                ->where('name', $roleData['name'])
+                ->where('guard_name', $roleData['guard_name'])
+                ->first();
 
-            $this->command->info("Role created/verified: {$roleData['name']}");
+            if ($existing) {
+                // Update existing row to canonical values (name convergence)
+                \Illuminate\Support\Facades\DB::table('roles')
+                    ->where('id', $existing->id)
+                    ->update(['name' => $roleData['name']]);
+            } else {
+                // Insert new canonical role
+                \Illuminate\Support\Facades\DB::table('roles')
+                    ->insert([
+                        'name' => $roleData['name'],
+                        'guard_name' => $roleData['guard_name'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+            }
+
+            $this->command?->info("Role created/verified: {$roleData['name']}");
         }
 
-        $this->command->info('✅ RoleSeeder completed successfully');
+        $this->command?->info('✅ RoleSeeder completed successfully');
     }
 }
