@@ -44,7 +44,7 @@ class TalepAuthorityService
                     'ad' => $data['kisi_ad'],
                     'soyad' => $data['kisi_soyad'] ?? null,
                     'telefon' => $data['kisi_telefon'] ?? null,
-                    'email' => $data['kisi_email'] ?? null,
+                    'eposta' => $data['kisi_email'] ?? null,
                     'kisi_tipi' => 'lead', // KisiTipi::lead — aday müşteri (Telegram'dan gelen talep)
                 ];
 

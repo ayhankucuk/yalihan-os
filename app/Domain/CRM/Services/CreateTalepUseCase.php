@@ -81,7 +81,7 @@ class CreateTalepUseCase
                     'ad'       => $data['kisi_ad'],
                     'soyad'    => $data['kisi_soyad'] ?? null,
                     'telefon'  => $data['kisi_telefon'] ?? null,
-                    'email'    => $data['kisi_email'] ?? null,
+                    'eposta'   => $data['kisi_email'] ?? null,
                     'kisi_tipi'=> 'lead',  // maps to KisiTipi::LEAD
                 ];
                 $kisi = $this->kisiRegistrationService->register($kisiData, $actor?->id);

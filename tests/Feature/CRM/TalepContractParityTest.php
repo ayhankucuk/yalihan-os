@@ -120,25 +120,61 @@ class TalepContractParityTest extends TestCase
 
     public function test_store_with_kisi_spillover_parity(): void
     {
-        $payload = [
-            'baslik'       => 'Spillover Parity Talebi',
+        // 1. Legacy mode spillover store
+        Config::set('crm.use_domain_talep', false);
+        $legacyPayload = [
+            'baslik'       => 'Legacy Spillover Parity Talebi',
             'tip'          => 'Satılık',
             'talep_durumu' => 'yayinda',
             'il_id'        => $this->il->id,
             'ilce_id'      => $this->ilce->id,
-            'kisi_ad'      => 'Mehmet',
+            'kisi_ad'      => 'LegacyMehmet',
             'kisi_soyad'   => 'Kaya',
-            'kisi_telefon' => '05559876543',
-            'kisi_email'   => 'mehmet@example.test',
+            'kisi_telefon' => '05559876541',
+            'kisi_email'   => 'legacy_mehmet@example.test',
         ];
+        $resLegacy = $this->actingAs($this->admin)->post(route('admin.talepler.store'), $legacyPayload);
+        $resLegacy->assertStatus(302);
+        $this->assertDatabaseHas('kisiler', [
+            'ad'     => 'LegacyMehmet',
+            'soyad'  => 'Kaya',
+            'eposta' => 'legacy_mehmet@example.test',
+        ]);
+        $legacyKisi = Kisi::where('ad', 'LegacyMehmet')->orderBy('id')->first();
+        $this->assertNotNull($legacyKisi);
+        $this->assertSame('legacy_mehmet@example.test', $legacyKisi->eposta);
+        $this->assertDatabaseHas('talepler', [
+            'baslik'  => 'Legacy Spillover Parity Talebi',
+            'kisi_id' => $legacyKisi->id,
+        ]);
 
-        // Domain mode store
+        // 2. Domain mode spillover store
         Config::set('crm.use_domain_talep', true);
-        $res = $this->actingAs($this->admin)->post(route('admin.talepler.store'), $payload);
-
-        $res->assertStatus(302);
-        $this->assertDatabaseHas('kisiler', ['ad' => 'Mehmet', 'soyad' => 'Kaya']);
-        $this->assertDatabaseHas('talepler', ['baslik' => 'Spillover Parity Talebi']);
+        $domainPayload = [
+            'baslik'       => 'Domain Spillover Parity Talebi',
+            'tip'          => 'Satılık',
+            'talep_durumu' => 'yayinda',
+            'il_id'        => $this->il->id,
+            'ilce_id'      => $this->ilce->id,
+            'kisi_ad'      => 'DomainMehmet',
+            'kisi_soyad'   => 'Kaya',
+            'kisi_telefon' => '05559876542',
+            'kisi_email'   => 'domain_mehmet@example.test',
+        ];
+        $resDomain = $this->actingAs($this->admin)->post(route('admin.talepler.store'), $domainPayload);
+        $resDomain->assertStatus(302);
+        $this->assertDatabaseHas('kisiler', [
+            'ad'     => 'DomainMehmet',
+            'soyad'  => 'Kaya',
+            'eposta' => 'domain_mehmet@example.test',
+        ]);
+        $domainKisi = Kisi::where('ad', 'DomainMehmet')->orderBy('id')->first();
+        $this->assertNotNull($domainKisi);
+        $this->assertSame('domain_mehmet@example.test', $domainKisi->eposta);
+        $this->assertDatabaseHas('talepler', [
+            'baslik'  => 'Domain Spillover Parity Talebi',
+            'kisi_id' => $domainKisi->id,
+        ]);
     }
 
     public function test_update_and_destroy_parity(): void
