@@ -93,7 +93,7 @@ class TalepController extends Controller
             'baslik'          => 'required|string|max:255',
             'aciklama'        => 'nullable|string',
             'tip'             => 'required|string|in:Satılık,Kiralık,Günlük Kiralık,Devren',
-            'alt_kategori_id' => 'nullable|exists:ilan_kategoriler,id',
+            'alt_kategori_id' => 'nullable|exists:ilan_kategorileri,id',
             'talep_durumu'    => 'required|string',
             'one_cikan'       => 'nullable|boolean',
             'il_id'           => 'required|exists:iller,id',
@@ -105,6 +105,9 @@ class TalepController extends Controller
             'kisi_soyad'      => 'nullable|string|max:100',
             'kisi_telefon'    => 'nullable|string|max:20',
             'kisi_email'      => 'nullable|email|max:100',
+            'min_fiyat'       => 'nullable|numeric',
+            'max_fiyat'       => 'nullable|numeric',
+            'notlar'          => 'nullable|string',
         ]);
 
         try {
@@ -178,7 +181,7 @@ class TalepController extends Controller
             'baslik'          => 'required|string|max:255',
             'aciklama'        => 'nullable|string',
             'tip'             => 'required|string|in:Satılık,Kiralık,Günlük Kiralık,Devren',
-            'alt_kategori_id' => 'nullable|exists:ilan_kategoriler,id',
+            'alt_kategori_id' => 'nullable|exists:ilan_kategorileri,id',
             'talep_durumu'    => 'required|string',
             'one_cikan'       => 'nullable|boolean',
             'il_id'           => 'required|exists:iller,id',
