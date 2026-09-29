@@ -99,7 +99,15 @@ class TalepController extends Controller
             'il_id'           => 'required|exists:iller,id',
             'ilce_id'         => 'nullable|exists:ilceler,id',
             'mahalle_id'      => 'nullable|exists:mahalleler,id',
-            'kisi_id'         => 'nullable|exists:kisiler,id',
+            'kisi_id'          => [
+                'nullable',
+                \Illuminate\Validation\Rule::exists('kisiler', 'id')->where(function ($query) {
+                    $effectiveTenantId = auth()->user()->tenant_id ?? (app(\App\Services\SaaS\TenantContextService::class)->hasTenant() ? app(\App\Services\SaaS\TenantContextService::class)->getTenant()->id : null);
+                    if ($effectiveTenantId) {
+                        $query->where('tenant_id', $effectiveTenantId);
+                    }
+                }),
+            ],
             'danisman_id'     => 'nullable|exists:users,id',
             'kisi_ad'         => 'nullable|string|max:100',
             'kisi_soyad'      => 'nullable|string|max:100',
@@ -187,7 +195,15 @@ class TalepController extends Controller
             'il_id'           => 'required|exists:iller,id',
             'ilce_id'         => 'nullable|exists:ilceler,id',
             'mahalle_id'      => 'nullable|exists:mahalleler,id',
-            'kisi_id'         => 'nullable|exists:kisiler,id',
+            'kisi_id'          => [
+                'nullable',
+                \Illuminate\Validation\Rule::exists('kisiler', 'id')->where(function ($query) {
+                    $effectiveTenantId = auth()->user()->tenant_id ?? (app(\App\Services\SaaS\TenantContextService::class)->hasTenant() ? app(\App\Services\SaaS\TenantContextService::class)->getTenant()->id : null);
+                    if ($effectiveTenantId) {
+                        $query->where('tenant_id', $effectiveTenantId);
+                    }
+                }),
+            ],
             'danisman_id'     => 'nullable|exists:users,id',
             'min_fiyat'       => 'nullable|numeric',
             'max_fiyat'       => 'nullable|numeric',
