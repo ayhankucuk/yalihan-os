@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\KisiDurumu;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * KisiStoreRequest
@@ -21,6 +23,10 @@ class KisiStoreRequest extends FormRequest
         if ($this->has('email') && ! $this->has('eposta')) {
             $this->merge(['eposta' => $this->input('email')]);
         }
+
+        if (! $this->filled('crm_surec_asamasi')) {
+            $this->merge(['crm_surec_asamasi' => KisiDurumu::POTANSIYEL->value]);
+        }
     }
 
     public function rules(): array
@@ -35,7 +41,7 @@ class KisiStoreRequest extends FormRequest
             'tc_kimlik' => 'nullable|string|size:11',
             'kisi_tipi' => 'nullable|string|max:50',
             'aktiflik_durumu' => 'boolean',
-            'crm_surec_asamasi' => 'required|string|in:yeni,gorusme,takip,tamamlandi,kaybedildi',
+            'crm_surec_asamasi' => ['nullable', Rule::enum(KisiDurumu::class)],
             'danisman_id' => 'nullable|exists:users,id',
             'il_id' => 'nullable|exists:iller,id',
             'ilce_id' => 'nullable|exists:ilceler,id',
@@ -53,6 +59,10 @@ class KisiStoreRequest extends FormRequest
                 $validated['eposta'] = $validated['email'];
             }
             unset($validated['email']);
+
+            if (empty($validated['crm_surec_asamasi'])) {
+                $validated['crm_surec_asamasi'] = KisiDurumu::POTANSIYEL->value;
+            }
         }
 
         return $validated;
@@ -70,6 +80,8 @@ class KisiStoreRequest extends FormRequest
             'tc_kimlik.size' => 'TC Kimlik No 11 haneli olmalıdır.',
             'crm_surec_asamasi.required' => 'CRM durumu zorunludur.',
             'crm_surec_asamasi.in' => 'Geçersiz CRM durumu.',
+            'crm_surec_asamasi.enum' => 'Geçersiz CRM durumu.',
+            'crm_surec_asamasi.Illuminate\Validation\Rules\Enum' => 'Geçersiz CRM durumu.',
             'danisman_id.exists' => 'Seçilen danışman bulunamadı.',
             'il_id.exists' => 'Seçilen il bulunamadı.',
             'ilce_id.exists' => 'Seçilen ilçe bulunamadı.',

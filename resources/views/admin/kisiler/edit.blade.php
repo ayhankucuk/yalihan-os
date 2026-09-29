@@ -219,12 +219,9 @@
                                 required
                                 class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
                                 x-model="formData.crm_surec_asamasi">
-                                <option value="">Seçin...</option>
-                                <option value="yeni">Yeni</option>
-                                <option value="gorusme">Görüşme</option>
-                                <option value="takip">Takip</option>
-                                <option value="tamamlandi">Tamamlandı</option>
-                                <option value="kaybedildi">Kaybedildi</option>
+                                @foreach (\App\Enums\KisiDurumu::cases() as $durum)
+                                    <option value="{{ $durum->value }}">{{ $durum->label() }}</option>
+                                @endforeach
                             </select>
                         </div>
 
@@ -492,7 +489,7 @@
                     telefon: '{{ old('telefon', $kisi->telefon) }}',
                     eposta: '{{ old('eposta', old('email', $kisi->eposta)) }}',
                     kisi_tipi: '{{ old('kisi_tipi', $kisi->kisi_tipi) }}',
-                    crm_surec_asamasi: '{{ old('crm_surec_asamasi', $kisi->crm_surec_asamasi?->value ?? $kisi->crm_surec_asamasi) }}',
+                    crm_surec_asamasi: '{{ old('crm_surec_asamasi', $kisi->crm_surec_asamasi instanceof \App\Enums\KisiDurumu ? $kisi->crm_surec_asamasi->value : ($kisi->crm_surec_asamasi?->value ?? $kisi->crm_surec_asamasi ?? 'potansiyel')) }}',
                     danisman_id: '{{ old('danisman_id', $kisi->danisman_id ?? '') }}',
                     aktiflik_durumu: '{{ old('aktiflik_durumu', $kisi->aktiflik_durumu) }}',
 

@@ -117,11 +117,9 @@
                                 required
                                 class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
                                 x-model="formData.crm_surec_asamasi">
-                                <option value="yeni">Yeni</option>
-                                <option value="gorusme">Görüşme</option>
-                                <option value="takip">Takip</option>
-                                <option value="tamamlandi">Tamamlandı</option>
-                                <option value="kaybedildi">Kaybedildi</option>
+                                @foreach (\App\Enums\KisiDurumu::cases() as $durum)
+                                    <option value="{{ $durum->value }}">{{ $durum->label() }}</option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
@@ -337,14 +335,14 @@
                     telefon: '{{ old('telefon') }}',
                     eposta: '{{ old('eposta', old('email')) }}',
                     kisi_tipi: '{{ old('kisi_tipi') }}',
-                    crm_surec_asamasi: '{{ old('crm_surec_asamasi', 'yeni') }}',
+                    crm_surec_asamasi: '{{ old('crm_surec_asamasi', 'potansiyel') }}',
                     danisman_id: '{{ old('danisman_id') }}',
                     adres_detay: '{{ old('adres_detay') }}',
                     notlar: '{{ old('notlar') }}'
                 },
                 resetForm() {
                     if (confirm('Emin misiniz?')) {
-                        this.formData = { ad: '', soyad: '', telefon: '', eposta: '', kisi_tipi: '', crm_surec_asamasi: 'yeni', danisman_id: '', adres_detay: '', notlar: '' };
+                        this.formData = { ad: '', soyad: '', telefon: '', eposta: '', kisi_tipi: '', crm_surec_asamasi: 'potansiyel', danisman_id: '', adres_detay: '', notlar: '' };
                     }
                 }
             };

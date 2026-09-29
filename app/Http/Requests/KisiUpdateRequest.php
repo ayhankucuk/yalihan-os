@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\KisiDurumu;
 use App\Models\Kisi;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * KisiUpdateRequest
@@ -39,7 +41,7 @@ class KisiUpdateRequest extends FormRequest
             'tc_kimlik' => 'nullable|string|size:11',
             'kisi_tipi' => 'nullable|string|max:50',
             'aktiflik_durumu' => 'boolean',
-            'crm_surec_asamasi' => 'required|string|in:yeni,gorusme,takip,tamamlandi,kaybedildi',
+            'crm_surec_asamasi' => ['nullable', Rule::enum(KisiDurumu::class)],
             'danisman_id' => 'nullable|exists:users,id',
             'il_id' => 'nullable|exists:iller,id',
             'ilce_id' => 'nullable|exists:ilceler,id',
@@ -75,6 +77,8 @@ class KisiUpdateRequest extends FormRequest
             'tc_kimlik.size' => 'TC Kimlik No 11 haneli olmalıdır.',
             'crm_surec_asamasi.required' => 'CRM durumu zorunludur.',
             'crm_surec_asamasi.in' => 'Geçersiz CRM durumu.',
+            'crm_surec_asamasi.enum' => 'Geçersiz CRM durumu.',
+            'crm_surec_asamasi.Illuminate\Validation\Rules\Enum' => 'Geçersiz CRM durumu.',
             'danisman_id.exists' => 'Seçilen danışman bulunamadı.',
             'il_id.exists' => 'Seçilen il bulunamadı.',
             'ilce_id.exists' => 'Seçilen ilçe bulunamadı.',

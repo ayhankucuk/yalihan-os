@@ -70,7 +70,7 @@ class KisiEmailContractRemediationTest extends TestCase
             'telefon' => '05551112233',
             'eposta' => 'mehmet.canonical@yalihan.test',
             'kisi_tipi' => 'alici',
-            'crm_surec_asamasi' => 'yeni',
+            'crm_surec_asamasi' => 'potansiyel',
             'aktiflik_durumu' => 1,
         ];
         $validator = Validator::make($rawInput, $request->rules());
@@ -112,7 +112,7 @@ class KisiEmailContractRemediationTest extends TestCase
             'telefon' => '05552223344',
             'email' => 'ayse.boundary@yalihan.test',
             'kisi_tipi' => 'satici',
-            'crm_surec_asamasi' => 'yeni',
+            'crm_surec_asamasi' => 'potansiyel',
             'aktiflik_durumu' => 1,
         ]);
         $request->setContainer($this->app);
@@ -172,7 +172,7 @@ class KisiEmailContractRemediationTest extends TestCase
             'ad' => 'Can',
             'soyad' => 'Yilmaz',
             'eposta' => 'can.new1@yalihan.test',
-            'crm_surec_asamasi' => 'yeni',
+            'crm_surec_asamasi' => 'potansiyel',
             'aktiflik_durumu' => 1,
         ]);
         $updateRequest1->setContainer($this->app);
@@ -207,7 +207,7 @@ class KisiEmailContractRemediationTest extends TestCase
             'ad' => 'Can',
             'soyad' => 'Yilmaz',
             'email' => 'can.new2@yalihan.test',
-            'crm_surec_asamasi' => 'yeni',
+            'crm_surec_asamasi' => 'potansiyel',
             'aktiflik_durumu' => 1,
         ]);
         $updateRequest2->setContainer($this->app);

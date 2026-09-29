@@ -573,7 +573,7 @@ class KisiRepository
             2 => (clone $baseQuery)->where('crm_surec_asamasi', 'ilgili')->get(),
             3 => (clone $baseQuery)->where('crm_surec_asamasi', 'takipte')->get(),
             4 => (clone $baseQuery)->where('crm_surec_asamasi', 'sicak')->get(),
-            5 => (clone $baseQuery)->where('crm_surec_asamasi', 'islem_yapmis')->get(),
+            5 => (clone $baseQuery)->where('crm_surec_asamasi', 'islemyapmis')->get(),
         ];
     }
 
