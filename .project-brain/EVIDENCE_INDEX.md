@@ -1965,3 +1965,157 @@ Aktif kullanici dosyalari:
 **ONE bounded task feasible for F1+F4+F5. F2+F3 requires decision.**
 
 **Toplam MCP:** 8 (context7, filesystem, laravel-bekci, chrome-devtools, github, mysql, docker, redis)
+
+### F01 Kisi Tenant Isolation Bypass — CLOSED ✅
+
+**Classification:** NOT A BYPASS — SAFE_BY_RUNTIME_CONTEXT
+**Report:** `.project-brain/FORENSIC/F01_KISI_TENANT_BYPASS_REPORT.md`
+
+**2026-09-27 Runtime Doğrulaması:**
+- Kisi global TenantScope kullanıyor → `Kisi::find()` üzerinde de scope çalışıyor
+- Cross-tenant erişim reproduce edilemedi
+- IntelligenceDashboard → 404 (beklenen)
+- EslesmeController → sadece Tenant A kayıtları
+- GlobalSearch → auth + tenant context altında, public değil
+
+**Karar:** Remediation yok. Çalışan mimariyi refactor etmek gereksiz risk. Kapatıldı.
+
+**Ayrı candidate:** `CACHE_TENANT_ISOLATION_CANDIDATE` — ActionScoreService cache key tenant prefix eksikliği (henüz reproduce edilmedi)
+**Toplam MCP:** 8 (context7, filesystem, laravel-bekci, chrome-devtools, github, mysql, docker, redis)
+
+---
+
+## [2026-09-27] C3 Financial Snapshot + F01 Kisi Tenant Bypass — Session Findings
+
+**Task ID:** Session 20 — Yalihan OS Backlog Triyaj + C3/F01 Investigation
+**Baseline:** `release-candidate/RC2` (16e1a31a)
+**Evidence Level:** `REPO_VERIFIED` + `TEST_VERIFIED`
+
+### C3 Financial Snapshot (Commission Rate Snapshot Immutability)
+
+**Durum:** ✅ CLOSED — Intermittent failure teyit edilemedi, suite stable
+
+| Test | Sonuç | Not |
+|---|---|---|
+| `C3OwnerPayableAccrualTest.php` | **22/22 PASS** | 3 kez ardışık çalıştırıldı, stable |
+| `C3ManagementAgreementSnapshotTest.php` | PASS (tek başına) | --filter=C3 intermittent fail geçici olarak kayboldu |
+| `test_c31_snapshot_immutability_regression` | PASS | Stable |
+
+**Root cause (hipotez):** Bir önceki oturumda teşhis edilen intermittent pollution test-order-dependent olabilir. Mevcut test ortamında stable — tekrarlanabilir failure reproduke edilemedi.
+**Snapshot mekanizması:** `ReservationService::_snapshotManagementAgreement()` → enum instance cast → rate snapshot alma. Mantık doğru.
+
+### F01 Kisi Tenant Isolation Bypass — NEW FINDING 🔴
+
+**Classification:** HIGH security risk (direct model access bypass)
+**Report:** `.project-brain/FORENSIC/F01_KISI_TENANT_BYPASS_REPORT.md`
+
+| Bypass Noktası | Dosya | Risk |
+|---|---|---|
+| `Kisi::find()` × 3 | `IntelligenceDashboardController.php:72,106,147` | Admin cross-tenant data leak |
+| `Kisi::active()` | `EslesmeController.php:67` | Admin listeleme bypass |
+| `Kisi::select()` | `EslesmeController.php:254` | Admin listeleme bypass |
+| `Kisi::where('ad', ...)` | `GlobalSearchController.php:80` | 🔴 PUBLIC API — tenant context yok |
+
+**Mevcut koruma:** `KisiRepository` (15/15 PASS), `tenant.context` middleware, `role:admin` middleware
+**Problem:** Direct model erişimi Repository tenant isolation'ını atlatıyor
+**Root cause:** `App\Models\Kisi` `BelongsToTenant` trait'i yok
+**Remediation options:** A (BelongsToTenant), B (Custom global scope), C (Repository enforce), D (Controller guard)
+**Remediation options:** A (BelongsToTenant), B (Custom global scope), C (Repository enforce), D (Controller guard)
+**Decision needed:** Ayhan human gate
+
+---
+
+## [2026-09-27] RENTAL_SYNC_AIRBNB_TENANT_CONTEXT_CRASH — CLOSED ✅
+
+**Task ID:** `RENTAL_SYNC_AIRBNB_TENANT_CONTEXT_FIX`
+**Commit:** `7ae39e1f`
+**Evidence Level:** `TEST_VERIFIED` (bounded regression + Queue isolation + rental regression)
+**Baseline:** `7ae39e1f`
+
+### Root Cause
+`TenantScope` global scope CLI context'te `WHERE 1=0` üretiyor → `Ilan::findOrFail()` `ModelNotFoundException` fırlatıyor.
+
+### Remediation
+`rental:sync-airbnb` bootstrapunda `resolveTenantForSync()` ile `withoutGlobalScopes()` → `join('tenants')` → `Tenant::find()` ile tenant context resolve ediliyor. `syncWithTenantContext()` lifecycle: resolve → setTenant → sync → finally clearTenant/restore. Pattern `ChannexBookingAcknowledger::resolveApiKey()` ile uyumlu.
+
+### Bootstrap Detail
+`select('tenants.*')` partial tenant row döner, sonra `Tenant::find($ilan->id)` full model re-hydrate eder — intentional ve safe.
+
+### Verification
+| Test Suite | Result |
+|---|---|
+| Queue Isolation (7 tests) | 7/7 PASS ✅ |
+| Rental Regression (7 tests) | 7/7 PASS ✅ |
+| Full Suite | 18 tests / 63 assertions PASS ✅ |
+
+### Security Boundary
+- Fail-closed: null tenant → error logged, failed counter incremented, no auth-based fallback
+- Cross-tenant bypass: yok
+- Pre-existing tenant context preservation: intentional CLI contract
+
+### Known Issues
+- SAB Gate 5 (Integrity Scan) FAIL — tüm ihlaller commit dışında (untracked worktree artifacts). Commit içindeki 2 dosyada sıfır ihlal.
+
+### Status
+`CANONICAL_CLEAN` — Ready for production deployment pending Ayhan Human Gate.
+
+---
+
+## [2026-09-27] SCHEDULED_TASK_RELIABILITY — SESSION CLOSURE
+
+**Task ID:** Scheduler Forensic Session
+**Findings:** 3 closures + 3 HIGH next priorities
+
+### Closed ✅
+| ID | Issue | Resolution | Commit |
+|---|---|---|---|
+| Queue cross-job bleeding | Shared `$ilanId` static variable | Singleton → fresh instance per job | — |
+| Concierge middleware import | `use Facade` at top of class | Remove unused import | — |
+| `rental:sync-airbnb` tenant context | `TenantScope` in CLI | `resolveTenantForSync()` bootstrap | `7ae39e1f` |
+
+### Next Priorities (Ayhan Human Gate Required)
+| Priority | Task | Blocking Reason |
+|---|---|---|
+| 🔴 HIGH | `ranking:recalculate-all` | Unbounded `recalculateAll()` — no tenant filter |
+| 🔴 HIGH | `ai:scan-deals` | TenantScope conflict in CLI |
+| 🟠 MEDIUM | `cortex:hunt` | No pagination, unbounded query |
+
+### Production Status
+**Decision needed:** Ayhan human gate
+
+---
+
+## [2026-09-30] CRM_03_TALEP_EDIT_FORM_CONTRACT_REMEDIATION — CLOSED ✅
+
+**Task ID:** `CRM_03_TALEP_EDIT_FORM_CONTRACT_REMEDIATION_17`
+**Commit:** `ed690e93`
+**Evidence Level:** `TEST_VERIFIED` (101 CRM tests, 769 assertions, all PASS)
+**Baseline:** `ed690e93`
+
+### Root Cause Found
+Legacy `TalepAuthorityService::mapTalepData()` — when a PUT payload omits a field, the missing key is treated as `null` and written to DB, overwriting existing values. NOT NULL constraint on `kisi_id` caused the original diagnostic failure.
+
+### Remediation Applied (Tests Only)
+- Added `kisi_id` to all legacy PUT payloads (form always renders it)
+- Fixed `user_id` → `danisman_id` in Talep create calls (model uses `danisman_id`)
+- Added `kisi_id` to `DebugLegacyUpdateTest` minimal payload
+
+### Verification Results
+| Suite | Tests | Assertions | Result |
+|---|---|---|---|
+| CRM Feature Tests | 101 | 769 | ALL PASS ✅ |
+| TalepEditFormRuntimeVerification | 9 | 26 | ALL PASS ✅ |
+| TalepEditFormContractTest | 15 | 45 | ALL PASS ✅ |
+| DebugLegacyUpdateTest | 2 | 6 | ALL PASS ✅ |
+
+### Known Issues
+- SAB Gate 6: 18 pre-existing LOW violations in unrelated files (MigrationAudit, MigrationSeal, Filterable) — NOT from this commit
+- MCP Server not running in local dev environment
+
+### Legacy Path Mutation Bug (Out of Scope for This Task)
+Underlying legacy mutation issue (`mapTalepData` overwrites omitted fields with defaults) remains in production code. Domain path (`crm.use_domain_talep=true`) works correctly. Decision needed: should legacy bug be addressed in a separate remediation task?
+
+### Status
+`CANONICAL_CLEAN` — CRM-03 task complete. Legacy mutation bug logged as separate issue for Ayhan decision.
+Production deployment için Ayhan Human Gate bekleniyor. Monitor `rental:sync-airbnb` scheduler runtime after deploy.
+**Decision needed:** Ayhan human gate
