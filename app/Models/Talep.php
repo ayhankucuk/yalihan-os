@@ -48,7 +48,8 @@ class Talep extends BaseModel
         // Context7: Talep reformu - 2025-11-24
         // Context7: Talep reformu - 2025-11-24
         'notlar',
-
+        'min_metrekare',
+        'max_metrekare',
     ];
 
     /**

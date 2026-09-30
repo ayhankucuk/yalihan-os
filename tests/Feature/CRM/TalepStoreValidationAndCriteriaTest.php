@@ -384,5 +384,91 @@ class TalepStoreValidationAndCriteriaTest extends TestCase
 
         $fresh = $talep->fresh();
         $this->assertEquals('Omitted Fields Updated Baslik', $fresh->baslik);
+        $this->assertNull($fresh->min_metrekare);
+        $this->assertNull($fresh->max_metrekare);
+    }
+
+    /**
+     * Requirement G: AREA CRITERIA ROUND-TRIP (CREATE & UPDATE) IN LEGACY & DOMAIN MODES
+     * CREATE: 120 / 240 -> DB readback exactly 120 / 240
+     * UPDATE: 150 / 300 -> DB readback exactly 150 / 300
+     */
+    public function test_area_criteria_round_trip_and_parity_across_legacy_and_domain(): void
+    {
+        foreach ([false, true] as $useDomain) {
+            config(['crm.use_domain_talep' => $useDomain]);
+
+            // 1. Create with area criteria
+            $createPayload = [
+                'baslik'         => 'Metrekare Kriterli Talep ' . ($useDomain ? 'Domain' : 'Legacy'),
+                'tip'            => 'Satılık',
+                'alt_kategori_id'=> $this->kategoriVilla->id,
+                'talep_durumu'   => 'yayinda',
+                'il_id'          => $this->il->id,
+                'ilce_id'        => $this->ilce->id,
+                'kisi_id'        => $this->kisi->id,
+                'min_metrekare'  => 120,
+                'max_metrekare'  => 240,
+            ];
+
+            $response = $this->actingAs($this->admin)->post(route('admin.talepler.store'), $createPayload);
+            $response->assertStatus(302);
+            $response->assertSessionHasNoErrors();
+
+            $talep = Talep::where('baslik', $createPayload['baslik'])->first();
+            $this->assertNotNull($talep, "Talep should exist in DB (useDomain: {$useDomain})");
+            $this->assertSame(120, (int) $talep->min_metrekare);
+            $this->assertSame(240, (int) $talep->max_metrekare);
+
+            // 2. Update with new area criteria
+            $updatePayload = [
+                'baslik'         => $talep->baslik,
+                'tip'            => 'Satılık',
+                'talep_durumu'   => 'yayinda',
+                'il_id'          => $this->il->id,
+                'kisi_id'        => $this->kisi->id,
+                'min_metrekare'  => 150,
+                'max_metrekare'  => 300,
+            ];
+
+            $updateResponse = $this->actingAs($this->admin)->put(
+                route('admin.talepler.update', $talep->id),
+                $updatePayload
+            );
+            $updateResponse->assertStatus(302);
+            $updateResponse->assertSessionHasNoErrors();
+
+            $fresh = $talep->fresh();
+            $this->assertSame(150, (int) $fresh->min_metrekare);
+            $this->assertSame(300, (int) $fresh->max_metrekare);
+        }
+    }
+
+    /**
+     * Requirement H: AREA RANGE VALIDATION INVARIANT
+     * When both min_metrekare and max_metrekare are provided,
+     * max_metrekare must be >= min_metrekare.
+     */
+    public function test_invalid_area_range_fails_validation(): void
+    {
+        $invalidPayload = [
+            'baslik'        => 'Invalid Area Range Demand',
+            'tip'           => 'Satılık',
+            'talep_durumu'  => 'yayinda',
+            'il_id'         => $this->il->id,
+            'kisi_id'       => $this->kisi->id,
+            'min_metrekare' => 300,
+            'max_metrekare' => 150,
+        ];
+
+        // 1. Session store failure
+        $response = $this->actingAs($this->admin)->post(route('admin.talepler.store'), $invalidPayload);
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['max_metrekare']);
+
+        // 2. JSON store failure (422)
+        $jsonResponse = $this->actingAs($this->admin)->postJson(route('admin.talepler.store'), $invalidPayload);
+        $jsonResponse->assertStatus(422);
+        $jsonResponse->assertJsonValidationErrors(['max_metrekare']);
     }
 }

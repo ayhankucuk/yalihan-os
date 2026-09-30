@@ -198,6 +198,8 @@ class TalepAuthorityService
             'kaynak' => $data['kaynak'] ?? null,
             'min_fiyat' => $data['min_fiyat'] ?? null,
             'max_fiyat' => $data['max_fiyat'] ?? null,
+            'min_metrekare' => isset($data['min_metrekare']) && $data['min_metrekare'] !== '' ? (int) $data['min_metrekare'] : null,
+            'max_metrekare' => isset($data['max_metrekare']) && $data['max_metrekare'] !== '' ? (int) $data['max_metrekare'] : null,
             'notlar' => $data['notlar'] ?? null,
         ];
     }

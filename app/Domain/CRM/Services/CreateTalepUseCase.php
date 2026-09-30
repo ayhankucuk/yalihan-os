@@ -165,6 +165,8 @@ class CreateTalepUseCase
             'danisman_id'      => $command->danismanId ?? $command->actor?->id,
             'min_fiyat'       => $command->minFiyat,
             'max_fiyat'       => $command->maxFiyat,
+            'min_metrekare'   => $command->minMetrekare,
+            'max_metrekare'   => $command->maxMetrekare,
             'notlar'           => $command->notlar,
         ];
     }

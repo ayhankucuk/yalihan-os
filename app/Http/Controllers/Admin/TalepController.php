@@ -115,6 +115,8 @@ class TalepController extends Controller
             'kisi_email'      => 'nullable|email|max:100',
             'min_fiyat'       => 'nullable|numeric',
             'max_fiyat'       => 'nullable|numeric',
+            'min_metrekare'   => 'nullable|integer|min:0',
+            'max_metrekare'   => 'nullable|integer|gte:min_metrekare',
             'notlar'          => 'nullable|string',
         ]);
 
@@ -207,6 +209,8 @@ class TalepController extends Controller
             'danisman_id'     => 'nullable|exists:users,id',
             'min_fiyat'       => 'nullable|numeric',
             'max_fiyat'       => 'nullable|numeric',
+            'min_metrekare'   => 'nullable|integer|min:0',
+            'max_metrekare'   => 'nullable|integer|gte:min_metrekare',
             'notlar'          => 'nullable|string',
         ]);
 

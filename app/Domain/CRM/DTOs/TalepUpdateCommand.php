@@ -22,6 +22,8 @@ readonly class TalepUpdateCommand
         public ?int $danismanId = null,
         public ?float $minFiyat = null,
         public ?float $maxFiyat = null,
+        public ?int $minMetrekare = null,
+        public ?int $maxMetrekare = null,
         public ?string $notlar = null,
         public ?User $actor = null,
     ) {}
@@ -31,7 +33,7 @@ readonly class TalepUpdateCommand
         return new self(
             baslik: $data['baslik'] ?? null,
             aciklama: $data['aciklama'] ?? null,
-            talepTipi: $data['talep_tipi'] ?? null,
+            talepTipi: $data['talep_tipi'] ?? $data['tip'] ?? null,
             altKategoriId: isset($data['alt_kategori_id']) ? (int) $data['alt_kategori_id'] : (isset($data['kategori_id']) ? (int) $data['kategori_id'] : null),
             talepDurumu: $data['talep_durumu'] ?? $data['status'] ?? null,
             ilId: isset($data['il_id']) ? (int) $data['il_id'] : null,
@@ -41,6 +43,8 @@ readonly class TalepUpdateCommand
             danismanId: isset($data['danisman_id']) ? (int) $data['danisman_id'] : null,
             minFiyat: isset($data['min_fiyat']) ? (float) $data['min_fiyat'] : null,
             maxFiyat: isset($data['max_fiyat']) ? (float) $data['max_fiyat'] : null,
+            minMetrekare: isset($data['min_metrekare']) && $data['min_metrekare'] !== '' ? (int) $data['min_metrekare'] : null,
+            maxMetrekare: isset($data['max_metrekare']) && $data['max_metrekare'] !== '' ? (int) $data['max_metrekare'] : null,
             notlar: $data['notlar'] ?? null,
             actor: $actor,
         );
@@ -61,6 +65,8 @@ readonly class TalepUpdateCommand
             'danisman_id' => $this->danismanId,
             'min_fiyat' => $this->minFiyat,
             'max_fiyat' => $this->maxFiyat,
+            'min_metrekare' => $this->minMetrekare,
+            'max_metrekare' => $this->maxMetrekare,
             'notlar' => $this->notlar,
         ], fn($val) => $val !== null);
     }
