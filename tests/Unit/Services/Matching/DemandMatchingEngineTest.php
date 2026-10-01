@@ -217,4 +217,39 @@ class DemandMatchingEngineTest extends TestCase
         // 5. Assert: Only 1 candidate should survive SQL filtering
         $this->assertCount(1, $results);
     }
+
+    /** @test */
+    public function it_calculates_semantic_bonus_and_logs_without_throwing_when_keywords_overlap()
+    {
+        $kategori = $this->ensureKategori('villa');
+        $istanbul = $this->ensureIl(34, ['il_adi' => 'İstanbul']);
+        $kisi = Kisi::withoutEvents(fn() => Kisi::factory()->create());
+
+        // Ilan with positive semantic keywords in aciklama ('lüks', 'merkezi')
+        $ilan = Ilan::factory()->create([
+            'yayin_durumu' => IlanDurumu::YAYINDA->value,
+            'il_id' => $istanbul->id,
+            'alt_kategori_id' => $kategori->id,
+            'fiyat' => 1000000,
+            'aciklama' => 'Merkezi konumda, lüks ve ferah villa.',
+        ]);
+
+        // Talep with overlapping positive semantic keywords in notlar ('lüks', 'merkezi')
+        $talep = Talep::factory()->create([
+            'il_id' => $istanbul->id,
+            'kisi_id' => $kisi->id,
+            'alt_kategori_id' => $kategori->id,
+            'min_fiyat' => 800000,
+            'max_fiyat' => 1200000,
+            'talep_durumu' => TalepDurumu::AKTIF->value,
+            'notlar' => 'Merkezi ve lüks bir villa arıyorum.',
+        ]);
+
+        // Execute matching — should compute semantic bonus and execute logging branch without throwing Class "Log" not found
+        $results = $this->engine->matchDemand($talep);
+
+        $this->assertCount(1, $results);
+        $this->assertEquals($ilan->id, $results->first()['ilan']->id);
+        $this->assertGreaterThan(0, $results->first()['skor']);
+    }
 }

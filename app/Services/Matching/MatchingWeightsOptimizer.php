@@ -571,7 +571,7 @@ class MatchingWeightsOptimizer
 
         // Log için (debugging)
         if ($score > 0) {
-            \Log::debug('Semantic bonus calculated', [
+            Log::debug('Semantic bonus calculated', [
                 'ilan_id' => $ilan->id ?? 'N/A',
                 'talep_id' => $talep->id ?? 'N/A',
                 'matched_keywords' => $matchedKeywords,
