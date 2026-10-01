@@ -34,21 +34,51 @@ class EslesmeController extends AdminController
      */
     public function index(Request $request)
     {
-        // ✅ N+1 FIX: Eager loading with select optimization
-        $eslesmeler = \App\Models\Eslesme::with([
+        // ✅ F02 REMEDIATION: Scope through Ilan relationship (tenant-bearing anchor).
+        // Eslesme has no BelongsToTenant, so read scoping is done via the Ilan relation.
+        // Every valid Eslesme has a mandatory ilan_id → Ilan has tenant_id (TenantScope enforced).
+        // Read scope: only Eslesme records whose canonical Ilan belongs to the current tenant.
+        $tenantCtx = app(\App\Services\SaaS\TenantContextService::class);
+        $currentTenantId = $tenantCtx->hasTenant() ? $tenantCtx->getTenant()->id : null;
+
+        $query = \App\Models\Eslesme::with([
             'ilan:id,baslik,fiyat,para_birimi,yayin_durumu', // ✅ SAB: yayin_durumu (Ilan tablosu)
             'kisi:id,ad,soyad,telefon,email',
             'danisman:id,name,email',
         ])
-            ->select(['id', 'ilan_id', 'kisi_id', 'danisman_id', 'eslesme_durumu', 'one_cikan', 'created_at'])
-            ->latest()
-            ->paginate(20);
+            ->select(['id', 'ilan_id', 'kisi_id', 'danisman_id', 'eslesme_durumu', 'one_cikan', 'created_at']);
 
-        // ✅ OPTIMIZED: İstatistikleri tek query'de hesapla
+        // ✅ F02-R REMEDIATION: All three relation anchors must match current tenant.
+        //   C1/C2/C3: Ilan=TenantA but Kisi/Talep=TenantB rows must NOT be accessible.
+        //   Ilan-only scope is insufficient — mixed-tenant legacy rows would pass.
+        //   Read invariant: Ilan∈T AND Kisi∈T AND (Talep∈T OR Talep=null).
+        if ($currentTenantId !== null) {
+            $query->whereHas('ilan', fn($q) => $q->where('tenant_id', $currentTenantId))
+                ->whereHas('kisi', fn($q) => $q->where('tenant_id', $currentTenantId))
+                // Nullable-safe: if talep_id IS NOT NULL, its Talep must also belong to current tenant.
+                // Using NOT EXISTS subquery: exclude rows where a foreign tenant Talep exists.
+                ->whereRaw('NOT EXISTS (SELECT 1 FROM talepler WHERE talepler.id = eslesmeler.talep_id AND talepler.tenant_id != ?)', [$currentTenantId]);
+        } else {
+            // No tenant context → return empty (fail closed)
+            $query->whereRaw('1 = 0');
+        }
+
+        $eslesmeler = $query->latest()->paginate(20);
+
+        // ✅ OPTIMIZED: İstatistikleri tenant-scoped query ile hesapla
+        // ✅ F02-R REMEDIATION: All three relation anchors must match current tenant.
+        $baseStats = \App\Models\Eslesme::query();
+        if ($currentTenantId !== null) {
+            $baseStats->whereHas('ilan', fn($q) => $q->where('tenant_id', $currentTenantId))
+                ->whereHas('kisi', fn($q) => $q->where('tenant_id', $currentTenantId))
+                ->whereRaw('NOT EXISTS (SELECT 1 FROM talepler WHERE talepler.id = eslesmeler.talep_id AND talepler.tenant_id != ?)', [$currentTenantId]);
+        } else {
+            $baseStats->whereRaw('1 = 0');
+        }
         $istatistikler = [
-            'toplam' => \App\Models\Eslesme::count(),
-            'aktif' => \App\Models\Eslesme::where('eslesme_durumu', IlanDurumu::YAYINDA->value)->count(),
-            'beklemede' => \App\Models\Eslesme::where('eslesme_durumu', 'Beklemede')->count(),
+            'toplam'    => (clone $baseStats)->count(),
+            'aktif'     => (clone $baseStats)->where('eslesme_durumu', IlanDurumu::YAYINDA->value)->count(),
+            'beklemede' => (clone $baseStats)->where('eslesme_durumu', 'Beklemede')->count(),
         ];
 
         return $this->render('admin.eslesmeler.index', compact('eslesmeler', 'istatistikler'));
@@ -136,6 +166,42 @@ class EslesmeController extends AdminController
             'eslesme_tarihi' => 'nullable|date',
         ]);
 
+        // ✅ TENANT BOUNDARY (ESLESME-F01 remediation):
+        // 'exists:table,id' validator runs without TenantScope — it does NOT enforce
+        // tenant isolation. After the validator passes, we MUST verify that the
+        // referenced entities all belong to the current effective tenant.
+        $tenantCtx = app(\App\Services\SaaS\TenantContextService::class);
+        if (!$tenantCtx->hasTenant()) {
+            abort(403, 'Tenant context not established.');
+        }
+        $currentTenantId = $tenantCtx->getTenant()->id;
+
+        $kisi = \App\Models\Kisi::find($validated['kisi_id']);
+        if (!$kisi || (int) $kisi->tenant_id !== (int) $currentTenantId) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Seçilen kişi bu firmaya ait değil.');
+        }
+
+        $ilan = \App\Models\Ilan::find($validated['ilan_id']);
+        if (!$ilan || (int) $ilan->tenant_id !== (int) $currentTenantId) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Seçilen ilan bu firmaya ait değil.');
+        }
+
+        if (!empty($validated['talep_id'])) {
+            $talep = \App\Models\Talep::find($validated['talep_id']);
+            if (!$talep || (int) $talep->tenant_id !== (int) $currentTenantId) {
+                return redirect()
+                    ->back()
+                    ->withInput()
+                    ->with('error', 'Seçilen talep bu firmaya ait değil.');
+            }
+        }
+
         try {
             $eslesme = $this->authorityService->createMatch($validated, auth()->user());
 
@@ -160,7 +226,38 @@ class EslesmeController extends AdminController
      */
     public function show($eslesme)
     {
-        return $this->render('admin.eslesmeler.show', ['eslesme' => $eslesme]);
+        // ✅ F02 REMEDIATION: Model binding is tenant-agnostic.
+        // Resolve the Eslesme manually and verify all three relation anchors belong
+        // to the current tenant before exposing any data.
+        $tenantCtx = app(\App\Services\SaaS\TenantContextService::class);
+        $currentTenantId = $tenantCtx->hasTenant() ? $tenantCtx->getTenant()->id : null;
+
+        $eslesmeModel = \App\Models\Eslesme::with([
+            'ilan:id,baslik,fiyat,para_birimi,yayin_durumu',
+            'kisi:id,ad,soyad,telefon,email',
+            'danisman:id,name,email',
+        ])->find($eslesme);
+
+        if (!$eslesmeModel) {
+            abort(404);
+        }
+
+        // Fail closed: no tenant context = no data
+        if ($currentTenantId === null) {
+            abort(403);
+        }
+
+        // Verify all three anchors
+        $ilanOk = $eslesmeModel->ilan && (int) $eslesmeModel->ilan->tenant_id === (int) $currentTenantId;
+        $kisiOk = $eslesmeModel->kisi && (int) $eslesmeModel->kisi->tenant_id === (int) $currentTenantId;
+        $talepOk = !$eslesmeModel->talep_id
+            || ($eslesmeModel->talep && (int) $eslesmeModel->talep->tenant_id === (int) $currentTenantId);
+
+        if (!$ilanOk || !$kisiOk || !$talepOk) {
+            abort(403, 'Bu eşleştirmeye erişim yetkiniz yok.');
+        }
+
+        return $this->render('admin.eslesmeler.show', ['eslesme' => $eslesmeModel]);
     }
 
     /**
@@ -198,10 +295,29 @@ class EslesmeController extends AdminController
      */
     public function destroy(Eslesme $eslesme)
     {
-        try {
-            // ✅ N+1 FIX: Eager loading ekle
-            $eslesme->load('ilan:id,baslik');
+        // ✅ F02 REMEDIATION: Model binding is tenant-agnostic.
+        // Verify all three relation anchors belong to the current tenant before deleting.
+        $tenantCtx = app(\App\Services\SaaS\TenantContextService::class);
+        $currentTenantId = $tenantCtx->hasTenant() ? $tenantCtx->getTenant()->id : null;
 
+        // Fail closed: no tenant context = no deletion
+        if ($currentTenantId === null) {
+            abort(403, 'Tenant context not established.');
+        }
+
+        // Reload with all anchors loaded
+        $eslesme->load(['ilan', 'kisi', 'talep']);
+
+        $ilanOk = $eslesme->ilan && (int) $eslesme->ilan->tenant_id === (int) $currentTenantId;
+        $kisiOk = $eslesme->kisi && (int) $eslesme->kisi->tenant_id === (int) $currentTenantId;
+        $talepOk = !$eslesme->talep_id
+            || ($eslesme->talep && (int) $eslesme->talep->tenant_id === (int) $currentTenantId);
+
+        if (!$ilanOk || !$kisiOk || !$talepOk) {
+            abort(403, 'Bu eşleştirmeyi silme yetkiniz yok.');
+        }
+
+        try {
             // Eşleşme bilgilerini al
             $eslesmeBilgi = 'Eşleşme #'.$eslesme->id;
             if ($eslesme->ilan) {
