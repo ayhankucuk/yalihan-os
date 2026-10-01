@@ -227,34 +227,30 @@ class EslesmeController extends AdminController
     public function show($eslesme)
     {
         // ✅ F02 REMEDIATION: Model binding is tenant-agnostic.
-        // Resolve the Eslesme manually and verify all three relation anchors belong
-        // to the current tenant before exposing any data.
+        // Resolve the requested Eslesme through the query-level tenant boundary.
+        // Read invariant: Ilan∈T AND Kisi∈T AND (Talep∈T OR Talep=null).
         $tenantCtx = app(\App\Services\SaaS\TenantContextService::class);
         $currentTenantId = $tenantCtx->hasTenant() ? $tenantCtx->getTenant()->id : null;
+
+        if ($currentTenantId === null) {
+            abort(403, 'Tenant context not established.');
+        }
+
+        $id = $eslesme instanceof \App\Models\Eslesme ? $eslesme->id : $eslesme;
 
         $eslesmeModel = \App\Models\Eslesme::with([
             'ilan:id,baslik,fiyat,para_birimi,yayin_durumu',
             'kisi:id,ad,soyad,telefon,email',
             'danisman:id,name,email',
-        ])->find($eslesme);
+        ])
+            ->where('id', $id)
+            ->whereHas('ilan', fn($q) => $q->where('tenant_id', $currentTenantId))
+            ->whereHas('kisi', fn($q) => $q->where('tenant_id', $currentTenantId))
+            ->whereRaw('NOT EXISTS (SELECT 1 FROM talepler WHERE talepler.id = eslesmeler.talep_id AND talepler.tenant_id != ?)', [$currentTenantId])
+            ->first();
 
         if (!$eslesmeModel) {
             abort(404);
-        }
-
-        // Fail closed: no tenant context = no data
-        if ($currentTenantId === null) {
-            abort(403);
-        }
-
-        // Verify all three anchors
-        $ilanOk = $eslesmeModel->ilan && (int) $eslesmeModel->ilan->tenant_id === (int) $currentTenantId;
-        $kisiOk = $eslesmeModel->kisi && (int) $eslesmeModel->kisi->tenant_id === (int) $currentTenantId;
-        $talepOk = !$eslesmeModel->talep_id
-            || ($eslesmeModel->talep && (int) $eslesmeModel->talep->tenant_id === (int) $currentTenantId);
-
-        if (!$ilanOk || !$kisiOk || !$talepOk) {
-            abort(403, 'Bu eşleştirmeye erişim yetkiniz yok.');
         }
 
         return $this->render('admin.eslesmeler.show', ['eslesme' => $eslesmeModel]);
@@ -302,7 +298,9 @@ class EslesmeController extends AdminController
 
         // Fail closed: no tenant context = no deletion
         if ($currentTenantId === null) {
-            abort(403, 'Tenant context not established.');
+            return redirect()
+                ->route('admin.eslesmeler.index')
+                ->with('error', 'Bu eşleştirmeyi silme yetkiniz yok.');
         }
 
         // Reload with all anchors loaded
@@ -314,7 +312,9 @@ class EslesmeController extends AdminController
             || ($eslesme->talep && (int) $eslesme->talep->tenant_id === (int) $currentTenantId);
 
         if (!$ilanOk || !$kisiOk || !$talepOk) {
-            abort(403, 'Bu eşleştirmeyi silme yetkiniz yok.');
+            return redirect()
+                ->route('admin.eslesmeler.index')
+                ->with('error', 'Bu eşleştirmeyi silme yetkiniz yok.');
         }
 
         try {
