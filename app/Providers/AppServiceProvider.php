@@ -60,6 +60,31 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\TemplateResolver::class
         );
 
+        // ─── Hermes Event Bus (Bounded Inbound Email Registration — AI_08) ────────
+        // Selective registration: Only CommunicationEmailHandler is active in normal runtime.
+        // Workforce cascade (DriveAgent, PhotoAgent, etc.) remains strictly dormant.
+        $this->app->singleton(\App\Domain\Hermes\Handlers\CommunicationEmailHandler::class, function () {
+            return new \App\Domain\Hermes\Handlers\CommunicationEmailHandler();
+        });
+
+        $this->app->singleton(\App\Services\Hermes\HermesRegistry::class, function ($app) {
+            $registry = new \App\Services\Hermes\HermesRegistry();
+            $registry->register($app->make(\App\Domain\Hermes\Handlers\CommunicationEmailHandler::class));
+            return $registry;
+        });
+
+        $this->app->singleton(\App\Services\Hermes\HermesDispatcher::class, function ($app) {
+            return new \App\Services\Hermes\HermesDispatcher(
+                $app->make(\App\Services\Hermes\HermesRegistry::class)
+            );
+        });
+
+        $this->app->singleton(\App\Services\Hermes\HermesService::class, function ($app) {
+            return new \App\Services\Hermes\HermesService(
+                $app->make(\App\Services\Hermes\HermesDispatcher::class)
+            );
+        });
+
         // AI Service'i singleton olarak kaydet
         $this->app->singleton(AIService::class, function ($app) {
             return new AIService(
