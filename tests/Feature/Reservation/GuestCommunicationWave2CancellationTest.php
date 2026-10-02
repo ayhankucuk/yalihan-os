@@ -213,11 +213,20 @@ class GuestCommunicationWave2CancellationTest extends TestCase
         Queue::fake();
 
         // Tenant B's property
+        $tenantB = \App\Models\SaaS\Tenant::create([
+            'uuid'   => (string) \Illuminate\Support\Str::uuid(),
+            'name'   => 'Tenant B Comm',
+            'domain' => 'tenantbcomm.test',
+            'status' => 'active',
+        ]);
+
         $ilanB = Ilan::factory()->create([
-            'tenant_id' => $this->ilan->tenant_id + 1,
+            'tenant_id' => $tenantB->id,
             'rental_enabled' => true,
             'min_stay_nights' => 2,
         ]);
+
+        app(\App\Services\SaaS\TenantContextService::class)->setTenant($tenantB);
 
         // Create reservation on tenant B's property
         $resB = $this->service->createReservation(

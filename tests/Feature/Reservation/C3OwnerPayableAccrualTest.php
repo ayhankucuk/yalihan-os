@@ -2,23 +2,26 @@
 
 namespace Tests\Feature\Reservation;
 
+use App\Application\ChannelManager\Services\AvailabilitySynchronizationService;
 use App\Enums\ManagementModel;
 use App\Events\Reservation\ReservationCancelledEvent;
 use App\Events\Reservation\ReservationCompletedEvent;
+use App\Events\Reservation\ReservationCreatedEvent;
 use App\Jobs\Reservation\ProcessFinancialCompletionJob;
 use App\Jobs\Reservation\ProcessReservationCancelled;
+use App\Jobs\Reservation\ProcessReservationCreated;
 use App\Models\Ilan;
-use App\Models\LedgerAccount;
 use App\Models\LedgerEntry;
 use App\Models\PropertyReservation;
 use App\Models\SaaS\Tenant;
 use App\Models\User;
 use App\Services\FinancialLedgerService;
-use App\Application\ChannelManager\Services\AvailabilitySynchronizationService;
 use App\Services\ReservationService;
 use App\ValueObjects\TransactionStatus;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
@@ -50,8 +53,11 @@ class C3OwnerPayableAccrualTest extends TestCase
     use RefreshDatabase;
 
     protected ReservationService $reservationService;
+
     protected FinancialLedgerService $ledgerService;
+
     protected User $user;
+
     protected Ilan $ilan;
 
     protected function setUp(): void
@@ -63,10 +69,10 @@ class C3OwnerPayableAccrualTest extends TestCase
         $this->user = User::factory()->create();
 
         $this->ilan = Ilan::factory()->create([
-            'rental_enabled'  => true,
+            'rental_enabled' => true,
             'min_stay_nights' => 1,
-            'fiyat'          => 5000.00,
-            'para_birimi'    => 'TRY',
+            'fiyat' => 5000.00,
+            'para_birimi' => 'TRY',
         ]);
     }
 
@@ -202,7 +208,7 @@ class C3OwnerPayableAccrualTest extends TestCase
 
         // Booking entry still exists (unchanged)
         $allEntries = LedgerEntry::where('reference_id', $reservation->id)->get();
-        $bookingEntries = $allEntries->filter(fn($e) => str_contains($e->sebep ?? '', 'Konaklama Kaydı'));
+        $bookingEntries = $allEntries->filter(fn ($e) => str_contains($e->sebep ?? '', 'Konaklama Kaydı'));
         $this->assertGreaterThan(0, $bookingEntries->count(), 'Booking entry still exists');
     }
 
@@ -248,8 +254,8 @@ class C3OwnerPayableAccrualTest extends TestCase
     public function test_cross_tenant_no_accrual_mutation(): void
     {
         $tenantA = Tenant::create([
-            'uuid'   => (string) \Illuminate\Support\Str::uuid(),
-            'name'   => 'Tenant A',
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Tenant A',
             'domain' => 'tenanta.test',
             'status' => 'active',
         ]);
@@ -258,15 +264,17 @@ class C3OwnerPayableAccrualTest extends TestCase
         $ilanA->update(['tenant_id' => $tenantA->id]);
 
         $ilanB = Ilan::factory()->create([
-            'tenant_id'           => $tenantA->id + 1,  // different tenant
-            'rental_enabled'       => true,
-            'min_stay_nights'     => 1,
-            'fiyat'              => 10000.00,
-            'management_model'     => ManagementModel::FULL_MANAGEMENT,
+            'tenant_id' => $tenantA->id + 1,  // different tenant
+            'rental_enabled' => true,
+            'min_stay_nights' => 1,
+            'fiyat' => 10000.00,
+            'management_model' => ManagementModel::FULL_MANAGEMENT,
         ]);
 
         $startDate = Carbon::tomorrow()->format('Y-m-d');
         $endDate = Carbon::tomorrow()->addDays(2)->format('Y-m-d');
+
+        app(\App\Services\SaaS\TenantContextService::class)->setTenant($tenantA);
 
         $resA = $this->reservationService->createReservation(
             $ilanA->id, $startDate, $endDate,
@@ -275,10 +283,10 @@ class C3OwnerPayableAccrualTest extends TestCase
         );
 
         // Process creation job to create Konaklama/Gelirleri account
-        $createdEventA = \App\Events\Reservation\ReservationCreatedEvent::fromModel($resA);
-        $createJobA = new \App\Jobs\Reservation\ProcessReservationCreated($createdEventA);
+        $createdEventA = ReservationCreatedEvent::fromModel($resA);
+        $createJobA = new ProcessReservationCreated($createdEventA);
         $createJobA->handle(
-            app(\App\Application\ChannelManager\Services\AvailabilitySynchronizationService::class),
+            app(AvailabilitySynchronizationService::class),
             $this->ledgerService
         );
 
@@ -424,8 +432,9 @@ class C3OwnerPayableAccrualTest extends TestCase
         $reservation->refresh();
         $this->assertEquals(0.1500, (float) $reservation->commission_rate_snapshot);
 
-        // Change ilan agreement
-        $ilan->update(['management_model' => ManagementModel::CHECKIN_CHECKOUT]);
+        // Update management model for subsequent reservations
+        $ilan->management_model = ManagementModel::CHECKIN_CHECKOUT;
+        $ilan->save();
 
         // New reservation with new agreement
         $startDate2 = Carbon::tomorrow()->addDays(10)->format('Y-m-d');
@@ -488,11 +497,11 @@ class C3OwnerPayableAccrualTest extends TestCase
     private function makeIlanWithModel(ManagementModel $model, ?float $customRate = null): Ilan
     {
         return Ilan::factory()->create([
-            'rental_enabled'      => true,
-            'min_stay_nights'    => 1,
-            'fiyat'             => 5000.00,
-            'para_birimi'       => 'TRY',
-            'management_model'   => $model,
+            'rental_enabled' => true,
+            'min_stay_nights' => 1,
+            'fiyat' => 5000.00,
+            'para_birimi' => 'TRY',
+            'management_model' => $model,
             'custom_commission_rate' => $customRate,
         ]);
     }
@@ -509,10 +518,10 @@ class C3OwnerPayableAccrualTest extends TestCase
         );
 
         // Process creation job: this creates Konaklama/Gelirleri account and initial booking entries
-        $createdEvent = \App\Events\Reservation\ReservationCreatedEvent::fromModel($reservation);
-        $createJob = new \App\Jobs\Reservation\ProcessReservationCreated($createdEvent);
+        $createdEvent = ReservationCreatedEvent::fromModel($reservation);
+        $createJob = new ProcessReservationCreated($createdEvent);
         $createJob->handle(
-            app(\App\Application\ChannelManager\Services\AvailabilitySynchronizationService::class),
+            app(AvailabilitySynchronizationService::class),
             $this->ledgerService
         );
 
@@ -528,7 +537,7 @@ class C3OwnerPayableAccrualTest extends TestCase
         $job->handle($this->ledgerService);
     }
 
-    private function getEntriesBySebep(int $reservationId, string $pattern): \Illuminate\Support\Collection
+    private function getEntriesBySebep(int $reservationId, string $pattern): Collection
     {
         return LedgerEntry::where('reference_id', $reservationId)
             ->where('sebep', 'like', "%{$pattern}%")
@@ -543,6 +552,7 @@ class C3OwnerPayableAccrualTest extends TestCase
         if ($date instanceof \DateTimeInterface) {
             return $date->format('Y-m-d');
         }
+
         return (string) $date;
     }
 }

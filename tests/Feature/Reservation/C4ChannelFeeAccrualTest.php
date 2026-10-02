@@ -455,6 +455,8 @@ class C4ChannelFeeAccrualTest extends TestCase
         $startDate = Carbon::tomorrow()->format('Y-m-d');
         $endDate = Carbon::tomorrow()->addDays(2)->format('Y-m-d');
 
+        app(\App\Services\SaaS\TenantContextService::class)->setTenant($tenantA);
+
         $resA = $this->reservationService->createReservation(
             $ilanA->id, $startDate, $endDate,
             ['guest_name' => 'TenantA Guest', 'total_amount' => 100_000.00, 'currency' => 'TRY'],

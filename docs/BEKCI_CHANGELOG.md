@@ -1,3 +1,63 @@
+## Oturum 208 — 2026-10-02 | REZ-FINDING-01: Reservation Multi-Tenant Boundary Remediation & Independent Verification
+
+**Task ID:** `REZERVASYON_05_REMOVE_TEST_SECURITY_BYPASS_05` + `REZERVASYON_06_TENANT_BOUNDARY_INDEPENDENT_VERIFY_06`
+**Role:** `IMPLEMENTER` + `INDEPENDENT VERIFIER`
+**Karar Sahibi:** Ayhan
+**Status:** `VERIFIED - PASS` ✅
+**Focus:** Eradication of test-only tenant security bypass (`$isBootstrapTestTenant`) and enforcement of unconditional fail-closed tenant boundary guards across Presentation and Domain Service tiers (Target finding: `REZ-FINDING-01`).
+
+### YAPILANLAR (IMPLEMENTER)
+- `app/Services/ReservationService.php`:
+  - `$isBootstrapTestTenant`, `app()->environment('testing')` ve `'test.yalihan.local'` test-özel güvenlik arka kapısı tamamen kaldırıldı.
+  - `TenantContextService::hasTenant()` etkin olduğunda koşulsuz fail-closed koruması (`(int) $ilan->tenant_id !== (int) $currentTenant->id` -> `AuthorizationException`) uygulandı.
+- `app/Http/Controllers/Admin/PropertyEventApiController.php`:
+  - `store()` metodundaki global exists kuralı sıkılaştırıldı ve rezervasyon servisine gitmeden önce erken tenant-scoped `Ilan::where('tenant_id', ...)->findOrFail()` sorgulaması ile yabancı mülklere 404 concealment getirildi; `AuthorizationException` 403 olarak yakalandı.
+- `tests/Feature/Reservation/PropertyEventTenantBoundaryTest.php`:
+  - R0, R1, R2, R3 ve eski bypass koşulunu doğrudan hedefleyen R4 (`test_r4_former_bootstrap_bypass_fails_closed_under_unauthenticated_test_domain_context`) regresyon probu eklendi.
+- Test Fixture Uyumlulaştırması:
+  - `C1FinancialCompletionTest`, `C3ManagementAgreementSnapshotTest`, `C3OwnerPayableAccrualTest`, `C4ChannelFeeAccrualTest`, `GuestCommunicationWave2CancellationTest` ve `ReservationEndToEndLifecycleTest` dosyalarında üretim kuralları gevşetilmeden meşru tenant bağlamı (`app(TenantContextService::class)->setTenant(...)`) kuruldu.
+
+### BAĞIMSIZ DOĞRULAMA (INDEPENDENT VERIFIER)
+- `REZERVASYON_06_TENANT_BOUNDARY_INDEPENDENT_VERIFY_06` ile 4 çekirdek kapı denetlendi:
+  1. Güvenlik istisnalarının tamamen arındırıldığı teyit edildi (0 bypass, 0 testing flag).
+  2. Controller 404 concealment ve 403 defansı onaylandı.
+  3. `PropertyEventTenantBoundaryTest` R0–R4 tümüyle PASS verdi (5/5 PASS, 29 assertions).
+  4. `ReservationServiceTest` (4/4 PASS, 22 assertions) ve `tests/Feature/Reservation/` (112/112 PASS, 377 assertions) %100 yeşil tamamlandı. Status: `CLOSED`.
+
+---
+
+## Oturum 207 — 2026-09-28 | ILAN-05: Publish Lifecycle Reentrancy Remediation & Independent Verification
+
+**Task ID:** `ILAN-05`
+**Role:** `IMPLEMENTER` + `INDEPENDENT VERIFIER`
+**Karar Sahibi:** Ayhan
+**Status:** `VERIFIED - PASS`
+**Focus:** Remediation of reentrancy authorization flag reset bug during recursive publish lifecycle transitions (`TASLAK -> BEKLEMEDE -> YAYINDA`).
+
+### YAPILANLAR (IMPLEMENTER)
+- `app/Services/Listing/YalihanLifecycle.php`:
+  - Static boolean flag (`public static bool $isAuthorized`) etrafında call-depth counter (`private static int $authDepth = 0`) kuruldu.
+  - `transition()` girişinde `self::$authDepth++` ve `self::$isAuthorized = true` yapıldı.
+  - `transition()` `finally` bloğunda `self::$authDepth = max(0, self::$authDepth - 1); self::$isAuthorized = (self::$authDepth > 0);` ile nested çağrılarda dış çağrının yetkisinin erken sıfırlanması önlendi.
+  - `getAuthDepth()` ve `resetAuthorization()` statik metodları eklendi.
+  - Exception güvenliği sağlandı: exception fırlatılsa dahi depth 0'a iner ve authorization `false` olarak güvenli temizlenir.
+- `app/Models/Ilan.php` modelindeki doğrudan `setYayinDurumuAttribute` guard'ı (`! YalihanLifecycle::$isAuthorized`) kesinlikle korunarak yetkisiz doğrudan atamalar engellenmeye devam etti.
+- `tests/Feature/Listing/ListingLifecycleReentrancyTest.php` oluşturuldu ve 5 senaryo (unauthorized direct mutation, BEKLEMEDE->YAYINDA, TASLAK->YAYINDA auto-chain reentrancy, exception cleanup, atomicity/partial failure analysis) kanıtlandı.
+- `tests/Feature/ListingLifecycle/ListingLifecycleFinalSealTest.php` dosyasına doğrudan `taslak_to_yayinda_auto_chain_flow_succeeds` testi eklendi.
+
+### BAĞIMSIZ DOĞRULAMA (INDEPENDENT VERIFIER)
+- `tests/Feature/Listing/Ilan05IndependentVerificationTest.php` ile 7 ayrı adversarial runtime challenge icra edildi:
+  1. Orijinal hata reprodüksiyonu ve patched kontrolü (`TASLAK -> BEKLEMEDE -> YAYINDA` auto-chain PASS)
+  2. 4 seviyeli derin reentrancy ve simetrik stack unwinding (0 -> 4 -> 0, PASS)
+  3. Hata/exception durumunda yetki sızıntısı olmaksızın temiz unwind garantisi (No leak PASS)
+  4. Model guard dokunulmazlığı (Doğrudan mutasyon denemelerinde DomainException PASS)
+  5. Audit ve `listing_state_transitions` log bütünlüğü (2 geçiş kaydı eksiksiz PASS)
+  6. Sıralı farklı ilanlar arası statik izolasyon (Cross-listing leak yok PASS)
+  7. Bounded scope & tree integrity (PASS)
+- Konsolide Test Sonucu: 24 test, 106 assertion %100 PASS. Status: `CLOSED`.
+
+---
+
 ## Oturum 206 — 2026-09-24 | Defect Hunt F001-F005 Adversarial Verification Complete
 
 **Task ID:** `YALIHAN_DEEP_REPOSITORY_DEFECT_HUNT_01` (adversarial verification)
@@ -6728,3 +6788,82 @@ Artık ajanlar bu dosyaları her açtığında otomatik olarak ilgili skill yük
 - `tests/Feature/Workspace/WorkspaceExecutionTenantIsolationTest.php` — YENİ (17 test)
 - `app/Services/Workspace/WorkspaceExecutionService.php` — değişiklik yok (policy tabanlı)
 - `app/Policies/PortfolioDriveWorkspacePolicy.php` — mevcut policy yeterli
+- `app/Services/Workspace/WorkspaceExecutionService.php` — değişiklik yok (policy tabanlı)
+- `app/Policies/PortfolioDriveWorkspacePolicy.php` — mevcut policy yeterli
+
+---
+
+#### Oturum — 2026-09-27 | Rental Airbnb Tenant Context Crash — CLOSED ✅
+
+**Task ID:** `RENTAL_SYNC_AIRBNB_TENANT_CONTEXT_FIX`
+**Commit:** `7ae39e1f`
+**Baseline:** `7ae39e1f`
+**Evidence Level:** `TEST_VERIFIED`
+
+### Root Cause
+`TenantScope` global scope CLI context'te `WHERE 1=0` üretiyor → `Ilan::findOrFail()` `ModelNotFoundException` fırlatıyor.
+
+### Remediation
+`rental:sync-airbnb` bootstrapunda `resolveTenantForSync()` ile `withoutGlobalScopes()` → `join('tenants')` → `Tenant::find()` ile tenant context resolve ediliyor. `syncWithTenantContext()` lifecycle: resolve → setTenant → sync → finally clearTenant/restore. Pattern `ChannexBookingAcknowledger::resolveApiKey()` ile uyumlu.
+
+### Verification
+| Test Suite | Result |
+|---|---|
+| Queue Isolation (7 tests) | 7/7 PASS ✅ |
+| Rental Regression (7 tests) | 7/7 PASS ✅ |
+| Full Suite | 18 tests / 63 assertions PASS ✅ |
+
+### Security Boundary
+- Fail-closed: null tenant → error logged, failed counter incremented, no auth-based fallback
+- Cross-tenant bypass: yok
+- Pre-existing tenant context preservation: intentional CLI contract
+
+### Known Issues
+- SAB Gate 5 (Integrity Scan) FAIL — tüm ihlaller commit dışında (untracked worktree artifacts). Commit içindeki 2 dosyada sıfır ihlal.
+
+### Status
+`CANONICAL_CLEAN` — Ready for production deployment pending Ayhan Human Gate.
+
+### Next Priorities (Scheduler Forensic Session — 3 Closed, 3 Pending)
+| Priority | Task | Blocking Reason |
+|---|---|---|
+| 🔴 HIGH | `ranking:recalculate-all` | Unbounded `recalculateAll()` — no tenant filter |
+| 🔴 HIGH | `ai:scan-deals` | TenantScope conflict in CLI |
+| 🟠 MEDIUM | `cortex:hunt` | No pagination, unbounded query |
+
+---
+
+### 🔐 ESLESME-F01/F02 Tenant Boundary Remediation (2026-10-01)
+
+**BASE_HEAD:** e7a385934a40bf12db8f38237280f285a0a9487d
+
+**F01 (Cross-tenant create):**
+- Root cause: `'exists:table,id'` validator runs without TenantScope — cross-tenant FK IDs validate as "found"
+- Fix: After validator passes, Kisi/Ilan/Talep tenant_id checked against `TenantContextService::getTenant()->id`
+- `store()`: Kisi + Ilan + optional Talep must belong to current effective tenant
+- Fail closed: redirect with error, DB unchanged
+
+**F02 (Unscoped index/show/destroy):**
+- Root cause: Eslesme model has no BelongsToTenant trait — all queries completely unscoped
+- Fix: `index()`/`show()`/`destroy()` scoped through Ilan relationship (tenant-bearing anchor)
+- `whereHas('ilan', tenant_id = current)` closes cross-tenant read/destroy
+- show: 404 on foreign tenant Eslesme ID
+- destroy: redirect with error + DB unchanged on foreign tenant
+
+**Files Changed:**
+- `app/Http/Controllers/Admin/EslesmeController.php` (F01 + F02 remediation)
+- `tests/Feature/CRM/EslesmeTenantBoundarySecurityTest.php` (11 tests / 32 assertions — REGRESSION)
+
+**Regression:**
+| Test Suite | Result |
+|---|---|
+| EslesmeTenantBoundarySecurityTest | 11/11 PASS ✅ |
+| DemandMatchingTenantIsolationTest | 1/1 PASS ✅ |
+| DemandMatchingSagaTest | 3/3 PASS ✅ |
+| DemandMatchingIdempotencyTest | 1/1 PASS ✅ |
+| DemandMatchingEngineTest | 4/4 PASS ✅ |
+
+**Evidence:** TEST_VERIFIED
+**Production:** UNKNOWN
+**CDA-006:** OPEN — direct `tenant_id` on eslesmeler not implemented. Option A (relation-based scoping) used.
+**Status:** READY_FOR_INDEPENDENT_VERIFICATION: YES

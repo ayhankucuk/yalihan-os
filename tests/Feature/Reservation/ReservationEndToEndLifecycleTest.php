@@ -273,6 +273,7 @@ class ReservationEndToEndLifecycleTest extends TestCase
         $startDate = Carbon::tomorrow()->addDays(20)->format('Y-m-d');
         $endDate = Carbon::tomorrow()->addDays(22)->format('Y-m-d');
 
+        app(\App\Services\SaaS\TenantContextService::class)->setTenant($tenant1);
         $resTenant1 = $this->reservationService->createReservation(
             $tenant1Ilan->id,
             $startDate,
@@ -281,6 +282,7 @@ class ReservationEndToEndLifecycleTest extends TestCase
             $this->user->id
         );
 
+        app(\App\Services\SaaS\TenantContextService::class)->setTenant($tenant2);
         $resTenant2 = $this->reservationService->createReservation(
             $tenant2Ilan->id,
             $startDate,

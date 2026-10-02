@@ -21,6 +21,8 @@ use App\Enums\ReservationState;
 use App\Actions\Admin\Reservation\UpdateReservationStateAction;
 use App\Actions\Admin\Reservation\UpdateReservationAction;
 use App\Application\Shared\Services\TenantContextResolver;
+use App\Services\SaaS\TenantContextService;
+use Illuminate\Auth\Access\AuthorizationException;
 
 /**
  * Property Event API Controller
@@ -111,7 +113,7 @@ class PropertyEventApiController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'ilan_id' => 'required|exists:ilanlar,id',
+            'ilan_id' => 'required|integer',
             'event_type' => 'required|in:booking,blocked',
             'check_in' => 'required|date',
             'check_out' => 'required|date|after:check_in',
@@ -121,6 +123,21 @@ class PropertyEventApiController extends Controller
             'guest_count' => 'nullable|integer|min:1',
             'notes' => 'nullable|string',
         ]);
+
+        // 🛡️ Early tenant-aware ownership rejection for ilan_id (404 concealment)
+        $tenantService = app(TenantContextService::class);
+        $tenantId = null;
+        if ($tenantService->hasTenant()) {
+            $tenantId = $tenantService->getTenant()->id;
+        } elseif (auth()->check() && !empty(auth()->user()->tenant_id)) {
+            $tenantId = auth()->user()->tenant_id;
+        }
+
+        $ilanQuery = Ilan::query();
+        if ($tenantId !== null) {
+            $ilanQuery->where('tenant_id', $tenantId);
+        }
+        $ilan = $ilanQuery->findOrFail($validated['ilan_id']);
 
         try {
             $guestData = [
@@ -133,7 +150,7 @@ class PropertyEventApiController extends Controller
             ];
 
             $reservation = $this->reservationService->createReservation(
-                $validated['ilan_id'],
+                $ilan->id,
                 $validated['check_in'],
                 $validated['check_out'],
                 $guestData,
@@ -150,6 +167,11 @@ class PropertyEventApiController extends Controller
                 'event' => $reservation
             ], 201);
 
+        } catch (AuthorizationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 403);
         } catch (\Exception $e) {
             // Transaction failed or Conflict
             return response()->json([

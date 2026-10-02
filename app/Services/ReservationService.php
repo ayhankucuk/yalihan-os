@@ -14,8 +14,10 @@ use App\Models\Ilan;
 use App\Models\PropertyAvailability;
 use App\Models\PropertyReservation;
 use App\Services\Reservation\GuestArrivalReadinessService;
+use App\Services\SaaS\TenantContextService;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -52,6 +54,18 @@ class ReservationService
         $nights = $start->diffInDays($end);
 
         $ilan = Ilan::withoutGlobalScopes()->findOrFail($propertyId);
+
+        // 🛡️ TENANT BOUNDARY GUARD: Target property must belong to the effective tenant context
+        $tenantService = app(TenantContextService::class);
+        if ($tenantService->hasTenant()) {
+            $currentTenant = $tenantService->getTenant();
+
+            if ((int) $ilan->tenant_id !== (int) $currentTenant->id) {
+                throw new AuthorizationException(
+                    "Unauthorized tenant access: Target property does not belong to the current tenant."
+                );
+            }
+        }
 
         if (!$ilan->rental_enabled) {
             throw new Exception("This property is not enabled for rental.");

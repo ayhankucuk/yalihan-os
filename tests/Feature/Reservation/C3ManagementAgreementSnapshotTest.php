@@ -141,6 +141,7 @@ class C3ManagementAgreementSnapshotTest extends TestCase
         ]);
 
         $resA = $this->makeReservation($ilanA, 45, 47);
+        app(\App\Services\SaaS\TenantContextService::class)->setTenant($tenantB);
         $resB = $this->makeReservation($ilanB, 45, 47);
 
         $this->assertSnapshot($resA, ManagementModel::FULL_MANAGEMENT, 0.1500);

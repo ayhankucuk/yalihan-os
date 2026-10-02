@@ -335,9 +335,11 @@ class C1FinancialCompletionTest extends TestCase
         $endDate = Carbon::tomorrow()->addDays(2)->format('Y-m-d');
 
         // Create reservations
+        app(\App\Services\SaaS\TenantContextService::class)->setTenant($tenant1);
         $res1 = $this->reservationService->createReservation(
             $ilan1->id, $startDate, $endDate, ['guest_name' => 'Alpha Guest'], $this->user->id
         );
+        app(\App\Services\SaaS\TenantContextService::class)->setTenant($tenant2);
         $res2 = $this->reservationService->createReservation(
             $ilan2->id, $startDate, $endDate, ['guest_name' => 'Beta Guest'], $this->user->id
         );

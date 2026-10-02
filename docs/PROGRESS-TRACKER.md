@@ -1,8 +1,9 @@
 # Governance Progress Tracker
-**Son Güncelleme:** 2026-09-15 (Oturum 187 — İlan Yaşam Döngüsü & /admin/ilanlar/3 Lüks Kokpit / Sosyal CRM / WhatsApp Entegrasyonu)
-**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + 🧙‍♂️ **WIZARD DOMAIN REFACTOR COMPLETE (106/106 PASS)** + 🔗 **FAZ 4B EVENT LISTENER COMPLETE** + 📍 **POI STRANGLER FIG CERTIFIED** + 🤝 **CRM TALEP & DEMAND MATCHING SAGA CERTIFIED**
+**Son Güncelleme:** 2026-10-02 (Oturum 208 — REZ-FINDING-01: Reservation Multi-Tenant Boundary Remediation — 112/112 PASS)
+**Sistem Statüsü:** 🛡️ **TRUE SEALED** + 🎨 **Premium Mediterranean UI** + 🔍 **SEO Ready** + 🧹 **FA=0** + ✅ **SSOT Enum Uyumlu** + 🏗️ **CQRS Genişletildi** + ✅ **CI PIPELINE STABLE** + 📅 **ICS CALENDAR STABLE** + 🧹 **DX Guard & --dirty scan** + 🎨 **SVG Icon Catalog** + ✅ **AUTOMATED TESTS STABLE** + ✅ **ERA III COMPLETE** + ✅ **PRR CERTIFIED** + 📍 **LOCATION INTEL GREEN** + 🚀 **PRODUCT ERA ACTIVE** + 🧙‍♂️ **WIZARD DOMAIN REFACTOR COMPLETE (106/106 PASS)** + 🔗 **FAZ 4B EVENT LISTENER COMPLETE** + 📍 **POI STRANGLER FIG CERTIFIED** + 🤝 **CRM TALEP & DEMAND MATCHING SAGA CERTIFIED** + 🔁 **ILAN-05 REENTRANCY REMEDIATED** + 🛡️ **REZ-01 TENANT BOUNDARY CERTIFIED**
 | ERA III/IV / DOMAINS | Katman | Sprint | Status |
 |---------|--------|--------|--------|
+| **🏨 Reservation Domain** | **Multi-Tenant Boundary & Security Bypass Remediation (REZ-01)** | **Sprint 5.3** | **✅ CERTIFIED (112/112 PASS — Zero Security Bypass, Fail-Closed Boundary, R0-R4 Verified)** |
 | **🤝 CRM Subdomain** | **Talep Domain & Demand Matching Saga (RC2)** | **Sprint 5.2** | **✅ CERTIFIED (40/40 PASS — Multi-Tenant Isolation, Idempotency, Strangler Fig Parity)** |
 | **📍 Location Domain** | **POI Distance Calculation Strangler Fig Pilot** | **Sprint 5.1** | **✅ CERTIFIED (5/5 PASS — Legacy + Domain Use Case %100 Equivalence)** |
 | Observation | Cockpit | 4.6 | ✅ Certified |
@@ -2331,3 +2332,25 @@ The Repository Authority Pattern is now a **validated operational contract** pro
 | #20-25 | Oracle Cloud deploy | 🔴 | 3 |
 | #14 | 175 Context7 ihlali rename | 🟠 | 4 |
 | #26 | `bekci:pattern:sync` komutu | 🟡 | 4 |
+
+---
+
+### ✅ ESLESME-F01/F02 — Tenant Boundary Security (2026-10-01)
+
+**Durum:** ✅ KAPANDI
+**Tarih:** 2026-10-01
+**BASE_HEAD:** e7a385934a40bf12db8f38237280f285a0a9487d
+
+**Kapanan bulgular:**
+- F01: Cross-tenant Kisi/Ilan/Talep IDs ile Eslesme oluşturulabiliyordu → `store()`'da tenant_id kontrolü eklendi
+- F02: Tenant A, Tenant B'nin Eslesme kaydını görebiliyordu ve silebiliyordu → `index()`/`show()`/`destroy()` scoped
+
+**Değişen dosyalar:**
+- `app/Http/Controllers/Admin/EslesmeController.php`
+- `tests/Feature/CRM/EslesmeTenantBoundarySecurityTest.php` (11 test / 32 assertion — REGRESSION)
+
+**Regression:** 20/20 matching-related tests PASS ✅
+
+**CDA-006:** OPEN — direct `tenant_id` on eslesmeler pending. Option A (relation-based) used.
+
+**Not:** `EslesmeTenantBoundaryRuntimeTest` (untracked, eski vulnerability proof) artık FAIL — vulnerability kapatıldığı için.
