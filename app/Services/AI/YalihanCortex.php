@@ -1333,6 +1333,58 @@ class YalihanCortex
     }
 
     /**
+     * 🤖 AI İlan Başlığı Üretimi (Cortex Integration)
+     */
+    public function generateIlanTitle($ilan, array $options = []): array
+    {
+        $data = $ilan instanceof Ilan ? $ilan->toArray() : (array) $ilan;
+        if ($ilan instanceof Ilan) {
+            $data['features'] = $ilan->ozellikler()->pluck('name')->toArray();
+        }
+        if (isset($options['draft_features'])) {
+            $data['features'] = $options['draft_features'];
+        }
+        $data['tone'] = $options['tone'] ?? 'seo';
+
+        if (empty($data['lokasyon'])) {
+            $parts = array_filter([$data['mahalle'] ?? null, $data['ilce'] ?? null, $data['il'] ?? null]);
+            if (!empty($parts)) {
+                $data['lokasyon'] = implode(', ', $parts);
+            }
+        }
+
+        $provider = $options['provider'] ?? config('ai.default_provider', 'ollama');
+        $model = $options['model'] ?? config('ai.ollama_model', 'ollama');
+
+        try {
+            $titles = $this->ollamaService->generateTitle($data);
+            if (empty($titles)) {
+                return [
+                    'success' => false,
+                    'error' => 'Empty titles returned from AI service',
+                    'provider' => $provider,
+                    'model' => $model,
+                ];
+            }
+
+            return [
+                'success' => true,
+                'titles' => $titles,
+                'count' => count($titles),
+                'provider' => $provider,
+                'model' => $model,
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'provider' => $provider,
+                'model' => $model,
+            ];
+        }
+    }
+
+    /**
      * 🤖 AI İlan Açıklaması Üretimi (Cortex Integration)
      */
     public function generateIlanDescription($ilan, array $options = []): array
