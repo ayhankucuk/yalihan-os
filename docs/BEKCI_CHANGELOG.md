@@ -48,7 +48,17 @@ Two independent bugs were found and fixed:
 - Security contract verified: token from config(), tenant_id via trait (no injection)
 - Result: `scripts/tasks/EXT_07E_RESULTS.md`
 
-**STATUS: WhatsApp Tenant Ingress CLOSED**
+**EXT_07E Formal Acceptance: ACCEPT**
+- HEAD: 9b8aca27
+- CONTEXT_DURING_LEAD_WRITE: Tenant A ✅
+- PERSISTED_LEAD_TENANT_ID: Tenant A ✅
+- PERSISTED_MESSAGE_TENANT_ID: Tenant A ✅
+- PERSISTED_ACTIVITY_TENANT_ID: Tenant A ✅
+- HTTP_FACADE_BUG_REAL: FIXED
+- L1-L6: PASS | S1-S5: PASS
+- FAILURES: 0 | ERRORS: 0
+
+**STATUS: WhatsApp Tenant Ingress CLOSED** ✅
 
 ---
 
