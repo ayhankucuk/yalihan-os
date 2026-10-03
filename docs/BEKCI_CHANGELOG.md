@@ -42,6 +42,14 @@ Two independent bugs were found and fixed:
 - `LeadTenantBoundaryTest` → 10/10 PASS (29 assertions)
 - No regression in other webhook/CRM tests
 
+**EXT_07E Post-Commit Verification: PASS**
+- Commit integrity verified: 3 files, 831 insertions, 1 deletion
+- FQCN fix correct; no other unqualified `Http::` references in API controllers
+- Security contract verified: token from config(), tenant_id via trait (no injection)
+- Result: `scripts/tasks/EXT_07E_RESULTS.md`
+
+**STATUS: WhatsApp Tenant Ingress CLOSED**
+
 ---
 
 ## Oturum 208 — 2026-10-02 | REZ-FINDING-01: Reservation Multi-Tenant Boundary Remediation & Independent Verification
