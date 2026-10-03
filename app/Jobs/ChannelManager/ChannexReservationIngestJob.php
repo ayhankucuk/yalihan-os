@@ -3,7 +3,10 @@
 namespace App\Jobs\ChannelManager;
 
 use App\DTOs\ChannelManager\ChannexReservationPayload;
+use App\Queue\Contracts\TenantAwareJobInterface;
+use App\Queue\Middleware\RestoreTenantContext;
 use App\Services\ChannelManager\ChannexRevisionProcessor;
+use App\Services\SaaS\TenantContextService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -11,7 +14,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class ChannexReservationIngestJob implements ShouldQueue
+class ChannexReservationIngestJob implements ShouldQueue, TenantAwareJobInterface
 {
     use Dispatchable, Queueable, InteractsWithQueue, SerializesModels;
 
@@ -22,6 +25,21 @@ class ChannexReservationIngestJob implements ShouldQueue
         public readonly ChannexReservationPayload $payload,
         public readonly int                       $tenantId,
     ) {}
+
+    public function getTenantId(): ?int
+    {
+        return $this->tenantId;
+    }
+
+    public function getUserId(): ?int
+    {
+        return null;
+    }
+
+    public function middleware(): array
+    {
+        return [new RestoreTenantContext(app(TenantContextService::class))];
+    }
 
     public function handle(ChannexRevisionProcessor $processor): void
     {

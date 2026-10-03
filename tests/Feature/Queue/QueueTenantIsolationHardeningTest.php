@@ -59,6 +59,9 @@ class QueueTenantIsolationHardeningTest extends TestCase
             \App\Jobs\SendNotificationJob::class,
             \App\Jobs\HandleUrgentMatch::class,
             \App\Jobs\AI\GenerateDealPredictionsJob::class,
+            \App\Jobs\ChannelManager\ChannexReservationIngestJob::class,
+            \App\Jobs\ChannelManager\ChannexReservationModifyJob::class,
+            \App\Jobs\ChannelManager\ChannexReservationCancelJob::class,
         ];
 
         foreach ($targetJobs as $jobClass) {

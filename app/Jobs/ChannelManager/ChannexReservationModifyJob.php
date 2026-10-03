@@ -2,7 +2,10 @@
 
 namespace App\Jobs\ChannelManager;
 
+use App\Queue\Contracts\TenantAwareJobInterface;
+use App\Queue\Middleware\RestoreTenantContext;
 use App\Services\ChannelManager\ChannexReservationIngestService;
+use App\Services\SaaS\TenantContextService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -14,7 +17,7 @@ use Illuminate\Support\Facades\Log;
  * ChannexReservationModifyJob — Async modification ingest.
  * CHANNEL_MANAGER_PROVIDER Wave 3 — ADR-008
  */
-class ChannexReservationModifyJob implements ShouldQueue
+class ChannexReservationModifyJob implements ShouldQueue, TenantAwareJobInterface
 {
     use Dispatchable, Queueable, InteractsWithQueue, SerializesModels;
 
@@ -29,6 +32,21 @@ class ChannexReservationModifyJob implements ShouldQueue
         public readonly string $newEndDate,
         public readonly array  $guestData = [],
     ) {}
+
+    public function getTenantId(): ?int
+    {
+        return $this->tenantId;
+    }
+
+    public function getUserId(): ?int
+    {
+        return null;
+    }
+
+    public function middleware(): array
+    {
+        return [new RestoreTenantContext(app(TenantContextService::class))];
+    }
 
     public function handle(ChannexReservationIngestService $ingestService): void
     {
