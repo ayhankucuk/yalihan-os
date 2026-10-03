@@ -46,7 +46,7 @@ class EslesmeController extends AdminController
             'kisi:id,ad,soyad,telefon,email',
             'danisman:id,name,email',
         ])
-            ->select(['id', 'ilan_id', 'kisi_id', 'danisman_id', 'eslesme_durumu', 'one_cikan', 'created_at']);
+            ->select(['id', 'ilan_id', 'kisi_id', 'danisman_id', 'eslesme_durumu', 'created_at']);
 
         // ✅ F02-R REMEDIATION: All three relation anchors must match current tenant.
         //   C1/C2/C3: Ilan=TenantA but Kisi/Talep=TenantB rows must NOT be accessible.
@@ -161,7 +161,6 @@ class EslesmeController extends AdminController
             'talep_id' => 'nullable|exists:talepler,id',
             'danisman_id' => 'nullable|exists:users,id',
             'eslesme_durumu' => 'required|string|in:Aktif,Beklemede,İptal,Tamamlandı',
-            'one_cikan' => 'nullable|boolean',
             'notlar' => 'nullable|string|max:1000',
             'eslesme_tarihi' => 'nullable|date',
         ]);

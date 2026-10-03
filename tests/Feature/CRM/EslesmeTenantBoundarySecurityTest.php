@@ -91,14 +91,10 @@ class EslesmeTenantBoundarySecurityTest extends TestCase
                     $table->unsignedInteger('skor')->default(0)->after('eslesme_durumu');
                 });
             }
-            if (!Schema::hasColumn('eslesmeler', 'one_cikan')) {
-                Schema::table('eslesmeler', function ($table) {
-                    $table->boolean('one_cikan')->default(false)->after('skor');
-                });
-            }
+            // @sab-ignore: one_cikan column not in canonical schema — controller no longer references it (CDH-001 fix)
             if (!Schema::hasColumn('eslesmeler', 'notlar')) {
                 Schema::table('eslesmeler', function ($table) {
-                    $table->text('notlar')->nullable()->after('one_cikan');
+                    $table->text('notlar')->nullable()->after('eslesme_detaylari');
                 });
             }
             if (!Schema::hasColumn('eslesmeler', 'eslesme_tarihi')) {
