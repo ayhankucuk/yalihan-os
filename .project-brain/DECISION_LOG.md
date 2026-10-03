@@ -523,3 +523,144 @@ Model ↔ Migration ↔ Relation Contract Guard backlog adayı, CANONICAL_BOOTST
 
 **Evidence:** Ayhan onayı 2026-09-28 + DECISION_LOG.md commit. Kaynak: TENANT_CANONICAL_AUTHORITY_RESOLVE_01 forensic sonucu (CDA-006)
 
+---
+
+## BEKCI v3 5-CAPABILITY ARCHITECTURE — 2026-10-03
+
+**Session:** BEKCI_ENFORCEMENT_REALITY_CHECK_01 + AYHAN_ARCHITECTURE_FEEDBACK
+**Kaynak:** Ayhan'ın 5 canonical Bekçi capability vizyonu + 10 yeni koruma önerisi
+
+### 1. Mimari Kararlar
+
+**Nihai Cümle (Ayhan):**
+> "Bir değişiklik production'a ulaşmadan önce Bekçi 'ne değişti, neyi etkiliyor, hangi canonical authority'ye bağlı, hangi invariant'ları geçti, hangi istisnaları kullandı ve production'ın hangi execution surfaces'ında hangi release çalışıyor?' sorularının tamamına makine-okunabilir cevap verebilmeli."
+
+**Değişiklik Yapılmadı:**
+- Silent Observer: Auto-block KESİNLİKLE YOK
+- Deployment Readiness Score: Boolean gates, yüzde DEĞİL
+- FULL_BLOCKING: Sadece zero legitimate legacy exceptions durumunda
+- Rename/backup varsayılan DEĞİL: ADDITIVE first, DESTRUCTIVE last
+
+### 2. Yeni Kavramlar
+
+| Kavram | Kontrat | Kapasite |
+|--------|---------|----------|
+| Change Impact Graph | "Bu değişiklik başka neyi etkileyebilir?" | Architecture Integrity |
+| Execution Boundary Registry | Default + explicit exception model | Tenant Contracts |
+| Canonical Exception Registry | CE-001 ID'li, scoped, expires'li | Guard Integrity |
+| Consumer Retirement Gate | Static+runtime usage verification öncesi cleanup | Release Integrity |
+| Web/Worker/Scheduler Parity | Long-lived process release identity | Release Integrity |
+
+### 3. Execution Boundary Registry Kontratı
+
+```yaml
+SURFACE: QUEUE
+  default:
+    tenant_context: REQUIRED_FOR_TENANT_BOUND_WORK
+    cleanup: REQUIRED
+    correlation: REQUIRED
+  contracts:
+    tenant_bound_job: TenantAwareJobInterface, RestoreTenantContext
+  exceptions:
+    - SystemRankingJob: system-wide
+    - CacheWarmupJob: infrastructure
+
+SURFACE: HTTP
+  default:
+    tenant_context: REQUIRED
+    auth: REQUIRED
+  exceptions:
+    - /health: NONE
+    - /api/v1/public/*: NONE
+```
+
+### 4. Rule Maturity Ladder
+
+```
+v1.0 DISCOVERY        → Reports only, no blocking
+v1.1 OBSERVATION      → Reports, precision measured
+v1.2 BASELINED        → NEW_CODE_ONLY blocking
+v2.0 REGRESSION       → ALL code blocking (except legacy exceptions)
+v2.1 FULL_BLOCKING    → Only when zero legitimate legacy exceptions
+```
+
+**Rule Metadata:**
+```yaml
+RULE_ID: FORBIDDEN_STATUS
+VERSION: v1.2
+MATURITY: BASELINED
+PRECISION: HIGH
+BASELINE: 16 violations
+EXCEPTIONS: [CE-001, CE-002]
+SELF_TEST_STATUS: PASS
+BLOCKING_POLICY: NEW_CODE_ONLY
+LAST_VERIFIED_SHA: 4287be8e
+```
+
+### 5. CDA-007 Cleanup Stratejisi
+
+```
+PRODUCTION READ-ONLY DISCOVERY
+            ↓
+DATA/WRITERS/READERS/USAGE MAP
+            ↓
+CANONICAL AUTHORITY DECISION
+            ↓
+ADDITIVE CONVERGENCE (first)
+            ↓
+ALL CONSUMERS → CANONICAL
+            ↓
+REGRESSION + INDEPENDENT VERIFY
+            ↓
+OBSERVATION WINDOW
+            ↓
+LEGACY COLUMN REMOVAL CANDIDATE
+            ↓
+HUMAN GATE
+            ↓
+DROP (last)
+```
+
+**Şu anda hiçbir legacy kolona dokunmuyoruz. Production schema UNKNOWN.**
+
+### 6. Consumer Retirement Gate Kontratı
+
+```yaml
+LEGACY_ARTIFACT: tenants.status
+STATIC_READERS: 2
+ex: HuntOpportunitiesCommand + TenantSeeder
+STATIC_WRITERS: 1
+ex: TenantSeeder
+RUNTIME_OBSERVED: 0  # Silent Observer
+JOBS: 0
+COMMANDS: 0
+SEEDERS: 1
+TEST_FIXTURES: 0
+RETIREMENT_ELIGIBLE: NO
+REASON: "HuntOpportunitiesCommand still uses status"
+```
+
+### 7. Contract Coverage Map
+
+```yaml
+TENANT_BOUNDARY:
+  HTTP:      COVERED
+  WEBHOOK:   COVERED
+  QUEUE:     PARTIAL  # TenantAwareJobInterface ✓, cleanup ?
+  CLI:       UNKNOWN
+  SCHEDULER: UNKNOWN
+  HERMES:    COVERED
+  IMPORT:    LIMITED
+```
+
+### 8. Uygulama Öncelik Sırası (Ayhan)
+
+1. NOW: Task 10 Production Audit (SSH)
+2. NEXT: CDA-007 Read-only Discovery
+3. NEXT: Guard Integrity (Blueprint precision, self-test, maturity, fingerprints, ratchet, exception registry)
+4. NEXT: Change Integrity (Task Boundary, Dirty Tree, Ownership)
+5. NEXT: Architecture Integrity (Impact Graph, Drift Propagation, Contract checks, Boundary Registry)
+6. NEXT: Release Integrity (Fingerprint, Parity, Schema Classification, Consumer Retirement, Deploy State Machine)
+7. LATER: Runtime Integrity (Exception/Fallback provenance, Silent Observer)
+8. LATER: Agent Ergonomics (MCP discovery, capability handshake)
+

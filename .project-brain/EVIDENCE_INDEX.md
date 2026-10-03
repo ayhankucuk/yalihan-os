@@ -2119,3 +2119,122 @@ Underlying legacy mutation issue (`mapTalepData` overwrites omitted fields with 
 `CANONICAL_CLEAN` — CRM-03 task complete. Legacy mutation bug logged as separate issue for Ayhan decision.
 Production deployment için Ayhan Human Gate bekleniyor. Monitor `rental:sync-airbnb` scheduler runtime after deploy.
 **Decision needed:** Ayhan human gate
+
+---
+
+## [2026-10-03] BEKCI_ENFORCEMENT_REALITY_CHECK_01 + AYHAN_ARCHITECTURE_FEEDBACK
+
+**Session:** BEKCI_ENFORCEMENT_REALITY_CHECK_01 + AYHAN_ARCHITECTURE_FEEDBACK
+**Evidence Level:** `DOCUMENTED`
+**Report:** `.project-brain/BEKCI_ARCHITECTURE.md`
+
+### Mimari Kararlar
+
+| Karar | Değer | Referans |
+|-------|-------|--------|
+| Bekçi 5-Capability Architecture | Kabul | .project-brain/BEKCI_ARCHITECTURE.md |
+| Change Impact Graph | Architecture Integrity altında | Ayhan |
+| Execution Boundary Registry | Default + Exception model | Ayhan |
+| Guard Maturity Ladder | v1.0→v2.1 | Ayhan |
+| Canonical Exception Registry | Guard gevşetmeden exception yönetimi | Ayhan |
+| Consumer Retirement Gate | Legacy artifact kaldırma öncesi verification | Ayhan |
+| Web/Worker/Scheduler Parity | Long-lived process restart requirement | Ayhan |
+| Silent Observer | Auto-block YOK | Ayhan |
+| Deployment Readiness Score | Authority DEĞİL (boolean gates) | Ayhan reddetti |
+
+### Ayhan'ın Eklediği Yeni Kavramlar
+
+1. **Change Impact Graph:** "Bu değişiklik başka neyi etkileyebilir?" — implementation öncesi
+2. **Execution Boundary Registry:** QUEUE/HTTP/CLI surface bazlı contract — default + exception model
+3. **Canonical Exception Registry:** CE-001 gibi ID'li, scoped, expires'li exception tracking
+4. **Consumer Retirement Gate:** Legacy artifact kaldırma öncesi static+runtime usage verification
+5. **Web/Worker/Scheduler Parity:** Long-lived process release identity kontrolü
+
+### Ayhan'ın Düzeltmeleri
+
+| Orijinal | Düzeltme | Neden |
+|----------|----------|-------|
+| FULL_BLOCKING = otomatik hedef | v2.1 sadece zero legacy exceptions durumunda | Bazı legacy violation bilinçli olabilir |
+| HTTP → TenantRequired YES | Default + explicit exception | Public/global route olabilir |
+| Rename → backup varsayılan | ADDITIVE first, DESTRUCTIVE last | Consumer kırılabilir |
+| Deployment Readiness Score = % | Boolean gates | Yüzde scoring yanıltıcı |
+
+### CDA-007 Cleanup Stratejisi (Karar Bekliyor)
+
+```
+PRODUCTION READ-ONLY DISCOVERY
+            ↓
+DATA/WRITERS/READERS/USAGE MAP
+            ↓
+CANONICAL AUTHORITY DECISION
+            ↓
+ADDITIVE CONVERGENCE
+            ↓
+ALL CONSUMERS → CANONICAL
+            ↓
+REGRESSION + INDEPENDENT VERIFY
+            ↓
+OBSERVATION WINDOW
+            ↓
+LEGACY COLUMN REMOVAL CANDIDATE
+            ↓
+HUMAN GATE
+            ↓
+DROP
+```
+
+**Şu anda:** HİÇBİR legacy kolona dokunmuyoruz. Production schema UNKNOWN.
+
+### Nihai Mimari — 5 Capability
+
+```
+BEKÇİ
+├── 1. CHANGE INTEGRITY
+│   ├── Task Boundary
+│   ├── Dirty Tree
+│   └── Logical Ownership
+├── 2. ARCHITECTURE INTEGRITY
+│   ├── Canonical Authority
+│   ├── Change Impact Graph ← new
+│   ├── Drift Propagation
+│   ├── Schema/Model/Seeder Contract
+│   ├── DI Contracts
+│   ├── State Contracts
+│   └── Tenant Contracts
+│       └── Execution Boundary Registry ← new
+├── 3. GUARD INTEGRITY
+│   ├── Self-test Fixtures
+│   ├── Rule Maturity Ladder ← new
+│   ├── Violation Fingerprints
+│   ├── Ratchet Baseline
+│   └── Canonical Exception Registry ← new
+├── 4. RUNTIME INTEGRITY
+│   ├── Exception Provenance
+│   ├── Fallback Provenance
+│   ├── Execution Boundaries
+│   └── Silent Observer ← Ayhan: ASLA auto-block
+└── 5. RELEASE INTEGRITY
+    ├── Schema Evolution Classification
+    ├── Release Fingerprint
+    ├── Web/Worker/Scheduler Parity ← new
+    ├── Consumer Retirement Gate ← new
+    └── Deployment State Machine
+```
+
+### Ayhan'ın Son Söylediği Nihai Cümle
+
+> "Bir değişiklik production'a ulaşmadan önce Bekçi 'ne değişti, neyi etkiliyor, hangi canonical authority'ye bağlı, hangi invariant'ları geçti, hangi istisnaları kullandı ve production'ın hangi execution surfaces'ında hangi release çalışıyor?' sorularının tamamına makine-okunabilir cevap verebilmeli."
+
+**Uygulama Öncelik Sırası (Ayhan):**
+
+1. NOW: Task 10 Production Audit (SSH)
+2. NEXT: CDA-007 Read-only Discovery
+3. NEXT: Guard Integrity
+4. NEXT: Change Integrity
+5. NEXT: Architecture Integrity
+6. NEXT: Release Integrity
+7. LATER: Runtime Integrity
+8. LATER: Agent Ergonomics (MCP)
+
+### Status
+`DOCUMENTED` — Bekçi v3 mimarisi tamamlandı. Uygulama sırası belirlendi. Production audit + CDA-007 discovery bekleniyor.
