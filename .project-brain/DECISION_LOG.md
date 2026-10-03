@@ -985,3 +985,57 @@ Bu kontratlar Guard Integrity implementation başladığında uygulanacak.
 
 **Bekçi v3.1 yok. Bekçi v3 + implementation contracts var.**
 
+---
+
+## BEKÇİ v3 — DESIGN CLOSED / EXECUTION OPEN (2026-10-03)
+
+**Session:** Ayhan Architecture Review Round 2 — FINAL
+**Commit:** 84409735
+
+### Evidence Classification
+
+| Artifact | Evidence Level |
+|----------|----------------|
+| Bekçi v3 architecture + implementation contracts | `REPO_VERIFIED` |
+| Bekçi v3 capability implementation'ları | `UNKNOWN` / `NOT_STARTED` |
+| Production davranışı | `UNKNOWN` |
+
+### Tasarım Kapanış Kararı
+
+> "STOP DESIGN / START EXECUTION. Yeni öneri eklemiyorum."
+
+**84409735 artık implementation'ın contract referansı:**
+- Self-tests
+- Rule maturity
+- Fingerprint
+- Ratchet
+- Exception registry
+- Canonical Result Envelope
+
+### Implementation Sırası (Değişmedi)
+
+```
+Task 10 Production Read-Only Audit
+         ↓
+   (SSH erişimi resume)
+         ↓
+CDA-007 Read-Only Discovery
+         ↓
+   (consumer/data haritası çıkınca)
+         ↓
+Guard Integrity implementation
+```
+
+### Hard Stops
+
+1. **Task 10:** Audit tamamlanıp compatibility sonucu çıkmadan migration/deploy YAPILMAYACAK
+2. **CDA-007:** Status/durum/aktiflik_durumu için gerçek consumer/data haritası çıkmadan legacy kolonlara dokunulmayacak
+3. **Guard Integrity:** 84409735 contract referansı olarak uygulanacak
+
+### Durum
+
+```
+BEKÇİ v3 DESIGN   ████████████████████ 100% — CLOSED
+BEKÇİ v3 EXECUTION                  █░░░░░░░░░░░░░░░░  0% — STARTING
+```
+
