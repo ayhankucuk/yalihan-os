@@ -655,6 +655,8 @@ TENANT_BOUNDARY:
 
 ### 8. Uygulama Öncelik Sırası (Ayhan)
 
+8. Uygulama Öncelik Sırası (Ayhan)
+
 1. NOW: Task 10 Production Audit (SSH)
 2. NEXT: CDA-007 Read-only Discovery
 3. NEXT: Guard Integrity (Blueprint precision, self-test, maturity, fingerprints, ratchet, exception registry)
@@ -663,4 +665,323 @@ TENANT_BOUNDARY:
 6. NEXT: Release Integrity (Fingerprint, Parity, Schema Classification, Consumer Retirement, Deploy State Machine)
 7. LATER: Runtime Integrity (Exception/Fallback provenance, Silent Observer)
 8. LATER: Agent Ergonomics (MCP discovery, capability handshake)
+
+---
+
+## BEKCI v3 — IMPLEMENTATION CONTRACTS (2026-10-03)
+
+**Session:** Ayhan Architecture Review Round 2
+**Kaynak:** 5 öneri karar toplantısı
+**Prensip:** Yeni mimari doküman YOK. Mevcut v3'e implementation contract olarak absorbe edilecek.
+
+### Mimari Özet Pipeline
+
+```
+BEKÇİ v3
+CDA / existing evidence
+       ↓
+Change Impact View (READ-ONLY)
+       ↓
+Capability Evidence Pipeline
+       ↓
+Evidence-aware Guard Result
+       ↓
+Canonical Result Envelope
+       ↓
+CI / MCP / Release consumers
+```
+
+**Yeni engine YOK. Yeni authority YOK. Yeni paralel scanner YOK.**
+
+### Karar Tablosu
+
+| Öneri | Karar | Gerekçe |
+|-------|-------|---------|
+| #1 CDA + Impact Graph | ✅ KABUL | Paralel authority yaratmayı önler |
+| #2 Capability Data Flow | ✅ KABUL | 5 capability'yi gerçek sistem haline getirir |
+| #3 3-layer Precision | ⚠️ REVİZE | Katman bazlı evidence gerekli, matematiksel ağırlık gereksiz |
+| #4 Maturity Formula | ❌ REDDET | Sayısal eşikler maturity gerçeğini temsil etmiyor |
+| #5 Structured Output | ✅ KABUL | CI/MCP/release aynı sonucu tüketebilmeli |
+
+---
+
+### #1 — Change Impact View Kontratı
+
+**Yanlış:** Ayrı analyzer/engine olarak Impact Graph
+**Doğru:** READ-ONLY OUTPUT VIEW — mutation yapmaz, finding üretmez
+
+**Kaynaklar (hepsi mevcut):**
+
+```yaml
+SOURCES:
+  - Canonical Discovery / CDA
+  - Migration Diff
+  - Schema Drift
+  - Changed Files (git diff)
+  - AST Dependency Evidence
+
+CONSTRAINTS:
+  - READ_ONLY: true
+  - MUTATION: false
+  - FINDING_AUTHORITY: false
+  - SECONDARY_TO: [CDA, Migration Audit, Sentinel, Doctor]
+```
+
+**Kritik:** Yoksa birkaç ay sonra CDA başka şey, Impact Graph başka şey söyleyebilir.
+
+---
+
+### #2 — Capability Evidence Pipeline (EN ÖNEMLİ MİMARİ EKSİK)
+
+**Prensip:** 5 capability bağımsız araçlar DEĞİL — tek evidence pipeline.
+
+```yaml
+CHANGE INTEGRITY
+  outputs:
+    - changed_paths: Set<path>
+    - declared_scope: ScopeContract
+    - out_of_scope_changes: Set<path>
+    - change_fingerprint: string
+  CONSTRAINTS:
+    - affected_tenants: PROHIBITED  # statik çıkarım yapamaz
+
+ARCHITECTURE INTEGRITY
+  consumes: [changed_paths, declared_scope, out_of_scope_changes, change_fingerprint]
+  outputs:
+    - affected_domains: Set<domain>
+    - affected_contracts: Set<contract_id>
+    - affected_surfaces: Set<SURFACE>  # HTTP/QUEUE/CLI/HERMES
+    - canonical_authorities: Map<artifact, authority>
+    - drift_candidates: Set<CDA>
+    - unknown_dependencies: Set<path>
+
+GUARD INTEGRITY
+  consumes: [affected_domains, affected_contracts, canonical_authorities]
+  outputs:
+    - violations: Set<Violation>
+    - exceptions: Set<Exception>
+    - maturity: MaturityLevel
+    - evidence: EvidenceMap
+    - blocking_status: BLOCKING_STATUS
+
+RELEASE INTEGRITY
+  consumes:
+    - verified gate results: [change_integrity, architecture_integrity, guard_integrity]
+    - schema compatibility: SchemaCompatibility
+    - release identity: ReleaseIdentity
+    - worker_web_scheduler_parity: ParityCheck
+  outputs:
+    - decision: PASS | BLOCKED | HUMAN_GATE_REQUIRED
+
+RUNTIME INTEGRITY
+  role: FEEDBACK_LOOP  # pipeline'ın sonunda DEĞİL
+  outputs:
+    - runtime_evidence: RuntimeEvidence
+  feeds_back_to: [architecture_integrity, release_integrity]
+```
+
+**Prensip:** Runtime Integrity "sonraki stage" DEĞİL — production/runtime evidence üretip Architecture ve Release Integrity'ye geri besleme yapar.
+
+---
+
+### #3 — Evidence-Level Precision Metadata (REVİZE EDİLDİ)
+
+**Yanlış:** Ağırlıklı matematiksel skor (0.8, 0.6...)
+**Doğru:** Katman bazlı evidence type + confidence + blocking eligibility
+
+**Örnek — FORBIDDEN_STATUS_FIELD:**
+
+```yaml
+RULE: FORBIDDEN_STATUS_FIELD
+
+MODEL:
+  evidence: AST_INVARIANT
+  level: REPO_VERIFIED
+  confidence: VALIDATED
+
+MIGRATION:
+  evidence: DATABASE_SCHEMA_CONTRACT
+  level: REPO_VERIFIED
+  confidence: LIMITED  # Seeder ≠ physical schema
+
+SEEDER:
+  evidence: AST_INVARIANT
+  level: REPO_VERIFIED
+  confidence: DISCOVERY  # Henüz production doğrulaması yok
+
+RUNTIME:
+  evidence: TOOL_RUNTIME
+  level: UNKNOWN  # Production schema bilinmiyor
+
+BLOCKING_ELIGIBLE: NEW_REGRESSION_ONLY
+```
+
+**Kritik Nokta — STATIC MATCH ≠ RUNTIME VULNERABILITY:**
+
+Bu, Filterable vakasında yaşanan hatayı önler. Blueprint'te `status` görülür — ama runtime'da farklı field'a map edilmiş olabilir.
+
+**Blocking Eligibility Levels:**
+
+```yaml
+BLOCKING_ELIGIBLE:
+  NONE              # Discovery — report only
+  NEW_ONLY          # v1.2 — yeni kod block
+  NEW_REGRESSION    # v2.0 — yeni + regression block
+  ALL               # v2.1 — tüm kod block (zero legacy exceptions şartı)
+```
+
+---
+
+### #4 — Maturity Promotion Criteria (RED — FORMULA DEĞİL)
+
+**Red Gerekçesi:**
+
+```yaml
+# YANLIŞ:
+IF violations >= 50 → v2.0
+
+# Neden yanlış:
+50 violation = rule olgun demek DEĞİL
+50 violation = rule çok kötü durumda olabilir
+Blueprint örneği bunun kanıtı
+```
+
+**Doğru — Promotion Criteria (Invariant-Based):**
+
+```yaml
+PROMOTION_REQUIREMENTS:
+
+DISCOVERY → OBSERVATION:
+  - SELF_TESTS_EXIST: true
+  - FALSE_POSITIVES_CLASSIFIED: >= 80%
+
+OBSERVATION → BASELINED:
+  - SELF_TESTS_PASS: true
+  - FALSE_POSITIVES_CLASSIFIED: 100%
+  - KNOWN_EXCEPTIONS_EXPLICIT: true
+  - BASELINE_STABLE: true  # violations > %5 değişim yok
+
+BASELINED → NEW_REGRESSION_BLOCKING:
+  - DETERMINISTIC_OUTPUT: true
+  - REPRESENTATIVE_FIXTURES_PASS: true
+  - NO_UNKNOWN_CRITICAL_BEHAVIOR: true
+
+NEW_REGRESSION_BLOCKING → DOMAIN_BLOCKING:
+  - DOMAIN_COVERAGE: COMPLETE
+  - LEGACY_EXCEPTIONS_STABLE: true
+
+DOMAIN_BLOCKING → FULL_BLOCKING:
+  - LEGACY_EXCEPTIONS: 0
+  - ALL_CONSUMERS_MIGRATED: true
+  - PRODUCTION_VERIFIED: true
+```
+
+**Prensip:** Maturity = formül DEĞİL, invariant karşılandığında promotion.
+
+---
+
+### #5 — Canonical Result Envelope (ZORUNLU)
+
+**Prensip:** Tek JSON dosyası YENİ AUTHORITY DEĞİL — tüm consumer'ların tükettiği kontrat.
+
+```yaml
+BEKCI_RESULT:
+  run_id: string
+  timestamp: ISO8601
+  source_sha: string
+  environment: LOCAL | STAGING | PRODUCTION
+  mode: DISCOVERY | OBSERVATION | BLOCKING
+
+  capabilities:
+    change_integrity:
+      status: PASS | FAIL
+      outputs: {...}
+    architecture_integrity:
+      status: PASS | FAIL
+      outputs: {...}
+    guard_integrity:
+      status: PASS | FAIL
+      outputs: {...}
+    runtime_integrity:
+      status: PASS | FAIL | SKIPPED
+      outputs: {...}
+    release_integrity:
+      status: PASS | FAIL
+      outputs: {...}
+
+  findings:
+    - rule_id: string
+      fingerprint: string
+      evidence_level: REPO_VERIFIED | TEST_VERIFIED | PRODUCTION_VERIFIED | DOCUMENTED | INFERRED | UNKNOWN
+      evidence_type: AST_INVARIANT | DATABASE_SCHEMA_CONTRACT | TOOL_RUNTIME | MANUAL_AUDIT
+      maturity: DISCOVERY | OBSERVATION | BASELINED | NEW_REGRESSION | DOMAIN | FULL_BLOCKING
+      blocking: true | false
+      exception_id: string | null
+      location: path:line
+
+  unknowns:
+    - type: PRODUCTION_SCHEMA | RUNTIME_BEHAVIOR | DEPENDENCY
+      description: string
+      severity: BLOCKING | WARNING
+
+  decision:
+    PASS | BLOCKED | HUMAN_GATE_REQUIRED
+    reasons:  # BLOCKED veya HUMAN_GATE_REQUIRED durumunda
+      - code: string
+        message: string
+        requires_resolution: boolean
+
+  HUMAN_GATE_REQUIRED:
+    triggers:
+      - PRODUCTION_SCHEMA_UNKNOWN
+      - RUNTIME_BEHAVIOR_UNVERIFIED
+      - CRITICAL_UNKNOWN_DEPENDENCY
+    authorization: Ayhan | System | Human
+```
+
+**Kritik Karar — CONDITIONAL KULLANILMAZ:**
+
+```yaml
+# YANLIŞ:
+decision: CONDITIONAL
+
+# DOĞRU:
+decision: BLOCKED
+reason:
+  code: PRODUCTION_SCHEMA_UNKNOWN
+  message: "..."
+
+# VEYA:
+decision: HUMAN_GATE_REQUIRED
+triggers:
+  - PRODUCTION_SCHEMA_UNKNOWN
+```
+
+**Prensip:** Fail-closed. Çözülmemiş koşul varsa BLOCKED. İnsan override gerekirse HUMAN_GATE_REQUIRED.
+
+---
+
+### Uygulama Sırası (Değişmedi)
+
+```
+Task 10 → CDA-007 discovery → Guard Integrity implementation
+                                      ↓
+                    Contract'lar burada uygulanacak:
+                    - #2 Capability Evidence Pipeline
+                    - #5 Canonical Result Envelope
+                    - #3 Evidence-Level Precision (revize)
+                    - #1 Change Impact View (CDA'ya entegre)
+```
+
+**Şu anda YOK: Yeni mimari doküman, v3.1, v3.2**
+
+Bu kontratlar Guard Integrity implementation başladığında uygulanacak.
+
+---
+
+### En Kritik Çıkarım (Ayhan)
+
+> "#2 Capability Evidence Pipeline ve #5 Canonical Result Envelope, Bekçi'yi gerçekten parçalı script koleksiyonundan tek bir sisteme dönüştürecek iki unsur."
+
+**Bekçi v3.1 yok. Bekçi v3 + implementation contracts var.**
 

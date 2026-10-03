@@ -2238,3 +2238,73 @@ BEKÇİ
 
 ### Status
 `DOCUMENTED` — Bekçi v3 mimarisi tamamlandı. Uygulama sırası belirlendi. Production audit + CDA-007 discovery bekleniyor.
+
+---
+
+## [2026-10-03] BEKCI v3 — IMPLEMENTATION CONTRACTS
+
+**Session:** Ayhan Architecture Review Round 2
+**Evidence Level:** `DOCUMENTED`
+**Report:** `.project-brain/DECISION_LOG.md` → `BEKCI v3 — IMPLEMENTATION CONTRACTS`
+
+### Karar Özeti
+
+| Öneri | Karar |
+|-------|-------|
+| #1 CDA + Impact Graph | ✅ KABUL |
+| #2 Capability Data Flow | ✅ KABUL |
+| #3 3-layer Precision | ⚠️ REVİZE (ağırlık DEĞİL, evidence type + confidence) |
+| #4 Maturity Formula | ❌ REDDET |
+| #5 Structured Output | ✅ KABUL |
+
+### Mimari Özet Pipeline
+
+```
+BEKÇİ v3
+CDA / existing evidence
+       ↓
+Change Impact View (READ-ONLY)
+       ↓
+Capability Evidence Pipeline
+       ↓
+Evidence-aware Guard Result
+       ↓
+Canonical Result Envelope
+       ↓
+CI / MCP / Release consumers
+```
+
+### Kritik Kararlar
+
+1. **Change Impact View:** READ-ONLY OUTPUT VIEW — ayrı authority DEĞİL
+2. **Capability Evidence Pipeline:** 5 capability tek pipeline — ayrı araçlar DEĞİL
+3. **Maturity Promotion:** Formula DEĞİL — invariant-based promotion criteria
+4. **Structured Output:** CONDITIONAL KULLANILMAZ — fail-closed (PASS | BLOCKED | HUMAN_GATE_REQUIRED)
+5. **Runtime Integrity:** Pipeline sonunda DEĞİL — feedback loop olarak Architecture + Release'e besleme yapar
+
+### Evidence-Level Precision Metadata (Revize)
+
+```yaml
+RULE: FORBIDDEN_STATUS_FIELD
+MODEL:
+  evidence: AST_INVARIANT
+  level: REPO_VERIFIED
+  confidence: VALIDATED
+MIGRATION:
+  evidence: DATABASE_SCHEMA_CONTRACT
+  level: REPO_VERIFIED
+  confidence: LIMITED
+SEEDER:
+  evidence: AST_INVARIANT
+  level: REPO_VERIFIED
+  confidence: DISCOVERY
+RUNTIME:
+  evidence: TOOL_RUNTIME
+  level: UNKNOWN
+BLOCKING_ELIGIBLE: NEW_REGRESSION_ONLY
+```
+
+**Kritik:** STATIC MATCH ≠ RUNTIME VULNERABILITY
+
+### Status
+`DOCUMENTED` — Implementation contracts kaydedildi. Yeni mimari doküman YOK. Guard Integrity implementation başladığında uygulanacak.
