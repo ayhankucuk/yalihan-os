@@ -364,7 +364,7 @@ class WhatsAppWebhookController extends Controller
 
             $url = "https://graph.facebook.com/$apiVersion/$phoneNumberId/messages";
 
-            $response = \Http::withToken($accessToken)->post($url, [
+            $response = \Illuminate\Support\Facades\Http::withToken($accessToken)->post($url, [
                 'messaging_product' => 'whatsapp',
                 'recipient_type' => 'individual',
                 'to' => $phoneNumber,

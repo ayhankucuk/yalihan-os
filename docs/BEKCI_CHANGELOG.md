@@ -1,3 +1,49 @@
+## Oturum 209 — 2026-10-03 | EXT-06E: WhatsApp W2/W3 Regression Root Cause — FIXED
+
+**Task ID:** `EXT-06E`
+**Role:** `IMPLEMENTER` + `VERIFIER`
+**Karar Sahibi:** Ayhan
+**Status:** `VERIFIED - PASS` ✅
+**Focus:** Root cause identification and fix for W2/W3 WhatsApp tenant ingress test failures (EXT-06D regression).
+
+### YAPILANLAR (IMPLEMENTER)
+
+**Root Cause Analysis (EXT-06E Runtime Probe):**
+
+Two independent bugs were found and fixed:
+
+**Bug 1: `\Http::` Unqualified Namespace Reference** (`WhatsAppWebhookController.php:367`)
+- **Location:** `app/Http/Controllers/Api/WhatsAppWebhookController.php` line 367
+- **Cause:** Controller imports `Http` facade as `use Illuminate\Support\Facades\Http;` (line 16), which creates class alias `App\Http\Controllers\Api\Http`. Line 367 uses `\Http::withToken()` (global namespace), which resolved to nothing because `class_alias` in test setup returned FALSE (Http already existed somewhere).
+- **Fix:** Changed `\Http::withToken(...)` → `\Illuminate\Support\Facades\Http::withToken(...)`
+- **Impact:** HTTP 500 → "Class Http not found" during `sendMessage()` call
+
+**Bug 2: Test Scoped Query After finally{} Context Clear** (`WhatsAppTenantIngressTest.php`)
+- **Location:** `tests/Feature/Webhook/WhatsAppTenantIngressTest.php` lines 208, 229
+- **Cause:** W2/W3 tests use `Lead::where(...)` (with TenantScope applied) to verify lead creation. Middleware's `finally{}` block clears TenantContextService AFTER the HTTP response is returned. By the time assertions run, TenantScope applies `WHERE 1=0` and no leads are found.
+- **Fix:** Changed `Lead::where(...)` → `Lead::withoutGlobalScopes()->where(...)` in W2/W3 tests
+- **Impact:** "Lead record must be created" assertion failed with NULL
+
+**Key Evidence (EXT-06E Probe):**
+- Direct service call: `Lead::create()` with context set → tenant_id=2 ✅ (context persists correctly through call chain)
+- HTTP call with instrumented trace → tenant_id=2 ✅ (no premature context loss)
+- `BelongsToTenant::creating()` hook fires correctly when context exists
+- `TenantContextService` is singleton — confirmed via `AppServiceProvider:35`
+- Singleton instance is shared across middleware + controller + service — no instance switching
+- `finally{}` clears context AFTER `$next()` returns → PHP guarantees
+
+**Conclusion:** W2/W3 failure was NOT caused by premature context clearing. The actual bugs were:
+1. Missing `\` namespace prefix on `Http::` facade call → 500 error, silent failure
+2. Test using scoped query after context cleanup → NULL lead returned
+
+### BAĞIMSIZ DOĞRULAMA (VERIFIER)
+- W2/W3 fix verified: `WhatsAppTenantIngressTest` → 19/19 PASS (58 assertions)
+- Full webhook suite verified: `tests/Feature/Webhook/` → 37/37 PASS (109 assertions)
+- `LeadTenantBoundaryTest` → 10/10 PASS (29 assertions)
+- No regression in other webhook/CRM tests
+
+---
+
 ## Oturum 208 — 2026-10-02 | REZ-FINDING-01: Reservation Multi-Tenant Boundary Remediation & Independent Verification
 
 **Task ID:** `REZERVASYON_05_REMOVE_TEST_SECURITY_BYPASS_05` + `REZERVASYON_06_TENANT_BOUNDARY_INDEPENDENT_VERIFY_06`
