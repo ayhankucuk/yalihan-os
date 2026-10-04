@@ -23,26 +23,13 @@ use Tests\TestCase;
 /**
  * ESLESME_02 — Runtime Tenant Boundary Verification
  *
- * Empirical reproduction of F01 (cross-tenant Eslesme create) and F02 (unscoped index).
+ * Verifies canonical fail-closed tenant boundary on Eslesme operations:
+ *   - Cross-tenant Kisi, Ilan, Talep references are rejected on store()
+ *   - index() scopes Eslesmeler strictly to current tenant
+ *   - show() aborts 404 for foreign-tenant Eslesme
+ *   - destroy() fails closed (refuses deletion) for foreign-tenant Eslesme
  *
- * CURRENT_HEAD: e7a385934a40bf12db8f38237280f285a0a9487d
- * MODE: READ-ONLY SOURCE + DISPOSABLE TEST RUNTIME
- *
- * Architecture under test:
- *   Eslesme has NO BelongsToTenant → no auto tenant_id on create
- *   Kisi, Ilan, Talep all have BelongsToTenant → global TenantScope
- *   SetTenantContext middleware sets TenantContextService on all admin routes
- *   Validation: 'exists:kisiler,id' uses global scope when checking existence
- *   MatchingAuthorityService::createMatch() → Eslesme::create() (no tenant_id set)
- *
- * CRITICAL FINDING:
- *   actingAs() in Laravel feature tests bypasses the full middleware chain.
- *   This means SetTenantContext is NOT executed during HTTP tests.
- *   The 'exists:table,id' validation runs WITHOUT TenantScope enforcement.
- *   Cross-tenant references are therefore possible in the HTTP test environment.
- *   In PRODUCTION: the full middleware chain runs, but SetTenantContext only
- *   sets TenantContextService — it does NOT scope the 'exists' validator.
- *   Therefore the vulnerability is REAL in production as well.
+ * TASK: REASONING_PIPELINE_V0_PILOT_F02R_01
  */
 class EslesmeTenantBoundaryRuntimeTest extends TestCase
 {
@@ -229,14 +216,11 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
     // =========================================================================
 
     /**
-     * CRITICAL: actingAs() does NOT run the full Laravel middleware chain.
-     * Therefore SetTenantContext never executes, TenantContextService has no tenant.
-     * The 'exists:kisiler,id' validation runs WITHOUT global TenantScope.
-     * KISI_B is visible to the unscoped validator → validation passes → Eslesme created.
+     * Store endpoint enforces tenant boundary: cross-tenant kisi_id is rejected fail-closed.
      *
      * @test
      */
-    public function test_cross_tenant_kisi_is_not_blocked(): void
+    public function test_cross_tenant_kisi_is_blocked_fail_closed(): void
     {
         $this->setupTenants();
 
@@ -251,7 +235,6 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
         $this->setTenantContext($this->tenantA);
 
         $response = $this->actingAs($userA, 'sanctum')
-            ->withHeaders(['Accept' => 'application/json'])
             ->post(route('admin.eslesmeler.store'), [
                 'kisi_id'         => $kisiB->id, // Tenant B
                 'ilan_id'         => $ilanA->id,
@@ -260,20 +243,21 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
                 'eslesme_durumu'  => 'Aktif',
             ]);
 
-        // actingAs bypasses SetTenantContext middleware → exists: validation unscoped
-        // → KISI_B is found → validation passes → Eslesme created → 302 redirect
-        $response->assertStatus(302,
-            'F01 CONFIRMED: Cross-tenant kisi_id NOT blocked when middleware is bypassed by actingAs');
-
-        $this->assertDatabaseHas('eslesmeler', ['kisi_id' => $kisiB->id, 'ilan_id' => $ilanA->id]);
+        $response->assertStatus(302);
+        $response->assertSessionHas('error');
+        $this->assertDatabaseMissing('eslesmeler', ['kisi_id' => $kisiB->id, 'ilan_id' => $ilanA->id]);
     }
 
     // =========================================================================
     // TEST 3 — CROSS-TENANT ILAN
     // =========================================================================
 
-    /** @test */
-    public function test_cross_tenant_ilan_is_not_blocked(): void
+    /**
+     * Store endpoint enforces tenant boundary: cross-tenant ilan_id is rejected fail-closed.
+     *
+     * @test
+     */
+    public function test_cross_tenant_ilan_is_blocked_fail_closed(): void
     {
         $this->setupTenants();
 
@@ -288,7 +272,6 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
         $this->setTenantContext($this->tenantA);
 
         $response = $this->actingAs($userA, 'sanctum')
-            ->withHeaders(['Accept' => 'application/json'])
             ->post(route('admin.eslesmeler.store'), [
                 'kisi_id'         => $kisiA->id,
                 'ilan_id'         => $ilanB->id, // Tenant B
@@ -297,18 +280,21 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
                 'eslesme_durumu'  => 'Aktif',
             ]);
 
-        $response->assertStatus(302,
-            'F01 CONFIRMED: Cross-tenant ilan_id NOT blocked');
-
-        $this->assertDatabaseHas('eslesmeler', ['ilan_id' => $ilanB->id]);
+        $response->assertStatus(302);
+        $response->assertSessionHas('error');
+        $this->assertDatabaseMissing('eslesmeler', ['ilan_id' => $ilanB->id]);
     }
 
     // =========================================================================
     // TEST 4 — CROSS-TENANT TALEP
     // =========================================================================
 
-    /** @test */
-    public function test_cross_tenant_talep_is_not_blocked(): void
+    /**
+     * Store endpoint enforces tenant boundary: cross-tenant talep_id is rejected fail-closed.
+     *
+     * @test
+     */
+    public function test_cross_tenant_talep_is_blocked_fail_closed(): void
     {
         $this->setupTenants();
 
@@ -324,7 +310,6 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
         $this->setTenantContext($this->tenantA);
 
         $response = $this->actingAs($userA, 'sanctum')
-            ->withHeaders(['Accept' => 'application/json'])
             ->post(route('admin.eslesmeler.store'), [
                 'kisi_id'         => $kisiA->id,
                 'ilan_id'         => $ilanA->id,
@@ -333,17 +318,20 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
                 'eslesme_durumu'  => 'Aktif',
             ]);
 
-        $response->assertStatus(302,
-            'F01 CONFIRMED: Cross-tenant talep_id NOT blocked');
-
-        $this->assertDatabaseHas('eslesmeler', ['talep_id' => $talepB->id]);
+        $response->assertStatus(302);
+        $response->assertSessionHas('error');
+        $this->assertDatabaseMissing('eslesmeler', ['talep_id' => $talepB->id]);
     }
 
     // =========================================================================
     // TEST 5 — MIXED RELATION SET (All cross-tenant)
     // =========================================================================
 
-    /** @test */
+    /**
+     * Store endpoint enforces tenant boundary: all-cross-tenant references are rejected fail-closed.
+     *
+     * @test
+     */
     public function test_mixed_tenant_all_cross_tenant_persisted(): void
     {
         $this->setupTenants();
@@ -361,7 +349,6 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
         $this->setTenantContext($this->tenantA);
 
         $response = $this->actingAs($userA, 'sanctum')
-            ->withHeaders(['Accept' => 'application/json'])
             ->post(route('admin.eslesmeler.store'), [
                 'kisi_id'         => $kisiB->id,
                 'ilan_id'         => $ilanB->id,
@@ -370,11 +357,9 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
                 'eslesme_durumu'  => 'Aktif',
             ]);
 
-        $response->assertStatus(302,
-            'F01 CONFIRMED: All-cross-tenant Eslesme NOT blocked');
-
-        $this->assertGreaterThan(0, Eslesme::count(),
-            'F01 REAL: Eslesme records created despite ALL entities being Tenant B');
+        $response->assertStatus(302);
+        $response->assertSessionHas('error');
+        $this->assertEquals(0, Eslesme::count());
     }
 
     // =========================================================================
@@ -382,13 +367,12 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
     // =========================================================================
 
     /**
-     * F02: EslesmeController::index() has NO TenantScope on Eslesme query.
-     * The unscoped query returns ALL Eslesmeler from all tenants.
-     * Even if the form is scoped, the index is unscoped.
+     * Index endpoint scopes Eslesme records strictly to the authenticated tenant.
+     * Foreign-tenant Eslesmeler are not visible in pagination results.
      *
      * @test
      */
-    public function test_index_returns_all_eslesmeler_regardless_of_tenant(): void
+    public function test_index_scopes_eslesmeler_to_current_tenant(): void
     {
         $this->setupTenants();
 
@@ -398,7 +382,6 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
         $ilanA  = $this->createIlan($userA, $this->tenantA);
         $talepA = $this->createTalep($userA, $this->tenantA, $kisiA);
         $this->setTenantContext($this->tenantA);
-        $ilanABaslik = $ilanA->baslik;
         $matchA = Eslesme::withoutEvents(fn () => Eslesme::create([
             'kisi_id'         => $kisiA->id,
             'ilan_id'         => $ilanA->id,
@@ -415,7 +398,6 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
         $ilanB  = $this->createIlan($userB, $this->tenantB);
         $talepB = $this->createTalep($userB, $this->tenantB, $kisiB);
         $this->setTenantContext($this->tenantB);
-        $ilanBBaslik = $ilanB->baslik;
         $matchB = Eslesme::withoutEvents(fn () => Eslesme::create([
             'kisi_id'         => $kisiB->id,
             'ilan_id'         => $ilanB->id,
@@ -433,19 +415,13 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
         // Index as ADMIN_A (with Tenant A context set)
         $this->setTenantContext($this->tenantA);
         $response = $this->actingAs($userA, 'sanctum')
-            ->withHeaders(['Accept' => 'application/json'])
             ->get(route('admin.eslesmeler.index'));
 
         $response->assertStatus(200);
-        $content = $response->getContent();
-
-        // F02 CONFIRMED: Unscoped Eslesme query returns ALL records from ALL tenants.
-        // Both MATCH_A and MATCH_B exist in the DB (asserted above).
-        // If Eslesme had TenantScope, only MATCH_A would be returned.
-        // Here we assert total count ≥ 2 — proves unscoped query.
-        // Note: ilan baslik is not rendered in eslesme index rows, so we count records instead.
-        $this->assertGreaterThanOrEqual(2, substr_count($content, 'eslesme_durumu'),
-            'F02 CONFIRMED: At least 2 Eslesme rows visible in index — query is unscoped');
+        $eslesmeler = $response->viewData('eslesmeler');
+        $this->assertNotNull($eslesmeler);
+        $this->assertTrue($eslesmeler->contains('id', $matchA->id));
+        $this->assertFalse($eslesmeler->contains('id', $matchB->id));
     }
 
     // =========================================================================
@@ -453,12 +429,11 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
     // =========================================================================
 
     /**
-     * F02 EXTENSION: Direct show() access to a foreign-tenant Eslesme by ID.
-     * Route model binding finds Eslesme by ID with no tenant filter.
+     * Show endpoint enforces fail-closed tenant boundary: foreign-tenant Eslesme returns 404.
      *
      * @test
      */
-    public function test_admin_a_can_show_admin_b_eslesme_by_id(): void
+    public function test_admin_a_cannot_show_admin_b_eslesme_by_id(): void
     {
         $this->setupTenants();
 
@@ -485,15 +460,12 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
 
         $matchBId = $matchB->id;
 
-        // ADMIN_A tries to SHOW MATCH_B
+        // ADMIN_A tries to SHOW MATCH_B -> 404 Not Found
         $this->setTenantContext($this->tenantA);
         $response = $this->actingAs($userA, 'sanctum')
-            ->withHeaders(['Accept' => 'application/json'])
             ->get(route('admin.eslesmeler.show', $matchBId));
 
-        // F02 EXTENSION CONFIRMED: Route model binding finds unscoped Eslesme by ID → 200 OK
-        $response->assertStatus(200,
-            'F02 EXTENSION CONFIRMED: Tenant A admin can directly access Tenant B Eslesme by ID');
+        $response->assertStatus(404);
     }
 
     // =========================================================================
@@ -501,12 +473,11 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
     // =========================================================================
 
     /**
-     * F02 CRITICAL EXTENSION: Admin from Tenant A can DELETE Tenant B's Eslesme.
-     * This is the most severe manifestation of F02.
+     * Destroy endpoint enforces fail-closed tenant boundary: foreign-tenant Eslesme cannot be deleted.
      *
      * @test
      */
-    public function test_admin_a_can_delete_admin_b_eslesme(): void
+    public function test_admin_a_cannot_delete_admin_b_eslesme(): void
     {
         $this->setupTenants();
 
@@ -534,15 +505,13 @@ class EslesmeTenantBoundaryRuntimeTest extends TestCase
         $matchBId = $matchB->id;
         $this->assertDatabaseHas('eslesmeler', ['id' => $matchBId]);
 
-        // ADMIN_A tries to DESTROY MATCH_B
+        // ADMIN_A tries to DESTROY MATCH_B -> fails closed, record survives
         $this->setTenantContext($this->tenantA);
         $response = $this->actingAs($userA, 'sanctum')
-            ->withHeaders(['Accept' => 'application/json'])
             ->delete(route('admin.eslesmeler.destroy', $matchBId));
 
-        // F02 CRITICAL: Unscoped destroy → record deleted
         $response->assertStatus(302);
-        $this->assertDatabaseMissing('eslesmeler', ['id' => $matchBId]);
+        $this->assertDatabaseHas('eslesmeler', ['id' => $matchBId]);
     }
 
     // =========================================================================
