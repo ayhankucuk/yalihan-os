@@ -216,4 +216,132 @@ class UserTest extends TestCase
             $this->markTestSkipped('scopeActive method does not exist');
         }
     }
+
+    // =========================================================================
+    // CDH-002 Regression Tests — aktiflik_durumu canonical alignment
+    // =========================================================================
+
+    /**
+     * Test: aktiflik_durumu is mass-assignable via $fillable
+     * Proof: User::make() with aktiflik_durumu preserves the attribute
+     */
+    public function test_aktiflik_durumu_is_mass_assignable(): void
+    {
+        $user = User::make([
+            'name' => 'Aktiflik Test User',
+            'email' => 'aktiflik-test@example.com',
+            'password' => Hash::make('password'),
+            'aktiflik_durumu' => true,
+        ]);
+
+        $this->assertArrayHasKey('aktiflik_durumu', $user->getAttributes());
+        $this->assertEquals(true, $user->aktiflik_durumu);
+    }
+
+    /**
+     * Test: aktiflik_durumu=false mass assignment preserves false state
+     * Proof: fill() does not silently drop the attribute
+     */
+    public function test_aktiflik_durumu_false_is_preserved(): void
+    {
+        $user = new User();
+        $user->fill(['aktiflik_durumu' => false]);
+
+        $this->assertFalse($user->aktiflik_durumu);
+    }
+
+    /**
+     * Test: aktiflik_durumu=true mass assignment preserves true state
+     * Proof: fill() works for the canonical active state
+     */
+    public function test_aktiflik_durumu_true_is_preserved(): void
+    {
+        $user = new User();
+        $user->fill(['aktiflik_durumu' => true]);
+
+        $this->assertTrue($user->aktiflik_durumu);
+    }
+
+    /**
+     * Test: aktiflik_durumu boolean cast returns correct semantics
+     * Proof: accessing the attribute returns boolean type
+     */
+    public function test_aktiflik_durumu_cast_returns_boolean(): void
+    {
+        // Create user with aktiflik_durumu = 0
+        $userId = DB::table('users')->insertGetId([
+            'name' => 'Boolean Cast Test',
+            'email' => 'boolean-cast-' . uniqid() . '@example.com',
+            'password' => Hash::make('password'),
+            'aktiflik_durumu' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $user = User::find($userId);
+        $this->assertIsBool($user->aktiflik_durumu);
+        $this->assertFalse($user->aktiflik_durumu);
+
+        // Update to aktiflik_durumu = 1
+        $user->update(['aktiflik_durumu' => true]);
+        $user->refresh();
+
+        $this->assertIsBool($user->aktiflik_durumu);
+        $this->assertTrue($user->aktiflik_durumu);
+    }
+
+    /**
+     * Test: legacy is_active is NOT mass-assignable
+     * Proof: is_active is removed from $fillable, mass assignment should fail silently
+     *        (attribute not in model, no exception - just not persisted)
+     */
+    public function test_is_active_legacy_not_mass_assignable(): void
+    {
+        $fillable = (new User())->getFillable();
+
+        $this->assertNotContains('is_active', $fillable);
+        $this->assertContains('aktiflik_durumu', $fillable);
+    }
+
+    /**
+     * Test: Context7 guard blocks legacy is_active during create
+     * Proof: is_active in $globalForbiddenFields throws Context7ViolationException
+     */
+    public function test_context7_guard_blocks_is_active_on_create(): void
+    {
+        $this->expectException(\App\Exceptions\Context7ViolationException::class);
+
+        User::create([
+            'name' => 'Context7 Guard Test',
+            'email' => 'context7-' . uniqid() . '@example.com',
+            'password' => Hash::make('password'),
+            'is_active' => 1, // Legacy forbidden field
+        ]);
+    }
+
+    /**
+     * Test: aktiflik_durumu write via canonical mass assignment
+     * Proof: full create + retrieve cycle for canonical field
+     */
+    public function test_aktiflik_durumu_create_and_retrieve(): void
+    {
+        $user = User::create([
+            'name' => 'Canonical Aktiflik Test',
+            'email' => 'canonical-' . uniqid() . '@example.com',
+            'password' => Hash::make('password'),
+            'aktiflik_durumu' => false,
+        ]);
+
+        $this->assertFalse($user->aktiflik_durumu);
+
+        // Retrieve from DB
+        $retrieved = User::find($user->id);
+        $this->assertFalse($retrieved->aktiflik_durumu);
+
+        // Toggle to active
+        $retrieved->update(['aktiflik_durumu' => true]);
+        $retrieved->refresh();
+
+        $this->assertTrue($retrieved->aktiflik_durumu);
+    }
 }
