@@ -1037,5 +1037,195 @@ Guard Integrity implementation
 ```
 BEKÇİ v3 DESIGN   ████████████████████ 100% — CLOSED
 BEKÇİ v3 EXECUTION                  █░░░░░░░░░░░░░░░░  0% — STARTING
+
+---
+
+## BEKÇİ v3 — VİZYON VE ÇALIŞMA PRENSİPLERİ (2026-10-03)
+
+**Kaynak:** Ayhan — "Bekçi bir AI agent olmayacak"
+
+### Temel Prensip
+
+Bekçi şunlara GÜVENMEYECEK:
+- Cline "iyi" dedi
+- Claude "doğruladım" dedi
+- Antigravity "geçti" dedi
+- Ayhan "kontrol ettim" dedi
+
+Bekçi SADEce **executable technical evidence** üzerinden karar verecek.
+
+### Bekçi Ne Yapmaz
+
+| YAPMAZ | NEDEN |
+|--------|-------|
+| Kod yazmaz | Tamirci Cline'ın işi |
+| Karar sahibinin yerine geçmez | Karar Ayhan'ın |
+| Production'ı kendi başına değiştirmez | Human gate + Ayhan override |
+| AI agent değildir | Otomatik teknik denetim sistemi |
+
+### Bekçi Ne Yapar
+
+1. **Kanıt toplar** — git diff, AST, schema, runtime evidence
+2. **Canonical contract'larla karşılaştırır** — v3 implementation contracts
+3. **İhlali sınıflandırır** — rule_id, fingerprint, evidence_type, maturity, exception_id
+4. **Sonuç üretir** — PASS | BLOCKED | HUMAN_GATE_REQUIRED
+
+### Çalışma Zamanları
+
 ```
+A — Agent görev başlamadan önce
+   bekci task:start
+   → BASE_SHA, dirty_tree, declared_scope, canonical_state kaydedilir
+
+B — Agent değişiklik yaptıktan sonra (FAST kontroller)
+   → scope, secrets, schema_parity, routes, AST_invariants, new_violations
+
+C — Commit öncesi (PRE-COMMIT BEKÇİ)
+   → NEW regression var mı?
+   → Scope dışı değişiklik var mı?
+   → Secret var mı?
+   → Canonical contract bozuldu mu?
+   → Kritik problem varsa commit DURDURULUR
+
+D — GitHub CI
+   → Local hook bypass edilse bile aynı kontroller CI'da tekrar çalışır
+   → Cline, Claude, Antigravity, Ayhan — kim yazmış olursa olsun aynı kurallar
+
+E — Deploy öncesi (RELEASE INTEGRITY)
+   → source SHA, migration compatibility, critical workflows
+   → schema expectation, release fingerprint, worker compatibility
+   → rollback readiness
+   → UNKNOWN varsa → BLOCKED veya HUMAN_GATE_REQUIRED
+
+F — Production'da (SİLENT OBSERVER)
+   → Tenant violation? Queue failure? Fallback? Schema mismatch?
+   → Exception? Release mismatch?
+   → Sadece gözlemler ve raporlar
+   → KENDİ BAŞINA DEĞİŞTİRMEZ
+```
+
+### Worker/Scheduler Parity (Production)
+
+```
+WEB SHA       abc123
+WORKER SHA    abc123
+SCHEDULER SHA abc123
+SCHEMA        compatible
+
+PRODUCTION RELEASE = VERIFIED
+```
+
+**Kritik:** Laravel queue:work worker'ları uzun yaşayan process'lerdir. Yeni kod deploy edildiğinde çalışan worker eski boot edilmiş application state'i kullanmaya devam edebilir. Bekçi bunu kontrol eder.
+
+### Change Impact View Örneği
+
+```yaml
+CHANGE: migration: status → aktiflik_durumu
+
+IMPACT:
+  Tenant schema
+    ├── Tenant.php
+    ├── SaaS/Tenant.php
+    ├── TenantBaselineSeeder
+    ├── HuntOpportunitiesCommand
+    ├── HermesDashboardService
+    └── tests
+
+UNKNOWN CONSUMERS: 2
+```
+
+**Not:** Bu ayrı bir tarayıcı/authority DEĞİL. Mevcut CDA/evidence'ın agent için okunabilir görünümü.
+
+### Sonuç Formatı
+
+```
+╔════════════════════════════════════╗
+║           YALIHAN BEKÇİ           ║
+╠════════════════════════════════════╣
+║ Change Integrity        PASS       ║
+║ Architecture Integrity  PASS       ║
+║ Guard Integrity         PASS       ║
+║ Runtime Integrity       PASS       ║
+║ Release Integrity       BLOCKED    ║
+╠════════════════════════════════════╣
+║ BLOCKER                            ║
+║ Production worker release UNKNOWN ║
+╠════════════════════════════════════╣
+║ DECISION: BLOCKED                  ║
+╚════════════════════════════════════╝
+```
+
+### Mevcut Altyapıdan Bekçi'ye
+
+```
+                    BEKÇİ v3
+                       │
+          ┌────────────┼────────────┐
+          ▼            ▼            ▼
+     Sentinel FAST  Doktor DEEP  Bekçi Health
+          │            │            │
+          └────────────┼────────────┘
+                       ▼
+             Canonical Result Envelope
+```
+
+**Bekçi mevcut motorları çöpe atmaz.** Sentinel, Doctor, Health zaten çalışıyor. v3 bunları tek contract altında birleştirir.
+
+### MCP'nin Yeri
+
+```
+                  BEKÇİ ENGINE
+                       │
+         ┌─────────────┼──────────────┐
+         │             │              │
+      Artisan         CI             MCP
+         │             │              │
+       Human         GitHub          Agent
+```
+
+**MCP kolaylık sağlar; authority DEĞİLDİR.**
+
+MCP bozulursa `php artisan bekci:...` veya mevcut gate script'leri yine çalışır.
+
+Örnek: "Cline, Bekçi'ye 'bu değişikliğin impact'ini göster' der → MCP Bekçi'yi çağırır."
+
+### Blocking Örneği (TENANT_LEGACY_STATUS)
+
+```yaml
+RULE: TENANT_LEGACY_STATUS
+Fingerprint: ...
+Evidence Type: AST_INVARIANT
+Evidence Level: REPO_VERIFIED
+Maturity: NEW_REGRESSION_BLOCKING
+Legacy baseline: NO
+Canonical exception: NONE
+
+DECISION: BLOCKED
+```
+
+**Bekçi "STATUS YASAK!" DEMEZ.** Finding'in niteliğini de bilir.
+
+---
+
+## BEKÇİ ROL TANIMI
+
+| Rol | Kim | Ne yapar |
+|-----|-----|----------|
+| **Tamirci** | Cline | Kod yazar, değişiklik yapar |
+| **Yönlendirici/Doğrulayıcı** | Antigravity | Agent'ı yönlendirir, doğrular |
+| **Karar Sahibi** | Ayhan | İnsan override, Human Gate |
+| **Kapıdaki Teknik Kontrol** | **Bekçi** | Evidence toplar, PASS/BLOCKED/HUMAN_GATE üretir |
+```
+
+---
+
+## 🏛️ ADR-CDH-002: User Model aktiflik_durumu Canonical Authority & Isolated Production Hotfix (2026-10-04)
+
+- **Karar:** `users.aktiflik_durumu` tablonun tek ve kanonik aktiflik otoritesidir. `is_active` fiziksel sütunu veritabanında mevcut değildir ve model fillable/cast listelerine eklenemez.
+- **Source Implementation Commit:** `fdc421bc3f55ac1c4f2ee73b8b67df87b8c1c2d6` (Main worktree, REPO_VERIFIED + TEST_VERIFIED)
+- **Certified Production Artifact:** `9cb41e20405ae8b561c0d6ecc71f78d76f4bdcd1` (Isolated hotfix backport branch: `release/cdh002-prod-hotfix`)
+- **Production Base:** `1172824699243659c87977ccca8a9b0c307101fa` (Direct parent of `9cb41e20`)
+- **Doğrulama:** `CDH002_INDEPENDENT_PRODUCTION_VERIFY_07` = PASS. Host, App ve Queue container dosyaları sha256 (`a129ad4880e865a649cb33d83c2711e3cc4027f366269e8f95a4677612a2b0d0`) ile birebir doğrulanmıştır.
+- **Kural & İlke:** Primary worktree HEAD (`fdc421bc`) ile production HEAD (`9cb41e20`) aynı olmak zorunda değildir; primary worktree'de aktif geliştirme ve unpushed commit'ler bulunurken izole hotfix production'a bağımsız sokulmuştur. `fdc421bc` tekrar CDH-002 olarak deploy edilmemelidir.
+
 

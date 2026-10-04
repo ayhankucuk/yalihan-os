@@ -1,5 +1,15 @@
+## 🔍 Production Target (UPDATED 2026-10-03)
+
+| Field | Value | Source |
+|---|---|---|
+| Production IP | `157.180.116.63` | Verified — multiple repo sources |
+| SSH USER | `root` | Production auth records |
+| App Path | `/opt/yalihan2026/current` | rc2-production-deploy.sh |
+| Legacy Oracle Cloud | `168.138.101.124` | SUPERSEDED — docker-compose.production.yml |
+
+**Note:** `docs/architecture-lite.md` lists Oracle Cloud IP — STALE. Active production is Hetzner at `157.180.116.63`.
 # Yalıhan OS — Project State
-**Son Güncelleme:** 2026-09-28 | **HEAD:** 7dd8b016 | **Oturum:** bootstrap-blocked + ILAN-06-parallel
+**Son Güncelleme:** 2026-10-03 | **HEAD:** 9b8aca27 | **Oturum:** EXT-06E-fixed
 
 ---
 
@@ -71,6 +81,19 @@ Domain convergence çalışması devam ediyor. Tenant drift'ten bağımsız.
 
 ---
 
+## ✅ EXT-06E — WhatsApp W2/W3 Regression FIXED (2026-10-03)
+
+| Item | Detail |
+|---|---|
+| Commit | `9b8aca27` — EXT-06E: Fix WhatsApp W2/W3 tenant ingress regression |
+| Bug 1 | `\Http::withToken()` → FQCN `\Illuminate\Support\Facades\Http::withToken()` |
+| Bug 2 | `Lead::where()` → `Lead::withoutGlobalScopes()->where()` in W2/W3 |
+| Root Cause | `finally{}` clears TenantContextService AFTER response, BEFORE assertions |
+| Architecture | Intentional (singleton cleanup). Tests must use `withoutGlobalScopes()` |
+| Verified | WhatsAppTenantIngressTest 19/19, Webhook 37/37, LeadTenantBoundary 10/10 |
+
+---
+
 ## 📋 Evidence Cache
 
 | Kanıt | Değer |
@@ -79,4 +102,38 @@ Domain convergence çalışması devam ediyor. Tenant drift'ten bağımsız.
 | Mevcut tenant data | `id=1, name=Test, domain=t.test, durum=active, uuid=NULL` |
 | SaaS\Tenant fillable | `['uuid','name','domain','status']` — schema-dışı |
 | App\Models\Tenant fillable | `['uuid','name','domain','durum']` — schema-uyumlu |
+## ✅ CDH-001 — CLOSED (2026-10-04)
+
+| Item | Detail |
+|---|---|
+| Commit | `8333bd6f` |
+| Finding | `EslesmeController` phantom `one_cikan` column reference |
+| Canonical Authority | `eslesmeler` table NEVER had `one_cikan` column |
+| Remediation | `one_cikan` removed from select clause + validation rules |
+| Verification | VERIFIED_PASS (Ayhan, 2026-10-04) |
+| Test Result | SecurityTest: 17/17 PASS |
+
+**Note:** 6 RuntimeTest failures = pre-existing F02-R fail-closed regression. OUT OF SCOPE. Backlog item: `F02R-TEST-UPDATE`.
+
+---
+
+## ✅ CDH-002 — CLOSED / PRODUCTION_VERIFIED (2026-10-04)
+
+| Attribute | Value / Evidence |
+|---|---|
+| **Status** | `CLOSED` |
+| **Evidence Level** | `PRODUCTION_VERIFIED` |
+| **Source Implementation Commit** | `fdc421bc3f55ac1c4f2ee73b8b67df87b8c1c2d6` (REPO_VERIFIED + TEST_VERIFIED) |
+| **Certified Production Artifact** | `9cb41e20405ae8b561c0d6ecc71f78d76f4bdcd1` (Isolated backport commit) |
+| **Production Base Before Deploy** | `1172824699243659c87977ccca8a9b0c307101fa` |
+| **Production Target** | `root@157.180.116.63` (`/opt/yalihan2026/current`, `release-candidate/RC2`) |
+| **Production Verification Task** | `CDH002_INDEPENDENT_PRODUCTION_VERIFY_07 = PASS` |
+| **Runtime Artifact Hash** | SHA256: `a129ad4880e865a649cb33d83c2711e3cc4027f366269e8f95a4677612a2b0d0` (Host = App = Queue) |
+| **Physical Schema Contract** | `users.aktiflik_durumu` tinyint(1) default 1; `is_active` physical column ABSENT |
+| **Runtime Query Contract** | `User::active()` query count = `User::where('aktiflik_durumu', true)` (3 = 3) |
+| **Critical Provenance Note** | `fdc421bc` remains the original source implementation. `9cb41e20` is the isolated artifact actually deployed and independently verified in production. Primary worktree HEAD (`fdc421bc`) is not required to equal production HEAD (`9cb41e20`). Do NOT redeploy `fdc421bc` as CDH-002. |
+
+---
+
+## 📋 Evidence Cache
 | TenantBaselineSeeder | Direct DB facade, `uuid` + `status` yazıyor |

@@ -2308,3 +2308,148 @@ BLOCKING_ELIGIBLE: NEW_REGRESSION_ONLY
 
 ### Status
 `DOCUMENTED` — Implementation contracts kaydedildi. Yeni mimari doküman YOK. Guard Integrity implementation başladığında uygulanacak.
+
+---
+
+## [2026-10-03] PRODUCTION_TARGET_VERIFICATION — VERIFICATION_COMPLETE
+
+**Task ID:** `BEKCI_v3_CLOSURE_02 / TASK_10A_VERIFY`
+**Mode:** STRICT READ-ONLY
+**Evidence Level:** `REPO_VERIFIED`
+**Baseline:** `9b8aca27` (HEAD)
+
+### Summary
+
+Session summary incorrectly identified production SSH target. Repository evidence reveals **two distinct production targets** with different deployment paths.
+
+### Critical Finding: IP MISMATCH
+
+| Session Claimed | Repository Says | Resolution |
+|---|---|---|
+| `168.138.101.124:22` (Oracle Cloud) | `157.180.116.63` (Hetzner) | **WRONG TARGET — CORRECTED** |
+
+### Verified Production Target
+
+| Field | Value | Source |
+|---|---|---|
+| Production IP | `157.180.116.63` | `audits/GATE_BLOCKER_EVIDENCE.md` (root@157.180.116.63) |
+| SSH USER | `root` | Production auth records |
+| SSH PORT | `22` (default) | Not in repo, assumed |
+| App Path | `/opt/yalihan2026/current` | `scripts/rc2-production-deploy.sh` |
+| Active Branch | `migration/fix-kytfd-table` (9723c2e) | Production verification |
+| Integration Branch | `integration/era-v-phase2a-e01` (a0a52bf) | Production verification |
+| GitHub Repo | `https://github.com/ayhankucuk/yalihan-os.git` | Production verification |
+| Panel Domain | `panel.yalihanemlak.com.tr` | Architecture docs |
+| Vite Legacy | `yalihanemlak.com.tr` | Production HTTP 200 verified |
+
+### Oracle Cloud (168.138.101.124) — LEGACY/UNUSED
+
+| Field | Value |
+|---|---|
+| Status | PLANNED — never used or superseded |
+| docker-compose path | `/opt/yalihan-os-production/` |
+| Vite API Domain | `api.yalihanemlak.com.tr` |
+| Evidence | CHANGELOG.md: Sprint 1 backlog item |
+
+### Root Cause
+
+| Factor | Finding |
+|---|---|
+| Session source | `docs/architecture-lite.md` listed 168.138.101.124 as "Production IP" |
+| Actual status | `architecture-lite.md` is **STALE** — production migrated to Hetzner |
+| GATE_BLOCKER_EVIDENCE.md | Uses `157.180.116.63` with root SSH auth |
+| Multiple independent sources | Production cert, evidence index, gate blocker, changelog |
+
+### Architecture Drift Finding
+
+```
+Two separate production targets in repository:
+1. Oracle Cloud (168.138.101.124) — docker-compose.production.yml
+2. Hetzner (157.180.116.63) — rc2-production-deploy.sh
+
+These are DIFFERENT hosts with DIFFERENT deployment paths.
+Oracle Cloud appears to be superseded/never-fully-provisioned.
+```
+
+### Required Corrections
+
+| File | Action | Priority |
+|---|---|---|
+| `docs/architecture-lite.md` | Update Production IP: 168.138.101.124 to 157.180.116.63 | **HIGH** |
+| `docs/runbooks/production-server-setup.md` | Add note: "Oracle Cloud superseded" | MEDIUM |
+| Session state | Task 10A_R target to `root@157.180.116.63` | **HIGH** |
+
+### Status
+`REPO_VERIFIED` — Production target corrected. Oracle Cloud IP is legacy. Active production is 157.180.116.63.
+
+### Required Next Step
+Task 10A_R → SSH access retry to `root@157.180.116.63:22` (correct target)
+### Required Next Step
+Task 10A_R → SSH access retry to `root@157.180.116.63:22` (correct target)
+
+---
+
+## [2026-10-04] CDH-001 — VERIFIED_PASS / COMMITTED
+
+**Task ID:** `CDH-001_INDEPENDENT_VERIFICATION`  
+**Mode:** STRICT READ-ONLY (Ayhan, verifier)  
+**Evidence Level:** `TEST_VERIFIED` + `REPO_VERIFIED`  
+**Commit:** `8333bd6f`  
+**Baseline:** `1682e9e2`
+
+### Summary
+Canonical drift remediation: `EslesmeController`'dan phantom `one_cikan` kolon referansı kaldırıldı.  
+`eslesmeler` tablosunda `one_cikan` kolonu HİÇBİR ZAMAN mevcut olmamış.
+
+### Verdict Table
+
+| Claim | Verdict | Evidence |
+|---|---|---|
+| `danisman_id` canonical in eslesmeler | ✅ CONFIRMED | Schema snapshots |
+| `one_cikan` NOT in eslesmeler | ✅ CONFIRMED | Schema snapshots — absent |
+| `one_cikan` canonical in ilanlar | ✅ CONFIRMED | `ilanlar.one_cikan` EXISTS |
+| EslesmeController effective path clean | ✅ CONFIRMED | Full method-by-method trace |
+| Eslesme::$fillable has no `one_cikan` | ✅ CONFIRMED | Model source inspection |
+| SecurityTest: 17/17 PASS | ✅ PASS | Independent test execution |
+| RuntimeTest: 3/9 PASS, 6/9 FAIL | ⚠️ PRE-EXISTING | F02-R fail-closed regression; UNRELATED to CDH-001 |
+
+### Canonical Drift Classification
+`one_cikan` in EslesmeController — `STALE_FINDING` (phantom column, never existed).  
+No active AUTHORITY_CONTRACT_DRIFT — write/read chain never reached `one_cikan`.
+
+### Files Committed (3 unique)
+1. `app/Http/Controllers/Admin/EslesmeController.php`
+2. `tests/Feature/CRM/EslesmeTenantBoundaryRuntimeTest.php`
+3. `tests/Feature/CRM/EslesmeTenantBoundarySecurityTest.php`
+
+### Backlog Item
+- **F02R-TEST-UPDATE**: 6 RuntimeTest failures = F02-R fail-closed regression. Tests expect old vulnerable behavior. OUT OF SCOPE for CDH-001.
+
+---
+
+## [2026-10-04] CDH-002 — CLOSED / PRODUCTION_VERIFIED
+
+**Task ID:** `CDH002_INDEPENDENT_PRODUCTION_VERIFY_07`  
+**Mode:** STRICT READ-ONLY (Independent Production Verifier)  
+**Evidence Level:** `PRODUCTION_VERIFIED`  
+**Source Implementation Commit:** `fdc421bc3f55ac1c4f2ee73b8b67df87b8c1c2d6` (REPO_VERIFIED + TEST_VERIFIED)  
+**Certified Production Artifact:** `9cb41e20405ae8b561c0d6ecc71f78d76f4bdcd1` (Isolated backport)  
+**Production Base Before Deploy:** `1172824699243659c87977ccca8a9b0c307101fa`  
+**Production Target:** `root@157.180.116.63` (`/opt/yalihan2026/current`)
+
+### Summary
+`users.aktiflik_durumu` mass-assignment ve boolean cast yetkisi sağlandı. Fiziksel MySQL veritabanında `is_active` bulunmadığı doğrulandı. İzole hotfix commit `9cb41e20405a` VPS'e aktarıldı ve container runtime dosyaları (`a129ad4880e865a649cb33d83c2711e3cc4027f366269e8f95a4677612a2b0d0`) ile birebir doğrulandı.
+
+### Verdict Table
+
+| Katman / Bileşen | Durum | Kanıt |
+|---|---|---|
+| Runtime Artifact Hash | ✅ MATCH | `sha256: a129ad...` host = app = queue |
+| Physical Column Contract | ✅ MATCH | `aktiflik_durumu` tinyint(1) default 1; `is_active` absent |
+| Active Scope Count | ✅ MATCH | `User::active()` count = `User::where('aktiflik_durumu', true)` (3 = 3) |
+| Container Status | ✅ HEALTHY | `yalihanai-app-v2`, `yalihanai-queue-v2`, `yalihanai-nginx-v2` Up |
+| Independent Production Verification | ✅ PASS | Task `CDH002_INDEPENDENT_PRODUCTION_VERIFY_07` |
+
+### Provenance Rule
+`fdc421bc` kaynak geliştirmedir (main worktree). `9cb41e20` prodüksiyonda koşan bağımsız doğrulanmış artefakttır. Primary worktree HEAD'in production HEAD ile eşitlenmesi gerekmez. `fdc421bc` tekrar deploy edilmemelidir.
+
