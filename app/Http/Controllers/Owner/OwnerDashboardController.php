@@ -31,7 +31,7 @@ class OwnerDashboardController extends Controller
                           ->count();
 
         $aktifIlanSayisi = Ilan::where('user_id', $user->id)
-                                ->where('yayin_durumu', true)
+                                ->whereYayinda()
                                 ->count();
 
         return view('owner.dashboard', compact('ilanSayisi', 'aktifIlanSayisi'));
