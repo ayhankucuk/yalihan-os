@@ -30,6 +30,7 @@ Before starting any material coding or architectural task, the agent MUST explic
 - **Read Scope**: Repository-wide read/search is permitted when required to establish authority, usages, dependencies, schema, tests, or impact. Discovery does not authorize modification.
 - **Verification**: Mandatory test suite or browser flow to run
 - **Stop Conditions**: Explicit rollback and pause triggers
+- **Remediation Contract**: All material defect remediations MUST follow the claim-scoped Evidence-Grounded Reasoning Pipeline V1 contract (`.project-brain/REASONING_PIPELINE_V1.md`).
 
 ---
 
