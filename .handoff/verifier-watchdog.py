@@ -56,8 +56,9 @@ HERMES_CLI_PATH = os.path.expanduser(
 SANDBOX_SB_PATH = os.path.expanduser(
     "~/.hermes/profiles/yalihan-verifier/sandbox/yalihan-verifier-isolated.sb"
 )
-NONINTERACTIVE_CONFIG = os.path.expanduser(
-    "~/.hermes/profiles/yalihan-verifier/config.noninteractive.yaml"
+# Non-interactive profile: separate HERMES_HOME with aiwebmodel-only config
+NONINTERACTIVE_HERMES_HOME = os.path.expanduser(
+    "~/.hermes/profiles/yalihan-verifier-ni"
 )
 
 
@@ -140,8 +141,9 @@ def run_verifier(artifact: Artifact, env: dict) -> tuple[int, str, str]:
         "--non-interactive",
     ]
 
-    # Override config with non-interactive profile
-    env["HERMES_CONFIG_PATH"] = NONINTERACTIVE_CONFIG
+    # Use non-interactive Hermes home (aiwebmodel-only config, no TTY required)
+    env["HERMES_HOME"] = NONINTERACTIVE_HERMES_HOME
+    env.pop("HERMES_PROFILE", None)  # Don't inherit profile from parent
 
     # Optional: sandbox wrapper
     sandbox_cmd = build_sandbox_wrapper(cmd)
