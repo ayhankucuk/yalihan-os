@@ -1,3 +1,94 @@
+## Oturum 211 — 2026-10-05 | ADMIN_RBAC_REMEDIATION_01
+
+**Task ID:** `ADMIN_RBAC_ROLE_CASE_AUTHORITY_01`
+**Role:** `INVESTIGATOR` + `VERIFIER`
+**Evidence Level:** `REPO_VERIFIED`
+**Commit:** `54ad84b8`
+
+### Investigation Results
+
+| Item | Result | Evidence |
+|---|---|---|
+| Canonical Role Authority | `'admin'` (lowercase) | RoleSeeder.php:34, BootstrapProductionPilotCommand.php:54 |
+| Canonical Vocabulary | `super-admin \| admin \| danisman \| musteri \| owner` | RoleSeeder.php |
+| hasRole('admin') calls | 59 in app/ | grep REPO_VERIFIED |
+| hasRole('Admin') calls | 0 in app/ | grep REPO_VERIFIED |
+| Code-level case mismatch | NONE | Verified all lowercase |
+| Production role data | UNKNOWN | Production Read-Only Audit pending |
+
+### ROOT CAUSE
+Hardcoded role validation (`'in:superadmin,admin,danisman,editor,musteri'`) instead of dynamic DB-driven validation.
+
+### Fixes Applied
+
+1. **UserController.php:** Dynamic validation via `Role::pluck('name')`
+2. **index.blade.php:** Dynamic dropdown + `getRoleNames()` instead of legacy `role_id`
+
+### Regression Tests
+
+| Test | Result |
+|---|---|
+| RoleSeederCanonicalConvergenceTest | 4/4 PASS |
+| AdminUserSeederContractTest | 6/6 PASS |
+| User-related tests | 102/102 PASS |
+
+### Verdict
+
+```
+ADMIN_RBAC_REMEDIATION_01: CLOSED / REPO_VERIFIED
+PRODUCTION ROLE DATA: UNKNOWN — Production Read-Only Audit pending
+MIGRATION REQUIRED: NO — Code-level fix only
+```
+
+---
+
+## Oturum 210 — 2026-10-03 | AUTH-LOGIN-CSRF-BYPASS → LOCAL_AUTH_LOGIN_CSRF_REMEDIATION_01
+## Oturum 210 — 2026-10-03 | AUTH-LOGIN-CSRF-BYPASS → LOCAL_AUTH_LOGIN_CSRF_REMEDIATION_01
+
+**Task ID:** `LOCAL_AUTH_LOGIN_CSRF_REMEDIATION_01`
+**Role:** `IMPLEMENTER` + `VERIFIER`
+**Karar Sahibi:** Ayhan
+
+### Evidence Breakdown
+| Layer | Status | Evidence |
+|-------|--------|----------|
+| Repository | **FIXED** | Commit `45492617` — `'login'` removed from `$except` array |
+| Regression | **TEST_VERIFIED** | 114 passed, 0 failed |
+| Independent | **PASS** | CSRFLoginBypassReproductionTest + CSRFLoginDirectTest |
+| Production | **UNKNOWN** | No production verification |
+
+> ⚠️ **Claim Strength Rule:** `FIXED` ≠ `PRODUCTION_VERIFIED`. Evidence strength cannot exceed its source.
+
+### YAPILANLAR (IMPLEMENTER)
+
+**Root Cause:**
+- `VerifyCsrfToken.php` line 19 had `'login'` in `$except` array
+- This excluded `/login` POST route from CSRF verification
+- Form already had `@csrf` directive (hidden input + meta tag)
+
+**Fix Applied:**
+- Removed `'login'` from `VerifyCsrfToken::$except` array
+- Form already correct — no change needed
+
+**Verification:**
+- `test_csrf_middleware_except_array_does_not_contain_login`: PASS
+- `test_login_form_has_csrf_hidden_input`: PASS
+- `test_login_form_renders_csrf_in_meta_for_js`: PASS
+- `test_baseline_without_csrf_returns_302`: PASS
+- Security suite: 114 passed, 0 failed
+
+**Files Changed:**
+- `app/Http/Middleware/VerifyCsrfToken.php`
+- `tests/Feature/Security/CSRFLoginBypassReproductionTest.php` (new)
+- `tests/Feature/Security/CSRFLoginDirectTest.php` (new)
+
+**Commit:** `45492617` — `fix(auth): restore CSRF protection on POST /login`
+
+**No migration required. No schema change.**
+
+---
+
+
 ## Oturum 209 — 2026-10-03 | EXT-06E: WhatsApp W2/W3 Regression Root Cause — FIXED
 
 **Task ID:** `EXT-06E`

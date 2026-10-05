@@ -2453,3 +2453,104 @@ No active AUTHORITY_CONTRACT_DRIFT — write/read chain never reached `one_cikan
 ### Provenance Rule
 `fdc421bc` kaynak geliştirmedir (main worktree). `9cb41e20` prodüksiyonda koşan bağımsız doğrulanmış artefakttır. Primary worktree HEAD'in production HEAD ile eşitlenmesi gerekmez. `fdc421bc` tekrar deploy edilmemelidir.
 
+---
+
+## [2026-10-05] CDA_001_EFFECTIVE_AGENT_AUTHORITY_VERIFY_01 — COMPLETE
+
+**Task ID:** `CDA_001_EFFECTIVE_AGENT_AUTHORITY_VERIFY_01`
+**Mode:** READ-ONLY AUDIT
+**Evidence Level:** `REPO_VERIFIED`
+**Baseline:** `7d2091d5`
+
+### Summary
+Agent authority graph araştırması tamamlandı. İki AGENTS.md arasında competing authority KANITLANMADI.
+
+### Key Findings
+
+| Soru | Cevap | Kanıt |
+|------|-------|-------|
+| Cline hangi AGENTS.md alıyor? | ROOT `AGENTS.md` (v2.1) | `.clinerules` L5: "Agent Behavioral Constitution: AGENTS.md" |
+| Cursor hangi AGENTS.md alıyor? | AGENTS.md referansı YOK | `.cursorrules` authority.json'a gider |
+| Antigravity hangi AGENTS.md alıyor? | ROOT `AGENTS.md` (v2.1) | `.agents/skills/*/SKILL.md` "AGENTS.md" okur |
+| `.agents/AGENTS.md` (SAAB v9) kim alıyor? | HİÇBİR AJAN ALMIYOR | SEARCH: sadece dosyanın kendisinde bulunuyor |
+
+### Verdict
+
+```
+CDA-001: IDENTITY_FRAGMENTATION → CLOSED / STALE_FINDING / ORIGINAL_FINDING_NOT_PROVEN
+
+SEBEP:
+1. .agents/AGENTS.md hiçbir agent tarafından YÜKLENMİYOR
+2. Competing authority KANITLANMADI
+3. Sadece dosya adı kafa karıştırıcı
+4. "Daha temiz görünüyor" ≠ problem
+
+EYLEM:
+- Rename REJECTED
+- Governance değişikliği YAPILMADI
+- Pipeline lesson: Contradictory Evidence Gate needed
+```
+
+### Output
+- `.project-brain/CDA_AUDIT_001_FINAL.md` → FINAL CLOSURE
+- `.project-brain/CDA_AUDIT_001_STATUS_UPDATE.md` → STALE
+- `.project-brain/CDA_AUDIT_001_IDENTITY_FRAGMENTATION.md` → STALE
+
+### Karar Gerektiren Mi?
+**EVET — Human Gate kararı ile CLOSED.** (2026-10-05)
+
+### Karar
+
+| # | Aksiyon | Risk | Durum |
+|---|---------|------|-------|
+| 1 | `.agents/AGENTS.md` rename | DÜŞÜK | **REJECTED** |
+| 2 | Governance cleanup | DÜŞÜK | **REJECTED** |
+| 3 | Pipeline hardening | ORTA | **TODO: Contradictory Evidence Gate** |
+
+| 3 | Pipeline hardening | ORTA | **TODO: Contradictory Evidence Gate** |
+
+---
+
+## ADMIN_RBAC_REMEDIATION_01 — 2026-10-05
+
+**Commit:** `54ad84b8`
+**Mode:** BOUNDED REMEDIATION
+**Evidence Level:** `REPO_VERIFIED`
+
+### Summary
+Admin user management dynamic Spatie role validation fix.
+
+### Investigation Results
+
+| Item | Result | Evidence |
+|---|---|---|
+| Canonical Role Authority | `'admin'` (lowercase) | RoleSeeder.php:34, BootstrapProductionPilotCommand.php:54 |
+| Canonical Vocabulary | `super-admin \| admin \| danisman \| musteri \| owner` | RoleSeeder.php |
+| hasRole('admin') calls | 59 in app/ | grep REPO_VERIFIED |
+| hasRole('Admin') calls | 0 in app/ | grep REPO_VERIFIED |
+| Code-level case mismatch | NONE | Verified all lowercase |
+| Production role data | UNKNOWN | Production Read-Only Audit pending |
+
+### Fixes Applied
+
+1. **UserController.php:** Dynamic validation via `Role::pluck('name')`
+2. **index.blade.php:** Dynamic dropdown + `getRoleNames()` instead of legacy `role_id`
+
+### Regression Tests
+
+| Test | Result |
+|---|---|
+| RoleSeederCanonicalConvergenceTest | 4/4 PASS |
+| AdminUserSeederContractTest | 6/6 PASS |
+| User-related tests | 102/102 PASS |
+
+### Verdict
+
+```
+ADMIN_RBAC_REMEDIATION_01: CLOSED / REPO_VERIFIED
+
+ROOT CAUSE: Hardcoded role validation instead of dynamic DB-driven validation
+FIX: Dynamic Spatie Role validation + proper getRoleNames() usage
+PRODUCTION ROLE DATA: UNKNOWN — Production Read-Only Audit pending
+MIGRATION REQUIRED: NO — Code-level fix only
+```
