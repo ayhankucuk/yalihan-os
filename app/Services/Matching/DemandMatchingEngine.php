@@ -470,6 +470,14 @@ class DemandMatchingEngine
             $query->where('fiyat', '<=', $talep->max_fiyat * (1 + $tolerance));
         }
 
+        // Oda sayısı ön filtresi (Kesin eşleşme - tolerans yok)
+        if ($talep->min_oda_sayisi) {
+            $query->where("oda_sayisi", ">=", $talep->min_oda_sayisi);
+        }
+        if ($talep->max_oda_sayisi) {
+            $query->where("oda_sayisi", "<=", $talep->max_oda_sayisi);
+        }
+
         // Metrekare ön filtresi (Toleranslı - Brut veya Alan kontrolü)
         $m2Tolerance = 0.20; // Metrekarede %20 daha geniş tolerans
         if ($talep->min_metrekare) {

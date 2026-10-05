@@ -1147,6 +1147,70 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
             İptal
+    </div>
+
+            <!-- Emlak Kriterleri Card -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 transition-all duration-300">
+                <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-gray-800 dark:to-gray-700 rounded-t-2xl">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                        <svg class="w-6 h-6 mr-3 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        🎯 Emlak Kriterleri
+                    </h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Aranan emlak özellikleri</p>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div>
+                            <label for="min_oda_sayisi" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Min Oda</label>
+                            <input type="number" id="min_oda_sayisi" name="min_oda_sayisi" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" value="{{ old('min_oda_sayisi') }}" min="1" max="10" placeholder="örn: 3" x-model="form.min_oda_sayisi">
+                            @error('min_oda_sayisi')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="max_oda_sayisi" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Max Oda</label>
+                            <input type="number" id="max_oda_sayisi" name="max_oda_sayisi" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" value="{{ old('max_oda_sayisi') }}" min="1" max="10" placeholder="örn: 5" x-model="form.max_oda_sayisi">
+                            @error('max_oda_sayisi')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="min_metrekare" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Min m²</label>
+                            <input type="number" id="min_metrekare" name="min_metrekare" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" value="{{ old('min_metrekare') }}" min="0" max="10000" placeholder="örn: 100" x-model="form.min_metrekare">
+                            @error('min_metrekare')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="max_metrekare" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Max m²</label>
+                            <input type="number" id="max_metrekare" name="max_metrekare" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" value="{{ old('max_metrekare') }}" min="0" max="10000" placeholder="örn: 200" x-model="form.max_metrekare">
+                            @error('max_metrekare')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div>
+                            <label for="min_fiyat" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Min Fiyat (₺)</label>
+                            <input type="number" id="min_fiyat" name="min_fiyat" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" value="{{ old('min_fiyat') }}" min="0" step="1000" placeholder="örn: 1000000" x-model="form.min_fiyat">
+                            @error('min_fiyat')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="max_fiyat" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Max Fiyat (₺)</label>
+                            <input type="number" id="max_fiyat" name="max_fiyat" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" value="{{ old('max_fiyat') }}" min="0" step="1000" placeholder="örn: 3000000" x-model="form.max_fiyat">
+                            @error('max_fiyat')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
         </a>
     </div>
     </form>

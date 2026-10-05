@@ -26,8 +26,28 @@
                                 Belirtilmemiş
                             @endif
                         </p>
-                        <p><strong>Oda Sayısı:</strong> {{ $talep->oda_sayisi ?: 'Belirtilmemiş' }}</p>
-                        <p><strong>Metraj:</strong> {{ $talep->metraj ?: 'Belirtilmemiş' }} m²</p>
+                        <p><strong>Oda Sayısı:</strong>
+                            @if ($talep->min_oda_sayisi && $talep->max_oda_sayisi)
+                                {{ $talep->min_oda_sayisi }} - {{ $talep->max_oda_sayisi }} oda
+                            @elseif($talep->min_oda_sayisi)
+                                Min: {{ $talep->min_oda_sayisi }} oda
+                            @elseif($talep->max_oda_sayisi)
+                                Max: {{ $talep->max_oda_sayisi }} oda
+                            @else
+                                Belirtilmemiş
+                            @endif
+                        </p>
+                        <p><strong>Metrekare:</strong>
+                            @if ($talep->min_metrekare && $talep->max_metrekare)
+                                {{ $talep->min_metrekare}} - {{ $talep->max_metrekare }} m²
+                            @elseif($talep->min_metrekare)
+                                Min: {{ $talep->min_metrekare }} m²
+                            @elseif($talep->max_metrekare)
+                                Max: {{ $talep->max_metrekare }} m²
+                            @else
+                                Belirtilmemiş
+                            @endif
+                        </p>
                         <p><strong>Ek Notlar:</strong> {{ $talep->notlar ?: 'Bulunmuyor' }}</p>
                     </div>
                 </div>
@@ -63,7 +83,7 @@
                                             <p><strong>Konum:</strong> {{ $eslesme['emlak']->il }} /
                                                 {{ $eslesme['emlak']->ilce }}</p>
                                             <p><strong>Özellikler:</strong> {{ $eslesme['emlak']->oda_sayisi }} Oda,
-                                                {{ $eslesme['emlak']->metraj }} m²</p>
+                                                {{ $eslesme['emlak']->brut_m2 ?? $eslesme['emlak']->alan_m2 ?? 'N/A' }} m²</p>
                                             <a href="{{ route('admin.emlaklar.show', $eslesme['emlak']->id) }}"
                                                 class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 active:scale-95 focus:ring-blue-500 shadow-md hover:shadow-lg dark:shadow-none">Detaylar</a>
                                         </div>

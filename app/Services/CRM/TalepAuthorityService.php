@@ -200,6 +200,8 @@ class TalepAuthorityService
             'max_fiyat' => $data['max_fiyat'] ?? null,
             'min_metrekare' => isset($data['min_metrekare']) && $data['min_metrekare'] !== '' ? (int) $data['min_metrekare'] : null,
             'max_metrekare' => isset($data['max_metrekare']) && $data['max_metrekare'] !== '' ? (int) $data['max_metrekare'] : null,
+            'min_oda_sayisi' => isset($data['min_oda_sayisi']) && $data['min_oda_sayisi'] !== '' ? (int) $data['min_oda_sayisi'] : null,
+            'max_oda_sayisi' => isset($data['max_oda_sayisi']) && $data['max_oda_sayisi'] !== '' ? (int) $data['max_oda_sayisi'] : null,
             'notlar' => $data['notlar'] ?? null,
         ];
     }

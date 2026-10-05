@@ -117,6 +117,8 @@ class TalepController extends Controller
             'max_fiyat'       => 'nullable|numeric',
             'min_metrekare'   => 'nullable|integer|min:0',
             'max_metrekare'   => 'nullable|integer|gte:min_metrekare',
+            'min_oda_sayisi'  => 'nullable|integer|min:1|max:20',
+            'max_oda_sayisi'  => 'nullable|integer|gte:min_oda_sayisi',
             'notlar'          => 'nullable|string',
         ]);
 
@@ -211,6 +213,8 @@ class TalepController extends Controller
             'max_fiyat'       => 'nullable|numeric',
             'min_metrekare'   => 'nullable|integer|min:0',
             'max_metrekare'   => 'nullable|integer|gte:min_metrekare',
+            'min_oda_sayisi'  => 'nullable|integer|min:1|max:20',
+            'max_oda_sayisi'  => 'nullable|integer|gte:min_oda_sayisi',
             'notlar'          => 'nullable|string',
         ]);
 

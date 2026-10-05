@@ -4415,6 +4415,8 @@ CREATE TABLE `talepler` (
   `alt_kategori_id` bigint unsigned DEFAULT NULL,
   `max_metrekare` int NULL COMMENT 'Max square meters filter',
   `min_metrekare` int NULL COMMENT 'Min square meters filter',
+  `min_oda_sayisi` tinyint unsigned NULL COMMENT 'Minimum room count criterion for matching',
+  `max_oda_sayisi` tinyint unsigned NULL COMMENT 'Maximum room count criterion for matching',
   `metadata` json NULL COMMENT 'Extended search metadata',
   `mahalle_id` bigint unsigned DEFAULT NULL,
   `kaynak` varchar(100) DEFAULT NULL COMMENT 'Talep origin source',

@@ -6,6 +6,7 @@ use App\Domain\CRM\Contracts\TalepRepositoryInterface;
 use App\Domain\CRM\DTOs\TalepListCriteria;
 use App\Models\IlanKategori;
 use App\Models\Il;
+use App\Models\Kisi;
 use App\Models\Ulke;
 use App\Models\User;
 use App\Repositories\TalepRepository;
@@ -83,6 +84,7 @@ class ListTaleplerUseCase
             'statuslar'    => \App\Enums\TalepDurumu::options(),
             'talepTipleri' => $this->getTalepTipleri(),
             'emlakTipleri' => $this->getTalepTipleri(),
+            'kisiler'      => $this->getKisiler(),
         ];
     }
 
@@ -132,6 +134,13 @@ class ListTaleplerUseCase
     {
         return User::whereHas('roles', fn($q) => $q->where('name', 'danisman'))
             ->select(['id', 'name', 'email'])
+            ->get();
+    }
+
+    private function getKisiler(): Collection
+    {
+        return Kisi::select(['id', 'ad', 'soyad', 'telefon', 'email'])
+            ->orderBy('ad')
             ->get();
     }
 

@@ -6,6 +6,7 @@ use App\Models\Talep;
 use App\Models\Ulke;
 use App\Models\IlanKategori;
 use App\Models\Il;
+use App\Models\Kisi;
 use App\Models\User;
 use App\Enums\TalepDurumu;
 use App\Enums\YayinTipi;
@@ -70,6 +71,7 @@ class TalepOrchestrator
             'statuslar'   => TalepDurumu::options(),
             'talepTipleri' => $this->getTalepTipleri(),
             'emlakTipleri' => ['Daire', 'Villa', 'Arsa', 'İşyeri', 'Yazlık'],
+            'kisiler'     => $this->getKisiler(),
         ];
     }
 
@@ -112,6 +114,13 @@ class TalepOrchestrator
     {
         return User::whereHas('roles', fn($q) => $q->where('name', 'danisman'))
             ->select(['id', 'name', 'email'])
+            ->get();
+    }
+
+    private function getKisiler(): Collection
+    {
+        return Kisi::select(['id', 'ad', 'soyad', 'telefon', 'email'])
+            ->orderBy('ad')
             ->get();
     }
 

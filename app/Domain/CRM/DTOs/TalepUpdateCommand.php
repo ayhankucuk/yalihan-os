@@ -24,6 +24,8 @@ readonly class TalepUpdateCommand
         public ?float $maxFiyat = null,
         public ?int $minMetrekare = null,
         public ?int $maxMetrekare = null,
+        public ?int $minOdaSayisi = null,
+        public ?int $maxOdaSayisi = null,
         public ?string $notlar = null,
         public ?User $actor = null,
     ) {}
@@ -45,6 +47,8 @@ readonly class TalepUpdateCommand
             maxFiyat: isset($data['max_fiyat']) ? (float) $data['max_fiyat'] : null,
             minMetrekare: isset($data['min_metrekare']) && $data['min_metrekare'] !== '' ? (int) $data['min_metrekare'] : null,
             maxMetrekare: isset($data['max_metrekare']) && $data['max_metrekare'] !== '' ? (int) $data['max_metrekare'] : null,
+            minOdaSayisi: isset($data['min_oda_sayisi']) && $data['min_oda_sayisi'] !== '' ? (int) $data['min_oda_sayisi'] : null,
+            maxOdaSayisi: isset($data['max_oda_sayisi']) && $data['max_oda_sayisi'] !== '' ? (int) $data['max_oda_sayisi'] : null,
             notlar: $data['notlar'] ?? null,
             actor: $actor,
         );
@@ -67,6 +71,8 @@ readonly class TalepUpdateCommand
             'max_fiyat' => $this->maxFiyat,
             'min_metrekare' => $this->minMetrekare,
             'max_metrekare' => $this->maxMetrekare,
+            'min_oda_sayisi' => $this->minOdaSayisi,
+            'max_oda_sayisi' => $this->maxOdaSayisi,
             'notlar' => $this->notlar,
         ], fn($val) => $val !== null);
     }

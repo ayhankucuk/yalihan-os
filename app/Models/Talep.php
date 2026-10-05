@@ -50,6 +50,8 @@ class Talep extends BaseModel
         'notlar',
         'min_metrekare',
         'max_metrekare',
+        'min_oda_sayisi',
+        'max_oda_sayisi',
     ];
 
     /**
@@ -62,6 +64,8 @@ class Talep extends BaseModel
         'max_fiyat' => 'decimal:2',
         'min_metrekare' => 'integer',
         'max_metrekare' => 'integer',
+        'min_oda_sayisi' => 'integer',
+        'max_oda_sayisi' => 'integer',
         'aranan_ozellikler_json' => 'array',
         'metadata' => 'array',
         'talep_durumu' => \App\Enums\TalepDurumu::class, // ✅ SAB: talep_durumu (TalepDurumu Enum)

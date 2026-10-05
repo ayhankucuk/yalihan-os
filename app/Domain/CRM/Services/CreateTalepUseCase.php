@@ -167,6 +167,8 @@ class CreateTalepUseCase
             'max_fiyat'       => $command->maxFiyat,
             'min_metrekare'   => $command->minMetrekare,
             'max_metrekare'   => $command->maxMetrekare,
+            'min_oda_sayisi'  => $command->minOdaSayisi,
+            'max_oda_sayisi'  => $command->maxOdaSayisi,
             'notlar'           => $command->notlar,
         ];
     }

@@ -252,4 +252,271 @@ class DemandMatchingEngineTest extends TestCase
         $this->assertEquals($ilan->id, $results->first()['ilan']->id);
         $this->assertGreaterThan(0, $results->first()['skor']);
     }
+
+
+    /** @test */
+    public function it_filters_by_min_oda_sayisi_hard_constraint()
+    {
+        $kategori = $this->ensureKategori("daire");
+        $istanbul = $this->ensureIl(34, ["il_adi" => "İstanbul"]);
+        $kisi = Kisi::withoutEvents(fn() => Kisi::factory()->create());
+
+        $talep = Talep::factory()->create([
+            "il_id" => $istanbul->id,
+            "kisi_id" => $kisi->id,
+            "alt_kategori_id" => $kategori->id,
+            "min_fiyat" => 500000,
+            "max_fiyat" => 2000000,
+            "talep_durumu" => TalepDurumu::AKTIF->value,
+        ]);
+        $talep->min_oda_sayisi = 3;
+        $talep->save();
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 2,
+            "brut_m2" => 100,
+            "fiyat" => 1000000,
+        ]);
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 3,
+            "brut_m2" => 120,
+            "fiyat" => 1000000,
+        ]);
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 4,
+            "brut_m2" => 140,
+            "fiyat" => 1000000,
+        ]);
+
+        $results = $this->engine->matchDemand($talep);
+        $this->assertCount(2, $results);
+    }
+
+    /** @test */
+    public function it_filters_by_max_oda_sayisi_hard_constraint()
+    {
+        $kategori = $this->ensureKategori("daire");
+        $istanbul = $this->ensureIl(34, ["il_adi" => "İstanbul"]);
+        $kisi = Kisi::withoutEvents(fn() => Kisi::factory()->create());
+
+        $talep = Talep::factory()->create([
+            "il_id" => $istanbul->id,
+            "kisi_id" => $kisi->id,
+            "alt_kategori_id" => $kategori->id,
+            "min_fiyat" => 500000,
+            "max_fiyat" => 2000000,
+            "talep_durumu" => TalepDurumu::AKTIF->value,
+        ]);
+        $talep->max_oda_sayisi = 3;
+        $talep->save();
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 4,
+            "brut_m2" => 140,
+            "fiyat" => 1000000,
+        ]);
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 3,
+            "brut_m2" => 120,
+            "fiyat" => 1000000,
+        ]);
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 2,
+            "brut_m2" => 100,
+            "fiyat" => 1000000,
+        ]);
+
+        $results = $this->engine->matchDemand($talep);
+        $this->assertCount(2, $results);
+    }
+
+    /** @test */
+    public function it_applies_room_range_constraint_with_both_min_and_max()
+    {
+        $kategori = $this->ensureKategori("daire");
+        $istanbul = $this->ensureIl(34, ["il_adi" => "İstanbul"]);
+        $kisi = Kisi::withoutEvents(fn() => Kisi::factory()->create());
+
+        $talep = Talep::factory()->create([
+            "il_id" => $istanbul->id,
+            "kisi_id" => $kisi->id,
+            "alt_kategori_id" => $kategori->id,
+            "min_fiyat" => 500000,
+            "max_fiyat" => 2000000,
+            "talep_durumu" => TalepDurumu::AKTIF->value,
+        ]);
+        $talep->min_oda_sayisi = 2;
+        $talep->max_oda_sayisi = 4;
+        $talep->save();
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 1,
+            "brut_m2" => 80,
+            "fiyat" => 1000000,
+        ]);
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 2,
+            "brut_m2" => 100,
+            "fiyat" => 1000000,
+        ]);
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 3,
+            "brut_m2" => 120,
+            "fiyat" => 1000000,
+        ]);
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 4,
+            "brut_m2" => 140,
+            "fiyat" => 1000000,
+        ]);
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 5,
+            "brut_m2" => 160,
+            "fiyat" => 1000000,
+        ]);
+
+        $results = $this->engine->matchDemand($talep);
+        $this->assertCount(3, $results);
+    }
+
+    /** @test */
+    public function it_does_not_apply_room_constraint_when_both_null()
+    {
+        $kategori = $this->ensureKategori("daire");
+        $istanbul = $this->ensureIl(34, ["il_adi" => "İstanbul"]);
+        $kisi = Kisi::withoutEvents(fn() => Kisi::factory()->create());
+
+        $talep = Talep::factory()->create([
+            "il_id" => $istanbul->id,
+            "kisi_id" => $kisi->id,
+            "alt_kategori_id" => $kategori->id,
+            "min_fiyat" => 500000,
+            "max_fiyat" => 2000000,
+            "talep_durumu" => TalepDurumu::AKTIF->value,
+        ]);
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 1,
+            "brut_m2" => 80,
+            "fiyat" => 1000000,
+        ]);
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 5,
+            "brut_m2" => 180,
+            "fiyat" => 1000000,
+        ]);
+
+        $results = $this->engine->matchDemand($talep);
+        $this->assertCount(2, $results);
+    }
+
+    /** @test */
+    public function it_preserves_area_and_price_filtering_when_room_added()
+    {
+        $kategori = $this->ensureKategori("daire");
+        $istanbul = $this->ensureIl(34, ["il_adi" => "İstanbul"]);
+        $kisi = Kisi::withoutEvents(fn() => Kisi::factory()->create());
+
+        $talep = Talep::factory()->create([
+            "il_id" => $istanbul->id,
+            "kisi_id" => $kisi->id,
+            "alt_kategori_id" => $kategori->id,
+            "min_fiyat" => 1000000,
+            "max_fiyat" => 3000000,
+            "talep_durumu" => TalepDurumu::AKTIF->value,
+        ]);
+        $talep->min_metrekare = 100;
+        $talep->max_metrekare = 200;
+        $talep->min_oda_sayisi = 2;
+        $talep->max_oda_sayisi = 4;
+        $talep->save();
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 3,
+            "brut_m2" => 150,
+            "fiyat" => 2000000,
+        ]);
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 3,
+            "brut_m2" => 150,
+            "fiyat" => 5000000,
+        ]);
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 3,
+            "brut_m2" => 50,
+            "fiyat" => 2000000,
+        ]);
+
+        Ilan::factory()->create([
+            "yayin_durumu" => IlanDurumu::YAYINDA->value,
+            "il_id" => $istanbul->id,
+            "alt_kategori_id" => $kategori->id,
+            "oda_sayisi" => 5,
+            "brut_m2" => 150,
+            "fiyat" => 2000000,
+        ]);
+
+        $results = $this->engine->matchDemand($talep);
+        $this->assertCount(1, $results);
+    }
+
 }
