@@ -187,13 +187,9 @@
                         <select style="color-scheme: light dark;" name="role" onchange="this.form.submit()"
                             class="cursor-pointer rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 transition-colors focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
                             <option value="">Tüm Roller</option>
-                            <option value="superadmin" {{ request('role') == 'superadmin' ? 'selected' : '' }}>Super Admin
-                            </option>
-                            <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                            <option value="danisman" {{ request('role') == 'danisman' ? 'selected' : '' }}>Danışman
-                            </option>
-                            <option value="editor" {{ request('role') == 'editor' ? 'selected' : '' }}>Editor</option>
-                            <option value="musteri" {{ request('role') == 'musteri' ? 'selected' : '' }}>Müşteri</option>
+                            @foreach ($roles as $roleItem)
+                                <option value="{{ $roleItem->name }}" {{ request('role') == $roleItem->name ? 'selected' : '' }}>{{ ucfirst($roleItem->name) }}</option>
+                            @endforeach
                         </select>
                     </form>
 
@@ -300,14 +296,18 @@
                                 <td class="px-6 py-4 text-center">
                                     @php
                                         $roleMapping = [
-                                            'superadmin' => 'Super Admin',
+                                            'super-admin' => 'Super Admin',
                                             'admin' => 'Admin',
                                             'danisman' => 'Danışman',
                                             'editor' => 'Editor',
                                             'musteri' => 'Müşteri',
+                                            'owner' => 'Owner',
                                         ];
-                                        // Use role_id instead of roles relationship (Spatie not available)
-                                        $primaryRole = $user->role_id ? 'Role #' . $user->role_id : 'Rol Yok';
+                                        // ✅ SAB: Spatie getRoleNames() öncelikli, legacy role_id fallback
+                                        $spatieRole = $user->getRoleNames()->first();
+                                        $primaryRole = $spatieRole
+                                            ? ($roleMapping[$spatieRole] ?? ucfirst($spatieRole))
+                                            : 'Rol Yok';
 
                                         $roleColors = [
                                             'Super Admin' =>
@@ -332,7 +332,7 @@
                                             class="{{ $roleColor }} inline-flex items-center rounded-full px-3 py-1.5 text-xs font-bold">
                                             {{ $primaryRole }}
                                         </span>
-                                        @if (!$user->role_id)
+                                        @if (!$spatieRole)
                                             <a href="{{ route('admin.kullanicilar.edit', $user) }}"
                                                 class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-blue-600 transition-all duration-200 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
                                                 title="Rol Ata">

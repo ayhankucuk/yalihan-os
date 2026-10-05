@@ -68,7 +68,10 @@ class UserController extends AdminController
 
         $users = $query->paginate(20)->withQueryString();
 
-        return view('admin.users.index', compact('users'));
+        // ✅ SAB: Tüm rolleri filter dropdown için gönder
+        $roles = \Spatie\Permission\Models\Role::all(['id', 'name', 'guard_name']);
+
+        return view('admin.users.index', compact('users', 'roles'));
     }
 
     /**
@@ -89,7 +92,7 @@ class UserController extends AdminController
             'email' => 'required|string|email|max:255|unique:users',
             'telefon' => 'nullable|string|max:20',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|string|in:superadmin,admin,danisman,editor,musteri',
+            'role' => 'required|string|in:' . implode(',', \Spatie\Permission\Models\Role::pluck('name')->toArray()),
             'aktiflik_durumu' => 'nullable|boolean',
             'email_verified' => 'nullable|boolean',
         ]);
@@ -127,11 +130,13 @@ class UserController extends AdminController
     public function update(Request $request, User $kullanicilar)
     {
         // ✅ SAB: Validation - aktiflik_durumu string olarak geliyor (0 veya 1)
+        // DB'deki tüm rol isimlerini dinamik al — hardcoded in: kuralı yerine
+        $validRoles = \Spatie\Permission\Models\Role::pluck('name')->toArray();
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,'.$kullanicilar->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|string|in:superadmin,admin,danisman,editor,musteri', // ✅ SAB: Rol zorunlu
+            'role' => 'required|string|in:' . implode(',', $validRoles), // ✅ SAB: Rol zorunlu, dinamik validasyon
             'aktiflik_durumu' => 'nullable|in:0,1',
         ], [
             'role.required' => 'Kullanıcı rolü seçilmelidir.',
