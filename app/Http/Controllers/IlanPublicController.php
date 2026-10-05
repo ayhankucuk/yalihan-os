@@ -421,15 +421,7 @@ class IlanPublicController extends Controller
             'robots'      => 'index, follow',
         ];
 
-        // "Yazlık Kiralık" kategorisi kontrolü (Kategori slug veya Yayin tipi)
-        $isYazlik = ($ilan->kategori && str_contains(strtolower($ilan->kategori->slug), 'yazlik')) 
-                 || ($ilan->altKategori && str_contains(strtolower($ilan->altKategori->slug), 'yazlik'))
-                 || ($ilan->anaKategori && str_contains(strtolower($ilan->anaKategori->slug), 'yazlik'))
-                 || str_contains(strtolower($ilan->kategori_adi ?? ''), 'yazlık');
-
-        $viewName = $isYazlik ? 'frontend.ilanlar.show-yazlik' : 'frontend.ilanlar.show';
-
-        return view($viewName, compact('ilan', 'similar', 'danismanDigerIlanlar', 'cortexHealth', 'cortexAnalysis', 'currency', 'seo', 'mainImage'));
+        return view('frontend.ilanlar.show', compact('ilan', 'similar', 'danismanDigerIlanlar', 'cortexHealth', 'cortexAnalysis', 'currency', 'seo', 'mainImage'));
     }
 
     /**
