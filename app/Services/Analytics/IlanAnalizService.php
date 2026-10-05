@@ -48,7 +48,12 @@ class IlanAnalizService
             $roiData = $this->roiEngine->calculateROI($ilan);
 
             // 3. POI Analizi (Çevresel Değer)
-            $poiHighlights = $this->poiService->getHighlights($ilan->lat, $ilan->lng);
+            // POI Service strict spatial contract: requires valid float coordinates.
+            // If coordinates are missing, skip POI analysis — do not weaken PoiService contract.
+            // @defect-fix: DEFECT_POI_SERVICE_NULL_REMEDIATION_01
+            $poiHighlights = ($ilan->lat !== null && $ilan->lng !== null)
+                ? $this->poiService->getHighlights($ilan->lat, $ilan->lng)
+                : [];
 
             return [
                 'ilan_id' => $ilan->id,
