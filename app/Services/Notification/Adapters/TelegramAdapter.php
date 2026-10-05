@@ -39,27 +39,27 @@ class TelegramAdapter
                 ]);
             }
 
-            $response = $telegramService->sendMessage(
+            $success = $telegramService->sendMessage(
                 $recipient,
                 $message,
                 $replyMarkup
             );
 
-            if ($response->successful()) {
+            if ($success) {
                 if ($audit) {
                     $audit->update([
-                        'provider_response' => $response->json()
+                        'provider_response' => ['ok' => true, 'timestamp' => now()->toIso8601String()]
                     ]);
                 }
                 return true;
             }
 
-            throw new \Exception("Telegram API error: " . $response->body());
+            throw new \Exception("Telegram API error: sendMessage returned false");
 
         } catch (\Throwable $e) {
             if ($audit) {
                 $audit->update([
-                    'provider_response' => isset($response) ? $response->json() : null
+                    'provider_response' => ['ok' => false, 'error' => $e->getMessage(), 'timestamp' => now()->toIso8601String()]
                 ]);
             }
 
