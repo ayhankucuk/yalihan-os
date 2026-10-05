@@ -68,7 +68,7 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
         $this->registerBladeDirectives();
 
-        // Superadmin otomatik olarak tüm izinlere sahiptir
+        // SUPER-ADMIN ONLY: Global bypass sadece canonical super-admin için
         Gate::before(function (User $user) {
             // Eager load role relationship if not already loaded
             if (!$user->relationLoaded('role')) {
@@ -79,12 +79,9 @@ class AuthServiceProvider extends ServiceProvider
                 return null; // Let other gates handle it
             }
 
-            // Normalize role name (handle case sensitivity and spaces)
-            $roleName = strtolower(trim($user->role->name));
-
-            // Check if user is superadmin (with variations)
-            $superadminVariations = ['superadmin', 'super-admin', 'süper admin', 'süperadmin', 'admin'];
-            if (in_array($roleName, $superadminVariations)) {
+            // SECURITY FIX: Canonical super-admin ONLY — no compatibility array
+            // super-admin bypass sadece canonical Spatie rolüne verilir
+            if ($user->hasRole('super-admin')) {
                 return true;
             }
 
@@ -102,26 +99,26 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('manage-users', function (User $user) {
-            $allowed = ['Süper Admin', 'superadmin', 'süper admin', 'admin'];
+            $allowed = ['Süper Admin', 'super-admin', 'süper admin', 'admin'];
             return $user->hasAnyRole($allowed) ||
                    ($user->role && in_array(strtolower(trim($user->role->name)), array_map('strtolower', $allowed)));
         });
 
         Gate::define('manage-settings', function (User $user) {
-            $allowed = ['Süper Admin', 'superadmin', 'süper admin', 'super-admin', 'admin'];
+            $allowed = ['Süper Admin', 'super-admin', 'süper admin', 'admin'];
             return $user->hasAnyRole($allowed) ||
                    ($user->role && in_array(strtolower(trim($user->role->name)), array_map('strtolower', $allowed)));
         });
 
         Gate::define('manage-ilanlar', function (User $user) {
-            $allowed = ['Süper Admin', 'superadmin', 'super-admin', 'admin', 'Danışman', 'danışman', 'danisman'];
+            $allowed = ['Süper Admin', 'super-admin', 'admin', 'Danışman', 'danışman', 'danisman'];
             return $user->hasAnyRole($allowed) ||
                    ($user->role && in_array(strtolower(trim($user->role->name)), array_map('strtolower', $allowed)));
         });
 
         Gate::define('edit-ilanlar', function (User $user) {
             $allowed = [
-                'Süper Admin', 'superadmin', 'super-admin', 'admin',
+                'Süper Admin', 'super-admin', 'admin',
                 'Danışman', 'danışman', 'danisman', 'Editör', 'editor', 'editör',
             ];
             return $user->hasAnyRole($allowed) ||
@@ -129,7 +126,7 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('manage-notifications', function (User $user) {
-            $allowed = ['Süper Admin', 'superadmin', 'super-admin', 'süper admin', 'admin'];
+            $allowed = ['Süper Admin', 'super-admin', 'süper admin', 'admin'];
             return $user->hasAnyRole($allowed) ||
                    ($user->role && in_array(strtolower(trim($user->role->name)), array_map('strtolower', $allowed)));
         });
@@ -137,7 +134,7 @@ class AuthServiceProvider extends ServiceProvider
         // ✅ SECURITY FIX (2026-01-17): Resource-aware gate with ownership control
         Gate::define('edit-ilan', function (User $user, \App\Models\Ilan $ilan) {
             // Superadmin bypass
-            $superadminRoles = ['superadmin', 'süper admin', 'süperadmin', 'super-admin', 'admin'];
+            $superadminRoles = ['super-admin', 'superadmin', 'süper admin', 'süperadmin', 'admin'];
             if ($user->role && in_array(strtolower(trim($user->role->name)), $superadminRoles)) {
                 return true;
             }

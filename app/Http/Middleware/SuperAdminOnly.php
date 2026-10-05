@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Auth;
 
 class SuperAdminOnly
 {
+    /**
+     * Handle an incoming request.
+     * SUPER-ADMIN ONLY — ordinary admin does NOT pass.
+     */
     public function handle(Request $request, Closure $next)
     {
         if (!Auth::check()) {
@@ -15,21 +19,13 @@ class SuperAdminOnly
         }
 
         $user = Auth::user();
-        $allowed = ['Süper Admin', 'superadmin', 'süper admin', 'admin'];
-        
-        $hasAccess = $user->hasAnyRole($allowed);
-        
-        if (!$hasAccess && $user->role) {
-            $roleName = strtolower(trim($user->role->name));
-            if (in_array($roleName, array_map('strtolower', $allowed))) {
-                $hasAccess = true;
-            }
+
+        // SECURITY FIX: Canonical super-admin ONLY via Spatie
+        // ordinary 'admin' does NOT pass this middleware
+        if ($user->hasRole('super-admin')) {
+            return $next($request);
         }
 
-        if (!$hasAccess) {
-            abort(403, 'Bu sayfaya sadece süper admin erişebilir.');
-        }
-
-        return $next($request);
+        abort(403, 'Bu sayfaya sadece süper admin erişebilir.');
     }
 }

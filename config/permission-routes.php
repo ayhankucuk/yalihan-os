@@ -122,7 +122,7 @@ return [
             // Spatie Permission permission'ları buraya eklenir
         ],
         'role' => [
-            'superadmin',
+            'super-admin',
             'admin',
             'danisman',
             'editor',

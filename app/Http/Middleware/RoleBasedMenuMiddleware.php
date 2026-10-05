@@ -33,8 +33,8 @@ class RoleBasedMenuMiddleware
             // Kullanıcının en yüksek rolünü belirle
             $roleName = 'user'; // Default
 
-            if ($user->hasRole('superadmin')) {
-                $roleName = 'superadmin';
+            if ($user->hasRole('super-admin')) {
+                $roleName = 'super-admin';
             } elseif ($user->hasRole('admin')) {
                 $roleName = 'admin';
             } elseif ($user->hasRole('danisman')) {

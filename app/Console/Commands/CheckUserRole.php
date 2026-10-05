@@ -61,7 +61,8 @@ class CheckUserRole extends Command
             $this->warn("  ⚠️  No role assigned!");
             
             // Try to find a role
-            $superadminRole = Role::where('name', 'superadmin')
+            $superadminRole = Role::where('name', 'super-admin')
+                ->orWhere('name', 'superadmin')
                 ->orWhere('name', 'Süper Admin')
                 ->orWhere('name', 'admin')
                 ->first();
@@ -87,6 +88,7 @@ class CheckUserRole extends Command
             // Check if role name matches enum values
             $normalizedRole = strtolower(trim($roleName));
             $allowedRoles = [
+                'super-admin',
                 'superadmin',
                 'süper admin',
                 'süperadmin',

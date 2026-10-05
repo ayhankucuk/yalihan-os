@@ -4,7 +4,7 @@ namespace App\Enums;
 
 enum UserRole: string
 {
-    case SUPERADMIN = 'superadmin';
+    case SUPERADMIN = 'super-admin';
     case DANISMAN = 'danisman';
     case EDITOR = 'editor';
 

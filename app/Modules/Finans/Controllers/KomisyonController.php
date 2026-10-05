@@ -72,7 +72,7 @@ class KomisyonController extends Controller
         // Check role name (resolves role_id → role.name mapping)
         $roleName = optional($user->role)->name ?? null;
 
-        return in_array($roleName, ['admin', 'superadmin'], true);
+        return in_array($roleName, ['admin', 'super-admin'], true);
     }
 
     /**

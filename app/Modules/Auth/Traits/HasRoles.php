@@ -91,7 +91,7 @@ trait HasRoles
      */
     public function isSuperAdmin()
     {
-        return $this->hasRole('superadmin');
+        return $this->hasRole('super-admin');
     }
 
     /**

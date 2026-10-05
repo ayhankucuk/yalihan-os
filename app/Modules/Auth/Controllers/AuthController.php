@@ -308,7 +308,7 @@ class AuthController extends BaseController
     {
         // Kullanıcının rolü varsa ve rolü admin veya superadmin ise
         if ($user && $user->role) {
-            return in_array($user->role->name, ['admin', 'superadmin']);
+            return in_array($user->role->name, ['admin', 'super-admin']);
         }
 
         return false;

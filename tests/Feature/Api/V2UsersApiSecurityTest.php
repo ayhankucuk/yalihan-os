@@ -218,7 +218,8 @@ class V2UsersApiSecurityTest extends TestCase
             'status' => 'active',
         ]);
 
-        $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
+        // SECURITY FIX: Canonical super-admin role
+        $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
 
         $superAdmin = User::create([
             'tenant_id' => $tenantA->id,

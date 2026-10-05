@@ -11,7 +11,7 @@ class PhotoBulkActionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['admin', 'superadmin']);
+        return auth()->check() && auth()->user()->hasAnyRole(['admin', 'super-admin']);
     }
 
     /**

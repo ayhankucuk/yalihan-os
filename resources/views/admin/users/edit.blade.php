@@ -81,7 +81,7 @@
                             $roles = \Spatie\Permission\Models\Role::all(['id', 'name']);
                             $currentRole = $user->getRoleNames()->first();
                             $roleDescriptions = [
-                                'superadmin' => [
+                                'super-admin' => [
                                     'icon' => '👑',
                                     'name' => 'Super Admin',
                                     'desc' => 'Tüm yetkilere sahip süper kullanıcı',

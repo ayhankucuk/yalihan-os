@@ -26,8 +26,8 @@ trait AdminMenu
         $role = 'user'; // Default
 
         if ($user) {
-            if ($user->hasRole('superadmin')) {
-                $role = 'superadmin';
+            if ($user->hasRole('super-admin')) {
+                $role = 'super-admin';
             } elseif ($user->hasRole('admin')) {
                 $role = 'admin';
             } elseif ($user->hasRole('danisman')) {

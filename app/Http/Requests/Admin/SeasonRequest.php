@@ -11,7 +11,7 @@ class SeasonRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['admin', 'superadmin', 'danisman']);
+        return auth()->check() && auth()->user()->hasAnyRole(['admin', 'super-admin', 'danisman']);
     }
 
     /**

@@ -312,7 +312,7 @@ class User extends Authenticatable
      */
     public function isSuperAdmin(): bool
     {
-        return $this->hasRole('superadmin');
+        return $this->hasRole('super-admin');
     }
 
     /**
@@ -440,7 +440,7 @@ class User extends Authenticatable
      */
     public function getDashboardUrl()
     {
-        if ($this->userHasRole(['superadmin', 'admin'])) {
+        if ($this->userHasRole(['super-admin', 'admin'])) {
             return route('admin.dashboard.index');
         }
 

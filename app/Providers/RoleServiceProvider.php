@@ -35,7 +35,7 @@ class RoleServiceProvider extends ServiceProvider
         Blade::if('admin', function () {
             if (!Auth::check()) return false;
             $user = Auth::user();
-            $allowed = ['Süper Admin', 'superadmin', 'süper admin', 'admin'];
+            $allowed = ['Süper Admin', 'super-admin', 'süper admin', 'admin'];
             return $user->hasAnyRole($allowed) || 
                    ($user->role && in_array(strtolower(trim($user->role->name)), array_map('strtolower', $allowed)));
         });

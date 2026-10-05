@@ -45,34 +45,14 @@ class FeaturePolicy
 
     private function canManage(User $user): bool
     {
-        // Spatie & Legacy accepted roles
-        $accepted = [
-            'admin', 'superadmin', 'editor',
-            'Admin', 'Süper Admin', 'Editör',
-            'süper admin', 'süperadmin',
-            UserRole::SUPERADMIN->value,
-            UserRole::EDITOR->value,
-        ];
-
-        if (method_exists($user, 'hasAnyRole')) {
-            if ($user->hasAnyRole($accepted)) {
-                return true;
-            }
+        // SECURITY FIX: Canonical super-admin via Spatie
+        if ($user->hasRole('super-admin')) {
+            return true;
         }
 
-        if (method_exists($user, 'hasRole')) {
-            foreach ($accepted as $roleName) {
-                if ($user->hasRole($roleName)) {
-                    return true;
-                }
-            }
-        }
-
-        // Fallback to legacy role relationship check
-        if ($user->role) {
-            $currentRoleName = strtolower(trim($user->role->name));
-            $adminRoles = ['admin', 'superadmin', 'super admin', 'süper admin', 'süperadmin', 'editor', 'editör'];
-            return in_array($currentRoleName, $adminRoles);
+        // Admin and other elevated roles via Spatie
+        if ($user->hasAnyRole(['admin', 'editor'])) {
+            return true;
         }
 
         return false;

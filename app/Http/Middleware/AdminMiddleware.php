@@ -27,7 +27,7 @@ class AdminMiddleware
 
         // Spatie Permission ile rol kontrolü (Büyük-küçük harf ve Türkçe karakter duyarlılığı için normalize ediyoruz)
         $allowedRoles = [
-            'superadmin', 'super-admin', 'süper-admin', 'süper admin',
+            'super-admin', 'superadmin', 'süper-admin', 'süper admin',
             'admin', 'danisman',
             'Super Admin', 'Super-Admin', 'Süper Admin',
             'Admin', 'Danışman',

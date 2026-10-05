@@ -145,7 +145,7 @@
                         @php
                             $roles = \Spatie\Permission\Models\Role::all(['id', 'name']);
                             $roleDescriptions = [
-                                'superadmin' => [
+                                'super-admin' => [
                                     'icon' => '👑',
                                     'name' => 'Super Admin',
                                     'desc' => 'Tüm yetkilere sahip süper kullanıcı',

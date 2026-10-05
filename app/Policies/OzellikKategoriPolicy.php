@@ -45,26 +45,14 @@ class OzellikKategoriPolicy
 
     private function canManage(User $user): bool
     {
-        // Spatie roles check
-        $roleNames = [
-            'admin', 'superadmin', 'editor',
-            'Admin', 'Süper Admin', 'Editör',
-            'süper admin', 'süperadmin',
-            UserRole::SUPERADMIN->value,
-            UserRole::EDITOR->value,
-        ];
-
-        if (method_exists($user, 'hasAnyRole')) {
-            if ($user->hasAnyRole($roleNames)) {
-                return true;
-            }
+        // SECURITY FIX: Canonical super-admin via Spatie
+        if ($user->hasRole('super-admin')) {
+            return true;
         }
 
-        // Fallback to legacy role check
-        if ($user->role) {
-            $currentRoleName = strtolower(trim($user->role->name));
-            $adminRoles = ['admin', 'superadmin', 'super admin', 'süper admin', 'süperadmin', 'editor', 'editör'];
-            return in_array($currentRoleName, $adminRoles);
+        // Admin and other elevated roles via Spatie
+        if ($user->hasAnyRole(['admin', 'editor'])) {
+            return true;
         }
 
         return false;

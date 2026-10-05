@@ -13,7 +13,7 @@ class IlanKategoriRequest extends FormRequest
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        return auth()->check() && $user->hasAnyRole(['admin', 'superadmin']);
+        return auth()->check() && $user->hasAnyRole(['admin', 'super-admin']);
     }
 
     /**
