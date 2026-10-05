@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>ai.yalihan-os.verifier-watchdog</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>/Users/macbookpro/repos/yalihan-os/.handoff/verifier-watchdog.py</string>
+        <string>--pending-dir</string>
+        <string>/Users/macbookpro/.hermes/profiles/yalihan-verifier/pending/</string>
+        <string>--hermes-home</string>
+        <string>/Users/macbookpro/.hermes</string>
+        <string>--profile</string>
+        <string>yalihan-verifier</string>
+        <string>--timeout-minutes</string>
+        <string>30</string>
+        <string>--poll-interval</string>
+        <string>5</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/macbookpro/.hermes/profiles/yalihan-verifier/logs/watchdog.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/macbookpro/.hermes/profiles/yalihan-verifier/logs/watchdog.err</string>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+
+    <key>LowPriorityIO</key>
+    <true/>
+</dict>
+</plist>

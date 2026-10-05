@@ -251,5 +251,122 @@ Her yeni oturumda veya kullanıcı geçmiş sorduğunda:
 - Kullanıcı geçmiş sorduğunda önce cache okunur, sonra gerekirse tekrar doğrulanır
 
 ---
-*Sürüm: Oturum 20 (2026-09-06) | Kaynak: .cursorrules + Cline otonom davranış genişletmeleri*
-*Yeni: §10 Context Cache Manager — token tasarrufu için zorunlu cache protokolü*
+
+## 11. 🔬 CANONICAL DRIFT AUDIT (CDA) — 5N1K BULGU RAPORLAMA STANDARDI
+
+**Canonical Drift:** Bir kavramın tek yetkili (canonical) kaynağından saparak çoğalması. Sistemler arası otorite kayması sessiz hatalar üretir.
+
+> **Kural:** Sadece **effective runtime path kanıtlanmış** bulgular. "grep bulundu" tek başına kanıt DEĞİLDİR.
+
+### 5N1K Formatı (Zorunlu)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ CDA-XXX: [PATTERN] — [CONCEPT]                                  │
+├─────────────────────────────────────────────────────────────────┤
+│ NE?        Pattern: AUTHORITY_CONTRACT_DRIFT                      │
+│ NEREDE?    WRITE: file:line → table.field                       │
+│            READ:  file:line → pivot->field                       │
+│ NE ZAMAN?  Geçiş tarihi / ilk bozulma                          │
+│ NASIL?     write: pivot['field_a'] = X                          │
+│            read:  pivot->field_b → NULL                         │
+│ NEDEN?     Kök neden                                          │
+│ KİM?       ETKİ: kullanıcı/rol                                 │
+│            SAHİP: ekip                                         │
+│            BLAST: etki zinciri (≥3 sistem = CRITICAL)            │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Canonical Drift Pattern Envanteri
+
+| Pattern | Tanım | Örnek |
+|---|---|---|
+| `AUTHORITY_CONTRACT_DRIFT` | Yazma-okuma otoritesi ayrışmış | Feature pivot `deger` yazılıyor, Blade `value` okuyor |
+| `AUTHORITY_PIVOT_DRIFT` | Pivot şeması canonical'dan kaymış | Legacy: `deger`, Canonical: `value` |
+| `AUTHORITY_MODEL_DRIFT` | Aynı tablo iki model sınıfına kaymış | `App\Tenant` + `SaaS\Tenant` |
+| `AUTHORITY_TABLE_DRIFT` | Tek kavram iki tabloya kaymış | `ozellikler` + `features` |
+| `AUTHORITY_STATE_DRIFT` | State alanı naming standard'dan kaymış | `status` vs `durum` vs `aktiflik_durumu` |
+| `AUTHORITY_STALE_CONSUMER_DRIFT` | Tüketici eski otoriteye takılı kalmış | Cortex → `Ozellik` yazıyor |
+| `AUTHORITY_SEED_RUNTIME_DRIFT` | Seed ve runtime farklı otoriteye bakıyor | `OzellikKategoriSeeder` + `FeatureCategory` |
+
+### Silent Failure Kuralı
+
+`AUTHORITY_CONTRACT_DRIFT` diğerlerinden KRİTİKTİR — sessiz hata üretir, HTTP 200 verir, log kaydı oluşturmaz.
+
+| Tespit Kriteri | Normal Bug | AUTHORITY_CONTRACT_DRIFT |
+|---|---|---|
+| HTTP Status | 500 | 200 ✅ |
+| Exception | Evet | Hayır ❌ |
+| Log | Evet | Hayır ❌ |
+| Kullanıcı | Hemen fark eder | "Veri yok" der ❌ |
+
+### Önceliklendirme (Blast Radius)
+
+| ETKİ ALANI | ÖNCELİK |
+|---|---|
+| Feature/Ozellik drift (ilan detay, AI, search) | CRITICAL |
+| Tenant drift (auth, billing, isolation) | CRITICAL |
+| Status/subscription (scope, seed, publish) | HIGH |
+| Photo duplicate model (yükleme, CDN) | HIGH |
+| Category/ozellik drift (form, filtre) | MEDIUM |
+
+### Rapor: `.project-brain/CDA_FINDINGS.md` — commit hash + tarih ile kaydedilir.
+
+---
+
+*Sürüm: Oturum 21 (2026-09-28) | Yeni: §11 Canonical Drift Audit (CDA)*
+*Kaynak: .cursorrules + Cline otonom davranış genişletmeleri*
+
+---
+
+## 12. 📤 CLINE → HERMES HANDOFF PROTOCOL (V0)
+
+### Görev Tamamlama Akışı
+
+Bir görev tamamlandığında ve READY_FOR_INDEPENDENT_VERIFICATION durumuna geçildiğinde:
+
+```bash
+# 1. Artifact oluştur ve publish et
+python3 .handoff/handoff-publisher.py <TASK_ID> \
+    --repo /Users/macbookpro/repos/yalihan-os \
+    --scope <file1> <file2> \
+    --contract TASKS/<TASK_ID>.md
+```
+
+**Parametreler:**
+- `<TASK_ID>` = Görev tanımlayıcı (örn: CLINE_36_INTL)
+- `--scope` = Bu görevde değiştirilen dosyalar
+- `--contract` = Görev sözleşmesi markdown dosyası
+
+**Otomatik olarak:**
+1. Git HEAD, branch ve diff bilgisi toplanır
+2. JSON artifact atomik olarak yazılır
+3. `~/.hermes/profiles/yalihan-verifier/pending/{TASK_ID}_{head}_{ts}.handoff.json` oluşur
+4. Watchdog (launchd agent) artifact'ı algılar ve Hermes verifier'ı başlatır
+
+### Doğrulama Sonuçları
+
+Sonuç dosyaları aynı pending/ dizininde:
+- `{TASK_ID}.pass` → VERIFIED_PASS (Ayhan commit yapabilir)
+- `{TASK_ID}.fail` → VERIFIED_FAIL (tekrar çalışma gerekli)
+- `{TASK_ID}.blocked` → BLOCKED (insan müdahalesi gerekli)
+
+### Log İzleme
+
+```bash
+# Watchdog loglarını izle
+tail -f ~/.hermes/profiles/yalihan-verifier/logs/watchdog.log
+
+# Agent durumunu kontrol et
+launchctl list | grep verifier
+```
+
+### Önemli Notlar
+
+⚠️ **Cline otomatik tetikleme yapmaz** — .clinerules bir talimat dosyasıdır,
+hook değil. Görev tamamlandığında yukarıdaki komutu manuel veya Ayhan çalıştırır.
+
+⚠️ **Hermes verifier read-only'dir** — sandbox-exec + approvals.deny ile korunmuştur.
+Hiçbir dosya yazamaz, git push yapamaz, production erişimi yoktur.
+
+✅ **İnsan onayı zorunludur** — Sadece Ayhan git commit yapabilir.
