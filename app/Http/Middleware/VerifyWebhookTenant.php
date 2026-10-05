@@ -63,16 +63,63 @@ class VerifyWebhookTenant
      */
     public function handle(Request $request, Closure $next): mixed
     {
+        // EXT_06C FIX: HTTP Tenant Context Lifecycle Cleanup
+        // Her webhook request'i başında miras alınan context'i temizle.
+        // Bu, singleton TenantContextService'de önceki isteklerden kalan
+        // tenant context'in yeni isteklere sızmasını önler.
+        $this->tenantContextService->clearTenant();
+
+        // Güvenlik & Doğrulama Sırası: HMAC İmzası Doğrulaması (Fail-Closed 403)
+        // Meta webhook isteklerinde sahte veya geçersiz imzalı istekler kiracı arama (tenant lookup)
+        // yapılmadan 403 ile reddedilir.
+        if ($request->isMethod('POST') && ($request->is('*api/v1/webhook/*') || $request->hasHeader('X-Hub-Signature-256'))) {
+            $signature = $request->header('X-Hub-Signature-256');
+            if (!$signature) {
+                Log::warning('Webhook Ingress Guard: missing X-Hub-Signature-256 header', [
+                    'ip' => $request->ip(),
+                ]);
+                abort(403, 'Invalid signature');
+            }
+
+            $parts = explode('=', $signature, 2);
+            if (count($parts) !== 2 || $parts[0] !== 'sha256') {
+                Log::warning('Webhook Ingress Guard: malformed signature header', [
+                    'ip' => $request->ip(),
+                ]);
+                abort(403, 'Invalid signature');
+            }
+
+            $appSecret = config('services.whatsapp.app_secret')
+                ?: (config('services.facebook.app_secret')
+                ?: config('services.instagram.app_secret'));
+
+            if (empty($appSecret)) {
+                Log::error('Webhook Ingress Guard: app_secret not configured');
+                abort(403, 'Invalid signature');
+            }
+
+            $payload = $request->getContent();
+            $expectedHash = hash_hmac('sha256', $payload, $appSecret);
+
+            if (!hash_equals($expectedHash, $parts[1])) {
+                Log::warning('Webhook Ingress Guard: invalid signature', [
+                    'ip' => $request->ip(),
+                ]);
+                abort(403, 'Invalid signature');
+            }
+        }
+
         try {
-            // Anayasal Karar 3: Latans-optimize ham array erişimi (<0.1ms)
+            // SECURITY FIX EXT_06B: Tenant authority yalnızca Meta-imzalı payload'daki canonical identifier'dır.
+            // Query/body fallback'leri KALDIRILDI — attacker-supplied parametreler kabul edilmez.
+            // Signed payload'dan gelen metadata.phone_number_id zorunludur.
             $rawPayload = $request->json()->all();
-            $phoneNumberId = $rawPayload['entry'][0]['changes'][0]['value']['metadata']['phone_number_id']
-                ?? $request->query('phone_number_id')
-                ?? $request->input('tenant_id');
+            $phoneNumberId = $rawPayload['entry'][0]['changes'][0]['value']['metadata']['phone_number_id'] ?? null;
 
             if (!$phoneNumberId) {
                 throw new TenantNotFoundException(
-                    "Inbound identifier signal is completely missing from stream context."
+                    "Canonical phone_number_id missing from signed Meta payload. " .
+                    "Tenant selection via unsigned query/body parameters is not permitted."
                 );
             }
 
@@ -97,7 +144,6 @@ class VerifyWebhookTenant
             ]);
 
             return $next($request);
-
         } catch (\Throwable $exception) {
             // Fail-Loud: Adli izleme katmanına hatayı akıt (SAB Madde 2)
             Log::critical("FATAL WEBHOOK INGRESS FAILURE: {$exception->getMessage()}", [
@@ -113,6 +159,17 @@ class VerifyWebhookTenant
             // Anayasal Karar 2 & SAB Madde 5: Absolute 404 Semantics Masking
             // Hiçbir bilgi sızdırma - standart Laravel 404
             abort(404);
+        } finally {
+            // EXT_06D FIX: Request-Boundary Lifecycle Cleanup
+            // Tenant context singleton'da biriken tüm tenant bilgisini request
+            // sınırında temizle. Bu:
+            //   - Normal tamamlanmada context'i temizler
+            //   - Downstream $next() exception sonrası context'i temizler
+            //   - HMAC/auth hatalarında context'i temizler
+            // NOT: Entry'deki clearTenant() ile birlikte çalışır.
+            //       Entry clear = önceki request'ten gelen sızmayı engeller.
+            //       Finally clear = bu request'in kendi context'ini temizler.
+            $this->tenantContextService->clearTenant();
         }
     }
 }
