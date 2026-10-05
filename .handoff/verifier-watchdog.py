@@ -56,6 +56,9 @@ HERMES_CLI_PATH = os.path.expanduser(
 SANDBOX_SB_PATH = os.path.expanduser(
     "~/.hermes/profiles/yalihan-verifier/sandbox/yalihan-verifier-isolated.sb"
 )
+NONINTERACTIVE_CONFIG = os.path.expanduser(
+    "~/.hermes/profiles/yalihan-verifier/config.noninteractive.yaml"
+)
 
 
 # ---------------------------------------------------------------------------
@@ -126,6 +129,7 @@ def run_verifier(artifact: Artifact, env: dict) -> tuple[int, str, str]:
     prompt = build_verification_prompt(artifact)
 
     # Hermes CLI command
+    # Use non-interactive config (aiwebmodel provider, no TTY required)
     cmd = [
         sys.executable,  # Current Python interpreter
         HERMES_CLI_PATH,
@@ -134,8 +138,10 @@ def run_verifier(artifact: Artifact, env: dict) -> tuple[int, str, str]:
         "--skills", "yalihan-independent-verifier,yalihan-os",
         "--max-turns", "60",
         "--non-interactive",
-        "--provider", "aiwebmodel",  # Use aiwebmodel (ollama may not be running)
     ]
+
+    # Override config with non-interactive profile
+    env["HERMES_CONFIG_PATH"] = NONINTERACTIVE_CONFIG
 
     # Optional: sandbox wrapper
     sandbox_cmd = build_sandbox_wrapper(cmd)
