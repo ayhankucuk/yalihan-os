@@ -111,5 +111,6 @@ class Kernel extends HttpKernel
         // Owner Portal — mülk sahibi erişim kontrolü (Task #14)
         'check.owner'    => \App\Http\Middleware\CheckOwner::class,
         'feature'        => \App\Http\Middleware\EnforceFeatureFlag::class,
+        'verify.webhook.tenant' => \App\Http\Middleware\VerifyWebhookTenant::class,
     ];
 }

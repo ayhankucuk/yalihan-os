@@ -83,7 +83,8 @@ Route::prefix('v1')->middleware([ThrottleApiRequests::class])->group(function ()
     require __DIR__.'/api/v1/action-center.php'; // 🎯 Sprint 15 Phase 2: Action Center API
 
     // 🌐 Social Media Webhooks (No auth required - signed by platform)
-    Route::post('/webhook/whatsapp', [WhatsAppWebhookController::class, 'handleWebhook']);
+    Route::post('/webhook/whatsapp', [WhatsAppWebhookController::class, 'handleWebhook'])
+        ->middleware('verify.webhook.tenant');
     Route::get('/webhook/whatsapp', [WhatsAppWebhookController::class, 'verifyWebhook']);
 
     Route::post('/webhook/instagram', [InstagramWebhookController::class, 'handleWebhook']);
