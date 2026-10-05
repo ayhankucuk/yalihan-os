@@ -9,7 +9,7 @@
 
 **Note:** `docs/architecture-lite.md` lists Oracle Cloud IP — STALE. Active production is Hetzner at `157.180.116.63`.
 # Yalıhan OS — Project State
-**Son Güncelleme:** 2026-10-03 | **HEAD:** 9b8aca27 | **Oturum:** EXT-06E-fixed
+**Son Güncelleme:** 2026-10-05 | **HEAD:** 3b1f0453 | **Oturum:** POI-FIXED
 
 ---
 
@@ -94,6 +94,19 @@ Domain convergence çalışması devam ediyor. Tenant drift'ten bağımsız.
 
 ---
 
+## ✅ CDA-001 — CLOSED / STALE_FINDING (2026-10-05)
+
+| Attribute | Value |
+|---|---|
+| **Claim** | Antigravity auto-loads `.agents/AGENTS.md` as competing authority |
+| **Status** | `STALE_FINDING / ORIGINAL_FINDING_NOT_PROVEN` |
+| **Decision** | NO REMEDIATION |
+| **Reason** | `.agents/AGENTS.md` NOT loaded by any agent |
+| **Evidence** | TOOL_RUNTIME verification → REJECTED |
+| **Pipeline Lesson** | Contradictory Evidence Gate needed |
+
+---
+
 ## 📋 Evidence Cache
 
 | Kanıt | Değer |
@@ -137,3 +150,25 @@ Domain convergence çalışması devam ediyor. Tenant drift'ten bağımsız.
 
 ## 📋 Evidence Cache
 | TenantBaselineSeeder | Direct DB facade, `uuid` + `status` yazıyor |
+
+## Active Protocol Locks
+## ✅ POI_ANALIZ_NULL_COORDINATES — CLOSED (2026-10-05)
+
+| Attribute | Value |
+|---|---|
+| **Status** | `CLOSED` |
+| **Evidence Level** | `TEST_VERIFIED` (production: UNKNOWN) |
+| **Commit** | `3b1f0453` — fix(analytics): guard POI highlights calculation against null listing coordinates |
+| **Root Cause** | `IlanAnalizService::getDetayliRapor()` calls `PoiService::getHighlights($ilan->lat, $ilan->lng)` without null-check |
+| **Symptom** | Published ilan without coordinates → HTTP 500 on `/ilan/{id}` detail page |
+| **Fix** | Guard: `($ilan->lat !== null && $ilan->lng !== null) ? $poiService->getHighlights(...) : []` |
+| **Test** | `tests/Feature/Analytics/IlanAnalizServiceNullCoordinatesTest.php` — 4 scenarios |
+| **PoiService Contract** | UNCHANGED — strict spatial contract preserved |
+
+---
+
+## 📋 Evidence Cache
+| TenantBaselineSeeder | Direct DB facade, `uuid` + `status` yazıyor |
+
+## Active Protocol Locks
+
