@@ -152,8 +152,9 @@ def main() -> None:
 
     args = parser.parse_args()
 
+    # Write to HANDOFF/READY/ for watcher consumption (not pending/)
     pending_dir = args.pending_dir or os.path.expanduser(
-        "~/.hermes/profiles/yalihan-verifier/pending/"
+        "~/.hermes/profiles/yalihan-verifier/HANDOFF/READY/"
     )
 
     metadata = {}

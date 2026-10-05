@@ -1,3 +1,42 @@
+## [2026-10-06] HANDOFF_E2E_PIPELINE — VERIFICATION_COMPLETE
+
+**Task ID:** `CLINE_FINAL_TEST`
+**Mode:** INDEPENDENT VERIFIER (E2E Pipeline Test)
+**Evidence Level:** `TEST_VERIFIED`
+**Baseline:** `456904df` (HEAD)
+
+### Summary
+End-to-end handshake between Cline publisher, Hermes watcher, and Hermes verifier confirmed working.
+
+### Pipeline Flow Verified
+```
+1. Cline publisher → HANDOFF/READY/artifact.json ✅
+2. Watcher poll (2s) → artifact detected ✅
+3. Task claim → VERIFYING/artifact ✅
+4. Hermes chat --query-file --oneshot -Q → response ✅
+5. Result → HANDOFF/RESULTS/{task_id}__{head}.json ✅
+```
+
+### Fixes Applied During Debugging
+| Issue | Fix |
+|---|---|
+| `pending_dir` wrong path | `pending/` → `HANDOFF/READY/` |
+| `launchd` Python path | Hermes managed path |
+| `Union[dict, None]` syntax | Removed (Python 3.14 compatible) |
+| `--provider` flag unknown | Removed (not valid for this profile) |
+
+### Result
+```json
+{
+  "task_id": "CLINE_FINAL_TEST",
+  "verdict": "PASS",
+  "evidence_level": "TEST_VERIFIED",
+  "verified_head": "456904df"
+}
+```
+
+---
+
 ## [2026-09-24] YALIHAN_DEEP_REPOSITORY_DEFECT_HUNT_01 — ADVERSARIAL VERIFICATION_COMPLETE
 
 **Task ID:** `YALIHAN_DEEP_REPOSITORY_DEFECT_HUNT_01`
