@@ -4,12 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
+use App\Traits\BelongsToTenant;
 use App\Traits\HasCountryScope;
 use Illuminate\Support\Facades\Storage;
 
 class Photo extends BaseModel
 {
     use HasFactory;
+    use BelongsToTenant;
     use HasCountryScope;
 
     /**
