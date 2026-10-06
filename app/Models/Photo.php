@@ -52,8 +52,10 @@ class Photo extends BaseModel
 
         // Fotoğraf silindiğinde dosyaları da sil
         static::deleting(function ($photo) {
-            if ($photo->isForceDeleting()) {
-                // Hard delete - dosyaları sil
+            // isForceDeleting() sadece SoftDeletes kullanılan modellerde mevcut.
+            // Photo SoftDeletes kullanmadığı için method_exists kontrolü eklenmeli,
+            // aksi halde BadMethodCallException fırlatılır ve silme başarısız olur.
+            if (! method_exists($photo, 'isForceDeleting') || $photo->isForceDeleting()) {
                 if ($photo->dosya_yolu) {
                     Storage::disk('public')->delete($photo->dosya_yolu);
                 }
