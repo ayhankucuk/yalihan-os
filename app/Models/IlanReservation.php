@@ -40,6 +40,7 @@ class IlanReservation extends BaseModel
         'currency',
         'created_by_user_id',
         'ulke_id',
+        'tenant_id',
         'cancelled_at',
         'confirmed_at',
     ];
@@ -49,6 +50,7 @@ class IlanReservation extends BaseModel
         'end_date' => 'date',
         'cancelled_at' => 'datetime',
         'confirmed_at' => 'datetime',
+        'tenant_id' => 'integer',
         'nights' => 'integer',
         'guest_count' => 'integer',
         'depozito_tutari' => 'float',

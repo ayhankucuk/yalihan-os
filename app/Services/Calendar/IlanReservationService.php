@@ -111,14 +111,15 @@ class IlanReservationService
         // Create
         $reservation = IlanReservation::create([
             'ilan_id' => $ilanId,
-            'starts_at' => $startsAt,
-            'ends_at' => $endsAt,
+            'start_date' => $startsAt->format('Y-m-d'),
+            'end_date' => $endsAt->format('Y-m-d'),
             'islem_statusu' => 'active', // context7-ignore
             'source' => $data['source'] ?? 'admin',
             'customer_name' => $data['customer_name'] ?? null,
             'customer_phone' => $data['customer_phone'] ?? null,
             'note' => $data['note'] ?? null,
             'created_by_user_id' => $userId,
+            'tenant_id' => $ilan->tenant_id,
         ]);
 
         // Log (NO content_type)
@@ -269,8 +270,8 @@ class IlanReservationService
             ->where('customer_name', null)
             ->where('note', 'calendar_closed')
             ->where(function ($query) use ($from, $to) {
-                $query->where('starts_at', '<=', $from)
-                    ->where('ends_at', '>=', $to);
+                $query->where('start_date', '<=', $from->format('Y-m-d'))
+                    ->where('end_date', '>=', $to->format('Y-m-d'));
             })
             ->first();
 
@@ -289,8 +290,8 @@ class IlanReservationService
             ->active() // context7-ignore
             ->whereNotNull('customer_name') // Only real reservations, not calendar closures
             ->where(function ($query) use ($from, $to) {
-                $query->where('starts_at', '<', $to)
-                    ->where('ends_at', '>', $from);
+                $query->where('start_date', '<', $to->format('Y-m-d'))
+                    ->where('end_date', '>', $from->format('Y-m-d'));
             })
             ->pluck('id');
 
@@ -303,14 +304,15 @@ class IlanReservationService
         // Create blocking reservation
         $reservation = IlanReservation::create([
             'ilan_id' => $ilanId,
-            'starts_at' => $from,
-            'ends_at' => $to,
+            'start_date' => $from->format('Y-m-d'),
+            'end_date' => $to->format('Y-m-d'),
             'islem_statusu' => 'active', // context7-ignore
             'source' => $source,
             'customer_name' => null,
             'customer_phone' => null,
             'note' => $reason ?? 'calendar_closed',
             'created_by_user_id' => $userId,
+            'tenant_id' => $ilan->tenant_id,
         ]);
 
         LogService::info('ilan_calendar_close', [
