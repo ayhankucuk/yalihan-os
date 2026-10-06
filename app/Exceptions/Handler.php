@@ -109,6 +109,34 @@ class Handler extends ExceptionHandler
             }
         });
 
+        // NotFoundHttpException → 403 when it wraps ModelNotFoundException (TenantScope cross-tenant)
+        // Laravel converts ModelNotFoundException → NotFoundHttpException in route binding.
+        // We check the previous exception to distinguish tenant boundary violations from genuine 404s.
+        $this->renderable(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, $request) {
+            if ($request->expectsJson() || $request->is('api/*') || $request->is('admin/*')) {
+                $previous = $e->getPrevious();
+                if ($previous instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                    $modelClass = $previous->getModel();
+                    LogService::warning('model_not_found_as_tenant_boundary', [
+                        'model' => $modelClass,
+                        'ids' => $previous->getIds(),
+                        'user_id' => auth()->id(),
+                    ]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Bu emlak üzerinde işlem yapma yetkiniz bulunmamaktadır.',
+                        'data' => null,
+                        'meta' => null,
+                        'error' => [
+                            'code' => 'TENANT_ACCESS_DENIED',
+                            'message' => 'Emlak bulunamadı veya bu emlak üzerinde yetkiniz yok.',
+                        ],
+                    ], 403);
+                }
+                return null;
+            }
+        });
+
         // TokenMismatchException (CSRF 419) → JSON
         $this->renderable(function (\Illuminate\Session\TokenMismatchException $e, $request) {
             if ($request->expectsJson() || $request->is('api/*')) {
