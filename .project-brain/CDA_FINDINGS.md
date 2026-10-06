@@ -12,191 +12,244 @@ Her bulgu 5N1K formatında raporlanır:
 
 ---
 
-## CDA-001: AUTHORITY_CONTRACT_DRIFT — Ilan Fiyat Partial Update Corruption
-
-*(Önceki bulgu — kapatıldı)*
-
----
-
-## CDA-002: AUTHORITY_STATE_DRIFT — yayin_durumu Naming Standard Sapması
-
-*(Önceki bulgu — belgelendi)*
-
----
-
-## CDA-003: AUTHORITY_MODEL_DRIFT — Ilan/Ozellik Duplicate Model Potansiyeli
-
-*(Önceki bulgu — çözüldü)*
-
----
-
-## CDA-006: AUTHORITY_MODEL_DRIFT + AUTHORITY_CONTRACT_DRIFT — Tenant Split-Brain (CRITICAL)
+## CDA-001: IDENTITY_FRAGMENTATION (CLOSED / STALE_FINDING)
 
 ### 5N1K Raporu
 
 | Alan | İçerik |
 |---|---|
-| **NE?** | `AUTHORITY_MODEL_DRIFT` + `AUTHORITY_CONTRACT_DRIFT` — Aynı kavram için iki model sınıfı; biri schema-uyumlu, diğeri değil |
-| **NEREDE?** | **Model A (schema-uyumlu):** `App\Models\Tenant` → fillable: `['uuid','name','domain','durum']` + auto-uuid boot <br> **Model B (schema-dışı):** `App\Models\SaaS\Tenant` → fillable: `['uuid','name','domain','status']` + SoftDeletes <br> **Physical Schema:** `tenants` tablosu → `id, name, domain, durum, created_at, updated_at, deleted_at` (uuid YOK, status YOK) |
-| **NE ZAMAN?** | 2026-05-03 — SaaS Monetization Foundation migration'ı ile `App\Models\SaaS\Tenant` oluştu; 2026-05-06'da `durum` eklendi ama SaaS\Tenant güncellenmedi |
-| **NASIL?** | 1. `2026_05_03_010000_create_saas_monetization_foundation_tables.php` → `tenants` tablosunu `uuid` + `status` ile oluşturdu (L24, L27) <br> 2. `2026_05_06_173500_add_remaining_columns_run64.php` → `durum` kolonu ekledi (status DEĞİL) (L50-54) <br> 3. `App\Models\Tenant` → `durum` fillable + auto-uuid boot → SCHEMA-UYUMLU <br> 4. `App\Models\SaaS\Tenant` → `status` fillable → SCHEMA-DIŞI <br> 5. Runtime middleware + billing: `App\Models\SaaS\Tenant` kullanıyor → `status` yazmaya çalışır → DB `durum` bekliyor |
-| **NEDEN?** | Migration silsilesinde `status` → `durum` dönüşümü yapıldı ama `App\Models\SaaS\Tenant` fillable'ı güncellenmedi. İki model sınıfı aynı physical tabloya farklı kontratlarla erişiyor. |
-| **KİM?** | **ETKİ:** SetTenantContext middleware (L68) `Tenant::find()` yapıyor → SaaS\Tenant kullanır → `status` yazmaya çalışırsa DB'ye `status` gönderilir ama tablo `durum` bekliyor. Subscription billing ledger + BillingLedgerService `tenant_id` üzerinden erişir. <br> **SAHİP:** Backend Team <br> **BLAST:** TenantContextService, SetTenantContext middleware, BillingLedgerService, SubscriptionService, tüm tenant-scoped HTTP istekleri |
+| **NE?** | Antigravity automatic rule injection creates competing authority |
+| **NEREDE?** | `.agents/AGENTS.md` vs ROOT `AGENTS.md` |
+| **NE ZAMAN?** | 2026-09-17 — Araştırma sırasında keşfedildi |
+| **NASIL?** | Birden fazla AGENTS.md dosyası potansiyel confusion yarattı |
+| **NEDEN?** | Naming/filing confusion |
+| **KİM?** | Agent constitution files |
 
-### Migration Lineage (Kronolojik)
+### Kanıt (TEST_VERIFIED — 2026-10-05)
+
+| Verification | Result |
+|---|---|
+| Antigravity loads `.agents/AGENTS.md`? | **REJECTED — NOT_REPRODUCED** |
+| Antigravity loads ROOT `AGENTS.md`? | **CONFIRMED** |
+| Runtime references to `.agents/AGENTS.md`? | **NONE** |
+
+### Karar
 
 ```
-2026_05_03_010000_create_saas_monetization_foundation_tables.php
-  → Schema::create('tenants'):
-    - id, uuid, name, domain, status (default 'active'), timestamps, softDeletes
+CDA-001 → STALE_FINDING / ORIGINAL_FINDING_NOT_PROVEN
 
-2026_05_06_173500_add_remaining_columns_run64.php  
-  → Schema::table('tenants') → ADD durum (NOT status) column
-    - "if hasTable('tenants') && !hasColumn('durum')"
-    - NOT renaming status → durum, just ADDING durum
-    - Physical tabloya both 'status' AND 'durum' olabilir
+SEBEP:
+- .agents/AGENTS.md hiçbir agent tarafından YÜKLENMİYOR
+- Competing authority KANITLANMADI
+- Sadece dosya adı kafa karıştırıcı
+- "Daha temiz görünüyor" ≠ problem
 
-2026_05_17_194127_add_aktiflik_durumu_to_tenants_table.php
-  → ALSO adds durum (checks same condition)
-    - Multiple migrations adding same column (idempotent-guard'lı)
-
-restore_missing_ci_schema.php (L414-427)
-  → ALSO creates tenants with status + uuid + is_active
-  → Conflict: restore CI = SaaS migration + different schema
+EYLEM:
+- Rename REJECTED
+- Governance değişikliği YAPILMADI
+- Pipeline lesson: Contradictory Evidence Gate needed
 ```
+
+### Pipeline Lessons
+
+| # | Lesson | Priority |
+|---|--------|----------|
+| 1 | Contradictory evidence NOT blocked | HIGH |
+| 2 | INFERRED → implementation geçiş kontrolsüz | HIGH |
+| 3 | Implementer stage constraint ihlal edildi | MEDIUM |
+
+### Forensic Report
+
+Tam kanıt: `.project-brain/CDA_AUDIT_001_FINAL.md`
+
+---
+
+## CDA-007: MIGRATION_INCOMPLETE + MODEL_CONTRACT_DRIFT — Tenant Active-State Authority Gap (REMEDIATED)
+
+### 5N1K Raporu
+
+| Alan | İçerik |
+|---|---|
+| **NE?** | `MODEL_CONTRACT_DRIFT` + `MIGRATION_INCOMPLETE` — Write/read authority farklı kolonlarda |
+| **NEREDE?** | `tenants` tablosu — `App\Models\SaaS\Tenant` vs `HuntOpportunitiesCommand` |
+| **NE ZAMAN?** | 2026-05-17 — aktiflik_durumu migration'ı + Sprint 2 sonrası |
+| **NASIL?** | Model write: `status` kolonu; Reader primary: `aktiflik_durumu` kolonu |
+| **NEDEN?** | Migration aktiflik_durumu ekledi ama model güncellenmedi + legacy fallback maskeledi |
+| **KİM?** | Migration geliştiriciler |
+
+### Kanıt (TEST_VERIFIED — 2026-10-06) — FIXED
+
+**Write Authority (FIXED 2026-10-06):**
+```php
+// app/Models/SaaS/Tenant.php
+protected $fillable = ['uuid', 'name', 'domain', 'status', 'durum', 'aktiflik_durumu'];
+
+// database/factories/SaaS/TenantFactory.php
+'status' => 'active',
+'durum' => 'active',
+'aktiflik_durumu' => 'active',
+
+// database/seeders/TenantBaselineSeeder.php
+'status' => 'active',
+'durum' => 'active',
+'aktiflik_durumu' => 'active',
+```
+
+**Read Authority:**
+```php
+// app/Console/Commands/Cortex/HuntOpportunitiesCommand.php:41-46
+$query->where('aktiflik_durumu', 1)           // INT
+    ->orWhere('aktiflik_durumu', 'active')     // STRING
+    ->orWhere('aktiflik_durumu', 'aktif')      // TURKISH
+    ->orWhere('status', 'active');             // LEGACY FALLBACK
+```
+
+**Şema (SQLite — 4 kolon):**
+```sql
+status          varchar default 'active'
+durum           varchar default 'active'
+aktiflik_durumu  varchar default 'active'
+is_active       tinyint(1) default 1
+```
+
+### Root Cause Chain
+
+1. Sprint 2: `aktiflik_durumu` kolonu eklendi (Context7 standard)
+2. Data copy: `status → aktiflik_durumu` (forward compat)
+3. `status` kolonu KALDIRILMADI (backward compat)
+4. `SaaS\Tenant` model güncellenMEDİ → `aktiflik_durumu` fillable'a eklenmedi
+5. HuntOpportunities `aktiflik_durumu` okuyor (Context7)
+6. Legacy fallback `OR status='active'` maskeliyor
+7. DB default `aktiflik_durumu='active'` maskeliyor
+
+### Remediation (COMPLETED 2026-10-06)
+
+**Option A (SAFE) uygulandı:**
+1. ✅ `SaaS\Tenant::$fillable` → `aktiflik_durumu`, `durum` eklendi
+2. ✅ Factory güncellendi — tüm state kolonlarına 'active' değeri
+3. ✅ Seeder güncellendi — tüm state kolonlarına 'active' değeri
+
+### Neden Şimdi Maskeleniyor?
+
+| Maskeleme Kaynağı | Açıklama |
+|---|---|
+| DB Default | `aktiflik_durumu='active'` default — model yazmasa da var |
+| Legacy Fallback | `OR status='active'` — aktiflik_durumu boşsa buluyor |
+
+### Test Kanıtları (PASS — 2026-10-06)
+
+```
+✓ proof_aktiflik_durumu_is_now_in_fillable — aktiflik_durumu fillable'da ARTIK VAR
+✓ proof_aktiflik_durumu_can_be_mass_assigned — Mass assignment çalışıyor
+✓ proof_tenant_create_with_aktiflik_durumu_writes_to_db — DB'ye yazıyor
+✓ proof_hunt_opportunities_finds_tenant_with_explicit_aktiflik_durumu — Hunt buluyor
+✓ summary_write_read_authority_now_aligned — Write/read aligned
+```
+
+### DOMAIN_CONVERGENCE Raporu
+
+```
+CANONICAL_AUTHORITY:         App\Models\SaaS\Tenant (model)
+CANONICAL_EXECUTION_PATH:    Tenant::create() → aktiflik_durumu → HuntOpportunitiesCommand
+
+SOURCE_OF_TRUTH_COUNT:       1
+
+LEGACY_PATHS:                status kolonu hala mevcut (backward compat korundu)
+DUPLICATE_IMPLEMENTATIONS:   NONE
+PROVEN_ORPHANS:              NONE
+UNKNOWN_USAGE:               NONE
+MOCK_OR_PLACEHOLDER_RESIDUE: NONE
+
+FALLBACKS:                   SAFE — Legacy fallback hala mevcut ama artık gereksiz
+
+ROUTE_API_DRIFT:             NONE
+MODEL_SCHEMA_CONTRACT_DRIFT: FIXED — aktiflik_durumu artık fillable'da
+DESIGN_SYSTEM_DRIFT:         NONE
+
+SECURITY_BOUNDARY_REGRESSION: PASS
+OBSERVABILITY_ALIGNMENT:     PASS
+
+REGRESSION:                  PASS
+
+RUNTIME:                     TEST_VERIFIED
+PRODUCTION:                  PENDING
+
+DOMAIN_STATE:                CANONICAL_CLEAN
+```
+
+### Risk Değerlendirmesi
+
+| Senaryo | Risk |
+|---|---|
+| Normal SaaS\Tenant::create() | DÜŞÜK — DB default maskeliyor |
+| Manual migration/data fix | ORTA — aktiflik_durumu farklı değer alırsa görünmez |
+| Strict aktiflik_durumu query | YÜKSEK — status yazılıp aktiflik_durumu farklıysa kayıp |
+
+### Remediation Options
+
+**Option A (SAFE):**
+1. `SaaS\Tenant::$fillable` → `aktiflik_durumu` ekle
+2. Model sync logic ekle: `status` değişince `aktiflik_durumu` da güncelle
+3. Factory/Seeder güncelle
+
+**Option C (CANONICAL):**
+1. Migration: `status`, `durum`, `is_active` kolonlarını drop et
+2. Model: `$fillable = ['uuid', 'name', 'domain', 'aktiflik_durumu']`
+3. Query cleanup
+
+### İlişkili CDAs
+
+- CDA-006: DISPROVED (split-brain yok, orphan model)
+- CDA-005: AUTHORITY_TABLE_DRIFT — migration conflict
+
+### Forensic Report
+
+Tam kanıt zinciri: `.project-brain/CDA_007_FINAL_REPORT.md`
+
+---
+
+## CDA-006: AUTHORITY_MODEL_DRIFT — Tenant Split-Brain (CLOSED / DISPROVED)
+
+### 5N1K Raporu
+
+| Alan | İçerik |
+|---|---|
+| **NE?** | `AUTHORITY_MODEL_DRIFT` + `AUTHORITY_CONTRACT_DRIFT` — Aynı kavram için iki model sınıfı |
+| **NEREDE?** | `App\Models\Tenant` vs `App\Models\SaaS\Tenant` |
+| **NE ZAMAN?** | 2026-05-03 — SaaS migration ile başladı |
+| **NASIL?** | İki model farklı kontratlarla aynı tabloya erişiyor |
+| **NEDEN?** | Migration silsilesinde schema değişti ama modeller güncellenmedi |
 
 ### Modellerin Durumu
 
 **`App\Models\Tenant` (Schema-uyumlu):**
 ```php
-fillable: ['uuid', 'name', 'domain', 'durum']  // ✅ Physical schema match
-boot: auto uuid on creating                     // ✅ Auto uuid available
-uses: HasCountryScope trait                     // ✅
+fillable: ['uuid', 'name', 'domain', 'durum']
 ```
 
 **`App\Models\SaaS\Tenant` (Schema-dışı):**
 ```php
-fillable: ['uuid', 'name', 'domain', 'status']  // ❌ Physical schema: durum NOT status
-uses: SoftDeletes, HasFactory                   // Additional traits
-No auto-uuid boot                               // ❌ Missing
+fillable: ['uuid', 'name', 'domain', 'status']
 ```
 
-### Runtime Consumerlar
+### Çözüm Önerisi
 
-| Bileşen | Model | Sorun |
-|---|---|---|
-| `SetTenantContext` middleware (L68) | `App\Models\SaaS\Tenant` | `status` fillable, physical `durum` bekliyor |
-| `TenantContextService` | `App\Models\SaaS\Tenant` | Tenant tipi olarak kullanılıyor |
-| `Subscription` relation | `App\Models\SaaS\Tenant` | hasOne Subscription |
-| BillingLedgerEntry relation | `App\Models\SaaS\Tenant` | hasMany BillingLedgerEntry |
-| ChannelManager tests | `App\Models\SaaS\Tenant` | Test fixture |
-| `YazlikKiralamaController` (L490) | `App\Models\SaaS\Tenant::find()` | Direct usage |
-| `TenantBaselineSeeder` | Direct DB facade | `status` + `uuid` yazıyor, DB `durum` bekliyor |
-| `App\Models\Tenant` | (Unused in runtime consumer'larda) | Sadece model var, aktif kullanım yok gibi |
+Tenant model canonicalization + migration ile schema cleanup
 
-### TenantBaselineSeeder Kontrat Uyuşmazlığı
+### İlişkili CDAs
 
-Seeder `direct DB facade` kullanıyor, model üzerinden değil:
-```php
-// TenantBaselineSeeder.php L44-47
-DB::table('tenants')->updateOrInsert(
-    ['id' => $tenant['id']],
-    $tenant  // ['uuid' => ..., 'status' => 'active', ...]
-);
-```
-
-Ama physical DB'de `status` kolonu YOK, `durum` var. Seeder şu kolonlara yazmaya çalışıyor:
-- `uuid` → ❌ DB'de YOK
-- `status` → ❌ DB'de YOK (varolan satırlarda `durum` var)
-
-**Mevcut data (test DB):** `id=1, name=Test, domain=t.test, durum=active, (uuid=NULL)`
-
-### Drift Etki Matrisi
-
-| Senaryo | Sonuç |
-|---|---|
-| SaaS\Tenant üzerinden `->save()` veya mass-assign | `status` → DB hatası (kolon yok) veya yanlış kolona yazılır |
-| SaaS\Tenant üzerinden `->update(['status' => 'suspended'])` | Silent fail veya SQL hatası — kolon yok |
-| SetTenantContext middleware `Tenant::find()` | **CRITICAL**: `App\Models\SaaS\Tenant` kullanır → find sonrası model `status` bekler ama DB `durum` döndürür → accessor `durum` döndürmez → null |
-| TenantBaselineSeeder çalışırsa | `uuid` + `status`写入 → DB hatası veya yanlış kolon |
-
-### Silent Failure Analizi
-
-`SetTenantContext` middleware'de (L68):
-```php
-$tenant = Cache::remember(..., fn() => Tenant::find($user->tenant_id));
-$this->tenantContextService->setTenant($tenant);
-```
-
-Eğer `Tenant::find()` bir `App\Models\SaaS\Tenant` döndürürse (ki öyle — middleware import SaaS\Tenant):
-- Model `status` accessor'ı yok (sadece `durum` var) → `null` döner
-- `TenantContextService::getTenant()` çalışır → tenant objesi var ama `status` property'si boş
-- Subscription sorgusu yapılırsa → `tenant->subscription()` yanlış sonuç verebilir
-
-### Önceliklendirme
-
-| ETKİ ALANI | ÖNCELİK |
-|---|---|
-| Tenant middleware + runtime context | **CRITICAL** — Tüm HTTP tenant-isolated istekleri etkilenir |
-| Billing/Subscription system | **CRITICAL** — SaaS\Tenant üzerinden subscription relation |
-| TenantBaselineSeeder | HIGH — Şu anda fail değil ama yanlış kontratla çalışıyor |
-| AdminUserSeeder | MEDIUM — Tenant'a bağlı |
-
-### Çözüm Yönleri (Ayhan'a Sunulacak)
-
-**A (Seeder fix — minimal, bounded):**
-TenantBaselineSeeder'ı physical schema'ya uydur: `'durum' => 'active'` + uuid AUTO (model boot'ta). Model üzerinden değil direct DB kullanmaya devam. Risk: uuid üretilmez.
-
-**B (Model canonicalization — kapsamlı):**
-`App\Models\Tenant` → canonical, `App\Models\SaaS\Tenant` → deprecated/silgi.
-Tüm SaaS\Tenant kullanan bileşenleri App\Models\Tenant'a point et. Migration gerekir: ya `durum` → `status` rename (tehlikeli, data riskli) ya da SaaS\Tenant'ı `durum` kullanacak şekilde güncelle.
-
-**C (Migration-add-uuid — Ayhan onaylı):**
-Physical schema'ya `uuid` kolonu ekle. Seeder `uuid` üretmeye devam eder. Status/durum ayrıştırması sonra yapılır.
-
-**D (Daha fazla araştırma):**
-`restore_missing_ci_schema.php`'daki tenants tablo tanımı ile SaaS migration'ınki farklı. Hangi migration local DB'ye uygulandı? CI'da hangisi çalışıyor? Bu fark aydınlatılmalı.
-
-### Durum
-
-| Alan | Değer |
-|---|---|
-| **Finding** | REAL_FINDING |
-| **Reproduction** | REPO_VERIFIED — Physical schema doğrulandı |
-| **Evidence Level** | REPO_VERIFIED |
-| **Repository Status** | OPEN — Ayhan kararı bekleniyor |
-| **F-DRIFT-02 ile İlişki** | AYNI KÖK NEDEN — F-DRIFT-02 yükseltildi |
-| **Blocked Tasks** | TenantBaselineSeeder, AdminUserSeeder |
+- CDA-007: Tenant Schema Trinstate Drift — aynı kök neden ailesi
 
 ---
 
 ## CDA-005: AUTHORITY_TABLE_DRIFT — İki tenants Tablo Oluşturma Migration'ı
 
-### 5N1K Raporo
-
 | Alan | İçerik |
 |---|---|
-| **NE?** | `AUTHORITY_TABLE_DRIFT` — Aynı tablo için iki farklı schema tanımı |
-| **NEREDE?** | `2026_05_03_010000_create_saas_monetization_foundation_tables.php` (uuid+status) <br> `2026_05_03_000000_restore_missing_ci_schema.php:414` (uuid+status+is_active) |
-| **NE ZAMAN?** | 2026-05-03 — CI schema recovery + SaaS foundation aynı gün |
-| **NASIL?** | İki farklı migration aynı `tenants` tablosunu oluşturmaya çalışıyor. `if (!Schema::hasTable())` guard'ları var ama farklı schema tanımları içeriyorlar. |
-| **NEDEN?** | CI recovery + SaaS foundation paralel geliştirme sırasında koordine edilemedi |
-| **KİM?** | **ETKİ:** Local DB ve CI DB farklı schema alabilir. <br> **SAHİP:** DevOps/Backend |
+| **NE?** | Aynı tablo için iki farklı schema tanımı |
+| **NEREDE?** | SaaS migration + CI restore migration |
+| **NE ZAMAN?** | 2026-05-03 |
+| **NASIL?** | Paralel geliştirme sırasında koordine edilemedi |
 
-### Schema Farkı
-
-| Kolon | SaaS Foundation Migration | CI Restore Migration |
-|---|---|---|
-| uuid | ✅ unique | ✅ nullable |
-| status | ✅ default active | ✅ default active |
-| is_active | ❌ | ✅ default true |
-| softDeletes | ✅ | ✅ (ekstra guard) |
-
-### Durum
-
-**Status:** DOCUMENTED — Production migration order'a bağlı
-
----
-
-*Son Güncelleme: 2026-09-28 | HEAD: 7dd8b016*
-*Kaynak: TENANT_CANONICAL_AUTHORITY_RESOLVE_01 Forensic Research*
+*Son Güncelleme: 2026-10-03 | HEAD: 4287be8e*
+*Kaynak: BEKCI_ENFORCEMENT_REALITY_CHECK_01*

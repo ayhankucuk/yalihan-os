@@ -12,7 +12,9 @@ class Tenant extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['uuid', 'name', 'domain', 'status'];
+    // context7-ignore: durum, status, is_active — physical DB column names retained for backward compat
+    // aktiflik_durumu: Context7 canonical — HuntOpportunitiesCommand reads this column
+    protected $fillable = ['uuid', 'name', 'domain', 'status', 'durum', 'aktiflik_durumu'];
 
     /**
      * Get the tenant's current subscription.

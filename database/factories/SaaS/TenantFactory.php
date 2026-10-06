@@ -18,6 +18,8 @@ class TenantFactory extends Factory
             'name' => $this->faker->company(),
             'uuid' => $this->faker->uuid(),
             'status' => 'active',
+            'durum' => 'active',
+            'aktiflik_durumu' => 'active',
         ];
     }
 }
