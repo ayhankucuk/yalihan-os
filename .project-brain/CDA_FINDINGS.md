@@ -253,3 +253,85 @@ Tenant model canonicalization + migration ile schema cleanup
 
 *Son Güncelleme: 2026-10-03 | HEAD: 4287be8e*
 *Kaynak: BEKCI_ENFORCEMENT_REALITY_CHECK_01*
+
+*Son Güncelleme: 2026-10-03 | HEAD: 4287be8e*
+*Kaynak: BEKCI_ENFORCEMENT_REALITY_CHECK_01*
+
+---
+
+## CDA-REZ-01: AUTHORITY_MODEL_DRIFT — IlanReservation/PropertyReservation Split-Brain (ACTIVE / INVESTIGATION REQUIRED)
+
+### 5N1K Raporu
+
+| Alan | İçerik |
+|---|---|
+| **NE?** | `AUTHORITY_MODEL_DRIFT` — Aynı tablo için iki Eloquent modeli, farklı `tenant_id` kontratları |
+| **NEREDE?** | `property_reservations` tablosu: `App\Models\IlanReservation` vs `App\Models\PropertyReservation` |
+| **NE ZAMAN?** | 2026-01-29 — `property_reservations` tablo değişikliği + model refactor sırasında başladı |
+| **NASIL?** | `IlanReservation` → `tenant_id` fillable'da YOK; `PropertyReservation` → `tenant_id` VAR |
+| **NEDEN?** | Migration 2026-06-29 `tenant_id` ekledi ama `IlanReservation` modeli güncellenmedi |
+| **KİM?** | Migration, Model refactor |
+
+### Modellerin Durumu (2026-10-06)
+
+**`IlanReservation` (LEGACY — tenant_id eksik):**
+```php
+protected $table = 'property_reservations'; // Aynı tablo
+protected $fillable = [
+    'property_id', 'start_date', 'end_date', 'nights',
+    'guest_name', 'guest_phone', 'guest_email',
+    'reservation_state', 'finansal_durum', 'depozito_tutari',
+    'locked_nightly_rate', 'total_amount', 'created_by_user_id',
+    'ulke_id', 'cancelled_at', 'confirmed_at',
+    // ❌ tenant_id EKSİK!
+];
+public function ilan() { return $this->belongsTo(Ilan::class, 'ilan_id'); } // ❌ FK: ilan_id (yanlış!)
+```
+
+**`PropertyReservation` (CANONICAL):**
+```php
+protected $fillable = [
+    'tenant_id',  // ✅ VAR!
+    'property_id',
+    // ... tüm field'lar + yeni channel_fee, checkin/out, snapshot fields
+];
+public function ilan() { return $this->belongsTo(Ilan::class, 'property_id'); } // ✅ FK: property_id
+```
+
+### Aktivasyon Kontrolü
+
+| Aktivasyon Yolu | Kullanıcı | Status | Tenant Guard |
+|---|---|---|---|
+| `ReservationService::createReservation()` | Admin/API | **ACTIVE** ✅ | Unconditional fail-closed |
+| `IlanReservationService::create()` | Admin | **ACTIVE** ❌ | **YOK — `tenant_id` yazılamaz!** |
+| `IlanCalendarController::cancel()` | Admin | **ACTIVE** ❌ | **YOK** |
+| `IlanCalendarController::confirm()` | Admin | **ACTIVE** ❌ | **YOK** |
+
+### Risk Analizi
+
+| Risk | Seviye | Açıklama |
+|---|---|---|
+| `IlanReservation::create()` ile `tenant_id` eksik yazılır | **CRITICAL** | Model `tenant_id`'yi fillable'da tutmadığı için yazamaz |
+| Cross-tenant rezervasyon iptal/onay | **HIGH** | Controller'da tenant kontrolü yok |
+| Legacy path üzerinden tenant isolation bypass | **HIGH** | `IlanReservationService` hiçbir tenant kontrolü yapmıyor |
+
+### Remediation Seçenekleri
+
+**Option A (Minimal Fix):**
+1. `IlanReservation::$fillable` → `tenant_id` ekle
+2. `IlanReservationService::create()` → `tenant_id` otomatik ekle
+3. Controller'lara tenant guard ekle
+
+**Option B (Strangler Fig):**
+1. `IlanReservationService` → `PropertyReservation` kullanmaya yönlendir
+2. Blade/Controller'ları güncelle
+3. `IlanReservation` → deprecated annotation + migration ile kaldır
+
+### İlişkili CDAs
+
+- CDA-007: Tenant Active-State Authority Gap (aynı migration ailesi)
+
+---
+
+*Task ID: REZERVASYON_05_TENANT_BOUNDARY_REMEDIATION_01*
+*Investigation: 2026-10-06 | IMPLEMENTER: Cline | STATUS: INVESTIGATION_COMPLETE*

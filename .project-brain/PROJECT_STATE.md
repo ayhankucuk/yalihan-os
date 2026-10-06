@@ -1,6 +1,6 @@
 # Yalıhan OS — Project State
 
-**Son Güncelleme:** 2026-10-06 | **HEAD:** 456904df | **Oturum:** HANDOFF_E2E_FIX
+**Son Güncelleme:** 2026-10-06 | **HEAD:** 456904df | **Oturum:** REZERVASYON_05_INVESTIGATION
 
 ---
 
@@ -93,16 +93,12 @@
 
 #### Production Schema (yalihanai_v2_production.tenants)
 ```
-Field               Type             Null  Default
---------------------------------------------------
-aktiflik_durumu     varchar(255)     NO    'active'  -- Context7 canonical
-status              varchar(255)     NO    'active'  -- Legacy
-durum               varchar(50)      NO    'active'  -- Legacy
-is_active           tinyint(1)       NO    1        -- Legacy
+id  name  domain  aktiflik_durumu  status  uuid  is_active  created_at  updated_at  deleted_at  durum
 ```
+All 4 status columns present and synchronized.
 
-#### Key Finding
-- **Code Drift:** REAL — `SaaS\Tenant` writes `status`, ignores `aktiflik_durumu`
+#### Analysis
+- **Schema Drift:** REAL — `SaaS\Tenant` writes `status`, ignores `aktiflik_durumu`
 - **Data Drift:** NONE — All 4 columns synchronized via DB defaults
 - **Runtime Impact:** NONE — Production stable
 
@@ -132,7 +128,7 @@ is_active           tinyint(1)       NO    1        -- Legacy
 | Item | Detail |
 |---|---|
 | Commit | `9b8aca27` |
-| Bug 1 | `\Http::withToken()` → FQCN |
+| Bug 1 | `\\Http::withToken()` → FQCN |
 | Bug 2 | `Lead::where()` → `withoutGlobalScopes()->where()` |
 | Tests | WhatsAppTenantIngressTest 19/19, Webhook 37/37, LeadTenantBoundary 10/10 |
 
@@ -187,6 +183,7 @@ None currently.
 *Son Güncelleme: 2026-10-05*
 HOTSPOT_LOCK:database/migrations/2026_10_05_000001_add_oda_sayisi_columns_to_talepler_table.php:Ayhan-CRM03-Commit:2026-10-05T11:39:53Z:3600
 HOTSPOT_LOCK:database/schema/mysql-schema.sql:Ayhan-CRM03-Commit:2026-10-05T11:40:36Z:3600
+
 ---
 
 ## ✅ ADMIN_RBAC_REMEDIATION_01 — CLOSED (2026-10-05)
@@ -230,3 +227,51 @@ HOTSPOT_LOCK:database/schema/mysql-schema.sql:Ayhan-CRM03-Commit:2026-10-05T11:4
 | POI null coordinates | CLOSED ✅ | TEST_VERIFIED |
 | Scheduled Task Pipeline | VERIFIED ✅ | Design correct |
 | ADMIN_RBAC dynamic roles | CLOSED ✅ | REPO_VERIFIED |
+
+---
+
+## 🟡 ACTIVE: CDA-REZ-01 — IlanReservation/PropertyReservation Split-Brain
+
+| Attribute | Value |
+|---|---|
+| **Task ID** | `REZERVASYON_05_TENANT_BOUNDARY_REMEDIATION_01` |
+| **Evidence Level** | `REPO_VERIFIED` |
+| **Finding** | `AUTHORITY_MODEL_DRIFT` — Aynı tablo için iki model, farklı tenant_id kontratları |
+| **Status** | `INVESTIGATION_COMPLETE` |
+
+### Split-Brain Durumu
+
+| Model | Tablo | tenant_id | FK | Status |
+|---|---|---|---|---|
+| `IlanReservation` | `property_reservations` | ❌ YOK | `ilan_id` ❌ | **LEGACY** |
+| `PropertyReservation` | `property_reservations` | ✅ VAR | `property_id` ✅ | **CANONICAL** |
+
+### Aktivasyon Kontrolü
+
+| Aktivasyon Yolu | Kullanıcı | Status | Tenant Guard |
+|---|---|---|---|
+| `ReservationService::createReservation()` | Admin/API | **ACTIVE** ✅ | Unconditional fail-closed |
+| `IlanReservationService::create()` | Admin | **ACTIVE** ❌ | **YOK — `tenant_id` yazılamaz!** |
+| `IlanCalendarController::cancel()` | Admin | **ACTIVE** ❌ | **YOK** |
+| `IlanCalendarController::confirm()` | Admin | **ACTIVE** ❌ | **YOK** |
+
+### Risk Analizi
+
+| Risk | Seviye | Açıklama |
+|---|---|---|
+| `IlanReservation::create()` ile `tenant_id` eksik | **CRITICAL** | Model fillable'da yok |
+| Cross-tenant rezervasyon iptal/onay | **HIGH** | Controller'da tenant kontrolü yok |
+| Legacy path üzerinden tenant bypass | **HIGH** | `IlanReservationService` hiçbir tenant kontrolü yapmıyor |
+
+### Canonical Tenant Guard (Mevcut)
+
+`ReservationService::createReservation()` satır 59-68: **UNCONDITIONAL FAIL-CLOSED** ✅
+
+### Remediation Seçenekleri
+
+- **Option A (Minimal):** `IlanReservation::$fillable` → `tenant_id` ekle + service'te cascade
+- **Option B (Strangler Fig):** `IlanReservationService` → `PropertyReservation` kullanmaya yönlendir
+
+### Ayhan Kararı Bekleniyor
+
+**REQUIRES_HUMAN_DECISION**: Remediation seçeneği belirlenmeli.
