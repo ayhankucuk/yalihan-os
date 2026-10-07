@@ -5,28 +5,44 @@
     'help' => null,
     'value' => null,
     'rows' => 3,
+    'placeholder' => '',
+    'disabled' => false,
+    'readonly' => false,
+    'error' => null,
     'wrapperClass' => 'mb-4',
 ])
+
+@php
+    $hasError = $error || ($errors->has($name));
+@endphp
+
 <div class="{{ $wrapperClass }}">
     @if ($label)
-        <label for="{{ $name }}" class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2 dark:text-slate-300">
-            {{ $label }} @if ($required)
+        <label for="{{ $name }}" class="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
+            {{ $label }}
+            @if ($required)
                 <span class="text-red-500">*</span>
             @endif
         </label>
     @endif
     <textarea
-        {{ $attributes->merge(['class' => 'w-full p-4 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 text-sm text-gray-900 dark:text-gray-100 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all shadow-sm placeholder-gray-400 dark:placeholder-gray-500 resize-y dark:shadow-none']) }}
+        {{ $attributes->merge([
+            'class' => 'w-full p-4 rounded-xl border text-sm transition-all resize-y placeholder-slate-400 dark:placeholder-slate-500 ' .
+                ($hasError
+                    ? 'border-red-500 dark:border-red-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-red-50/50 dark:bg-red-900/10'
+                    : 'border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100') .
+                ($disabled ? ' opacity-50 cursor-not-allowed' : '')
+        ]) }}
         id="{{ $name }}" name="{{ $name }}" rows="{{ $rows }}"
-        @if ($required) required @endif>
-@if (old($name))
-{{ old($name) }}@else{{ $value }}
-@endif
-</textarea>
+        placeholder="{{ $placeholder }}"
+        {{ $required ? 'required' : '' }}
+        {{ $disabled ? 'disabled' : '' }}
+        {{ $readonly ? 'readonly' : '' }}
+>@if(old($name)){{ old($name) }}@else{{ $value ?? '' }}@endif</textarea>
     @if ($help)
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{!! $help !!}</p>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{!! $help !!}</p>
     @endif
     @error($name)
-        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+        <x-admin.validation-error :message="$message" />
     @enderror
 </div>
