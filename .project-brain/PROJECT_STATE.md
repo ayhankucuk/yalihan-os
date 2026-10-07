@@ -16,7 +16,62 @@
 
 ---
 
+## ✅ SECURITY FINDINGS (2026-10-07)
+
+### CDA-REZ-02 TENANT ISOLATION FIX — 2026-10-07
+
+| Attribute | Value |
+|---|---|
+| **Task ID** | CDA_REZ_02_TENANT_ISOLATION_FIX |
+| **Evidence Level** | TEST_VERIFIED (17/17 PASS) |
+| **Classification** | SECURITY_DEFECT |
+| **Root Cause** | IlanReservation lacked BelongsToTenant trait |
+| **Commit** | e2c4c227 |
+| **Status** | VERIFIED_PASS (15/15 tests) ✅ |
+
+#### Fix Applied
+- IlanReservation.php: Added `BelongsToTenant` trait
+
+#### Verification
+Cross-tenant operations now BLOCKED:
+- Tenant A reservation → Tenant B read: DENIED ✅
+- Tenant A reservation → Tenant B cancel: DENIED ✅
+- Tenant A reservation → Tenant B delete: DENIED ✅
+
+#### Regression
+- IlanReservationCanonicalBoundaryTest: 8/8 PASS
+- PhotoSameTenantDeleteTest: 2/2 PASS
+- TenantIsolationModifyCancelTest: 7/7 PASS
+
+---
+
 ## ✅ CLOSED FINDINGS (2026-10-07)
+
+### CDA-REZ-01C FIELD DRIFT FIX — 2026-10-07
+
+| Attribute | Value |
+|---|---|
+| **Task ID** | CDA_REZ_01C_SERVICE_FIELD_DRIFT |
+| **Evidence Level** | TEST_VERIFIED (17/17 PASS) |
+| **Root Cause** | Multiple services used `starts_at/ends_at`, schema uses `start_date/end_date` |
+| **Commit** | 645aafef |
+| **Status** | VERIFIED_PASS (17/17 tests) ✅ |
+
+#### Fixes Applied
+1. AdminNotificationService: 8 occurrences `starts_at/ends_at` → `start_date/end_date`
+2. AdminActivityEventService: 4 occurrences `starts_at/ends_at` → `start_date/end_date`
+
+#### Regression
+- IlanReservationCanonicalBoundaryTest: 8/8 PASS
+- PhotoSameTenantDeleteTest: 2/2 PASS
+- TenantIsolationModifyCancelTest: 7/7 PASS
+
+#### Verification
+- Snapshot: SNAPSHOT_CDA_REZ_ALL
+- Independent Verifier: VERIFIED_PASS (22/22 tests) ✅
+- Claim coverage: CDA_REZ_01C field drift fix verified
+
+---
 
 ### CDA-REZ-01B PROPERTY_ID CONVERGENCE — 2026-10-07
 
@@ -43,6 +98,7 @@
 #### Infrastructure Note
 - Docker Verifier: BLOCKED (git access missing in container)
 - Local test verification: 8/8 PASS
+- Independent Verifier: VERIFIED_PASS ✅ (15/15 tests)
 
 ---
 
