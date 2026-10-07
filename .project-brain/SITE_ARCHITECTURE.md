@@ -370,6 +370,113 @@ Kisi (CRM süreci)
 
 ---
 
+---
+
+## SECONDARY UI PANELS
+
+### Panel 2: Property Engine & AI Dashboard
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ TAKIM & OPERASYON                                                │
+│   ├── Takımlar                → TakimController              │
+│   ├── Görevler               → GorevController              │
+│   ├── Projeler               → ProjeController               │
+│   └── Kanban Board          → KanbanController             │
+├─────────────────────────────────────────────────────────────────┤
+│ FİNANS & SATIŞ                                                   │
+│   ├── Finansal İşlemler     → FinansController              │
+│   └── Satışlar              → SatisController              │
+├─────────────────────────────────────────────────────────────────┤
+│ BİLDİRİMLER                                                      │
+├─────────────────────────────────────────────────────────────────┤
+│ PROPERTY ENGINE                                                  │
+│   ├── Dashboard             → PropertyEngineDashboardController│
+│   ├── Özellik Havuzu       → OzellikHavuzuController        │
+│   ├── Şablonlar            → SablonController              │
+│   ├── Özellik Paketleri    → PaketController              │
+│   ├── İlan Kategorileri    → IlanKategoriController        │
+│   ├── Özellik Kategorileri → OzellikKategoriController     │
+│   ├── Kategori Matrisi      → KategoriMatrisiController     │
+│   ├── Bağımlılık Kuralları → BagimlilikController          │
+│   └── AI Alan Önerileri    → AIFieldSuggestionController   │
+├─────────────────────────────────────────────────────────────────┤
+│ AI (CORTEX)                                                      │
+│   ├── Cortex                → CortexController              │
+│   ├── AI Dashboard         → AIController                  │
+│   ├── Cortex Analytics     → CortexAnalyticsController      │
+│   ├── Cortex Monitoring    → CortexMonitorController       │
+│   └── Kullanım & Maliyet  → KullanimMaliyetController     │
+├─────────────────────────────────────────────────────────────────┤
+│ İSTATİSTİKLER                                                    │
+│   ├── Tüm Raporlar        → ReportsController              │
+│   └── Portfolio Doctor     → PortfolioDoctorController      │
+├─────────────────────────────────────────────────────────────────┤
+│ GOVERNANCE                                                       │
+│   ├── Telemetri İzleme    → TelemetriController            │
+│   ├── LIVE                → LiveController                 │
+│   ├── AI Kontrol Merkezi  → IntelligenceCenterController   │
+│   ├── Karar Kuyruğu      → ReviewQueueController         │
+│   ├── Governance Dashboard → GovernanceDashboardController   │
+│   ├── Özellik Sağlık     → FeatureHealthController       │
+│   ├── AI Governance       → AIGovernanceController        │
+│   ├── Denetim Kayıtları   → AuditController               │
+│   ├── Otonom Kontrol      → AutonomyPanelController       │
+│   ├── Aksiyon Döngüsü     → ActionCycleController         │
+│   └── Yalıhan Bekçi      → BekciController               │
+├─────────────────────────────────────────────────────────────────┤
+│ AUTOMATION HUB                                                   │
+│   ├── n8n Workflows       → N8nController                 │
+│   ├── Webhook Yönetimi   → WebhookController              │
+│   └── Schedule Yönetimi  → ScheduleController            │
+├─────────────────────────────────────────────────────────────────┤
+│ SİSTEM                                                            │
+│   ├── Ayarlar            → AyarlarController              │
+│   ├── Kullanıcılar       → UserController                │
+│   └── Çevre Değişkenleri → EnvController               │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## CORTEX (AI ANALYTICS)
+
+| Menu Item | Route/Controller | Purpose |
+|-----------|------------------|---------|
+| Cortex | /api/cortex/* | AI analytics API |
+| AI Dashboard | admin.ai.dashboard | AI metrics |
+| Cortex Analytics | CortexAnalyticsController | Analytics |
+| Cortex Monitoring | CortexMonitorController | System monitoring |
+| Kullanım & Maliyet | KullanimMaliyetController | Cost tracking |
+
+**API Routes:** routes/api/v1/cortex.php
+
+---
+
+## PROPERTY ENGINE
+
+| Menu Item | Route/Controller | Purpose |
+|-----------|------------------|---------|
+| Dashboard | PropertyEngineDashboardController | Property overview |
+| Özellik Havuzu | OzellikHavuzuController | Feature pool management |
+| Şablonlar | SablonController | Template management |
+| Özellik Paketleri | PaketController | Feature packages |
+| Kategori Matrisi | KategoriMatrisiController | Category matrix |
+| Bağımlılık Kuralları | BagimlilikController | Dependency rules |
+| AI Alan Önerileri | AIFieldSuggestionController | AI suggestions |
+
+---
+
+## PORTFOLIO DOCTOR
+
+| Route | Controller | Purpose |
+|-------|------------|---------|
+| /advisor/portfolio/doctor | PortfolioDoctorController | Portfolio analysis |
+
+**EVIDENCE:** routes/web.php
+
+---
+
 ## EXTERNAL SERVICES LINKED
 
 | Service | Menu | Purpose |
@@ -377,5 +484,5 @@ Kisi (CRM süreci)
 | Horizon | System Tools | Queue monitoring |
 | Telescope | System Tools | Debugging |
 | Sentry | System Tools | Error tracking |
-| n8n | AI Otomasyon | Workflow automation |
+| n8n | AI Otomasyon / Automation Hub | Workflow automation |
 | Telegram | AI Otomasyon | Bot integration |
