@@ -40,8 +40,8 @@ class IlanReservationService
     public function listForIlan(int $ilanId, Carbon $from, Carbon $to): Collection
     {
         return IlanReservation::forIlan($ilanId)
-            ->between($from, $to)
-            ->orderBy('starts_at') // context7-ignore
+            ->whereBetween('start_date', [$from, $to])
+            ->orderBy('start_date') // context7-ignore
             ->with('createdBy:id,name')
             ->get();
     }
@@ -116,9 +116,9 @@ class IlanReservationService
             'end_date' => $endsAt->format('Y-m-d'),
             'islem_statusu' => 'active', // context7-ignore
             'source' => $data['source'] ?? 'admin',
-            'customer_name' => $data['customer_name'] ?? null,
-            'customer_phone' => $data['customer_phone'] ?? null,
-            'note' => $data['note'] ?? null,
+            'guest_name' => $data['customer_name'] ?? $data['guest_name'] ?? null,
+            'guest_phone' => $data['customer_phone'] ?? $data['guest_phone'] ?? null,
+            'notes' => $data['note'] ?? $data['notes'] ?? null,
             'created_by_user_id' => $userId,
             'tenant_id' => $ilan->tenant_id,
         ]);
@@ -129,7 +129,7 @@ class IlanReservationService
             'ilan_id' => $ilanId,
             'starts_at' => $startsAt->toIso8601String(),
             'ends_at' => $endsAt->toIso8601String(),
-            'customer_name' => $reservation->customer_name,
+            'customer_name' => $reservation->guest_name,
             'user_id' => $userId,
         ]);
 
@@ -148,7 +148,7 @@ class IlanReservationService
             $source,
             $userId,
             $telegramUserId,
-            ['customer_name' => $reservation->customer_name]
+            ['customer_name' => $reservation->guest_name]
         );
 
         return $reservation->fresh('createdBy');
@@ -162,7 +162,7 @@ class IlanReservationService
     public function cancel(IlanReservation $reservation, ?int $userId = null, ?string $reason = null, ?int $telegramUserId = null): IlanReservation
     {
         $t0 = microtime(true);
-        $ilan = Ilan::find($reservation->ilan_id);
+        $ilan = Ilan::find($reservation->property_id);
         $slug = $ilan?->yayinTipi?->name ?? null;
         if ($slug) {
             try {
@@ -172,7 +172,7 @@ class IlanReservationService
                     LogService::warning('reservation_guard_blocked', [
                         'action' => 'cancel',
                         'yayin_tipi_slug' => $slug,
-                        'ilan_id' => $reservation->ilan_id,
+                        'ilan_id' => $reservation->property_id,
                         'reservation_id' => $reservation->id,
                         'user_id' => $userId,
                         'duration_ms' => $duration,
@@ -205,7 +205,7 @@ class IlanReservationService
         // Log (NO content_type)
         LogService::info('ilan_reservation_cancel', [
             'reservation_id' => $reservation->id,
-            'ilan_id' => $reservation->ilan_id,
+            'ilan_id' => $reservation->property_id,
             'cancelled_by_user_id' => $userId,
             'cancel_reason' => $reason,
         ]);
@@ -268,8 +268,8 @@ class IlanReservationService
         // Phase T: Idempotency - Aynı range için zaten "closed" kayıt varsa SKIP
         $existingClosed = IlanReservation::forIlan($ilanId)
             ->where('aktiflik_durumu', 1)
-            ->where('customer_name', null)
-            ->where('note', 'calendar_closed')
+            ->whereNull('guest_name')
+            ->where('notes', 'calendar_closed')
             ->where(function ($query) use ($from, $to) {
                 $query->where('start_date', '<=', $from->format('Y-m-d'))
                     ->where('end_date', '>=', $to->format('Y-m-d'));
@@ -289,7 +289,7 @@ class IlanReservationService
         // Conflict detection (only active reservations with customers)
         $conflicts = IlanReservation::forIlan($ilanId)
             ->active() // context7-ignore
-            ->whereNotNull('customer_name') // Only real reservations, not calendar closures
+            ->whereNotNull('guest_name') // Only real reservations, not calendar closures
             ->where(function ($query) use ($from, $to) {
                 $query->where('start_date', '<', $to->format('Y-m-d'))
                     ->where('end_date', '>', $from->format('Y-m-d'));
@@ -309,9 +309,9 @@ class IlanReservationService
             'end_date' => $to->format('Y-m-d'),
             'islem_statusu' => 'active', // context7-ignore
             'source' => $source,
-            'customer_name' => null,
-            'customer_phone' => null,
-            'note' => $reason ?? 'calendar_closed',
+            'guest_name' => null,
+            'guest_phone' => null,
+            'notes' => $reason ?? 'calendar_closed',
             'created_by_user_id' => $userId,
             'tenant_id' => $ilan->tenant_id,
         ]);
@@ -407,7 +407,7 @@ class IlanReservationService
                     LogService::warning('reservation_guard_blocked', [
                         'action' => 'confirm',
                         'yayin_tipi_slug' => $slug,
-                        'ilan_id' => $reservation->ilan_id,
+                        'ilan_id' => $reservation->property_id,
                         'reservation_id' => $reservation->id,
                         'user_id' => $userId,
                         'duration_ms' => $duration,
@@ -447,7 +447,7 @@ class IlanReservationService
         // Log (NO content_type)
         LogService::info('ilan_reservation_confirm', [
             'reservation_id' => $reservation->id,
-            'ilan_id' => $reservation->ilan_id,
+            'ilan_id' => $reservation->property_id,
             'confirmed_by_user_id' => $userId,
             'source' => $source,
         ]);
@@ -484,8 +484,8 @@ class IlanReservationService
         // O günün aktif rezervasyonları
         $reservations = IlanReservation::forIlan($ilanId)
             ->active() // context7-ignore
-            ->between($dayStart, $dayEnd)
-            ->get(['id', 'starts_at', 'ends_at']);
+            ->whereBetween('start_date', [$dayStart, $dayEnd])
+            ->get(['id', 'start_date', 'end_date']);
 
         $slots = [];
         $current = $dayStart->copy();
@@ -504,7 +504,7 @@ class IlanReservationService
 
             // Çakışma kontrolü
             foreach ($reservations as $res) {
-                if ($current->lt($res->ends_at) && $slotEnd->gt($res->starts_at)) {
+                if ($current->lt($res->end_date) && $slotEnd->gt($res->start_date)) {
                     $isReserved = true;
                     $reservationId = $res->id;
                     break;

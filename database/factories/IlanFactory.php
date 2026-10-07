@@ -70,4 +70,15 @@ class IlanFactory extends Factory
             ]);
         });
     }
+
+    /**
+     * Factory state: Ilan ready for reservations (rental_enabled + min_stay).
+     */
+    public function rentalEnabled(): static
+    {
+        return $this->state([
+            'rental_enabled'  => true,
+            'min_stay_nights' => 1,
+        ]);
+    }
 }

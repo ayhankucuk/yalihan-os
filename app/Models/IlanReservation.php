@@ -61,6 +61,28 @@ class IlanReservation extends BaseModel
         'total_amount' => 'float',
     ];
 
+    // Backward-compat accessors: Blade views use guest_name/notes
+    public function getCustomerNameAttribute(): ?string
+    {
+        return $this->guest_name;
+    }
+
+    public function getCustomerPhoneAttribute(): ?string
+    {
+        return $this->guest_phone;
+    }
+
+    public function getNoteAttribute(): ?string
+    {
+        return $this->notes;
+    }
+
+    public function isActive(): bool
+    {
+        return in_array($this->reservation_state, ['confirmed', 'pending'])
+            && $this->cancelled_at === null;
+    }
+
     /**
      * İlan ilişkisi
      */
@@ -93,6 +115,14 @@ class IlanReservation extends BaseModel
     public function scopeCancelled($query)
     {
         return $query->whereNotNull('cancelled_at');
+    }
+
+    /**
+     * Check if reservation is cancelled
+     */
+    public function isCancelled(): bool
+    {
+        return $this->cancelled_at !== null;
     }
 
     /**

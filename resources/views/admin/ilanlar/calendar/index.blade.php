@@ -96,8 +96,8 @@
                                 $isSelected = $current->format('Y-m-d') === $selectedDay;
                                 $hasReservation = $reservations
                                     ->filter(function ($r) use ($current) {
-                                        return $r->starts_at->lte($current->endOfDay()) &&
-                                            $r->ends_at->gte($current->startOfDay());
+                                        return $r->start_date->lte($current->endOfDay()) &&
+                                            $r->end_date->gte($current->startOfDay());
                                     })
                                     ->isNotEmpty();
                             @endphp
@@ -290,8 +290,8 @@
                                             </span>
                                         </div>
                                         <div class="text-sm text-gray-700 dark:text-slate-200 mb-1 dark:text-slate-300">
-                                            {{ $reservation->starts_at->format('d.m.Y H:i') }} →
-                                            {{ $reservation->ends_at->format('d.m.Y H:i') }}
+                                            {{ $reservation->start_date->format('d.m.Y H:i') }} →
+                                            {{ $reservation->end_date->format('d.m.Y H:i') }}
                                         </div>
                                         @if ($reservation->customer_name)
                                             <div class="text-sm text-gray-600 dark:text-gray-400">

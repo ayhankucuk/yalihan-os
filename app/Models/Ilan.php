@@ -1941,6 +1941,14 @@ class Ilan extends BaseModel
         return $this->hasMany(PropertyCalendarFeed::class, 'property_id');
     }
 
+    /**
+     * Singular alias for Blade template compatibility.
+     */
+    public function calendarFeed(): HasMany
+    {
+        return $this->calendarFeeds();
+    }
+
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

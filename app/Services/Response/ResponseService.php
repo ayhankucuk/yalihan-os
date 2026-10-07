@@ -184,9 +184,12 @@ class ResponseService
      * @param  string  $route  Route name
      * @param  string  $message  Success message
      */
-    public static function redirectSuccess(string $route, string $message = 'İşlem başarılı'): RedirectResponse
+    public static function redirectSuccess(string $route, array|string $paramsOrMessage = 'İşlem başarılı', ?string $message = null): RedirectResponse
     {
-        return redirect()->route($route)->with('success', $message);
+        $params = is_array($paramsOrMessage) ? $paramsOrMessage : null;
+        $msg = $message ?? (is_string($paramsOrMessage) ? $paramsOrMessage : 'İşlem başarılı');
+
+        return redirect()->route($route, $params)->with('success', $msg);
     }
 
     /**
@@ -195,9 +198,12 @@ class ResponseService
      * @param  string  $route  Route name
      * @param  string  $message  Error message
      */
-    public static function redirectError(string $route, string $message = 'Bir hata oluştu'): RedirectResponse
+    public static function redirectError(string $route, array|string $paramsOrMessage = 'Bir hata oluştu', ?string $message = null): RedirectResponse
     {
-        return redirect()->route($route)->with('error', $message);
+        $params = is_array($paramsOrMessage) ? $paramsOrMessage : null;
+        $msg = $message ?? (is_string($paramsOrMessage) ? $paramsOrMessage : 'Bir hata oluştu');
+
+        return redirect()->route($route, $params)->with('error', $msg);
     }
 
     /**
