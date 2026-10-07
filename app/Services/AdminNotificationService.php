@@ -60,8 +60,8 @@ class AdminNotificationService
                 "Müşteri: %s\n" .
                 "Kaynak: %s",
             $ilan->id,
-            $reservation->starts_at->format('d.m.Y H:i'),
-            $reservation->ends_at->format('d.m.Y H:i'),
+            $reservation->start_date->format('d.m.Y H:i'),
+            $reservation->end_date->format('d.m.Y H:i'),
             $reservation->customer_name ?? 'Belirtilmemiş',
             $source === 'telegram' ? 'Telegram Bot' : 'Admin Panel'
         );
@@ -69,8 +69,8 @@ class AdminNotificationService
         $payload = [
             'ilan_id' => $ilan->id,
             'reservation_id' => $reservation->id,
-            'starts_at' => $reservation->starts_at->toIso8601String(),
-            'ends_at' => $reservation->ends_at->toIso8601String(),
+            'starts_at' => $reservation->start_date->toIso8601String(),
+            'ends_at' => $reservation->end_date->toIso8601String(),
             'customer_name' => $reservation->customer_name,
             'customer_phone' => $reservation->customer_phone,
             'source' => $source,
@@ -115,8 +115,8 @@ class AdminNotificationService
                 "Müşteri: %s\n" .
                 "Kaynak: %s",
             $ilan->id,
-            $reservation->starts_at->format('d.m.Y H:i'),
-            $reservation->ends_at->format('d.m.Y H:i'),
+            $reservation->start_date->format('d.m.Y H:i'),
+            $reservation->end_date->format('d.m.Y H:i'),
             $reservation->customer_name ?? 'Belirtilmemiş',
             $source === 'telegram' ? 'Telegram Bot' : 'Admin Panel'
         );
@@ -128,8 +128,8 @@ class AdminNotificationService
         $payload = [
             'ilan_id' => $ilan->id,
             'reservation_id' => $reservation->id,
-            'starts_at' => $reservation->starts_at->toIso8601String(),
-            'ends_at' => $reservation->ends_at->toIso8601String(),
+            'starts_at' => $reservation->start_date->toIso8601String(),
+            'ends_at' => $reservation->end_date->toIso8601String(),
             'customer_name' => $reservation->customer_name,
             'cancelled_by_user_id' => $userId,
             'cancel_reason' => $reason,
@@ -178,8 +178,8 @@ class AdminNotificationService
                 "Müşteri: %s\n" .
                 "Kaynak: %s",
             $ilan->id,
-            $reservation->starts_at->format('d.m.Y H:i'),
-            $reservation->ends_at->format('d.m.Y H:i'),
+            $reservation->start_date->format('d.m.Y H:i'),
+            $reservation->end_date->format('d.m.Y H:i'),
             $reservation->customer_name ?? 'Belirtilmemiş',
             $source === 'telegram' ? 'Telegram Bot' : 'Admin Panel'
         );
@@ -187,8 +187,8 @@ class AdminNotificationService
         $payload = [
             'ilan_id' => $ilan->id,
             'reservation_id' => $reservation->id,
-            'starts_at' => $reservation->starts_at->toIso8601String(),
-            'ends_at' => $reservation->ends_at->toIso8601String(),
+            'starts_at' => $reservation->start_date->toIso8601String(),
+            'ends_at' => $reservation->end_date->toIso8601String(),
             'customer_name' => $reservation->customer_name,
             'source' => $source,
         ];

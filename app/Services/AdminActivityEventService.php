@@ -50,8 +50,8 @@ class AdminActivityEventService
             'context' => array_merge([
                 'reservation_id' => $reservation->id,
                 'ilan_id' => $reservation->ilan_id,
-                'starts_at' => $reservation->starts_at->toIso8601String(),
-                'ends_at' => $reservation->ends_at->toIso8601String(),
+                'starts_at' => $reservation->start_date->toIso8601String(),
+                'ends_at' => $reservation->end_date->toIso8601String(),
                 'islem_statusu' => $reservation->islem_statusu,
                 'customer_name' => $reservation->customer_name,
             ], $context),
@@ -108,8 +108,8 @@ class AdminActivityEventService
             $reservation->id,
             $actionText,
             $reservation->ilan_id,
-            $reservation->starts_at->format('d.m.Y H:i'),
-            $reservation->ends_at->format('d.m.Y H:i')
+            $reservation->start_date->format('d.m.Y H:i'),
+            $reservation->end_date->format('d.m.Y H:i')
         );
     }
 
