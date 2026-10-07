@@ -295,7 +295,7 @@
     </main>
 
     <!-- Footer -->
-    <footer style="background: #0F2A5C; border-top: 1px solid rgba(255,255,255,0.08);">
+    <footer style="background: var(--color-navy-light); border-top: 1px solid rgba(255,255,255,0.08);">
         <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <div class="mb-12 grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
 
@@ -303,7 +303,7 @@
                 <div>
                     <div class="mb-5 flex items-center gap-1">
                         <span class="text-xl font-bold tracking-tight" style="color: #ffffff;">Yalıhan</span>
-                        <span class="text-xl font-light tracking-[0.18em]" style="color: #C9A84C;">EMLAK</span>
+                        <span class="text-xl font-light tracking-[0.18em]" style="color: var(--color-gold);">EMLAK</span>
                     </div>
                     <p class="mb-6 text-sm leading-relaxed" style="color: rgba(255,255,255,0.45);">
                         Bodrum'un en prestijli bölgelerinde 20+ yıllık deneyimle güvenilir,
@@ -324,7 +324,7 @@
 
                 <!-- Quick Links -->
                 <div>
-                    <h6 class="mb-5 text-xs font-semibold uppercase tracking-widest" style="color: #C9A84C;">Hızlı Linkler</h6>
+                    <h6 class="mb-5 text-xs font-semibold uppercase tracking-widest" style="color: var(--color-gold);">Hızlı Linkler</h6>
                     <ul class="space-y-3">
                         <li><a href="{{ route('home') }}" class="footer-link text-sm">Ana Sayfa</a></li>
                         <li><a href="{{ route('ilanlar.index') }}" class="footer-link text-sm">Tüm İlanlar</a></li>
@@ -337,7 +337,7 @@
 
                 <!-- Services -->
                 <div>
-                    <h6 class="mb-5 text-xs font-semibold uppercase tracking-widest" style="color: #C9A84C;">Portföy</h6>
+                    <h6 class="mb-5 text-xs font-semibold uppercase tracking-widest" style="color: var(--color-gold);">Portföy</h6>
                     <ul class="space-y-3">
                         <li><a href="{{ route('satilik') }}" class="footer-link text-sm">Satılık Konut</a></li>
                         <li><a href="{{ route('kiralik') }}" class="footer-link text-sm">Kiralık Konut</a></li>
@@ -349,18 +349,18 @@
 
                 <!-- Contact -->
                 <div>
-                    <h6 class="mb-5 text-xs font-semibold uppercase tracking-widest" style="color: #C9A84C;">İletişim</h6>
+                    <h6 class="mb-5 text-xs font-semibold uppercase tracking-widest" style="color: var(--color-gold);">İletişim</h6>
                     <div class="space-y-4">
                         <div class="flex items-start gap-3">
-                            <x-icon name="konum" class="w-4 h-4 mt-0.5 shrink-0" style="color: #C9A84C;" />
+                            <x-icon name="konum" class="w-4 h-4 mt-0.5 shrink-0" style="color: var(--color-gold);" />
                             <span class="text-sm" style="color: rgba(255,255,255,0.5);">Yalıkavak, Bodrum, Muğla</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <x-icon name="telefon" class="w-4 h-4 shrink-0" style="color: #C9A84C;" />
+                            <x-icon name="telefon" class="w-4 h-4 shrink-0" style="color: var(--color-gold);" />
                             <a href="tel:+905332090302" class="text-sm hover:opacity-100 transition-opacity" style="color: rgba(255,255,255,0.5);">0533 209 03 02</a>
                         </div>
                         <div class="flex items-center gap-3">
-                            <x-icon name="gonder" class="w-4 h-4 shrink-0" style="color: #C9A84C;" />
+                            <x-icon name="gonder" class="w-4 h-4 shrink-0" style="color: var(--color-gold);" />
                             <a href="mailto:{{ config('company.email') }}" class="text-sm hover:opacity-100 transition-opacity" style="color: rgba(255,255,255,0.5);">{{ config('company.email') }}</a>
                         </div>
                     </div>

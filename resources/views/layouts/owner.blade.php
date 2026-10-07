@@ -26,7 +26,7 @@
         <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
 
             {{-- Logo --}}
-            <a href="{{ route('owner.dashboard') }}" class="flex items-center gap-2 text-lg font-bold text-blue-700 dark:text-blue-400">
+            <a href="{{ route('owner.dashboard') }}" class="flex items-center gap-2 text-lg font-bold text-[#0A1628] dark:text-white">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M3 9.75L12 3l9 6.75V21a1 1 0 01-1 1H4a1 1 0 01-1-1V9.75z"/>
@@ -39,33 +39,33 @@
             {{-- Nav --}}
             <nav class="hidden items-center gap-5 text-sm font-medium sm:flex">
                 <a href="{{ route('owner.dashboard') }}"
-                   class="text-gray-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400
-                          {{ request()->routeIs('owner.dashboard') ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600' : '' }}">
+                   class="text-gray-600 hover:text-[#C9A84C] dark:text-slate-300 dark:hover:text-[#C9A84C]
+                          {{ request()->routeIs('owner.dashboard') ? 'text-[#C9A84C] dark:text-[#C9A84C] border-b-2 border-[#C9A84C]' : '' }}">
                     Ana Sayfa
                 </a>
                 <a href="{{ route('owner.ilanlar.index') }}"
-                   class="text-gray-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400
-                          {{ request()->routeIs('owner.ilanlar.*') ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600' : '' }}">
+                   class="text-gray-600 hover:text-[#C9A84C] dark:text-slate-300 dark:hover:text-[#C9A84C]
+                          {{ request()->routeIs('owner.ilanlar.*') ? 'text-[#C9A84C] dark:text-[#C9A84C] border-b-2 border-[#C9A84C]' : '' }}">
                     İlanlarım
                 </a>
                 <a href="{{ route('owner.teklifler.index') }}"
-                   class="text-gray-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400
-                          {{ request()->routeIs('owner.teklifler.*') ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600' : '' }}">
+                   class="text-gray-600 hover:text-[#C9A84C] dark:text-slate-300 dark:hover:text-[#C9A84C]
+                          {{ request()->routeIs('owner.teklifler.*') ? 'text-[#C9A84C] dark:text-[#C9A84C] border-b-2 border-[#C9A84C]' : '' }}">
                     Teklifler
                 </a>
                 <a href="{{ route('owner.mesajlar.index') }}"
-                   class="text-gray-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400
-                          {{ request()->routeIs('owner.mesajlar.*') ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600' : '' }}">
+                   class="text-gray-600 hover:text-[#C9A84C] dark:text-slate-300 dark:hover:text-[#C9A84C]
+                          {{ request()->routeIs('owner.mesajlar.*') ? 'text-[#C9A84C] dark:text-[#C9A84C] border-b-2 border-[#C9A84C]' : '' }}">
                     Mesajlar
                 </a>
                 <a href="{{ route('owner.belgeler.index') }}"
-                   class="text-gray-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400
-                          {{ request()->routeIs('owner.belgeler.*') ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600' : '' }}">
+                   class="text-gray-600 hover:text-[#C9A84C] dark:text-slate-300 dark:hover:text-[#C9A84C]
+                          {{ request()->routeIs('owner.belgeler.*') ? 'text-[#C9A84C] dark:text-[#C9A84C] border-b-2 border-[#C9A84C]' : '' }}">
                     Belgelerim
                 </a>
                 <a href="{{ route('owner.reports.index') }}"
-                   class="text-gray-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400
-                          {{ request()->routeIs('owner.reports.*') ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600' : '' }}">
+                   class="text-gray-600 hover:text-[#C9A84C] dark:text-slate-300 dark:hover:text-[#C9A84C]
+                          {{ request()->routeIs('owner.reports.*') ? 'text-[#C9A84C] dark:text-[#C9A84C] border-b-2 border-[#C9A84C]' : '' }}">
                     Raporlar
                 </a>
             </nav>
@@ -132,7 +132,7 @@
             <a href="{{ route($route) }}"
                class="block px-3 py-2 rounded-lg text-sm font-medium transition-colors
                       {{ request()->routeIs(str_replace('.index', '.*', $route))
-                         ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                         ? 'bg-[#C9A84C]/10 text-[#C9A84C] dark:bg-[#C9A84C]/20 dark:text-[#C9A84C]'
                          : 'text-gray-600 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700' }}">
                 {{ $label }}
             </a>

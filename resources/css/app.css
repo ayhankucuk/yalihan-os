@@ -48,10 +48,16 @@
     --text-muted: #6b7280;
     --text-inverse: #ffffff;
 
-    /* Brand Colors */
-    --color-navy: #0a1628;
-    --color-gold: #c9a84c;
-    --color-cream: #f8f6f1;
+    /* Brand Colors - DC-005 Brand Token System */
+    --color-navy: #0A1628;
+    --color-navy-light: #0F2A5C;
+    --color-gold: #C9A84C;
+    --color-cream: #F8F6F1;
+    --color-white: #FFFFFF;
+    
+    /* Semantic Aliases */
+    --brand-primary: var(--color-navy);
+    --brand-accent: var(--color-gold);
 
     /* Semantic Colors */
     --color-primary: #0d5fa3;

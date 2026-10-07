@@ -35,14 +35,14 @@
 
                 {{-- Brand --}}
                 <a href="/admin" class="flex items-center gap-3 shrink-0 group">
-                    <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-600 rounded-lg flex items-center justify-center shadow-md shadow-orange-500/25 group-hover:scale-110 transition-transform duration-300">
+                    <div class="w-8 h-8 bg-[#0A1628] rounded-lg flex items-center justify-center shadow-md shadow-[#C9A84C]/20 group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
                         </svg>
                     </div>
                     <div class="hidden sm:block">
                         <div class="text-sm font-black text-slate-900 dark:text-white tracking-tighter leading-none">Yalıhan</div>
-                        <div class="text-[9px] font-black uppercase tracking-[0.2em] text-orange-500 leading-none mt-0.5">AI OS</div>
+                        <div class="text-[9px] font-black uppercase tracking-[0.2em] text-[#C9A84C] leading-none mt-0.5">AI OS</div>
                     </div>
                 </a>
 
@@ -53,7 +53,7 @@
                         Pano
                     </a>
                     <a href="{{ route('admin.ilanlar.index') }}"
-                        class="px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-tighter text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 {{ request()->is('admin/ilanlar*') ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : '' }}">
+                        class="px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-tighter text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 {{ request()->is('admin/ilanlar*') ? 'bg-[#C9A84C]/10 text-[#C9A84C] dark:bg-[#C9A84C]/20 dark:text-[#C9A84C]' : '' }}">
                         İlanlar
                     </a>
                     <a href="{{ route('admin.crm.dashboard') }}"
@@ -135,7 +135,7 @@
     <footer class="mt-8 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <div class="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div class="flex items-center gap-2">
-                <div class="w-5 h-5 bg-gradient-to-br from-orange-500 to-amber-600 rounded-md flex items-center justify-center">
+                <div class="w-5 h-5 bg-[#0A1628] rounded-md flex items-center justify-center">
                     <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
                     </svg>
