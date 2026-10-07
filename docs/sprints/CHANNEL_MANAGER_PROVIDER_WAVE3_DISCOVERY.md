@@ -176,7 +176,7 @@ app/Services/ChannelManager/ChannexReservationIngestService.php
 app/Http/Controllers/Api/ChannexWebhookController.php
                                          ← MODIFY: action routing
 
-docs/adrs/ADR-008-Channex-Reservation-Lifecycle.md
+docs/adr/ADR-008-Channex-Reservation-Lifecycle.md
 ```
 
 ---
@@ -216,5 +216,5 @@ docs/adrs/ADR-008-Channex-Reservation-Lifecycle.md
 - `app/Http/Controllers/Api/ChannexWebhookController.php`
 - `app/Services/ChannelManager/ChannexReservationIngestService.php`
 - `app/Services/ReservationService.php` (L144: cancelReservation)
-- `docs/adrs/ADR-007-Channel-Manager-Webhook-Ingest.md`
+- `docs/adr/ADR-007-Channel-Manager-Webhook-Ingest.md`
 - `docs/sprints/CHANNEL_MANAGER_PROVIDER_WAVE2_DISCOVERY.md`

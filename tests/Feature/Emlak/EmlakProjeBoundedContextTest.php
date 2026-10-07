@@ -12,7 +12,7 @@ use App\Enums\IlanDurumu;
 use Illuminate\Support\Facades\Bus;
 
 /**
- * ADR #006 Bounded Context Regression Test
+ * ADR-044 Bounded Context Regression Test
  *
  * Validates that:
  *   1. Ilan::proje()  resolves to App\Modules\Emlak\Models\Proje (emlak_projeleri)
@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Bus;
  *   3. The bounded context is isolated from Takım Projesi (App\Models\Proje / projeler)
  *
  * @group emlak
- * @group adr006
+ * @group adr044
  */
 class EmlakProjeBoundedContextTest extends TestCase
 {
@@ -31,11 +31,11 @@ class EmlakProjeBoundedContextTest extends TestCase
     }
 
     /**
-     * ADR #006 Invariant A: Ilan.proje() returns an Emlak Proje instance.
+     * ADR-044 Invariant A: Ilan.proje() returns an Emlak Proje instance.
      *
      * @test
      * @group emlak
-     * @group adr006
+     * @group adr044
      */
     public function ilan_proje_returns_emlak_proje_instance(): void
     {
@@ -68,11 +68,11 @@ class EmlakProjeBoundedContextTest extends TestCase
     }
 
     /**
-     * ADR #006 Invariant B: Proje.ilanlar() returns Ilan collection (inverse).
+     * ADR-044 Invariant B: Proje.ilanlar() returns Ilan collection (inverse).
      *
      * @test
      * @group emlak
-     * @group adr006
+     * @group adr044
      */
     public function emlak_proje_ilanlar_returns_ilan_collection(): void
     {
@@ -110,11 +110,11 @@ class EmlakProjeBoundedContextTest extends TestCase
     }
 
     /**
-     * ADR #006 Invariant C: ilanlar.proje_id stores Emlak Proje ID (not Takım Projesi).
+     * ADR-044 Invariant C: ilanlar.proje_id stores Emlak Proje ID (not Takım Projesi).
      *
      * @test
      * @group emlak
-     * @group adr006
+     * @group adr044
      */
     public function ilan_proje_id_stores_emlak_proje_id(): void
     {
@@ -149,11 +149,11 @@ class EmlakProjeBoundedContextTest extends TestCase
     }
 
     /**
-     * ADR #006 Invariant D: Ilan without proje_id has null proje relation.
+     * ADR-044 Invariant D: Ilan without proje_id has null proje relation.
      *
      * @test
      * @group emlak
-     * @group adr006
+     * @group adr044
      */
     public function ilan_without_proje_id_returns_null_proje(): void
     {
@@ -169,11 +169,11 @@ class EmlakProjeBoundedContextTest extends TestCase
     }
 
     /**
-     * ADR #006 Invariant E: Emlak Proje stores in emlak_projeleri table, not projeler.
+     * ADR-044 Invariant E: Emlak Proje stores in emlak_projeleri table, not projeler.
      *
      * @test
      * @group emlak
-     * @group adr006
+     * @group adr044
      */
     public function emlak_proje_stored_in_emlak_projeleri_not_projeler(): void
     {
@@ -202,14 +202,14 @@ class EmlakProjeBoundedContextTest extends TestCase
     }
 
     /**
-     * ADR #006 Invariant F: Emlak Proje soft-delete cascades to nullify ilanlar.proje_id.
+     * ADR-044 Invariant F: Emlak Proje soft-delete cascades to nullify ilanlar.proje_id.
      * Note: Laravel soft-deletes do not automatically nullify FK columns.
      * This test documents current behavior. FK constraint to enforce null-on-delete
      * would require a future additive migration.
      *
      * @test
      * @group emlak
-     * @group adr006
+     * @group adr044
      */
     public function emlak_proje_soft_delete_removes_from_active_relation(): void
     {

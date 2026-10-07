@@ -8,7 +8,7 @@
 **Owner:** WenOX / Kilo Agent
 **Branch:** `integration/era-v-phase2a-e01`
 **Baseline:** `b70c2c2` (Wave 1 CERTIFIED)
-**Reference:** `docs/adrs/ADR-009`
+**Reference:** `docs/adr/ADR-009`
 
 ---
 

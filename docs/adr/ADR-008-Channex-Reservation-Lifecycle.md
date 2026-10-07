@@ -40,5 +40,5 @@ ChannexWebhookController
 ## Referanslar
 
 - `docs/sprints/CHANNEL_MANAGER_PROVIDER_WAVE3_DISCOVERY.md`
-- `docs/adrs/ADR-007-Channel-Manager-Webhook-Ingest.md`
+- `docs/adr/ADR-007-Channel-Manager-Webhook-Ingest.md`
 - `app/Services/ReservationService.php`

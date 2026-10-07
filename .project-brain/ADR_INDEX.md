@@ -2,22 +2,35 @@
 
 ## Rules
 
-- Use `docs/adrs/ADR-TEMPLATE.md` for every material architecture decision.
+- Use `docs/adr/ADR-TEMPLATE.md` for every material architecture decision.
 - One decision per ADR; do not hide alternatives or consequences.
 - Record the Git baseline and verification evidence.
 - A proposed decision is not an implementation authorization.
 - Superseded decisions remain for historical traceability.
 
-## Existing decisions
+## Active Decisions
 
-| ADR | Topic | Status | Note |
+| ADR | Topic | Status | Physical Artifact |
 |---|---|---|---|
-| ADR-006 | Channel Manager provider architecture | Repository document | Supporting/historical status must be checked against ERA V |
-| ADR-007 | Channel Manager webhook ingest | Repository document | Channel integration lineage |
-| ADR-008 | Channex reservation lifecycle | Repository document | Reservation event lifecycle |
-| ADR-009 | Booking.com provider architecture | ACCEPTED | Provider protocol and acknowledgement invariant |
-| ADR-010 | Production frontend asset ownership | PROPOSED | Requires explicit decision before production fix |
+| ADR-006 | Channel Manager Provider Architecture | ACCEPTED | `docs/adr/ADR-006-Channel-Manager-Provider-Architecture.md` |
+| ADR-007 | Channel Manager Webhook Ingest | ACCEPTED | `docs/adr/ADR-007-Channel-Manager-Webhook-Ingest.md` |
+| ADR-008 | Channex Reservation Lifecycle | ACCEPTED | `docs/adr/ADR-008-Channex-Reservation-Lifecycle.md` |
+| ADR-009 | Booking.com Reservation Provider Architecture | ACCEPTED | `docs/adr/ADR-009-Booking.com-Reservation-Provider-Architecture.md` |
+| ADR-010 | Production Frontend Asset Ownership | PROPOSED | `docs/adr/ADR-010-Production-Frontend-Asset-Ownership.md` |
+| **ADR-044** | **Emlak Proje / Team Proje Bounded Context Separation** | **ACCEPTED** | **`docs/adr/2026-09-17-adr044-emlak-proje-bounded-context.md`** |
 
-## Decision log linkage
+## Known Historical Numbering Drift
 
-Short operational decisions stay in `.project-brain/DECISION_LOG.md`; durable architecture decisions belong here and in `docs/adrs/`.
+> WARNING: The following historical ADR numbers are documented in repository artifacts but have gaps or conflicting references. OUT OF SCOPE for ADR_CANONICAL_CONVERGENCE_01.
+
+| ADR | Status | Note |
+|---|---|---|---|
+| ADR-002 | KNOWN HISTORICAL COLLISION | Out of scope |
+| ADR-003 | KNOWN HISTORICAL COLLISION | Out of scope |
+| ADR-021 | KNOWN HISTORICAL COLLISION | Out of scope |
+
+ADR numbers are NOT required to be contiguous. Index reflects actual artifacts only.
+
+## Decision Log Linkage
+
+Short operational decisions stay in `.project-brain/DECISION_LOG.md`; durable architecture decisions belong here and in `docs/adr/`.

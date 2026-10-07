@@ -29,4 +29,4 @@ ChannexWebhookController (thin)
 ## Referanslar
 
 - `docs/sprints/CHANNEL_MANAGER_PROVIDER_WAVE2_DISCOVERY.md`
-- `docs/adrs/ADR-006-Channel-Manager-Provider-Architecture.md`
+- `docs/adr/ADR-006-Channel-Manager-Provider-Architecture.md`

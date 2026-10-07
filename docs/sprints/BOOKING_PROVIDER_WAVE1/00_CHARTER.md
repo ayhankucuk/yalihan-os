@@ -8,7 +8,7 @@
 **Owner:** WenOX / Kilo Agent
 **Branch:** `integration/era-v-phase2a-e01`
 **Baseline:** `8bfee67` (ADR-009 ACCEPTED)
-**Reference:** `docs/adrs/ADR-009-Booking.com-Reservation-Provider-Architecture.md`
+**Reference:** `docs/adr/ADR-009-Booking.com-Reservation-Provider-Architecture.md`
 
 ---
 

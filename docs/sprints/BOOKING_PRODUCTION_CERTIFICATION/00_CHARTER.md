@@ -8,7 +8,7 @@
 **Owner:** Kilo Agent
 **Branch:** `integration/booking-production`
 **Baseline:** `Sprint 4.14` (71/71 PASS — Booking Wave 1-5 + Channex regression)
-**Reference:** `docs/adrs/ADR-009`
+**Reference:** `docs/adr/ADR-009`
 
 ---
 
