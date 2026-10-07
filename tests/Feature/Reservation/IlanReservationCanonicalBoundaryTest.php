@@ -208,11 +208,10 @@ class IlanReservationCanonicalBoundaryTest extends TestCase
         $reservationId = $reservation->id;
         $this->setTenantContext($this->tenantB);
 
-        // IlanReservation does NOT have BelongsToTenant trait → TenantScope NOT enforced
-        // Expected: Tenant B CAN read Tenant A's reservation (security bug)
+        // BelongsToTenant trait added → TenantScope now enforced
+        // Tenant B should NOT read Tenant A's reservation
         $found = IlanReservation::find($reservationId);
-        $this->assertNotNull($found, 'SECURITY FINDING: IlanReservation lacks BelongsToTenant trait — cross-tenant read IS allowed!');
-        $this->assertEquals($this->tenantA->id, $found->tenant_id, 'Cross-tenant read succeeded: tenant isolation broken');
+        $this->assertNull($found, 'Cross-tenant read should be blocked by TenantScope');
     }
 
     // ─── Test 7: cross-tenant cancel ───────────────────────────────────────────
