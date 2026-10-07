@@ -44,6 +44,7 @@ class SentinelHealthThresholdTest extends TestCase
 
     /**
      * Register a fake bekci:health command returning a specific score.
+     * Returns FAILURE if score < 70, SUCCESS otherwise — matches real command threshold.
      */
     private function registerFakeBekciHealth(float $score): void
     {
@@ -52,8 +53,9 @@ class SentinelHealthThresholdTest extends TestCase
             public function __construct(float $score) { $this->score = $score; parent::__construct(); }
             public function handle(): int
             {
-                $this->output->writeln("Overall System Health: {$this->score}%");
-                return 0;
+                $this->output->writeln("Overall System Health: {$this->score}% — " . ($this->score >= 70 ? 'GOOD' : 'NEEDS ATTENTION'));
+                // Match real YalihanBekciHealthCommand threshold: >= 70 = SUCCESS, < 70 = FAILURE
+                return $this->score >= 70 ? self::SUCCESS : self::FAILURE;
             }
         };
         $fakeCommand->setName('bekci:health');
