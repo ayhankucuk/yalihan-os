@@ -31,7 +31,7 @@ EVENTS / QUEUE / NOTIFICATIONS
 ### Core Property Domain
 | Domain | Purpose | Entry Points |
 |--------|---------|-------------|
-| **Ilan/Listing** | Public/draft property presentation | IlanController, Wizard flow |
+| **Ilan/Listing** | Public/draft property presentation | IlanController, Wizard | DOMAIN_KNOWLEDGE/ILAN.md |
 | **Property** | Managed real-estate asset | PropertyController |
 | **Reservation** | Booking management | IlanCalendarController, IlanReservationService |
 | **Calendar** | Availability/ICS | IlanCalendarService, AvailabilityService |
@@ -336,50 +336,6 @@ AI:
 ## Evidence Conflicts
 
 None currently.
-
----
-
-## Domain Business Semantics
-
-### Rezervasyon Domain
-
-**REZERVASYON NEDİR?**
-- Bir mülkün belirli tarihler arasında rezerve edilmesi
-- Misafir kabulü için takvimde blok
-
-**KİM OLUŞTURABILIR?**
-- Admin kullanıcılar (Yalıhan Emlak)
-- Tenant context içinde
-
-**HANGİ İLANA BAĞLI?**
-- Ilan (property_id üzerinden)
-
-**TENANT SAHİBİ KİM?**
-- IlanReservation → tenant_id otomatik atanır
-
-**HANGİ STATÜLERDEN GEÇER?**
-- pending → confirmed → checked_in → completed
-- cancelled (herhangi bir aşamada)
-
-**İPTAL NE DEMEKTİR?**
-- cancelled_at timestamp atanır
-- Takvim bloğu kaldırılmaz (geriye dönük raporlama için)
-
-**TAKVİM NE ZAMAN BLOKE OLUR?**
-- Rezervasyon oluşturulduğunda
-- confirmed veya pending statüsünde
-
-**HANGİ NOTIFICATION OLUŞUR?**
-- AdminNotificationService üzerinden admin bildirimi
-- Rezervasyon oluşturulduğunda, iptal edildiğinde
-
-**FİNANS ETKİSİ VAR MI?**
-- total_amount alanı mevcut
-- Ödeme lifecycle'ı ayrı
-
-**MİSAFİR/CRM BAĞLANTISI NEDİR?**
-- guest_name, guest_phone, guest_email alanları
-- Kisi tablosu ile doğrudan bağlı DEĞİL
 
 ---
 
