@@ -397,7 +397,7 @@ class IlanReservationService
             ]);
         }
         $t0 = microtime(true);
-        $ilan = Ilan::find($reservation->ilan_id);
+        $ilan = Ilan::find($reservation->property_id);
         $slug = $ilan?->yayinTipi?->name ?? null;
         if ($slug) {
             try {

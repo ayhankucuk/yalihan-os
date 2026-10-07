@@ -293,9 +293,9 @@ class IlanCalendarController extends Controller
             );
         } catch (ValidationException $e) {
             return ResponseService::redirectError(
-                route('admin.ilanlar.calendar', $ilan),
+                'admin.ilanlar.calendar',
                 $e->getMessage()
-            )->withInput();
+            )->withInput()->with(['ilan' => $ilan->id]);
         }
     }
 
@@ -335,7 +335,7 @@ class IlanCalendarController extends Controller
             }
 
             return ResponseService::redirectSuccess(
-                route('admin.activity-events.index'),
+                'admin.activity-events.index',
                 'Rezervasyon onaylandı'
             );
         } catch (ValidationException $e) {
@@ -344,7 +344,7 @@ class IlanCalendarController extends Controller
             }
 
             return ResponseService::redirectError(
-                route('admin.activity-events.index'),
+                'admin.activity-events.index',
                 $e->getMessage()
             );
         }
