@@ -74,8 +74,10 @@
 
     <div class="min-h-screen bg-gray-50 dark:bg-slate-900">
         <div class="flex h-screen">
-            <!-- Modern Sidebar -->
-            @include('admin.layouts.sidebar')
+            <!-- Modern Sidebar (hidden on mobile - shown in drawer) -->
+            <div class="hidden lg:block">
+                @include('admin.layouts.sidebar')
+            </div>
 
             <!-- Content -->
             <div class="flex flex-1 flex-col overflow-hidden">
@@ -83,6 +85,15 @@
                 <header
                     class="sticky top-0 z-30 border-b border-gray-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-gray-950/80">
                     <div class="flex h-14 items-center gap-3 px-3 sm:px-4">
+                        {{-- Mobile sidebar toggle --}}
+                        <button @click="mobileSidebar = true"
+                            class="flex h-10 w-10 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
+                            aria-label="Menüyü aç">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+
                         <div class="ml-auto flex items-center gap-2">
                             <div class="hidden md:block">
                                 <button @click="$dispatch('open-global-search')"
@@ -246,6 +257,23 @@
                     </div>
                 </main>
             </div>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Drawer -->
+    <div x-show="mobileSidebar" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 lg:hidden" x-cloak>
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="mobileSidebar = false"></div>
+
+        <!-- Sidebar -->
+        <div x-show="mobileSidebar" x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-x-0"
+            x-transition:leave-end="-translate-x-full" class="fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw]">
+            @include('admin.layouts.sidebar')
         </div>
     </div>
 

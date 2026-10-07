@@ -74,7 +74,25 @@
             <div
                 class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
                 <div class="border-b border-gray-200 dark:border-slate-700 dark:border-slate-800">
-                    <nav class="-mb-px flex flex-wrap px-6" aria-label="Tabs">
+                    {{-- Mobile: Dropdown selector --}}
+                    <div class="md:hidden p-4 border-b border-gray-200 dark:border-slate-700 dark:border-slate-800">
+                        <label for="mobile-tab-select" class="sr-only">Sekme Seç</label>
+                        <select id="mobile-tab-select"
+                            class="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                            <option value="genel">Genel</option>
+                            <option value="bildirim">Bildirimler</option>
+                            <option value="portal">Portal Entegrasyonları</option>
+                            <option value="fiyat">Fiyatlandırma</option>
+                            <option value="qrcode">QR Kod</option>
+                            <option value="navigation">Navigasyon</option>
+                            <option value="kullanici">Kullanıcı Yönetimi</option>
+                            <option value="diller">Diller</option>
+                            <option value="paralar">Para Birimleri</option>
+                        </select>
+                    </div>
+
+                    {{-- Desktop: Horizontal tabs --}}
+                    <nav class="hidden md:-mb-px md:flex md:flex-wrap md:px-6" aria-label="Tabs">
                         <button type="button" data-tab="genel"
                             class="tab-button active flex items-center gap-2 border-b-2 border-blue-500 px-6 py-4 text-sm font-medium text-blue-600 transition-all duration-200 dark:text-blue-400">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -915,46 +933,56 @@
         document.addEventListener('DOMContentLoaded', function() {
             const tabButtons = document.querySelectorAll('.tab-button');
             const tabContents = document.querySelectorAll('.tab-content');
+            const mobileSelect = document.getElementById('mobile-tab-select');
 
+            // Unified tab switching function
+            function switchToTab(targetTab) {
+                // Update buttons
+                tabButtons.forEach(btn => {
+                    if (btn.getAttribute('data-tab') === targetTab) {
+                        btn.classList.add('active', 'border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+                        btn.classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+                    } else {
+                        btn.classList.remove('active', 'border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+                        btn.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+                    }
+                });
+
+                // Update tab contents
+                tabContents.forEach(content => {
+                    if (content.id === targetTab) {
+                        content.classList.remove('hidden');
+                    } else {
+                        content.classList.add('hidden');
+                    }
+                });
+
+                // Update mobile select if exists
+                if (mobileSelect) {
+                    mobileSelect.value = targetTab;
+                }
+            }
+
+            // Desktop button click handlers
             tabButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const targetTab = this.getAttribute('data-tab');
-
-                    // Remove active class from all buttons
-                    tabButtons.forEach(btn => {
-                        btn.classList.remove('active', 'border-blue-500', 'text-blue-600',
-                            'dark:text-blue-400');
-                        btn.classList.add('border-transparent', 'text-gray-500',
-                            'dark:text-gray-400');
-                    });
-
-                    // Add active class to clicked button
-                    this.classList.add('active', 'border-blue-500', 'text-blue-600',
-                        'dark:text-blue-400');
-                    this.classList.remove('border-transparent', 'text-gray-500',
-                        'dark:text-gray-400');
-
-                    // Hide all tab contents
-                    tabContents.forEach(content => {
-                        content.classList.add('hidden');
-                    });
-
-                    // Show target tab content
-                    const targetContent = document.getElementById(targetTab);
-                    if (targetContent) {
-                        targetContent.classList.remove('hidden');
-                    }
+                    switchToTab(targetTab);
                 });
             });
+
+            // Mobile dropdown handler
+            if (mobileSelect) {
+                mobileSelect.addEventListener('change', function() {
+                    switchToTab(this.value);
+                });
+            }
 
             // Check URL hash on load (support #notifications and #bildirim)
             const hash = window.location.hash.replace('#', '');
             if (hash) {
-                const targetButton = document.querySelector(`.tab-button[data-tab="${hash}"]`) ||
-                    (hash === 'notifications' ? document.querySelector('.tab-button[data-tab="bildirim"]') : null);
-                if (targetButton) {
-                    targetButton.click();
-                }
+                const targetTab = (hash === 'notifications') ? 'bildirim' : hash;
+                switchToTab(targetTab);
             }
         });
 
