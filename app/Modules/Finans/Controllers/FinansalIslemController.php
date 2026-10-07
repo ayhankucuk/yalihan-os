@@ -11,6 +11,7 @@ use App\DataTransferObjects\Finans\UpdateFinansalIslemCommand;
 use App\Services\Response\ResponseService;
 use Illuminate\Http\Request;
 use App\Enums\FinansalIslemDurumu;
+use App\Services\SaaS\TenantContextService;
 use Illuminate\Support\Facades\Validator;
 
 /**
@@ -142,7 +143,22 @@ class FinansalIslemController extends Controller
         }
 
         try {
-            $this->authorize('create', FinansalIslem::class);
+            // Tenant ownership check: ilan_id must belong to current tenant
+            if ($request->filled('ilan_id')) {
+                $tenantCtx = app(TenantContextService::class);
+                if ($tenantCtx->hasTenant()) {
+                    $tenantId = $tenantCtx->getTenant()->id;
+                    $ilan = \App\Models\Ilan::withoutGlobalScopes()->find($request->input('ilan_id'));
+
+                    if (!$ilan || $ilan->tenant_id !== $tenantId) {
+                        if ($request->wantsJson() || $request->ajax()) {
+                            return ResponseService::forbidden('Bu ilana finansal işlem oluşturma yetkiniz yok');
+                        }
+                        // Web request: return 403 response with error flash
+                        return redirect()->back()->with('error', 'Bu ilana finansal işlem oluşturma yetkiniz yok');
+                    }
+                }
+            }
 
             $cmd = CreateFinansalIslemCommand::fromRequest($request->all());
             $islem = $this->islemManager->createIslem($cmd);

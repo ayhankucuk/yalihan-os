@@ -159,4 +159,132 @@ class FinansalIslemTenantIsolationTest extends TestCase
         $this->assertEquals(1, $paginated->total(), 'Paginated query must respect tenant isolation');
         $this->assertEquals($this->islemA->id, $paginated->first()->id);
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CREATE ISOLATION TESTS — t_b4bbbe31
+    // Tenant A must NOT be able to create FinansalIslem for Tenant B's Ilan
+    // ═══════════════════════════════════════════════════════════════
+
+    // ═══════════════════════════════════════════════════════════════
+    // CREATE ISOLATION TESTS — t_b4bbbe31
+    // Tenant A must NOT be able to create FinansalIslem for Tenant B's Ilan
+    // ═══════════════════════════════════════════════════════════════
+
+    /** @test */
+    public function tenant_a_can_create_finansalislem_for_own_ilan()
+    {
+        // Set Tenant A context
+        app(TenantContextService::class)->setTenant($this->tenantA);
+
+        // Tenant A creates FinansalIslem for own Ilan via controller
+        $controller = app(\App\Modules\Finans\Controllers\FinansalIslemController::class);
+        $request = \Illuminate\Http\Request::create('/admin/finans/islemler', 'POST', [
+            'ilan_id' => $this->ilanA->id,
+            'kisi_id' => $this->kisiA->id,
+            'islem_tipi' => 'gelir',
+            'miktar' => 2500.00,
+            'para_birimi' => 'TRY',
+            'tarih' => now()->toDateString(),
+        ]);
+
+        $response = $controller->store($request);
+
+        // Success: redirect to index (302) or JSON (201)
+        $this->assertTrue(
+            $response instanceof \Illuminate\Http\RedirectResponse
+                ? $response->getStatusCode() === 302
+                : $response->getStatusCode() === 201,
+            'Tenant A should be able to create FinansalIslem for own Ilan'
+        );
+    }
+
+    /** @test */
+    public function tenant_a_cannot_create_finansalislem_for_tenant_b_ilan()
+    {
+        // Set Tenant A context
+        app(TenantContextService::class)->setTenant($this->tenantA);
+
+        // Verify ilanB belongs to Tenant B (sanity check)
+        $this->assertEquals($this->tenantB->id, $this->ilanB->tenant_id, 'ilanB should belong to Tenant B');
+
+        // Verify tenant context is set
+        $this->assertTrue(app(TenantContextService::class)->hasTenant());
+        $this->assertEquals($this->tenantA->id, app(TenantContextService::class)->getTenant()->id);
+
+        // Tenant A tries to create FinansalIslem for Tenant B's Ilan via controller
+        $controller = app(\App\Modules\Finans\Controllers\FinansalIslemController::class);
+        $request = \Illuminate\Http\Request::create('/admin/finans/islemler', 'POST', [
+            'ilan_id' => $this->ilanB->id, // Tenant B's Ilan
+            'kisi_id' => $this->kisiA->id,
+            'islem_tipi' => 'gelir',
+            'miktar' => 2500.00,
+            'para_birimi' => 'TRY',
+            'tarih' => now()->toDateString(),
+        ]);
+
+        $response = $controller->store($request);
+
+        // Tenant isolation enforced: should redirect with error message
+        $this->assertInstanceOf(\Illuminate\Http\RedirectResponse::class, $response, 'Tenant isolation should block cross-tenant create');
+        // Error flash message must be set
+        $this->assertTrue(
+            session()->has('error') && str_contains(session()->get('error'), 'yetkiniz yok'),
+            'Error flash message should be set: ' . session()->get('error')
+        );
+    }
+
+    /** @test */
+    public function tenant_b_cannot_create_finansalislem_for_tenant_a_ilan()
+    {
+        // Set Tenant B context
+        app(TenantContextService::class)->setTenant($this->tenantB);
+
+        // Tenant B tries to create FinansalIslem for Tenant A's Ilan via controller
+        $controller = app(\App\Modules\Finans\Controllers\FinansalIslemController::class);
+        $request = \Illuminate\Http\Request::create('/admin/finans/islemler', 'POST', [
+            'ilan_id' => $this->ilanA->id, // Tenant A's Ilan
+            'kisi_id' => $this->kisiB->id,
+            'islem_tipi' => 'masraf',
+            'miktar' => 1000.00,
+            'para_birimi' => 'TRY',
+            'tarih' => now()->toDateString(),
+        ]);
+
+        $response = $controller->store($request);
+
+        // Tenant isolation enforced: should redirect with error message
+        $this->assertInstanceOf(\Illuminate\Http\RedirectResponse::class, $response, 'Tenant isolation should block cross-tenant create');
+        // Error flash message must be set
+        $this->assertTrue(
+            session()->has('error') && str_contains(session()->get('error'), 'yetkiniz yok'),
+            'Error flash message should be set: ' . session()->get('error')
+        );
+    }
+
+    /** @test */
+    public function create_without_ilan_id_succeeds_regardless_of_tenant()
+    {
+        // Set Tenant A context
+        app(TenantContextService::class)->setTenant($this->tenantA);
+
+        // Creating FinansalIslem without ilan_id should work
+        $controller = app(\App\Modules\Finans\Controllers\FinansalIslemController::class);
+        $request = \Illuminate\Http\Request::create('/admin/finans/islemler', 'POST', [
+            'kisi_id' => $this->kisiA->id,
+            'islem_tipi' => 'gelir',
+            'miktar' => 500.00,
+            'para_birimi' => 'TRY',
+            'tarih' => now()->toDateString(),
+        ]);
+
+        $response = $controller->store($request);
+
+        // Success: redirect (302) or JSON (201)
+        $this->assertTrue(
+            $response instanceof \Illuminate\Http\RedirectResponse
+                ? $response->getStatusCode() === 302
+                : $response->getStatusCode() === 201,
+            'Creating FinansalIslem without ilan_id should succeed'
+        );
+    }
 }
