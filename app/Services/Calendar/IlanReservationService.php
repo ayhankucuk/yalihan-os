@@ -3,6 +3,7 @@
 namespace App\Services\Calendar;
 
 use App\Models\Ilan;
+use App\Models\IlanReservation;
 // ❌ DEPRECATED: IlanReservation table deprecated (2026-01-29)
 // use App\Models\Deprecated\IlanReservation;
 use App\Services\AdminActivityEventService;

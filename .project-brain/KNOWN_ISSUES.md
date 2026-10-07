@@ -254,3 +254,138 @@
 | `[COMMAND_CENTER_TENANT_PROPAGATION]` | `CommandGateway.php:91-124`, `tests/Feature/CommandCenter/CommandGatewayTenantPropagationTest.php` | Telegram kullanıcısı bulunuyor ancak TenantContextService::setTenant() çağrılmıyordu — IlanSearchService fail-closed davranışı nedeniyle Tenant A listing görünmüyordu | Tenant A €1M aramasında sıfır sonuç / Tenant İzolasyonu İhlali Riski |
 
 
+
+---
+
+## HANDLER_BOOTSTRAP_ENV_RESOLUTION_01 — NEW FINDING — 2026-10-06
+
+### Finding
+- **Task ID:** `HANDLER_BOOTSTRAP_ENV_RESOLUTION_01`
+- **Classification:** `EXISTING_REPOSITORY_DEFECT_CANDIDATE`
+- **Evidence Level:** `TEST_VERIFIED` (local Docker verification only)
+- **Production Status:** `UNKNOWN`
+
+### Observed Behavior
+Docker verification snapshot'ta Laravel artisan bootstrap başarısız:
+```
+ReflectionException: Class "env" does not exist
+Target class [env] does not exist
+```
+
+### Candidate Location
+- `app/Exceptions/Handler.php` around line 50
+- `$this->app->isProduction()` çağrısı
+
+### Candidate Chain
+1. `Handler.php:50` → `$this->app->isProduction()`
+2. `isProduction()` → `app()->make('env')`
+3. `'env'` binding container'da kayıtlı değil
+4. `register()` closure'unda çağrılıyor, container tam başlatılmadan önce
+
+### Git History
+- Handler.php değişikliği: commit `6a818ea4` ("preserve authorization semantics")
+- Bu commit HEAD `6e73c920`'de mevcut
+- `ILAN_CALENDAR_PILOT_RECOVERY_01` sırasında değiştirildi
+
+### Constraints
+- **ATLAS:** Handler.php DEĞİŞTİREMEZ
+- **Denetçi:** Handler.php DEĞİŞTİREMEZ
+- **Production:** DOĞRULANMADI
+- **Root cause:** Kanıtlanmadı
+
+### Next Action
+Revalidation + root cause investigation required before implementation.
+
+---
+
+---
+
+## HANDLER_BOOTSTRAP_ENV_RESOLUTION_01 — RESOLVED — 2026-10-06
+
+### Finding
+- **Task ID:** `HANDLER_BOOTSTRAP_ENV_RESOLUTION_01`
+- **Classification:** `FALSE_POSITIVE` → **VERIFIER_INFRASTRUCTURE_DEFECT**
+
+### Root Cause (Actual)
+- **Not:** `app/Exceptions/Handler.php:50` bug
+- **Actual:** Docker image missing PHP zip extension
+
+### Evidence Chain
+1. Initial error: `ReflectionException: Class "env" does not exist`
+2. Initial hypothesis: Handler.php bug
+3. Debug revealed: `ZipArchive` class not found in `config/backup.php:133`
+4. `LoadConfiguration` bootstrap failed before `env` binding
+5. Handler.php was symptom, not cause
+
+### Resolution
+- Added `zip` extension to custom Docker image: `yalihan/verifier-php:local-v1`
+- Image rebuilt with: `docker-php-ext-install pdo pdo_sqlite zip`
+- Final test: **2/2 PHPUnit tests PASS**
+
+### Lesson Learned
+- Stack trace appearances are NOT sufficient for root cause
+- Always validate against actual execution order
+- Docker image completeness is critical for Laravel verification
+
+---
+
+---
+
+## CDA-REZ-01 — RESOLVED — 2026-10-07
+
+### Finding
+- **Task ID:** `CDA-REZ-01`
+- **Classification:** `RESOLVED`
+- **Commit:** `495ac6b6`
+
+### Root Causes Fixed
+| # | Root Cause | Fix Applied |
+|---|-----------|-------------|
+| A | DATA FIELD MISMATCH: Service `starts_at/ends_at` vs Schema `start_date/end_date` | → `start_date/end_date` |
+| B | TENANT VIOLATION: `tenant_id` not injected in `IlanReservation::create()` | → `$ilan->tenant_id` injected |
+
+### Files Changed
+- `app/Services/Calendar/IlanReservationService.php`
+- `app/Models/IlanReservation.php` (premature fix absorbed)
+
+### Verification
+- **Docker Denetçi:** VERIFIED_PASS
+- **Snapshot:** SNAPSHOT_CDA_REZ_01_FIX_V2_20261007_014503
+- **Tests:** PhotoSameTenantDeleteTest 2/2 PASS
+- **Isolation:** TEST_VERIFIED
+
+### Resolution
+Canonical boundary convergence complete.
+
+---
+
+## CDA-REZ-01 — RESOLVED — 2026-10-07 (GÜNCELLEME)
+
+### Finding
+- **Task ID:** `CDA-REZ-01`
+- **Classification:** `RESOLVED`
+- **Commits:** `495ac6b6` + `22cbb36a`
+
+### Root Causes Fixed
+| # | Root Cause | Fix Applied |
+|---|-----------|-------------|
+| A | DATA FIELD MISMATCH: Service `starts_at/ends_at` vs Schema `start_date/end_date` | → `start_date/end_date` (4 locations) |
+| B | TENANT VIOLATION: `tenant_id` not injected | → `$ilan->tenant_id` injected (2 locations) |
+
+### Fix Locations (IlanReservationService.php)
+- Line 100-101: create() overlap query
+- Line 114-115: create() reservation fields
+- Line 122: tenant_id injection
+- Line 273-274: closeCalendar() idempotency query
+- Line 293-294: closeCalendar() conflict query
+- Line 307-308: closeCalendar() reservation fields
+- Line 315: tenant_id injection
+
+### Verification
+- **Docker Denetçi:** VERIFIED_PASS
+- **Snapshot:** SNAPSHOT_CDA_REZ_01_COMPLETE_20261007_084608
+- **Tests:** PhotoSameTenantDeleteTest 2/2 PASS, 120/120 Security PASS
+- **Isolation:** TEST_VERIFIED
+
+### Resolution
+Canonical boundary convergence complete.
