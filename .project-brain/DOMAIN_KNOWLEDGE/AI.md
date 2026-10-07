@@ -59,6 +59,36 @@ Response
 
 ---
 
+## Architecture Flexibility ⚠️
+
+**NOT:** Provider ve model yapısı değişkenlik gösterebilir.
+
+| Aspect | Current | Flexibility Needed |
+|--------|---------|-------------------|
+| Provider sayısı | 6 | Artırılabilir |
+| Model adları | Hardcoded | Config/DB'ye taşınabilir |
+| API endpoint | Her provider farklı | Abstract edilebilir |
+| Authentication | API key tabanlı | TokenVault ile soyutlanabilir |
+
+**Yapı Önerisi (Future):**
+```
+AIProviderInterface
+    ├── OpenAIProvider
+    ├── ClaudeProvider
+    ├── GeminiProvider
+    ├── DeepSeekProvider
+    ├── OllamaProvider
+    └── CustomProvider (plugin-ready)
+```
+
+**Model Listesi Önerisi:**
+- Database tablosu: `ai_models`
+- Sütunlar: provider, model_name, cost_per_token, is_active
+
+**FINDING:** AI Provider abstraction P2 öncelikli - BEKLEMEDE
+
+---
+
 ## AI Services
 
 | Service | Purpose | Evidence |

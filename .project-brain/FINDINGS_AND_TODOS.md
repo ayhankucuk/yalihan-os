@@ -103,6 +103,43 @@ property_reservations:
 
 ---
 
+---
+
+### 11. AI Provider Architecture - Esneklik Gereksinimi
+**Domain:** AI
+**Bulgu:** AI Provider abstraction katmanı modeller ve firmalar değiştiğinde kolayca genişletilebilir olmalı
+**Mevcut Durum:**
+- 5 provider: OpenAI, Claude, Gemini, DeepSeek, Ollama, MiniMax
+- Model adları hardcoded (gpt-4o, gemini-1.5-flash, vs.)
+- Yeni provider eklemek = kod değişikliği
+**Risk:** Her yeni model/firma için kod güncellemesi gerekecek
+**Önerilen Çözüm:**
+- AI Provider → Strategy Pattern ile soyutlanmalı
+- Model listesi → Database veya Config-driven olmalı
+- Provider geçişi runtime'da yapılabilmeli
+**Yapı Önerisi:**
+```
+AIProviderInterface
+    ├── OpenAIProvider (implements)
+    ├── ClaudeProvider (implements)
+    ├── GeminiProvider (implements)
+    ├── DeepSeekProvider (implements)
+    ├── OllamaProvider (implements)
+    └── CustomProvider (plugin-ready)
+```
+**Mevcut Kod:**
+```php
+switch ($provider) {
+    case 'openai': return $this->callOpenAI(...);
+    case 'claude': return $this->callClaude(...);
+    // Yeni provider = yeni case
+}
+```
+**Durum:** BEKLEMEDE
+**Kaynak:** AIProviderManager.php
+
+---
+
 ## DÜŞÜK ÖNCELİKLİ BULGULAR (P3)
 
 ### 9. Yazlık Modülü Legacy
@@ -152,6 +189,7 @@ property_reservations:
 | 8 | AI cost tracking | P2 | BEKLEMEDE |
 | 9 | Yazlık legacy | P3 | BEKLEMEDE |
 | 10 | Finance test coverage | P3 | BEKLEMEDE |
+| 11 | AI Provider architecture esnekliği | P2 | BEKLEMEDE |
 
 ---
 
