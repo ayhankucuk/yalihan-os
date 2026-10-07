@@ -97,8 +97,8 @@ class IlanReservationService
         $conflicts = IlanReservation::forIlan($ilanId)
             ->active() // context7-ignore
             ->where(function ($query) use ($startsAt, $endsAt) {
-                $query->where('starts_at', '<', $endsAt)
-                    ->where('ends_at', '>', $startsAt);
+                $query->where('start_date', '<', $endsAt->format('Y-m-d'))
+                    ->where('end_date', '>', $startsAt->format('Y-m-d'));
             })
             ->pluck('id');
 
