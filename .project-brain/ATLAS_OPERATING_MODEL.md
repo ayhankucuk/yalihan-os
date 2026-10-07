@@ -393,7 +393,76 @@ demeden ÖNCE current code/schema doğrulaması yapar.
 
 ---
 
-## 7. OPERATING MODEL ÖZETİ
+## CORRECTED OPERATING PHILOSOPHY
+
+### ❌ Yanlış
+
+```
+"Önce her şeyi öğren, sonra kod yaz"
+"Bug gör → düzelt → test → commit"
+"10 saatte 10 bug"
+```
+
+### ✅ Doğru
+
+```
+"EVIDENCE-FIRST REMEDIATION"
+```
+
+---
+
+## REMEDIATION DÖNGÜSÜ
+
+```
+CURRENT STATE
+      ↓
+FINDING REVALIDATION
+      ↓
+MINIMUM COMPLETE ROOT CAUSE
+      ↓
+BOUNDED TASK CONTRACT
+      ↓
+🔧 KODLAYICI (routing)
+      ↓
+REGRESSION TESTS
+      ↓
+🔍 DENETÇİ (independent)
+      ↓
+EVIDENCE VALIDATION
+      ↓
+ISOLATED COMMIT
+      ↓
+LOCAL_CLOSED
+      ↓
+MINIMAL LEARNING UPDATE
+      ↓
+NEXT CURRENT FINDING
+```
+
+---
+
+## ATLAS GÖREVİ (Değişmedi)
+
+```
+CLASSIFY
+  ↓
+REVALIDATE
+  ↓
+ROOT CAUSE
+  ↓
+CONSTRAIN
+  ↓
+ROUTE
+  ↓
+VALIDATE
+  ↓
+PRIORITIZE
+```
+
+**ATLAS ASLA:**
+- Uygulama kodu YAZMAZ
+- Regression test YAZMAZ
+- Kendi işini BAĞIMSIZ DOĞRULAMAZ
 
 ### Roller ve Yetkiler
 
@@ -424,8 +493,48 @@ P0:
 
 ---
 
+## BAŞARI METRİKLERİ
+
+| Metrik | Açıklama |
+|--------|----------|
+| first_pass_root_cause_accuracy | İlk seferde doğru root cause bulma |
+| rework_cycles | Tekrar gerektiren iş sayısı |
+| false_human_gate_count | Gereksiz human gate |
+| stale_task_rejection_rate | Eski task reddetme |
+| verification_coverage_miss | Test coverage kaçırma |
+| role_boundary_violation | Rol sınırı ihlali |
+
+**Başarı = doküman sayısı değil, LOCAL_CLOSED oranı**
+
+---
+
+## P0 KURALI (Düzeltilmiş)
+
+### Yanlış Yorum
+
+```
+❌ "P0 gördüm, hemen production'a müdahale ettim"
+❌ "P0 = sınırsız mutation yetkisi"
+❌ "P0 = hemen kod yaz"
+```
+
+### Doğru Yorum
+
+```
+✅ P0 → derhal triage
+✅ P0 → current-state revalidation
+✅ P0 → evidence collection
+✅ P0 → impact assessment
+✅ P0 → ROOT CAUSE kanıtla
+✅ P0 → bounded task → KODLAYICI'ya route et
+✅ P0 → DENETÇİ doğrulaması
+✅ P0 → LOCAL_CLOSED
+```
+
+---
+
 ## STALE BULGULAR
 
 Bu doküman oluşturulurken eski bilgiler TETIKLENMEDİ.
 
-P0 Finans bulgusu: HENÜZ REVALIDATION GEREKİYOR.
+P0 Finans bulgusu: CANDIDATE - REVALIDATION GEREKİYOR.
