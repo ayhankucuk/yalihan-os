@@ -19,6 +19,43 @@ class FinansalIslem extends CoreBaseModel
     protected $dateFormat = 'Y-m-d H:i:s';
 
     /**
+     * Boot: Global tenant scope
+     *
+     * @see YALIHAN_ENGINE_REAL_REMEDIATION_PILOT_01
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        static::bootFinansalIslemTenantIsolation();
+    }
+
+    /**
+     * Boot: Global tenant isolation scope
+     *
+     * FinansalIslem tüm query'lere otomatik tenant filtresi uygular.
+     * Option A — migration gerektirmez.
+     *
+     * @see YALIHAN_ENGINE_REAL_REMEDIATION_PILOT_01
+     */
+    protected static function bootFinansalIslemTenantIsolation(): void
+    {
+        static::addGlobalScope('tenant_isolation', function ($query) {
+            $tenantCtx = app(\App\Services\SaaS\TenantContextService::class);
+
+            // CLI/background: tenant context set edilmemişse scope atla
+            if (! $tenantCtx->hasTenant()) {
+                return;
+            }
+
+            $tenantId = $tenantCtx->getTenant()->id;
+
+            $query->whereHas('ilan', function ($q) use ($tenantId) {
+                $q->where('tenant_id', $tenantId);
+            });
+        });
+    }
+
+    /**
      * İlişkilendirilmiş tablo adı
      *
      * @var string

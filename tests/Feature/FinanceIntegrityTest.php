@@ -3,9 +3,12 @@
 namespace Tests\Feature;
 
 use App\Modules\Finans\Models\FinansalIslem;
-use App\Models\User;
 use App\Models\Ilan;
 use App\Models\Kisi;
+use App\Models\SaaS\Tenant;
+use App\Models\User;
+use App\Services\SaaS\TenantContextService;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class FinanceIntegrityTest extends TestCase
@@ -13,11 +16,13 @@ class FinanceIntegrityTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Clear tenant context
+        app(TenantContextService::class)->clearTenant();
+
         // Manually truncate to bypass SAVEPOINT issues and data pollution
-        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
-        \Illuminate\Support\Facades\DB::table('finansal_islemler')->truncate();
-        \Illuminate\Support\Facades\DB::table('komisyonlar')->truncate();
-        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
+        DB::table('finansal_islemler')->truncate();
+        DB::table('komisyonlar')->truncate();
     }
 
     /**
@@ -74,9 +79,30 @@ class FinanceIntegrityTest extends TestCase
     /** @test */
     public function it_filters_transactions_by_status_scopes()
     {
-        FinansalIslem::create(['islem_statusu' => 'bekliyor', 'islem_tipi' => 'gelir', 'miktar' => 100, 'tarih' => now()]);
-        FinansalIslem::create(['islem_statusu' => 'onaylandi', 'islem_tipi' => 'gelir', 'miktar' => 200, 'tarih' => now()]);
-        FinansalIslem::create(['islem_statusu' => 'tamamlandi', 'islem_tipi' => 'gelir', 'miktar' => 300, 'tarih' => now()]);
+        // Create ilan with tenant for proper tenant isolation
+        $ilan = Ilan::factory()->create();
+
+        FinansalIslem::withoutGlobalScopes()->create([
+            'ilan_id' => $ilan->id,
+            'islem_statusu' => 'bekliyor',
+            'islem_tipi' => 'gelir',
+            'miktar' => 100,
+            'tarih' => now(),
+        ]);
+        FinansalIslem::withoutGlobalScopes()->create([
+            'ilan_id' => $ilan->id,
+            'islem_statusu' => 'onaylandi',
+            'islem_tipi' => 'gelir',
+            'miktar' => 200,
+            'tarih' => now(),
+        ]);
+        FinansalIslem::withoutGlobalScopes()->create([
+            'ilan_id' => $ilan->id,
+            'islem_statusu' => 'tamamlandi',
+            'islem_tipi' => 'gelir',
+            'miktar' => 300,
+            'tarih' => now(),
+        ]);
 
         $this->assertCount(1, FinansalIslem::bekleyen()->get());
         $this->assertCount(1, FinansalIslem::onaylanan()->get());
