@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\BaseModel;
+use App\Traits\BelongsToTenant;
 use App\Traits\HasCountryScope;
 
 /**
@@ -13,6 +14,7 @@ use App\Traits\HasCountryScope;
  */
 class IlanReservation extends BaseModel
 {
+    use BelongsToTenant;
     use HasFactory;
     use HasCountryScope;
 
