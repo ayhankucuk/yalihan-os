@@ -302,41 +302,126 @@
         <!-- Right Area (Listings) -->
         <div class="flex-1">
 
-            {{-- ─── Applied Filter Chips (Canonical Query Reconstruction) ─── --}}
+            {{-- ─── Applied Filter Chips (PILOT_001) ─── --}}
             @if($hasActiveFilters)
-                <div class="bg-white rounded-2xl p-4 border border-[#E8E2D8] mb-6 shadow-sm flex flex-wrap items-center gap-2">
-                    <span class="text-xs font-semibold text-[#6B7280] mr-1">Aktif Filtreler:</span>
+                @php
+                    // Collect chips with removal URLs
+                    $chips = [];
 
-                    @if(request('search'))
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#0A1628] text-white">
-                            Arama: "{{ request('search') }}"
-                        </span>
-                    @endif
+                    // Location: İl chips
+                    $selectedIlIds = array_values(array_filter(array_map('intval', (array)request('il', []))));
+                    foreach ($selectedIlIds as $ilId) {
+                        $il = $iller->firstWhere('id', $ilId);
+                        if ($il) {
+                            $newIl = array_values(array_filter($selectedIlIds, fn($id) => $id !== $ilId));
+                            $url = $newIl
+                                ? route('ilanlar.index', array_merge(request()->except(['il']), ['il' => $newIl]))
+                                : route('ilanlar.index', request()->except(['il']));
+                            $chips[] = ['label' => $il->name, 'url' => $url];
+                        }
+                    }
 
-                    @if(request('min_fiyat') || request('max_fiyat'))
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#0A1628] text-white">
-                            Fiyat: {{ request('min_fiyat') ? request('min_fiyat').'€' : '0' }} – {{ request('max_fiyat') ? request('max_fiyat').'€' : '∞' }}
-                        </span>
-                    @endif
+                    // Location: İlçe chips
+                    $selectedIlceIds = array_values(array_filter(array_map('intval', (array)request('ilce', []))));
+                    foreach ($selectedIlceIds as $ilceId) {
+                        foreach ($iller as $il) {
+                            $ilce = $il->ilceler->firstWhere('id', $ilceId);
+                            if ($ilce) {
+                                $newIlce = array_values(array_filter($selectedIlceIds, fn($id) => $id !== $ilceId));
+                                $url = $newIlce
+                                    ? route('ilanlar.index', array_merge(request()->except(['ilce']), ['ilce' => $newIlce]))
+                                    : route('ilanlar.index', request()->except(['ilce']));
+                                $chips[] = ['label' => $ilce->name, 'url' => $url];
+                            }
+                        }
+                    }
 
-                    @if(request('oda_sayisi'))
-                        @foreach((array)request('oda_sayisi') as $rOda)
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#0A1628] text-white">
-                                {{ $rOda }} Oda
-                            </span>
-                        @endforeach
-                    @endif
+                    // Location: Mahalle chips
+                    $selectedMahIds = array_values(array_filter(array_map('intval', (array)request('mahalle', []))));
+                    foreach ($selectedMahIds as $mahId) {
+                        foreach ($iller as $il) {
+                            foreach ($il->ilceler as $ilce) {
+                                $mah = $ilce->mahalleler->firstWhere('id', $mahId);
+                                if ($mah) {
+                                    $newMah = array_values(array_filter($selectedMahIds, fn($id) => $id !== $mahId));
+                                    $url = $newMah
+                                        ? route('ilanlar.index', array_merge(request()->except(['mahalle']), ['mahalle' => $newMah]))
+                                        : route('ilanlar.index', request()->except(['mahalle']));
+                                    $chips[] = ['label' => $mah->name, 'url' => $url];
+                                }
+                            }
+                        }
+                    }
 
-                    @if(request('havuz_var'))
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#0A1628] text-white">
-                            Havuzlu
-                        </span>
-                    @endif
+                    // Kategori chip
+                    if ($kategoriSlug) {
+                        $katName = $kategoriler->firstWhere('slug', $kategoriSlug)?->name ?? ucfirst(str_replace('-', ' ', $kategoriSlug));
+                        $chips[] = ['label' => $katName, 'url' => route('ilanlar.index', request()->except(['kategori_slug']))];
+                    }
 
-                    <a href="{{ route('ilanlar.index') }}" class="ml-auto text-xs font-bold text-[#C9A84C] hover:underline">
-                        Filtreleri Temizle ×
+                    // Mülk tipi chips
+                    $selectedMulk = (array)request('mulk_tipi', []);
+                    foreach ($selectedMulk as $tip) {
+                        $newMulk = array_values(array_filter($selectedMulk, fn($t) => $t !== $tip));
+                        $url = $newMulk
+                            ? route('ilanlar.index', array_merge(request()->except(['mulk_tipi']), ['mulk_tipi' => $newMulk]))
+                            : route('ilanlar.index', request()->except(['mulk_tipi']));
+                        $chips[] = ['label' => $tip, 'url' => $url];
+                    }
+
+                    // İmar durumu chip
+                    if (request('imar_durumu')) {
+                        $chips[] = ['label' => request('imar_durumu'), 'url' => route('ilanlar.index', request()->except(['imar_durumu']))];
+                    }
+
+                    // Oda sayısı chips
+                    $selectedOdalar = (array)request('oda_sayisi', []);
+                    foreach ($selectedOdalar as $oda) {
+                        $newOda = array_values(array_filter($selectedOdalar, fn($o) => $o !== $oda));
+                        $url = $newOda
+                            ? route('ilanlar.index', array_merge(request()->except(['oda_sayisi']), ['oda_sayisi' => $newOda]))
+                            : route('ilanlar.index', request()->except(['oda_sayisi']));
+                        $chips[] = ['label' => $oda, 'url' => $url];
+                    }
+
+                    // Fiyat aralığı chip
+                    if (request('min_fiyat') || request('max_fiyat')) {
+                        $fiyatLabel = '₺' . (request('min_fiyat') ? number_format(request('min_fiyat'), 0, ',', '.') : '0') . ' – ₺' . (request('max_fiyat') ? number_format(request('max_fiyat'), 0, ',', '.') : '∞');
+                        $chips[] = ['label' => $fiyatLabel, 'url' => route('ilanlar.index', request()->except(['min_fiyat', 'max_fiyat']))];
+                    }
+
+                    // Alan chip
+                    if (request('min_m2') || request('max_m2')) {
+                        $alanLabel = (request('min_m2') ?: '0') . '–' . (request('max_m2') ?: '∞') . ' m²';
+                        $chips[] = ['label' => $alanLabel, 'url' => route('ilanlar.index', request()->except(['min_m2', 'max_m2']))];
+                    }
+
+                    // Özellik chips
+                    $ozellikMap = ['havuz_var' => 'Havuz', 'akilli_ev' => 'Akıllı Ev', 'guvenlik' => 'Güvenlik', 'otopark' => 'Otopark', 'spor_salonu' => 'Spor Salonu'];
+                    foreach ($ozellikMap as $key => $label) {
+                        if (request($key)) {
+                            $chips[] = ['label' => $label, 'url' => route('ilanlar.index', request()->except([$key]))];
+                        }
+                    }
+                @endphp
+
+                @if(count($chips) > 0)
+                <div class="bg-white rounded-2xl px-4 py-3 border border-[#E8E2D8] mb-6 shadow-sm flex flex-wrap items-center gap-2">
+                    <!-- Filter chips -->
+                    @foreach($chips as $chip)
+                        <a href="{{ $chip['url'] }}"
+                           class="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 hover:bg-neutral-200 transition-colors group">
+                            <span>{{ $chip['label'] }}</span>
+                            <span class="w-4 h-4 flex items-center justify-center rounded-full bg-neutral-300/60 group-hover:bg-neutral-400/60 transition-colors text-neutral-600 text-[10px] font-bold leading-none">×</span>
+                        </a>
+                    @endforeach
+                    <!-- Clear all -->
+                    <a href="{{ route('ilanlar.index') }}"
+                       class="ml-auto text-xs font-semibold text-[#C9A84C] hover:underline whitespace-nowrap">
+                        Tümünü Temizle
                     </a>
                 </div>
+                @endif
             @endif
 
             <!-- Toolbar -->
