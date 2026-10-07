@@ -227,6 +227,7 @@ return [
 
         'webhook_secret' => env('N8N_WEBHOOK_SECRET', ''),
         'webhook_token'  => env('N8N_WEBHOOK_TOKEN', ''),
+        'api_key'        => env('N8N_API_KEY', ''),
         'timeout'        => env('N8N_TIMEOUT', 30), // seconds
 
         // N8nWebhookService tarafından kullanılan yüksek düzey webhook'lar

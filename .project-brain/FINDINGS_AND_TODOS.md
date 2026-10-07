@@ -190,6 +190,7 @@ switch ($provider) {
 | 9 | Yazlık legacy | P3 | BEKLEMEDE |
 | 10 | Finance test coverage | P3 | BEKLEMEDE |
 | 11 | AI Provider architecture esnekliği | P2 | BEKLEMEDE |
+| 12 | Hermes n8n entegrasyonu | P2 | BEKLEMEDE |
 
 ---
 

@@ -130,6 +130,7 @@ $response = Http::timeout(30)
 | N8N_WEBHOOK_URL | Base n8n URL | http://localhost:5678 |
 | N8N_WEBHOOK_SECRET | Authentication secret | (empty) |
 | N8N_WEBHOOK_TOKEN | API token | (empty) |
+| **N8N_API_KEY** | **Hermes API key** | **(empty) - YENİ** |
 | N8N_NEW_ILAN_WEBHOOK | New ilan webhook | (empty) |
 | N8N_ILAN_PRICE_CHANGED_WEBHOOK | Price change webhook | (empty) |
 | N8N_GOREV_CREATED_WEBHOOK | New task webhook | (empty) |
