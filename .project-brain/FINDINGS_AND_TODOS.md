@@ -11,12 +11,15 @@
 **Domain:** Finance
 **Bulgu:** FinansalIslem model ve ledger_* tablolarında tenant_id kolonu yok
 **Risk:** Cross-tenant finansal veri erişimi
-**Kanıt:** 
+**Kanıt:**
 ```
 grep -l "BelongsToTenant" FinansalIslem.php → BOŞ
+grep "tenant_id" database/migrations/*finansal*.php → BOŞ
 ```
-**Önerilen Çözüm:** tenant_id ekle + migration + model güncelle
-**Durum:** BEKLEMEDE
+**Ek Bulgu:** Komisyon modeli tenant_id içeriyor ama FinansalIslem içermiyor → TUTARSIZLIK
+**Kullanım:** CrossModuleIntelligenceController::getFinancialInsights() → tenant scope yok
+**Önerilen Çözüm:** tenant_id ekle + migration + model güncelle + fillable + relation
+**Durum:** BEKLEMEDE - Human Gate gerekli
 **Kaynak:** DATABASE_ARCHITECTURE.md
 
 ---

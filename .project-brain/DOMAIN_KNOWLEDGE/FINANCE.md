@@ -90,10 +90,18 @@
 
 | Check | Status | Evidence |
 |-------|--------|----------|
-| BelongsToTenant | ❌ **NOT FOUND** | Model lacks trait |
-| Tenant scope | UNKNOWN | Requires verification |
+| FinansalIslem BelongsToTenant | ❌ **YOK** | Model lacks trait |
+| Komisyon BelongsToTenant | ✅ VAR | fillable includes tenant_id |
+| **TUTARSIZLIK** | ⚠️ | Komisyon izole, FinansalIslem değil |
 
-⚠️ **POTENTIAL ISSUE:** FinansalIslem modelinde BelongsToTenant trait yok.
+⚠️ **CRITICAL:** FinansalIslem modelinde BelongsToTenant trait yok. Cross-tenant finansal veri riski var.
+
+## Kullanım Analizi
+
+| Usage | Controller | Risk |
+|-------|------------|------|
+| CrossModuleIntelligenceController | FinansalIslem::findOrFail() | ⚠️ Tenant scope yok |
+| getFinancialInsights() | FinansalIslem queries | ⚠️ Global sorgu |
 
 ---
 
