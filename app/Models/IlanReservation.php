@@ -64,7 +64,7 @@ class IlanReservation extends BaseModel
      */
     public function ilan()
     {
-        return $this->belongsTo(Ilan::class, 'ilan_id');
+        return $this->belongsTo(Ilan::class, 'property_id');
     }
 
     /**

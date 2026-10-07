@@ -111,7 +111,7 @@ class IlanReservationService
 
         // Create
         $reservation = IlanReservation::create([
-            'ilan_id' => $ilanId,
+            'property_id' => $ilanId,
             'start_date' => $startsAt->format('Y-m-d'),
             'end_date' => $endsAt->format('Y-m-d'),
             'islem_statusu' => 'active', // context7-ignore
@@ -304,7 +304,7 @@ class IlanReservationService
 
         // Create blocking reservation
         $reservation = IlanReservation::create([
-            'ilan_id' => $ilanId,
+            'property_id' => $ilanId,
             'start_date' => $from->format('Y-m-d'),
             'end_date' => $to->format('Y-m-d'),
             'islem_statusu' => 'active', // context7-ignore
