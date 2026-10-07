@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}"
-    class="scroll-smooth">
+    class="scroll-smooth"
+    x-data="{
+        darkMode: localStorage.getItem('darkMode') === 'true' ||
+                  (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    }"
+    x-init="$watch('darkMode', val => {
+        localStorage.setItem('darkMode', val);
+        val ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark');
+    });
+    darkMode ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark');"
+    :class="{ 'dark': darkMode }"
 
 <head>
     <meta charset="UTF-8">
@@ -109,23 +119,37 @@
         :root {
             color-scheme: light;
 {{ app(\App\Services\ThemeService::class)->getCssVars() }}
-            /* Statik yardımcı değişkenler (tema bağımsız) */
-            --ege:         #0D5FA3;
-            --ege-light:   #EFF6FF;
-            --ege-dark:    #0A4D87;
-            --gri:         #F4F6F8;
-            --gri-mid:     #E5E7EB;
-            --metin:       #1A1A2E;
-            --metin-ikinci:#6B7280;
-            --satilik:     #15803D;
-            --kiralik:     #B45309;
+            /* DC-003 Dark Mode Variables */
+            --surface: #faf8ff;
+            --on-surface: #191b23;
+            --surface-variant: #f3f2f0;
+            --on-surface-variant: #434655;
+            --surface-container: #ffffff;
+            --surface-container-low: #f8f7f5;
+            --surface-container-high: #efe9e3;
+            --outline: #e8e2d8;
+            --outline-variant: #d1ccc4;
+        }
+
+        /* Dark Theme - DC-003 */
+        .dark {
+            --surface: #0f172a;
+            --on-surface: #f1f5f9;
+            --surface-variant: #1e293b;
+            --on-surface-variant: #cbd5e1;
+            --surface-container: #1e293b;
+            --surface-container-low: #0f172a;
+            --surface-container-high: #334155;
+            --outline: #334155;
+            --outline-variant: #475569;
+            color-scheme: dark;
         }
 
         body {
             font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
             line-height: 1.6;
-            background: var(--surface, #faf8ff);
-            color: var(--on-surface, #191b23);
+            background: var(--surface);
+            color: var(--on-surface);
         }
         /* Veri/etiket alanları Inter kullanır */
         .font-data, .font-meta,
@@ -193,7 +217,7 @@
 </head>
 
 <body
-    class="text-gray-900"
+    class="text-gray-900 dark:text-gray-100 transition-colors duration-300"
     data-locale-endpoint="{{ route('preferences.locale') }}"
     data-currency-endpoint="{{ route('preferences.currency') }}">
     <!-- Global Topbar -->
@@ -220,6 +244,18 @@
             </div>
 
             <div class="flex items-center gap-4">
+                <!-- Dark Mode Toggle - DC-003 -->
+                <button @click="darkMode = !darkMode"
+                    class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                    :aria-label="darkMode ? 'Açık moda geç' : 'Koyu moda geç'">
+                    <svg x-show="!darkMode" class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+                    </svg>
+                    <svg x-show="darkMode" x-cloak class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0z"/>
+                    </svg>
+                </button>
+
                 <a href="{{ route('contact') }}" class="hidden md:flex items-center text-on-surface-variant font-medium hover:text-primary transition-all {{ request()->routeIs('contact') ? 'text-primary font-semibold' : '' }}">İletişim</a>
 
                 @auth
@@ -368,7 +404,7 @@
             }
         }
 
-        // Dark Mode Toggle - FIX: localStorage boolean sorunu düzeltildi
+        // Dark Mode Toggle - DC-003: localStorage boolean sorunu düzeltildi
         function toggleDarkMode() {
             try {
                 const html = document.documentElement;
@@ -380,12 +416,6 @@
                 console.error('Context7: Dark mode toggle error', error);
             }
         }
-
-        // Aegean Clean: always light mode — dark class removed unconditionally
-        (function() {
-            document.documentElement.classList.remove('dark');
-            try { localStorage.removeItem('theme'); } catch(e) {}
-        })();
 
         // Dark mode system listener removed — Aegean Clean is always light
 

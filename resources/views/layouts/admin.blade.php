@@ -1,6 +1,13 @@
 <!DOCTYPE html>
-<html lang="tr" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }"
-    x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))"
+<html lang="tr" x-data="{
+    darkMode: localStorage.getItem('darkMode') === 'true' ||
+              (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+}"
+    x-init="$watch('darkMode', val => {
+        localStorage.setItem('darkMode', val);
+        val ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark');
+    });
+    darkMode ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark');"
     :class="{ 'dark': darkMode }">
 
 <head>

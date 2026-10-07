@@ -33,6 +33,61 @@
     --color-shadow: rgba(0, 0, 0, 0.3);
 }
 
+/* ===== DC-003 Dark Mode Unified Design Tokens ===== */
+:root {
+    /* Surface Colors - Light */
+    --surface-bg: #faf8ff;
+    --surface-card: #ffffff;
+    --surface-elevated: #ffffff;
+    --surface-border: #e8e2d8;
+    --surface-hover: #f3f2f0;
+
+    /* Text Colors - Light */
+    --text-primary: #191b23;
+    --text-secondary: #434655;
+    --text-muted: #6b7280;
+    --text-inverse: #ffffff;
+
+    /* Brand Colors */
+    --color-navy: #0a1628;
+    --color-gold: #c9a84c;
+    --color-cream: #f8f6f1;
+
+    /* Semantic Colors */
+    --color-primary: #0d5fa3;
+    --color-primary-hover: #0a4d87;
+    --color-secondary: #565e74;
+    --color-accent: #c9a84c;
+
+    /* Status Colors */
+    --color-sale: #15803d;
+    --color-rent: #b45309;
+
+    /* Shadows */
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark Theme - DC-003 Unified */
+.dark {
+    /* Surface Colors - Dark */
+    --surface-bg: #0f172a;
+    --surface-card: #1e293b;
+    --surface-elevated: #1e293b;
+    --surface-border: #334155;
+    --surface-hover: #334155;
+
+    /* Text Colors - Dark */
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --text-inverse: #0f172a;
+
+    /* Shadows - Dark */
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
 /* Responsive Utilities */
 @media (max-width: 768px) {
     :root {

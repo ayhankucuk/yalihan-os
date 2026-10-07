@@ -8,7 +8,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>
-<body class="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors duration-300"
+<body class="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-300"
       x-data="{
           darkMode: localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
           mobileMenu: false
