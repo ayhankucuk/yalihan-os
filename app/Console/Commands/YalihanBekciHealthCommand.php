@@ -69,7 +69,7 @@ class YalihanBekciHealthCommand extends Command
             $this->showDetailedReport();
         }
 
-        $this->showOverallScore($skipMcp ? null : $mcpStatus);
+        return $this->showOverallScore($skipMcp ? null : $mcpStatus);
     }
 
     /**
@@ -256,7 +256,7 @@ class YalihanBekciHealthCommand extends Command
         }
     }
 
-    private function showOverallScore(?array $mcpStatus): void
+    private function showOverallScore(?array $mcpStatus): int
     {
         // Normalize weights when MCP is skipped so remaining components sum to 1.0
         $weights = self::BASE_WEIGHTS;
@@ -290,6 +290,8 @@ class YalihanBekciHealthCommand extends Command
 
         $mcpNote = $mcpStatus === null ? ' (MCP skipped)' : '';
         $this->line("{$statusIcon} Overall System Health: {$overallScore}%{$mcpNote} — {$durumMetni}");
+
+        return $overallScore >= 70 ? self::SUCCESS : self::FAILURE;
     }
 
     private function getContext7Compliance(): int
