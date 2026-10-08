@@ -196,6 +196,9 @@ class Kernel extends ConsoleKernel
             ->everyFiveMinutes()
             ->withoutOverlapping()
             ->name('governance-alert-check');
+
+        // 🔧 Telescope: Prune old entries daily
+        $schedule->command('telescope:prune')->daily();
     }
 
     /**
