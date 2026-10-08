@@ -53,6 +53,7 @@ class DatabaseSeeder extends Seeder
             SmartFormsCanonicalSeeder::class,          // Dinamik form kuralları
             ExpenseItemSeeder::class,                  // Finansal kalemler
             TurkiyeLocationSeeder::class,              // 81 İl + Muğla ilçeleri + Bodrum mahalleleri
+            LanguageSeeder::class,                     // Sistem dilleri (TR, EN, RU)
         ]);
         $this->command->newLine();
 
