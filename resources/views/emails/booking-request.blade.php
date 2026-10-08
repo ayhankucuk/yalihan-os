@@ -153,7 +153,7 @@
                         </svg>
                         Fiyat:
                     </span>
-                    <span class="info-value">{{ number_format($villa['fiyat']) }} TL</span>
+                    <span class="info-value">{{ number_format($villa['fiyat']) }} {{ $villa['para_birimi'] ?? 'TRY' }}</span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">
