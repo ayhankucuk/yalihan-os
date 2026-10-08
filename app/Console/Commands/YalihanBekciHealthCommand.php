@@ -23,10 +23,17 @@ class YalihanBekciHealthCommand extends Command
 
     private string $knowledgeBase;
 
-    /** @var string[] Available MCP server process names to check */
+    /** @var string[] Available MCP server process names/paths to check */
     private const MCP_PROCESS_NAMES = [
-        'yalihan-bekci-mcp',
-        'mcp-server-yalihan',
+        'laravel-mcp',        // Primary MCP server for this repo
+        'yalihan-bekci',      // MCP server name in package.json
+        'yalihan-bekci-mcp',  // Legacy name
+        'mcp-server-yalihan', // Legacy name
+    ];
+
+    /** @var string[] Process patterns that indicate MCP server is serving this repo */
+    private const MCP_REPO_PATTERNS = [
+        'yalihan-os',         // Repository path in process args
     ];
 
     public function __construct()
@@ -81,18 +88,36 @@ class YalihanBekciHealthCommand extends Command
     private function checkMCPServer(): array
     {
         try {
+            // First check: Look for process names
             foreach (self::MCP_PROCESS_NAMES as $processName) {
                 $count = (int) trim((string) shell_exec(
                     "pgrep -f '" . addslashes($processName) . "' 2>/dev/null | wc -l"
                 ));
 
                 if ($count > 0) {
-                    return [
-                        'saglik_durumu' => 'running',
-                        'message' => "MCP Server running (process: {$processName})",
-                        'score' => 100,
-                    ];
+                    // Second check: Verify it's serving this repo
+                    $processList = shell_exec("ps aux | grep '" . addslashes($processName) . "' | grep -v grep");
+                    
+                    foreach (self::MCP_REPO_PATTERNS as $repoPattern) {
+                        if (str_contains($processList, $repoPattern)) {
+                            return [
+                                'saglik_durumu' => 'running',
+                                'message' => "MCP Server running (process: {$processName})",
+                                'score' => 100,
+                            ];
+                        }
+                    }
                 }
+            }
+
+            // Fallback: Check for any MCP process that references this repo
+            $repoCheck = shell_exec("ps aux | grep -E 'mcp|MCP' | grep 'yalihan-os' | grep -v grep");
+            if (! empty(trim($repoCheck))) {
+                return [
+                    'saglik_durumu' => 'running',
+                    'message' => 'MCP Server running (repo-specific process detected)',
+                    'score' => 100,
+                ];
             }
 
             return [
