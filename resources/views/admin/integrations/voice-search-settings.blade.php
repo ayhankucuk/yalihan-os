@@ -33,8 +33,8 @@
                 <!-- Sol Kolon: Genel Ayarlar -->
                 <div class="md:col-span-2 space-y-6">
                     <div
-                        class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden dark:shadow-none dark:border-slate-700">
-                        <div class="border-b border-gray-200 dark:border-slate-800 px-6 py-4 bg-gray-50 dark:bg-gray-800/50 dark:bg-slate-900 dark:border-slate-700">
+                        class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden dark:shadow-none">
+                        <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-4 bg-gray-50 dark:bg-gray-800">
                             <h2 class="text-lg font-semibold text-gray-900 dark:text-white dark:text-slate-100">Entegrasyon Yapılandırması</h2>
                         </div>
                         <div class="p-6 space-y-6">
@@ -98,7 +98,7 @@
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">API
                                     Anahtarı</label>
-                                <input type="password" name="voice_api_key"
+                                <input type="text" name="voice_api_key" autocomplete="off"
                                     value="{{ $voiceApiKey ? '••••••••••••••••' : '' }}"
                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:bg-slate-900 dark:text-slate-100"
                                     placeholder="sk-...">
@@ -109,8 +109,8 @@
                     </div>
 
                     <div
-                        class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden dark:shadow-none dark:border-slate-700">
-                        <div class="border-b border-gray-200 dark:border-slate-800 px-6 py-4 bg-gray-50 dark:bg-gray-800/50 dark:bg-slate-900 dark:border-slate-700">
+                        class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden dark:shadow-none">
+                        <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-4 bg-gray-50 dark:bg-gray-800">
                             <h2 class="text-lg font-semibold text-gray-900 dark:text-white dark:text-slate-100">Gelişmiş Parametreler</h2>
                         </div>
                         <div class="p-6 space-y-6">
