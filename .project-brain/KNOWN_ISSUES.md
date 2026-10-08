@@ -162,7 +162,7 @@
 | `[LEDGER-LEAK]` | `FinancialLedgerService.php:84` ✅ | Ledger hesabı açılırken `tenant_id` verilmiyor | ✅ STALE (tenant_id mevcut) |
 | `[AI-CRASH]` | `IlanAIController.php:109` ✅ | `YayinTipiResolverTrait` import edilmemiş | ✅ STALE (trait kullanılmıyor) |
 | `[PROJE-CONFLICT]` | `App\Models\Proje` vs `Emlak\Models\Proje` | ✅ **CLOSED / PRODUCTION_VERIFIED (3ced67c1)** — Domain split completed; `emlak_projeleri` table migrated, `projeler` preserved for Team Proje | ~~Split-brain model kaosu~~ |
-| `[FORM-BLOCKER]` | `StoreIlanRequest.php` | Formda olmayan `proje_id` alanı zorunlu tutulmuş | 422 Unprocessable Entity |
+| `[FORM-BLOCKER]` | `StoreIlanRequest.php` | Formda olmayan `proje_id` alanı zorunlu tutulmuş | ✅ STALE (sadece on-satis/insaat-halinde tiplerinde gerekli) |
 | `[CHANNEL-MOCK]` | `CalendarSyncService.php` | Dış API yerine sahte mock success dönüyor | Kanal senkronizasyonu çalışmıyor |
 | `[RESERVATION-SPLIT]` | `yazlik_rezervasyonlar` vs `property_reservations` | İki ayrı rezervasyon tablosu var | Rezervasyon çakışması riski |
 | `[FINANS-CRASH]` | `Komisyon.php` ✅ | Tabloda olmayan `tenant_id` üzerinden `BelongsToTenant` uygulanmış | ✅ STALE (tenant_id mevcut) |
@@ -170,9 +170,9 @@
 | `[BULK-CRASH]` | `MyListingsController.php:175` ✅ | Koşulsuz `throw new RuntimeException()` | ✅ STALE (RuntimeException yok) |
 | `[SEARCH-LEAK]` | `IlanSearchService.php` ✅ | Raw `DB::table('ilanlar')` ile tenant bypass | ✅ STALE (fail-closed davranış) |
 | `[SLUG-SEVERANCE]` | Web route vs Controller ✅ | `yazlik` ve `yazlik-kiralama` rota tutarsızlığı | ✅ STALE (routes tutarlı) |
-| `[PHOTO-SPLIT]` | `Photo` vs `IlanFotografi` | Aynı tabloya bakan 2 model; olmayan `incrementViews()` çağrısı | BadMethodCallException |
+| `[PHOTO-SPLIT]` | `Photo` vs `IlanFotografi` | Aynı tabloya bakan 2 model; olmayan `incrementViews()` çağrısı | ✅ STALE (PhotoService orphan code - kullanılmıyor) |
 | `[MAIL-500]` | `BookingRequestMail.php:51` | Olmayan `emails.booking-request` view'ına referans | ✅ CLOSED (dccb0e73) |
-| `[OWNER-COUNT]` | `OwnerDashboardController.php:34` | String enum kolonda `where('yayin_durumu', true)` boolean sorgusu | Yanlış aktif ilan sayısı |
+| `[OWNER-COUNT]` | `OwnerDashboardController.php:34` | String enum kolonda `where('yayin_durumu', true)` boolean sorgusu | ✅ STALE (scopeWhereYayinda doğru whereIn kullanıyor) |
 | `[CRM-EMAIL-CRASH]`| `KisiStoreRequest.php` ✅ | Yeniden adlandırılan `eposta` yerine eski `email` unique kontrolü | ✅ STALE (email→eposta mapping mevcut) |
 | `[OBSERVER-DEAD]` | `TalepObserver.php:26` ✅ | Incompatible enum tipleri `===` ile kıyaslanıyor | ✅ CLOSED (fd50596) |
 | `[LEAD-BYPASS]` | `LeadService.php:24` ✅ | Raw `DB::table('leads')->insertGetId()` ile tenant bypass | ✅ STALE (Authority pattern kullanılıyor) |
@@ -192,7 +192,7 @@
 | `[TKGM-SCHEMA-LEAK]`| `TKGMLearningService:80` | `tkgm_queries` tablosunda olmayan `enlem`/`boylam` ve `aktiflik_durumu` kolonlarına insert | SQL General Error (Column not found) |
 | `[BOSCH-FIELD-DRIFT]`| `FieldMcpController.php:81` | `ilanlar` tablosunda olmayan donanım kolonlarına (`alan_m2_verified_by_hardware` vb.) direkt update | SQL Unknown Column Error |
 | `[TELESCOPE-UNPRUNED]`| `Kernel.php` | `telescope:prune` komutu schedule edilmemiş | Veritabanı disk dolması / çökme |
-| `[GUEST-LISTING-BLACKOUT]`| `TenantScope.php:30` | Misafir vitrininde (`/ilanlar`, `/`) tenant context yokken fail-closed `1=0` ile tüm vitrin boş dönüyor | Vitrinde 0 İlan (Public Blackout) |
+| `[GUEST-LISTING-BLACKOUT]`| `TenantScope.php:30` | Misafir vitrininde tenant context yokken fail-closed ile tüm vitrin boş dönüyor | ✅ STALE (1=0 fail-closed kod yok) |
 | `[CURRENCY-SPLIT-BRAIN]`| `CurrencyConversionService.php` vs `TCMBCurrencyService.php` | Vitrin hardcoded config kurunu (USD 35.20) kullanırken TCMB canlı kuru `fx_rates` tablosuna yazıyor ama vitrin bu tabloyu hiç okumuyor | Yanıltıcı / Bayat Kur Gösterimi |
 | `[REFUND-DISCONNECT]`| `ReservationService::cancelReservation()` | İptal yapıldığında `CancellationPolicyService::calculateRefund()` çalıştırılmıyor, iade tutarı/cezası hesaplanmadan rezervasyon iptal ediliyor | Otomasyon / Muhasebe Kopukluğu |
 | `[SMS-MOCK-BLACKHOLE]`| `NotificationService.php:256` | SMS gönderimi yorum satırında (`// SMSService::send`), `SMSService` sınıfı yok; sahte success dönüyor | SMS Blackhole (Mesajlar gitmiyor) |
