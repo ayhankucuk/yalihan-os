@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\ArsaCalculationController;
 use App\Http\Controllers\Admin\ArsaCalculatorController;
 use App\Http\Controllers\Admin\CalendarSyncController;
 use App\Http\Controllers\Admin\AI\IlanAIController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\KategoriOzellikApiController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PageAnalyzerController;
@@ -660,4 +661,9 @@ Route::prefix('admin')->name('api.admin.')->middleware(['auth', 'admin', 'role:a
         Route::post('/{id}/ai/optimize', [KomisyonController::class, 'aiOptimize'])->name('ai.optimize');
         Route::post('/ai/analyze', [KomisyonController::class, 'aiAnalyze'])->name('ai.analyze');
     });
+    
+    // Danışman Dashboard stats API
+    Route::get('/danisman-dashboard/stats', [DashboardController::class, 'danismanDashboardStats'])
+        ->middleware(['auth:sanctum', 'role:danisman'])
+        ->name('danisman-dashboard.stats');
 });

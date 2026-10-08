@@ -89,6 +89,27 @@ class DashboardController extends AdminController
         ]);
     }
 
+    /**
+     * Danışman Dashboard API stats
+     */
+    public function danismanDashboardStats(): JsonResponse
+    {
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
+        $myIlanlar = Ilan::where('tenant_id', $tenantId)
+            ->where('danisman_id', $user->id);
+
+        return response()->json([
+            'my_ilanlar' => (clone $myIlanlar)->count(),
+            'active_ilanlar' => (clone $myIlanlar)->where('yayin_durumu', 'yayinda')->count(),
+            'my_musteriler' => \App\Models\Kisi::where('tenant_id', $tenantId)
+                ->where('danisman_id', $user->id)->count(),
+            'my_talepler' => Talep::where('tenant_id', $tenantId)
+                ->where('danisman_id', $user->id)->count(),
+        ]);
+    }
+
     public function create()
     {
         $widgetTypes = [
