@@ -8,7 +8,7 @@
         <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Sistem genelinde aktif olan dilleri ve varsayılan dili yönetin.</p>
     </div>
 
-    <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-slate-700">
+    <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-800">
             <thead class="bg-gray-50 dark:bg-slate-900">
                 <tr>
@@ -31,7 +31,7 @@
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
                 @foreach ($languages as $lang)
-                    <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-slate-800/50">
+                    <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700">
                         <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
                             {{ $lang->name }}
                             @if ($lang->varsayilan_durumu)
