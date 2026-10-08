@@ -194,7 +194,7 @@
 | `[BOSCH-FIELD-DRIFT]`| `FieldMcpController.php:81` | `alan_m2_verified_by_hardware` kolonu mevcut değil | ⚠️ CLOSED-PENDING (migration oluşturuldu - Ayhan Human Gate gerekli) |
 | `[TELESCOPE-UNPRUNED]`| `Kernel.php` | `telescope:prune` komutu schedule edilmemiş | ✅ CLOSED (9b42a2bf) + DENETÇİ PASS |
 | `[GUEST-LISTING-BLACKOUT]`| `TenantScope.php:30` | Misafir vitrininde tenant context yokken fail-closed ile tüm vitrin boş dönüyor | ✅ STALE (1=0 fail-closed kod yok) |
-| `[CURRENCY-SPLIT-BRAIN]`| `CurrencyConversionService.php` vs `TCMBCurrencyService.php` | İki ayrı currency service var; vitrin hangisini kullanıyor? | ⚠️ Architectural karar gerekli - hangi servis canonical? |
+| `[CURRENCY-SPLIT-BRAIN]`| `CurrencyConversionService.php` vs `TCMBCurrencyService.php` | İki ayrı currency service var | ✅ STALE (farklı amaçlar: dönüşüm vs rate API - split-brain değil) |
 | `[REFUND-DISCONNECT]`| `ReservationService::cancelReservation()` | İptal yapıldığında `CancellationPolicyService::calculateRefund()` çalıştırılmıyor, iade tutarı/cezası hesaplanmadan rezervasyon iptal ediliyor | Otomasyon / Muhasebe Kopukluğu |
 | `[SMS-MOCK-BLACKHOLE]`| `NotificationService.php:256` | SMS gönderimi yorum satırında | ✅ STALE (sendToSMS() mevcut - SMS gönderimi çalışıyor) |
 | `[TELEGRAM-ADAPTER-CRASH]`| `TelegramAdapter.php:48` ✅ | `TelegramService::sendMessage()` bool dönerken adapter `$response->successful()` çağırıyor | ✅ STALE (send() zaten bool dönüyor) |
