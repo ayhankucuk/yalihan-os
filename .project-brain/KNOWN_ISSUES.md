@@ -158,7 +158,7 @@
 | `[LEAD-LOSS]` | `show.blade.php:605` ✅ | Dummy/Simulated JS form post; backend'e kayıt düşmüyor | ✅ STALE (8c156d40 ile düzeltildi) |
 | `[EVENT-GHOST]` | `IlanObserver` ✅ | `IlanYayinlandiEvent`, `IlanPriceChanged` dispatch edilmiyor | ✅ CLOSED (38f622a2) |
 | `[SCHEDULER-MISS]` | `Kernel.php` ✅ | 11 adet artisan komutu tanımlı değilken schedule edilmiş | ✅ STALE (tüm komutlar mevcut) |
-| `[RBAC-DEADLOCK]` | `routes/admin.php` | Tüm admin rotaları `role:admin` kilitli, danışman giremiyor | Danışman izolasyon kilidi |
+| `[RBAC-DEADLOCK]` | `routes/admin.php` | Tüm admin rotaları `role:admin` kilitli, danışman giremiyor | ⚠️ GÖREV: t_d42e6c5e (Danışman Paneli oluşturuldu) |
 | `[LEDGER-LEAK]` | `FinancialLedgerService.php:84` ✅ | Ledger hesabı açılırken `tenant_id` verilmiyor | ✅ STALE (tenant_id mevcut) |
 | `[AI-CRASH]` | `IlanAIController.php:109` ✅ | `YayinTipiResolverTrait` import edilmemiş | ✅ STALE (trait kullanılmıyor) |
 | `[PROJE-CONFLICT]` | `App\Models\Proje` vs `Emlak\Models\Proje` | ✅ **CLOSED / PRODUCTION_VERIFIED (3ced67c1)** — Domain split completed; `emlak_projeleri` table migrated, `projeler` preserved for Team Proje | ~~Split-brain model kaosu~~ |
@@ -181,7 +181,7 @@
 | `[TELEGRAM-ALERT]` | `TelegramService.php` ✅ | Olmayan `$user->gorevler()` ve `ilce->name` erişimi | ✅ STALE (çağrı yok) |
 | `[MATCHING-MISMATCH]`| `SmartPropertyMatcherAI.php`| Para birimi dönüşümü yok; sadece fiyat karşılaştırması | ⚠️ Potansiyel yanlış eşleşme (para birimi uyumsuzluğu) |
 | `[ANALYTICS-VIEW]` | `AnalyticsDashboardController.php` | View `$analytics['form_analytics']` bekliyor, controller `$metrics` veriyor | ✅ STALE (View `?? 0` fallback kullanıyor - crash yok) |
-| `[ROUTE-DEAD-LINK]`| `MenuItemsController.php:409` | Olmayan `admin.analytics.dashboard` rota kontrolü | Kırık navigasyon menüsü |
+| `[ROUTE-DEAD-LINK]`| `MenuItemsController.php:409` | Olmayan `admin.analytics.dashboard` rota kontrolü | ✅ CLOSED (f0ddf54 - redirect eklendi) |
 | `[CORTEX-ADAPTER]` | Cortex Provider'lar ✅ | `AITaskType::RECOMMEND_NEXT_ACTIONS` match dalı eksik | ✅ STALE (routing vs execution ayrı) |
 | `[SUBSCRIPTION-GATE]`| `Kernel.php` | `SubscriptionMiddleware` mevcut ama route middleware alias'larında kayıtlı değil | ⚠️ Güvenlik gap - subscription kontrolü bypass ediliyor |
 | `[TRANSLATION-MOCK]`| `AITranslationService.php` | Mock prompt string return ediyor | ✅ STALE (orphan code - hiçbir yerde kullanılmıyor) |
