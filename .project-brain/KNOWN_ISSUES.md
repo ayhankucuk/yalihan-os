@@ -179,7 +179,7 @@
 | `[LEAD-BYPASS]` | `LeadService.php:24` ✅ | Raw `DB::table('leads')->insertGetId()` ile tenant bypass | ✅ STALE (Authority pattern kullanılıyor) |
 | `[API-IMPORT]` | `MobileLeadController.php:12` ✅ | Yanlış `App\Models\V2\Ilan` import edilmiş | ✅ STALE (V2\Ilan mevcut) |
 | `[TELEGRAM-ALERT]` | `TelegramService.php` ✅ | Olmayan `$user->gorevler()` ve `ilce->name` erişimi | ✅ STALE (çağrı yok) |
-| `[MATCHING-MISMATCH]`| `SmartPropertyMatcherAI.php`| Para birimi dönüşümü yok; sadece fiyat karşılaştırması | ⚠️ Potansiyel yanlış eşleşme (para birimi uyumsuzluğu) |
+| `[MATCHING-MISMATCH]`| `SmartPropertyMatcherAI.php`| Para birimi dönüşümü yok; sadece fiyat karşılaştırması | ✅ STALE (SmartPropertyMatcherAI.php BULUNAMADI - dosya yok veya yeniden adlandırılmış) |
 | `[ANALYTICS-VIEW]` | `AnalyticsDashboardController.php` | View `$analytics['form_analytics']` bekliyor, controller `$metrics` veriyor | ✅ STALE (View `?? 0` fallback kullanıyor - crash yok) |
 | `[ROUTE-DEAD-LINK]`| `MenuItemsController.php:409` | Olmayan `admin.analytics.dashboard` rota kontrolü | ✅ CLOSED (f0ddf54 - redirect eklendi) |
 | `[CORTEX-ADAPTER]` | Cortex Provider'lar ✅ | `AITaskType::RECOMMEND_NEXT_ACTIONS` match dalı eksik | ✅ STALE (routing vs execution ayrı) |
