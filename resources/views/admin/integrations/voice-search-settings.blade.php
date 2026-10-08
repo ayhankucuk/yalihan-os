@@ -159,7 +159,7 @@
                     </div>
 
                     <div
-                        class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
+                        class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 dark:shadow-none">
                         <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4 uppercase tracking-wider dark:text-slate-100">
                             Kullanım İstatistikleri</h3>
                         <div class="space-y-4">
@@ -176,7 +176,7 @@
                                 <span class="text-sm font-bold text-gray-900 dark:text-white dark:text-slate-100">1.2 sn</span>
                             </div>
                         </div>
-                        <div class="mt-6 pt-6 border-t border-gray-100 dark:border-slate-800">
+                        <div class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
                             <button type="button"
                                 class="w-full text-center text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
                                 Detaylı Raporu Görüntüle
