@@ -182,9 +182,9 @@
 | `[ANALYTICS-VIEW]` | `AnalyticsDashboardController.php` | View `$analytics['form_analytics']` bekliyor, controller `$metrics` veriyor | ✅ STALE (View `?? 0` fallback kullanıyor - crash yok) |
 | `[ROUTE-DEAD-LINK]`| `MenuItemsController.php:409` | Olmayan `admin.analytics.dashboard` rota kontrolü | Kırık navigasyon menüsü |
 | `[CORTEX-ADAPTER]` | Cortex Provider'lar ✅ | `AITaskType::RECOMMEND_NEXT_ACTIONS` match dalı eksik | ✅ STALE (routing vs execution ayrı) |
-| `[SUBSCRIPTION-GATE]`| `Kernel.php` | `SubscriptionMiddleware` route middleware alias'larında kayıtlı değil | Lisans/Abonelik kapıları bypass |
-| `[TRANSLATION-MOCK]`| `AITranslationService.php` | Mock prompt string return ediyor, translation tablosunu kirletiyor | Yanıltıcı çeviri verisi |
-| `[READ-MODEL-DRIFT]`| `IlanObserver.php:126` | `sorumlu_danisman_id` sorgulanıyor (kolon `danisman_id`) | CQRS okuma modelinde null danışman |
+| `[SUBSCRIPTION-GATE]`| `Kernel.php` | `SubscriptionMiddleware` mevcut ama route middleware alias'larında kayıtlı değil | ⚠️ Güvenlik gap - subscription kontrolü bypass ediliyor |
+| `[TRANSLATION-MOCK]`| `AITranslationService.php` | Mock prompt string return ediyor | ✅ STALE (orphan code - hiçbir yerde kullanılmıyor) |
+| `[READ-MODEL-DRIFT]`| `IlanObserver.php:132` | Read model `sorumlu_danisman_id` yazıyor, Ilan model `danisman_id` kullanıyor | ⚠️ CQRS drift - read modelde null danışman |
 | `[LOCATION-VIEW-500]` | `Admin\LocationController:22` | `admin.locations.index` blade dosyası fiziksel olarak yok | ✅ CLOSED (230209f6) + DENETÇİ PASS |
 | `[LOCATION-FONTAWESOME-VIOLATION]` | `locations/show.blade.php` | 8 FontAwesome instance → SVG | ✅ CLOSED (26bc036b) + DENETÇİ PASS |
 | `[ADDRESS-CLASS-500]` | `Admin\AddressController:13` | Olmayan `App\\Models\\Address` modelini import/kullanıyor | ✅ CLOSED (dccb0e73) + DENETÇİ PASS |
