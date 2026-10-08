@@ -129,7 +129,7 @@ class IlanObserver
                     'bina_yasi' => $ilan->bina_yasi ?? null,
                     'bulundugu_kat' => $ilan->bulundugu_kat ?? null,
                     'sahip_id' => $ilan->ilan_sahibi_id ?? $ilan->kisi_id ?? null,
-                    'sorumlu_danisman_id' => $ilan->sorumlu_danisman_id ?? null,
+                    'sorumlu_danisman_id' => $ilan->danisman_id ?? null,
                     'display_order' => (int) ($ilan->display_order ?? 0),
                     'slug' => $ilan->slug ?? null,
                     'goruntulenme_sayisi' => (int) ($ilan->goruntulenme ?? 0),
