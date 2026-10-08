@@ -1677,6 +1677,8 @@ Route::middleware(['auth', 'role:danisman'])->prefix('danisman')->name('danisman
     // Danışman Dashboard
     Route::get('/panel', [\App\Http\Controllers\Admin\DashboardController::class, 'danismanDashboard'])
         ->name('panel');
+    Route::get('/danisman-dashboard/stats', [\App\Http\Controllers\Admin\DashboardController::class, 'danismanDashboardStats'])
+        ->name('danisman-dashboard.stats');
     
     // Profil yönetimi
     Route::get('/profil', [\App\Http\Controllers\Danisman\ProfilController::class, 'edit'])
