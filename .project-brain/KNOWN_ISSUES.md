@@ -163,7 +163,7 @@
 | `[AI-CRASH]` | `IlanAIController.php:109` ✅ | `YayinTipiResolverTrait` import edilmemiş | ✅ STALE (trait kullanılmıyor) |
 | `[PROJE-CONFLICT]` | `App\Models\Proje` vs `Emlak\Models\Proje` | ✅ **CLOSED / PRODUCTION_VERIFIED (3ced67c1)** — Domain split completed; `emlak_projeleri` table migrated, `projeler` preserved for Team Proje | ~~Split-brain model kaosu~~ |
 | `[FORM-BLOCKER]` | `StoreIlanRequest.php` | Formda olmayan `proje_id` alanı zorunlu tutulmuş | ✅ STALE (sadece on-satis/insaat-halinde tiplerinde gerekli) |
-| `[CHANNEL-MOCK]` | `CalendarSyncService.php` | Dış API yerine sahte mock success dönüyor | Kanal senkronizasyonu çalışmıyor |
+| `[CHANNEL-MOCK]` | `CalendarSyncService.php` | Dış API yerine sahte mock success dönüyor | ✅ STALE (CalendarSyncService mevcut değil - orphan code) |
 | `[RESERVATION-SPLIT]` | `yazlik_rezervasyonlar` vs `property_reservations` | İki ayrı rezervasyon tablosu var | Rezervasyon çakışması riski |
 | `[FINANS-CRASH]` | `Komisyon.php` ✅ | Tabloda olmayan `tenant_id` üzerinden `BelongsToTenant` uygulanmış | ✅ STALE (tenant_id mevcut) |
 | `[RESTORE-404]` | `IlanCrudController.php:122` ✅ | `withTrashed()` olmadan restore sorgusu | ✅ STALE (restore endpoint mevcut) |
