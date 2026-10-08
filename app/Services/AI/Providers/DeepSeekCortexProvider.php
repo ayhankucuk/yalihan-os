@@ -75,12 +75,13 @@ class DeepSeekCortexProvider implements CortexServiceInterface
 
             if ($response->failed()) {
                 $this->circuitBreaker->failure($provider);
+                $statusCode = $response->status();
                 $this->telemetry->logFailure(
-                    $provider, 
-                    $request->getCapability()->value, 
-                    // context7-ignore: HTTP status is required here
-                    $response->status(), 
-                    [], 
+                    $provider,
+                    $request->getCapability()->value,
+                    $response->reason() ?? "HTTP {$statusCode} Error",
+                    $statusCode,
+                    [],
                     $request->getTenantId()
                 );
                 return $this->errorResponse('AI_PROVIDER_ERROR', 'HTTP Error: ' . $response->reason());
