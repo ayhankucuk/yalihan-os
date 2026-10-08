@@ -15,7 +15,7 @@
                 <div class="text-2xl font-bold text-gray-800 dark:text-slate-100 dark:text-slate-200">{{ $stats['total_templates'] }}</div>
             </div>
             <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                <i class="fas fa-layer-group text-2xl text-blue-500 dark:text-blue-400"></i>
+                <x-icon name="folder" class="w-4 h-4"/>
             </div>
         </div>
 
@@ -26,7 +26,7 @@
                 <div class="text-2xl font-bold text-gray-800 dark:text-slate-100 dark:text-slate-200">{{ $stats['active_templates'] }}</div>
             </div>
             <div class="p-3 bg-green-50 dark:bg-green-900/30 rounded-lg">
-                <i class="fas fa-check-circle text-2xl text-green-500 dark:text-green-400"></i>
+                <x-icon name="check" class="w-4 h-4" />
             </div>
         </div>
 
@@ -37,7 +37,7 @@
                 <div class="text-2xl font-bold text-gray-800 dark:text-slate-100 dark:text-slate-200">{{ $stats['total_listings'] }}</div>
             </div>
             <div class="p-3 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
-                <i class="fas fa-home text-2xl text-purple-500 dark:text-purple-400"></i>
+                <x-icon name="home" class="w-4 h-4"/>
             </div>
         </div>
     </div>
@@ -46,7 +46,7 @@
     <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
         <div class="flex">
             <div class="flex-shrink-0">
-                <i class="fas fa-info-circle text-blue-500"></i>
+                <x-icon name="info" class="w-4 h-4"/>
             </div>
             <div class="ml-3">
                 <p class="text-sm text-blue-700 dark:text-blue-300">

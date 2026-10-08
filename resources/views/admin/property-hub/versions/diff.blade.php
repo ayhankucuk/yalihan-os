@@ -8,7 +8,7 @@
             <div>
                 <a href="{{ route('admin.property-hub.versions.index') }}"
                     class="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline text-sm mb-2">
-                    <i class="fas fa-arrow-left mr-2"></i> Back to Versions
+                    <x-icon name="arrow-left" class="w-4 h-4"/> Back to Versions
                 </a>
                 <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mb-2">RuleSet Diff Viewer</h1>
                 <p class="text-slate-500 dark:text-slate-400">Comparing
@@ -26,7 +26,7 @@
             @if (count($diff['modified']) > 0)
                 <div class="col-12 mb-4">
                     <h5 class="text-xl font-bold dark:text-white mb-6 flex items-center gap-2">
-                        <i class="fas fa-edit text-amber-500"></i> Modified Rules
+                        <x-icon name="edit" class="w-4 h-4"/> Modified Rules
                     </h5>
                     @foreach ($diff['modified'] as $item)
                         <div
@@ -61,7 +61,7 @@
             @if (count($diff['added']) > 0)
                 <div class="col-md-6 mb-8">
                     <h5 class="text-lg font-bold dark:text-white mb-4 flex items-center gap-2">
-                        <i class="fas fa-plus-circle text-green-500"></i> Added Rules
+                        <x-icon name="plus" class="w-4 h-4"/> Added Rules
                     </h5>
                     @foreach ($diff['added'] as $rule)
                         <div

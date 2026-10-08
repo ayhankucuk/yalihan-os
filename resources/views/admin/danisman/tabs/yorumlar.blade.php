@@ -2,7 +2,7 @@
     <div class="flex items-center justify-between mb-4">
         <div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white dark:text-slate-100">
-                <i class="fas fa-star mr-2"></i>
+                <x-icon name="star" class="w-4 h-4"/>
                 Yorumlar ({{ $performans['onayli_yorum'] }} Onaylı)
             </h3>
             @if($performans['ortalama_rating'] > 0)
@@ -11,7 +11,7 @@
                     <span class="font-semibold text-yellow-600">
                         @for($i = 1; $i <= 5; $i++)
                             @if($i <= $performans['ortalama_rating'])
-                                <i class="fas fa-star"></i>
+                                <x-icon name="star" class="w-4 h-4"/>
                             @else
                                 <i class="far fa-star"></i>
                             @endif
@@ -40,7 +40,7 @@
                         <div class="flex items-center gap-1">
                             @for($i = 1; $i <= 5; $i++)
                                 @if($i <= $yorum->rating)
-                                    <i class="fas fa-star text-yellow-400 text-sm"></i>
+                                    <x-icon name="star" class="w-4 h-4"/>
                                 @else
                                     <i class="far fa-star text-gray-300 text-sm"></i>
                                 @endif
@@ -54,7 +54,7 @@
                     @if($yorum->kisi)
                         <div class="mt-3 pt-3 border-t border-gray-200 dark:border-slate-800 dark:border-slate-700">
                             <p class="text-xs text-gray-500 dark:text-gray-400">
-                                <i class="fas fa-user mr-1"></i>
+                                <x-icon name="user" class="w-4 h-4"/>
                                 Müşteri: {{ $yorum->kisi->tam_ad ?? $yorum->kisi->name ?? 'N/A' }}
                                 @if($yorum->kisi->email)
                                     ({{ $yorum->kisi->email }})
@@ -71,7 +71,7 @@
         </div>
     @else
         <div class="text-center py-12 bg-gray-50 dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 dark:border-slate-700">
-            <i class="fas fa-star text-4xl text-gray-400 mb-4"></i>
+            <x-icon name="star" class="w-4 h-4"/>
             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2 dark:text-slate-100">Henüz yorum bulunmuyor</h3>
             <p class="text-sm text-gray-500 dark:text-gray-400">Bu danışman için henüz onaylı yorum yapılmamıştır.</p>
         </div>

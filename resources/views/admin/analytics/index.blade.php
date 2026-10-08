@@ -24,7 +24,7 @@
                     Son güncelleme: <span id="last-updated">{{ $metrics['last_updated'] ?? 'Bilinmiyor' }}</span>
                 </div>
                 <button onclick="refreshDashboard()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                    <i class="fas fa-sync-alt mr-2"></i>Yenile
+                    <x-icon name="refresh" class="w-4 h-4"/>Yenile
                 </button>
             </div>
         </div>
@@ -40,7 +40,7 @@
                     <p class="text-2xl font-bold text-gray-900 dark:text-white dark:text-slate-100">{{ $metrics['total_ilanlar'] ?? 0 }}</p>
                 </div>
                 <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-home text-blue-600 dark:text-blue-400 text-xl"></i>
+                    <x-icon name="home" class="w-4 h-4"/>
                 </div>
             </div>
         </div>
@@ -53,7 +53,7 @@
                     <p class="text-2xl font-bold text-gray-900 dark:text-white dark:text-slate-100">{{ $metrics['total_kategoriler'] ?? 0 }}</p>
                 </div>
                 <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-tags text-green-600 dark:text-green-400 text-xl"></i>
+                    <x-icon name="tag" class="w-4 h-4"/>
                 </div>
             </div>
         </div>
@@ -66,7 +66,7 @@
                     <p class="text-2xl font-bold text-gray-900 dark:text-white dark:text-slate-100">{{ $metrics['total_kullanicilar'] ?? 0 }}</p>
                 </div>
                 <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-users text-purple-600 dark:text-purple-400 text-xl"></i>
+                    <x-icon name="users" class="w-4 h-4"/>
                 </div>
             </div>
         </div>
@@ -79,7 +79,7 @@
                     <p class="text-2xl font-bold text-gray-900 dark:text-white dark:text-slate-100">{{ $metrics['new_ilanlar_this_month'] ?? 0 }}</p>
                 </div>
                 <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-plus-circle text-orange-600 dark:text-orange-400 text-xl"></i>
+                    <x-icon name="plus" class="w-4 h-4"/>
                 </div>
             </div>
         </div>

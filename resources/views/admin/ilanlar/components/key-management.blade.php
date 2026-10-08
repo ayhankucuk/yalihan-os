@@ -67,7 +67,7 @@
             {{-- Detaylı Bilgiler Edit'te --}}
             <div class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                 <div class="flex items-start space-x-3">
-                    <i class="fas fa-info-circle mt-1 text-blue-500"></i>
+                    <x-icon name="info" class="w-4 h-4"/>
                     <div>
                         <p class="text-sm font-medium text-blue-800 dark:text-blue-200">Detaylı Anahtar Yönetimi</p>
                         <p class="text-xs text-blue-600 dark:text-blue-400">

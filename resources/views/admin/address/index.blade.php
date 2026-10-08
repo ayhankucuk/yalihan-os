@@ -9,7 +9,7 @@
                 <h1 class="text-3xl font-bold flex items-center text-gray-800 dark:text-slate-200">
                     <div
                         class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                        <i class="fas fa-map-marker-alt text-white text-xl"></i>
+                        <x-icon name="map" class="w-4 h-4"/>
                     </div>
                     Address Management
                 </h1>
@@ -17,7 +17,7 @@
             </div>
             <div class="flex gap-3">
                 <a href="{{ route('admin.address.create') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium font-medium-primary">
-                    <i class="fas fa-plus mr-2"></i>
+                    <x-icon name="plus" class="w-4 h-4"/>
                     Add Address
                 </a>
             </div>
@@ -31,7 +31,7 @@
                 <div class="flex items-center">
                     <div
                         class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-map-marker-alt text-white"></i>
+                        <x-icon name="map" class="w-4 h-4"/>
                     </div>
                     <div class="ml-4">
                         <h3 class="text-2xl font-bold text-blue-600">{{ $addresses->total() }}</h3>
@@ -44,7 +44,7 @@
                 <div class="flex items-center">
                     <div
                         class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-check-circle text-white"></i>
+                        <x-icon name="check" class="w-4 h-4" />
                     </div>
                     <div class="ml-4">
                         <h3 class="text-2xl font-bold text-green-600">{{ $addresses->where('aktiflik_durumu', true)->count() }}
@@ -110,7 +110,7 @@
                     </select>
 
                     <button onclick="filterAddresses()" class="inline-flex items-center px-4 py-2.5 text-sm font-medium font-medium-outline">
-                        <i class="fas fa-search mr-2"></i>
+                        <x-icon name="search" class="w-4 h-4"/>
                         Filter
                     </button>
                 </div>
@@ -166,7 +166,7 @@
                                     @if ($address->aktiflik_durumu)
                                         <span
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            <i class="fas fa-check-circle mr-1"></i>
+                                            <x-icon name="check" class="w-4 h-4" />
                                             Active
                                         </span>
                                     @else
@@ -181,15 +181,15 @@
                                     <div class="flex items-center gap-2">
                                         <a href="{{ route('admin.address.show', $address) }}"
                                             class="text-blue-600 hover:text-blue-800">
-                                            <i class="fas fa-eye"></i>
+                                            <x-icon name="eye" class="w-4 h-4"/>
                                         </a>
                                         <a href="{{ route('admin.address.edit', $address) }}"
                                             class="text-green-600 hover:text-green-800">
-                                            <i class="fas fa-edit"></i>
+                                            <x-icon name="edit" class="w-4 h-4"/>
                                         </a>
                                         <button onclick="deleteAddress({{ $address->id }})"
                                             class="text-red-600 hover:text-red-800">
-                                            <i class="fas fa-trash"></i>
+                                            <x-icon name="trash" class="w-4 h-4"/>
                                         </button>
                                     </div>
                                 </td>
@@ -198,7 +198,7 @@
                             <tr>
                                 <td colspan="6" class="py-12 text-center">
                                     <div class="text-gray-500">
-                                        <i class="fas fa-map-marker-alt text-4xl mb-4"></i>
+                                        <x-icon name="map" class="w-4 h-4"/>
                                         <p class="text-lg">No addresses found</p>
                                         <p class="text-sm">Create your first address to get started</p>
                                     </div>

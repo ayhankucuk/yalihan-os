@@ -56,7 +56,7 @@
 
                                         @if($version->governance_state === 'REVIEW')
                                             <button onclick="changeState('{{ $version->id }}', 'approve')" class="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 p-2 rounded-lg hover:bg-green-100 transition-colors" title="Approve">
-                                                <i class="fas fa-check"></i>
+                                                <x-icon name="check" class="w-4 h-4" />
                                             </button>
                                         @endif
 

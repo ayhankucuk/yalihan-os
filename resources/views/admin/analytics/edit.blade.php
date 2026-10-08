@@ -9,7 +9,7 @@
                 <h1 class="text-3xl font-bold text-gray-800 flex items-center dark:text-slate-200">
                     <div
                         class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                        <i class="fas fa-edit text-white text-xl"></i>
+                        <x-icon name="edit" class="w-4 h-4"/>
                     </div>
                     Analitik Raporu Düzenle
                 </h1>
@@ -17,7 +17,7 @@
             </div>
             <div class="flex gap-3">
                 <a href="{{ route('admin.analytics.show', $analyticsItem['id']) }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 active:scale-95 focus:ring-gray-500 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-gray-700 dark:text-slate-300">
-                    <i class="fas fa-arrow-left mr-2"></i>Geri Dön
+                    <x-icon name="arrow-left" class="w-4 h-4"/>Geri Dön
                 </a>
             </div>
         </div>
@@ -88,7 +88,7 @@
                     <!-- Mevcut Bilgi Kutusu -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <div class="flex items-start">
-                            <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                            <x-icon name="info" class="w-4 h-4"/>
                             <div>
                                 <h4 class="text-sm font-medium text-blue-900 mb-1">Mevcut Rapor Bilgileri</h4>
                                 <p class="text-sm text-blue-800">
@@ -164,7 +164,7 @@
                     <!-- Uyarı Kutusu -->
                     <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
                         <div class="flex items-start">
-                            <i class="fas fa-exclamation-triangle text-amber-500 mt-1 mr-3"></i>
+                            <x-icon name="warning" class="w-4 h-4"/>
                             <div>
                                 <h4 class="text-sm font-medium text-amber-900 mb-1">Dikkat!</h4>
                                 <p class="text-sm text-amber-800">
@@ -183,7 +183,7 @@
                     İptal
                 </a>
                 <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 active:scale-95 focus:ring-blue-500 shadow-md hover:shadow-lg dark:shadow-none" id="submitBtn">
-                    <i class="fas fa-save mr-2"></i>
+                    <x-icon name="save" class="w-4 h-4"/>
                     Değişiklikleri Kaydet
                 </button>
             </div>
@@ -195,7 +195,7 @@
             document.getElementById('analyticsEditForm').addEventListener('submit', function() {
                 const submitBtn = document.getElementById('submitBtn');
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Kaydediliyor...';
+                submitBtn.innerHTML = '<x-icon name="spinner" class="w-4 h-4 animate-spin"/>Kaydediliyor...';
             });
 
             // Form değişiklik takibi

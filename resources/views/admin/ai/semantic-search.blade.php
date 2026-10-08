@@ -8,7 +8,7 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
             <h1 class="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-3 dark:text-slate-200">
-                <i class="fas fa-brain text-indigo-500"></i>
+                <x-icon name="lightning" class="w-4 h-4"/>
                 AI Semantik Arama
             </h1>
             <p class="text-gray-600 dark:text-gray-400 mt-2 italic">
@@ -40,7 +40,7 @@
                 class="w-full px-6 py-5 rounded-3xl bg-white dark:bg-slate-900 border-2 border-transparent shadow-xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all duration-300 text-lg text-gray-700 dark:text-slate-200 dark:text-slate-300"
             >
             <button type="submit" class="absolute right-3 top-3 bottom-3 px-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-2xl transition-all duration-300 shadow-lg flex items-center gap-2">
-                <i class="fas fa-search"></i>
+                <x-icon name="search" class="w-4 h-4"/>
                 Cortex Arama
             </button>
         </form>
@@ -74,7 +74,7 @@
                             <img src="{{ $listing->kapak_fotografi }}" alt="" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                         @else
                             <div class="w-full h-full bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 flex flex-col items-center justify-center p-6 text-center">
-                                <i class="fas fa-home text-4xl text-indigo-200 dark:text-indigo-800 mb-2"></i>
+                                <x-icon name="home" class="w-4 h-4"/>
                                 <span class="text-xs text-gray-400 dark:text-gray-500 font-medium">Görsel Yok</span>
                             </div>
                         @endif
@@ -91,7 +91,7 @@
                         </h3>
 
                         <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-                            <i class="fas fa-map-marker-alt text-red-400"></i>
+                            <x-icon name="map" class="w-4 h-4"/>
                             {{ $listing->il?->il_adi }}, {{ $listing->ilce?->ilce_adi }}
                         </div>
 
@@ -100,7 +100,7 @@
                                 {{ number_format($listing->fiyat, 0, ',', '.') }} <span class="text-sm font-medium">{{ $listing->para_birimi }}</span>
                             </div>
                             <a href="#" class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all dark:bg-slate-900">
-                                <i class="fas fa-external-link-alt"></i>
+                                <x-icon name="external" class="w-4 h-4"/>
                             </a>
                         </div>
                     </div>

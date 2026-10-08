@@ -14,7 +14,7 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
                 <div class="flex items-center">
-                    <i class="fas fa-users text-2xl opacity-80"></i>
+                    <x-icon name="users" class="w-4 h-4"/>
                     <div class="ml-4">
                         <div class="text-2xl font-bold">{{ number_format($stats['total_customers']) }}</div>
                         <div class="text-blue-100 text-sm">Toplam Müşteri</div>
@@ -24,7 +24,7 @@
 
             <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
                 <div class="flex items-center">
-                    <i class="fas fa-user-check text-2xl opacity-80"></i>
+                    <x-icon name="user" class="w-4 h-4"/>
                     <div class="ml-4">
                         <div class="text-2xl font-bold">{{ number_format($stats['active_customers']) }}</div>
                         <div class="text-green-100 text-sm">Aktif</div>
@@ -34,7 +34,7 @@
 
             <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg p-6 text-white">
                 <div class="flex items-center">
-                    <i class="fas fa-clock text-2xl opacity-80"></i>
+                    <x-icon name="clock" class="w-4 h-4"/>
                     <div class="ml-4">
                         <div class="text-2xl font-bold">{{ number_format($stats['pending_followups']) }}</div>
                         <div class="text-yellow-100 text-sm">Bekleyen</div>
@@ -44,7 +44,7 @@
 
             <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
                 <div class="flex items-center">
-                    <i class="fas fa-chart-line text-2xl opacity-80"></i>
+                    <x-icon name="chart" class="w-4 h-4"/>
                     <div class="ml-4">
                         <div class="text-2xl font-bold">{{ number_format($stats['today_activities']) }}</div>
                         <div class="text-purple-100 text-sm">Bugünkü</div>
@@ -111,7 +111,7 @@
                     <div class="px-6 py-4 space-y-3">
                         <a href="{{ route('admin.crm.customers.create') }}"
                             class="w-full inline-flex items-center px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg shadow-md hover:bg-orange-700 hover:scale-105 hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none transition-all duration-200 touch-target-optimized dark:shadow-none">
-                            <i class="fas fa-plus mr-2"></i>Yeni Müşteri
+                            <x-icon name="plus" class="w-4 h-4"/>Yeni Müşteri
                         </a>
                         <button type="button" id="voice-task-btn"
                             class="w-full inline-flex items-center px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 hover:scale-105 hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-200 touch-target-optimized dark:shadow-none">
@@ -123,7 +123,7 @@
                         </button>
                         <a href="{{ route('admin.crm.customers.index') }}"
                             class="w-full inline-flex items-center px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 hover:scale-105 hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200 touch-target-optimized dark:shadow-none">
-                            <i class="fas fa-search mr-2"></i>Müşteri Ara
+                            <x-icon name="search" class="w-4 h-4"/>Müşteri Ara
                         </a>
                         <button
                             class="w-full inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all duration-200 touch-target-optimized"
@@ -231,7 +231,7 @@
                         recognition.lang = 'tr-TR';
                         recognition.interimResults = false;
 
-                        voiceTaskBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Dinleniyor...';
+                        voiceTaskBtn.innerHTML = '<x-icon name="spinner" class="w-4 h-4 animate-spin"/>Dinleniyor...';
                         voiceTaskBtn.classList.add('bg-red-600', 'hover:bg-red-700');
 
                         recognition.start();
@@ -285,7 +285,7 @@
                 const briefingBtn = document.getElementById('cortex-briefing-btn');
                 if (briefingBtn) {
                     briefingBtn.addEventListener('click', function() {
-                        briefingBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Hazırlanıyor...';
+                        briefingBtn.innerHTML = '<x-icon name="spinner" class="w-4 h-4 animate-spin"/>Hazırlanıyor...';
                         briefingBtn.disabled = true;
 
                         fetch('{{ route('api.ai.admin.briefing') }}', {

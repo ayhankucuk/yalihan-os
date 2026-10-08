@@ -8,7 +8,7 @@
             <div>
                 <h1 class="text-3xl font-bold flex items-center text-gray-800 dark:text-slate-200">
                     <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mr-4">
-                        <i class="fas fa-plus text-white text-xl"></i>
+                        <x-icon name="plus" class="w-4 h-4"/>
                     </div>
                     Create Etiket
                 </h1>
@@ -16,7 +16,7 @@
             </div>
             <a href="{{ route('admin.etiket.index') }}"
                class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg border border-gray-700 hover:border-gray-600 transition-all duration-200 font-medium shadow-sm hover:shadow-md dark:shadow-none">
-                <i class="fas fa-arrow-left mr-2"></i>
+                <x-icon name="arrow-left" class="w-4 h-4"/>
                 Back to Etiketler
             </a>
         </div>
@@ -126,7 +126,7 @@
                     <div class="p-4 bg-gray-50 dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 dark:border-slate-700">
                         <div class="flex items-center">
                             <div id="previewIcon" class="text-lg mr-2">
-                                <i class="fas fa-tag"></i>
+                                <x-icon name="tag" class="w-4 h-4"/>
                             </div>
                             <span id="previewName" class="font-medium text-gray-900 dark:text-white dark:text-slate-100">Etiket Name</span>
                             <div id="previewColor" class="w-4 h-4 rounded-full ml-2" style="background-color: #3B82F6;"></div>
@@ -138,7 +138,7 @@
                 <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 dark:border-slate-800 dark:border-slate-700">
                     <a href="{{ route('admin.etiket.index') }}"
                        class="inline-flex items-center px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md dark:shadow-none">
-                        <i class="fas fa-times mr-2"></i>
+                        <x-icon name="times" class="w-4 h-4"/>
                         Cancel
                     </a>
                     <button type="submit"

@@ -24,7 +24,7 @@
     <div class="flex items-center justify-between mb-8">
         <div>
             <h3 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-3 dark:text-slate-200">
-                <i class="fas fa-magic text-purple-500"></i>
+                <x-icon name="sparkles" class="w-4 h-4"/>
                 AI Benzer İlanlar
             </h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Bu ilana anlamsal olarak en yakın mülkler:</p>
@@ -42,7 +42,7 @@
                          <img src="{{ $similar->kapak_fotografi }}" alt="" class="w-full h-full object-cover">
                     @else
                         <div class="w-full h-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                            <i class="fas fa-home text-indigo-300"></i>
+                            <x-icon name="home" class="w-4 h-4"/>
                         </div>
                     @endif
                     <div class="absolute top-2 right-2 px-2 py-1 rounded-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-[10px] font-black text-indigo-600 dark:bg-slate-900/90">

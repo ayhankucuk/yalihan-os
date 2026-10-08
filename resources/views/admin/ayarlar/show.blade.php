@@ -17,12 +17,12 @@
             <div class="flex space-x-3">
                 <a href="{{ route('admin.ayarlar.edit', $setting->id) }}"
                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg hover:scale-105 active:scale-95 dark:shadow-none">
-                    <i class="fas fa-edit mr-2"></i>
+                    <x-icon name="edit" class="w-4 h-4"/>
                     Düzenle
                 </a>
                 <a href="{{ route('admin.ayarlar.index') }}"
                    class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md dark:shadow-none">
-                    <i class="fas fa-arrow-left mr-2"></i>
+                    <x-icon name="arrow-left" class="w-4 h-4"/>
                     Geri Dön
                 </a>
             </div>
@@ -131,7 +131,7 @@
                             <div class="flex justify-end space-x-4 mt-6">
                                 <button type="submit"
                                         class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-semibold shadow-md hover:shadow-lg hover:scale-105 active:scale-95 dark:shadow-none">
-                                    <i class="fas fa-save mr-2"></i>
+                                    <x-icon name="save" class="w-4 h-4"/>
                                     Güncelle
                                 </button>
                             </div>
@@ -167,13 +167,13 @@
                         <div class="space-y-3">
                             <a href="{{ route('admin.ayarlar.edit', $setting->id) }}"
                                class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                                <i class="fas fa-edit mr-2"></i>
+                                <x-icon name="edit" class="w-4 h-4"/>
                                 Ayarı Düzenle
                             </a>
 
                             <button onclick="copyValue()"
                                     class="block w-full text-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-600 transition-colors">
-                                <i class="fas fa-copy mr-2"></i>
+                                <x-icon name="copy" class="w-4 h-4"/>
                                 Değeri Kopyala
                             </button>
 
@@ -185,7 +185,7 @@
 
                             <button onclick="deleteSetting()"
                                     class="block w-full text-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-600 transition-colors">
-                                <i class="fas fa-trash mr-2"></i>
+                                <x-icon name="trash" class="w-4 h-4"/>
                                 Ayarı Sil
                             </button>
                         </div>

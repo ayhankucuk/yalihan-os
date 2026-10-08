@@ -16,7 +16,7 @@
                     </div>
                     <div class="flex items-center space-x-3">
                         <a href="{{ route('admin.blog.tags.create') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 touch-target-optimized dark:shadow-none">
-                            <i class="fas fa-plus mr-2"></i>
+                            <x-icon name="plus" class="w-4 h-4"/>
                             Yeni Etiket
                         </a>
                     </div>
@@ -43,7 +43,7 @@
                                     <div class="flex items-center space-x-4">
                                         <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white"
                                             style="background-color: {{ $tag->color ?? '#6366f1' }}">
-                                            <i class="fas fa-tag"></i>
+                                            <x-icon name="tag" class="w-4 h-4"/>
                                         </div>
                                         <div>
                                             <h4 class="font-medium text-gray-900 dark:text-white dark:text-slate-100">
@@ -64,11 +64,11 @@
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('admin.blog.tags.edit', $tag) }}"
                                             class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm touch-target-optimized dark:shadow-none dark:text-slate-300" title="Düzenle">
-                                            <i class="fas fa-edit"></i>
+                                            <x-icon name="edit" class="w-4 h-4"/>
                                         </a>
                                         <a href="{{ route('blog.tag', $tag->slug) }}" target="_blank"
                                             class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm touch-target-optimized dark:shadow-none dark:text-slate-300" title="Görüntüle">
-                                            <i class="fas fa-external-link-alt"></i>
+                                            <x-icon name="external" class="w-4 h-4"/>
                                         </a>
 
                                         <!-- Status Toggle -->
@@ -90,7 +90,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-red-600 to-red-700 rounded-lg hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 touch-target-optimized dark:shadow-none" title="Sil">
-                                                    <i class="fas fa-trash"></i>
+                                                    <x-icon name="trash" class="w-4 h-4"/>
                                                 </button>
                                             </form>
                                         @endif
@@ -167,11 +167,11 @@
 
                         <div class="flex items-center justify-end space-x-3 mt-6">
                             <button type="reset" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm touch-target-optimized dark:shadow-none dark:text-slate-300">
-                                <i class="fas fa-times mr-2"></i>
+                                <x-icon name="times" class="w-4 h-4"/>
                                 Temizle
                             </button>
                             <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 active:scale-95 focus:ring-blue-500 shadow-md hover:shadow-lg touch-target-optimized dark:shadow-none">
-                                <i class="fas fa-save mr-2"></i>
+                                <x-icon name="save" class="w-4 h-4"/>
                                 Etiket Oluştur
                             </button>
                         </div>

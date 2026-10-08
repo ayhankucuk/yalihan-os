@@ -182,7 +182,7 @@
             <nav class="flex -mb-px space-x-8 px-6" aria-label="Tabs">
                 <a href="{{ route('admin.danisman.show', ['danisman' => $danisman->id, 't' => 'hakkimda']) }}"
                     class="py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 {{ $activeTab === 'hakkimda' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    <i class="fas fa-user mr-2"></i>
+                    <x-icon name="user" class="w-4 h-4"/>
                     Hakkımda
                 </a>
                 <a href="{{ route('admin.danisman.show', ['danisman' => $danisman->id, 't' => 'portfoy']) }}"
@@ -192,7 +192,7 @@
                 </a>
                 <a href="{{ route('admin.danisman.show', ['danisman' => $danisman->id, 't' => 'yorumlar']) }}"
                     class="py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 {{ $activeTab === 'yorumlar' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}">
-                    <i class="fas fa-star mr-2"></i>
+                    <x-icon name="star" class="w-4 h-4"/>
                     Yorumlar ({{ $performans['onayli_yorum'] }})
                     @if ($performans['ortalama_rating'] > 0)
                         <span class="ml-1 text-xs">⭐ {{ $performans['ortalama_rating'] }}</span>

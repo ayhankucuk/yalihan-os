@@ -68,10 +68,10 @@
                     </div>
                     <div class="flex items-center space-x-2">
                         <button @click="copyResult()" class="text-blue-600 hover:text-blue-800">
-                            <i class="fas fa-copy"></i> Kopyala
+                            <x-icon name="copy" class="w-4 h-4"/> Kopyala
                         </button>
                         <button @click="regenerate()" class="text-green-600 hover:text-green-800">
-                            <i class="fas fa-redo"></i> Yeniden Üret
+                            <x-icon name="refresh" class="w-4 h-4"/> Yeniden Üret
                         </button>
                     </div>
                 </div>
@@ -80,13 +80,13 @@
             {{-- Error State --}}
             <div x-show="status === 'error'" class="text-center py-8">
                 <div class="ai-error-icon w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                    <x-icon name="warning" class="w-4 h-4"/>
                 </div>
                 <h4 class="text-lg font-semibold text-gray-900 mb-2 dark:text-slate-100 dark:text-white">AI Hatası</h4>
                 <p class="text-gray-600 mb-4" x-text="errorMessage"></p>
                 <div class="flex justify-center space-x-3">
                     <button @click="retry()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                        <i class="fas fa-redo mr-2"></i> Tekrar Dene
+                        <x-icon name="refresh" class="w-4 h-4"/> Tekrar Dene
                     </button>
                     <button @click="reportError()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
                         <i class="fas fa-bug mr-2"></i> Hata Bildir
@@ -97,12 +97,12 @@
             {{-- Idle State --}}
             <div x-show="status === 'idle'" class="text-center py-8">
                 <div class="ai-idle-icon w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-slate-900">
-                    <i class="fas fa-play text-gray-600 text-xl"></i>
+                    <x-icon name="play" class="w-4 h-4"/>
                 </div>
                 <h4 class="text-lg font-semibold text-gray-900 mb-2 dark:text-slate-100 dark:text-white">AI Analiz</h4>
                 <p class="text-gray-600 mb-4">Analiz başlatmak için butona tıklayın</p>
                 <button @click="startAnalysis()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-                    <i class="fas fa-brain mr-2"></i> Analizi Başlat
+                    <x-icon name="lightning" class="w-4 h-4"/> Analizi Başlat
                 </button>
             </div>
         </div>
@@ -117,7 +117,7 @@
             </div>
             <div class="flex items-center space-x-2">
                 <button @click="refresh()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-sync-alt"></i>
+                    <x-icon name="refresh" class="w-4 h-4"/>
                 </button>
                 <button @click="settings()" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-cog"></i>
@@ -234,7 +234,7 @@ function aiWidget(config = {}) {
             if (Array.isArray(data)) {
                 return '<ul class="space-y-2">' +
                        data.map(item => `<li class="flex items-start space-x-2">
-                           <i class="fas fa-check text-green-500 mt-1"></i>
+                           <x-icon name="check" class="w-4 h-4" />
                            <span>${item}</span>
                        </li>`).join('') +
                        '</ul>';

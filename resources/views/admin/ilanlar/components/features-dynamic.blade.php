@@ -17,7 +17,7 @@
         <button type="button" id="ai-suggest-all-features" style="display: none;"
             class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center space-x-2 dark:shadow-none"
             onclick="window.FeaturesAI && window.FeaturesAI.suggestAll(window.FeaturesAI.getFormContext())">
-            <i class="fas fa-magic"></i>
+            <x-icon name="sparkles" class="w-4 h-4"/>
             <span class="font-medium">AI ile Tümünü Doldur</span>
         </button>
     </div>
@@ -28,7 +28,7 @@
         <div id="features-empty-state"
             class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div class="flex items-center">
-                <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mr-3"></i>
+                <x-icon name="info" class="w-4 h-4"/>
                 <div>
                     <p class="text-blue-800 dark:text-blue-200 font-medium empty-title">
                         Kategori Seçimi Gerekli
@@ -49,7 +49,7 @@
 
         {{-- Loading State --}}
         <div id="features-loading" class="text-center py-8 hidden" style="display: none;">
-            <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-2"></i>
+            <x-icon name="spinner" class="w-4 h-4 animate-spin"/>
             <p class="text-gray-500 dark:text-gray-400">Özellikler yükleniyor...</p>
         </div>
 
@@ -57,7 +57,7 @@
         <div id="features-error"
             class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 hidden">
             <div class="flex items-center">
-                <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 mr-3"></i>
+                <x-icon name="warning" class="w-4 h-4"/>
                 <p class="text-red-800 dark:text-red-200" id="features-error-message"></p>
             </div>
         </div>
@@ -703,7 +703,7 @@
                                 class="ai-suggest-btn opacity-0 group-hover:opacity-100 inline-flex items-center px-2 py-1 text-xs font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-all"
                                 onclick="window.FeaturesAI && window.FeaturesAI.suggestSingle('${this.escape(feature.slug)}', document.getElementById('feature_${feature.id}'))"
                                 title="AI ile öner">
-                                <i class="fas fa-magic"></i>
+                                <x-icon name="sparkles" class="w-4 h-4"/>
                             </button>` : ''}
                         </label>
                     `;
@@ -716,7 +716,7 @@
                                 class="ai-suggest-btn inline-flex items-center px-2 py-1 text-xs font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-all"
                                 onclick="window.FeaturesAI && window.FeaturesAI.suggestSingle('${this.escape(feature.slug)}', document.getElementById('feature_${feature.id}'))"
                                 title="AI ile öner">
-                                <i class="fas fa-magic mr-1"></i><span class="hidden sm:inline">AI</span>
+                                <x-icon name="sparkles" class="w-4 h-4"/><span class="hidden sm:inline">AI</span>
                             </button>` : ''}
                         </label>
                         <div class="flex items-center gap-2">
@@ -749,7 +749,7 @@
                             'ai-suggest-btn inline-flex items-center px-2 py-1 text-xs font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-all';
                         aiBtn.title = 'AI ile öner';
                         aiBtn.innerHTML =
-                            '<i class="fas fa-magic mr-1"></i><span class="hidden sm:inline">AI</span>';
+                            '<x-icon name="sparkles" class="w-4 h-4"/><span class="hidden sm:inline">AI</span>';
                         aiBtn.onclick = () => {
                             if (window.FeaturesAI) {
                                 window.FeaturesAI.suggestSingle(feature.slug, document.getElementById(

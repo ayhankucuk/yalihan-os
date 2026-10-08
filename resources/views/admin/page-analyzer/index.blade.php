@@ -8,7 +8,7 @@
             <div>
                 <h1 class="text-3xl font-bold flex items-center text-gray-800 dark:text-slate-200">
                     <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                        <i class="fas fa-search text-white text-xl"></i>
+                        <x-icon name="search" class="w-4 h-4"/>
                     </div>
                     Page Analyzer Sessions
                 </h1>
@@ -16,11 +16,11 @@
             </div>
             <div class="flex gap-3">
                 <a href="{{ route('admin.page-analyzer.create') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 dark:shadow-none">
-                    <i class="fas fa-plus mr-2"></i>
+                    <x-icon name="plus" class="w-4 h-4"/>
                     New Analysis
                 </a>
                 <a href="{{ route('admin.page-analyzer.dashboard') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm dark:shadow-none dark:text-slate-300">
-                    <i class="fas fa-tachometer-alt mr-2"></i>
+                    <x-icon name="chart" class="w-4 h-4"/>
                     Live Dashboard
                 </a>
             </div>
@@ -47,12 +47,12 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <button onclick="runQuickAnalysis('complete')"
                         class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 dark:shadow-none">
-                    <i class="fas fa-search mr-2"></i>
+                    <x-icon name="search" class="w-4 h-4"/>
                     Complete Analysis
                 </button>
                 <button onclick="runQuickAnalysis('performance')"
                         class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm dark:shadow-none dark:text-slate-300">
-                    <i class="fas fa-tachometer-alt mr-2"></i>
+                    <x-icon name="chart" class="w-4 h-4"/>
                     Performance Check
                 </button>
                 <button onclick="runQuickAnalysis('security')"
@@ -138,11 +138,11 @@
                             <tr>
                                 <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                     <div class="flex flex-col items-center py-8">
-                                        <i class="fas fa-search text-gray-400 text-4xl mb-4"></i>
+                                        <x-icon name="search" class="w-4 h-4"/>
                                         <p class="text-lg font-medium text-gray-900 mb-2 dark:text-slate-100 dark:text-white">No analysis sessions found</p>
                                         <p class="text-gray-500 mb-4">Create your first analysis session to get started</p>
                                         <a href="{{ route('admin.page-analyzer.create') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 dark:shadow-none">
-                                            <i class="fas fa-plus mr-2"></i>
+                                            <x-icon name="plus" class="w-4 h-4"/>
                                             Create Analysis Session
                                         </a>
                                     </div>
@@ -158,7 +158,7 @@
                 <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-200 p-6 dark:shadow-none dark:border-slate-700">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-chart-line text-2xl text-blue-600"></i>
+                            <x-icon name="chart" class="w-4 h-4"/>
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-500">Total Sessions</p>
@@ -182,7 +182,7 @@
                 <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-200 p-6 dark:shadow-none dark:border-slate-700">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+                            <x-icon name="warning" class="w-4 h-4"/>
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-500">Critical Issues</p>
@@ -194,7 +194,7 @@
                 <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-200 p-6 dark:shadow-none dark:border-slate-700">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-star text-2xl text-yellow-600"></i>
+                            <x-icon name="star" class="w-4 h-4"/>
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-500">Average Score</p>

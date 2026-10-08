@@ -16,11 +16,11 @@
                     <div class="flex gap-3">
                         <button onclick="window.location.href='{{ route('admin.danisman-ai.prompt-interface') }}'"
                             class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                            <i class="fas fa-magic mr-2"></i>AI Prompt Arayüzü
+                            <x-icon name="sparkles" class="w-4 h-4"/>AI Prompt Arayüzü
                         </button>
                         <button onclick="startBatchAnalysis()"
                             class="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                            <i class="fas fa-robot mr-2"></i>Toplu Analiz
+                            <x-icon name="lightning" class="w-4 h-4"/>Toplu Analiz
                         </button>
                     </div>
                 </div>
@@ -33,7 +33,7 @@
                     class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-white/50 dark:bg-slate-900/80">
                     <div class="flex items-center">
                         <div class="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl text-white">
-                            <i class="fas fa-chart-line text-2xl"></i>
+                            <x-icon name="chart" class="w-4 h-4"/>
                         </div>
                         <div class="ml-4">
                             <p class="text-gray-600 text-sm font-medium">Bugün Analiz</p>
@@ -61,7 +61,7 @@
                     class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-white/50 dark:bg-slate-900/80">
                     <div class="flex items-center">
                         <div class="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl text-white">
-                            <i class="fas fa-brain text-2xl"></i>
+                            <x-icon name="lightning" class="w-4 h-4"/>
                         </div>
                         <div class="ml-4">
                             <p class="text-gray-600 text-sm font-medium">AI Doğruluk</p>
@@ -75,7 +75,7 @@
                     class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-white/50 dark:bg-slate-900/80">
                     <div class="flex items-center">
                         <div class="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl text-white">
-                            <i class="fas fa-star text-2xl"></i>
+                            <x-icon name="star" class="w-4 h-4"/>
                         </div>
                         <div class="ml-4">
                             <p class="text-gray-600 text-sm font-medium">Memnuniyet</p>
@@ -120,7 +120,7 @@
                                                         </span>
                                                     </div>
                                                     <p class="text-gray-600 text-sm mb-2">
-                                                        <i class="fas fa-map-marker-alt text-red-500 mr-1"></i>
+                                                        <x-icon name="map" class="w-4 h-4"/>
                                                         {{ $talep->il->il_adi ?? '' }} / {{ $talep->ilce->ilce_adi ?? '' }}
                                                     </p>
                                                     <p class="text-gray-500 text-xs">
@@ -130,11 +130,11 @@
                                                 <div class="flex gap-2">
                                                     <button onclick="analyzeWithAI({{ $talep->id }})"
                                                         class="bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm hover:bg-blue-600 transition-colors">
-                                                        <i class="fas fa-robot mr-1"></i>AI Analiz
+                                                        <x-icon name="lightning" class="w-4 h-4"/>AI Analiz
                                                     </button>
                                                     <button onclick="findMatches({{ $talep->id }})"
                                                         class="bg-green-600 text-white px-4 py-2.5 rounded-lg text-sm hover:bg-green-600 transition-colors">
-                                                        <i class="fas fa-search mr-1"></i>Eşleştir
+                                                        <x-icon name="search" class="w-4 h-4"/>Eşleştir
                                                     </button>
                                                 </div>
                                             </div>
@@ -155,7 +155,7 @@
                     <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 dark:bg-slate-900/80">
                         <div class="p-6 border-b border-gray-200 dark:border-slate-700">
                             <h2 class="text-2xl font-bold text-gray-800 flex items-center dark:text-slate-200">
-                                <i class="fas fa-search text-purple-500 mr-3"></i>
+                                <x-icon name="search" class="w-4 h-4"/>
                                 Akıllı İlan Arama
                             </h2>
                         </div>
@@ -167,7 +167,7 @@
                                         class="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     <button type="submit"
                                         class="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300">
-                                        <i class="fas fa-magic mr-2"></i>AI Ara
+                                        <x-icon name="sparkles" class="w-4 h-4"/>AI Ara
                                     </button>
                                 </div>
                             </form>
@@ -186,7 +186,7 @@
                     <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 dark:bg-slate-900/80">
                         <div class="p-6 border-b border-gray-200 dark:border-slate-700">
                             <h3 class="text-xl font-bold text-gray-800 flex items-center dark:text-slate-200">
-                                <i class="fas fa-history text-indigo-500 mr-3"></i>
+                                <x-icon name="clock" class="w-4 h-4"/>
                                 Son Analizler
                             </h3>
                         </div>
@@ -225,7 +225,7 @@
                             <button onclick="getAIContext('yeni_talep')"
                                 class="w-full text-left bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 p-4 rounded-xl transition-all duration-300 border border-blue-200">
                                 <div class="flex items-center">
-                                    <i class="fas fa-plus-circle text-blue-500 mr-3"></i>
+                                    <x-icon name="plus" class="w-4 h-4"/>
                                     <div>
                                         <p class="font-medium text-gray-800 dark:text-slate-200">Yeni Talep Önerileri</p>
                                         <p class="text-sm text-gray-600">AI destekli işlem önerileri al</p>
@@ -247,7 +247,7 @@
                             <button onclick="getAIContext('müşteri_takip')"
                                 class="w-full text-left bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 p-4 rounded-xl transition-all duration-300 border border-purple-200">
                                 <div class="flex items-center">
-                                    <i class="fas fa-users text-purple-500 mr-3"></i>
+                                    <x-icon name="users" class="w-4 h-4"/>
                                     <div>
                                         <p class="font-medium text-gray-800 dark:text-slate-200">Müşteri Takip</p>
                                         <p class="text-sm text-gray-600">AI destekli müşteri analizi</p>
@@ -258,7 +258,7 @@
                             <button onclick="getAIContext('performans')"
                                 class="w-full text-left bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 p-4 rounded-xl transition-all duration-300 border border-yellow-200">
                                 <div class="flex items-center">
-                                    <i class="fas fa-chart-bar text-yellow-500 mr-3"></i>
+                                    <x-icon name="chart" class="w-4 h-4"/>
                                     <div>
                                         <p class="font-medium text-gray-800 dark:text-slate-200">Performans Analizi</p>
                                         <p class="text-sm text-gray-600">AI destekli performans değerlendirmesi</p>
@@ -273,7 +273,7 @@
                         class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 hidden dark:bg-slate-900/80">
                         <div class="p-6 border-b border-gray-200 dark:border-slate-700">
                             <h3 class="text-xl font-bold text-gray-800 flex items-center dark:text-slate-200">
-                                <i class="fas fa-lightbulb text-orange-500 mr-3"></i>
+                                <x-icon name="lightbulb" class="w-4 h-4"/>
                                 AI Önerileri
                             </h3>
                         </div>
@@ -497,14 +497,14 @@
                             %${result.relevance_score} uyum
                         </div>
                         <a href="/admin/ilanlar/${result.ilan_id}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm">
-                            <i class="fas fa-external-link-alt mr-1"></i>Görüntüle
+                            <x-icon name="external" class="w-4 h-4"/>Görüntüle
                         </a>
                     </div>
                 </div>
                 ${result.match_reasons.length > 0 ? `
                                 <div class="mt-2 pt-2 border-t border-gray-200 dark:border-slate-700">
                                     <p class="text-xs text-gray-500">
-                                        <i class="fas fa-check-circle text-green-500 mr-1"></i>
+                                        <x-icon name="check" class="w-4 h-4" />
                                         ${result.match_reasons.join(', ')}
                                     </p>
                                 </div>
@@ -526,7 +526,7 @@
                 html += `
             <div class="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg p-4">
                 <div class="flex items-start">
-                    <i class="fas fa-lightbulb text-orange-500 mr-3 mt-1"></i>
+                    <x-icon name="lightbulb" class="w-4 h-4"/>
                     <p class="text-gray-800 dark:text-slate-200">${suggestion}</p>
                 </div>
             </div>

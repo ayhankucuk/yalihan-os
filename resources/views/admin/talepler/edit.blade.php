@@ -8,7 +8,7 @@
             <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-2xl font-semibold text-gray-800 dark:text-slate-200">
-                        <i class="fas fa-edit mr-2 text-yellow-500"></i>
+                        <x-icon name="edit" class="w-4 h-4"/>
                         Talebi Düzenle
                     </h1>
                     <p class="text-gray-600 dark:text-gray-400 mt-2">
@@ -17,7 +17,7 @@
                 </div>
                 <a href="{{ route('admin.talepler.index') }}"
                     class="inline-flex items-center px-4 py-2 btn-outline font-semibold rounded-lg transition-colors touch-target-optimized">
-                    <i class="fas fa-arrow-left mr-2"></i>
+                    <x-icon name="arrow-left" class="w-4 h-4"/>
                     Taleplere Geri Dön
                 </a>
             </div>

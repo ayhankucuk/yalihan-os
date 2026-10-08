@@ -69,15 +69,15 @@
                 <h4 class="font-bold text-gray-900 dark:text-white mb-2 dark:text-slate-100">AI Önerileri Aktif</h4>
                 <div class="text-sm text-gray-700 dark:text-slate-200 space-y-1 dark:text-slate-300">
                     <div class="flex items-center gap-2">
-                        <i class="fas fa-check text-green-500"></i>
+                        <x-icon name="check" class="w-4 h-4" />
                         <span>Fiyatlar otomatik hesaplanabilir (haftalık = günlük × 6.5)</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="fas fa-check text-green-500"></i>
+                        <x-icon name="check" class="w-4 h-4" />
                         <span>Sezon fiyatları market analizi ile önerilir</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="fas fa-check text-green-500"></i>
+                        <x-icon name="check" class="w-4 h-4" />
                         <span>Check-in/out saatleri standart değerlerle doldurulur</span>
                     </div>
                 </div>

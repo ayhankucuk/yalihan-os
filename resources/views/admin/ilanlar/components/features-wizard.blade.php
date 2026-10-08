@@ -19,7 +19,7 @@
         {{-- AI Suggest All Button --}}
         <button type="button" id="ai-suggest-all-btn"
             class="hidden px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 items-center space-x-2 active:scale-95 dark:shadow-none">
-            <i class="fas fa-magic"></i>
+            <x-icon name="sparkles" class="w-4 h-4"/>
             <span class="font-medium">AI ile Tümünü Doldur</span>
         </button>
     </div>
@@ -30,7 +30,7 @@
             <input type="text" id="feature-search-input"
                 placeholder="Özelliklerde ara... (ör: balkon, havuz, asansör)"
                 class="w-full px-4 py-3 pl-11 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all duration-200 dark:text-slate-100">
-            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <x-icon name="search" class="w-4 h-4"/>
             <div id="search-results-count"
                 class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-500 dark:text-gray-400 hidden">
                 <span id="search-match-count">0</span> sonuç
@@ -42,7 +42,7 @@
     <div id="features-empty-state"
         class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <div class="flex items-center">
-            <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mr-3"></i>
+            <x-icon name="info" class="w-4 h-4"/>
             <div>
                 <p class="text-blue-800 dark:text-blue-200 font-medium">Kategori Seçimi Gerekli</p>
                 <p class="text-blue-600 dark:text-blue-400 text-sm mt-1">
@@ -54,7 +54,7 @@
 
     {{-- Loading State --}}
     <div id="features-loading" class="text-center py-8 hidden">
-        <i class="fas fa-spinner fa-spin text-3xl text-lime-600 dark:text-lime-400 mb-3"></i>
+        <x-icon name="spinner" class="w-4 h-4 animate-spin"/>
         <p class="text-gray-600 dark:text-gray-400 font-medium">Özellikler yükleniyor...</p>
         <p class="text-gray-500 dark:text-gray-500 text-sm mt-1">AI önerileri hazırlanıyor</p>
     </div>
@@ -63,7 +63,7 @@
     <div id="features-error"
         class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 hidden">
         <div class="flex items-center">
-            <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 mr-3"></i>
+            <x-icon name="warning" class="w-4 h-4"/>
             <p class="text-red-800 dark:text-red-200" id="features-error-message"></p>
         </div>
     </div>

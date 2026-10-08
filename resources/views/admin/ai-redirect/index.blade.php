@@ -16,11 +16,11 @@
             </div>
             <div class="flex gap-3">
                 <a href="{{ route('admin.ai-redirect.create') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 dark:shadow-none">
-                    <i class="fas fa-plus mr-2"></i>
+                    <x-icon name="plus" class="w-4 h-4"/>
                     New Redirect
                 </a>
                 <a href="{{ route('admin.ai-redirect.analytics') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm dark:shadow-none dark:text-slate-300">
-                    <i class="fas fa-chart-bar mr-2"></i>
+                    <x-icon name="chart" class="w-4 h-4"/>
                     Analytics
                 </a>
             </div>
@@ -36,15 +36,15 @@
                     AI Settings
                 </a>
                 <a href="{{ route('admin.ai.advanced-dashboard') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm text-center dark:shadow-none dark:text-slate-300">
-                    <i class="fas fa-tachometer-alt mr-2"></i>
+                    <x-icon name="chart" class="w-4 h-4"/>
                     AI Dashboard
                 </a>
                 <a href="{{ route('admin.danisman-ai.index') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-yellow-600 to-orange-600 rounded-lg hover:from-yellow-700 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 text-center dark:shadow-none">
-                    <i class="fas fa-robot mr-2"></i>
+                    <x-icon name="lightning" class="w-4 h-4"/>
                     Danışman AI
                 </a>
                 <a href="{{ route('admin.page-analyzer.dashboard') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-cyan-600 to-blue-600 rounded-lg hover:from-cyan-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 text-center dark:shadow-none">
-                    <i class="fas fa-search mr-2"></i>
+                    <x-icon name="search" class="w-4 h-4"/>
                     Page Analyzer
                 </a>
             </div>
@@ -66,7 +66,7 @@
                 <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-check-circle text-2xl text-green-600"></i>
+                            <x-icon name="check" class="w-4 h-4" />
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-500">Success Rate</p>
@@ -78,7 +78,7 @@
                 <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-clock text-2xl text-yellow-600"></i>
+                            <x-icon name="clock" class="w-4 h-4"/>
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-500">Avg Response</p>
@@ -90,7 +90,7 @@
                 <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-star text-2xl text-purple-600"></i>
+                            <x-icon name="star" class="w-4 h-4"/>
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-500">Most Used</p>

@@ -95,17 +95,17 @@
                 </div>
                 <div class="flex items-center space-x-2">
                     <a href="{{ route('admin.talepler.index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-gray-700">
-                        <i class="fas fa-arrow-left mr-2"></i>Taleplere Dön
+                        <x-icon name="arrow-left" class="w-4 h-4"/>Taleplere Dön
                     </a>
                     <a href="{{ route('admin.talepler.edit', $talep->id) }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 active:scale-95 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                        <i class="fas fa-edit mr-2"></i>Düzenle
+                        <x-icon name="edit" class="w-4 h-4"/>Düzenle
                     </a>
                     <form action="{{ route('admin.talepler.destroy', $talep->id) }}" method="POST"
                         onsubmit="return confirm('Bu talebi silmek istediğinizden emin misiniz?');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 active:scale-95 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500">
-                            <i class="fas fa-trash-alt mr-2"></i>Sil
+                            <x-icon name="trash" class="w-4 h-4"/>Sil
                         </button>
                     </form>
                 </div>
@@ -118,7 +118,7 @@
         <div class="mt-6 mb-6">
             <div class="mb-4">
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-slate-100 flex items-center">
-                    <i class="fas fa-magic mr-2 text-blue-600 dark:text-blue-400"></i>
+                    <x-icon name="sparkles" class="w-4 h-4"/>
                     Yapay Zeka Önerileri
                 </h2>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -222,7 +222,7 @@
 
         <div class="mt-8 text-center">
             <a href="{{ route('admin.talepler.eslesen', ['talep' => $talep->id]) }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 active:scale-95 focus:ring-blue-500 shadow-md hover:shadow-lg dark:shadow-none">
-                <i class="fas fa-search-location mr-2"></i>
+                <x-icon name="search" class="w-4 h-4"/>
                 Bu Talebe Uygun İlanları Bul
             </a>
         </div>

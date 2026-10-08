@@ -8,7 +8,7 @@
         <div class="mb-8 flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <a href="{{ route('admin.leads.index') }}" class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-500 hover:bg-gray-50 transition-colors dark:border-slate-700">
-                    <i class="fas fa-arrow-left"></i>
+                    <x-icon name="arrow-left" class="w-4 h-4" />
                 </a>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 dark:text-slate-100">
@@ -35,11 +35,11 @@
                 <!-- AI Insights Card -->
                 <div class="bg-white dark:bg-slate-900 rounded-xl border border-purple-200 dark:border-purple-900/50 shadow-sm overflow-hidden relative dark:shadow-none">
                     <div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                        <i class="fas fa-brain text-9xl text-purple-600"></i>
+                        <x-icon name="lightning" class="w-4 h-4"/>
                     </div>
                     <div class="px-6 py-4 border-b border-purple-100 dark:border-purple-900/30 bg-purple-50 dark:bg-purple-900/10 flex justify-between items-center">
                         <h3 class="text-lg font-bold text-purple-900 dark:text-purple-300">
-                            <i class="fas fa-magic mr-2"></i> AI İçgörüleri
+                            <x-icon name="sparkles" class="w-4 h-4"/> AI İçgörüleri
                         </h3>
                         <span class="text-xs text-purple-700 dark:text-purple-400 font-medium">
                             {{ $score->updated_at->diffForHumans() }} güncellendi
@@ -98,7 +98,7 @@
                 <div class="bg-white dark:bg-slate-900 rounded-xl border border-{{ $recommendation['color'] }}-200 dark:border-{{ $recommendation['color'] }}-900/50 shadow-sm overflow-hidden mb-6 dark:shadow-none">
                     <div class="px-6 py-4 border-b border-{{ $recommendation['color'] }}-100 dark:border-{{ $recommendation['color'] }}-900/30 bg-{{ $recommendation['color'] }}-50 dark:bg-{{ $recommendation['color'] }}-900/10 flex justify-between items-center">
                         <h3 class="text-lg font-bold text-{{ $recommendation['color'] }}-900 dark:text-{{ $recommendation['color'] }}-300">
-                            <i class="fas fa-robot mr-2"></i> Önerilen Aksiyon
+                            <x-icon name="lightning" class="w-4 h-4"/> Önerilen Aksiyon
                         </h3>
                         @if($recommendation['urgency'] === 'critical' || $recommendation['urgency'] === 'high')
                             <span class="animate-pulse px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded">ACİL</span>
@@ -141,7 +141,7 @@
                         </li>
                         <li class="flex items-center text-sm">
                             <div class="w-8 h-8 rounded bg-gray-100 dark:bg-slate-900 flex items-center justify-center mr-3 text-gray-500">
-                                <i class="fas fa-map-marker-alt"></i>
+                                <x-icon name="map" class="w-4 h-4"/>
                             </div>
                             <span class="text-gray-700 dark:text-slate-200 dark:text-slate-300">{{ $lead->interested_location_id ?? 'Konum Belirsiz' }}</span>
                         </li>

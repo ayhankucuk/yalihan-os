@@ -9,7 +9,7 @@
                     <div>
                         <h1
                             class="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent flex items-center">
-                            <i class="fas fa-magic text-indigo-500 mr-4"></i>
+                            <x-icon name="sparkles" class="w-4 h-4"/>
                             AI Prompt Arayüzü
                         </h1>
                         <p class="text-gray-600 mt-2">İstediğiniz soruyu sorun, AI size en iyi yanıtı versin</p>
@@ -17,11 +17,11 @@
                     <div class="flex gap-3">
                         <button onclick="window.location.href='{{ route('admin.danisman-ai.index') }}'"
                             class="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-300">
-                            <i class="fas fa-arrow-left mr-2"></i>Geri Dön
+                            <x-icon name="arrow-left" class="w-4 h-4"/>Geri Dön
                         </button>
                         <button onclick="clearAll()"
                             class="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-300">
-                            <i class="fas fa-trash mr-2"></i>Temizle
+                            <x-icon name="trash" class="w-4 h-4"/>Temizle
                         </button>
                     </div>
                 </div>
@@ -51,7 +51,7 @@
                                         <input type="radio" name="analysis_type" value="ilan_bulma" class="sr-only"
                                             checked>
                                         <div class="flex items-center">
-                                            <i class="fas fa-search text-blue-500 mr-3 text-lg"></i>
+                                            <x-icon name="search" class="w-4 h-4"/>
                                             <div>
                                                 <p class="font-semibold text-gray-800 dark:text-slate-200">İlan Bulma</p>
                                                 <p class="text-xs text-gray-600">Kriterlere uygun ilanları bulur</p>
@@ -63,7 +63,7 @@
                                         class="flex items-center p-4 border-2 border-green-200 rounded-xl cursor-pointer hover:bg-green-50 transition-colors has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
                                         <input type="radio" name="analysis_type" value="talep_analizi" class="sr-only">
                                         <div class="flex items-center">
-                                            <i class="fas fa-chart-line text-green-500 mr-3 text-lg"></i>
+                                            <x-icon name="chart" class="w-4 h-4"/>
                                             <div>
                                                 <p class="font-semibold text-gray-800 dark:text-slate-200">Talep Analizi</p>
                                                 <p class="text-xs text-gray-600">Müşteri taleplerini analiz eder</p>
@@ -75,7 +75,7 @@
                                         class="flex items-center p-4 border-2 border-purple-200 rounded-xl cursor-pointer hover:bg-purple-50 transition-colors has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50">
                                         <input type="radio" name="analysis_type" value="genel_analiz" class="sr-only">
                                         <div class="flex items-center">
-                                            <i class="fas fa-brain text-purple-500 mr-3 text-lg"></i>
+                                            <x-icon name="lightning" class="w-4 h-4"/>
                                             <div>
                                                 <p class="font-semibold text-gray-800 dark:text-slate-200">Genel Analiz</p>
                                                 <p class="text-xs text-gray-600">Genel sorular ve danışmanlık</p>
@@ -116,13 +116,13 @@
                                 <button onclick="submitPrompt()"
                                     class="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white py-4 px-6 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                                     id="submitBtn">
-                                    <i class="fas fa-magic mr-2"></i>
+                                    <x-icon name="sparkles" class="w-4 h-4"/>
                                     <span>AI Analizi Başlat</span>
                                 </button>
                                 <button onclick="addToFavorites()"
                                     class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-4 px-6 rounded-xl hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300"
                                     title="Favorilere ekle">
-                                    <i class="fas fa-star"></i>
+                                    <x-icon name="star" class="w-4 h-4"/>
                                 </button>
                             </div>
                         </div>
@@ -134,7 +134,7 @@
                         <div class="p-6 border-b border-gray-200 dark:border-slate-700">
                             <div class="flex items-center justify-between">
                                 <h3 class="text-xl font-bold text-gray-800 flex items-center dark:text-slate-200">
-                                    <i class="fas fa-robot text-green-500 mr-3"></i>
+                                    <x-icon name="lightning" class="w-4 h-4"/>
                                     AI Yanıtı
                                 </h3>
                                 <div class="flex items-center gap-3">
@@ -153,11 +153,11 @@
                             <div class="flex gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-slate-700">
                                 <button onclick="copyResponse()"
                                     class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors">
-                                    <i class="fas fa-copy mr-2"></i>Kopyala
+                                    <x-icon name="copy" class="w-4 h-4"/>Kopyala
                                 </button>
                                 <button onclick="saveResponse()"
                                     class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-600 transition-colors">
-                                    <i class="fas fa-save mr-2"></i>Kaydet
+                                    <x-icon name="save" class="w-4 h-4"/>Kaydet
                                 </button>
                                 <button onclick="shareResponse()"
                                     class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-600 transition-colors">
@@ -174,7 +174,7 @@
                     <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 dark:bg-slate-900/80">
                         <div class="p-6 border-b border-gray-200 dark:border-slate-700">
                             <h3 class="text-xl font-bold text-gray-800 flex items-center dark:text-slate-200">
-                                <i class="fas fa-lightbulb text-yellow-500 mr-3"></i>
+                                <x-icon name="lightbulb" class="w-4 h-4"/>
                                 Örnek Prompts
                             </h3>
                         </div>
@@ -182,7 +182,7 @@
                             <div class="prompt-example bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl cursor-pointer hover:from-blue-100 hover:to-blue-200 transition-all"
                                 onclick="useExamplePrompt(this)">
                                 <div class="flex items-start">
-                                    <i class="fas fa-search text-blue-500 mr-3 mt-1"></i>
+                                    <x-icon name="search" class="w-4 h-4"/>
                                     <div>
                                         <p class="text-sm font-medium text-gray-800 dark:text-slate-200">İlan Arama</p>
                                         <p class="text-xs text-gray-600 mt-1">"Bodrum'da deniz manzaralı, 2-3 milyon TL
@@ -194,7 +194,7 @@
                             <div class="prompt-example bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl cursor-pointer hover:from-green-100 hover:to-green-200 transition-all"
                                 onclick="useExamplePrompt(this)">
                                 <div class="flex items-start">
-                                    <i class="fas fa-chart-line text-green-500 mr-3 mt-1"></i>
+                                    <x-icon name="chart" class="w-4 h-4"/>
                                     <div>
                                         <p class="text-sm font-medium text-gray-800 dark:text-slate-200">Pazar Analizi</p>
                                         <p class="text-xs text-gray-600 mt-1">"Çeşme bölgesinde yazlık fiyatları nasıl bir
@@ -206,7 +206,7 @@
                             <div class="prompt-example bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-xl cursor-pointer hover:from-purple-100 hover:to-purple-200 transition-all"
                                 onclick="useExamplePrompt(this)">
                                 <div class="flex items-start">
-                                    <i class="fas fa-users text-purple-500 mr-3 mt-1"></i>
+                                    <x-icon name="users" class="w-4 h-4"/>
                                     <div>
                                         <p class="text-sm font-medium text-gray-800 dark:text-slate-200">Müşteri Analizi</p>
                                         <p class="text-xs text-gray-600 mt-1">"Bu müşteri profili için hangi pazarlama
@@ -245,13 +245,13 @@
                     <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 dark:bg-slate-900/80">
                         <div class="p-6 border-b border-gray-200 dark:border-slate-700">
                             <h3 class="text-xl font-bold text-gray-800 flex items-center dark:text-slate-200">
-                                <i class="fas fa-star text-yellow-500 mr-3"></i>
+                                <x-icon name="star" class="w-4 h-4"/>
                                 Favori Prompts
                             </h3>
                         </div>
                         <div class="p-6" id="favoritesContainer">
                             <div class="text-center py-4">
-                                <i class="fas fa-star text-gray-300 text-3xl mb-2"></i>
+                                <x-icon name="star" class="w-4 h-4"/>
                                 <p class="text-gray-500 text-sm">Henüz favori prompt yok</p>
                             </div>
                         </div>
@@ -261,13 +261,13 @@
                     <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 dark:bg-slate-900/80">
                         <div class="p-6 border-b border-gray-200 dark:border-slate-700">
                             <h3 class="text-xl font-bold text-gray-800 flex items-center dark:text-slate-200">
-                                <i class="fas fa-history text-indigo-500 mr-3"></i>
+                                <x-icon name="clock" class="w-4 h-4"/>
                                 Son Kullanılan
                             </h3>
                         </div>
                         <div class="p-6" id="historyContainer">
                             <div class="text-center py-4">
-                                <i class="fas fa-history text-gray-300 text-3xl mb-2"></i>
+                                <x-icon name="clock" class="w-4 h-4"/>
                                 <p class="text-gray-500 text-sm">Henüz geçmiş yok</p>
                             </div>
                         </div>
@@ -429,7 +429,7 @@
                 htmlContent = `
             <div class="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-6 mb-4">
                 <div class="flex items-start">
-                    <i class="fas fa-robot text-green-500 mr-3 mt-1 text-lg"></i>
+                    <x-icon name="lightning" class="w-4 h-4"/>
                     <div class="flex-1">
                         <h4 class="font-semibold text-gray-800 mb-2 dark:text-slate-200">AI Yanıtı</h4>
                         <div class="text-gray-700 whitespace-pre-wrap dark:text-slate-300">${data.result.response}</div>
@@ -518,7 +518,7 @@
             if (promptHistory.length === 0) {
                 container.innerHTML = `
             <div class="text-center py-4">
-                <i class="fas fa-history text-gray-300 text-3xl mb-2"></i>
+                <x-icon name="clock" class="w-4 h-4"/>
                 <p class="text-gray-500 text-sm">Henüz geçmiş yok</p>
             </div>
         `;
@@ -551,7 +551,7 @@
             if (favoritePrompts.length === 0) {
                 container.innerHTML = `
             <div class="text-center py-4">
-                <i class="fas fa-star text-gray-300 text-3xl mb-2"></i>
+                <x-icon name="star" class="w-4 h-4"/>
                 <p class="text-gray-500 text-sm">Henüz favori prompt yok</p>
             </div>
         `;
@@ -568,7 +568,7 @@
                         <p class="text-xs text-gray-500 mt-1">${new Date(item.date).toLocaleDateString('tr-TR')}</p>
                     </div>
                     <button onclick="event.stopPropagation(); removeFavorite(${item.id})" class="text-red-500 hover:text-red-700">
-                        <i class="fas fa-times"></i>
+                        <x-icon name="times" class="w-4 h-4"/>
                     </button>
                 </div>
             </div>

@@ -8,7 +8,7 @@
             <div>
                 <h1 class="text-3xl font-bold flex items-center text-gray-800 dark:text-slate-200">
                     <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                        <i class="fas fa-edit text-white text-xl"></i>
+                        <x-icon name="edit" class="w-4 h-4"/>
                     </div>
                     Edit Etiket
                 </h1>
@@ -16,7 +16,7 @@
             </div>
             <a href="{{ route('admin.etiket.index') }}"
                class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg border border-gray-700 hover:border-gray-600 transition-all duration-200 font-medium shadow-sm hover:shadow-md dark:shadow-none">
-                <i class="fas fa-arrow-left mr-2"></i>
+                <x-icon name="arrow-left" class="w-4 h-4"/>
                 Back to Etiketler
             </a>
         </div>
@@ -170,7 +170,7 @@
                     </a>
                     <button type="submit"
                             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                        <i class="fas fa-save mr-2"></i>
+                        <x-icon name="save" class="w-4 h-4"/>
                         Update Etiket
                     </button>
                 </div>

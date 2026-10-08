@@ -6,7 +6,7 @@
     <!-- 👤 Temel Bilgiler -->
     <x-neo.card variant="primary" class="p-6">
         <h2 class="text-xl font-bold text-blue-800 mb-6 flex items-center">
-            <i class="fas fa-user mr-3 text-blue-600"></i>
+            <x-icon name="user" class="w-4 h-4"/>
             👤 Temel Bilgiler
         </h2>
 
@@ -79,7 +79,7 @@
     <!-- 📝 Hakkımda / Bio -->
     <x-neo.card variant="success" class="p-6">
         <h2 class="text-xl font-bold text-green-800 mb-6 flex items-center">
-            <i class="fas fa-info-circle mr-3 text-green-600"></i>
+            <x-icon name="info" class="w-4 h-4"/>
             📝 Hakkımda
         </h2>
 
@@ -172,7 +172,7 @@
     <!-- ⭐ Uzmanlık Alanları -->
     <x-neo.card variant="warning" class="p-6">
         <h2 class="text-xl font-bold text-yellow-800 mb-6 flex items-center">
-            <i class="fas fa-star mr-3 text-yellow-600"></i>
+            <x-icon name="star" class="w-4 h-4"/>
             ⭐ Uzmanlık Alanları
         </h2>
 
@@ -232,7 +232,7 @@
     <!-- 🕒 İletişim ve Çalışma Bilgileri -->
     <x-neo.card variant="success" class="p-6">
         <h2 class="text-xl font-bold text-green-800 mb-6 flex items-center">
-            <i class="fas fa-clock mr-3 text-green-600"></i>
+            <x-icon name="clock" class="w-4 h-4"/>
             🕒 İletişim ve Çalışma Bilgileri
         </h2>
 

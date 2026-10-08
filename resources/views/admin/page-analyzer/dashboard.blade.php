@@ -34,7 +34,7 @@
                     Test Modal
                 </button>
                 <a href="{{ route('admin.dashboard.index') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm dark:shadow-none dark:text-slate-300">
-                    <i class="fas fa-arrow-left mr-2"></i>
+                    <x-icon name="arrow-left" class="w-4 h-4"/>
                     Dashboard'a Dön
                 </a>
             </div>
@@ -122,7 +122,7 @@
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center dark:text-slate-200">
-                        <i class="fas fa-chart-line text-blue-500 mr-3"></i>
+                        <x-icon name="chart" class="w-4 h-4"/>
                         Real-time Analiz Kontrolleri
                     </h2>
                     <p class="text-gray-600 mt-1">Akıllı sayfa analizi ve izleme sistemi</p>
@@ -138,7 +138,7 @@
                         </label>
                     </div>
                     <div class="text-sm text-gray-600">
-                        <i class="fas fa-clock mr-1"></i>
+                        <x-icon name="clock" class="w-4 h-4"/>
                         Son Güncelleme: <span id="lastUpdate">{{ now()->format('d.m.Y H:i') }}</span>
                     </div>
                 </div>
@@ -160,15 +160,15 @@
             <!-- Quick Actions -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <button onclick="analyzeCategory('AI Sistemi')" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm text-left dark:shadow-none dark:text-slate-300">
-                    <i class="fas fa-robot text-blue-500 mr-2"></i>
+                    <x-icon name="lightning" class="w-4 h-4"/>
                     AI Sistemi Analizi
                 </button>
                 <button onclick="analyzeCategory('İlan Yönetimi')" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm text-left dark:shadow-none dark:text-slate-300">
-                    <i class="fas fa-home text-green-500 mr-2"></i>
+                    <x-icon name="home" class="w-4 h-4"/>
                     İlan Yönetimi Analizi
                 </button>
                 <button onclick="analyzeCategory('CRM')" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm text-left dark:shadow-none dark:text-slate-300">
-                    <i class="fas fa-users text-indigo-500 mr-2"></i>
+                    <x-icon name="users" class="w-4 h-4"/>
                     CRM Analizi
                 </button>
                 <button onclick="generateReport()" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm text-left dark:shadow-none dark:text-slate-300">
@@ -183,7 +183,7 @@
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center dark:text-slate-200">
-                        <i class="fas fa-search text-purple-500 mr-3"></i>
+                        <x-icon name="search" class="w-4 h-4"/>
                         Detaylı Analiz Sonuçları
                     </h2>
                     <p class="text-gray-600 mt-1">Kategori bazında sayfa performans analizi</p>
@@ -228,7 +228,7 @@
         <!-- Summary Statistics -->
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
             <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center dark:text-slate-200">
-                <i class="fas fa-chart-bar text-green-500 mr-3"></i>
+                <x-icon name="chart" class="w-4 h-4"/>
                 Özet İstatistikler
             </h2>
 
@@ -273,7 +273,7 @@
                     <button id="modalCloseBtn"
                         class="modal-close text-gray-400 hover:text-gray-600 p-2 rounded hover:bg-gray-100" type="button"
                         title="Kapat">
-                        <i class="fas fa-times text-xl"></i>
+                        <x-icon name="times" class="w-4 h-4"/>
                     </button>
                 </div>
 
@@ -288,7 +288,7 @@
                                     class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm font-medium dark:bg-slate-900">
                                 <button onclick="copyToClipboard('modalPageName')"
                                     class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                                    <i class="fas fa-copy"></i>
+                                    <x-icon name="copy" class="w-4 h-4"/>
                                 </button>
                             </div>
                         </div>
@@ -301,7 +301,7 @@
                                     class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm dark:bg-slate-900">
                                 <button onclick="copyToClipboard('modalScore')"
                                     class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                                    <i class="fas fa-copy"></i>
+                                    <x-icon name="copy" class="w-4 h-4"/>
                                 </button>
                             </div>
                         </div>
@@ -314,7 +314,7 @@
                                     class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm dark:bg-slate-900">
                                 <button onclick="copyToClipboard('modalCategory')"
                                     class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                                    <i class="fas fa-copy"></i>
+                                    <x-icon name="copy" class="w-4 h-4"/>
                                 </button>
                             </div>
                         </div>
@@ -327,7 +327,7 @@
                                     class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm resize-none dark:bg-slate-900"></textarea>
                                 <button onclick="copyToClipboard('modalDetails')"
                                     class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                                    <i class="fas fa-copy"></i>
+                                    <x-icon name="copy" class="w-4 h-4"/>
                                 </button>
                             </div>
                         </div>
@@ -340,7 +340,7 @@
                                     class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm resize-none dark:bg-slate-900"></textarea>
                                 <button onclick="copyToClipboard('modalIssues')"
                                     class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                                    <i class="fas fa-copy"></i>
+                                    <x-icon name="copy" class="w-4 h-4"/>
                                 </button>
                             </div>
                         </div>
@@ -353,7 +353,7 @@
                                     class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm resize-none dark:bg-slate-900"></textarea>
                                 <button onclick="copyToClipboard('modalAllDetails')"
                                     class="px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-600 transition-colors">
-                                    <i class="fas fa-copy"></i>
+                                    <x-icon name="copy" class="w-4 h-4"/>
                                 </button>
                             </div>
                         </div>
@@ -368,7 +368,7 @@
                     </button>
                     <button onclick="copyAllDetails()"
                         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <i class="fas fa-copy mr-2"></i>
+                        <x-icon name="copy" class="w-4 h-4"/>
                         Tümünü Kopyala
                     </button>
                 </div>

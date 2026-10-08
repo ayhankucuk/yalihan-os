@@ -18,11 +18,11 @@
                 </div>
                 <div class="flex gap-3">
                     <button onclick="refreshData()" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
-                        <i class="fas fa-sync-alt"></i>
+                        <x-icon name="refresh" class="w-4 h-4"/>
                         Yenile
                     </button>
                     <button onclick="runCheck()" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2">
-                        <i class="fas fa-play"></i>
+                        <x-icon name="play" class="w-4 h-4"/>
                         Manuel Kontrol
                     </button>
                     <button onclick="autoFix()" class="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition flex items-center gap-2">
@@ -124,7 +124,7 @@
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                            <x-icon name="check" class="w-4 h-4" />
                         </div>
                         <h3 class="text-lg font-semibold">Kod Kalitesi</h3>
                     </div>
@@ -177,7 +177,7 @@
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                            <i class="fas fa-tachometer-alt text-red-600 text-xl"></i>
+                            <x-icon name="chart" class="w-4 h-4"/>
                         </div>
                         <h3 class="text-lg font-semibold">Performans</h3>
                     </div>
@@ -204,7 +204,7 @@
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                            <i class="fas fa-clock text-indigo-600 text-xl"></i>
+                            <x-icon name="clock" class="w-4 h-4"/>
                         </div>
                         <h3 class="text-lg font-semibold">Son Kontrol</h3>
                     </div>
@@ -214,7 +214,7 @@
                     <div class="text-lg font-bold text-gray-900 dark:text-white dark:text-slate-100">{{ $report['timestamp'] }}</div>
                     <div class="text-sm text-gray-600">Son güncelleme zamanı</div>
                     <button onclick="refreshData()" class="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
-                        <i class="fas fa-redo"></i>
+                        <x-icon name="refresh" class="w-4 h-4"/>
                         Şimdi yenile
                     </button>
                 </div>

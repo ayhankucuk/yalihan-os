@@ -17,7 +17,7 @@
                 <button @click="openCreateModal()"
                         class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg 
                                transition-all duration-200 flex items-center gap-2">
-                    <i class="fas fa-plus"></i>
+                    <x-icon name="plus" class="w-4 h-4"/>
                     Yeni Bağımlılık
                 </button>
             </div>
@@ -86,18 +86,18 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button @click="editDependency(dep)"
                                             class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3 transition-colors duration-150">
-                                        <i class="fas fa-edit"></i>
+                                        <x-icon name="edit" class="w-4 h-4"/>
                                     </button>
                                     <button @click="deleteDependency(dep.id)"
                                             class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-150">
-                                        <i class="fas fa-trash"></i>
+                                        <x-icon name="trash" class="w-4 h-4"/>
                                     </button>
                                 </td>
                             </tr>
                         </template>
                         <tr x-show="dependencies.length === 0">
                             <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                                <i class="fas fa-info-circle text-3xl mb-3"></i>
+                                <x-icon name="info" class="w-4 h-4"/>
                                 <p>Henüz bağımlılık tanımlanmamış</p>
                             </td>
                         </tr>

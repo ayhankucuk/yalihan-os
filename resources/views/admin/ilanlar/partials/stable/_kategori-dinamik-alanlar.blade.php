@@ -10,7 +10,7 @@
     <div x-show="hasRequiredFields || hasRecommendedFields"
         class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
         <div class="flex items-start gap-2">
-            <i class="fas fa-info-circle text-blue-600 mt-0.5"></i>
+            <x-icon name="info" class="w-4 h-4"/>
             <div class="text-sm">
                 <strong class="text-blue-800 dark:text-blue-300">Kategori Özel Alanlar</strong>
                 <p class="text-gray-900 dark:text-white mt-1 dark:text-slate-100" x-text="fieldInfo"></p>
@@ -22,7 +22,7 @@
     <div x-show="hasRequiredFields" x-cloak x-transition class="mb-6">
         <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
             <h4 class="text-sm font-bold text-red-800 dark:text-red-300 mb-3 flex items-center gap-2">
-                <i class="fas fa-exclamation-triangle text-red-600"></i>
+                <x-icon name="warning" class="w-4 h-4"/>
                 Zorunlu Alanlar
             </h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-html="requiredFieldsHtml"></div>
@@ -33,7 +33,7 @@
     <div x-show="hasRecommendedFields" x-cloak x-transition class="mb-6">
         <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
             <h4 class="text-sm font-bold text-yellow-800 dark:text-yellow-300 mb-3 flex items-center gap-2">
-                <i class="fas fa-lightbulb text-yellow-600"></i>
+                <x-icon name="lightbulb" class="w-4 h-4"/>
                 Önerilen Alanlar (Daha İyi İlan İçin)
             </h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-html="recommendedFieldsHtml"></div>

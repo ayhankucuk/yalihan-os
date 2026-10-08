@@ -12,7 +12,7 @@
         <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-4 mb-6">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <i class="fas fa-info-circle text-blue-500 dark:text-blue-400 text-xl"></i>
+                    <x-icon name="info" class="w-4 h-4"/>
                     <div>
                         <p class="text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">Mevcut Durum</p>
                         <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -78,7 +78,7 @@
         {{-- Otomatik Yayın Yönetimi --}}
         <div class="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-lg p-6">
             <h4 class="text-lg font-semibold text-gray-800 dark:text-slate-200 mb-4 flex items-center">
-                <i class="fas fa-robot mr-2 text-cyan-600"></i>
+                <x-icon name="lightning" class="w-4 h-4"/>
                 Otomatik Yayın Yönetimi
             </h4>
 
@@ -123,7 +123,7 @@
         @if(isset($ilan->id))
         <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-slate-800 dark:bg-slate-900 dark:border-slate-700">
             <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center dark:text-slate-100">
-                <i class="fas fa-chart-line mr-2 text-purple-500"></i>
+                <x-icon name="chart" class="w-4 h-4"/>
                 Yayın İstatistikleri
             </h4>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">

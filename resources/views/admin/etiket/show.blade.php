@@ -8,7 +8,7 @@
             <div>
                 <h1 class="text-3xl font-bold flex items-center text-gray-800 dark:text-slate-200">
                     <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                        <i class="fas fa-tag text-white text-xl"></i>
+                        <x-icon name="tag" class="w-4 h-4"/>
                     </div>
                     {{ $etiket->name ?? 'Etiket Details' }}
                 </h1>
@@ -16,11 +16,11 @@
             </div>
             <div class="flex gap-3">
                 <a href="{{ route('admin.etiket.edit', $etiket->id) }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 active:scale-95 focus:ring-blue-500 shadow-md hover:shadow-lg dark:shadow-none">
-                    <i class="fas fa-edit mr-2"></i>
+                    <x-icon name="edit" class="w-4 h-4"/>
                     Edit Etiket
                 </a>
                 <a href="{{ route('admin.etiket.index') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 active:scale-95 focus:ring-gray-500 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-gray-700 dark:text-slate-300">
-                    <i class="fas fa-arrow-left mr-2"></i>
+                    <x-icon name="arrow-left" class="w-4 h-4"/>
                     Back to Etiketler
                 </a>
             </div>
@@ -65,7 +65,7 @@
                                     <i class="{{ $etiket->icon }} text-2xl mr-3"></i>
                                     <span class="text-sm text-gray-600">{{ $etiket->icon }}</span>
                                 @else
-                                    <i class="fas fa-tag text-2xl text-gray-400 mr-3"></i>
+                                    <x-icon name="tag" class="w-4 h-4"/>
                                     <span class="text-gray-400">No icon set</span>
                                 @endif
                             </div>
@@ -75,7 +75,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Status</label>
                             @if($etiket->aktiflik_durumu)
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                    <i class="fas fa-check-circle mr-1"></i>
+                                    <x-icon name="check" class="w-4 h-4" />
                                     Active
                                 </span>
                             @else
@@ -151,7 +151,7 @@
                         </div>
                     @else
                         <div class="text-center py-8">
-                            <i class="fas fa-users text-gray-400 text-4xl mb-4"></i>
+                            <x-icon name="users" class="w-4 h-4"/>
                             <p class="text-gray-500">No kisiler associated with this etiket</p>
                         </div>
                     @endif
@@ -166,13 +166,13 @@
                     <div class="space-y-3">
                         <a href="{{ route('admin.etiket.edit', $etiket->id) }}"
                            class="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-edit mr-2"></i>
+                            <x-icon name="edit" class="w-4 h-4"/>
                             Edit Etiket
                         </a>
 
                         <button onclick="deleteEtiket({{ $etiket->id }})"
                                 class="w-full flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-600 transition-colors">
-                            <i class="fas fa-trash mr-2"></i>
+                            <x-icon name="trash" class="w-4 h-4"/>
                             Delete Etiket
                         </button>
                     </div>

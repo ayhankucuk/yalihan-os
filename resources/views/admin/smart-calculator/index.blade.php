@@ -9,11 +9,11 @@
                 <h1 class="admin-h1">🧮 Smart Calculator</h1>
                 <div class="flex items-center space-x-3">
                     <button onclick="showHistory()" class="admin-button admin-button-secondary touch-target-optimized">
-                        <i class="fas fa-history mr-2"></i>
+                        <x-icon name="clock" class="w-4 h-4"/>
                         Geçmiş
                     </button>
                     <button onclick="showFavorites()" class="admin-button admin-button-secondary touch-target-optimized">
-                        <i class="fas fa-star mr-2"></i>
+                        <x-icon name="star" class="w-4 h-4"/>
                         Favoriler
                     </button>
                 </div>
@@ -322,7 +322,7 @@
         <div x-show="result" class="admin-card mb-6">
             <div class="admin-p-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50 dark:border-slate-700">
                 <h3 class="admin-card-title">
-                    <i class="fas fa-chart-line text-green-600 mr-2"></i>
+                    <x-icon name="chart" class="w-4 h-4"/>
                     📊 HESAPLAMA SONUÇLARI
                 </h3>
             </div>
@@ -338,7 +338,7 @@
 
                 <div class="mt-6 flex flex-wrap gap-3">
                     <button @click="saveToFavorites()" class="admin-button admin-button-success touch-target-optimized">
-                        <i class="fas fa-star mr-2"></i>
+                        <x-icon name="star" class="w-4 h-4"/>
                         💾 Favorilere Kaydet
                     </button>
                     <button @click="shareResult()" class="btn-neutral sv-button-padding sv-button-hover touch-target-optimized">
@@ -346,7 +346,7 @@
                         📤 Paylaş
                     </button>
                     <button @click="resetCalculation()" class="admin-button admin-button-secondary touch-target-optimized">
-                        <i class="fas fa-redo mr-2"></i>
+                        <x-icon name="refresh" class="w-4 h-4"/>
                         🔄 Yeniden Hesapla
                     </button>
                 </div>
@@ -361,11 +361,11 @@
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-200">
-                                <i class="fas fa-history text-blue-600 mr-2"></i>
+                                <x-icon name="clock" class="w-4 h-4"/>
                                 Hesaplama Geçmişi
                             </h3>
                             <button @click="showHistoryModal = false" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times text-xl"></i>
+                                <x-icon name="times" class="w-4 h-4"/>
                             </button>
                         </div>
 
@@ -382,7 +382,7 @@
                                         </div>
                                         <button @click="loadFromHistory(item)"
                                             class="inline-flex items-center px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-all duration-200 dark:bg-blue-700 dark:hover:bg-blue-800">
-                                            <i class="fas fa-arrow-left mr-1"></i>
+                                            <x-icon name="arrow-left" class="w-4 h-4"/>
                                             Yükle
                                         </button>
                                     </div>
@@ -402,11 +402,11 @@
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-200">
-                                <i class="fas fa-star text-yellow-600 mr-2"></i>
+                                <x-icon name="star" class="w-4 h-4"/>
                                 Favori Hesaplamalar
                             </h3>
                             <button @click="showFavoritesModal = false" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times text-xl"></i>
+                                <x-icon name="times" class="w-4 h-4"/>
                             </button>
                         </div>
 
@@ -424,12 +424,12 @@
                                         <div class="flex space-x-2">
                                             <button @click="loadFromFavorites(item)"
                                                 class="inline-flex items-center px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-all duration-200 dark:bg-blue-700 dark:hover:bg-blue-800">
-                                                <i class="fas fa-arrow-left mr-1"></i>
+                                                <x-icon name="arrow-left" class="w-4 h-4"/>
                                                 Yükle
                                             </button>
                                             <button @click="removeFavorite(item.id)"
                                                 class="inline-flex items-center px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 transition-all duration-200 dark:bg-red-700 dark:hover:bg-red-800">
-                                                <i class="fas fa-trash mr-1"></i>
+                                                <x-icon name="trash" class="w-4 h-4"/>
                                                 Sil
                                             </button>
                                         </div>

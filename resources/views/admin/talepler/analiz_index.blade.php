@@ -71,7 +71,7 @@
                                 <td class="text-right">
                                     <a href="{{ route('admin.talepler.analiz.show', $talep->id) }}"
                                         class="admin-action-view">
-                                        <i class="fas fa-chart-bar mr-1"></i> Analiz Et
+                                        <x-icon name="chart" class="w-4 h-4"/> Analiz Et
                                     </a>
                                 </td>
                             </tr>

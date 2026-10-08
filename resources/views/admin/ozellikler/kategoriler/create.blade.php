@@ -10,7 +10,7 @@
                    hover:bg-gray-200 dark:hover:bg-gray-600 hover:scale-105 active:scale-95
                    focus:ring-2 focus:ring-gray-500 focus:ring-offset-2
                    transition-all duration-200 shadow-sm hover:shadow-md">
-            <i class="fas fa-arrow-left"></i> Geri Dön
+            <x-icon name="arrow-left" class="w-4 h-4" /> Geri Dön
         </a>
     </div>
 @endsection

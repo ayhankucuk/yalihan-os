@@ -72,7 +72,7 @@
                         <label class="admin-label">&nbsp;</label>
                         <div>
                             <button type="button" class="inline-flex items-center px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg shadow-md hover:bg-orange-700 hover:scale-105 hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none transition-all duration-200 touch-target-optimized dark:shadow-none" onclick="raporuYenile()">
-                                <i class="fas fa-sync-alt"></i> Raporu Yenile
+                                <x-icon name="refresh" class="w-4 h-4"/> Raporu Yenile
                             </button>
                         </div>
                     </div>
@@ -88,7 +88,7 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-shrink-0">
                                 <div class="avatar avatar-sm bg-primary">
-                                    <i class="fas fa-users text-white"></i>
+                                    <x-icon name="users" class="w-4 h-4"/>
                                 </div>
                             </div>
                             <div class="flex-grow-1 ms-3">
@@ -122,7 +122,7 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-shrink-0">
                                 <div class="avatar avatar-sm bg-warning">
-                                    <i class="fas fa-clock text-white"></i>
+                                    <x-icon name="clock" class="w-4 h-4"/>
                                 </div>
                             </div>
                             <div class="flex-grow-1 ms-3">
@@ -139,7 +139,7 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-shrink-0">
                                 <div class="avatar avatar-sm bg-info">
-                                    <i class="fas fa-chart-line text-white"></i>
+                                    <x-icon name="chart" class="w-4 h-4"/>
                                 </div>
                             </div>
                             <div class="flex-grow-1 ms-3">
@@ -230,9 +230,9 @@
                                         <div class="d-flex align-items-center">
                                             <div class="me-2">
                                                 @if ($performans['performans_skoru'] >= 80)
-                                                    <i class="fas fa-star text-warning"></i>
+                                                    <x-icon name="star" class="w-4 h-4"/>
                                                 @elseif($performans['performans_skoru'] >= 60)
-                                                    <i class="fas fa-star-half-alt text-warning"></i>
+                                                    <x-icon name="star" class="w-4 h-4"/>
                                                 @else
                                                     <i class="far fa-star text-muted"></i>
                                                 @endif
@@ -244,7 +244,7 @@
                             @empty
                                 <tr>
                                     <td colspan="8" class="text-center text-muted">
-                                        <i class="fas fa-info-circle me-2"></i>
+                                        <x-icon name="info" class="w-4 h-4"/>
                                         Henüz performans verisi bulunmuyor.
                                     </td>
                                 </tr>
@@ -307,7 +307,7 @@
                                         <div class="d-flex align-items-center">
                                             @for ($i = 1; $i <= 5; $i++)
                                                 @if ($i <= $performans['musteri_memnuniyeti'])
-                                                    <i class="fas fa-star text-warning"></i>
+                                                    <x-icon name="star" class="w-4 h-4"/>
                                                 @else
                                                     <i class="far fa-star text-muted"></i>
                                                 @endif
@@ -328,7 +328,7 @@
                             @empty
                                 <tr>
                                     <td colspan="8" class="text-center text-muted">
-                                        <i class="fas fa-info-circle me-2"></i>
+                                        <x-icon name="info" class="w-4 h-4"/>
                                         Henüz danışman performans verisi bulunmuyor.
                                     </td>
                                 </tr>

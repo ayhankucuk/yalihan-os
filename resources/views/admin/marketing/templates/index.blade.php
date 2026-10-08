@@ -14,7 +14,7 @@
         </div>
         <a href="{{ route('admin.marketing.templates.edit', ['format' => 'instagram_post', 'template' => 'default']) }}"
            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-none">
-            <i class="fas fa-plus mr-2"></i>Yeni Template
+            <x-icon name="plus" class="w-4 h-4"/>Yeni Template
         </a>
     </div>
 
@@ -60,7 +60,7 @@
                         <div class="flex items-center gap-2">
                             <a href="{{ route('admin.marketing.templates.edit', ['format' => $format, 'template' => $template]) }}"
                                class="px-3 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all duration-200">
-                                <i class="fas fa-edit"></i> Düzenle
+                                <x-icon name="edit" class="w-4 h-4"/> Düzenle
                             </a>
                             @if($template !== 'default')
                             <form action="{{ route('admin.marketing.templates.destroy') }}" method="POST" class="inline"
@@ -71,7 +71,7 @@
                                 <input type="hidden" name="template_name" value="{{ $template }}">
                                 <button type="submit"
                                         class="px-3 py-1 text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-900/50 transition-all duration-200">
-                                    <i class="fas fa-trash"></i>
+                                    <x-icon name="trash" class="w-4 h-4"/>
                                 </button>
                             </form>
                             @endif
@@ -89,7 +89,7 @@
                 <div class="mt-4 pt-4 border-t border-gray-200 dark:border-slate-800 dark:border-slate-700">
                     <a href="{{ route('admin.marketing.templates.edit', ['format' => $format, 'template' => 'new']) }}"
                        class="block w-full text-center px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 dark:bg-slate-900 dark:text-slate-300">
-                        <i class="fas fa-plus mr-2"></i>Yeni Template Ekle
+                        <x-icon name="plus" class="w-4 h-4"/>Yeni Template Ekle
                     </a>
                 </div>
             </div>

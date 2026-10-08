@@ -9,7 +9,7 @@
                 <h1 class="text-3xl font-bold flex items-center text-gray-800 dark:text-slate-200">
                     <div
                         class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                        <i class="fas fa-plus text-white text-xl"></i>
+                        <x-icon name="plus" class="w-4 h-4"/>
                     </div>
                     Yeni Not Oluştur
                 </h1>
@@ -17,7 +17,7 @@
             </div>
             <a href="{{ route('admin.kisi-not.index') }}"
                class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md dark:shadow-none">
-                <i class="fas fa-arrow-left mr-2"></i>
+                <x-icon name="arrow-left" class="w-4 h-4"/>
                 Geri Dön
             </a>
         </div>
@@ -165,12 +165,12 @@
             <div class="flex justify-end space-x-4">
                 <a href="{{ route('admin.kisi-not.index') }}"
                    class="inline-flex items-center px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md dark:shadow-none">
-                    <i class="fas fa-times mr-2"></i>
+                    <x-icon name="times" class="w-4 h-4"/>
                     İptal
                 </a>
                 <button type="submit"
                         class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-semibold shadow-md hover:shadow-lg hover:scale-105 active:scale-95 dark:shadow-none">
-                    <i class="fas fa-save mr-2"></i>
+                    <x-icon name="save" class="w-4 h-4"/>
                     Notu Kaydet
                 </button>
             </div>
@@ -235,7 +235,7 @@
         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
             #${tag}
             <button type="button" onclick="removeTag('${tag}')" class="ml-1 text-blue-600 hover:text-blue-800">
-                <i class="fas fa-times"></i>
+                <x-icon name="times" class="w-4 h-4"/>
             </button>
         </span>
     `).join('');

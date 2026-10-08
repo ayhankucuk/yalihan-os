@@ -98,7 +98,7 @@
                 <div class="bg-white dark:bg-slate-900 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                     <div class="sm:flex sm:items-start">
                         <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 sm:mx-0 sm:h-10 sm:w-10">
-                            <i class="fas fa-user-plus text-blue-600 dark:text-blue-400"></i>
+                            <x-icon name="user" class="w-4 h-4"/>
                         </div>
                         <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
                             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-slate-100 dark:text-white" id="modal-title">

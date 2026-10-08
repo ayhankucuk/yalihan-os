@@ -49,7 +49,7 @@
                             </a>
                             <a href="{{ route('ilanlar.show', $ilan->id) }}" target="_blank"
                                 class="rounded-lg border border-gray-300 px-3 py-2 text-sm transition-colors duration-200 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700">
-                                <i class="fas fa-external-link-alt"></i>
+                                <x-icon name="external" class="w-4 h-4"/>
                             </a>
                         </div>
                     </div>

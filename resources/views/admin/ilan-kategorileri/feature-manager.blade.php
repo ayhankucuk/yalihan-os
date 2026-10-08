@@ -419,7 +419,7 @@
 
                                 <button @click="loadAISuggestions()"
                                     class="inline-flex items-center rounded-2xl border-2 border-gray-100 bg-white px-8 py-4 font-bold text-gray-700 shadow-sm transition-all duration-300 hover:border-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:shadow-none dark:hover:border-blue-500">
-                                    <i class="fas fa-magic mr-3 text-purple-500"></i>
+                                    <x-icon name="sparkles" class="w-4 h-4"/>
                                     AI Önerilerini Gör
                                 </button>
                             </div>

@@ -91,7 +91,7 @@
                 </div>
                 <button type="button" @click="generateTitle()" :disabled="loading"
                     class="w-full px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                    <i class="fas fa-magic mr-1"></i>Başlık Oluştur
+                    <x-icon name="sparkles" class="w-4 h-4"/>Başlık Oluştur
                 </button>
             </div>
 
@@ -108,7 +108,7 @@
                 </div>
                 <button type="button" @click="generateDescription()" :disabled="loading"
                     class="w-full px-4 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                    <i class="fas fa-magic mr-1"></i>Açıklama Oluştur
+                    <x-icon name="sparkles" class="w-4 h-4"/>Açıklama Oluştur
                 </button>
             </div>
         </div>
@@ -116,7 +116,7 @@
         {{-- Loading State --}}
         <div x-show="loading" x-transition class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div class="flex items-center justify-center">
-                <i class="fas fa-spinner fa-spin text-blue-600 dark:text-blue-400 mr-3"></i>
+                <x-icon name="spinner" class="w-4 h-4 animate-spin"/>
                 <p class="text-sm text-blue-800 dark:text-blue-200">AI çalışıyor, lütfen bekleyin...</p>
             </div>
         </div>
@@ -124,7 +124,7 @@
         {{-- Success Message --}}
         <div x-show="message" x-transition class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
             <div class="flex items-center">
-                <i class="fas fa-check-circle text-green-600 dark:text-green-400 mr-3"></i>
+                <x-icon name="check" class="w-4 h-4" />
                 <p class="text-sm text-green-800 dark:text-green-200" x-text="message"></p>
             </div>
         </div>

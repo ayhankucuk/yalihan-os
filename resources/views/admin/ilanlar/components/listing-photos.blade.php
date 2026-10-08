@@ -79,7 +79,7 @@
                         {{-- Seçim Overlay --}}
                         <div x-show="photo.selected"
                             class="absolute inset-0 bg-blue-600 bg-opacity-75 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-check text-white text-2xl"></i>
+                            <x-icon name="check" class="w-4 h-4" />
                         </div>
 
                         {{-- Hover Overlay --}}
@@ -92,15 +92,15 @@
                                 </button>
                                 <button type="button" @click="setAsCover(photo)"
                                     class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full text-white dark:bg-slate-900">
-                                    <i class="fas fa-star"></i>
+                                    <x-icon name="star" class="w-4 h-4"/>
                                 </button>
                                 <button type="button" @click="editPhoto(photo)"
                                     class="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full text-white dark:bg-slate-900">
-                                    <i class="fas fa-edit"></i>
+                                    <x-icon name="edit" class="w-4 h-4"/>
                                 </button>
                                 <button type="button" @click="deletePhoto(photo)"
                                     class="p-2 bg-red-600 bg-opacity-80 hover:bg-opacity-100 rounded-full text-white">
-                                    <i class="fas fa-trash"></i>
+                                    <x-icon name="trash" class="w-4 h-4"/>
                                 </button>
                             </div>
                         </div>
@@ -108,7 +108,7 @@
                         {{-- Kapak Fotoğrafı İşareti --}}
                         <div x-show="photo.isCover"
                             class="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                            <i class="fas fa-star mr-1"></i>Kapak
+                            <x-icon name="star" class="w-4 h-4"/>Kapak
                         </div>
 
                         {{-- Fotoğraf Sırası --}}
@@ -139,7 +139,7 @@
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white dark:text-slate-100">Fotoğraf Düzenle</h3>
                         <button type="button" @click="closeEditModal()"
                             class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                            <i class="fas fa-times"></i>
+                            <x-icon name="times" class="w-4 h-4"/>
                         </button>
                     </div>
 

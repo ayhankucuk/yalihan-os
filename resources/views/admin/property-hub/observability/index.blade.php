@@ -31,7 +31,7 @@
                 <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                     <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                         <h2 class="text-xl font-bold dark:text-slate-100">Audit Timeline (D1)</h2>
-                        <i class="fas fa-history text-slate-400"></i>
+                        <x-icon name="clock" class="w-4 h-4"/>
                     </div>
                     <div class="p-0 overflow-y-auto max-h-[600px] custom-scrollbar">
                         <table class="w-full text-sm">
@@ -62,7 +62,7 @@
                 <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
                      <h2 class="text-xl font-bold dark:text-slate-100 mb-6">Drift Telemetry (D2)</h2>
                      <div class="h-48 bg-slate-50 dark:bg-slate-800/20 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center">
-                        <i class="fas fa-chart-line text-4xl text-slate-300 dark:text-slate-700 mb-4"></i>
+                        <x-icon name="chart" class="w-4 h-4"/>
                         <p class="text-slate-500 text-sm">Real-time drift chart integration pending.</p>
                      </div>
                 </div>
@@ -102,7 +102,7 @@
                     <div class="grid grid-cols-1 gap-4">
                         <a href="{{ route('admin.property-hub.versions.index') }}" class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group">
                            <div class="flex items-center gap-3">
-                               <i class="fas fa-layer-group text-blue-500"></i>
+                               <x-icon name="folder" class="w-4 h-4"/>
                                <span class="text-sm font-bold">Manage Versions</span>
                            </div>
                            <i class="fas fa-chevron-right text-slate-300 group-hover:text-blue-500 transition-colors"></i>

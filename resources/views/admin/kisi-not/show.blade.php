@@ -9,7 +9,7 @@
                 <h1 class="text-3xl font-bold flex items-center text-gray-800 dark:text-slate-200">
                     <div
                         class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                        <i class="fas fa-sticky-note text-white text-xl"></i>
+                        <x-icon name="file" class="w-4 h-4"/>
                     </div>
                     {{ $not['baslik'] ?? 'Not Detayları' }}
                 </h1>
@@ -17,11 +17,11 @@
             </div>
             <div class="flex space-x-3">
                 <a href="{{ route('admin.kisi-not.edit', $not['id']) }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 active:scale-95 focus:ring-blue-500 shadow-md hover:shadow-lg dark:shadow-none">
-                    <i class="fas fa-edit mr-2"></i>
+                    <x-icon name="edit" class="w-4 h-4"/>
                     Düzenle
                 </a>
                 <a href="{{ route('admin.kisi-not.index') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 active:scale-95 focus:ring-gray-500 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-gray-700 dark:text-slate-300">
-                    <i class="fas fa-arrow-left mr-2"></i>
+                    <x-icon name="arrow-left" class="w-4 h-4"/>
                     Geri Dön
                 </a>
             </div>
@@ -39,13 +39,13 @@
                         @if ($not['is_completed'] ?? false)
                             <span
                                 class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                <i class="fas fa-check mr-1"></i>
+                                <x-icon name="check" class="w-4 h-4" />
                                 Tamamlandı
                             </span>
                         @else
                             <span
                                 class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                                <i class="fas fa-clock mr-1"></i>
+                                <x-icon name="clock" class="w-4 h-4"/>
                                 Devam Ediyor
                             </span>
                         @endif
@@ -111,7 +111,7 @@
                                     </div>
                                     <a href="{{ route('admin.kisi-not.show', $relatedNote['id']) }}"
                                         class="text-blue-600 hover:text-blue-800">
-                                        <i class="fas fa-eye"></i>
+                                        <x-icon name="eye" class="w-4 h-4"/>
                                     </a>
                                 </div>
                             @endforeach
@@ -194,7 +194,7 @@
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 dark:text-slate-200">Kişi Bilgileri</h3>
                     <div class="flex items-center mb-4">
                         <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                            <i class="fas fa-user text-gray-600 text-lg"></i>
+                            <x-icon name="user" class="w-4 h-4"/>
                         </div>
                         <div>
                             <div class="font-medium text-gray-900 dark:text-slate-100 dark:text-white">{{ $not['kisi_adi'] ?? 'Bilinmeyen' }}</div>
@@ -205,12 +205,12 @@
                     <div class="space-y-2">
                         <a href="#"
                             class="block w-full text-center px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-user mr-2"></i>
+                            <x-icon name="user" class="w-4 h-4"/>
                             Kişi Detayları
                         </a>
                         <a href="{{ route('admin.kisi-not.create', ['kisi_id' => $not['kisi_id']]) }}"
                             class="block w-full text-center px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-600 transition-colors">
-                            <i class="fas fa-plus mr-2"></i>
+                            <x-icon name="plus" class="w-4 h-4"/>
                             Yeni Not Ekle
                         </a>
                     </div>
@@ -222,7 +222,7 @@
                     <div class="space-y-3">
                         <button onclick="toggleComplete()"
                             class="w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-600 transition-colors">
-                            <i class="fas fa-check mr-2"></i>
+                            <x-icon name="check" class="w-4 h-4" />
                             @if ($not['is_completed'] ?? false)
                                 Tamamlandı İşaretini Kaldır
                             @else
@@ -232,7 +232,7 @@
 
                         <button onclick="copyNoteContent()"
                             class="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-copy mr-2"></i>
+                            <x-icon name="copy" class="w-4 h-4"/>
                             İçeriği Kopyala
                         </button>
 
@@ -244,7 +244,7 @@
 
                         <button onclick="deleteNote()"
                             class="w-full flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-600 transition-colors">
-                            <i class="fas fa-trash mr-2"></i>
+                            <x-icon name="trash" class="w-4 h-4"/>
                             Notu Sil
                         </button>
                     </div>

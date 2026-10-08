@@ -131,7 +131,7 @@
                 <div
                     class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all p-4 dark:shadow-none dark:border-slate-700">
                     <h5 class="mb-4 font-semibold text-gray-900 dark:text-white dark:text-slate-100">
-                        <i class="fas fa-search mr-2 text-orange-500"></i>
+                        <x-icon name="search" class="w-4 h-4"/>
                         Arama Performans Paneli
                     </h5>
                     <div>
@@ -139,7 +139,7 @@
                             <!-- Search Performance -->
                             <div class="col-md-6 mb-4">
                                 <h6 class="text-warning mb-3">
-                                    <i class="fas fa-tachometer-alt mr-1"></i>
+                                    <x-icon name="chart" class="w-4 h-4"/>
                                     Arama Performansı
                                 </h6>
                                 <div class="space-y-2">
@@ -175,7 +175,7 @@
                             <!-- User Behavior -->
                             <div class="col-md-6 mb-4">
                                 <h6 class="text-info mb-3">
-                                    <i class="fas fa-users mr-1"></i>
+                                    <x-icon name="users" class="w-4 h-4"/>
                                     Kullanıcı Davranışları
                                 </h6>
                                 <div class="space-y-2">
@@ -206,7 +206,7 @@
             <div
                 class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all p-4 dark:shadow-none dark:border-slate-700">
                 <h6 class="mb-4 font-semibold text-gray-900 dark:text-white dark:text-slate-100">
-                    <i class="fas fa-tachometer-alt mr-2 text-orange-500"></i>
+                    <x-icon name="chart" class="w-4 h-4"/>
                     Performance Metrics
                 </h6>
                 <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -349,7 +349,7 @@
                     <!-- Top Neighborhoods -->
                     <div>
                         <h6 class="text-blue-600 dark:text-blue-400 mb-3">
-                            <i class="fas fa-star mr-1"></i>
+                            <x-icon name="star" class="w-4 h-4"/>
                             En Popüler Mahalleler
                         </h6>
                         <div id="top-neighborhoods-chart" class="h-[300px]">
@@ -360,7 +360,7 @@
                     <!-- API Response Times -->
                     <div>
                         <h6 class="text-green-600 dark:text-green-400 mb-3">
-                            <i class="fas fa-tachometer-alt mr-1"></i>
+                            <x-icon name="chart" class="w-4 h-4"/>
                             API Response Times
                         </h6>
                         <div id="response-times-chart" class="h-[300px]">
@@ -407,7 +407,7 @@
                     <!-- User Behavior -->
                     <div>
                         <h6 class="text-yellow-600 dark:text-yellow-400 mb-3">
-                            <i class="fas fa-users mr-1"></i>
+                            <x-icon name="users" class="w-4 h-4"/>
                             Kullanıcı Davranışları
                         </h6>
                         <div class="grid grid-cols-2 text-center gap-4">

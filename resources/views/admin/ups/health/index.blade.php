@@ -377,7 +377,7 @@
                 <div class="flex items-center gap-4">
                     <div
                         class="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-blue-500 dark:text-blue-400 dark:bg-slate-900">
-                        <i class="fas fa-brain"></i>
+                        <x-icon name="lightning" class="w-4 h-4"/>
                     </div>
                     <div class="text-sm">
                         <div class="text-slate-800 dark:text-slate-200 font-bold">Cortex Senkronizasyon Motoru v2.5</div>

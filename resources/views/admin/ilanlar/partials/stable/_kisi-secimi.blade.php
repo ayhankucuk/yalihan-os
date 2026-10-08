@@ -52,7 +52,7 @@
 
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fas fa-search text-gray-400"></i>
+                        <x-icon name="search" class="w-4 h-4"/>
                     </span>
                     <input type="text" id="ilan_sahibi_search"
                         class="w-full pl-10 pr-4 py-3 text-sm font-medium border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all shadow-sm group-hover:bg-white dark:group-hover:bg-gray-900 dark:shadow-none dark:bg-slate-900 dark:text-slate-100"
@@ -64,7 +64,7 @@
 
             <button type="button" @click="window.dispatchEvent(new CustomEvent('open-quick-client-modal', {detail: {type: 'owner'}}))"
                 class="mt-3 w-full py-2 flex items-center justify-center gap-2 text-xs font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/10 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors dashed-border border-purple-200 dark:border-purple-800/30">
-                <i class="fas fa-plus"></i> Yeni Kişi Ekle
+                <x-icon name="plus" class="w-4 h-4"/> Yeni Kişi Ekle
             </button>
         </div>
 
@@ -88,7 +88,7 @@
 
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fas fa-user-friends text-gray-400"></i>
+                        <x-icon name="user" class="w-4 h-4"/>
                     </span>
                     <input type="text" id="ilgili_kisi_search"
                         class="w-full pl-10 pr-4 py-3 text-sm font-medium border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all shadow-sm group-hover:bg-white dark:group-hover:bg-gray-900 dark:shadow-none dark:bg-slate-900 dark:text-slate-100"
@@ -100,7 +100,7 @@
 
             <button type="button" @click="window.dispatchEvent(new CustomEvent('open-quick-client-modal', {detail: {type: 'related'}}))"
                 class="mt-3 w-full py-2 flex items-center justify-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-slate-900 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors dashed-border border-gray-200 dark:border-slate-800 dark:border-slate-700">
-                <i class="fas fa-plus"></i> Yeni İlgili Ekle
+                <x-icon name="plus" class="w-4 h-4"/> Yeni İlgili Ekle
             </button>
         </div>
 
@@ -123,7 +123,7 @@
 
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fas fa-user-tie text-blue-400"></i>
+                        <x-icon name="user" class="w-4 h-4"/>
                     </span>
                     <input type="text" id="danisman_search"
                         class="w-full pl-10 pr-4 py-3 text-sm font-medium border border-blue-200 dark:border-blue-800 rounded-lg bg-blue-50/30 dark:bg-blue-900/10 text-gray-900 dark:text-white placeholder-blue-400 dark:placeholder-blue-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm group-hover:bg-blue-50/50 dark:group-hover:bg-blue-900/20 dark:shadow-none dark:text-slate-100"
@@ -134,7 +134,7 @@
             </div>
 
             <div class="mt-3 group relative inline-block">
-                 <i class="fas fa-info-circle text-blue-400 cursor-help"></i>
+                 <x-icon name="info" class="w-4 h-4"/>
                  <span class="invisible group-hover:visible absolute left-0 bottom-full mb-2 w-48 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-50">
                     Sistem kullanıcısıdır. Harici kişi eklenemez.
                  </span>

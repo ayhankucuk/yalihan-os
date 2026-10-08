@@ -16,7 +16,7 @@
                     <div>
                         <a href="{{ route('admin.blog.categories.index') }}"
                             class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2-outline-primary touch-target-optimized">
-                            <i class="fas fa-arrow-left mr-2"></i>
+                            <x-icon name="arrow-left" class="w-4 h-4"/>
                             Kategorilere Dön
                         </a>
                     </div>
@@ -124,7 +124,7 @@
                         </a>
                         <button type="submit"
                             class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 active:scale-95 focus:ring-blue-500 shadow-md hover:shadow-lg touch-target-optimized dark:shadow-none">
-                            <i class="fas fa-save mr-2"></i>
+                            <x-icon name="save" class="w-4 h-4"/>
                             Değişiklikleri Kaydet
                         </button>
                     </div>

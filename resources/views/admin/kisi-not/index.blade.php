@@ -8,7 +8,7 @@
             <div>
                 <h1 class="text-3xl font-bold flex items-center text-gray-800 dark:text-slate-200">
                     <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                        <i class="fas fa-sticky-note text-white text-xl"></i>
+                        <x-icon name="file" class="w-4 h-4"/>
                     </div>
                     Müşteri Notları 📝
                 </h1>
@@ -16,7 +16,7 @@
             </div>
             <div class="flex space-x-3">
                 <a href="{{ route('admin.kisi-not.create') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-none">
-                    <i class="fas fa-plus mr-2"></i>
+                    <x-icon name="plus" class="w-4 h-4"/>
                     Yeni Not
                 </a>
                 <button onclick="exportNotes()" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm dark:shadow-none dark:text-slate-300">
@@ -33,7 +33,7 @@
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-200 p-6 dark:shadow-none dark:border-slate-700">
                 <div class="flex items-center">
                     <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-sticky-note text-blue-600 text-xl"></i>
+                        <x-icon name="file" class="w-4 h-4"/>
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Toplam Not</p>
@@ -45,7 +45,7 @@
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-200 p-6 dark:shadow-none dark:border-slate-700">
                 <div class="flex items-center">
                     <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        <x-icon name="check" class="w-4 h-4" />
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Aktif Notlar</p>
@@ -57,7 +57,7 @@
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-200 p-6 dark:shadow-none dark:border-slate-700">
                 <div class="flex items-center">
                     <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-tags text-purple-600 text-xl"></i>
+                        <x-icon name="tag" class="w-4 h-4"/>
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Kategoriler</p>
@@ -69,7 +69,7 @@
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-200 p-6 dark:shadow-none dark:border-slate-700">
                 <div class="flex items-center">
                     <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-chart-line text-orange-600 text-xl"></i>
+                        <x-icon name="chart" class="w-4 h-4"/>
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Bu Ay</p>
@@ -114,11 +114,11 @@
 
                 <div class="flex items-end space-x-2">
                     <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg flex-1 dark:shadow-none">
-                        <i class="fas fa-search mr-2"></i>
+                        <x-icon name="search" class="w-4 h-4"/>
                         Filtrele
                     </button>
                     <a href="{{ route('admin.kisi-not.index') }}" class="inline-flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm dark:shadow-none dark:text-slate-300">
-                        <i class="fas fa-times"></i>
+                        <x-icon name="times" class="w-4 h-4"/>
                     </a>
                 </div>
             </form>
@@ -158,7 +158,7 @@
                                 <td class="px-6 py-4">
                                     <div class="flex items-center">
                                         <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                                            <i class="fas fa-user text-gray-600 text-sm"></i>
+                                            <x-icon name="user" class="w-4 h-4"/>
                                         </div>
                                         <div>
                                             <div class="font-medium text-gray-900 dark:text-slate-100 dark:text-white">{{ $not['kisi_adi'] ?? 'Bilinmeyen' }}</div>
@@ -200,12 +200,12 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($not['is_completed'] ?? false)
                                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            <i class="fas fa-check mr-1"></i>
+                                            <x-icon name="check" class="w-4 h-4" />
                                             Tamamlandı
                                         </span>
                                     @else
                                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                            <i class="fas fa-clock mr-1"></i>
+                                            <x-icon name="clock" class="w-4 h-4"/>
                                             Devam Ediyor
                                         </span>
                                     @endif
@@ -222,15 +222,15 @@
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('admin.kisi-not.show', $not['id']) }}"
                                            class="text-blue-600 hover:text-blue-800" title="Görüntüle">
-                                            <i class="fas fa-eye"></i>
+                                            <x-icon name="eye" class="w-4 h-4"/>
                                         </a>
                                         <a href="{{ route('admin.kisi-not.edit', $not['id']) }}"
                                            class="text-yellow-600 hover:text-yellow-800" title="Düzenle">
-                                            <i class="fas fa-edit"></i>
+                                            <x-icon name="edit" class="w-4 h-4"/>
                                         </a>
                                         <button onclick="deleteNote({{ $not['id'] }})"
                                                 class="text-red-600 hover:text-red-800" title="Sil">
-                                            <i class="fas fa-trash"></i>
+                                            <x-icon name="trash" class="w-4 h-4"/>
                                         </button>
                                     </div>
                                 </td>
@@ -239,11 +239,11 @@
                             <tr>
                                 <td colspan="8" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center">
-                                        <i class="fas fa-sticky-note text-4xl text-gray-300 mb-4"></i>
+                                        <x-icon name="file" class="w-4 h-4"/>
                                         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2 dark:text-slate-100">Henüz not bulunmuyor</h3>
                                         <p class="text-gray-500 dark:text-gray-400 mb-4">İlk notunuzu oluşturmak için yukarıdaki butonu kullanın.</p>
                                         <a href="{{ route('admin.kisi-not.create') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-none">
-                                            <i class="fas fa-plus mr-2"></i>
+                                            <x-icon name="plus" class="w-4 h-4"/>
                                             Yeni Not Oluştur
                                         </a>
                                     </div>
@@ -262,11 +262,11 @@
                     <span class="text-sm font-medium text-gray-700 dark:text-slate-200 dark:text-slate-300" id="selectedCount">0 seçildi</span>
                     <div class="flex space-x-2">
                         <button onclick="bulkAction('complete')" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-sm dark:shadow-none">
-                            <i class="fas fa-check mr-1"></i>
+                            <x-icon name="check" class="w-4 h-4" />
                             Tamamla
                         </button>
                         <button onclick="bulkAction('delete')" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-red-600 to-pink-600 rounded-lg hover:from-red-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 shadow-sm dark:shadow-none">
-                            <i class="fas fa-trash mr-1"></i>
+                            <x-icon name="trash" class="w-4 h-4"/>
                             Sil
                         </button>
                     </div>

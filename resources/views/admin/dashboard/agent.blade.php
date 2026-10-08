@@ -19,10 +19,10 @@
              <button class="px-4 py-2 text-sm font-medium border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ring-offset-white dark:ring-offset-gray-900
                 bg-white text-gray-700 border-gray-300 hover:bg-gray-50
                 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-900 dark:shadow-none dark:focus:ring-indigo-500">
-                <i class="fas fa-sync-alt mr-2"></i> Yenile
+                <x-icon name="refresh" class="w-4 h-4"/> Yenile
             </button>
             <a href="{{ route('admin.ilanlar.create') }}" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-offset-gray-900 dark:focus:ring-indigo-500 dark:shadow-none">
-                <i class="fas fa-plus mr-2"></i> Yeni İlan Ekle
+                <x-icon name="plus" class="w-4 h-4"/> Yeni İlan Ekle
             </a>
         </div>
     </div>
@@ -31,7 +31,7 @@
     @if(count($insights) > 0)
         <div class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800/50 rounded-xl p-4 relative overflow-hidden">
             <div class="absolute top-0 right-0 p-4 opacity-10">
-                <i class="fas fa-brain text-6xl text-indigo-600"></i>
+                <x-icon name="lightning" class="w-4 h-4"/>
             </div>
             <div class="relative z-10">
                 <h3 class="flex items-center text-indigo-700 dark:text-indigo-300 font-semibold mb-3">
@@ -72,7 +72,7 @@
                     <h4 class="text-2xl font-bold text-gray-900 dark:text-white mt-1 dark:text-slate-100">{{ $stats['total_listings'] }}</h4>
                 </div>
                 <div class="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-                    <i class="fas fa-home text-lg"></i>
+                    <x-icon name="home" class="w-4 h-4"/>
                 </div>
             </div>
             <div class="mt-4 flex items-center text-xs text-gray-500">
@@ -91,7 +91,7 @@
                     <h4 class="text-2xl font-bold text-gray-900 dark:text-white mt-1 dark:text-slate-100">{{ $stats['active_listings'] }}</h4>
                 </div>
                 <div class="p-2 bg-green-50 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
-                    <i class="fas fa-check-circle text-lg"></i>
+                    <x-icon name="check" class="w-4 h-4" />
                 </div>
             </div>
             <div class="mt-4 relative w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
@@ -110,7 +110,7 @@
                     <h4 class="text-2xl font-bold text-gray-900 dark:text-white mt-1 dark:text-slate-100">{{ $stats['new_leads'] }}</h4>
                 </div>
                 <div class="p-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">
-                    <i class="fas fa-users text-lg"></i>
+                    <x-icon name="users" class="w-4 h-4"/>
                 </div>
             </div>
              <div class="mt-4 flex items-center text-xs text-gray-500">
@@ -129,7 +129,7 @@
                     <h4 class="text-2xl font-bold text-gray-900 dark:text-white mt-1 dark:text-slate-100">%{{ $stats['roi_month'] }}</h4>
                 </div>
                 <div class="p-2 bg-orange-50 dark:bg-orange-900/30 rounded-lg text-orange-600 dark:text-orange-400">
-                    <i class="fas fa-chart-line text-lg"></i>
+                    <x-icon name="chart" class="w-4 h-4"/>
                 </div>
             </div>
              <div class="mt-4 text-xs text-gray-500">
@@ -175,14 +175,14 @@
                                     </div>
                                 </div>
                                 <button class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity">
-                                    <i class="fas fa-trash-alt"></i>
+                                    <x-icon name="trash" class="w-4 h-4"/>
                                 </button>
                             </div>
                         @endforeach
                     </div>
                 @else
                     <div class="text-center py-8 text-gray-500">
-                        <i class="fas fa-check-circle text-4xl mb-3 text-green-100"></i>
+                        <x-icon name="check" class="w-4 h-4" />
                          <p>Harika! Bekleyen göreviniz yok.</p>
                     </div>
                 @endif
@@ -219,7 +219,7 @@
             <!-- Recent Activity Widget -->
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5 dark:shadow-none">
                  <h3 class="font-semibold text-gray-900 dark:text-white mb-4 text-sm dark:text-slate-100">
-                    <i class="fas fa-history mr-2 text-gray-400"></i> Son Aktiviteler
+                    <x-icon name="clock" class="w-4 h-4"/> Son Aktiviteler
                 </h3>
                 <div class="space-y-4">
                     <!-- Activity Items (Mock) -->
@@ -234,7 +234,7 @@
                     </div>
                      <div class="flex gap-3">
                         <div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 text-xs shadow-sm ring-2 ring-white dark:ring-gray-800 dark:shadow-none">
-                             <i class="fas fa-check"></i>
+                             <x-icon name="check" class="w-4 h-4" />
                         </div>
                         <div>
                             <p class="text-sm text-gray-800 dark:text-slate-200">İlan <span class="font-semibold">#9821</span> yayına alındı.</p>
@@ -243,7 +243,7 @@
                     </div>
                     <div class="flex gap-3">
                         <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 text-xs shadow-sm ring-2 ring-white dark:ring-gray-800 dark:shadow-none dark:bg-slate-900">
-                             <i class="fas fa-edit"></i>
+                             <x-icon name="edit" class="w-4 h-4"/>
                         </div>
                         <div>
                             <p class="text-sm text-gray-800 dark:text-slate-200"><span class="font-semibold">Bodrum Villa</span> fiyat güncellendi.</p>

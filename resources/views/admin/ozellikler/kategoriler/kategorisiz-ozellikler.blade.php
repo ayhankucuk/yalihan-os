@@ -8,16 +8,16 @@
         <div class="p-6">
             <div class="flex justify-between items-center mb-4">
                 <h1 class="text-2xl font-semibold text-gray-800 dark:text-slate-200">
-                    <i class="fas fa-exclamation-triangle mr-2"></i> Kategorisiz Özellikler
+                    <x-icon name="warning" class="w-4 h-4"/> Kategorisiz Özellikler
                 </h1>
                 <div class="flex space-x-2">
                     <a href="{{ route('admin.ozellikler.kategoriler.index') }}"
                         class="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 hover:scale-105 active:scale-95 focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:focus:ring-offset-gray-900 transition-all duration-200 touch-target-optimized dark:text-slate-300">
-                        <i class="fas fa-tag mr-2"></i> Kategorilere Dön
+                        <x-icon name="tag" class="w-4 h-4"/> Kategorilere Dön
                     </a>
                     <a href="{{ route('admin.ozellikler.create') }}"
                         class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:scale-105 active:scale-95 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900 transition-all duration-200 shadow-md hover:shadow-lg touch-target-optimized dark:shadow-none">
-                        <i class="fas fa-plus mr-2"></i> Yeni Özellik Ekle
+                        <x-icon name="plus" class="w-4 h-4"/> Yeni Özellik Ekle
                     </a>
                 </div>
             </div>
@@ -98,7 +98,7 @@
                                         <a href="{{ route('admin.ozellikler.edit', $ozellik->id) }}"
                                             class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-2"
                                             title="Düzenle">
-                                            <i class="fas fa-edit"></i> Düzenle
+                                            <x-icon name="edit" class="w-4 h-4"/> Düzenle
                                         </a>
                                     </td>
                                 </tr>

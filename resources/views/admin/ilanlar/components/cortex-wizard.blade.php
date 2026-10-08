@@ -20,7 +20,7 @@
         {{-- Quality Score Header --}}
         <div class="flex items-center justify-between mb-3">
             <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2 dark:text-slate-100">
-                <i class="fas fa-brain text-blue-600 dark:text-blue-400 animate-pulse"></i>
+                <x-icon name="lightning" class="w-4 h-4"/>
                 Cortex Kalite Skoru
             </h4>
             <span class="text-2xl font-black"
@@ -77,7 +77,7 @@
         {{-- Cortex Suggestions --}}
         <div x-show="suggestions.length > 0" class="mt-4 pt-3 border-t border-gray-200 dark:border-slate-800 dark:border-slate-700">
             <h5 class="text-xs font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-1 dark:text-slate-100">
-                <i class="fas fa-lightbulb text-yellow-500 dark:text-yellow-400"></i>
+                <x-icon name="lightbulb" class="w-4 h-4"/>
                 AI Önerileri
             </h5>
             <ul class="space-y-1">
@@ -98,7 +98,7 @@
             class="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 
                     border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
             <div class="flex items-center gap-3">
-                <i class="fas fa-tag text-2xl text-blue-600 dark:text-blue-400"></i>
+                <x-icon name="tag" class="w-4 h-4"/>
                 <div>
                     <h4 class="text-sm font-bold text-gray-900 dark:text-white dark:text-slate-100" x-text="selectedKategoriName"></h4>
                     <p class="text-xs text-gray-700 dark:text-slate-200 mt-1 dark:text-slate-300" x-text="fieldSummary"></p>
@@ -110,7 +110,7 @@
         <div x-show="requiredFields.length > 0" x-transition
             class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
             <h4 class="text-sm font-bold text-red-800 dark:text-red-300 mb-4 flex items-center gap-2">
-                <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
+                <x-icon name="warning" class="w-4 h-4"/>
                 Zorunlu Alanlar
                 <span
                     class="ml-auto text-xs bg-red-600 dark:bg-red-700 text-white dark:text-red-100 px-2 py-0.5 rounded-full"
@@ -123,7 +123,7 @@
         <div x-show="recommendedFields.length > 0" x-transition
             class="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
             <h4 class="text-sm font-bold text-yellow-800 dark:text-yellow-300 mb-4 flex items-center gap-2">
-                <i class="fas fa-star text-yellow-600 dark:text-yellow-400"></i>
+                <x-icon name="star" class="w-4 h-4"/>
                 Önerilen Alanlar (Kalite İçin)
                 <span
                     class="ml-auto text-xs bg-yellow-600 dark:bg-yellow-700 text-white dark:text-yellow-100 px-2 py-0.5 rounded-full"
@@ -136,7 +136,7 @@
         <div x-show="optionalFields.length > 0" x-transition
             class="mb-6 bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-slate-800 rounded-lg p-4 dark:border-slate-700 dark:bg-slate-900">
             <h4 class="text-sm font-bold text-gray-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-                <i class="fas fa-plus-circle text-gray-600 dark:text-gray-400"></i>
+                <x-icon name="plus" class="w-4 h-4"/>
                 Opsiyonel Alanlar
                 <span
                     class="ml-auto text-xs bg-gray-600 dark:bg-gray-700 text-white dark:text-slate-100 px-2 py-0.5 rounded-full"

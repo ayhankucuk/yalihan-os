@@ -77,7 +77,7 @@
 
             <div class="flex justify-between items-center mb-4">
                 <h1 class="text-2xl font-semibold text-gray-800 dark:text-slate-200">
-                    <i class="fas fa-tag mr-2"></i> {{ $kategori->name }} Kategorisindeki Özellikler
+                    <x-icon name="tag" class="w-4 h-4"/> {{ $kategori->name }} Kategorisindeki Özellikler
                 </h1>
                 <div class="flex gap-3">
                     <a href="{{ route('admin.ozellikler.kategoriler.index') }}"
@@ -231,7 +231,7 @@
                                         <a href="{{ route('admin.ozellikler.edit', $ozellik->id) }}"
                                             class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-2"
                                             title="Düzenle">
-                                            <i class="fas fa-edit"></i> Düzenle
+                                            <x-icon name="edit" class="w-4 h-4"/> Düzenle
                                         </a>
                                     </td>
                                 </tr>

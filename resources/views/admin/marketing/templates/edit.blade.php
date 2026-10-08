@@ -15,15 +15,15 @@
         <div class="flex items-center gap-3">
             <button @click="previewTemplate()"
                     class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-none">
-                <i class="fas fa-eye mr-2"></i>Preview
+                <x-icon name="eye" class="w-4 h-4"/>Preview
             </button>
             <button @click="saveTemplate()"
                     class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-none">
-                <i class="fas fa-save mr-2"></i>Kaydet
+                <x-icon name="save" class="w-4 h-4"/>Kaydet
             </button>
             <a href="{{ route('admin.marketing.templates.index') }}"
                class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-none">
-                <i class="fas fa-arrow-left mr-2"></i>Geri
+                <x-icon name="arrow-left" class="w-4 h-4"/>Geri
             </a>
         </div>
     </div>
@@ -84,7 +84,7 @@
                 </button>
                 <button @click="validateJson()"
                         class="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-slate-200 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 dark:bg-slate-900 dark:text-slate-300">
-                    <i class="fas fa-check-circle mr-1"></i>Validate
+                    <x-icon name="check" class="w-4 h-4" />Validate
                 </button>
             </div>
         </div>
