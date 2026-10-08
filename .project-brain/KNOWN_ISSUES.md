@@ -185,8 +185,9 @@
 | `[SUBSCRIPTION-GATE]`| `Kernel.php` | `SubscriptionMiddleware` route middleware alias'larında kayıtlı değil | Lisans/Abonelik kapıları bypass |
 | `[TRANSLATION-MOCK]`| `AITranslationService.php` | Mock prompt string return ediyor, translation tablosunu kirletiyor | Yanıltıcı çeviri verisi |
 | `[READ-MODEL-DRIFT]`| `IlanObserver.php:126` | `sorumlu_danisman_id` sorgulanıyor (kolon `danisman_id`) | CQRS okuma modelinde null danışman |
-| `[LOCATION-VIEW-500]` | `Admin\LocationController:22` | `admin.locations.index` blade dosyası fiziksel olarak yok | ✅ CLOSED (230209f6) |
-| `[ADDRESS-CLASS-500]` | `Admin\AddressController:13` | Olmayan `App\Models\Address` modelini import/kullanıyor | ✅ CLOSED (dccb0e73) |
+| `[LOCATION-VIEW-500]` | `Admin\LocationController:22` | `admin.locations.index` blade dosyası fiziksel olarak yok | ✅ CLOSED (230209f6) + DENETÇİ PASS |
+| `[LOCATION-FONTAWESOME-VIOLATION]` | `locations/show.blade.php` | 8 FontAwesome instance → SVG | ✅ CLOSED (26bc036b) + DENETÇİ PASS |
+| `[ADDRESS-CLASS-500]` | `Admin\AddressController:13` | Olmayan `App\\Models\\Address` modelini import/kullanıyor | ✅ CLOSED (dccb0e73) + DENETÇİ PASS |
 | `[TKGM-METHOD-500]`| `TKGMAutoFillJob:102` | `TKGMService::getParcelInfo()` metodu yok, kuyruk çöküyor | Fatal Call to Undefined Method |
 | `[TKGM-SCHEMA-LEAK]`| `TKGMLearningService:80` | `tkgm_queries` tablosunda olmayan `enlem`/`boylam` ve `aktiflik_durumu` kolonlarına yazıyor | SQL General Error (Column not found) |
 | `[BOSCH-FIELD-DRIFT]`| `FieldMcpController.php:81` | `ilanlar` tablosunda olmayan donanım kolonlarına (`alan_m2_verified_by_hardware` vb.) direkt update | SQL Unknown Column Error |
