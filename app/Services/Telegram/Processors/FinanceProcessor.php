@@ -319,6 +319,7 @@ class FinanceProcessor
         }
 
         $islem = FinansalIslem::create([
+            'tenant_id' => $user->tenant_id,
             'kisi_id' => $user->id,
             'islem_tipi' => $data['islem_tipi'],
             'miktar' => $data['miktar'],
