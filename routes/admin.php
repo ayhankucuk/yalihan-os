@@ -1131,7 +1131,6 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
         Route::post('/send-test-message', [App\Modules\TakimYonetimi\Controllers\Admin\TelegramBotController::class, 'sendTestMessage'])->name('send-test-message');
         Route::get('/webhook-info', [App\Modules\TakimYonetimi\Controllers\Admin\TelegramBotController::class, 'getWebhookInfo'])->name('webhook-info');
         Route::post('/update-settings', [App\Modules\TakimYonetimi\Controllers\Admin\TelegramBotController::class, 'updateSettings'])->name('update-settings');
-        Route::post('/send-test', [App\Modules\TakimYonetimi\Controllers\Admin\TelegramBotController::class, 'sendTestMessage'])->name('send-test');
         Route::get('/test', [App\Modules\TakimYonetimi\Controllers\Admin\TelegramBotController::class, 'testBot'])->name('test');
         Route::post('/generate-pairing-code', [App\Modules\TakimYonetimi\Controllers\Admin\TelegramBotController::class, 'generatePairingCode'])->name('generate-pairing-code');
     });
