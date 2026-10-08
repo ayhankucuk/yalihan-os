@@ -709,6 +709,8 @@ Route::prefix('owner')->name('owner.')->middleware(['web', 'check.owner'])->grou
     // 📩 Teklifler & Talepler (Task #16)
     Route::get('/teklifler', [OwnerTeklifController::class, 'index'])->name('teklifler.index');
     Route::get('/teklifler/{id}', [OwnerTeklifController::class, 'show'])->name('teklifler.show');
+    Route::post('/teklifler/{id}/accept', [OwnerTeklifController::class, 'accept'])->name('teklifler.accept');
+    Route::post('/teklifler/{id}/reject', [OwnerTeklifController::class, 'reject'])->name('teklifler.reject');
 
     // 💬 Danışmanla İletişim (Task #17)
     Route::get('/mesajlar', [OwnerMesajController::class, 'index'])->name('mesajlar.index');

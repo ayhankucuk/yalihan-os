@@ -46,14 +46,18 @@
                     </div>
                     
                     @if($teklif->teklif_durumu->value === 'beklemede')
-                        <div class="flex gap-3">
-                            <button class="rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-green-500 hover:shadow-md hover:shadow-green-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">
+                        <form method="POST" action="{{ route('owner.teklifler.accept', $teklif->id) }}" class="inline">
+                            @csrf
+                            <button type="submit" class="rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-green-500 hover:shadow-md hover:shadow-green-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">
                                 Kabul Et
                             </button>
-                            <button class="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 transition-all hover:-translate-y-0.5 hover:bg-gray-50 hover:shadow-md dark:bg-slate-700 dark:text-white dark:ring-slate-600 dark:hover:bg-slate-600">
+                        </form>
+                        <form method="POST" action="{{ route('owner.teklifler.reject', $teklif->id) }}" class="inline">
+                            @csrf
+                            <button type="submit" class="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 transition-all hover:-translate-y-0.5 hover:bg-gray-50 hover:shadow-md dark:bg-slate-700 dark:text-white dark:ring-slate-600 dark:hover:bg-slate-600">
                                 Reddet
                             </button>
-                        </div>
+                        </form>
                     @endif
                 </div>
 

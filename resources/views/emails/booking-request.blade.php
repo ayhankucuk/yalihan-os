@@ -103,6 +103,27 @@
             line-height: 1.6;
             white-space: pre-wrap;
         }
+        .action-buttons {
+            margin-top: 24px;
+            text-align: center;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            margin: 0 8px;
+        }
+        .btn-accept {
+            background: #10b981;
+            color: white;
+        }
+        .btn-reject {
+            background: #6b7280;
+            color: white;
+        }
         .footer {
             padding: 20px;
             text-align: center;
@@ -263,6 +284,17 @@
                     Müşteri Mesajı
                 </div>
                 <div class="text">{{ $booking['mesaj'] }}</div>
+            </div>
+            @endif
+
+            @if(!empty($booking['booking_reference']))
+            <div class="action-buttons">
+                <p style="margin-bottom: 16px; color: #6b7280; font-size: 14px;">
+                    Bu rezervasyon talebini yönetmek için aşağıdaki butonları kullanabilirsiniz.
+                </p>
+                <a href="{{ config('app.url') }}/admin/yazlik-kiralama/bookings" class="btn btn-accept">
+                    Yönet
+                </a>
             </div>
             @endif
         </div>

@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Owner;
  */
 
 use App\Http\Controllers\Controller;
+use App\Enums\TeklifDurumu;
 use App\Models\Eslesme;
 use App\Models\Ilan;
 use App\Models\Teklif;
@@ -65,5 +66,51 @@ class OwnerTeklifController extends Controller
             ->firstOrFail();
 
         return view('owner.teklifler.show', compact('teklif'));
+    }
+
+    /**
+     * Teklifi kabul et.
+     */
+    public function accept(Request $request, $id)
+    {
+        $user = auth()->user();
+
+        $teklif = Teklif::where('id', $id)
+            ->whereHas('ilan', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->firstOrFail();
+
+        if ($teklif->teklif_durumu->value !== TeklifDurumu::BEKLEMEDE->value) {
+            return redirect()->back()->with('error', 'Bu teklif zaten işlenmiş.');
+        }
+
+        $teklif->update(['teklif_durumu' => TeklifDurumu::KABUL_EDILDI]);
+
+        return redirect()->route('owner.teklifler.show', $id)
+            ->with('success', 'Teklif kabul edildi.');
+    }
+
+    /**
+     * Teklifi reddet.
+     */
+    public function reject(Request $request, $id)
+    {
+        $user = auth()->user();
+
+        $teklif = Teklif::where('id', $id)
+            ->whereHas('ilan', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->firstOrFail();
+
+        if ($teklif->teklif_durumu->value !== TeklifDurumu::BEKLEMEDE->value) {
+            return redirect()->back()->with('error', 'Bu teklif zaten işlenmiş.');
+        }
+
+        $teklif->update(['teklif_durumu' => TeklifDurumu::REDDEDILDI]);
+
+        return redirect()->route('owner.teklifler.show', $id)
+            ->with('success', 'Teklif reddedildi.');
     }
 }
