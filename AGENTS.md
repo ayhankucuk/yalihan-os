@@ -381,3 +381,86 @@ Every writing agent MUST operate in its own Git worktree on a dedicated branch. 
 
 ### Project Brain Updates
 After material work, update `.project-brain/PROJECT_STATE.md`, `FEATURE_MATRIX.md`, `EVIDENCE_INDEX.md`, and `KNOWN_ISSUES.md` as applicable. Record important architectural choices in `DECISION_LOG.md`.
+
+---
+
+## 🧠 YALIHAN ENGINE — Adaptive Problem Analysis
+
+> **Her problem için aynı analiz derinliğini kullanma.**
+
+### Problem Seviyeleri
+
+| Seviye | Tip | Analiz | Örnek |
+|--------|-----|--------|-------|
+| **LEVEL 1** | Routine | Direkt bounded fix + regression | "X dosyası eksik" |
+| **LEVEL 2** | Recurring | 5N1K + root cause | Tekrarlayan route hatası |
+| **LEVEL 3** | Dependency Risk | 5N1K + kırılma/çatlak/chain | Paylaşılan model etkileniyor |
+| **LEVEL 4** | Critical | Tam analiz + cross-impact + karşı-olgusal | Güvenlik/tenant isolation |
+
+### 5N1K Analiz
+
+| Soru | Ne Sorar? |
+|------|-----------|
+| **Ne?** | Sorun nedir? |
+| **Neden?** | Sorun neden oluştu? |
+| **Nasıl?** | Sorun nasıl meydana geldi? |
+| **Nerede?** | Hangi sistem/modülde? |
+| **Ne zaman?** | Ne zaman başladı? |
+| **Kim?** | Hangi bileşen sorumlu? |
+
+### Zincirsel Analiz (LEVEL 3-4)
+
+```
+Kırılma → Çatlak → Zincirleme Etki
+```
+
+- **Kırılma:** Etkilenen dosya/servis
+- **Çatlak:** Bağımlılıklar
+- **Zincirleme:** Workflow etkisi
+
+### Karşı-Olgusal Analiz (LEVEL 4)
+
+> "A hiç yaşanmasaydı B yine ortaya çıkar mıydı?"
+
+### Kanıt Kuralları
+
+| Etiket | Anlamı |
+|--------|--------|
+| `INFERRED` | Olası çatlak (kanıt yok) |
+| `UNKNOWN` | Doğrulanmamış bağlantı |
+| `REPO_VERIFIED` | Kod incelemesi geçti |
+| `TEST_VERIFIED` | Testler geçti |
+
+### Yükseltme Kuralı (ESCALATION)
+
+> Sorun küçük başlasa bile **ortak mekanizmayı** etkilediği kanıtlanırsa → seviyeyi yükselt.
+
+### Kapsam Kuralı (SCOPE)
+
+> Bağlı sistemde ayrı bir sorun bulunursa → mevcut fix'e **gizlice ekleme**. Ayrı remediation candidate oluştur.
+
+### Verimlilik Kuralı (EFFICIENCY)
+
+> - Gereksiz rapor üretme
+> - Gereksiz agent oluşturma
+> - Her problemde kapsamlı analiz yapma
+
+### Human Gate
+
+| Karar | Kim Alır? |
+|-------|-----------|
+| Business kararı | Ayhan |
+| Mimari karar | Ayhan |
+| Güvenlik kararı | Ayhan |
+| Production deploy | Ayhan |
+| **Rutin teknik karar** | **ATLAS** |
+
+### Hedef
+
+```
+Sorunu çöz.
+Bağlı sistemlerde gerçek hasar olup olmadığını gerektiği kadar kontrol et.
+Regression ile güvenceye al.
+Bağımsız doğrula.
+Sonraki işe geç.
+```
