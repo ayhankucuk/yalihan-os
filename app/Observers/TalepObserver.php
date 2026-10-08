@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Enums\IlanDurumu;
+use App\Enums\TalepDurumu;
 
 use App\Events\TalepReceived;
 use App\Models\Talep;
@@ -23,7 +23,7 @@ class TalepObserver
     public function created(Talep $talep): void
     {
         // Sadece aktif talepler için event fire et
-        if ($talep->talep_durumu === IlanDurumu::YAYINDA->value || $talep->talep_durumu === 'active') {
+        if ($talep->talep_durumu === TalepDurumu::AKTIF->value || $talep->talep_durumu === 'active') {
             event(new TalepReceived($talep));
         }
     }
