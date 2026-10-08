@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Events\IlanYayinlandiEvent;
 use App\Jobs\AITranslation\TranslateListingJob;
 use App\Models\Ilan;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,11 @@ class IlanObserver
         // Yalnızca başlık veya açıklama değiştiyse veya yeni kayıt ise çeviri tetikle
         if ($ilan->wasRecentlyCreated || $ilan->wasChanged(['baslik', 'aciklama'])) {
             TranslateListingJob::dispatch($ilan);
+        }
+
+        // İlan yayın durumu 'aktif'e geçtiğinde event dispatch et
+        if ($ilan->wasChanged('yayin_durumu') && $ilan->yayin_durumu === 'aktif') {
+            IlanYayinlandiEvent::dispatch($ilan);
         }
 
         // CQRS Projeksiyonlarını Eşzamanla
