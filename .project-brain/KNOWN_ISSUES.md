@@ -179,7 +179,7 @@
 | `[API-IMPORT]` | `MobileLeadController.php:12` ✅ | Yanlış `App\Models\V2\Ilan` import edilmiş | ✅ STALE (V2\Ilan mevcut) |
 | `[TELEGRAM-ALERT]` | `TelegramService.php` ✅ | Olmayan `$user->gorevler()` ve `ilce->name` erişimi | ✅ STALE (çağrı yok) |
 | `[MATCHING-MISMATCH]`| `SmartPropertyMatcherAI.php`| Para birimi dönüşümü yok; uyumsuz yayın durumu filtreleri | Yanlış müşteri-ilan eşleşmesi |
-| `[ANALYTICS-VIEW]` | `AnalyticsDashboardController.php`| View `$analytics['form_analytics']` bekliyor, controller `$metrics` veriyor | Undefined array key fatal |
+| `[ANALYTICS-VIEW]` | `AnalyticsDashboardController.php` | View `$analytics['form_analytics']` bekliyor, controller `$metrics` veriyor | ✅ STALE (View `?? 0` fallback kullanıyor - crash yok) |
 | `[ROUTE-DEAD-LINK]`| `MenuItemsController.php:409` | Olmayan `admin.analytics.dashboard` rota kontrolü | Kırık navigasyon menüsü |
 | `[CORTEX-ADAPTER]` | Cortex Provider'lar ✅ | `AITaskType::RECOMMEND_NEXT_ACTIONS` match dalı eksik | ✅ STALE (routing vs execution ayrı) |
 | `[SUBSCRIPTION-GATE]`| `Kernel.php` | `SubscriptionMiddleware` route middleware alias'larında kayıtlı değil | Lisans/Abonelik kapıları bypass |
@@ -189,7 +189,7 @@
 | `[LOCATION-FONTAWESOME-VIOLATION]` | `locations/show.blade.php` | 8 FontAwesome instance → SVG | ✅ CLOSED (26bc036b) + DENETÇİ PASS |
 | `[ADDRESS-CLASS-500]` | `Admin\AddressController:13` | Olmayan `App\\Models\\Address` modelini import/kullanıyor | ✅ CLOSED (dccb0e73) + DENETÇİ PASS |
 | `[TKGM-METHOD-500]`| `TKGMAutoFillJob:102` | `TKGMService::getParcelInfo()` metodu yok, kuyruk çöküyor | ✅ CLOSED (d0ac9559) + DENETÇİ PASS |
-| `[TKGM-SCHEMA-LEAK]`| `TKGMLearningService:80` | `tkgm_queries` tablosunda olmayan `enlem`/`boylam` ve `aktiflik_durumu` kolonlarına yazıyor | SQL General Error (Column not found) |
+| `[TKGM-SCHEMA-LEAK]`| `TKGMLearningService:80` | `tkgm_queries` tablosunda olmayan `enlem`/`boylam` ve `aktiflik_durumu` kolonlarına insert | SQL General Error (Column not found) |
 | `[BOSCH-FIELD-DRIFT]`| `FieldMcpController.php:81` | `ilanlar` tablosunda olmayan donanım kolonlarına (`alan_m2_verified_by_hardware` vb.) direkt update | SQL Unknown Column Error |
 | `[TELESCOPE-UNPRUNED]`| `Kernel.php` | `telescope:prune` komutu schedule edilmemiş | Veritabanı disk dolması / çökme |
 | `[GUEST-LISTING-BLACKOUT]`| `TenantScope.php:30` | Misafir vitrininde (`/ilanlar`, `/`) tenant context yokken fail-closed `1=0` ile tüm vitrin boş dönüyor | Vitrinde 0 İlan (Public Blackout) |
@@ -215,7 +215,7 @@
 | `[KOMISYON-SCHEMA-MISMATCH]`| `Komisyon.php:14` vs `mysql-schema.sql` | `Komisyon` modeline `BelongsToTenant` eklenmiş fakat DB tablosunda `tenant_id` kolonu yok | SQL Column Not Found (1054) / Finans Modülü Çökmesi |
 | `[KOMISYON-LEDGER-DECOUPLING]`| `KomisyonService::storeCommission()` | Danışman komisyonu hesaplanıyor ancak `FinancialLedgerService` çift taraflı deftere işlenmiyor | Muhasebe Kopukluğu (Tahakkuk eden komisyon deftere girmiyor) |
 | `[AI-TELEMETRY-ARG-MISMATCH]`| `DeepSeekCortexProvider.php:79` ✅ | `logFailure` imzası `$errorMessage` beklerken provider HTTP integer status (`$response->status()`) geçiyor | ✅ CLOSED (19c9a85b) |
-| `[AI-MODEL-GUARD-DEADLOCK]` | `AIOrchestrator:312` vs `DeepSeekCortexProvider:53-57` | `AIOrchestrator` `config('ai.default_model')` (null) yolluyor, DeepSeek provider `expectedModel` ile eşleşmeyince `AIModelMismatchException` fırlatıyor | 500 AIModelMismatchException / İlan Üretim Kilitlenmesi |
+| `[AI-MODEL-GUARD-DEADLOCK]` | `AIOrchestrator:312` vs `DeepSeekCortexProvider:53-57` | `AIOrchestrator` `config('ai.default_model')` (null) yolluyor, DeepSeek provider `expectedModel` ile eşleşmeyince `AIModelMismatchException` fırlatıyor | ✅ STALE (null durumunda crash yok, default 'deepseek-chat') |
 | `[AI-CIRCUIT-BREAKER-SPLIT]`| `AIOrchestrator:27` vs `DeepSeekCortexProvider:27` | `AIOrchestrator` `Monetization\AiBudgetGuard` (kredi bazlı) kullanırken DeepSeek Provider `App\Services\AI\AiBudgetGuard` (token bazlı) bekliyor | Type Error / İki Ayrı Budget Guard Çakışması |
 | `[USER-DELETE-RESTRICT-CRASH]`| `DeleteUserAction.php:11` | Kullanıcı silinirken `ON DELETE RESTRICT` FK ilişkileri çöküyor | ✅ STALE (SoftDeletes kullanılıyor, FK tetiklenmiyor) |
 | `[GDPR-RIGHT-TO-FORGET-VOID]` | Core CRM & User Architecture | KVKK/GDPR Unutulma Hakkı (Right to be Forgotten) için anonimizasyon pipeline'ı veya rıza kütüğü mevcut değil | Hukuki Risk & KVKK Madde 7/11 İhlali |
@@ -225,7 +225,7 @@
 | `[HERMES-QUEUE-OBJECT-GRAPH-SERIALIZATION-EXPLOSION]` | `HermesDispatcher.php:96` vs `AsyncHandlerDispatchJob.php:43` | AsyncHandlerDispatchJob constructor'ına servis nesnesi ($handler) enjekte ediliyor; tüm servis grafı Redis'e serialize edilip SerializationException riski yaratıyor | Kuyruk Şişmesi & SerializationException Çökmesi |
 | `[N8N-AI-USECASES-UNQUALIFIED-MODEL-CRASH]` | `ProcessAIIlanTaslagiUseCase.php:5` | Olmayan `App\Models\AIIlanTaslagi`, `AIMessage`, `AIContractDraft` sınıflarını import ediyor | ✅ STALE (UseCase mevcut ama çağrılmıyor) |
 | `[N8N-AI-TENANT-ORPHAN-INJECTION]` | `AIIlanTaslagiService.php:65-72, 130-139`, `AIIlanTaslagi.php:7-20` | `AIIlanTaslagi` modeli BaseModel'i değil Eloquent'i extend ediyor, tenant_id yok; taslak ilana çevrilirken tenant_id atanmıyor | Yetim İlan / Kiracı İzolasyon İhlali |
-| `[PHOTO-SERVICE-SCHEMA-DESYNC-AND-LEAK]` | `PhotoService.php:36-40, 92-97, 180-184` vs `mysql-schema.sql:1985-2001` | Tabloda olmayan `category` kolonuna sorgu atılıyor; dosya silmede `dosya_yolu` yerine olmayan `path`/`thumbnail` okunup diskte dosya yetim kalıyor | SQL Column Not Found (1054) & Disk Sızıntısı |
+| `[PHOTO-SERVICE-SCHEMA-DESYNC-AND-LEAK]` | `PhotoService.php:36-40, 92-97, 180-184` vs `mysql-schema.sql:2037` | PhotoService `category` kolonu kullanıyor ama tablo `ilan_fotograflari`'nda yok; `path`/`thumbnail` accessor'lar mevcut | ✅ STALE (PhotoService orphan code - hiçbir yerde kullanılmıyor) |
 | `[ADMIN-PHOTO-CROSS-TENANT-DATA-LEAK]` | `PhotoController.php:387-400`, `Photo.php:10-14` ✅ | `Photo` modelinde `BelongsToTenant` yok; admin galeri sorgusunda kiracı filtrelemesi yapılmadan tüm sistem fotoğrafları listeleniyor | ✅ STALE (BelongsToTenant mevcut) |
 | `[SUBSCRIPTION-GATE-COMPLETE-DISCONNECT]` | `SubscriptionMiddleware.php:27-35`, `Kernel.php:77-114` | SubscriptionMiddleware alias'larda yok, hiçbir rotaya bağlı değil; bağlı olsa bile App\Models\Tenant modelinde subscription metodu yok | Lisans ve Abonelik Kapılarının Tamamen Devre Dışı Olması |
 | `[SAAS-TENANT-MODEL-DUAL-SPLIT]` | `Tenant.php:13` vs `SaaS\Tenant.php:11` | İki ayrı Tenant modeli aynı tabloya bakıyor; biri BaseModel extend edip auth'ta kullanılırken diğeri izole kalıyor | Model Çatallanması & İlişki Uyuşmazlığı |
