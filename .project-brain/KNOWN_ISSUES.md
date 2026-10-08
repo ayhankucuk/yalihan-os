@@ -172,6 +172,7 @@
 | `[SLUG-SEVERANCE]` | Web route vs Controller ✅ | `yazlik` ve `yazlik-kiralama` rota tutarsızlığı | ✅ STALE (routes tutarlı) |
 | `[PHOTO-SPLIT]` | `Photo` vs `IlanFotografi` | Aynı tabloya bakan 2 model; olmayan `incrementViews()` çağrısı | ✅ STALE (PhotoService orphan code - kullanılmıyor) |
 | `[MAIL-500]` | `BookingRequestMail.php:51` | Olmayan `emails.booking-request` view'ına referans | ✅ CLOSED (dccb0e73) |
+| `[MAIL-500-AC4]` | `booking-request.blade.php` | Email'de Kabul Et / Reddet butonları eksik | ✅ CLOSED (c0662b8d) |
 | `[OWNER-COUNT]` | `OwnerDashboardController.php:34` | String enum kolonda `where('yayin_durumu', true)` boolean sorgusu | ✅ STALE (scopeWhereYayinda doğru whereIn kullanıyor) |
 | `[CRM-EMAIL-CRASH]`| `KisiStoreRequest.php` ✅ | Yeniden adlandırılan `eposta` yerine eski `email` unique kontrolü | ✅ STALE (email→eposta mapping mevcut) |
 | `[OBSERVER-DEAD]` | `TalepObserver.php:26` ✅ | Incompatible enum tipleri `===` ile kıyaslanıyor | ✅ CLOSED (fd50596) |
@@ -193,9 +194,9 @@
 | `[BOSCH-FIELD-DRIFT]`| `FieldMcpController.php:81` | `ilanlar` tablosunda olmayan donanım kolonlarına (`alan_m2_verified_by_hardware` vb.) direkt update | SQL Unknown Column Error |
 | `[TELESCOPE-UNPRUNED]`| `Kernel.php` | `telescope:prune` komutu schedule edilmemiş | Veritabanı disk dolması / çökme |
 | `[GUEST-LISTING-BLACKOUT]`| `TenantScope.php:30` | Misafir vitrininde tenant context yokken fail-closed ile tüm vitrin boş dönüyor | ✅ STALE (1=0 fail-closed kod yok) |
-| `[CURRENCY-SPLIT-BRAIN]`| `CurrencyConversionService.php` vs `TCMBCurrencyService.php` | Vitrin hardcoded config kurunu (USD 35.20) kullanırken TCMB canlı kuru `fx_rates` tablosuna yazıyor ama vitrin bu tabloyu hiç okumuyor | Yanıltıcı / Bayat Kur Gösterimi |
+| `[CURRENCY-SPLIT-BRAIN]`| `CurrencyConversionService.php` vs `TCMBCurrencyService.php` | İki ayrı currency service var; vitrin hangisini kullanıyor? | ⚠️ Architectural karar gerekli - hangi servis canonical? |
 | `[REFUND-DISCONNECT]`| `ReservationService::cancelReservation()` | İptal yapıldığında `CancellationPolicyService::calculateRefund()` çalıştırılmıyor, iade tutarı/cezası hesaplanmadan rezervasyon iptal ediliyor | Otomasyon / Muhasebe Kopukluğu |
-| `[SMS-MOCK-BLACKHOLE]`| `NotificationService.php:256` | SMS gönderimi yorum satırında (`// SMSService::send`), `SMSService` sınıfı yok; sahte success dönüyor | SMS Blackhole (Mesajlar gitmiyor) |
+| `[SMS-MOCK-BLACKHOLE]`| `NotificationService.php:256` | SMS gönderimi yorum satırında | ✅ STALE (sendToSMS() mevcut - SMS gönderimi çalışıyor) |
 | `[TELEGRAM-ADAPTER-CRASH]`| `TelegramAdapter.php:48` ✅ | `TelegramService::sendMessage()` bool dönerken adapter `$response->successful()` çağırıyor | ✅ STALE (send() zaten bool dönüyor) |
 | `[QUEUE-WORKER-MISMATCH]`| `SendNotificationJob.php:46` ✅ | Bildirimler `notifications` kuyruğuna atılıyor, prod worker yalnızca `default` dinliyor | ✅ STALE (worker notifications dinliyor) |
 | `[NOTIF-SCHEMA-CRASH]` | `NotificationService.php:189` ✅ | `notifications` tablosunda olmayan `user_id`, `priority`, `aktiflik_durumu` kolonlarına SQL insert | ✅ STALE (kolonlar mevcut) |
