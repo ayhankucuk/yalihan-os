@@ -191,7 +191,7 @@
 | `[ADDRESS-CLASS-500]` | `Admin\AddressController:13` | Olmayan `App\\Models\\Address` modelini import/kullanıyor | ✅ CLOSED (dccb0e73) + DENETÇİ PASS |
 | `[TKGM-METHOD-500]`| `TKGMAutoFillJob:102` | `TKGMService::getParcelInfo()` metodu yok, kuyruk çöküyor | ✅ CLOSED (d0ac9559) + DENETÇİ PASS |
 | `[TKGM-SCHEMA-LEAK]`| `TKGMLearningService:80` | `tkgm_queries` tablosunda olmayan `enlem`/`boylam` ve `aktiflik_durumu` kolonlarına insert | SQL General Error (Column not found) |
-| `[BOSCH-FIELD-DRIFT]`| `FieldMcpController.php:81` | `ilanlar` tablosunda olmayan donanım kolonlarına (`alan_m2_verified_by_hardware` vb.) direkt update | SQL Unknown Column Error |
+| `[BOSCH-FIELD-DRIFT]`| `FieldMcpController.php:81` | `alan_m2_verified_by_hardware` kolonu mevcut değil | ⚠️ CLOSED-PENDING (migration oluşturuldu - Ayhan Human Gate gerekli) |
 | `[TELESCOPE-UNPRUNED]`| `Kernel.php` | `telescope:prune` komutu schedule edilmemiş | ✅ CLOSED (9b42a2bf) + DENETÇİ PASS |
 | `[GUEST-LISTING-BLACKOUT]`| `TenantScope.php:30` | Misafir vitrininde tenant context yokken fail-closed ile tüm vitrin boş dönüyor | ✅ STALE (1=0 fail-closed kod yok) |
 | `[CURRENCY-SPLIT-BRAIN]`| `CurrencyConversionService.php` vs `TCMBCurrencyService.php` | İki ayrı currency service var; vitrin hangisini kullanıyor? | ⚠️ Architectural karar gerekli - hangi servis canonical? |
