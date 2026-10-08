@@ -7108,4 +7108,38 @@ CREATE TABLE IF NOT EXISTS `ai_conversations` (
   KEY `ai_conversations_ulke_id_aktiflik_durumu_index` (`ulke_id`,`aktiflik_durumu`),
   CONSTRAINT `ai_conversations_communication_id_foreign` FOREIGN KEY (`communication_id`) REFERENCES `communications` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+--
+-- Table: addresses
+--
+DROP TABLE IF EXISTS `addresses`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `addresses` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint unsigned NOT NULL,
+  `il_id` bigint unsigned DEFAULT NULL,
+  `ilce_id` bigint unsigned DEFAULT NULL,
+  `mahalle_id` bigint unsigned DEFAULT NULL,
+  `address` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `postal_code` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `latitude` decimal(10,8) DEFAULT NULL,
+  `longitude` decimal(11,8) DEFAULT NULL,
+  `aktiflik_durumu` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `addresses_tenant_id_foreign` (`tenant_id`),
+  KEY `addresses_il_id_foreign` (`il_id`),
+  KEY `addresses_ilce_id_foreign` (`ilce_id`),
+  KEY `addresses_mahalle_id_foreign` (`mahalle_id`),
+  KEY `addresses_tenant_id_il_id_index` (`tenant_id`,`il_id`),
+  KEY `addresses_tenant_id_ilce_id_index` (`tenant_id`,`ilce_id`),
+  KEY `addresses_tenant_id_aktiflik_durumu_index` (`tenant_id`,`aktiflik_durumu`),
+  CONSTRAINT `addresses_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `addresses_il_id_foreign` FOREIGN KEY (`il_id`) REFERENCES `iller` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `addresses_ilce_id_foreign` FOREIGN KEY (`ilce_id`) REFERENCES `ilceler` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `addresses_mahalle_id_foreign` FOREIGN KEY (`mahalle_id`) REFERENCES `mahalleler` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
