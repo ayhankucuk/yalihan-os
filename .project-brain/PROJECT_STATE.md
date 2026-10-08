@@ -522,4 +522,6 @@ VERIFICATION_RECEIPT_V1:
 ### Ready for
 Next real remediation task through automated handoff pipeline.
 HOTSPOT_LOCK:database/migrations/2026_09_17_000002_add_proje_id_to_ilanlar_table.php:ADR_CANONICAL_CONVERGENCE_01_IMPLEMENTER:2026-10-07T07:53:55Z:3600
+HOTSPOT_LOCK:database/migrations/2026_10_08_143030_create_addresses_table.php:ADDRESS-CLASS-500:2026-10-08T14:30:30Z:3600
+HOTSPOT_LOCK:database/schema/mysql-schema.sql:ADDRESS-CLASS-500:2026-10-08T14:30:30Z:3600
 HOTSPOT_LOCK:config/services.php:yalihan-atlas:2026-10-07T17:46:21Z:3600
