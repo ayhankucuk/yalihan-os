@@ -192,7 +192,7 @@
 | `[TKGM-METHOD-500]`| `TKGMAutoFillJob:102` | `TKGMService::getParcelInfo()` metodu yok, kuyruk çöküyor | ✅ CLOSED (d0ac9559) + DENETÇİ PASS |
 | `[TKGM-SCHEMA-LEAK]`| `TKGMLearningService:80` | `tkgm_queries` tablosunda olmayan `enlem`/`boylam` ve `aktiflik_durumu` kolonlarına insert | SQL General Error (Column not found) |
 | `[BOSCH-FIELD-DRIFT]`| `FieldMcpController.php:81` | `ilanlar` tablosunda olmayan donanım kolonlarına (`alan_m2_verified_by_hardware` vb.) direkt update | SQL Unknown Column Error |
-| `[TELESCOPE-UNPRUNED]`| `Kernel.php` | `telescope:prune` komutu schedule edilmemiş | Veritabanı disk dolması / çökme |
+| `[TELESCOPE-UNPRUNED]`| `Kernel.php` | `telescope:prune` komutu schedule edilmemiş | ✅ CLOSED (9b42a2bf) + DENETÇİ PASS |
 | `[GUEST-LISTING-BLACKOUT]`| `TenantScope.php:30` | Misafir vitrininde tenant context yokken fail-closed ile tüm vitrin boş dönüyor | ✅ STALE (1=0 fail-closed kod yok) |
 | `[CURRENCY-SPLIT-BRAIN]`| `CurrencyConversionService.php` vs `TCMBCurrencyService.php` | İki ayrı currency service var; vitrin hangisini kullanıyor? | ⚠️ Architectural karar gerekli - hangi servis canonical? |
 | `[REFUND-DISCONNECT]`| `ReservationService::cancelReservation()` | İptal yapıldığında `CancellationPolicyService::calculateRefund()` çalıştırılmıyor, iade tutarı/cezası hesaplanmadan rezervasyon iptal ediliyor | Otomasyon / Muhasebe Kopukluğu |
