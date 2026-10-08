@@ -259,7 +259,7 @@ Tenant model canonicalization + migration ile schema cleanup
 
 ---
 
-## CDA-REZ-01: AUTHORITY_MODEL_DRIFT — IlanReservation/PropertyReservation Split-Brain (ACTIVE / INVESTIGATION REQUIRED)
+## CDA-REZ-01: AUTHORITY_MODEL_DRIFT — IlanReservation/PropertyReservation Split-Brain (STALE_FINDING ✅)
 
 ### 5N1K Raporu
 
