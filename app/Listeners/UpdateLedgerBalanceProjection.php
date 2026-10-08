@@ -17,8 +17,11 @@ class UpdateLedgerBalanceProjection
      */
     public function handle(LedgerDoubleEntryRecorded $event): void
     {
+        $tenantId = $event->debitEntry->tenant_id;
+
         // 1. Update the Debit Account Balance Projection
         $this->updateProjection(
+            $tenantId,
             $event->debitEntry->account_id,
             $event->debitEntry->currency,
             $event->debitEntry->debit_amount,
@@ -27,6 +30,7 @@ class UpdateLedgerBalanceProjection
 
         // 2. Update the Credit Account Balance Projection
         $this->updateProjection(
+            $tenantId,
             $event->creditEntry->account_id,
             $event->creditEntry->currency,
             0,
@@ -37,10 +41,11 @@ class UpdateLedgerBalanceProjection
     /**
      * Upserts the projection table efficiently.
      */
-    private function updateProjection(int $accountId, string $currency, float $addDebit, float $addCredit): void
+    private function updateProjection(int $tenantId, int $accountId, string $currency, float $addDebit, float $addCredit): void
     {
         // Use pessimistic lock to prevent concurrent update anomalies in the read model
-        $balance = LedgerBalance::where('account_id', $accountId)
+        $balance = LedgerBalance::where('tenant_id', $tenantId)
+            ->where('account_id', $accountId)
             ->where('currency', $currency)
             ->lockForUpdate()
             ->first();
@@ -49,6 +54,7 @@ class UpdateLedgerBalanceProjection
             // Because we lock for update, if it doesn't exist, we can safely create it
             // Assuming no other transaction just created it (race condition mitigated by the lock above).
             $balance = new LedgerBalance();
+            $balance->tenant_id = $tenantId;
             $balance->account_id = $accountId;
             $balance->currency = $currency;
             $balance->total_debit = 0;
