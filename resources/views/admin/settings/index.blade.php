@@ -48,10 +48,10 @@
             @method('POST')
 
             {{-- Modern Tab Navigation --}}
-            <div class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                <div class="border-b border-gray-200 dark:border-slate-700 dark:border-slate-800">
+            <div class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-slate-900 dark:shadow-none">
+                <div class="border-b border-gray-200 dark:border-gray-700">
                     {{-- Mobile: Dropdown selector --}}
-                    <div class="md:hidden p-4 border-b border-gray-200 dark:border-slate-700 dark:border-slate-800">
+                    <div class="md:hidden p-4 border-b border-gray-200 dark:border-gray-700">
                         <label for="mobile-tab-select" class="sr-only">Sekme Seç</label>
                         <select id="mobile-tab-select"
                             class="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
@@ -183,7 +183,7 @@
                     </div>
 
                     {{-- Form Actions --}}
-                    <div class="mt-6 flex items-center justify-between border-t border-gray-200 pt-6 dark:border-slate-700 dark:border-slate-800">
+                    <div class="mt-6 flex items-center justify-between border-t border-gray-200 pt-6 dark:border-gray-700">
                         <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -292,9 +292,7 @@
 
         // Reset to Defaults
         function resetToDefaults() {
-            if (confirm('Tüm ayarları varsayılan değerlere döndürmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
-                alert('Bu özellik yakında eklenecek.');
-            }
+            // TODO: Implement reset functionality
         }
 
         // Form Validation

@@ -13,7 +13,7 @@
     <div class="space-y-6">
         <x-admin.form-field label="Sahibinden.com API Anahtarı" name="sahibinden_api_key" :error="$errors->first('sahibinden_api_key')">
             <div class="relative">
-                <input type="password" id="sahibinden_api_key" name="sahibinden_api_key"
+                <input type="text" id="sahibinden_api_key" name="sahibinden_api_key" autocomplete="off"
                     value="{{ old('sahibinden_api_key', $settings['sahibinden_api_key'] ?? '') }}"
                     class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 pr-10 text-gray-900 placeholder-gray-400 shadow-sm transition-all duration-200 hover:shadow-md focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-gray-500 dark:shadow-none"
                     placeholder="API anahtarınızı girin">
@@ -29,7 +29,7 @@
 
         <x-admin.form-field label="Hepsiemlak API Anahtarı" name="hepsiemlak_api_key" :error="$errors->first('hepsiemlak_api_key')">
             <div class="relative">
-                <input type="password" id="hepsiemlak_api_key" name="hepsiemlak_api_key"
+                <input type="text" id="hepsiemlak_api_key" name="hepsiemlak_api_key" autocomplete="off"
                     value="{{ old('hepsiemlak_api_key', $settings['hepsiemlak_api_key'] ?? '') }}"
                     class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 pr-10 text-gray-900 placeholder-gray-400 shadow-sm transition-all duration-200 hover:shadow-md focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-gray-500 dark:shadow-none"
                     placeholder="API anahtarınızı girin">

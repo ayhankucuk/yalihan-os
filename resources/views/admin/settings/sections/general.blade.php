@@ -26,7 +26,7 @@
             @php
                 $defaultCurr = $currencies->firstWhere('varsayilan_durumu', true) ?? $currencies->firstWhere('code', 'TRY');
             @endphp
-            <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-slate-800/60">
+            <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-slate-800">
                 <div class="flex items-center gap-2">
                     <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-800 dark:bg-green-900/40 dark:text-green-300">
                         {{ $defaultCurr->symbol ?? '₺' }}
@@ -52,7 +52,7 @@
             @php
                 $defaultLang = $languages->firstWhere('varsayilan_durumu', true) ?? $languages->firstWhere('code', 'tr');
             @endphp
-            <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-slate-800/60">
+            <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-slate-800">
                 <div class="flex items-center gap-2">
                     <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
                         {{ strtoupper($defaultLang->code ?? 'TR') }}
