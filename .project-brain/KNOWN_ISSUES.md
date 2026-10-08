@@ -183,7 +183,7 @@
 | `[ANALYTICS-VIEW]` | `AnalyticsDashboardController.php` | View `$analytics['form_analytics']` bekliyor, controller `$metrics` veriyor | ✅ STALE (View `?? 0` fallback kullanıyor - crash yok) |
 | `[ROUTE-DEAD-LINK]`| `MenuItemsController.php:409` | Olmayan `admin.analytics.dashboard` rota kontrolü | ✅ CLOSED (f0ddf54 - redirect eklendi) |
 | `[CORTEX-ADAPTER]` | Cortex Provider'lar ✅ | `AITaskType::RECOMMEND_NEXT_ACTIONS` match dalı eksik | ✅ STALE (routing vs execution ayrı) |
-| `[SUBSCRIPTION-GATE]`| `Kernel.php` | `SubscriptionMiddleware` mevcut ama route middleware alias'larında kayıtlı değil | ⚠️ Güvenlik gap - subscription kontrolü bypass ediliyor |
+| `[SUBSCRIPTION-GATE]`| `Kernel.php` | `SubscriptionMiddleware` mevcut ama route middleware alias'larında kayıtlı değil | ✅ CLOSED (t_a3b86553 - 14 AI route'a middleware eklendi) |
 | `[TRANSLATION-MOCK]`| `AITranslationService.php` | Mock prompt string return ediyor | ✅ STALE (orphan code - hiçbir yerde kullanılmıyor) |
 | `[READ-MODEL-DRIFT]`| `IlanObserver.php:132` | Read model `sorumlu_danisman_id` yazıyor, Ilan model `danisman_id` kullanıyor | ✅ CLOSED (t_dbbb3265 - observer mapping fixed) |
 | `[LOCATION-VIEW-500]` | `Admin\LocationController:22` | `admin.locations.index` blade dosyası fiziksel olarak yok | ✅ CLOSED (230209f6) + DENETÇİ PASS |
