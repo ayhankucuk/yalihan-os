@@ -57,7 +57,7 @@
         <!-- Filter Button -->
         <div class="flex items-end">
             <button id="filter-button" onclick="applyFilters()"
-                class="w-full h-10 rounded-xl bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-bold shadow-sm hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all active:scale-95 disabled:opacity-50 dark:shadow-none">
+                class="w-full h-10 rounded-xl bg-indigo-600 dark:bg-indigo-600 text-white text-sm font-bold shadow-sm hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all active:scale-95 disabled:opacity-50 dark:shadow-none">
                 <div class="flex items-center justify-center">
                     <svg id="filter-spinner" class="hidden animate-spin h-4 w-4 text-white mr-2" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

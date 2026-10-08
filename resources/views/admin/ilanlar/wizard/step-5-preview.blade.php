@@ -163,13 +163,13 @@
                 </div>
             </div>
             <div x-show="loading" class="flex items-center gap-2">
-                <div class="h-2 w-2 animate-ping rounded-full bg-blue-500"></div>
+                <div class="h-2 w-2 animate-ping rounded-full bg-blue-600"></div>
                 <span class="text-[10px] font-black uppercase tracking-widest text-blue-400">Piyasa Analizi
                     Yapılıyor...</span>
             </div>
             <div x-show="!loading && analysis" class="flex items-center gap-2">
                 <span
-                    class="rounded-full bg-blue-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-blue-400 border border-blue-500/20">Cortex
+                    class="rounded-full bg-blue-600/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-blue-400 border border-blue-500/20">Cortex
                     v2.4 Active</span>
             </div>
         </div>
@@ -202,9 +202,9 @@
                     <span
                         class="inline-block rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
                         :class="{
-                            'bg-green-500/20 text-green-400': analysis?.market_position === 'below',
-                            'bg-blue-500/20 text-blue-400': analysis?.market_position === 'fair',
-                            'bg-red-500/20 text-red-400': analysis?.market_position === 'above'
+                            'bg-green-600/20 text-green-400': analysis?.market_position === 'below',
+                            'bg-blue-600/20 text-blue-400': analysis?.market_position === 'fair',
+                            'bg-red-600/20 text-red-400': analysis?.market_position === 'above'
                         }"
                         x-text="analysis?.market_position === 'fair' ? 'Piyasa Değerinde' : (analysis?.market_position === 'below' ? 'Fırsat Fiyatı' : 'Piyasa Üstü')"></span>
                 </div>
@@ -235,7 +235,7 @@
                         <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <template x-for="detail in analysis?.explanation?.details" :key="detail">
                                 <div class="flex items-center gap-2 text-[11px] font-bold text-slate-400">
-                                    <div class="h-1 w-1 rounded-full bg-blue-500"></div>
+                                    <div class="h-1 w-1 rounded-full bg-blue-600"></div>
                                     <span x-text="detail"></span>
                                 </div>
                             </template>
@@ -248,7 +248,7 @@
                 <div class="flex items-center gap-2">
                     <span class="text-[10px] font-black uppercase tracking-wider text-slate-500">Güven Skoru:</span>
                     <div class="h-1.5 w-24 overflow-hidden rounded-full bg-slate-800">
-                        <div class="h-full rounded-full bg-blue-500" :style="`width: ${analysis?.confidence * 100}%`">
+                        <div class="h-full rounded-full bg-blue-600" :style="`width: ${analysis?.confidence * 100}%`">
                         </div>
                     </div>
                     <span class="text-[10px] font-black text-blue-400"

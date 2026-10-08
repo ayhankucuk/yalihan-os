@@ -53,7 +53,7 @@
                         <p class="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">Toplam İlan</p>
                         <p class="text-3xl font-bold text-blue-900 dark:text-blue-100">{{ $stats['toplam_ilan'] }}</p>
                     </div>
-                    <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -69,7 +69,7 @@
                         <p class="text-sm font-medium text-green-600 dark:text-green-400 mb-1">Aktif İlan</p>
                         <p class="text-3xl font-bold text-green-900 dark:text-green-100">{{ $stats['aktif_ilan'] }}</p>
                     </div>
-                    <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <div class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center shadow-lg">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -85,7 +85,7 @@
                         <p class="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">Son 30 Gün</p>
                         <p class="text-3xl font-bold text-purple-900 dark:text-purple-100">{{ $stats['son_30_gun'] }}</p>
                     </div>
-                    <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />

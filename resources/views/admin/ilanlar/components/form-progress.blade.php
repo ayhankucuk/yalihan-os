@@ -5,7 +5,7 @@
         <span id="form-progress-text" class="text-sm text-gray-500 dark:text-gray-400">%0 tamamlandı</span>
     </div>
     <div class="w-full bg-gray-200 dark:bg-slate-900 rounded-full h-2">
-        <div id="form-progress-bar" class="h-full bg-red-500 rounded-full transition-all duration-500"
+        <div id="form-progress-bar" class="h-full bg-red-600 rounded-full transition-all duration-500"
             style="width: 0%"></div>
     </div>
     <div class="flex items-center justify-between mt-1.5">

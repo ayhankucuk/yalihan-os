@@ -78,7 +78,7 @@
                 type="submit"
                 class="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white
                        hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300
-                       dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors">
+                       dark:bg-blue-600 dark:hover:bg-blue-600 transition-colors">
                 Giriş Linki Gönder
             </button>
         </form>

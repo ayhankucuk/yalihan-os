@@ -156,19 +156,19 @@
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 dark:text-slate-200">Quick Actions</h3>
                     <div class="space-y-3">
                         <button onclick="exportSession({{ $specificResult['id'] ?? 1 }}, 'pdf')"
-                                class="w-full flex items-center justify-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                                class="w-full flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-600 transition-colors">
                             <i class="fas fa-file-pdf mr-2"></i>
                             Export PDF
                         </button>
 
                         <button onclick="exportSession({{ $specificResult['id'] ?? 1 }}, 'excel')"
-                                class="w-full flex items-center justify-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                                class="w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-600 transition-colors">
                             <i class="fas fa-file-excel mr-2"></i>
                             Export Excel
                         </button>
 
                         <button onclick="rerunAnalysis({{ $specificResult['id'] ?? 1 }})"
-                                class="w-full flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                                class="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
                             <i class="fas fa-redo mr-2"></i>
                             Re-run Analysis
                         </button>

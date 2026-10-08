@@ -18,7 +18,7 @@
     <div class="flex items-center gap-3">
         @if($ilan->yayindami)
             <span class="inline-flex items-center gap-1.5 rounded-md bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400 dark:ring-green-500/20">
-                <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
+                <span class="h-1.5 w-1.5 rounded-full bg-green-600"></span>
                 Yayında
             </span>
         @else
@@ -223,7 +223,7 @@
                     <template x-for="(file, index) in selectedFiles" :key="index">
                         <div class="relative">
                             <img :src="file.preview" class="h-16 w-16 rounded-lg object-cover ring-1 ring-gray-200 dark:ring-slate-600">
-                            <button type="button" @click="removeFile(index)" class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600">
+                            <button type="button" @click="removeFile(index)" class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-600">
                                 <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
                         </div>
@@ -531,9 +531,9 @@
                 get barColor() {
                     if (!this.data) return 'bg-gray-300';
                     const p = this.data.completion_percentage || 0;
-                    return p >= 80 ? 'bg-green-500'
+                    return p >= 80 ? 'bg-green-600'
                          : p >= 50 ? 'bg-amber-500'
-                         : 'bg-red-500';
+                         : 'bg-red-600';
                 }
             };
         }

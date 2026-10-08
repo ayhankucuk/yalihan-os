@@ -86,9 +86,9 @@
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-slate-800 rounded-full h-2">
                                 <div class="h-2 rounded-full transition-all duration-500
-                            @if ($stat['percentage'] >= 80) bg-green-500
+                            @if ($stat['percentage'] >= 80) bg-green-600
                             @elseif($stat['percentage'] >= 50) bg-yellow-500
-                            @else bg-red-500 @endif"
+                            @else bg-red-600 @endif"
                                     style="width: {{ $stat['percentage'] }}%">
                                 </div>
                             </div>

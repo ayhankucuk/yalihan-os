@@ -47,7 +47,7 @@
                             unselected: 'bg-white text-red-600 dark:text-red-400 dark:bg-slate-900 border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20'
                         },
                         'FAST_MOVING': {
-                            selected: 'bg-orange-500 text-white border-transparent',
+                            selected: 'bg-orange-600 text-white border-transparent',
                             unselected: 'bg-white text-orange-600 dark:text-orange-400 dark:bg-slate-900 border border-orange-200 dark:border-orange-900/50 hover:bg-orange-50 dark:hover:bg-orange-900/20'
                         },
                         'WATCHLIST': {
@@ -212,7 +212,7 @@
                 getTierBgClass(tier) {
                     const map = {
                         'HOT_DEAL': 'bg-red-600 dark:bg-red-700',
-                        'FAST_MOVING': 'bg-orange-500 dark:bg-orange-600',
+                        'FAST_MOVING': 'bg-orange-600 dark:bg-orange-600',
                         'WATCHLIST': 'bg-yellow-500 dark:bg-yellow-600',
                         'LOW_SIGNAL': 'bg-slate-500 dark:bg-slate-600'
                     };
@@ -228,8 +228,8 @@
 
                 getActionBtnClass(tier) {
                     const map = {
-                        'HOT_DEAL': 'bg-red-600 hover:bg-red-500 focus:ring-red-200 dark:bg-red-700 dark:hover:bg-red-600',
-                        'FAST_MOVING': 'bg-orange-600 hover:bg-orange-500 focus:ring-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600',
+                        'HOT_DEAL': 'bg-red-600 hover:bg-red-600 focus:ring-red-200 dark:bg-red-700 dark:hover:bg-red-600',
+                        'FAST_MOVING': 'bg-orange-600 hover:bg-orange-600 focus:ring-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600',
                         'WATCHLIST': 'bg-slate-800 hover:bg-slate-700 focus:ring-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600',
                         'LOW_SIGNAL': 'bg-slate-400 hover:bg-slate-500 cursor-not-allowed dark:bg-slate-600',
                     };

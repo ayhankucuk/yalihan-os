@@ -29,32 +29,32 @@
         <div class="mb-6 rounded-lg bg-white p-4 shadow-sm dark:bg-slate-800">
             <div class="flex flex-wrap gap-2">
                 <button @click="setFilter('')"
-                    :class="{ 'bg-blue-600 text-white dark:bg-blue-500': filter === '', 'bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-slate-700': filter !== '' }"
+                    :class="{ 'bg-blue-600 text-white dark:bg-blue-600': filter === '', 'bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-slate-700': filter !== '' }"
                     class="rounded-full px-4 py-2 text-sm font-medium transition-colors">
                     Tümü
                 </button>
                 <button @click="setFilter('UNDERPRICED_LISTING')"
-                    :class="{ 'bg-blue-600 text-white dark:bg-blue-500': filter === 'UNDERPRICED_LISTING', 'bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-slate-700': filter !== 'UNDERPRICED_LISTING' }"
+                    :class="{ 'bg-blue-600 text-white dark:bg-blue-600': filter === 'UNDERPRICED_LISTING', 'bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-slate-700': filter !== 'UNDERPRICED_LISTING' }"
                     class="rounded-full px-4 py-2 text-sm font-medium transition-colors">
                     <span class="material-symbols-outlined mr-1">label</span> Fiyat Fırsatı
                 </button>
                 <button @click="setFilter('HIGH_BUYER_MATCH')"
-                    :class="{ 'bg-blue-600 text-white dark:bg-blue-500': filter === 'HIGH_BUYER_MATCH', 'bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-slate-700': filter !== 'HIGH_BUYER_MATCH' }"
+                    :class="{ 'bg-blue-600 text-white dark:bg-blue-600': filter === 'HIGH_BUYER_MATCH', 'bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-slate-700': filter !== 'HIGH_BUYER_MATCH' }"
                     class="rounded-full px-4 py-2 text-sm font-medium transition-colors">
                     <span class="material-symbols-outlined mr-1">group</span> Yüksek Eşleşme
                 </button>
                 <button @click="setFilter('SEO_OPTIMIZATION')"
-                    :class="{ 'bg-blue-600 text-white dark:bg-blue-500': filter === 'SEO_OPTIMIZATION', 'bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-slate-700': filter !== 'SEO_OPTIMIZATION' }"
+                    :class="{ 'bg-blue-600 text-white dark:bg-blue-600': filter === 'SEO_OPTIMIZATION', 'bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-slate-700': filter !== 'SEO_OPTIMIZATION' }"
                     class="rounded-full px-4 py-2 text-sm font-medium transition-colors">
                     <span class="material-symbols-outlined mr-1">search</span> SEO Fırsatı
                 </button>
                 <button @click="setFilter('LOW_QUALITY_HIGH_POTENTIAL')"
-                    :class="{ 'bg-blue-600 text-white dark:bg-blue-500': filter === 'LOW_QUALITY_HIGH_POTENTIAL', 'bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-slate-700': filter !== 'LOW_QUALITY_HIGH_POTENTIAL' }"
+                    :class="{ 'bg-blue-600 text-white dark:bg-blue-600': filter === 'LOW_QUALITY_HIGH_POTENTIAL', 'bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-slate-700': filter !== 'LOW_QUALITY_HIGH_POTENTIAL' }"
                     class="rounded-full px-4 py-2 text-sm font-medium transition-colors">
                     <span class="material-symbols-outlined mr-1">photo_camera</span> Kalite İyileştirmesi
                 </button>
                 <button @click="setFilter('STALE_LISTING_RECOVERY')"
-                    :class="{ 'bg-blue-600 text-white dark:bg-blue-500': filter === 'STALE_LISTING_RECOVERY', 'bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-slate-700': filter !== 'STALE_LISTING_RECOVERY' }"
+                    :class="{ 'bg-blue-600 text-white dark:bg-blue-600': filter === 'STALE_LISTING_RECOVERY', 'bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-slate-700': filter !== 'STALE_LISTING_RECOVERY' }"
                     class="rounded-full px-4 py-2 text-sm font-medium transition-colors">
                     <span class="material-symbols-outlined mr-1">sync</span> Durağan İlan
                 </button>
@@ -195,9 +195,9 @@
                 },
 
                 getScoreBadgeClass(score) {
-                    if (score >= 80) return 'bg-green-500';
+                    if (score >= 80) return 'bg-green-600';
                     if (score >= 60) return 'bg-yellow-500';
-                    return 'bg-red-500';
+                    return 'bg-red-600';
                 },
 
                 getBorderColorClass(score) {

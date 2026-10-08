@@ -56,11 +56,11 @@
 
                     <div class="space-y-2">
                         <div
-                            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-widest">
+                            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-600/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-widest">
                             <span class="relative flex h-2 w-2">
                                 <span
                                     class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
                             </span>
                             Sistem Tanılaması
                         </div>
@@ -243,7 +243,7 @@
                                                 @elseif($cell['health_state'] == 'partial_empty')
                                                     <!-- Partial Empty (Template exists but incomplete) -->
                                                     <a href="{{ isset($cell['template_id']) ? route('admin.property-hub.templates.edit', $cell['template_id']) : '#' }}"
-                                                        class="w-full h-8 rounded-lg bg-orange-100 dark:bg-orange-500/20 border border-orange-300 dark:border-orange-500/50 flex items-center justify-center hover:scale-110 hover:shadow-[0_0_15px_#f97316] transition-all duration-300 cursor-pointer"
+                                                        class="w-full h-8 rounded-lg bg-orange-100 dark:bg-orange-600/20 border border-orange-300 dark:border-orange-500/50 flex items-center justify-center hover:scale-110 hover:shadow-[0_0_15px_#f97316] transition-all duration-300 cursor-pointer"
                                                         title="{{ $row['category_name'] }} - {{ $yayinTipi }}: Şablon var ama UI ipuçları boş!">
                                                         <i
                                                             class="fas fa-battery-half text-orange-600 dark:text-orange-400 text-xs"></i>
@@ -396,7 +396,7 @@
                         </div>
                     @elseif($healthScore >= 80)
                         <div
-                            class="px-4 py-2 bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 text-xs font-bold rounded-lg border border-blue-200 dark:border-blue-500/20">
+                            class="px-4 py-2 bg-blue-100 dark:bg-blue-600/10 text-blue-700 dark:text-blue-400 text-xs font-bold rounded-lg border border-blue-200 dark:border-blue-500/20">
                             Sistem Stabil
                         </div>
                     @else

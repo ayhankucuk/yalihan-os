@@ -20,7 +20,7 @@
 
                     {{-- Sync Button --}}
                     <button @click="bulkSync()" :disabled="syncing"
-                        class="px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 
+                        class="px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-600 
                            text-white font-medium rounded-lg shadow-lg hover:shadow-xl 
                            transform hover:scale-105 active:scale-95 
                            transition-all duration-200 ease-in-out
@@ -292,7 +292,7 @@
                                            transition-all duration-200">
                                     <button @click="updateCoordinates()"
                                         class="w-full px-4 py-2 bg-red-600 hover:bg-red-700 
-                                           dark:bg-red-500 dark:hover:bg-red-600 
+                                           dark:bg-red-600 dark:hover:bg-red-600 
                                            text-white font-medium rounded-lg 
                                            transform hover:scale-105 active:scale-95 
                                            transition-all duration-200 ease-in-out
@@ -340,7 +340,7 @@
             x-transition:enter-end="opacity-100 transform translate-y-0"
             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0" class="fixed bottom-6 right-6 z-50">
-            <div :class="toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
+            <div :class="toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'"
                 class="px-6 py-4 rounded-lg shadow-2xl text-white font-medium flex items-center space-x-3">
                 <span x-text="toast.message"></span>
                 <button @click="toast.show = false" class="ml-4 hover:opacity-80 transition-opacity">✕</button>

@@ -72,7 +72,7 @@
                         <div class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
                             Başlangıç Fiyatı</div>
                         <div
-                            class="w-8 h-8 bg-blue-500/20 dark:bg-blue-500/30 rounded-lg flex items-center justify-center">
+                            class="w-8 h-8 bg-blue-600/20 dark:bg-blue-600/30 rounded-lg flex items-center justify-center">
                             <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -91,7 +91,7 @@
                         <div class="text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider">
                             Güncel Fiyat</div>
                         <div
-                            class="w-8 h-8 bg-green-500/20 dark:bg-green-500/30 rounded-lg flex items-center justify-center">
+                            class="w-8 h-8 bg-green-600/20 dark:bg-green-600/30 rounded-lg flex items-center justify-center">
                             <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -111,7 +111,7 @@
                             class="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
                             En Yüksek</div>
                         <div
-                            class="w-8 h-8 bg-orange-500/20 dark:bg-orange-500/30 rounded-lg flex items-center justify-center">
+                            class="w-8 h-8 bg-orange-600/20 dark:bg-orange-600/30 rounded-lg flex items-center justify-center">
                             <svg class="w-4 h-4 text-orange-600 dark:text-orange-400" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -131,7 +131,7 @@
                             class="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
                             Fiyat Değişimi</div>
                         <div
-                            class="w-8 h-8 bg-purple-500/20 dark:bg-purple-500/30 rounded-lg flex items-center justify-center">
+                            class="w-8 h-8 bg-purple-600/20 dark:bg-purple-600/30 rounded-lg flex items-center justify-center">
                             <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

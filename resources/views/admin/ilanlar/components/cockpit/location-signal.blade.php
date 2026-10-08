@@ -98,7 +98,7 @@
                         <span>{{ $accessScore }}/40</span>
                     </div>
                     <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-1.5">
-                        <div class="bg-blue-500 dark:bg-blue-400 h-1.5 rounded-full"
+                        <div class="bg-blue-600 dark:bg-blue-400 h-1.5 rounded-full"
                             style="width: {{ min(100, ($accessScore / 40) * 100) }}%"></div>
                     </div>
                 </div>

@@ -217,7 +217,7 @@
                             <div class="dg-score-label"><span class="material-symbols-outlined text-blue-400">trending_up</span> Market Dengesi</div>
                             <div class="flex items-center gap-4">
                                 <div class="dg-progress-bg">
-                                    <div class="dg-progress-fill bg-blue-500"
+                                    <div class="dg-progress-fill bg-blue-600"
                                         :style="'width:' + report.health.scores.market.score + '%'"></div>
                                 </div>
                                 <span class="whitespace-nowrap font-bold"
@@ -253,7 +253,7 @@
                             </div>
                             <div class="flex items-center gap-4">
                                 <div class="dg-progress-bg">
-                                    <div class="dg-progress-fill bg-purple-500"
+                                    <div class="dg-progress-fill bg-purple-600"
                                         :style="'width:' + report.health.scores.match.score + '%'"></div>
                                 </div>
                                 <span class="whitespace-nowrap font-bold"

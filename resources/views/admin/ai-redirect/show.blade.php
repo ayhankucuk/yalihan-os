@@ -104,19 +104,19 @@
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 dark:text-slate-200">Quick Actions</h3>
                     <div class="space-y-3">
                         <a href="{{ route('admin.ai-redirect.edit', $redirectData['id']) }}"
-                           class="w-full flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                           class="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
                             <i class="fas fa-edit mr-2"></i>
                             Edit Redirect
                         </a>
 
                         <button onclick="testRedirect()"
-                                class="w-full flex items-center justify-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                                class="w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-600 transition-colors">
                             <i class="fas fa-play mr-2"></i>
                             Test Redirect
                         </button>
 
                         <button onclick="deleteRedirect({{ $redirectData['id'] }})"
-                                class="w-full flex items-center justify-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                                class="w-full flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-600 transition-colors">
                             <i class="fas fa-trash mr-2"></i>
                             Delete Redirect
                         </button>

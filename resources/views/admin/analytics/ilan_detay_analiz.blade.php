@@ -43,7 +43,7 @@
                                 <span class="text-3xl font-black text-slate-900 dark:text-white">{{ number_format($rapor['metrikler']['goruntulenme_sayisi']) }}</span>
                             </div>
                             <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-blue-500 dark:bg-blue-600 w-3/4 rounded-full"></div>
+                                <div class="h-full bg-blue-600 dark:bg-blue-600 w-3/4 rounded-full"></div>
                             </div>
                         </div>
                         <div>
@@ -52,7 +52,7 @@
                                 <span class="text-3xl font-black text-pink-500">{{ number_format($rapor['metrikler']['favori_sayisi']) }}</span>
                             </div>
                             <div class="h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                <div class="h-full bg-pink-500 w-1/4 rounded-full"></div>
+                                <div class="h-full bg-pink-600 w-1/4 rounded-full"></div>
                             </div>
                         </div>
                     </div>
@@ -109,7 +109,7 @@
                 <!-- Analysis Summary Text -->
                 <div class="bg-slate-900 rounded-3xl p-8 text-slate-300 font-mono text-sm leading-relaxed border-t-8 border-blue-600 shadow-2xl">
                     <div class="flex items-center gap-2 mb-4 text-blue-400 font-black tracking-widest uppercase text-xs">
-                        <span class="flex h-2 w-2 rounded-full bg-blue-500 animate-ping"></span>
+                        <span class="flex h-2 w-2 rounded-full bg-blue-600 animate-ping"></span>
                         Cortex Summary Log
                     </div>
                     <p class="mb-4">

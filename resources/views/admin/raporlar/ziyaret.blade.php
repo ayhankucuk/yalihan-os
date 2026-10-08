@@ -129,7 +129,7 @@
                                 <span class="text-sm font-medium text-gray-700 dark:text-slate-200 dark:text-slate-300">{{ number_format($dev->total) }}</span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                                <div class="bg-blue-600 dark:bg-blue-500 h-2.5 rounded-full" style="width: {{ $totalViews > 0 ? ($dev->total / $totalViews * 100) : 0 }}%"></div>
+                                <div class="bg-blue-600 dark:bg-blue-600 h-2.5 rounded-full" style="width: {{ $totalViews > 0 ? ($dev->total / $totalViews * 100) : 0 }}%"></div>
                             </div>
                         </div>
                     @endforeach

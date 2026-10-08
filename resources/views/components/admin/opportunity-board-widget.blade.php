@@ -107,13 +107,13 @@
              */
             const PRIORITY_COLORS = {
                 'ACIL': {
-                    bg: 'bg-red-500',
+                    bg: 'bg-red-600',
                     text: 'text-white',
                     border: 'border-red-500',
                     light: 'bg-red-50 dark:bg-red-900/20'
                 },
                 'YÜKSEK': {
-                    bg: 'bg-orange-500',
+                    bg: 'bg-orange-600',
                     text: 'text-white',
                     border: 'border-orange-500',
                     light: 'bg-orange-50 dark:bg-orange-900/20'

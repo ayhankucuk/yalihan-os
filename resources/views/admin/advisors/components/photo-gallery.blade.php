@@ -189,7 +189,7 @@
                             {{-- Delete Button --}}
                             <button
                                 @click="deletePhoto(photo.id)"
-                                class="w-full px-3 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors duration-200 text-sm flex items-center justify-center gap-2"
+                                class="w-full px-3 py-2 bg-red-600 hover:bg-red-600 text-white font-medium rounded-lg transition-colors duration-200 text-sm flex items-center justify-center gap-2"
                             >
                                 <svg
                                     class="w-4 h-4"

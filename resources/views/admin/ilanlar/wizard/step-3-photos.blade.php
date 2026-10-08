@@ -236,7 +236,7 @@
                                         x-text="Math.round(suggestion.confidence * 100) + '%'"></span></span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                <div class="bg-green-500 h-2 rounded-full transition-all"
+                                <div class="bg-green-600 h-2 rounded-full transition-all"
                                     :style="`width: ${suggestion.confidence * 100}%`"></div>
                             </div>
                         </div>
@@ -275,7 +275,7 @@
                                         x-text="Math.round(suggestion.confidence * 100) + '%'"></span></span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                <div class="bg-blue-500 h-2 rounded-full transition-all"
+                                <div class="bg-blue-600 h-2 rounded-full transition-all"
                                     :style="`width: ${suggestion.confidence * 100}%`"></div>
                             </div>
                         </div>

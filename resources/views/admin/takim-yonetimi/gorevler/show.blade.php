@@ -215,7 +215,7 @@
                                     @endphp
                                     <div class="flex gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg dark:bg-slate-900">
                                         <div
-                                            class="w-8 h-8 {{ $takipDurumu === 'tamamlandi' ? 'bg-green-500' : ($takipDurumu === 'devam_ediyor' ? 'bg-yellow-500' : 'bg-blue-500') }} rounded-full flex items-center justify-center flex-shrink-0">
+                                            class="w-8 h-8 {{ $takipDurumu === 'tamamlandi' ? 'bg-green-600' : ($takipDurumu === 'devam_ediyor' ? 'bg-yellow-500' : 'bg-blue-600') }} rounded-full flex items-center justify-center flex-shrink-0">
                                             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

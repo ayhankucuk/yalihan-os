@@ -131,12 +131,12 @@
                     <div class="flex items-center gap-2">
                         <span class="text-sm text-gray-600 dark:text-gray-400">Görünüm:</span>
                         <button id="gridView"
-                            class="p-2 rounded-lg {{ $viewMode === 'grid' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }} transition-colors duration-200"
+                            class="p-2 rounded-lg {{ $viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }} transition-colors duration-200"
                             onclick="changeView('grid')">
                             ⊞
                         </button>
                         <button id="listView"
-                            class="p-2 rounded-lg {{ $viewMode === 'list' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }} transition-colors duration-200"
+                            class="p-2 rounded-lg {{ $viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }} transition-colors duration-200"
                             onclick="changeView('list')">
                             ☰
                         </button>
@@ -217,7 +217,7 @@
                             </div>
                         </div>
 
-                        <button class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg font-semibold dark:shadow-none" onclick="applyFilters()">
+                        <button class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg font-semibold dark:shadow-none" onclick="applyFilters()">
                             Filtreleri Uygula
                         </button>
                     </div>
@@ -277,7 +277,7 @@
                                             <div class="flex-1">
                                                 <div class="flex items-center gap-2 mb-2">
                                                     <span
-                                                        class="px-3 py-1 rounded-full text-sm font-semibold {{ $property['badge'] === 'sale' ? 'bg-green-500 text-white' : ($property['badge'] === 'rent' ? 'bg-blue-500 text-white' : 'bg-purple-500 text-white') }}">
+                                                        class="px-3 py-1 rounded-full text-sm font-semibold {{ $property['badge'] === 'sale' ? 'bg-green-600 text-white' : ($property['badge'] === 'rent' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white') }}">
                                                         {{ $property['badgeText'] }}
                                                     </span>
                                                     <span class="text-sm text-gray-500 dark:text-gray-400">{{ $property['date'] }}</span>
@@ -330,12 +330,12 @@
 
                                                 <div class="flex gap-2">
                                                     <button
-                                                        class="p-2 border border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400 rounded-lg hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-colors"
+                                                        class="p-2 border border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-colors"
                                                         onclick="toggleFavorite({{ $property['id'] }})">
                                                         {{ $property['isFavorite'] ? '❤️' : '🤍' }}
                                                     </button>
                                                     <button
-                                                        class="px-4 py-2 bg-blue-500 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors">
+                                                        class="px-4 py-2 bg-blue-600 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors">
                                                         Detay
                                                     </button>
                                                 </div>
@@ -353,16 +353,16 @@
                     <div class="mt-8 flex justify-center">
                         <nav class="flex items-center gap-2">
                             <button
-                                class="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-colors dark:text-slate-300">
+                                class="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-colors dark:text-slate-300">
                                 ← Önceki
                             </button>
-                            <button class="px-4 py-2.5 bg-blue-500 dark:bg-blue-600 text-white rounded-lg">1</button>
+                            <button class="px-4 py-2.5 bg-blue-600 dark:bg-blue-600 text-white rounded-lg">1</button>
                             <button
-                                class="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-colors dark:text-slate-300">2</button>
+                                class="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-colors dark:text-slate-300">2</button>
                             <button
-                                class="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-colors dark:text-slate-300">3</button>
+                                class="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-colors dark:text-slate-300">3</button>
                             <button
-                                class="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-colors dark:text-slate-300">
+                                class="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-colors dark:text-slate-300">
                                 Sonraki →
                             </button>
                         </nav>
@@ -382,11 +382,11 @@
 
         if (mode === 'grid') {
             container.className = 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6';
-            gridBtn.className = 'p-2 rounded-lg bg-blue-500 text-white transition-colors duration-200';
+            gridBtn.className = 'p-2 rounded-lg bg-blue-600 text-white transition-colors duration-200';
             listBtn.className = 'p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors duration-200';
         } else {
             container.className = 'space-y-6';
-            listBtn.className = 'p-2 rounded-lg bg-blue-500 text-white transition-colors duration-200';
+            listBtn.className = 'p-2 rounded-lg bg-blue-600 text-white transition-colors duration-200';
             gridBtn.className = 'p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors duration-200';
         }
 

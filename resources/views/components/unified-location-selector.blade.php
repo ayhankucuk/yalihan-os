@@ -242,17 +242,17 @@
                 <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">🎯 Yakınında Neler Var?</h3>
                 <div class="flex items-center gap-2 p-2 rounded-md border border-gray-200 dark:border-slate-800 space-x-2 dark:border-slate-700">
                     <button @click="nearbyRadius = 500"
-                            :class="nearbyRadius === 500 ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'"
+                            :class="nearbyRadius === 500 ? 'bg-blue-600 text-white' : 'bg-white text-blue-500'"
                             class="px-3 py-1 rounded-full text-sm font-medium border border-blue-300 transition-colors">
                         500m
                     </button>
                     <button @click="nearbyRadius = 1000"
-                            :class="nearbyRadius === 1000 ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'"
+                            :class="nearbyRadius === 1000 ? 'bg-blue-600 text-white' : 'bg-white text-blue-500'"
                             class="px-3 py-1 rounded-full text-sm font-medium border border-blue-300 transition-colors">
                         1km
                     </button>
                     <button @click="nearbyRadius = 2000"
-                            :class="nearbyRadius === 2000 ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'"
+                            :class="nearbyRadius === 2000 ? 'bg-blue-600 text-white' : 'bg-white text-blue-500'"
                             class="px-3 py-1 rounded-full text-sm font-medium border border-blue-300 transition-colors">
                         2km
                     </button>

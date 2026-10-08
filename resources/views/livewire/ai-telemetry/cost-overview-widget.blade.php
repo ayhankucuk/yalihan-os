@@ -77,7 +77,7 @@
         {{-- Progress Bar --}}
         <div class="mt-4">
             <div class="relative h-2 w-full rounded-full bg-gray-200 dark:bg-slate-700">
-                <div class="{{ $data['usage_percent'] > 80 ? 'bg-red-500' : ($data['usage_percent'] > 50 ? 'bg-yellow-500' : 'bg-green-500') }} absolute left-0 top-0 h-2 rounded-full transition-all duration-300"
+                <div class="{{ $data['usage_percent'] > 80 ? 'bg-red-600' : ($data['usage_percent'] > 50 ? 'bg-yellow-500' : 'bg-green-600') }} absolute left-0 top-0 h-2 rounded-full transition-all duration-300"
                     style="width: {{ min($data['usage_percent'], 100) }}%"></div>
             </div>
         </div>

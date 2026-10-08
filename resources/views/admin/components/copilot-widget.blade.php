@@ -4,7 +4,7 @@
     <button @click="toggle()"
         class="flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         :class="open ? 'bg-gray-700 dark:bg-slate-600' : (hasIssues ? 'bg-amber-500 dark:bg-amber-600' :
-            'bg-blue-600 dark:bg-blue-500')"
+            'bg-blue-600 dark:bg-blue-600')"
         :aria-expanded="open.toString()" aria-label="Copilot Asistan">
         {{-- Brain icon --}}
         <svg x-show="!open" class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -19,7 +19,7 @@
         </svg>
         {{-- Badge for issues --}}
         <span x-show="!open && issueCount > 0" x-text="issueCount"
-            class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white"></span>
+            class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white"></span>
     </button>
 
     {{-- Panel --}}
@@ -162,7 +162,7 @@
                                     </span>
                                 </button>
                                 <button @click="fetchCopilotActions('full_generate')" :disabled="actionsLoading"
-                                    class="rounded-lg bg-green-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                                    class="rounded-lg bg-green-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-600"
                                     title="Tam İlan Üret">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                         stroke-width="2">
@@ -258,7 +258,7 @@
                         <template x-if="copilotActions.length > 1">
                             <div class="border-t border-gray-100 px-4 py-2 dark:border-slate-700">
                                 <button @click="previewAllActions()"
-                                    class="w-full rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
+                                    class="w-full rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-600">
                                     Tümünü Önizle & Uygula
                                 </button>
                             </div>
@@ -525,10 +525,10 @@
             },
 
             scoreBarColor(score) {
-                if (score >= 80) return 'bg-green-500';
-                if (score >= 60) return 'bg-blue-500';
+                if (score >= 80) return 'bg-green-600';
+                if (score >= 60) return 'bg-blue-600';
                 if (score >= 40) return 'bg-yellow-500';
-                return 'bg-red-500';
+                return 'bg-red-600';
             },
 
             insightBg(tip) {

@@ -146,7 +146,7 @@
                                     <div class="flex items-center">
                                         <div class="flex-1">
                                             <div class="h-2 rounded-full bg-gray-200 dark:bg-gray-700 mb-2">
-                                                <div class="h-2 rounded-full bg-blue-500" id="search-accuracy"
+                                                <div class="h-2 rounded-full bg-blue-600" id="search-accuracy"
                                                     style="width: 0%" role="progressbar"></div>
                                             </div>
                                             <small class="text-sm text-gray-500 dark:text-gray-400">
@@ -378,7 +378,7 @@
                             <div class="flex items-center">
                                 <div class="flex-1">
                                     <div class="h-2 rounded-full bg-gray-200 dark:bg-gray-700 mb-2">
-                                        <div class="h-2 rounded-full bg-green-500" id="cache-hit-rate" style="width: 0%"
+                                        <div class="h-2 rounded-full bg-green-600" id="cache-hit-rate" style="width: 0%"
                                             role="progressbar"></div>
                                     </div>
                                     <small class="text-sm text-gray-500 dark:text-gray-400">

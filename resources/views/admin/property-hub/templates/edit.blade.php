@@ -559,7 +559,7 @@
 
                                                     <div class="absolute top-4 right-4">
                                                         <div :class="selectedSuggestions.includes(suggestion.feature_id) ?
-                                                            'bg-purple-500 border-purple-500' :
+                                                            'bg-purple-600 border-purple-500' :
                                                             'bg-white dark:bg-slate-900 border-gray-300 dark:border-gray-600'"
                                                             class="h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors duration-200">
                                                             <svg x-show="selectedSuggestions.includes(suggestion.feature_id)"

@@ -53,7 +53,7 @@
                             .isCurrentMonth && !day.isBooked && !day.isBlocked,
                         'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300': day.isBooked,
                         'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300': day.isBlocked,
-                        'bg-blue-500 text-white': day.isToday,
+                        'bg-blue-600 text-white': day.isToday,
                         'ring-2 ring-blue-500': day.isSelected
                     }"
                     class="relative flex aspect-square items-center justify-center rounded-lg border border-gray-200 text-sm font-medium transition-all duration-200 dark:border-slate-700 dark:border-slate-800">
@@ -76,7 +76,7 @@
             <span class="text-sm text-gray-700 dark:text-slate-200 dark:text-slate-300">⛔ Bloke</span>
         </div>
         <div class="flex items-center gap-2">
-            <div class="h-4 w-4 rounded bg-blue-500"></div>
+            <div class="h-4 w-4 rounded bg-blue-600"></div>
             <span class="text-sm text-gray-700 dark:text-slate-200 dark:text-slate-300">Bugün</span>
         </div>
     </div>

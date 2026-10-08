@@ -166,13 +166,13 @@
                         <h3 class="text-lg font-semibold text-gray-800 mb-4 dark:text-slate-200">Hızlı İşlemler</h3>
                         <div class="space-y-3">
                             <a href="{{ route('admin.ayarlar.edit', $setting->id) }}"
-                               class="block w-full text-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                               class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
                                 <i class="fas fa-edit mr-2"></i>
                                 Ayarı Düzenle
                             </a>
 
                             <button onclick="copyValue()"
-                                    class="block w-full text-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                                    class="block w-full text-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-600 transition-colors">
                                 <i class="fas fa-copy mr-2"></i>
                                 Değeri Kopyala
                             </button>
@@ -184,7 +184,7 @@
                             </button>
 
                             <button onclick="deleteSetting()"
-                                    class="block w-full text-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                                    class="block w-full text-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-600 transition-colors">
                                 <i class="fas fa-trash mr-2"></i>
                                 Ayarı Sil
                             </button>
@@ -259,8 +259,8 @@ function deleteSetting() {
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white z-50 ${
-        type === 'success' ? 'bg-green-500' :
-        type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+        type === 'success' ? 'bg-green-600' :
+        type === 'error' ? 'bg-red-600' : 'bg-blue-600'
     }`;
     toast.textContent = message;
 

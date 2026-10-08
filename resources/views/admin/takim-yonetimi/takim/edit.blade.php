@@ -191,7 +191,7 @@
         function showNotification(type, message) {
             const notification = document.createElement('div');
             notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-        type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+        type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
     }`;
             notification.textContent = message;
 

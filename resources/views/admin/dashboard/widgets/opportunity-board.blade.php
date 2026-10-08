@@ -40,7 +40,7 @@
         <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
             <span id="ob-durumu">Güncel</span>
             <span class="flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                <span class="w-2 h-2 rounded-full bg-green-600"></span>
                 Canlı İzleme
             </span>
         </div>

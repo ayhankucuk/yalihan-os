@@ -47,7 +47,7 @@
                 {{ $fullLocation ?: 'Konum' }}
             </span>
             @if (data_get($property, 'citizenship_eligible'))
-                <span class="inline-flex items-center gap-1 rounded-full bg-green-500/90 text-white px-3 py-1 text-xs font-semibold shadow-md dark:shadow-none">
+                <span class="inline-flex items-center gap-1 rounded-full bg-green-600/90 text-white px-3 py-1 text-xs font-semibold shadow-md dark:shadow-none">
                     <span class="material-symbols-outlined">book</span>
                     Vatandaşlık Uygun
                 </span>
@@ -102,7 +102,7 @@
         </div>
 
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-gray-200 dark:border-slate-800 dark:border-slate-700">
-            <a href="{{ route('ilanlar.show', $property->id) }}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 dark:bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-blue-700 dark:hover:bg-blue-600 hover:shadow-lg active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:shadow-none">
+            <a href="{{ route('ilanlar.show', $property->id) }}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 dark:bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-blue-700 dark:hover:bg-blue-600 hover:shadow-lg active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:shadow-none">
                 Detayları Gör
                 <span class="material-symbols-outlined text-xs">arrow_forward</span>
             </a>

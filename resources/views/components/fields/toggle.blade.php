@@ -28,7 +28,7 @@
             <input type="hidden" name="features[{{ $field['slug'] }}]" :value="enabled ? '1' : '0'" />
             <button type="button"
                 class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                :class="enabled ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-200 dark:bg-slate-600'"
+                :class="enabled ? 'bg-blue-600 dark:bg-blue-600' : 'bg-gray-200 dark:bg-slate-600'"
                 @click="enabled = !enabled; $dispatch('field-changed', { slug: '{{ $field['slug'] }}', value: enabled, type: 'boolean' })"
                 role="switch"
                 :aria-checked="enabled.toString()">

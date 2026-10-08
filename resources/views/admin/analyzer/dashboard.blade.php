@@ -56,7 +56,7 @@
                     <h2 class="text-xl font-bold text-gray-800 mb-2 dark:text-slate-200">🏥 System Health</h2>
                     <div class="flex items-center space-x-4">
                         <div class="flex items-center">
-                                class="w-3 h-3 rounded-full mr-2 {{ ($healthData['score'] ?? 0) >= 70 ? 'bg-green-500' : (($healthData['score'] ?? 0) >= 50 ? 'bg-yellow-500' : 'bg-red-500') }}">
+                                class="w-3 h-3 rounded-full mr-2 {{ ($healthData['score'] ?? 0) >= 70 ? 'bg-green-600' : (($healthData['score'] ?? 0) >= 50 ? 'bg-yellow-500' : 'bg-red-600') }}">
                             </div>
                             <span class="text-lg font-semibold">{{ $healthData['score'] ?? 0 }}/100</span>
                         </div>
@@ -225,7 +225,7 @@
             <div class="bg-white dark:bg-slate-900 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-200">🤖 Telegram Bot</h3>
-                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-600"></div>
                 </div>
                 <div class="space-y-3">
                     <div class="flex justify-between">
@@ -248,7 +248,7 @@
             <div class="bg-white dark:bg-slate-900 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-200">🏠 Adres Yönetimi</h3>
-                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-600"></div>
                 </div>
                 <div class="space-y-3">
                     <div class="flex justify-between">
@@ -273,7 +273,7 @@
             <div class="bg-white dark:bg-slate-900 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-200">🏘️ My Listings</h3>
-                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-red-600"></div>
                 </div>
                 <div class="space-y-3">
                     <div class="flex justify-between">
@@ -296,7 +296,7 @@
             <div class="bg-white dark:bg-slate-900 shadow-sm p-6 dark:shadow-none dark:border-slate-700">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-200">📊 Analytics</h3>
-                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-red-600"></div>
                 </div>
                 <div class="space-y-3">
                     <div class="flex justify-between">
@@ -755,11 +755,11 @@
                 },
 
                 getHealthColor(score) {
-                    if (score >= 90) return 'bg-green-500';
-                    if (score >= 75) return 'bg-blue-500';
+                    if (score >= 90) return 'bg-green-600';
+                    if (score >= 75) return 'bg-blue-600';
                     if (score >= 60) return 'bg-yellow-500';
-                    if (score >= 40) return 'bg-orange-500';
-                    return 'bg-red-500';
+                    if (score >= 40) return 'bg-orange-600';
+                    return 'bg-red-600';
                 },
 
                 getHealthBadgeClass(status) {
@@ -774,9 +774,9 @@
                 },
 
                 getStatusColor(successRate) {
-                    if (successRate >= 95) return 'bg-green-500';
+                    if (successRate >= 95) return 'bg-green-600';
                     if (successRate >= 80) return 'bg-yellow-500';
-                    return 'bg-red-500';
+                    return 'bg-red-600';
                 },
 
                 getPriorityBorderClass(priority) {

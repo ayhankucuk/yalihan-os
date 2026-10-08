@@ -26,7 +26,7 @@
                             Yayında
                         </span>
                     @elseif(in_array($durumVal, ['beklemede', 'pending']))
-                        <span class="px-2 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full border border-blue-500/30">
+                        <span class="px-2 py-0.5 bg-blue-600/10 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full border border-blue-500/30">
                             Beklemede
                         </span>
                     @elseif(in_array($durumVal, ['pasif', 'passive']))

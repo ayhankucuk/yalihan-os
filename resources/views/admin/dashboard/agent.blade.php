@@ -21,7 +21,7 @@
                 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-900 dark:shadow-none dark:focus:ring-indigo-500">
                 <i class="fas fa-sync-alt mr-2"></i> Yenile
             </button>
-            <a href="{{ route('admin.ilanlar.create') }}" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:hover:bg-indigo-500 dark:focus:ring-offset-gray-900 dark:focus:ring-indigo-500 dark:shadow-none">
+            <a href="{{ route('admin.ilanlar.create') }}" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-offset-gray-900 dark:focus:ring-indigo-500 dark:shadow-none">
                 <i class="fas fa-plus mr-2"></i> Yeni İlan Ekle
             </a>
         </div>
@@ -98,7 +98,7 @@
                 @php
                     $percentage = $stats['total_listings'] > 0 ? ($stats['active_listings'] / $stats['total_listings']) * 100 : 0;
                 @endphp
-                <div class="bg-green-500 h-1.5 rounded-full" style="width: {{ $percentage }}%"></div>
+                <div class="bg-green-600 h-1.5 rounded-full" style="width: {{ $percentage }}%"></div>
             </div>
         </div>
 

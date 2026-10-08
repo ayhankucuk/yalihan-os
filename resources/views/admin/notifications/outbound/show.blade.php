@@ -53,10 +53,10 @@
                         <p class="text-sm font-semibold text-gray-500 uppercase">Durum</p>
                         <div class="mt-2">
                             <span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold 
-                                @if($log->gonderim_durumu == \App\Models\Notification\OutboundNotification::STATE_SENT) bg-green-500 text-white @endif
-                                @if($log->gonderim_durumu == \App\Models\Notification\OutboundNotification::STATE_FAILED) bg-red-500 text-white @endif
+                                @if($log->gonderim_durumu == \App\Models\Notification\OutboundNotification::STATE_SENT) bg-green-600 text-white @endif
+                                @if($log->gonderim_durumu == \App\Models\Notification\OutboundNotification::STATE_FAILED) bg-red-600 text-white @endif
                                 @if($log->gonderim_durumu == \App\Models\Notification\OutboundNotification::STATE_PENDING) bg-amber-500 text-white @endif
-                                @if($log->gonderim_durumu == \App\Models\Notification\OutboundNotification::STATE_QUEUED) bg-blue-500 text-white @endif
+                                @if($log->gonderim_durumu == \App\Models\Notification\OutboundNotification::STATE_QUEUED) bg-blue-600 text-white @endif
                             ">
                                 {{ strtoupper($log->gonderim_durumu) }}
                             </span>
@@ -110,20 +110,20 @@
                 </h3>
                 <div class="space-y-6">
                     <div class="relative pl-8 border-l-2 border-gray-100 dark:border-slate-800">
-                        <div class="absolute -left-2 top-0 w-4 h-4 rounded-full bg-blue-500 border-4 border-white dark:border-slate-900"></div>
+                        <div class="absolute -left-2 top-0 w-4 h-4 rounded-full bg-blue-600 border-4 border-white dark:border-slate-900"></div>
                         <p class="text-xs font-bold text-gray-400 uppercase">Oluşturulma</p>
                         <p class="text-gray-900 dark:text-white font-medium">{{ $log->created_at->format('d.m.Y H:i:s') }}</p>
                     </div>
                     @if($log->last_attempt_at)
                     <div class="relative pl-8 border-l-2 border-gray-100 dark:border-slate-800">
-                        <div class="absolute -left-2 top-0 w-4 h-4 rounded-full bg-orange-500 border-4 border-white dark:border-slate-900"></div>
+                        <div class="absolute -left-2 top-0 w-4 h-4 rounded-full bg-orange-600 border-4 border-white dark:border-slate-900"></div>
                         <p class="text-xs font-bold text-gray-400 uppercase">Son Deneme</p>
                         <p class="text-gray-900 dark:text-white font-medium">{{ $log->last_attempt_at->format('d.m.Y H:i:s') }}</p>
                     </div>
                     @endif
                     @if($log->sent_at)
                     <div class="relative pl-8 border-l-2 border-gray-100 dark:border-slate-800">
-                        <div class="absolute -left-2 top-0 w-4 h-4 rounded-full bg-green-500 border-4 border-white dark:border-slate-900"></div>
+                        <div class="absolute -left-2 top-0 w-4 h-4 rounded-full bg-green-600 border-4 border-white dark:border-slate-900"></div>
                         <p class="text-xs font-bold text-gray-400 uppercase">Gönderim Tamamlandı</p>
                         <p class="text-gray-900 dark:text-white font-medium">{{ $log->sent_at->format('d.m.Y H:i:s') }}</p>
                     </div>

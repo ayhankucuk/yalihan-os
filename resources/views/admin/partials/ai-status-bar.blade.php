@@ -6,10 +6,10 @@
     $aiAutonomyLevel = $autonomyService->getAutonomyLevel();
     $aiDryRun = config('governance.dry_run', false);
     $riskConfig = match($aiStatus['risk_level']) {
-        'high' => ['bg-red-600 dark:bg-red-700', 'text-white', 'bg-red-500/20', '🔴 Yüksek Risk'],
+        'high' => ['bg-red-600 dark:bg-red-700', 'text-white', 'bg-red-600/20', '🔴 Yüksek Risk'],
         'medium' => ['bg-yellow-500 dark:bg-yellow-600', 'text-white', 'bg-yellow-400/20', '🟡 Dikkat'],
-        'safe_mode' => ['bg-blue-600 dark:bg-blue-700', 'text-white', 'bg-blue-500/20', '🔵 Güvenli Mod'],
-        default => ['bg-green-600 dark:bg-green-700', 'text-white', 'bg-green-500/20', '🟢 Düşük'],
+        'safe_mode' => ['bg-blue-600 dark:bg-blue-700', 'text-white', 'bg-blue-600/20', '🔵 Güvenli Mod'],
+        default => ['bg-green-600 dark:bg-green-700', 'text-white', 'bg-green-600/20', '🟢 Düşük'],
     };
 @endphp
 <a href="{{ route('admin.governance.intelligence-center') }}"

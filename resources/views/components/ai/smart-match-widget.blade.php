@@ -86,7 +86,7 @@
             Kriterlerinize uygun ilan bulunamadı. Lütfen arama kriterlerinizi genişletin.
         </p>
         <button @click="refresh()"
-                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-600
                        text-white rounded-lg transition-all duration-200 text-sm font-medium">
             Tekrar Dene
         </button>
@@ -189,7 +189,7 @@
                         <a :href="'/admin/ilanlar/' + match.id"
                            target="_blank"
                            class="w-full flex items-center justify-center space-x-2 px-4 py-2
-                                  bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600
+                                  bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-600
                                   text-white rounded-lg transition-all duration-200 text-sm font-medium
                                   hover:scale-105 active:scale-95">
                             <span>İlana Git</span>

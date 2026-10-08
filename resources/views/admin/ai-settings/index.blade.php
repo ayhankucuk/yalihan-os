@@ -151,7 +151,7 @@
                             </label>
                             <select id="openai_model" name="openai_model"
                                 class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 dark:text-slate-100">
-                                @foreach($modelOptions['openai'] ?? [] as $model)
+                                @foreach($openaiModels as $model)
                                 <option value="{{ $model['value'] }}"
                                     {{ ($providerSettings['openai']['model'] ?? '') === $model['value'] ? 'selected' : '' }}>
                                     {{ $model['label'] }}
@@ -226,7 +226,7 @@
                         </label>
                         <select id="google_model" name="google_model"
                             class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 dark:text-slate-100">
-                            @foreach($modelOptions['gemini'] ?? [] as $model)
+                            @foreach($geminiModels as $model)
                             <option value="{{ $model['value'] }}"
                                 {{ ($providerSettings['google']['model'] ?? '') === $model['value'] ? 'selected' : '' }}>
                                 {{ $model['label'] }}
@@ -291,7 +291,7 @@
                         </label>
                         <select id="claude_model" name="claude_model"
                             class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 dark:text-slate-100">
-                            @foreach($modelOptions['claude'] ?? [] as $model)
+                            @foreach($claudeModels as $model)
                             <option value="{{ $model['value'] }}"
                                 {{ ($providerSettings['claude']['model'] ?? '') === $model['value'] ? 'selected' : '' }}>
                                 {{ $model['label'] }}
@@ -355,7 +355,7 @@
                         </label>
                         <select id="deepseek_model" name="deepseek_model"
                             class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 dark:text-slate-100">
-                            @foreach($modelOptions['deepseek'] ?? [] as $model)
+                            @foreach($deepseekModels as $model)
                             <option value="{{ $model['value'] }}"
                                 {{ ($providerSettings['deepseek']['model'] ?? '') === $model['value'] ? 'selected' : '' }}>
                                 {{ $model['label'] }}
@@ -409,7 +409,7 @@
                         </label>
                         <select id="ollama_model" name="ollama_model"
                             class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 dark:text-slate-100">
-                            @foreach($modelOptions['ollama'] ?? [] as $model)
+                            @foreach($ollamaModels as $model)
                             <option value="{{ $model['value'] }}"
                                 {{ ($providerSettings['ollama']['model'] ?? '') === $model['value'] ? 'selected' : '' }}>
                                 {{ $model['label'] }}

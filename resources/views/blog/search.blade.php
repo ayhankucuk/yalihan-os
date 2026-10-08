@@ -18,7 +18,7 @@
                             placeholder="Blog yazılarında ara..."
                             class="flex-1 px-4 py-3 rounded-l-lg text-gray-900 border-0 focus:ring-2 focus:ring-blue-300 dark:text-slate-100 dark:text-white">
                         <button type="submit"
-                            class="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-r-lg transition-colors">
+                            class="px-6 py-3 bg-blue-600 hover:bg-blue-600 rounded-r-lg transition-colors">
                             <span class="material-symbols-outlined">search</span>
                         </button>
                     </form>

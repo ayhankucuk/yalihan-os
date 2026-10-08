@@ -119,7 +119,7 @@
                     <!-- Cortex Scoring -->
                     <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg dark:bg-slate-900">
                         <div class="flex items-center space-x-3">
-                            <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-600 animate-pulse"></div>
                             <span class="font-medium text-gray-900 dark:text-white dark:text-slate-100">Cortex Scoring Engine</span>
                         </div>
                         <span class="text-sm text-green-600 dark:text-green-400">Çalışıyor</span>
@@ -128,7 +128,7 @@
                     <!-- Feature Resolution -->
                     <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg dark:bg-slate-900">
                         <div class="flex items-center space-x-3">
-                            <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-600 animate-pulse"></div>
                             <span class="font-medium text-gray-900 dark:text-white dark:text-slate-100">Feature Resolution Service</span>
                         </div>
                         <span class="text-sm text-green-600 dark:text-green-400">Çalışıyor</span>
@@ -137,7 +137,7 @@
                     <!-- Quality Check -->
                     <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg dark:bg-slate-900">
                         <div class="flex items-center space-x-3">
-                            <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-600 animate-pulse"></div>
                             <span class="font-medium text-gray-900 dark:text-white dark:text-slate-100">AI Quality Check</span>
                         </div>
                         <span class="text-sm text-green-600 dark:text-green-400">Çalışıyor</span>

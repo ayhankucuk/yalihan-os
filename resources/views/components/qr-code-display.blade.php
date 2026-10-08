@@ -71,7 +71,7 @@
              class="w-{{ $size === 'small' ? '48' : ($size === 'large' ? '64' : '56') }} h-{{ $size === 'small' ? '48' : ($size === 'large' ? '64' : '56') }} rounded-lg border-2 border-gray-200 dark:border-slate-800 transition-all duration-200 hover:border-blue-500 dark:hover:border-blue-400">
 
         {{-- Hover overlay --}}
-        <div class="absolute inset-0 bg-blue-500 bg-opacity-0 hover:bg-opacity-10 rounded-lg transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100">
+        <div class="absolute inset-0 bg-blue-600 bg-opacity-0 hover:bg-opacity-10 rounded-lg transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100">
             <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-2xl">qr_code</span>
         </div>
     </div>

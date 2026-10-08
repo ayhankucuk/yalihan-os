@@ -145,12 +145,12 @@
                                 $percentage =
                                     $stats['total_customers'] > 0 ? ($count / $stats['total_customers']) * 100 : 0;
                                 $colors = [
-                                    'alici' => 'bg-blue-500',
-                                    'satici' => 'bg-green-500',
+                                    'alici' => 'bg-blue-600',
+                                    'satici' => 'bg-green-600',
                                     'kiraci' => 'bg-yellow-500',
-                                    'kiralayan' => 'bg-purple-500',
-                                    'yatirimci' => 'bg-red-500',
-                                    'ev_sahibi' => 'bg-indigo-500',
+                                    'kiralayan' => 'bg-purple-600',
+                                    'yatirimci' => 'bg-red-600',
+                                    'ev_sahibi' => 'bg-indigo-600',
                                     'gorevli' => 'bg-gray-500',
                                 ];
                                 $color = $colors[$type] ?? 'bg-gray-500';

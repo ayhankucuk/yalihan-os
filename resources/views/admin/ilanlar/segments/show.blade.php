@@ -533,7 +533,7 @@
                         @php $p = $progress[$seg->value]; @endphp
                         <li class="flex items-center gap-2">
                             <span
-                                class="w-2 h-2 rounded-full {{ $p['completed'] ? 'bg-green-500' : 'bg-gray-400' }}"></span>
+                                class="w-2 h-2 rounded-full {{ $p['completed'] ? 'bg-green-600' : 'bg-gray-400' }}"></span>
                             <span
                                 class="text-sm {{ $p['current'] ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300' }}">{{ $p['title'] }}</span>
                         </li>

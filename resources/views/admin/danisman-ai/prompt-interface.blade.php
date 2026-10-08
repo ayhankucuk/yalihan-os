@@ -152,15 +152,15 @@
                             <!-- Aksiyon Butonları -->
                             <div class="flex gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-slate-700">
                                 <button onclick="copyResponse()"
-                                    class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors">
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors">
                                     <i class="fas fa-copy mr-2"></i>Kopyala
                                 </button>
                                 <button onclick="saveResponse()"
-                                    class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-600 transition-colors">
+                                    class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-600 transition-colors">
                                     <i class="fas fa-save mr-2"></i>Kaydet
                                 </button>
                                 <button onclick="shareResponse()"
-                                    class="bg-purple-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-600 transition-colors">
+                                    class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-600 transition-colors">
                                     <i class="fas fa-share mr-2"></i>Paylaş
                                 </button>
                             </div>
@@ -315,10 +315,10 @@
                 <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-500"></div>
                 <div class="ml-4">
                     <div class="animate-pulse flex space-x-1">
-                        <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce"></div>
-                        <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style="animation-delay: 0.1s">
+                        <div class="w-2 h-2 bg-purple-600 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style="animation-delay: 0.1s">
                         </div>
-                        <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style="animation-delay: 0.2s">
+                        <div class="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style="animation-delay: 0.2s">
                         </div>
                     </div>
                 </div>

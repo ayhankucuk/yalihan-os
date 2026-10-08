@@ -28,7 +28,7 @@
         <template x-if="durum === 'queued' || durum === 'rendering'">
             <div class="space-y-2">
                 <div class="w-full bg-gray-200 dark:bg-slate-900 rounded-full h-2 overflow-hidden">
-                    <div class="h-2 bg-blue-500 dark:bg-blue-400 rounded-full transition-all duration-500"
+                    <div class="h-2 bg-blue-600 dark:bg-blue-400 rounded-full transition-all duration-500"
                         :style="`width: ${progress}%`"></div>
                 </div>
                 <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">

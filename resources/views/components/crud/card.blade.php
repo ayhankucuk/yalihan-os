@@ -14,7 +14,7 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
                     @if($icon)
-                        <div class="flex-shrink-0 bg-blue-500 rounded-lg p-3 mr-4">
+                        <div class="flex-shrink-0 bg-blue-600 rounded-lg p-3 mr-4">
                             {!! $icon !!}
                         </div>
                     @endif

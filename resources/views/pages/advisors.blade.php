@@ -86,7 +86,7 @@
                                     <span class="material-symbols-outlined mr-1" style="font-size:16px;vertical-align:middle">call</span> Ara
                                 </a>
                                 <a href="https://wa.me/905332090302"
-                                    class="flex-1 py-2 bg-green-500 text-white text-center font-semibold rounded-lg hover:bg-green-600 transition-all">
+                                    class="flex-1 py-2 bg-green-600 text-white text-center font-semibold rounded-lg hover:bg-green-600 transition-all">
                                     <span class="material-symbols-outlined mr-1" style="font-size:16px;vertical-align:middle">chat</span> WhatsApp
                                 </a>
                             </div>

@@ -26,31 +26,31 @@
     {{-- Filter --}}
     <div class="mb-6 flex gap-3">
         <a href="{{ route('admin.governance.decision-history') }}"
-           class="rounded-lg px-3 py-1.5 text-sm font-medium {{ !request('karar_durumu') ? 'bg-indigo-600 text-white dark:bg-indigo-500' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300' }}">
+           class="rounded-lg px-3 py-1.5 text-sm font-medium {{ !request('karar_durumu') ? 'bg-indigo-600 text-white dark:bg-indigo-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300' }}">
             Tümü
         </a>
         <a href="{{ route('admin.governance.decision-history', ['karar_durumu' => 'approved']) }}"
-           class="rounded-lg px-3 py-1.5 text-sm font-medium {{ request('karar_durumu') === 'approved' ? 'bg-green-600 text-white dark:bg-green-500' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300' }}">
+           class="rounded-lg px-3 py-1.5 text-sm font-medium {{ request('karar_durumu') === 'approved' ? 'bg-green-600 text-white dark:bg-green-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300' }}">
             Onaylanan
         </a>
         <a href="{{ route('admin.governance.decision-history', ['karar_durumu' => 'rejected']) }}"
-           class="rounded-lg px-3 py-1.5 text-sm font-medium {{ request('karar_durumu') === 'rejected' ? 'bg-red-600 text-white dark:bg-red-500' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300' }}">
+           class="rounded-lg px-3 py-1.5 text-sm font-medium {{ request('karar_durumu') === 'rejected' ? 'bg-red-600 text-white dark:bg-red-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300' }}">
             Reddedilen
         </a>
         <a href="{{ route('admin.governance.decision-history', ['karar_durumu' => 'auto_applied']) }}"
-           class="rounded-lg px-3 py-1.5 text-sm font-medium {{ request('karar_durumu') === 'auto_applied' ? 'bg-blue-600 text-white dark:bg-blue-500' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300' }}">
+           class="rounded-lg px-3 py-1.5 text-sm font-medium {{ request('karar_durumu') === 'auto_applied' ? 'bg-blue-600 text-white dark:bg-blue-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300' }}">
             Otomatik
         </a>
         <a href="{{ route('admin.governance.decision-history', ['karar_durumu' => 'failed']) }}"
-           class="rounded-lg px-3 py-1.5 text-sm font-medium {{ request('karar_durumu') === 'failed' ? 'bg-red-600 text-white dark:bg-red-500' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300' }}">
+           class="rounded-lg px-3 py-1.5 text-sm font-medium {{ request('karar_durumu') === 'failed' ? 'bg-red-600 text-white dark:bg-red-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300' }}">
             Başarısız
         </a>
         <a href="{{ route('admin.governance.decision-history', ['karar_durumu' => 'rolled_back']) }}"
-           class="rounded-lg px-3 py-1.5 text-sm font-medium {{ request('karar_durumu') === 'rolled_back' ? 'bg-purple-600 text-white dark:bg-purple-500' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300' }}">
+           class="rounded-lg px-3 py-1.5 text-sm font-medium {{ request('karar_durumu') === 'rolled_back' ? 'bg-purple-600 text-white dark:bg-purple-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300' }}">
             Geri Alınan
         </a>
         <a href="{{ route('admin.governance.decision-history', ['karar_durumu' => 'blocked']) }}"
-           class="rounded-lg px-3 py-1.5 text-sm font-medium {{ request('karar_durumu') === 'blocked' ? 'bg-orange-600 text-white dark:bg-orange-500' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300' }}">
+           class="rounded-lg px-3 py-1.5 text-sm font-medium {{ request('karar_durumu') === 'blocked' ? 'bg-orange-600 text-white dark:bg-orange-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300' }}">
             Engellenen
         </a>
     </div>

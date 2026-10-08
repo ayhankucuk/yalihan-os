@@ -22,8 +22,8 @@
 
 @php
     $badgeClasses = [
-        'sale' => 'bg-green-500 text-white',
-        'rent' => 'bg-blue-500 text-white',
+        'sale' => 'bg-green-600 text-white',
+        'rent' => 'bg-blue-600 text-white',
         'featured' => 'bg-yellow-500 text-white',
     ];
 
@@ -105,39 +105,39 @@
 
                 <!-- Action Buttons -->
                 <div class="flex flex-wrap gap-3">
-                    <button class="border-2 border-purple-500 dark:border-purple-400 text-purple-500 dark:text-purple-400 px-4 py-2 rounded-lg hover:bg-purple-500 hover:text-white dark:hover:bg-purple-600 dark:hover:text-white transition-all duration-300 font-semibold flex items-center gap-2" onclick="downloadInvestmentPdf()">
+                    <button class="border-2 border-purple-500 dark:border-purple-400 text-purple-500 dark:text-purple-400 px-4 py-2 rounded-lg hover:bg-purple-600 hover:text-white dark:hover:bg-purple-600 dark:hover:text-white transition-all duration-300 font-semibold flex items-center gap-2" onclick="downloadInvestmentPdf()">
                         <span>📄</span>
                         <span>Yatırım Raporunu PDF İndir</span>
                     </button>
                     @if ($showVirtualTour)
-                        <button class="border-2 border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400 px-4 py-2 rounded-lg hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 font-semibold flex items-center gap-2" onclick="openVirtualTour()">
+                        <button class="border-2 border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400 px-4 py-2 rounded-lg hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 font-semibold flex items-center gap-2" onclick="openVirtualTour()">
                             <span>🔄</span>
                             <span>360° Tur</span>
                         </button>
                     @endif
 
                     @if ($showGallery)
-                        <button class="border-2 border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400 px-4 py-2 rounded-lg hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 font-semibold flex items-center gap-2" onclick="openGallery()">
+                        <button class="border-2 border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400 px-4 py-2 rounded-lg hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 font-semibold flex items-center gap-2" onclick="openGallery()">
                             <span>📸</span>
                             <span>Galeri</span>
                         </button>
                     @endif
 
                     @if ($showMap)
-                        <button class="border-2 border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400 px-4 py-2 rounded-lg hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 font-semibold flex items-center gap-2" onclick="openMap()">
+                        <button class="border-2 border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400 px-4 py-2 rounded-lg hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 font-semibold flex items-center gap-2" onclick="openMap()">
                             <span>🗺️</span>
                             <span>Harita</span>
                         </button>
                     @endif
 
                     @if ($showShare)
-                        <button class="border-2 border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400 px-4 py-2 rounded-lg hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 font-semibold flex items-center gap-2" onclick="shareProperty()">
+                        <button class="border-2 border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400 px-4 py-2 rounded-lg hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 font-semibold flex items-center gap-2" onclick="shareProperty()">
                             <span>📤</span>
                             <span>Paylaş</span>
                         </button>
                     @endif
 
-                    <button class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-none" onclick="toggleFavorite()">
+                    <button class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-none" onclick="toggleFavorite()">
                         <span id="favoriteIcon">{{ $isFavorite ? '❤️' : '🤍' }}</span>
                         <span>Favori</span>
                     </button>
@@ -295,14 +295,14 @@
                     <div class="space-y-3">
                         @if(isset($propertyAgent['phone']))
                             <a href="tel:{{ $propertyAgent['phone'] }}"
-                                class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-none">
+                                class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-none">
                                 <span class="material-symbols-outlined">call</span>
                                 <span>Ara</span>
                             </a>
                         @endif
                         @if(isset($propertyAgent['email']))
                             <a href="mailto:{{ $propertyAgent['email'] }}"
-                                class="w-full border-2 border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400 py-2.5 px-4 rounded-lg hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 font-semibold flex items-center justify-center gap-2">
+                                class="w-full border-2 border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400 py-2.5 px-4 rounded-lg hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 font-semibold flex items-center justify-center gap-2">
                                 <span class="material-symbols-outlined">mail</span>
                                 <span>E-posta</span>
                             </a>
@@ -314,7 +314,7 @@
                             @endphp
                             <a href="{{ $whatsappUrl }}"
                                target="_blank"
-                               class="w-full border-2 border-green-500 dark:border-green-400 text-green-500 dark:text-green-400 py-2.5 px-4 rounded-lg hover:bg-green-500 hover:text-white dark:hover:bg-green-600 dark:hover:text-white transition-all duration-300 font-semibold flex items-center justify-center gap-2">
+                               class="w-full border-2 border-green-500 dark:border-green-400 text-green-500 dark:text-green-400 py-2.5 px-4 rounded-lg hover:bg-green-600 hover:text-white dark:hover:bg-green-600 dark:hover:text-white transition-all duration-300 font-semibold flex items-center justify-center gap-2">
                                 <span class="material-symbols-outlined">chat</span>
                                 <span>WhatsApp</span>
                             </a>
@@ -355,7 +355,7 @@
                                 placeholder="Mesajınızı yazın..."></textarea>
                         </div>
 
-                        <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg font-semibold dark:shadow-none">
+                        <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg font-semibold dark:shadow-none">
                             Mesaj Gönder
                         </button>
                     </form>

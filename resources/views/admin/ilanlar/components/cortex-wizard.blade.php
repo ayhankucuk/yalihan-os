@@ -49,7 +49,7 @@
                 <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
                     <template x-for="item in missingCritical" :key="item">
                         <li class="flex items-center">
-                            <span class="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></span>
+                            <span class="w-1.5 h-1.5 bg-red-600 rounded-full mr-2"></span>
                             <span x-text="item"></span>
                         </li>
                     </template>
@@ -64,7 +64,7 @@
                     <span class="text-gray-700 dark:text-slate-200 dark:text-slate-300" x-text="item.label"></span>
                     <div class="flex items-center gap-2">
                         <div class="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div class="h-full bg-blue-600 dark:bg-blue-500 rounded-full transition-all duration-300"
+                            <div class="h-full bg-blue-600 dark:bg-blue-600 rounded-full transition-all duration-300"
                                 :style="`width: ${item.score}%`"></div>
                         </div>
                         <span class="text-gray-900 dark:text-white font-semibold w-8 text-right dark:text-slate-100"

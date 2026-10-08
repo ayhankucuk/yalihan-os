@@ -275,7 +275,7 @@
                 </div>
                 <div
                     class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-900 rounded-full shadow-sm border border-green-200 dark:border-green-800 dark:shadow-none">
-                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <div class="w-2 h-2 rounded-full bg-green-600 animate-pulse"></div>
                     <span class="text-xs font-medium text-green-700 dark:text-green-300">OpenStreetMap</span>
                 </div>
             </div>
@@ -651,19 +651,19 @@
                     <p class="text-sm font-semibold text-gray-900 dark:text-white mb-2 dark:text-slate-100">📍 Konum Nasıl İşaretlenir?</p>
                     <ul class="text-xs text-gray-900 dark:text-white space-y-1.5 dark:text-slate-100">
                         <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>
                             <span><strong>Tıklama:</strong> Haritada istediğiniz yere tıklayın</span>
                         </li>
                         <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>
                             <span><strong>Adres:</strong> Yukarıdaki İl/İlçe/Mahalle'yi seçin</span>
                         </li>
                         <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>
                             <span><strong>GPS:</strong> Sağ üst GPS butonuna tıklayın</span>
                         </li>
                         <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
                             <span><strong>Mesafe:</strong> Mesafe ölçüm butonuna tıklayıp haritada nokta seçin</span>
                         </li>
                         <li class="flex items-center gap-2">

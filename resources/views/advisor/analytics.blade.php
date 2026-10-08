@@ -69,7 +69,7 @@
                                     <span class="text-slate-500 dark:text-slate-400">{{ $intent->count }}</span>
                                 </div>
                                 <div class="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800">
-                                    <div class="h-2 rounded-full bg-blue-500"
+                                    <div class="h-2 rounded-full bg-blue-600"
                                         style="width: {{ ($intent->count / max($successCount, 1)) * 100 }}%"></div>
                                 </div>
                             </div>
@@ -117,7 +117,7 @@
                                 <div
                                     class="absolute -top-8 hidden rounded bg-slate-800 px-2 py-1 text-xs text-white group-hover:block">
                                     {{ $trend->count }}</div>
-                                <div class="w-full rounded-t-lg bg-blue-500/20 transition-all hover:bg-blue-500/40 dark:bg-blue-600/10 dark:hover:bg-blue-600/30"
+                                <div class="w-full rounded-t-lg bg-blue-600/20 transition-all hover:bg-blue-600/40 dark:bg-blue-600/10 dark:hover:bg-blue-600/30"
                                     style="height: {{ min(($trend->count / max($successCount, 1)) * 100, 100) }}%"></div>
                                 <p class="mt-2 text-[10px] font-medium uppercase text-slate-400">
                                     {{ date('M d', strtotime($trend->date)) }}</p>

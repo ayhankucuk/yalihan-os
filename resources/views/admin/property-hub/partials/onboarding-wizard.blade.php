@@ -65,7 +65,7 @@
                                     <div class="flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-all duration-200"
                                         :class="{
                                             'bg-blue-600 text-white': currentStep === index,
-                                            'bg-green-500 text-white': currentStep > index,
+                                            'bg-green-600 text-white': currentStep > index,
                                             'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400': currentStep <
                                                 index
                                         }">
@@ -91,7 +91,7 @@
                                 </div>
                                 <div x-show="index < steps.length - 1"
                                     class="mx-4 h-0.5 flex-1 transition-all duration-200"
-                                    :class="currentStep > index ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'">
+                                    :class="currentStep > index ? 'bg-green-600' : 'bg-gray-200 dark:bg-gray-700'">
                                 </div>
                             </div>
                         </template>

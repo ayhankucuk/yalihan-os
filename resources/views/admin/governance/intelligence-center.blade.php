@@ -23,7 +23,7 @@
             <form method="POST" action="{{ route('admin.governance.scan') }}" class="inline">
                 @csrf
                 <button type="submit"
-                        class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
+                        class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-600">
                     Pipeline Çalıştır
                 </button>
             </form>
@@ -49,7 +49,7 @@
                         class="whitespace-nowrap border-b-2 px-1 pb-3 text-sm font-medium transition-colors">
                     {{ $label }}
                     @if($tab === 'optimizer' && ($pendingSuggestions->count() ?? 0) > 0)
-                        <span class="ml-1 rounded-full bg-red-500 px-1.5 py-0.5 text-xs text-white">{{ $pendingSuggestions->count() }}</span>
+                        <span class="ml-1 rounded-full bg-red-600 px-1.5 py-0.5 text-xs text-white">{{ $pendingSuggestions->count() }}</span>
                     @endif
                     @if($tab === 'risk' && count($riskPanel['high_risk_decisions'] ?? []) > 0)
                         <span class="ml-1 rounded-full bg-yellow-500 px-1.5 py-0.5 text-xs text-white">{{ count($riskPanel['high_risk_decisions']) }}</span>
@@ -253,10 +253,10 @@
                                 default => ['bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-gray-300', strtoupper($entry['karar_durumu'])],
                             };
                             $severityDot = match($entry['severity']) {
-                                'critical' => 'bg-red-500',
-                                'high' => 'bg-orange-500',
+                                'critical' => 'bg-red-600',
+                                'high' => 'bg-orange-600',
                                 'medium' => 'bg-yellow-500',
-                                'low' => 'bg-green-500',
+                                'low' => 'bg-green-600',
                                 default => 'bg-gray-400',
                             };
                         @endphp
@@ -371,7 +371,7 @@
         {{-- High Risk Decisions --}}
         <div class="mb-6">
             <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
-                <span class="h-2 w-2 rounded-full bg-red-500"></span>
+                <span class="h-2 w-2 rounded-full bg-red-600"></span>
                 Yüksek Riskli Kararlar
             </h3>
             @if(empty($riskPanel['high_risk_decisions']))
@@ -434,7 +434,7 @@
         {{-- Unstable Rules --}}
         <div>
             <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
-                <span class="h-2 w-2 rounded-full bg-orange-500"></span>
+                <span class="h-2 w-2 rounded-full bg-orange-600"></span>
                 Kararsız Kurallar (hem otomatik hem geri alım/hata)
             </h3>
             @if(empty($riskPanel['unstable_rules']))
@@ -621,7 +621,7 @@
                     </div>
 
                     <button type="submit"
-                            class="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
+                            class="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-600">
                         Ayarları Kaydet
                     </button>
                 </form>

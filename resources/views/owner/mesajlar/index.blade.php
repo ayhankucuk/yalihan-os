@@ -73,7 +73,7 @@
                         @if($mesaj->gonderen_id === auth()->id())
                             {{-- Giden Mesaj (Benim Mesajım) --}}
                             <div class="flex justify-end">
-                                <div class="max-w-[75%] rounded-2xl rounded-tr-none bg-blue-600 px-4 py-2.5 text-sm text-white shadow-md shadow-blue-500/20 transition-transform hover:-translate-y-0.5 dark:bg-blue-500">
+                                <div class="max-w-[75%] rounded-2xl rounded-tr-none bg-blue-600 px-4 py-2.5 text-sm text-white shadow-md shadow-blue-500/20 transition-transform hover:-translate-y-0.5 dark:bg-blue-600">
                                     {!! nl2br(e($mesaj->icerik)) !!}
                                     <div class="mt-1 text-right text-[10px] text-blue-100">
                                         {{ $mesaj->created_at->format('H:i') }}
@@ -108,7 +108,7 @@
                         placeholder="Bir mesaj yazın..."
                         required
                     ></textarea>
-                    <button type="submit" class="inline-flex flex-shrink-0 items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    <button type="submit" class="inline-flex flex-shrink-0 items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
                     </button>
                 </form>

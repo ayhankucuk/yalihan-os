@@ -214,7 +214,7 @@
 
                     <!-- Stats Pills -->
                     <div class="mb-6 flex items-center gap-3">
-                        <div class="rounded-xl bg-red-500/30 px-4 py-2 backdrop-blur-sm">
+                        <div class="rounded-xl bg-red-600/30 px-4 py-2 backdrop-blur-sm">
                             <span class="text-xs text-white/70">Churn Riski:</span>
                             <span class="ml-2 font-black text-white" x-text="stats.by_type?.churn || 0"></span>
                         </div>
@@ -292,7 +292,7 @@
 
                                         <!-- Action Button -->
                                         <button @click="executeAction(action)"
-                                            class="shrink-0 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                                            class="shrink-0 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-600"
                                             x-text="action.action_label">
                                         </button>
                                     </div>
@@ -424,7 +424,7 @@
                         <option value="06">Ankara (06)</option>
                     </select>
                     <button id="mi-refresh"
-                        class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:scale-105 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-95 dark:bg-blue-600 dark:hover:bg-blue-500 dark:focus:ring-offset-gray-900">
+                        class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:scale-105 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-95 dark:bg-blue-600 dark:hover:bg-blue-600 dark:focus:ring-offset-gray-900">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 4v5h.582M20 20v-5h-.581M5.545 9A7.5 7.5 0 0119.5 12M18.455 15A7.5 7.5 0 014.5 12" />
@@ -646,7 +646,7 @@
                                 <span
                                     class="{{ $serviceState == 'online' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} flex items-center text-sm font-semibold">
                                     <span
-                                        class="{{ $serviceState == 'online' ? 'bg-green-500 dark:bg-green-500' : 'bg-red-500 dark:bg-red-500' }} mr-2 h-2 w-2 rounded-full"></span>
+                                        class="{{ $serviceState == 'online' ? 'bg-green-600 dark:bg-green-600' : 'bg-red-600 dark:bg-red-600' }} mr-2 h-2 w-2 rounded-full"></span>
                                     {{ $serviceState == 'online' ? 'Online' : 'Offline' }}
                                 </span>
                             </dd>

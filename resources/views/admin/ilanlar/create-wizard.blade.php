@@ -94,8 +94,8 @@
         <div
             class="relative overflow-hidden rounded-[2.5rem] border border-white/20 bg-white/50 p-8 shadow-2xl backdrop-blur-md dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
             {{-- Decorative Background --}}
-            <div class="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl"></div>
-            <div class="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl"></div>
+            <div class="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-blue-600/10 blur-3xl"></div>
+            <div class="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-purple-600/10 blur-3xl"></div>
 
             <div class="relative z-10 flex items-center justify-between">
                 @php
@@ -122,7 +122,7 @@
 
                                 {{-- Checkmark for completed --}}
                                 <div x-show="wizard?.completedSteps?.includes({{ $step['id'] }}) && wizard?.currentStep !== {{ $step['id'] }}"
-                                    class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-green-500 dark:border-slate-900">
+                                    class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-green-600 dark:border-slate-900">
                                     <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                     </svg>
@@ -155,7 +155,7 @@
             x-transition:enter-end="opacity-100 transform translate-y-0 scale-100">
 
             {{-- Pulse Effect for low score --}}
-            <div x-show="score < 40" class="pointer-events-none absolute inset-0 animate-pulse bg-red-500/5"></div>
+            <div x-show="score < 40" class="pointer-events-none absolute inset-0 animate-pulse bg-red-600/5"></div>
 
             <div class="relative z-10 mb-4 flex items-center justify-between">
                 <div class="flex items-center gap-4">
@@ -203,9 +203,9 @@
                 class="h-3 w-full overflow-hidden rounded-full border border-gray-200 bg-gray-100 dark:border-slate-700 dark:bg-slate-800">
                 <div class="h-full transition-all duration-1000 ease-out"
                     :class="{
-                        'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]': score < 40,
+                        'bg-red-600 shadow-[0_0_10px_rgba(239,68,68,0.5)]': score < 40,
                         'bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]': score >= 40 && score < 70,
-                        'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]': score >= 70
+                        'bg-green-600 shadow-[0_0_10px_rgba(34,197,94,0.5)]': score >= 70
                     }"
                     :style="`width: ${score}%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1)`"></div>
             </div>

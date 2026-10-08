@@ -61,7 +61,7 @@
                     <!-- Similarity Badge -->
                     <div class="absolute top-4 right-4 z-10">
                         <div class="px-3 py-1.5 rounded-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-indigo-100 dark:border-indigo-800 flex items-center gap-2 shadow-sm dark:shadow-none dark:bg-slate-900/90">
-                            <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-green-600 animate-pulse"></div>
                             <span class="text-xs font-bold text-gray-800 dark:text-slate-200">
                                 %{{ round($item['score'] * 100, 1) }} Alaka
                             </span>

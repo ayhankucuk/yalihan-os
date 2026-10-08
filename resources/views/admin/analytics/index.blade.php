@@ -23,7 +23,7 @@
                 <div class="text-sm text-gray-500 dark:text-gray-400">
                     Son güncelleme: <span id="last-updated">{{ $metrics['last_updated'] ?? 'Bilinmiyor' }}</span>
                 </div>
-                <button onclick="refreshDashboard()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                <button onclick="refreshDashboard()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
                     <i class="fas fa-sync-alt mr-2"></i>Yenile
                 </button>
             </div>

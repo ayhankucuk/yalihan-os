@@ -33,7 +33,7 @@
 
         <!-- Unread count badge -->
         <span x-show="unreadCount > 0" x-text="unreadCount"
-            class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center notification-count"></span>
+            class="absolute -top-1 -right-1 h-4 w-4 bg-red-600 text-white text-xs rounded-full flex items-center justify-center notification-count"></span>
     </button>
 
     <!-- Notification Panel -->
@@ -82,10 +82,10 @@
                         <div class="flex-shrink-0">
                             <div class="w-2 h-2 rounded-full mt-2"
                                 :class="{
-                                    'bg-blue-500': notification.type === 'info',
-                                    'bg-green-500': notification.type === 'success',
+                                    'bg-blue-600': notification.type === 'info',
+                                    'bg-green-600': notification.type === 'success',
                                     'bg-yellow-500': notification.type === 'warning',
-                                    'bg-red-500': notification.type === 'error'
+                                    'bg-red-600': notification.type === 'error'
                                 }"
                                 x-show="!notification.read"></div>
                         </div>

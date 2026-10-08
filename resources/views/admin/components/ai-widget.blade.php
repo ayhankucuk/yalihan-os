@@ -26,9 +26,9 @@
                 <div class="ai-status-indicator flex items-center space-x-2">
                     <div class="w-2 h-2 rounded-full"
                          :class="{
-                             'bg-green-500': status === 'success',
+                             'bg-green-600': status === 'success',
                              'bg-yellow-500': status === 'loading',
-                             'bg-red-500': status === 'error',
+                             'bg-red-600': status === 'error',
                              'bg-gray-400': status === 'idle'
                          }"></div>
                     <span class="text-xs font-medium text-gray-600" x-text="statusText"></span>

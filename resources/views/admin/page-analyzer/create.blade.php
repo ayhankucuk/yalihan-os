@@ -167,7 +167,7 @@
                     </a>
                     <button type="submit"
                             id="page-analyzer-create-submit-btn"
-                            class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             onsubmit="const btn = document.getElementById('page-analyzer-create-submit-btn'); const icon = document.getElementById('page-analyzer-create-submit-icon'); const text = document.getElementById('page-analyzer-create-submit-text'); const spinner = document.getElementById('page-analyzer-create-submit-spinner'); if(btn && icon && text && spinner) { btn.disabled = true; icon.classList.add('hidden'); spinner.classList.remove('hidden'); text.textContent = 'Creating Analysis...'; }">
                         <svg id="page-analyzer-create-submit-icon" class="fas fa-play mr-2"></svg>
                         <svg id="page-analyzer-create-submit-spinner" class="hidden w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">

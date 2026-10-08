@@ -84,17 +84,17 @@
         </h2>
         <div class="flex flex-wrap gap-3">
             <a href="{{ route('admin.finance.commissions.index') }}" 
-               class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg 
+               class="px-4 py-2 bg-blue-600 hover:bg-blue-600 text-white rounded-lg 
                       transition-all duration-200 hover:scale-105">
                 💼 Hakedişleri Görüntüle
             </a>
             <a href="{{ route('admin.finance.transactions.index') }}" 
-               class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg 
+               class="px-4 py-2 bg-green-600 hover:bg-green-600 text-white rounded-lg 
                       transition-all duration-200 hover:scale-105">
                 💳 Tahsilatları Görüntüle
             </a>
             <a href="{{ route('admin.finance.bonuses.index') }}" 
-               class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg 
+               class="px-4 py-2 bg-purple-600 hover:bg-purple-600 text-white rounded-lg 
                       transition-all duration-200 hover:scale-105">
                 🏆 Primleri Görüntüle
             </a>

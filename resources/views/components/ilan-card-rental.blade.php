@@ -22,25 +22,25 @@
                 <div class="absolute top-3 left-3">
                     @switch($ilan->kiralama_turu)
                         @case('gunluk')
-                            <span class="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                            <span class="bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
                                 🏠 Günlük Kiralama
                             </span>
                         @break
 
                         @case('haftalik')
-                            <span class="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                            <span class="bg-green-600 text-white px-2 py-1 rounded-full text-xs font-medium">
                                 🏡 Haftalık Kiralama
                             </span>
                         @break
 
                         @case('sezonluk')
-                            <span class="bg-purple-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                            <span class="bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium">
                                 🌅 Sezonluk Kiralama
                             </span>
                         @break
 
                         @case('uzun_donem')
-                            <span class="bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                            <span class="bg-orange-600 text-white px-2 py-1 rounded-full text-xs font-medium">
                                 📅 Uzun Dönem Kiralama
                             </span>
                         @break

@@ -170,13 +170,13 @@
 
             if (successRate >= 80) {
                 systemStatus.innerHTML =
-                    '<div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div><span class="text-xs text-green-600 font-medium">Mükemmel</span>';
+                    '<div class="w-3 h-3 bg-green-600 rounded-full animate-pulse"></div><span class="text-xs text-green-600 font-medium">Mükemmel</span>';
             } else if (successRate >= 50) {
                 systemStatus.innerHTML =
                     '<div class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div><span class="text-xs text-yellow-600 font-medium">İyi</span>';
             } else if (successRate > 0) {
                 systemStatus.innerHTML =
-                    '<div class="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div><span class="text-xs text-orange-600 font-medium">Sorunlu</span>';
+                    '<div class="w-3 h-3 bg-orange-600 rounded-full animate-pulse"></div><span class="text-xs text-orange-600 font-medium">Sorunlu</span>';
             } else {
                 systemStatus.innerHTML =
                     '<div class="w-3 h-3 bg-gray-400 rounded-full"></div><span class="text-xs text-gray-500">Pasif</span>';
@@ -191,7 +191,7 @@
         } catch (error) {
             console.error('AI Monitor refresh failed:', error);
             document.getElementById('ai-system-durumu').innerHTML =
-                '<div class="w-3 h-3 bg-red-500 rounded-full"></div><span class="text-xs text-red-600">Hata</span>';
+                '<div class="w-3 h-3 bg-red-600 rounded-full"></div><span class="text-xs text-red-600">Hata</span>';
         }
     }
 
@@ -208,7 +208,7 @@
 
             if (count > 0) {
                 // Aktif provider (yeşil)
-                dot.className = 'durum-isigi w-2 h-2 bg-green-500 rounded-full animate-pulse';
+                dot.className = 'durum-isigi w-2 h-2 bg-green-600 rounded-full animate-pulse';
                 badge.className =
                     'durum-etiketi text-xs px-2 py-1 bg-green-100 text-green-700 rounded font-medium';
                 badge.textContent = count;
@@ -294,7 +294,7 @@
         }
     }
 
-    .durum-isigi.bg-green-500 {
+    .durum-isigi.bg-green-600 {
         animation: pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
 </style>

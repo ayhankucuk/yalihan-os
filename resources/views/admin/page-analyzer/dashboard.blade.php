@@ -287,7 +287,7 @@
                                 <input type="text" id="modalPageName" readonly
                                     class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm font-medium dark:bg-slate-900">
                                 <button onclick="copyToClipboard('modalPageName')"
-                                    class="px-4 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                                    class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
                                     <i class="fas fa-copy"></i>
                                 </button>
                             </div>
@@ -300,7 +300,7 @@
                                 <input type="text" id="modalScore" readonly
                                     class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm dark:bg-slate-900">
                                 <button onclick="copyToClipboard('modalScore')"
-                                    class="px-4 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                                    class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
                                     <i class="fas fa-copy"></i>
                                 </button>
                             </div>
@@ -313,7 +313,7 @@
                                 <input type="text" id="modalCategory" readonly
                                     class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm dark:bg-slate-900">
                                 <button onclick="copyToClipboard('modalCategory')"
-                                    class="px-4 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                                    class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
                                     <i class="fas fa-copy"></i>
                                 </button>
                             </div>
@@ -326,7 +326,7 @@
                                 <textarea id="modalDetails" readonly rows="3"
                                     class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm resize-none dark:bg-slate-900"></textarea>
                                 <button onclick="copyToClipboard('modalDetails')"
-                                    class="px-4 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                                    class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
                                     <i class="fas fa-copy"></i>
                                 </button>
                             </div>
@@ -339,7 +339,7 @@
                                 <textarea id="modalIssues" readonly rows="4"
                                     class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm resize-none dark:bg-slate-900"></textarea>
                                 <button onclick="copyToClipboard('modalIssues')"
-                                    class="px-4 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                                    class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
                                     <i class="fas fa-copy"></i>
                                 </button>
                             </div>
@@ -352,7 +352,7 @@
                                 <textarea id="modalAllDetails" readonly rows="6"
                                     class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm resize-none dark:bg-slate-900"></textarea>
                                 <button onclick="copyToClipboard('modalAllDetails')"
-                                    class="px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                                    class="px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-600 transition-colors">
                                     <i class="fas fa-copy"></i>
                                 </button>
                             </div>
@@ -367,7 +367,7 @@
                         Kapat
                     </button>
                     <button onclick="copyAllDetails()"
-                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <i class="fas fa-copy mr-2"></i>
                         Tümünü Kopyala
                     </button>
@@ -677,9 +677,9 @@
         }
 
         function getScoreBarColor(score) {
-            if (score >= 8) return 'bg-green-500';
+            if (score >= 8) return 'bg-green-600';
             if (score >= 6) return 'bg-yellow-500';
-            return 'bg-red-500';
+            return 'bg-red-600';
         }
 
         function updateStats() {
@@ -933,9 +933,9 @@ Analiz Tarihi: ${new Date().toLocaleString('tr-TR')}`;
             // Toast notification oluştur
             const toast = document.createElement('div');
             toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 toast-notification shadow-lg ${
-                type === 'success' ? 'bg-green-500' :
-                type === 'error' ? 'bg-red-500' :
-                'bg-blue-500'
+                type === 'success' ? 'bg-green-600' :
+                type === 'error' ? 'bg-red-600' :
+                'bg-blue-600'
             }`;
 
             // İkon ekle

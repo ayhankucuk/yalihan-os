@@ -35,7 +35,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {{-- Toplam Kişi --}}
             <div class="group relative bg-white dark:bg-slate-900 rounded-2xl p-6 border border-gray-200 dark:border-slate-800 hover:shadow-2xl dark:hover:shadow-blue-900/20 transition-all duration-300 hover:scale-105 dark:hover:scale-105 overflow-hidden dark:border-slate-700">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-3xl dark:blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                <div class="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 dark:bg-blue-600/5 rounded-full blur-3xl dark:blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                 <div class="relative">
                     <div class="flex items-center justify-between mb-4">
                         <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
@@ -51,12 +51,12 @@
 
             {{-- Aktif Kişiler (Yeşil Işık) --}}
             <div class="group relative bg-white dark:bg-slate-900 rounded-2xl p-6 border border-gray-200 dark:border-slate-800 hover:shadow-2xl dark:hover:shadow-green-900/20 transition-all duration-300 hover:scale-105 dark:hover:scale-105 overflow-hidden dark:border-slate-700">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-green-500/10 dark:bg-green-500/5 rounded-full blur-3xl dark:blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                <div class="absolute top-0 right-0 w-32 h-32 bg-green-600/10 dark:bg-green-600/5 rounded-full blur-3xl dark:blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                 <div class="relative">
                     <div class="flex items-center justify-between mb-4">
                         <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl relative">
                             {{-- Telemetri Işığı --}}
-                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 dark:bg-green-400 rounded-full animate-pulse shadow-lg dark:shadow-green-500/50"></div>
+                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-600 dark:bg-green-400 rounded-full animate-pulse shadow-lg dark:shadow-green-500/50"></div>
                             <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
@@ -87,12 +87,12 @@
 
             {{-- Mülk Sahipleri (Mor Işık) --}}
             <div class="group relative bg-white dark:bg-slate-900 rounded-2xl p-6 border border-gray-200 dark:border-slate-800 hover:shadow-2xl dark:hover:shadow-purple-900/20 transition-all duration-300 hover:scale-105 dark:hover:scale-105 overflow-hidden dark:border-slate-700">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 dark:bg-purple-500/5 rounded-full blur-3xl dark:blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                <div class="absolute top-0 right-0 w-32 h-32 bg-purple-600/10 dark:bg-purple-600/5 rounded-full blur-3xl dark:blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                 <div class="relative">
                     <div class="flex items-center justify-between mb-4">
                         <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl relative">
                             {{-- Telemetri Işığı --}}
-                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 dark:bg-purple-400 rounded-full animate-pulse shadow-lg dark:shadow-purple-500/50"></div>
+                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-purple-600 dark:bg-purple-400 rounded-full animate-pulse shadow-lg dark:shadow-purple-500/50"></div>
                             <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                             </svg>
@@ -177,7 +177,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($kisi->aktiflik_durumu === 'Aktif')
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">
-                                            <span class="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                                            <span class="w-2 h-2 bg-green-600 dark:bg-green-400 rounded-full mr-2 animate-pulse"></span>
                                             Aktif
                                         </span>
                                     @elseif($kisi->aktiflik_durumu === 'Potansiyel')

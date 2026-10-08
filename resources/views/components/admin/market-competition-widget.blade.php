@@ -136,10 +136,10 @@
      * Fiyat farkı rengi
      */
     function getPriceGapColor(percent) {
-        if (percent > 10) return { bg: 'bg-red-500', text: 'text-red-700 dark:text-red-300', border: 'border-red-500' };
-        if (percent > 5) return { bg: 'bg-orange-500', text: 'text-orange-700 dark:text-orange-300', border: 'border-orange-500' };
+        if (percent > 10) return { bg: 'bg-red-600', text: 'text-red-700 dark:text-red-300', border: 'border-red-500' };
+        if (percent > 5) return { bg: 'bg-orange-600', text: 'text-orange-700 dark:text-orange-300', border: 'border-orange-500' };
         if (percent > 0) return { bg: 'bg-yellow-500', text: 'text-yellow-700 dark:text-yellow-300', border: 'border-yellow-500' };
-        return { bg: 'bg-green-500', text: 'text-green-700 dark:text-green-300', border: 'border-green-500' };
+        return { bg: 'bg-green-600', text: 'text-green-700 dark:text-green-300', border: 'border-green-500' };
     }
 
     /**
@@ -175,7 +175,7 @@
                             <span class="text-xs font-bold text-gray-900 dark:text-white dark:text-slate-100">${competitorCount} ilan</span>
                         </div>
                         <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                            <div class="bg-purple-500 h-2 rounded-full transition-all duration-300" style="width: ${Math.min(confidence, 100)}%"></div>
+                            <div class="bg-purple-600 h-2 rounded-full transition-all duration-300" style="width: ${Math.min(confidence, 100)}%"></div>
                         </div>
                         <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">Güven: ${Math.round(confidence)}%</p>
                     </div>

@@ -130,7 +130,7 @@
             <div class="space-y-3">
                 <div class="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/10 rounded-lg border border-green-200 dark:border-green-800">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                             1
                         </div>
                         <span class="text-sm text-gray-700 dark:text-slate-200 dark:text-slate-300">Yükleniyor...</span>

@@ -60,7 +60,7 @@
     <!-- Drift Heatmap Section -->
     <div class="bg-slate-800 border border-slate-700 p-6 rounded-xl shadow-2xl mb-8">
         <h3 class="text-slate-400 text-xs uppercase font-bold mb-6 flex items-center">
-            <span class="mr-2 h-2 w-2 bg-red-500 rounded-full animate-ping"></span>
+            <span class="mr-2 h-2 w-2 bg-red-600 rounded-full animate-ping"></span>
             Category Drift Heatmap (Model Training Priorities)
         </h3>
         
@@ -81,7 +81,7 @@
     <div class="flex justify-between items-center text-[10px] text-slate-500 uppercase tracking-widest border-t border-slate-800 pt-4">
         <div>System Node: {{ gethostname() }}</div>
         <div class="flex items-center">
-            <span class="mr-2 h-1 w-1 bg-green-500 rounded-full"></span>
+            <span class="mr-2 h-1 w-1 bg-green-600 rounded-full"></span>
             Telemetry Stream Active (Live Updates Every 10s)
         </div>
         <div>Last Update: {{ now()->toDateTimeString() }}</div>

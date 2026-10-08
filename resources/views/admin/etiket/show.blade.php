@@ -165,13 +165,13 @@
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 dark:text-slate-200">Quick Actions</h3>
                     <div class="space-y-3">
                         <a href="{{ route('admin.etiket.edit', $etiket->id) }}"
-                           class="w-full flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                           class="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
                             <i class="fas fa-edit mr-2"></i>
                             Edit Etiket
                         </a>
 
                         <button onclick="deleteEtiket({{ $etiket->id }})"
-                                class="w-full flex items-center justify-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                                class="w-full flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-600 transition-colors">
                             <i class="fas fa-trash mr-2"></i>
                             Delete Etiket
                         </button>

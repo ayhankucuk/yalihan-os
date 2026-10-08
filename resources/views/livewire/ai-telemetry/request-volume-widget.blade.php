@@ -50,7 +50,7 @@
                     @endphp
                     <div class="group relative w-full rounded-t bg-blue-100 dark:bg-blue-900"
                         style="height: {{ $height }}%">
-                        <div class="absolute bottom-0 w-full rounded-t bg-blue-500 transition-all hover:bg-blue-600 dark:bg-blue-400"
+                        <div class="absolute bottom-0 w-full rounded-t bg-blue-600 transition-all hover:bg-blue-600 dark:bg-blue-400"
                             style="height: 100%"></div>
 
                         {{-- Tooltip --}}

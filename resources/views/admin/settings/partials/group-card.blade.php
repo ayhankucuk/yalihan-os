@@ -73,7 +73,7 @@
         <a href="{{ route('admin.settings.index') }}#{{ $item['tab'] }}"
            class="flex items-center justify-between px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
             <div class="flex items-center gap-3">
-                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
                 <span class="font-medium text-slate-700 dark:text-slate-300">{{ $item['label'] }}</span>
             </div>
             <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -52,8 +52,8 @@
 
                         <span
                             class="inline-block px-3 py-1 rounded-full text-sm font-bold {{ match ($opp['priority_level']) {
-                                'ACIL' => 'bg-red-500 text-white',
-                                'YÜKSEK' => 'bg-orange-500 text-white',
+                                'ACIL' => 'bg-red-600 text-white',
+                                'YÜKSEK' => 'bg-orange-600 text-white',
                                 'ORTA' => 'bg-yellow-500 text-white',
                                 default => 'bg-gray-500 text-white',
                             } }}">
@@ -66,7 +66,7 @@
                         <div class="bg-white dark:bg-gray-700 rounded-lg p-3 dark:bg-slate-900">
                             <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">Match Score</p>
                             <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mb-1">
-                                <div class="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                <div class="bg-blue-600 h-2 rounded-full transition-all duration-300"
                                     style="width: {{ min($opp['match_score'], 100) }}%"></div>
                             </div>
                             <p class="text-sm font-bold text-gray-900 dark:text-white dark:text-slate-100">{{ $opp['match_score'] }}%</p>
@@ -75,7 +75,7 @@
                         <div class="bg-white dark:bg-gray-700 rounded-lg p-3 dark:bg-slate-900">
                             <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">Churn Risk</p>
                             <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mb-1">
-                                <div class="bg-red-500 h-2 rounded-full transition-all duration-300"
+                                <div class="bg-red-600 h-2 rounded-full transition-all duration-300"
                                     style="width: {{ min($opp['churn_risk'], 100) }}%"></div>
                             </div>
                             <p class="text-sm font-bold text-gray-900 dark:text-white dark:text-slate-100">{{ $opp['churn_risk'] }}%</p>

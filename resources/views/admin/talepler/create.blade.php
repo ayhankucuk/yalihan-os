@@ -315,7 +315,7 @@
                             <div class="flex items-center justify-between">
                                 <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center dark:text-slate-100">
                                     <div
-                                        class="w-10 h-10 bg-green-500 dark:bg-green-600 rounded-lg flex items-center justify-center mr-3
+                                        class="w-10 h-10 bg-green-600 dark:bg-green-600 rounded-lg flex items-center justify-center mr-3
                                                 shadow-lg transform hover:scale-110 transition-all duration-200">
                                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -827,7 +827,7 @@
                 <span class="relative flex h-3 w-3">
                     <span
                         class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-green-600"></span>
                 </span>
                 <span class="text-sm font-medium text-green-800 dark:text-green-200">AI Aktif</span>
             </div>
@@ -846,7 +846,7 @@
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -900,7 +900,7 @@
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                            <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -953,7 +953,7 @@
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                            <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1030,7 +1030,7 @@
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                            <div class="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1096,7 +1096,7 @@
                                focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2
                                transition-all duration-200 ease-in-out
                                disabled:opacity-50 disabled:cursor-not-allowed
-                               dark:bg-orange-500 dark:hover:bg-orange-600"
+                               dark:bg-orange-600 dark:hover:bg-orange-600"
             :disabled="loading" aria-label="Talebi kaydet">
             <span x-show="!loading" class="flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -266,7 +266,7 @@
                                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                     <div class="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                        <div class="h-full bg-green-500 transition-all duration-500"
+                                        <div class="h-full bg-green-600 transition-all duration-500"
                                             :style="`width: ${(suggestion.confidence || 0.75) * 100}%`"></div>
                                     </div>
                                     <span class="text-[10px] font-bold text-gray-600 dark:text-gray-400"

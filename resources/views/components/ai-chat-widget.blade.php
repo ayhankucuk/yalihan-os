@@ -15,7 +15,7 @@
 
         {{-- Notification Badge --}}
         <div
-            class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full
+            class="absolute -top-1 -right-1 w-4 h-4 bg-red-600 rounded-full
                     flex items-center justify-center text-xs font-bold animate-bounce">
             AI
         </div>

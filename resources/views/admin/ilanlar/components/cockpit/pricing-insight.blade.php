@@ -64,10 +64,10 @@
                         </div>
                         @php
                             $barColor = match (true) {
-                                $pricingInsight->pricing_score >= 80 => 'bg-green-500',
-                                $pricingInsight->pricing_score >= 60 => 'bg-blue-500',
+                                $pricingInsight->pricing_score >= 80 => 'bg-green-600',
+                                $pricingInsight->pricing_score >= 60 => 'bg-blue-600',
                                 $pricingInsight->pricing_score >= 40 => 'bg-amber-500',
-                                default => 'bg-red-500',
+                                default => 'bg-red-600',
                             };
                         @endphp
                         <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
@@ -166,8 +166,8 @@
                         <div class="flex-1">
                             @php
                                 $oppBarColor = match (true) {
-                                    $pricingInsight->opportunity_score >= 70 => 'bg-green-500',
-                                    $pricingInsight->opportunity_score >= 45 => 'bg-blue-500',
+                                    $pricingInsight->opportunity_score >= 70 => 'bg-green-600',
+                                    $pricingInsight->opportunity_score >= 45 => 'bg-blue-600',
                                     $pricingInsight->opportunity_score >= 20 => 'bg-amber-500',
                                     default => 'bg-gray-400',
                                 };

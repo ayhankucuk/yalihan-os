@@ -30,9 +30,9 @@
     // Colors
     $scoreBg = match ($execLevel) {
         'hot' => 'bg-emerald-500',
-        'balanced' => 'bg-blue-500',
+        'balanced' => 'bg-blue-600',
         'risky' => 'bg-amber-500',
-        default => 'bg-red-500',
+        default => 'bg-red-600',
     };
     $scoreRing = match ($execLevel) {
         'hot' => 'ring-emerald-500/20',
@@ -141,7 +141,7 @@
                                 $ctaColor = match ($execCtaAction) {
                                     'buy' => 'bg-emerald-600 dark:bg-emerald-700 text-white',
                                     'watch' => 'bg-amber-500 dark:bg-amber-600 text-white',
-                                    default => 'bg-red-500 dark:bg-red-600 text-white',
+                                    default => 'bg-red-600 dark:bg-red-600 text-white',
                                 };
                             @endphp
                             <span

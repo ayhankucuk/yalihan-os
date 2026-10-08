@@ -73,7 +73,7 @@
             <div class="bg-gray-50 dark:bg-slate-900 rounded-lg p-4 border border-gray-200 dark:border-slate-800">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-slate-100 flex items-center gap-2">
-                        <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
+                        <span class="w-3 h-3 bg-blue-600 rounded-full"></span>
                         İşlemde
                     </h2>
                     <span
@@ -102,7 +102,7 @@
             <div class="bg-gray-50 dark:bg-slate-900 rounded-lg p-4 border border-gray-200 dark:border-slate-800">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-slate-100 flex items-center gap-2">
-                        <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                        <span class="w-3 h-3 bg-green-600 rounded-full"></span>
                         Tamamlandı
                     </h2>
                     <span

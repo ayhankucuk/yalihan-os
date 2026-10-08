@@ -32,7 +32,7 @@
                     </div>
                 </div>
                 <a href="{{ route('admin.ozellikler.index') }}"
-                    class="bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 backdrop-blur-lg text-white dark:text-white px-4 py-2.5 rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md dark:shadow-none border border-blue-400 dark:border-blue-500">
+                    class="bg-blue-600 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 backdrop-blur-lg text-white dark:text-white px-4 py-2.5 rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md dark:shadow-none border border-blue-400 dark:border-blue-500">
                     <svg class="w-4 h-4 text-white dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -324,7 +324,7 @@
                             <div class="flex items-center space-x-3">
                                 <!-- Toggle Switch -->
                                 <div class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 cursor-pointer"
-                                    :class="aktif_mi ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'"
+                                    :class="aktif_mi ? 'bg-blue-600 dark:bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'"
                                     @click="aktif_mi = !aktif_mi">
                                     <span
                                         class="inline-block h-4 w-4 transform rounded-full bg-white dark:bg-gray-200 transition-transform duration-200 dark:bg-slate-900"
@@ -412,13 +412,13 @@
                                         :name="'field_options[' + index + '][label]'" placeholder="Seçenek etiketi"
                                         class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 dark:text-slate-100">
                                     <button type="button" @click="options.splice(index, 1)"
-                                        class="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 dark:shadow-none">
+                                        class="px-4 py-2.5 bg-red-600 hover:bg-red-600 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 dark:shadow-none">
                                         ❌
                                     </button>
                                 </div>
                             </template>
                             <button type="button" @click="options.push({value: '', label: ''})"
-                                class="px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 dark:shadow-none">
+                                class="px-4 py-2.5 bg-green-600 hover:bg-green-600 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 dark:shadow-none">
                                 ➕ Seçenek Ekle
                             </button>
                         </div>
@@ -503,7 +503,7 @@
                         <div class="flex items-center gap-2">
                             <div class="flex items-center gap-1.5">
                                 <div class="w-2 h-2 rounded-full animate-pulse"
-                                    :class="aktif_mi ? 'bg-green-500' : 'bg-red-500'"></div>
+                                    :class="aktif_mi ? 'bg-green-600' : 'bg-red-600'"></div>
                                 <span class="text-xs font-semibold"
                                     :class="aktif_mi ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'"
                                     x-text="aktif_mi ? 'Aktif' : 'Pasif'"></span>

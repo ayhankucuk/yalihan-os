@@ -687,19 +687,19 @@
                         bg: 'from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/20',
                         border: 'border-blue-300 dark:border-blue-600',
                         iconBg: 'bg-gradient-to-br from-blue-500 to-blue-600',
-                        progress: 'bg-blue-500'
+                        progress: 'bg-blue-600'
                     },
                     'fiziksel': {
                         bg: 'from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20',
                         border: 'border-purple-300 dark:border-purple-600',
                         iconBg: 'bg-gradient-to-br from-purple-500 to-purple-600',
-                        progress: 'bg-purple-500'
+                        progress: 'bg-purple-600'
                     },
                     'donanim': {
                         bg: 'from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/20',
                         border: 'border-green-300 dark:border-green-600',
                         iconBg: 'bg-gradient-to-br from-green-500 to-green-600',
-                        progress: 'bg-green-500'
+                        progress: 'bg-green-600'
                     },
                     'dismekan': {
                         bg: 'from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/20',
@@ -711,38 +711,38 @@
                         bg: 'from-pink-50 to-pink-100 dark:from-pink-900/30 dark:to-pink-800/20',
                         border: 'border-pink-300 dark:border-pink-600',
                         iconBg: 'bg-gradient-to-br from-pink-500 to-pink-600',
-                        progress: 'bg-pink-500'
+                        progress: 'bg-pink-600'
                     },
                     'ek_hizmetler': {
                         bg: 'from-indigo-50 to-indigo-100 dark:from-indigo-900/30 dark:to-indigo-800/20',
                         border: 'border-indigo-300 dark:border-indigo-600',
                         iconBg: 'bg-gradient-to-br from-indigo-500 to-indigo-600',
-                        progress: 'bg-indigo-500'
+                        progress: 'bg-indigo-600'
                     },
                     // ESKİ KATEGORİLER (backward compatibility)
                     'fiyat': {
                         bg: 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20',
                         border: 'border-green-300 dark:border-green-700',
                         iconBg: 'bg-gradient-to-br from-green-500 to-emerald-600',
-                        progress: 'bg-green-500'
+                        progress: 'bg-green-600'
                     },
                     'sezonluk': {
                         bg: 'from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20',
                         border: 'border-purple-300 dark:border-purple-700',
                         iconBg: 'bg-gradient-to-br from-purple-500 to-pink-600',
-                        progress: 'bg-purple-500'
+                        progress: 'bg-purple-600'
                     },
                     'ozellik': {
                         bg: 'from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20',
                         border: 'border-blue-300 dark:border-blue-700',
                         iconBg: 'bg-gradient-to-br from-blue-500 to-cyan-600',
-                        progress: 'bg-blue-500'
+                        progress: 'bg-blue-600'
                     },
                     'olanaklar': {
                         bg: 'from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20',
                         border: 'border-orange-300 dark:border-orange-700',
                         iconBg: 'bg-gradient-to-br from-orange-500 to-yellow-600',
-                        progress: 'bg-orange-500'
+                        progress: 'bg-orange-600'
                     }
                 };
 

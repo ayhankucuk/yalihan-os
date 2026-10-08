@@ -8,7 +8,7 @@
                  alt="{{ $agent->name ?? 'Danışman' }}"
                  class="w-16 h-16 rounded-full object-cover border-2 border-white dark:border-slate-800 shadow-md dark:shadow-none">
             @if(isset($agent->is_verified) && $agent->is_verified)
-                <div class="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full text-[10px] border-2 border-white dark:border-slate-800" title="Doğrulanmış Danışman">
+                <div class="absolute bottom-0 right-0 bg-blue-600 text-white p-1 rounded-full text-[10px] border-2 border-white dark:border-slate-800" title="Doğrulanmış Danışman">
                     <span class="material-symbols-outlined">check</span>
                 </div>
             @endif
@@ -49,7 +49,7 @@
         <div class="flex gap-2">
             @if(!empty($agent->whatsapp_number))
                 <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $agent->whatsapp_number) }}" target="_blank"
-                   class="flex-1 flex items-center justify-center py-3 px-4 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98]">
+                   class="flex-1 flex items-center justify-center py-3 px-4 bg-green-600 hover:bg-green-600 text-white rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98]">
                     <span class="material-symbols-outlined mr-2">chat</span> WhatsApp
                 </a>
             @endif

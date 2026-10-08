@@ -18,7 +18,7 @@
         <div class="flex items-center gap-3">
             <button @click="refreshPipeline()" 
                     :disabled="loading"
-                    class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg 
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-600 text-white rounded-lg 
                            transition-all duration-200 hover:scale-105 disabled:opacity-50">
                 <span x-show="!loading">🔄 Yenile</span>
                 <span x-show="loading">⏳ Yükleniyor...</span>
@@ -95,7 +95,7 @@
                         {{-- Score Badge --}}
                         @if($person->skor)
                         <span class="px-2 py-1 text-xs font-bold rounded
-                                     @if($person->skor >= 80) bg-green-500 text-white
+                                     @if($person->skor >= 80) bg-green-600 text-white
                                      @elseif($person->skor >= 50) bg-yellow-500 text-white
                                      @else bg-gray-400 text-white @endif">
                             {{ $person->skor }}
@@ -125,7 +125,7 @@
                     {{-- Quick Actions --}}
                     <div class="flex gap-2 pt-3 border-t border-gray-200 dark:border-slate-800 dark:border-slate-700">
                         <button @click.stop="quickCall({{ $person->id }})" 
-                                class="flex-1 px-2 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded 
+                                class="flex-1 px-2 py-1 text-xs bg-blue-600 hover:bg-blue-600 text-white rounded 
                                        transition-all duration-200">
                             📞
                         </button>
@@ -135,7 +135,7 @@
                             📝
                         </button>
                         <a href="{{ route('admin.kisiler.show', $person->id) }}" 
-                           class="flex-1 px-2 py-1 text-xs bg-purple-500 hover:bg-purple-600 text-white rounded 
+                           class="flex-1 px-2 py-1 text-xs bg-purple-600 hover:bg-purple-600 text-white rounded 
                                   text-center transition-all duration-200">
                             👁️
                         </a>
@@ -175,7 +175,7 @@
             
             <div class="flex gap-3 mt-4">
                 <button @click="saveNote()" 
-                        class="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg 
+                        class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-600 text-white rounded-lg 
                                transition-all duration-200">
                     Kaydet
                 </button>

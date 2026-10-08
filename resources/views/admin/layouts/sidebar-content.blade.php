@@ -48,18 +48,18 @@
                 </button>
                 <div x-show="open" class="ml-6 mt-1 space-y-1">
                     <a href="{{ route('admin.ilanlar.index') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.ilanlar.index') ? 'bg-blue-500 text-white' : '' }}">
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.ilanlar.index') ? 'bg-blue-600 text-white' : '' }}">
                         <span>Tüm İlanlar</span>
                     </a>
                     <a href="{{ route('admin.ilanlar.create-wizard') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.ilanlar.create-wizard') ? 'bg-blue-500 text-white' : '' }}">
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.ilanlar.create-wizard') ? 'bg-blue-600 text-white' : '' }}">
                         <span>Yeni İlan</span>
-                        <span class="ml-auto text-xs bg-green-500/20 text-green-600 dark:text-green-200 px-1.5 py-0.5 rounded">AI</span>
+                        <span class="ml-auto text-xs bg-green-600/20 text-green-600 dark:text-green-200 px-1.5 py-0.5 rounded">AI</span>
                     </a>
                     <a href="{{ route('admin.ups.features.index') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.ups.features.*') ? 'bg-blue-500 text-white' : '' }}">
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.ups.features.*') ? 'bg-blue-600 text-white' : '' }}">
                         <span>İlan Özellikleri</span>
-                        <span class="ml-auto text-xs bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded">UPS</span>
+                        <span class="ml-auto text-xs bg-purple-600/20 text-purple-400 px-1.5 py-0.5 rounded">UPS</span>
                     </a>
                 </div>
             </li>
@@ -79,13 +79,13 @@
                     </svg>
                 </button>
                 <div x-show="open" class="ml-6 mt-1 space-y-1">
-                    <a href="{{ route('admin.ilan-kategorileri.index') }}" class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.ilan-kategorileri.*') ? 'bg-blue-500 text-white' : '' }}">
+                    <a href="{{ route('admin.ilan-kategorileri.index') }}" class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.ilan-kategorileri.*') ? 'bg-blue-600 text-white' : '' }}">
                         <span>Kategoriler</span>
                     </a>
-                    <a href="{{ route('admin.property_types.index') }}" class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.property_types.*') ? 'bg-blue-500 text-white' : '' }}">
+                    <a href="{{ route('admin.property_types.index') }}" class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.property_types.*') ? 'bg-blue-600 text-white' : '' }}">
                         <span>Yayın Tipleri</span>
                     </a>
-                    <a href="{{ route('admin.ups.features.index') }}" class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.ups.features.*') ? 'bg-blue-500 text-white' : '' }}">
+                    <a href="{{ route('admin.ups.features.index') }}" class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm {{ request()->routeIs('admin.ups.features.*') ? 'bg-blue-600 text-white' : '' }}">
                         <span>Özellikler</span>
                     </a>
                 </div>
@@ -158,35 +158,35 @@
                     class="ml-6 mt-1 space-y-1">
                     @if (\Illuminate\Support\Facades\Route::has('admin.crm.dashboard'))
                         <a href="{{ route('admin.crm.dashboard') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.crm.dashboard') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.crm.dashboard') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <span>CRM Dashboard</span>
                         </a>
                     @endif
                     @if (\Illuminate\Support\Facades\Route::has('admin.kisiler.index'))
                         <a href="{{ route('admin.kisiler.index') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.kisiler.*') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.kisiler.*') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <span>Kişiler</span>
                         </a>
                     @endif
                     @if (\Illuminate\Support\Facades\Route::has('admin.talepler.index'))
                         <a href="{{ route('admin.talepler.index') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.talepler.*') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.talepler.*') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <span>Talepler</span>
                         </a>
                     @endif
                     @if (\Illuminate\Support\Facades\Route::has('admin.eslesmeler.index'))
                         <a href="{{ route('admin.eslesmeler.index') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.eslesmeler.*') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.eslesmeler.*') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <span>Eşleştirmeler</span>
                         </a>
                     @endif
                     @if (\Illuminate\Support\Facades\Route::has('admin.talep-portfolyo.index'))
                         <a href="{{ route('admin.talep-portfolyo.index') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.talep-portfolyo.*') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.talep-portfolyo.*') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <span>Talep-Portföy</span>
                         </a>
@@ -218,7 +218,7 @@
                     class="ml-6 mt-1 space-y-1">
                     @if (\Illuminate\Support\Facades\Route::has('admin.finans.islemler.index'))
                         <a href="{{ route('admin.finans.islemler.index') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.finans.islemler.*') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.finans.islemler.*') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <svg class="w-4 h-4 text-blue-500 dark:text-blue-300" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
@@ -230,7 +230,7 @@
                     @endif
                     @if (\Illuminate\Support\Facades\Route::has('admin.finans.islemler.create'))
                         <a href="{{ route('admin.finans.islemler.create') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.finans.islemler.create') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.finans.islemler.create') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <svg class="w-4 h-4 text-green-500 dark:text-green-300" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
@@ -242,7 +242,7 @@
                     @endif
                     @if (\Illuminate\Support\Facades\Route::has('admin.finans.komisyonlar.index'))
                         <a href="{{ route('admin.finans.komisyonlar.index') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.finans.komisyonlar.*') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.finans.komisyonlar.*') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <svg class="w-4 h-4 text-yellow-500 dark:text-yellow-300" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
@@ -254,7 +254,7 @@
                     @endif
                     @if (\Illuminate\Support\Facades\Route::has('admin.finans.komisyonlar.create'))
                         <a href="{{ route('admin.finans.komisyonlar.create') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.finans.komisyonlar.create') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.finans.komisyonlar.create') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <svg class="w-4 h-4 text-green-500 dark:text-green-300" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
@@ -291,7 +291,7 @@
                     class="ml-6 mt-1 space-y-1">
                     @if (\Illuminate\Support\Facades\Route::has('admin.yazlik-kiralama.index'))
                         <a href="{{ route('admin.yazlik-kiralama.index') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.yazlik-kiralama.index') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.yazlik-kiralama.index') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <svg class="w-4 h-4 text-blue-500 dark:text-blue-300" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
@@ -303,7 +303,7 @@
                     @endif
                     @if (\Illuminate\Support\Facades\Route::has('admin.yazlik-kiralama.takvim.index'))
                         <a href="{{ route('admin.yazlik-kiralama.takvim.index') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.yazlik-kiralama.takvim.*') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.yazlik-kiralama.takvim.*') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <svg class="w-4 h-4 text-green-500 dark:text-green-300" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
@@ -317,7 +317,7 @@
                     @endif
                     @if (\Illuminate\Support\Facades\Route::has('admin.yazlik-kiralama.bookings'))
                         <a href="{{ route('admin.yazlik-kiralama.bookings') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.yazlik-kiralama.bookings') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.yazlik-kiralama.bookings') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <svg class="w-4 h-4 text-purple-500 dark:text-purple-300" fill="none"
                                 stroke="CurrentColor" viewBox="0 0 24 24">
@@ -378,7 +378,7 @@
                     class="ml-6 mt-1 space-y-1">
                     @if (\Illuminate\Support\Facades\Route::has('admin.ai.dashboard'))
                         <a href="{{ route('admin.ai.dashboard') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.ai.dashboard') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.ai.dashboard') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <svg class="w-4 h-4 text-indigo-500 dark:text-indigo-300" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
@@ -387,16 +387,16 @@
                             </svg>
                             <span>AI Command Center</span>
                             <span
-                                class="ml-auto text-xs bg-green-500/20 text-green-600 dark:text-green-200 px-1.5 py-0.5 rounded transition-colors">Yeni</span>
+                                class="ml-auto text-xs bg-green-600/20 text-green-600 dark:text-green-200 px-1.5 py-0.5 rounded transition-colors">Yeni</span>
                         </a>
                     @endif
                     <a href="{{ route('admin.ai-settings.index') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.ai-settings.index') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.ai-settings.index') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>AI Ayarları</span>
                     </a>
                     <a href="{{ route('admin.ai-settings.analytics') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.ai-settings.analytics') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.ai-settings.analytics') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <svg class="w-4 h-4 text-blue-500 dark:text-blue-300" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
@@ -407,7 +407,7 @@
                     </a>
                     @if (\Illuminate\Support\Facades\Route::has('admin.ai-monitor.index'))
                         <a href="{{ route('admin.ai-monitor.index') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.ai-monitor.*') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.ai-monitor.*') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <span>AI Monitoring</span>
                         </a>
@@ -438,17 +438,17 @@
                     x-transition:leave-end="opacity-0 transform scale-95" id="takim-yonetimi-menu" role="menu"
                     class="ml-6 mt-1 space-y-1">
                     <a href="{{ route('admin.takim-yonetimi.index') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.takim-yonetimi.takim.*') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.takim-yonetimi.takim.*') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>Takım Üyeleri</span>
                     </a>
                     <a href="{{ route('admin.takim.gorevler.index') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.takim.gorevler.*') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.takim.gorevler.*') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>Görevler</span>
                     </a>
                     <a href="{{ route('admin.takim.performans') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.takim.performans') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.takim.performans') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>Performans</span>
                     </a>
@@ -477,13 +477,13 @@
                     x-transition:leave-end="opacity-0 transform scale-95" id="analytics-menu" role="menu"
                     class="ml-6 mt-1 space-y-1">
                     <a href="{{ route('admin.analytics.index') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.analytics.index') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.analytics.index') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>Genel Analytics</span>
                     </a>
                     {{-- Governance Dashboard linki kaldırıldı (2026-09-15) — admin.governance.dashboard kullanın --}}
                     <a href="{{ route('admin.reports.index') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.reports.*') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.reports.*') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem" title="Raporlar">
                         <span>Raporlar</span>
                     </a>
@@ -513,37 +513,37 @@
                     x-transition:leave-end="opacity-0 transform scale-95" id="governance-menu" role="menu"
                     class="ml-6 mt-1 space-y-1">
                     <a href="{{ route('admin.governance.dashboard') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.dashboard') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.dashboard') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>SAB Dashboard</span>
                     </a>
                     <a href="{{ route('admin.governance.review-queue') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.review-queue') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.review-queue') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>İnceleme Kuyruğu</span>
                     </a>
                     <a href="{{ route('admin.governance.intelligence-center') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.intelligence-center') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.intelligence-center') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>AI Kontrol Merkezi</span>
                     </a>
                     <a href="{{ route('admin.governance.autonomy-panel') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.autonomy-panel') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.autonomy-panel') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>Otonom Kontrol</span>
                     </a>
                     <a href="{{ route('admin.governance.decision-history') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.decision-history') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.decision-history') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>Karar Geçmişi</span>
                     </a>
                     <a href="{{ route('admin.governance.feature-health') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.feature-health*') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.feature-health*') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>Feature Health</span>
                     </a>
                     <a href="{{ route('admin.governance.suppression-list') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.suppression-list') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.governance.suppression-list') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>Bastırma Kuralları</span>
                     </a>
@@ -583,7 +583,7 @@
 
                     <!-- n8n Workflows -->
                     <a href="{{ route('admin.integrations.n8n-workflows') ?? '#' }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.integrations.n8n-workflows') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.integrations.n8n-workflows') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -594,7 +594,7 @@
 
                     <!-- Telegram AI Bot -->
                     <a href="{{ route('admin.telegram-bot.index') ?? '#' }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.telegram-bot.*') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.telegram-bot.*') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path d="M22 2L11 13" />
@@ -605,7 +605,7 @@
 
                     <!-- Voice Search -->
                     <a href="{{ route('admin.voice-search.settings') ?? '#' }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.voice-search.*') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.voice-search.*') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -613,14 +613,14 @@
                         </svg>
                         <span>Voice Search</span>
                         <span
-                            class="ml-auto px-1 py-0.5 text-xs font-medium bg-green-500 dark:bg-green-600 text-white rounded">
+                            class="ml-auto px-1 py-0.5 text-xs font-medium bg-green-600 dark:bg-green-600 text-white rounded">
                             Yeni
                         </span>
                     </a>
 
                     <!-- Bildirimler -->
                     <a href="{{ route('admin.notifications.settings') ?? '#' }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.notifications.*') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.notifications.*') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -631,7 +631,7 @@
 
                     <!-- Entegrasyon Ayarları -->
                     <a href="{{ route('admin.integrations.index') ?? '#' }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.integrations.*') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.integrations.*') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -667,12 +667,12 @@
                     x-transition:leave-end="opacity-0 transform scale-95" id="telegram-bot-menu" role="menu"
                     class="ml-6 mt-1 space-y-1">
                     <a href="{{ route('admin.telegram-bot.index') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.telegram-bot.index') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.telegram-bot.index') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>Genel & Durum</span>
                     </a>
                     <a href="{{ route('admin.telegram-bot.webhook-info') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.telegram-bot.webhook-info') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.telegram-bot.webhook-info') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>Webhook Bilgisi</span>
                     </a>
@@ -703,21 +703,21 @@
                     class="ml-6 mt-1 space-y-1">
                     @if (\Illuminate\Support\Facades\Route::has('admin.blog.posts.index'))
                         <a href="{{ route('admin.blog.posts.index') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.blog.posts.*') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.blog.posts.*') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <span>Yazılar</span>
                         </a>
                     @endif
                     @if (\Illuminate\Support\Facades\Route::has('admin.blog.categories.index'))
                         <a href="{{ route('admin.blog.categories.index') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.blog.categories.*') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.blog.categories.*') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <span>Kategoriler</span>
                         </a>
                     @endif
                     @if (\Illuminate\Support\Facades\Route::has('admin.blog.comments.index'))
                         <a href="{{ route('admin.blog.comments.index') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.blog.comments.*') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.blog.comments.*') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <span>Yorumlar</span>
                         </a>
@@ -750,16 +750,16 @@
                     x-transition:leave-end="opacity-0 transform scale-95" id="adres-yonetimi-menu" role="menu"
                     class="ml-6 mt-1 space-y-1">
                     <a href="{{ route('admin.adres-yonetimi.index') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.adres-yonetimi.index') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.adres-yonetimi.index') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>Adres Yönetimi</span>
                     </a>
                     <a href="{{ route('admin.wikimapia-search.index') }}"
-                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.wikimapia-search.*') ? 'bg-blue-500 text-white' : '' }}"
+                        class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.wikimapia-search.*') ? 'bg-blue-600 text-white' : '' }}"
                         role="menuitem">
                         <span>Wikimapia Arama</span>
                         <span
-                            class="ml-auto text-xs bg-green-500/20 text-green-600 dark:text-green-200 px-1.5 py-0.5 rounded transition-colors">Yeni</span>
+                            class="ml-auto text-xs bg-green-600/20 text-green-600 dark:text-green-200 px-1.5 py-0.5 rounded transition-colors">Yeni</span>
                     </a>
                 </div>
             </li>
@@ -815,7 +815,7 @@
                     role="menu" class="ml-6 mt-1 space-y-1">
                     @if (\Illuminate\Support\Facades\Route::has('admin.market-intelligence.dashboard'))
                         <a href="{{ route('admin.market-intelligence.dashboard') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.market-intelligence.dashboard') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.market-intelligence.dashboard') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -826,7 +826,7 @@
                     @endif
                     @if (\Illuminate\Support\Facades\Route::has('admin.market-intelligence.settings'))
                         <a href="{{ route('admin.market-intelligence.settings') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.market-intelligence.settings') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.market-intelligence.settings') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -839,7 +839,7 @@
                     @endif
                     @if (\Illuminate\Support\Facades\Route::has('admin.market-intelligence.compare'))
                         <a href="{{ route('admin.market-intelligence.compare') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.market-intelligence.compare') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.market-intelligence.compare') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -850,7 +850,7 @@
                     @endif
                     @if (\Illuminate\Support\Facades\Route::has('admin.market-intelligence.trends'))
                         <a href="{{ route('admin.market-intelligence.trends') }}"
-                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.market-intelligence.trends') ? 'bg-blue-500 text-white' : '' }}"
+                            class="flex items-center gap-2 h-9 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 text-sm transition-all duration-200 ease-in-out hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {{ request()->routeIs('admin.market-intelligence.trends') ? 'bg-blue-600 text-white' : '' }}"
                             role="menuitem">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -899,7 +899,7 @@
                         </svg>
                         <span>Horizon (Queue)</span>
                         <span
-                            class="ml-auto text-xs bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded">FREE</span>
+                            class="ml-auto text-xs bg-purple-600/20 text-purple-400 px-1.5 py-0.5 rounded">FREE</span>
                     </a>
 
                     <!-- Laravel Telescope (Dev Debug) -->
@@ -929,7 +929,7 @@
                                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                             <span>Sentry (Errors)</span>
-                            <span class="ml-auto text-xs bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded">FREE</span>
+                            <span class="ml-auto text-xs bg-red-600/20 text-red-400 px-1.5 py-0.5 rounded">FREE</span>
                         </a>
                     @endif
 

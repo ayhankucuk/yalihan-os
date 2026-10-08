@@ -352,7 +352,7 @@
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="text-sm text-green-700">Akıllı öneriler status</span>
                                     <div class="flex items-center">
-                                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                        <div class="w-2 h-2 bg-green-600 rounded-full animate-pulse"></div>
                                     </div>
                                 </div>
                                 <p class="text-xs text-green-600 dark:text-green-400">Görev düzenleme için AI önerileri alınır</p>

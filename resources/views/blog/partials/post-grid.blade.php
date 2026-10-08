@@ -8,7 +8,7 @@
 
                 @if ($post->one_cikan)
                     <div class="absolute top-4 left-4">
-                        <span class="bg-red-500 text-white px-2 py-1 text-xs rounded-full font-medium">
+                        <span class="bg-red-600 text-white px-2 py-1 text-xs rounded-full font-medium">
                             <span class="material-symbols-outlined mr-1">star</span>Öne Çıkan
                         </span>
                     </div>

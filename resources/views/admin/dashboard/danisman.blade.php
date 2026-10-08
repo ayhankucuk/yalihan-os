@@ -7,43 +7,46 @@
 @endpush
 
 @section('content')
-    <div x-data="danismanDashboard()" x-init="init()" class="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50">
+    <!-- Mobile-first responsive container -->
+    <div x-data="danismanDashboard()"
+         x-init="init()"
+         class="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50 dark:from-slate-900 dark:to-slate-800 px-4 py-6 md:px-6 lg:px-8">
         <!-- Header -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm mb-8 p-8 dark:shadow-none dark:border-slate-700">
-            <div class="flex items-center justify-between">
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm mb-6 p-4 md:p-6 lg:p-8 dark:shadow-none dark:border-slate-700">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <h1 class="text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                    <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
                         🧑‍💼 Danışman Dashboard
-                        <span class="ml-3 px-3 py-1 bg-orange-100 text-orange-800 text-sm rounded-full font-medium">CRM
+                        <span class="ml-0 md:ml-3 mt-2 md:mt-0 px-2 md:px-3 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 text-xs md:text-sm rounded-full font-medium inline-block">CRM
                             Powered</span>
                     </h1>
-                    <p class="mt-3 text-lg text-gray-600">
+                    <p class="mt-2 md:mt-3 text-base md:text-lg text-gray-600 dark:text-slate-400">
                         Kişisel performans ve müşteri yönetimi
                     </p>
-                    <div class="mt-4 flex items-center space-x-4 text-sm text-gray-500">
+                    <div class="mt-3 md:mt-4 flex items-center space-x-4 text-sm text-gray-500">
                         <span class="flex items-center">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                            <div class="w-2 h-2 bg-green-600 rounded-full mr-2"></div>
                             Online
                         </span>
                         <span>Son güncellenme: <span x-text="lastUpdated">{{ now()->format('H:i') }}</span></span>
                     </div>
                 </div>
-                <div class="flex gap-4">
-                    <button @click="generateReport()" :disabled="generatingReport" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 touch-target-optimized dark:shadow-none">
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button @click="generateReport()" :disabled="generatingReport" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 touch-target-optimized min-h-[44px] dark:shadow-none">
                         <svg class="w-5 h-5 mr-2" :class="generatingReport ? 'animate-spin' : ''" fill="none"
                             stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002 2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
                             </path>
                         </svg>
-                        <span x-text="generatingReport ? 'Hazırlanıyor...' : 'Performans Raporum'"></span>
+                        <span x-text="generatingReport ? 'Hazırlanıyor...' : 'Rapor'"></span>
                     </button>
-                    <a href="{{ route('admin.ilanlar.create') }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm touch-target-optimized dark:shadow-none dark:text-slate-300">
+                    <a href="{{ route('admin.ilanlar.create') }}" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-slate-800 dark:text-slate-200 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm touch-target-optimized min-h-[44px] dark:shadow-none dark:text-slate-300">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Yeni İlan Ekle
+                        Yeni İlan
                     </a>
                 </div>
             </div>
@@ -341,6 +344,71 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Görevler Section -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 dark:bg-slate-900 dark:border-slate-800">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="stat-card-value flex items-center">
+                        <svg class="w-6 h-6 mr-3 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                        Yaklaşan Görevlerim
+                    </h2>
+                    <a href="{{ route('admin.gorevler.index') }}"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 bg-amber-600 text-white hover:bg-amber-700 hover:scale-105 active:scale-95 focus:ring-amber-500 shadow-md hover:shadow-lg touch-target-optimized dark:shadow-none">
+                        Tüm Görevler
+                    </a>
+                </div>
+
+                <div class="space-y-4">
+                    @forelse($danismanStats['pending_tasks'] ?? [] as $task)
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center
+                                    @if($task['priority'] === 'high') bg-red-100 text-red-600
+                                    @elseif($task['priority'] === 'medium') bg-amber-100 text-amber-600
+                                    @else bg-green-100 text-green-600
+                                    @endif">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-gray-900 dark:text-slate-100">{{ $task['title'] }}</h3>
+                                    <p class="text-sm text-gray-600">{{ $task['description'] }}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    @if($task['status'] === 'pending') bg-yellow-100 text-yellow-800
+                                    @elseif($task['status'] === 'in_progress') bg-blue-100 text-blue-800
+                                    @else bg-gray-100 text-gray-800
+                                    @endif">
+                                    @if($task['status'] === 'pending') Bekliyor
+                                    @elseif($task['status'] === 'in_progress') Devam Ediyor
+                                    @else Tamamlandı
+                                    @endif
+                                </span>
+                                <p class="text-xs text-gray-500 mt-1">{{ $task['due_date'] ?? 'Tarih yok' }}</p>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center py-8 text-gray-500">
+                            <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                            <p>Henüz görev yok</p>
+                            <a href="{{ route('admin.gorevler.create') }}"
+                                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 bg-amber-600 text-white hover:bg-amber-700 hover:scale-105 active:scale-95 focus:ring-amber-500 shadow-md hover:shadow-lg mt-4 touch-target-optimized dark:shadow-none">
+                                İlk Görevini Ekle
+                            </a>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
         </div>
     </div>
 
@@ -417,9 +485,9 @@
                     showNotification(message, type = 'info') {
                         // Basic notification implementation
                         const colors = {
-                            success: 'bg-green-500',
-                            error: 'bg-red-500',
-                            info: 'bg-blue-500'
+                            success: 'bg-green-600',
+                            error: 'bg-red-600',
+                            info: 'bg-blue-600'
                         };
 
                         const notification = document.createElement('div');

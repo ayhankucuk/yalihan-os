@@ -41,8 +41,8 @@
     }
 
     $badgeClasses = [
-        'sale' => 'bg-green-500 text-white',
-        'rent' => 'bg-blue-500 text-white',
+        'sale' => 'bg-green-600 text-white',
+        'rent' => 'bg-blue-600 text-white',
         'featured' => 'bg-yellow-500 text-white',
     ];
 
@@ -85,7 +85,7 @@
         </div>
 
         <!-- Favorite Button -->
-        <div class="absolute top-5 right-5 w-12 h-12 bg-white dark:bg-slate-900/90 bg-opacity-90 backdrop-blur-md rounded-2xl flex items-center justify-center cursor-pointer hover:bg-red-500 hover:text-white transition-all duration-300 shadow-lg"
+        <div class="absolute top-5 right-5 w-12 h-12 bg-white dark:bg-slate-900/90 bg-opacity-90 backdrop-blur-md rounded-2xl flex items-center justify-center cursor-pointer hover:bg-red-600 hover:text-white transition-all duration-300 shadow-lg"
             data-role="favorite">
             @if ($isFavorite)
                 <span class="text-red-500 text-xl">❤️</span>
@@ -100,7 +100,7 @@
                 class="absolute bottom-5 left-5 right-5 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
                 <div class="flex gap-3">
                     <button
-                        class="flex-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3 rounded-2xl hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white transition-all duration-300 text-center shadow-lg font-medium {{ $hasVirtualTour ? '' : 'opacity-40 pointer-events-none cursor-not-allowed' }}"
+                        class="flex-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3 rounded-2xl hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white transition-all duration-300 text-center shadow-lg font-medium {{ $hasVirtualTour ? '' : 'opacity-40 pointer-events-none cursor-not-allowed' }}"
                         data-role="virtual-tour"
                         data-virtual-tour="{{ $hasVirtualTour ? e($virtualTourUrl) : '' }}"
                         title="360° Sanal Tur"
@@ -109,7 +109,7 @@
                         <div class="text-xs">Sanal Tur</div>
                     </button>
                     <button
-                        class="flex-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3 rounded-2xl hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white transition-all duration-300 text-center shadow-lg font-medium {{ $hasGallery ? '' : 'opacity-40 pointer-events-none cursor-not-allowed' }}"
+                        class="flex-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3 rounded-2xl hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white transition-all duration-300 text-center shadow-lg font-medium {{ $hasGallery ? '' : 'opacity-40 pointer-events-none cursor-not-allowed' }}"
                         data-role="gallery"
                         data-gallery='@json($galleryItems)'
                         title="Fotoğraf Galerisi"
@@ -118,7 +118,7 @@
                         <div class="text-xs">Galeri</div>
                     </button>
                     <button
-                        class="flex-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3 rounded-2xl hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white transition-all duration-300 text-center shadow-lg font-medium {{ $hasMap ? '' : 'opacity-40 pointer-events-none cursor-not-allowed' }}"
+                        class="flex-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3 rounded-2xl hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white transition-all duration-300 text-center shadow-lg font-medium {{ $hasMap ? '' : 'opacity-40 pointer-events-none cursor-not-allowed' }}"
                         data-role="map"
                         data-location='@json($mapLocation)'
                         title="Haritada Göster"
@@ -127,7 +127,7 @@
                         <div class="text-xs">Harita</div>
                     </button>
                     <button
-                        class="flex-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3 rounded-2xl hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white transition-all duration-300 text-center shadow-lg font-medium"
+                        class="flex-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3 rounded-2xl hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white transition-all duration-300 text-center shadow-lg font-medium"
                         data-role="share"
                         data-share-url="{{ e($shareTarget) }}"
                         data-share-title="{{ e($title) }}"
@@ -180,7 +180,7 @@
         <!-- Action Buttons -->
         <div class="flex gap-3">
             <button
-                class="flex-1 border-2 border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400 py-3 px-6 rounded-2xl hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 font-semibold text-lg"
+                class="flex-1 border-2 border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400 py-3 px-6 rounded-2xl hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 font-semibold text-lg"
                 data-role="property-detail"
                 data-detail='@json($detailPayload)'>
                 Detayları Gör

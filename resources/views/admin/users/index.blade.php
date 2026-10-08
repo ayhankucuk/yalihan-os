@@ -353,7 +353,7 @@
                                             ? 'bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 text-green-800 dark:text-green-400 border border-green-300 dark:border-green-700'
                                             : 'bg-gradient-to-br from-red-100 to-rose-100 dark:from-red-900/30 dark:to-rose-900/30 text-red-800 dark:text-red-400 border border-red-300 dark:border-red-700' }} inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold">
                                         <span
-                                            class="{{ $user->aktiflik_durumu ? 'bg-green-500 animate-pulse' : 'bg-red-500' }} h-2 w-2 rounded-full"></span>
+                                            class="{{ $user->aktiflik_durumu ? 'bg-green-600 animate-pulse' : 'bg-red-600' }} h-2 w-2 rounded-full"></span>
                                         {{ $user->aktiflik_durumu ? 'Aktif' : 'Pasif' }}
                                     </span>
                                 </td>

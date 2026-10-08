@@ -98,7 +98,7 @@
                             <div class="relative">
                                 <img :src="URL.createObjectURL(file)" class="w-full h-20 object-cover rounded border">
                                 <button @click="value.splice(index, 1)"
-                                    class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
+                                    class="absolute top-0 right-0 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
                                     ×
                                 </button>
                             </div>
@@ -190,7 +190,7 @@
                                     placeholder="Alan değeri"
                                     class="flex-1 py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 rounded-lg text-sm dark:text-white">
                                 <button @click="fields.splice(index, 1)" type="button"
-                                    class="px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm">
+                                    class="px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-600 text-sm">
                                     <span class="material-symbols-outlined">delete</span>
                                 </button>
                             </div>

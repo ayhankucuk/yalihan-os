@@ -30,7 +30,7 @@
                 <div>
                     <p
                         class="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-300">
-                        <span class="h-2.5 w-2.5 animate-pulse rounded-full bg-blue-500"></span>
+                        <span class="h-2.5 w-2.5 animate-pulse rounded-full bg-blue-600"></span>
                         Yapay Zeka Destekli Yardım
                     </p>
                     <h2 class="mb-1 text-xl font-bold text-gray-900 dark:text-slate-100 dark:text-white sm:text-2xl">

@@ -56,7 +56,7 @@
     // Score pill color
     $scorePillColor = match (true) {
         $score >= 80 => 'bg-emerald-600 dark:bg-emerald-500',
-        $score >= 60 => 'bg-blue-600 dark:bg-blue-500',
+        $score >= 60 => 'bg-blue-600 dark:bg-blue-600',
         $score >= 40 => 'bg-amber-600 dark:bg-amber-500',
         default => 'bg-rose-600 dark:bg-rose-500',
     };
@@ -71,8 +71,8 @@
             'text' => 'text-emerald-700 dark:text-emerald-300',
         ],
         'blue' => [
-            'bg' => 'bg-blue-500 dark:bg-blue-400',
-            'dot' => 'bg-blue-500',
+            'bg' => 'bg-blue-600 dark:bg-blue-400',
+            'dot' => 'bg-blue-600',
             'card_border' => 'border-blue-200 dark:border-blue-800',
             'card_bg' => 'bg-blue-50/50 dark:bg-blue-900/20',
             'text' => 'text-blue-700 dark:text-blue-300',

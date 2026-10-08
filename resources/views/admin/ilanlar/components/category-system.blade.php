@@ -192,7 +192,7 @@
     {{-- Category Flow Indicator - NEW! --}}
     <div class="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400">
         <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-slate-900 rounded-full">
-            <span class="w-2 h-2 rounded-full bg-green-500" id="ana-kategori-indicator"></span>
+            <span class="w-2 h-2 rounded-full bg-green-600" id="ana-kategori-indicator"></span>
             <span>Ana Kategori</span>
         </div>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

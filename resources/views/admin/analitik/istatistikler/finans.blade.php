@@ -110,7 +110,7 @@
             <div class="space-y-3">
                 <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg dark:bg-slate-900">
                     <div class="flex items-center gap-3">
-                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-green-600 rounded-full"></div>
                         <span class="text-sm text-gray-700 dark:text-slate-200 dark:text-slate-300">Yükleniyor...</span>
                     </div>
                     <span class="text-sm font-bold text-gray-900 dark:text-white dark:text-slate-100">₺ -</span>
@@ -123,7 +123,7 @@
             <div class="space-y-3">
                 <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg dark:bg-slate-900">
                     <div class="flex items-center gap-3">
-                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-red-600 rounded-full"></div>
                         <span class="text-sm text-gray-700 dark:text-slate-200 dark:text-slate-300">Yükleniyor...</span>
                     </div>
                     <span class="text-sm font-bold text-gray-900 dark:text-white dark:text-slate-100">₺ -</span>
@@ -142,7 +142,7 @@
                     <span class="text-sm text-gray-600 dark:text-gray-400">-% / 100%</span>
                 </div>
                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div class="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    <div class="bg-blue-600 dark:bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
                 </div>
             </div>
             <div>
@@ -151,7 +151,7 @@
                     <span class="text-sm text-gray-600 dark:text-gray-400">-% / 100%</span>
                 </div>
                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div class="bg-green-600 dark:bg-green-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    <div class="bg-green-600 dark:bg-green-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
                 </div>
             </div>
             <div>
@@ -160,7 +160,7 @@
                     <span class="text-sm text-gray-600 dark:text-gray-400">-% / 100%</span>
                 </div>
                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div class="bg-purple-600 dark:bg-purple-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    <div class="bg-purple-600 dark:bg-purple-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
                 </div>
             </div>
         </div>

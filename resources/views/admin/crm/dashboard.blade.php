@@ -23,7 +23,7 @@
                     class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-blue-50 to-transparent dark:from-blue-900/20 dark:border-slate-700">
                     <div class="flex items-center gap-3">
                         <div
-                            class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                            class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                             </svg>
@@ -111,7 +111,7 @@
                     class="px-6 py-4 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-red-50 to-transparent dark:from-red-900/20 dark:border-slate-700">
                     <div class="flex items-center gap-3">
                         <div
-                            class="w-8 h-8 rounded-lg bg-red-500 flex items-center justify-center text-white shadow-lg shadow-red-500/30">
+                            class="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center text-white shadow-lg shadow-red-500/30">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"></path>
                             </svg>
@@ -152,7 +152,7 @@
                                             x-text="c.score + '%' "></span>
                                     </div>
                                     <div class="w-full h-1.5 bg-gray-100 dark:bg-slate-900 rounded-full overflow-hidden">
-                                        <div class="h-full bg-red-500 rounded-full" :style="'width:' + c.score + '%'">
+                                        <div class="h-full bg-red-600 rounded-full" :style="'width:' + c.score + '%'">
                                         </div>
                                     </div>
                                 </div>
@@ -170,7 +170,7 @@
                 <div class="px-6 py-4 p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center bg-blue-500 text-white">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center bg-blue-600 text-white">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                 </svg>
@@ -190,7 +190,7 @@
                 <div class="px-6 py-4 p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center bg-green-500 text-white">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center bg-green-600 text-white">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
@@ -251,7 +251,7 @@
                 <div class="px-6 py-4 p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center bg-purple-500 text-white">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center bg-purple-600 text-white">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
@@ -303,7 +303,7 @@
                     ? ($stats['high_priority_followups'] / $stats['total_customers']) * 100
                     : 0;
         @endphp
-        <div class="w-full h-full bg-red-500" style="width: {{ $percentage }}%"></div>
+        <div class="w-full h-full bg-red-600" style="width: {{ $percentage }}%"></div>
     </div>
                 </div>
             </div>
@@ -507,7 +507,7 @@
                         return 'text-gray-600 dark:text-gray-300';
                     },
                     scoreBarClass(score) {
-                        if (score >= 70) return 'bg-red-500';
+                        if (score >= 70) return 'bg-red-600';
                         if (score >= 40) return 'bg-yellow-500';
                         return 'bg-gray-400';
                     }

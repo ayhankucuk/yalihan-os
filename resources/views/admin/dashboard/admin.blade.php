@@ -139,7 +139,7 @@
                             <span
                                 class="flex items-center text-sm {{ $serviceState === 'online' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
                                 <div
-                                    class="w-2 h-2 rounded-full mr-2 {{ $serviceState === 'online' ? 'bg-green-500' : 'bg-red-500' }}">
+                                    class="w-2 h-2 rounded-full mr-2 {{ $serviceState === 'online' ? 'bg-green-600' : 'bg-red-600' }}">
                                 </div>
                                 {{ $serviceState === 'online' ? 'Online' : 'Offline' }}
                             </span>

@@ -129,11 +129,11 @@
                                                 </div>
                                                 <div class="flex gap-2">
                                                     <button onclick="analyzeWithAI({{ $talep->id }})"
-                                                        class="bg-blue-500 text-white px-4 py-2.5 rounded-lg text-sm hover:bg-blue-600 transition-colors">
+                                                        class="bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm hover:bg-blue-600 transition-colors">
                                                         <i class="fas fa-robot mr-1"></i>AI Analiz
                                                     </button>
                                                     <button onclick="findMatches({{ $talep->id }})"
-                                                        class="bg-green-500 text-white px-4 py-2.5 rounded-lg text-sm hover:bg-green-600 transition-colors">
+                                                        class="bg-green-600 text-white px-4 py-2.5 rounded-lg text-sm hover:bg-green-600 transition-colors">
                                                         <i class="fas fa-search mr-1"></i>Eşleştir
                                                     </button>
                                                 </div>

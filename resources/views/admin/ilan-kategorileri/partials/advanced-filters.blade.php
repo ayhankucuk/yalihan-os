@@ -121,7 +121,7 @@
                         🧹 Temizle
                     </button>
                     <button type="button" id="save-filter-preset"
-                        class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900">
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-600 text-white rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900">
                         💾 Kaydet
                     </button>
                 </div>

@@ -76,7 +76,7 @@
                         <div class="space-y-4">
                             @foreach ($noteHistory as $history)
                                 <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg dark:bg-slate-900">
-                                    <div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                    <div class="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
                                     <div class="flex-1">
                                         <div class="text-sm font-medium text-gray-900 dark:text-slate-100 dark:text-white">
                                             {{ $history['action'] ?? 'Değişiklik' }}</div>
@@ -204,12 +204,12 @@
 
                     <div class="space-y-2">
                         <a href="#"
-                            class="block w-full text-center px-4 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            class="block w-full text-center px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
                             <i class="fas fa-user mr-2"></i>
                             Kişi Detayları
                         </a>
                         <a href="{{ route('admin.kisi-not.create', ['kisi_id' => $not['kisi_id']]) }}"
-                            class="block w-full text-center px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                            class="block w-full text-center px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-600 transition-colors">
                             <i class="fas fa-plus mr-2"></i>
                             Yeni Not Ekle
                         </a>
@@ -221,7 +221,7 @@
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 dark:text-slate-200">Hızlı İşlemler</h3>
                     <div class="space-y-3">
                         <button onclick="toggleComplete()"
-                            class="w-full flex items-center justify-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                            class="w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-600 transition-colors">
                             <i class="fas fa-check mr-2"></i>
                             @if ($not['is_completed'] ?? false)
                                 Tamamlandı İşaretini Kaldır
@@ -231,19 +231,19 @@
                         </button>
 
                         <button onclick="copyNoteContent()"
-                            class="w-full flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            class="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-600 transition-colors">
                             <i class="fas fa-copy mr-2"></i>
                             İçeriği Kopyala
                         </button>
 
                         <button onclick="shareNote()"
-                            class="w-full flex items-center justify-center px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
+                            class="w-full flex items-center justify-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-600 transition-colors">
                             <i class="fas fa-share mr-2"></i>
                             Paylaş
                         </button>
 
                         <button onclick="deleteNote()"
-                            class="w-full flex items-center justify-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                            class="w-full flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-600 transition-colors">
                             <i class="fas fa-trash mr-2"></i>
                             Notu Sil
                         </button>
@@ -355,8 +355,8 @@
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
             toast.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white z-50 ${
-        type === 'success' ? 'bg-green-500' :
-        type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+        type === 'success' ? 'bg-green-600' :
+        type === 'error' ? 'bg-red-600' : 'bg-blue-600'
     }`;
             toast.textContent = message;
 

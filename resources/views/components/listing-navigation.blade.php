@@ -57,7 +57,7 @@
         @if($previous)
         <a href="{{ route('ilanlar.show', $previous->id) }}"
            class="group flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-md transition-all duration-200 dark:bg-slate-900 dark:border-slate-700">
-            <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:bg-blue-500 dark:group-hover:bg-blue-600 transition-colors">
+            <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:bg-blue-600 dark:group-hover:bg-blue-600 transition-colors">
                 <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 group-hover:text-white transition-colors">chevron_left</span>
             </div>
             <div class="flex-1 min-w-0">
@@ -101,7 +101,7 @@
                 </div>
                 @endif
             </div>
-            <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:bg-blue-500 dark:group-hover:bg-blue-600 transition-colors">
+            <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:bg-blue-600 dark:group-hover:bg-blue-600 transition-colors">
                 <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 group-hover:text-white transition-colors">chevron_right</span>
             </div>
         </a>

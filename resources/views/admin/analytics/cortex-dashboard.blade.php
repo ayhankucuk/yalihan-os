@@ -3,7 +3,7 @@
 @section('content')
 <div x-data="cortexAnalytics()"
      x-init="init()"
-     class="min-h-screen bg-gray-900 text-white font-sans selection:bg-indigo-500 selection:text-white">
+     class="min-h-screen bg-gray-900 text-white font-sans selection:bg-indigo-600 selection:text-white">
 
     {{-- Header --}}
     <div class="px-8 py-6 border-b border-gray-800 flex justify-between items-center bg-gray-900/50 backdrop-blur-md sticky top-0 z-30">
@@ -78,7 +78,7 @@
                     </span>
                 </div>
                 <div class="mt-4 w-full bg-gray-700 rounded-full h-1.5 overflow-hidden">
-                    <div class="bg-indigo-500 h-1.5 rounded-full transition-all duration-1000" :style="`width: ${metrics.occupancy_rate}%`"></div>
+                    <div class="bg-indigo-600 h-1.5 rounded-full transition-all duration-1000" :style="`width: ${metrics.occupancy_rate}%`"></div>
                 </div>
             </div>
 

@@ -4,10 +4,10 @@
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <!-- Title & Description -->
         <div class="space-y-2">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold uppercase tracking-wider mb-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-600/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold uppercase tracking-wider mb-2">
                 <span class="relative flex h-2 w-2">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 dark:bg-indigo-300 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500 dark:bg-indigo-400"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-600 dark:bg-indigo-400"></span>
                 </span>
                 Yönetici Paneli
             </div>
@@ -46,7 +46,7 @@
 
             <!-- Create New Listing Button -->
             <a href="{{ route('admin.ilanlar.create') }}"
-                class="inline-flex items-center gap-2 px-5 py-2 h-10 bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-bold rounded-xl shadow-sm hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all active:scale-95 dark:shadow-none">
+                class="inline-flex items-center gap-2 px-5 py-2 h-10 bg-indigo-600 dark:bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-sm hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all active:scale-95 dark:shadow-none">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>

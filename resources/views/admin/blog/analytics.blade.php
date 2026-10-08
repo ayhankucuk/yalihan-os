@@ -227,7 +227,7 @@
                             @foreach ($analytics['traffic_sources'] as $source)
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center space-x-3">
-                                        <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                                        <div class="w-3 h-3 rounded-full bg-blue-600"></div>
                                         <span class="text-sm font-medium text-gray-700 dark:text-slate-300">{{ $source->source }}</span>
                                     </div>
                                     <span class="text-sm text-gray-500">{{ $source->count }}</span>

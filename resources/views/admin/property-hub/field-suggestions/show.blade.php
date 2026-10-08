@@ -146,7 +146,7 @@
                                         </div>
                                         <div class="w-full bg-gray-200 dark:bg-slate-800 rounded-full h-2">
                                             <div class="h-2 rounded-full transition-all duration-500
-                                                @if ($score >= 70) bg-green-500
+                                                @if ($score >= 70) bg-green-600
                                                 @elseif ($score >= 40) bg-amber-500
                                                 @else bg-gray-400 @endif"
                                                 style="width: {{ min($score, 100) }}%"></div>

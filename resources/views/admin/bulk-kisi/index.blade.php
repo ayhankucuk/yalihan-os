@@ -165,7 +165,7 @@
                     </span>
                 </div>
                 <div class="mt-2 bg-white rounded-full h-2 dark:bg-slate-900">
-                    <div class="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-300"
                         :style="'width: ' + progress + '%'"></div>
                 </div>
             </div>

@@ -59,7 +59,7 @@
                         @forelse($groupedAssignments as $categoryName => $items)
                             <div class="mb-6 last:mb-0">
                                 <h3 class="text-sm font-medium text-gray-700 dark:text-slate-200 mb-3 flex items-center dark:text-slate-300">
-                                    <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                    <span class="w-2 h-2 bg-blue-600 rounded-full mr-2"></span>
                                     {{ $categoryName }}
                                     <span class="ml-2 text-xs text-gray-500">({{ count($items) }})</span>
                                 </h3>

@@ -382,7 +382,7 @@
                         </div>
                     </div>
                     <div class="mt-3 h-1.5 w-full rounded-full bg-gray-100 dark:bg-slate-700">
-                        <div class="h-1.5 rounded-full ${sr >= 80 ? 'bg-emerald-500' : sr >= 50 ? 'bg-amber-500' : 'bg-red-500'}" style="width: ${sr}%"></div>
+                        <div class="h-1.5 rounded-full ${sr >= 80 ? 'bg-emerald-500' : sr >= 50 ? 'bg-amber-500' : 'bg-red-600'}" style="width: ${sr}%"></div>
                     </div>
                 </div>
             `;

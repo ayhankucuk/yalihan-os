@@ -39,8 +39,8 @@
                         Binlerce ilan arasından size en uygun olanı bulmak için özelleştirilmiş filtreler, harita görünümü ve akıllı öneriler.
                     </p>
                     <div class="mt-6 flex flex-wrap gap-2">
-                        <span class="px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-medium">Harita bazlı</span>
-                        <span class="px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-medium">Akıllı filtre</span>
+                        <span class="px-2.5 py-1 rounded-full bg-indigo-600/20 text-indigo-300 text-xs font-medium">Harita bazlı</span>
+                        <span class="px-2.5 py-1 rounded-full bg-indigo-600/20 text-indigo-300 text-xs font-medium">Akıllı filtre</span>
                     </div>
                 </div>
             </div>

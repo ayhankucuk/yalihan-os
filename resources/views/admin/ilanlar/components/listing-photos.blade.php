@@ -17,7 +17,7 @@
                 </h4>
                 <div class="flex items-center space-x-2">
                     <button type="button" @click="openFileDialog()"
-                        class="px-4 py-2 bg-orange-500 text-white text-sm rounded-lg hover:bg-orange-600 transition-colors">
+                        class="px-4 py-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-600 transition-colors">
                         <i class="fas fa-folder-open mr-1"></i>Dosyadan Seç
                     </button>
                     <input type="file" id="photo-input" multiple accept="image/*" class="hidden"
@@ -60,7 +60,7 @@
                         Tümünü Seç
                     </button>
                     <button type="button" @click="clearSelection()"
-                        class="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600">
+                        class="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-600">
                         Seçimi Temizle
                     </button>
                 </div>
@@ -78,7 +78,7 @@
 
                         {{-- Seçim Overlay --}}
                         <div x-show="photo.selected"
-                            class="absolute inset-0 bg-blue-500 bg-opacity-75 rounded-lg flex items-center justify-center">
+                            class="absolute inset-0 bg-blue-600 bg-opacity-75 rounded-lg flex items-center justify-center">
                             <i class="fas fa-check text-white text-2xl"></i>
                         </div>
 
@@ -99,7 +99,7 @@
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <button type="button" @click="deletePhoto(photo)"
-                                    class="p-2 bg-red-500 bg-opacity-80 hover:bg-opacity-100 rounded-full text-white">
+                                    class="p-2 bg-red-600 bg-opacity-80 hover:bg-opacity-100 rounded-full text-white">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -189,7 +189,7 @@
                             İptal
                         </button>
                         <button type="button" @click="savePhotoEdit()"
-                            class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600">
+                            class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-600">
                             Kaydet
                         </button>
                     </div>

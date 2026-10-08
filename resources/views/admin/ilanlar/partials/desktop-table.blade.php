@@ -148,7 +148,7 @@
                                                 'bg-amber-500': dt.value === 'beklemede',
                                                 'bg-slate-400': dt.value === 'taslak',
                                                 'bg-rose-500': dt.value === 'pasif',
-                                                'bg-indigo-500': dt.value === 'arsiv'
+                                                'bg-indigo-600': dt.value === 'arsiv'
                                             }"></span>
                                         <span x-text="dt.label"></span>
                                     </button>

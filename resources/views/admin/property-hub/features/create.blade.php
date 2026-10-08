@@ -115,7 +115,7 @@
                                 :class="type === 'text' ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border-gray-200 dark:border-gray-700' dark:border-slate-700"
                                 class="cursor-pointer rounded-xl border p-4 transition-all duration-200 relative group">
                                 <div class="flex items-start gap-4">
-                                    <div :class="type === 'text' ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'"
+                                    <div :class="type === 'text' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'"
                                          class="p-2 rounded-lg transition-colors duration-200">
                                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
@@ -133,7 +133,7 @@
                                 :class="type === 'number' ? 'ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border-gray-200 dark:border-gray-700' dark:border-slate-700"
                                 class="cursor-pointer rounded-xl border p-4 transition-all duration-200 relative group">
                                 <div class="flex items-start gap-4">
-                                    <div :class="type === 'number' ? 'bg-purple-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'"
+                                    <div :class="type === 'number' ? 'bg-purple-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'"
                                          class="p-2 rounded-lg transition-colors duration-200">
                                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
@@ -151,7 +151,7 @@
                                 :class="type === 'boolean' ? 'ring-2 ring-green-500 bg-green-50 dark:bg-green-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border-gray-200 dark:border-gray-700' dark:border-slate-700"
                                 class="cursor-pointer rounded-xl border p-4 transition-all duration-200 relative group">
                                 <div class="flex items-start gap-4">
-                                    <div :class="type === 'boolean' ? 'bg-green-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'"
+                                    <div :class="type === 'boolean' ? 'bg-green-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'"
                                          class="p-2 rounded-lg transition-colors duration-200">
                                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />

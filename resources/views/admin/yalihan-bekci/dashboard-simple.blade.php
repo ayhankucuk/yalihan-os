@@ -206,7 +206,7 @@
                     </div>
                     <div class="text-sm text-gray-600">Cache statusu</div>
                     <div class="flex items-center gap-2 mt-2">
-                        <div class="w-3 h-3 rounded-full {{ ($report['performance']['cache_durumu'] ?? '') === 'ok' ? 'bg-green-500 animate-pulse' : 'bg-gray-400' }}"></div>
+                        <div class="w-3 h-3 rounded-full {{ ($report['performance']['cache_durumu'] ?? '') === 'ok' ? 'bg-green-600 animate-pulse' : 'bg-gray-400' }}"></div>
                         <span class="text-xs text-gray-600">{{ ($report['performance']['cache_durumu'] ?? '') === 'ok' ? 'Çalışıyor' : 'Durdu' }}</span>
                     </div>
                 </div>

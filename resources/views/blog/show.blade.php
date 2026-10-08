@@ -195,7 +195,7 @@
                                         <span class="material-symbols-outlined">share</span>
                                     </a>
                                     <a href="https://wa.me/?text={{ urlencode($post->title . ' - ' . request()->url()) }}"
-                                        target="_blank" class="social-share-btn bg-green-500 hover:bg-green-600"
+                                        target="_blank" class="social-share-btn bg-green-600 hover:bg-green-600"
                                         title="WhatsApp'ta Paylaş">
                                         <span class="material-symbols-outlined">chat</span>
                                     </a>

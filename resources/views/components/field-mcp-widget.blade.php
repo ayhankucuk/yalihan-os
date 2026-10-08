@@ -99,7 +99,7 @@
                 </p>
                 <button type="button" 
                         onclick="alert('Hardware cihazı bağlayın ve ölçüm yapın')"
-                        class="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                        class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                     🔌 Cihaz Bağla
                 </button>
             </div>

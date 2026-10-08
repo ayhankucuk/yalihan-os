@@ -270,7 +270,7 @@
                                     class="text-xs font-bold {{ $accessLevel === 'strong' ? 'text-emerald-600 dark:text-emerald-400' : ($accessLevel === 'moderate' ? 'text-amber-600 dark:text-amber-400' : 'text-red-500 dark:text-red-400') }}">{{ $accessScore }}/40</span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
-                                <div class="h-2 rounded-full transition-all {{ $accessLevel === 'strong' ? 'bg-emerald-500' : ($accessLevel === 'moderate' ? 'bg-amber-500' : 'bg-red-500') }}"
+                                <div class="h-2 rounded-full transition-all {{ $accessLevel === 'strong' ? 'bg-emerald-500' : ($accessLevel === 'moderate' ? 'bg-amber-500' : 'bg-red-600') }}"
                                     style="width: {{ $accessPct }}%"></div>
                             </div>
                             <div class="text-[10px] text-gray-400 dark:text-slate-500 mt-0.5">
@@ -286,7 +286,7 @@
                                     class="text-xs font-bold {{ $densityLevel === 'strong' ? 'text-emerald-600 dark:text-emerald-400' : ($densityLevel === 'moderate' ? 'text-amber-600 dark:text-amber-400' : 'text-red-500 dark:text-red-400') }}">{{ $densityScore }}/30</span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
-                                <div class="h-2 rounded-full transition-all {{ $densityLevel === 'strong' ? 'bg-emerald-500' : ($densityLevel === 'moderate' ? 'bg-amber-500' : 'bg-red-500') }}"
+                                <div class="h-2 rounded-full transition-all {{ $densityLevel === 'strong' ? 'bg-emerald-500' : ($densityLevel === 'moderate' ? 'bg-amber-500' : 'bg-red-600') }}"
                                     style="width: {{ $densityPct }}%"></div>
                             </div>
                             <div class="text-[10px] text-gray-400 dark:text-slate-500 mt-0.5">
@@ -302,7 +302,7 @@
                                     class="text-xs font-bold {{ $coverageLevel === 'strong' ? 'text-emerald-600 dark:text-emerald-400' : ($coverageLevel === 'moderate' ? 'text-amber-600 dark:text-amber-400' : 'text-red-500 dark:text-red-400') }}">{{ $coverageScore }}/30</span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
-                                <div class="h-2 rounded-full transition-all {{ $coverageLevel === 'strong' ? 'bg-emerald-500' : ($coverageLevel === 'moderate' ? 'bg-amber-500' : 'bg-red-500') }}"
+                                <div class="h-2 rounded-full transition-all {{ $coverageLevel === 'strong' ? 'bg-emerald-500' : ($coverageLevel === 'moderate' ? 'bg-amber-500' : 'bg-red-600') }}"
                                     style="width: {{ $coveragePct }}%"></div>
                             </div>
                             <div class="text-[10px] text-gray-400 dark:text-slate-500 mt-0.5">
@@ -457,14 +457,14 @@
                 $ctaBg = match ($actionMode->cta_action) {
                     'buy' => 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600',
                     'watch' => 'bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-500',
-                    default => 'bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-500',
+                    default => 'bg-red-600 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-600',
                 };
 
                 $scoreBg = match ($amLevel) {
                     'hot' => 'bg-emerald-500',
-                    'balanced' => 'bg-blue-500',
+                    'balanced' => 'bg-blue-600',
                     'risky' => 'bg-amber-500',
-                    default => 'bg-red-500',
+                    default => 'bg-red-600',
                 };
                 $scoreRing = match ($amLevel) {
                     'hot' => 'ring-emerald-500/20',
@@ -543,7 +543,7 @@
                                                 ? 'bg-emerald-500'
                                                 : ($msPct >= 30
                                                     ? 'bg-amber-500'
-                                                    : 'bg-red-500');
+                                                    : 'bg-red-600');
                                     @endphp
                                     <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 mb-1">
                                         <div class="h-1.5 rounded-full {{ $msColor }}"

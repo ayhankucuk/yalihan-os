@@ -14,7 +14,7 @@
             <div
                 class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-transparent hover:border-blue-300 transition-all duration-200 dark:bg-slate-900">
                 <div
-                    class="flex-shrink-0 w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    class="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                     {{ $match['total_score'] }}
                 </div>
                 <div class="ml-4 flex-1">

@@ -125,7 +125,7 @@
                     <button type="button"
                             @click="save()"
                             :disabled="loading"
-                            class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto disabled:opacity-50 dark:shadow-none">
+                            class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 sm:ml-3 sm:w-auto disabled:opacity-50 dark:shadow-none">
                         <span x-show="!loading">Kaydet</span>
                         <span x-show="loading">Kaydediliyor...</span>
                     </button>

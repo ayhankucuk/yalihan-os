@@ -49,7 +49,7 @@
                             unselected: 'bg-slate-50 text-red-600 dark:text-red-400 dark:bg-slate-950 border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20'
                         },
                         'LOW_VISIBILITY': {
-                            selected: 'bg-orange-500 text-white border-transparent shadow-md shadow-orange-500/30',
+                            selected: 'bg-orange-600 text-white border-transparent shadow-md shadow-orange-500/30',
                             unselected: 'bg-slate-50 text-orange-600 dark:text-orange-400 dark:bg-slate-950 border-orange-200 dark:border-orange-900/50 hover:bg-orange-50 dark:hover:bg-orange-900/20'
                         },
                         'LOW_IMAGE_QUALITY': {

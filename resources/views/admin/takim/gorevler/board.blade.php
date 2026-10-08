@@ -63,7 +63,7 @@
                 <div class="mb-4 flex items-center justify-between">
                     <h2
                         class="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-slate-100 dark:text-white">
-                        <span class="h-3 w-3 rounded-full bg-red-500"></span>
+                        <span class="h-3 w-3 rounded-full bg-red-600"></span>
                         Yapılacaklar
                     </h2>
                     <span
@@ -125,7 +125,7 @@
                 <div class="mb-4 flex items-center justify-between">
                     <h2
                         class="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-slate-100 dark:text-white">
-                        <span class="h-3 w-3 rounded-full bg-green-500"></span>
+                        <span class="h-3 w-3 rounded-full bg-green-600"></span>
                         Tamamlandı
                     </h2>
                     <span

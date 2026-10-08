@@ -274,7 +274,7 @@
                         İptal
                     </a>
                     <button type="submit"
-                        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 dark:bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-200 shadow-md dark:shadow-blue-900/40 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 dark:bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-200 shadow-md dark:shadow-blue-900/40 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                         :disabled="loading">
                         <svg x-show="!loading" class="w-5 h-5" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">

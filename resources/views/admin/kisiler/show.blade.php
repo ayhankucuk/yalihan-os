@@ -421,7 +421,7 @@
                     ⏱️ Aktivite Zaman Çizelgesi
                 </h2>
                 <button @click="showAddForm = !showAddForm" 
-                        class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg 
+                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-600 text-white rounded-lg 
                                transition-all duration-200 hover:scale-105">
                     <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -465,7 +465,7 @@
                 
                 <div class="flex gap-3">
                     <button @click="addActivity()" 
-                            class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm
+                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-600 text-white rounded-lg text-sm
                                    transition-all duration-200">
                         Kaydet
                     </button>

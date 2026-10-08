@@ -208,7 +208,7 @@
                     recognition.maxAlternatives = 1;
 
                     testBtn.innerHTML =
-                        '<span class="flex items-center"><span class="w-2 h-2 bg-red-500 rounded-full animate-ping mr-2"></span> Dinleniyor...</span>';
+                        '<span class="flex items-center"><span class="w-2 h-2 bg-red-600 rounded-full animate-ping mr-2"></span> Dinleniyor...</span>';
                     testBtn.disabled = true;
 
                     recognition.start();

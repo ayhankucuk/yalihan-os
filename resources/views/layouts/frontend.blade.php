@@ -68,14 +68,14 @@
             window.addEventListener('load', function() {
                 setTimeout(function() {
                     const testEl = document.createElement('div');
-                    testEl.className = 'bg-blue-500';
+                    testEl.className = 'bg-blue-600';
                     testEl.style.position = 'absolute';
                     testEl.style.left = '-9999px';
                     document.body.appendChild(testEl);
                     const bgColor = window.getComputedStyle(testEl).backgroundColor;
                     document.body.removeChild(testEl);
 
-                    // If Tailwind is not working (bg-blue-500 doesn't apply), load CDN
+                    // If Tailwind is not working (bg-blue-600 doesn't apply), load CDN
                     if (bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent' || !bgColor.includes(
                             'rgb')) {
                         console.warn('Tailwind not detected, loading CDN fallback...');

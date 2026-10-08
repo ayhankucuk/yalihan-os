@@ -35,10 +35,10 @@
             <button
                 class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition shadow dark:text-slate-300 dark:shadow-none dark:bg-slate-900">Düzenle</button>
             <button
-                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition shadow dark:shadow-none">Mesaj
+                class="bg-blue-600 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition shadow dark:shadow-none">Mesaj
                 Gönder</button>
             <button
-                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition shadow dark:shadow-none">Sil</button>
+                class="bg-red-600 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition shadow dark:shadow-none">Sil</button>
         </div>
     </div>
     <!-- Tabs -->

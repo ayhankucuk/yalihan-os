@@ -151,7 +151,7 @@
             {{-- AI Features Grid --}}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
                 <div class="text-center p-6 bg-white/60 backdrop-blur-sm rounded-xl border border-white/20 dark:bg-slate-900/60">
-                    <div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div class="w-12 h-12 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
@@ -161,7 +161,7 @@
                 </div>
 
                 <div class="text-center p-6 bg-white/60 backdrop-blur-sm rounded-xl border border-white/20 dark:bg-slate-900/60">
-                    <div class="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div class="w-12 h-12 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
                             <path
                                 d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
@@ -172,7 +172,7 @@
                 </div>
 
                 <div class="text-center p-6 bg-white/60 backdrop-blur-sm rounded-xl border border-white/20 dark:bg-slate-900/60">
-                    <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div class="w-12 h-12 bg-green-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
                                 d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"

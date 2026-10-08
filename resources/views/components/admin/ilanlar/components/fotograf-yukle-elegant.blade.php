@@ -92,7 +92,7 @@ Context7: %100, Tailwind CSS ONLY, Drag & Drop
                     </button>
                     <button type="button" 
                             onclick="deletePhoto({{ $foto->id }})"
-                            class="p-2 bg-red-500 hover:bg-red-600 rounded-lg
+                            class="p-2 bg-red-600 hover:bg-red-600 rounded-lg
                                    text-white text-xs font-bold
                                    transition-all duration-200 hover:scale-110"
                             title="Sil">

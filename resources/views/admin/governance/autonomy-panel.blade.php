@@ -77,10 +77,10 @@
                 @php
                     $levelColor = match($autonomyStatus['autonomy_level']) {
                         0 => 'bg-gray-500',
-                        1 => 'bg-blue-500',
-                        2 => 'bg-green-500',
+                        1 => 'bg-blue-600',
+                        2 => 'bg-green-600',
                         3 => 'bg-yellow-500',
-                        4 => 'bg-red-500',
+                        4 => 'bg-red-600',
                         default => 'bg-gray-500',
                     };
                 @endphp
@@ -180,7 +180,7 @@
                         $hourPct = $autonomyStatus['actions']['max_per_hour'] > 0
                             ? min(100, ($autonomyStatus['actions']['this_hour'] / $autonomyStatus['actions']['max_per_hour']) * 100)
                             : 0;
-                        $hourColor = $hourPct >= 90 ? 'bg-red-500' : ($hourPct >= 70 ? 'bg-yellow-500' : 'bg-green-500');
+                        $hourColor = $hourPct >= 90 ? 'bg-red-600' : ($hourPct >= 70 ? 'bg-yellow-500' : 'bg-green-600');
                     @endphp
                     <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-slate-700">
                         <div class="{{ $hourColor }} h-2 rounded-full transition-all" style="width: {{ $hourPct }}%"></div>
@@ -199,7 +199,7 @@
                         $dayPct = $autonomyStatus['actions']['max_per_day'] > 0
                             ? min(100, ($autonomyStatus['actions']['today'] / $autonomyStatus['actions']['max_per_day']) * 100)
                             : 0;
-                        $dayColor = $dayPct >= 90 ? 'bg-red-500' : ($dayPct >= 70 ? 'bg-yellow-500' : 'bg-green-500');
+                        $dayColor = $dayPct >= 90 ? 'bg-red-600' : ($dayPct >= 70 ? 'bg-yellow-500' : 'bg-green-600');
                     @endphp
                     <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-slate-700">
                         <div class="{{ $dayColor }} h-2 rounded-full transition-all" style="width: {{ $dayPct }}%"></div>

@@ -108,8 +108,8 @@
                         <p class="text-sm text-gray-600 dark:text-gray-400">{{ $systemHealth['cortex_brain']['description'] }}</p>
                     </div>
                     <div class="relative">
-                        <div id="cortex-durumu" class="w-4 h-4 rounded-full {{ $systemHealth['cortex_brain']['servis_durumu'] === 'online' ? 'bg-green-500' : 'bg-red-500' }} animate-pulse" role="presentation" aria-label="Cortex brain durumu: {{ $systemHealth['cortex_brain']['servis_durumu'] }}"></div>
-                        <div class="absolute inset-0 w-4 h-4 rounded-full {{ $systemHealth['cortex_brain']['servis_durumu'] === 'online' ? 'bg-green-500' : 'bg-red-500' }} opacity-75 animate-ping"></div>
+                        <div id="cortex-durumu" class="w-4 h-4 rounded-full {{ $systemHealth['cortex_brain']['servis_durumu'] === 'online' ? 'bg-green-600' : 'bg-red-600' }} animate-pulse" role="presentation" aria-label="Cortex brain durumu: {{ $systemHealth['cortex_brain']['servis_durumu'] }}"></div>
+                        <div class="absolute inset-0 w-4 h-4 rounded-full {{ $systemHealth['cortex_brain']['servis_durumu'] === 'online' ? 'bg-green-600' : 'bg-red-600' }} opacity-75 animate-ping"></div>
                     </div>
                 </div>
                 <div class="flex items-center justify-between">
@@ -130,8 +130,8 @@
                         <p class="text-sm text-gray-600 dark:text-gray-400">{{ $systemHealth['llm_engine']['description'] }}</p>
                     </div>
                     <div class="relative">
-                        <div id="llm-durumu" class="w-4 h-4 rounded-full {{ $systemHealth['llm_engine']['servis_durumu'] === 'online' ? 'bg-green-500' : 'bg-red-500' }} animate-pulse" role="presentation" aria-label="LLM engine durumu: {{ $systemHealth['llm_engine']['servis_durumu'] }}"></div>
-                        <div class="absolute inset-0 w-4 h-4 rounded-full {{ $systemHealth['llm_engine']['servis_durumu'] === 'online' ? 'bg-green-500' : 'bg-red-500' }} opacity-75 animate-ping"></div>
+                        <div id="llm-durumu" class="w-4 h-4 rounded-full {{ $systemHealth['llm_engine']['servis_durumu'] === 'online' ? 'bg-green-600' : 'bg-red-600' }} animate-pulse" role="presentation" aria-label="LLM engine durumu: {{ $systemHealth['llm_engine']['servis_durumu'] }}"></div>
+                        <div class="absolute inset-0 w-4 h-4 rounded-full {{ $systemHealth['llm_engine']['servis_durumu'] === 'online' ? 'bg-green-600' : 'bg-red-600' }} opacity-75 animate-ping"></div>
                     </div>
                 </div>
                 <div class="flex items-center justify-between">
@@ -154,8 +154,8 @@
                         <p class="text-sm text-gray-600 dark:text-gray-400">{{ $systemHealth['knowledge_base']['description'] }}</p>
                     </div>
                     <div class="relative">
-                        <div id="kb-durumu" class="w-4 h-4 rounded-full {{ $systemHealth['knowledge_base']['servis_durumu'] === 'online' ? 'bg-green-500' : ($systemHealth['knowledge_base']['servis_durumu'] === 'not_configured' ? 'bg-yellow-500' : 'bg-red-500') }} animate-pulse" role="presentation" aria-label="Knowledge base durumu: {{ $systemHealth['knowledge_base']['servis_durumu'] }}"></div>
-                        <div class="absolute inset-0 w-4 h-4 rounded-full {{ $systemHealth['knowledge_base']['servis_durumu'] === 'online' ? 'bg-green-500' : ($systemHealth['knowledge_base']['servis_durumu'] === 'not_configured' ? 'bg-yellow-500' : 'bg-red-500') }} opacity-75 animate-ping"></div>
+                        <div id="kb-durumu" class="w-4 h-4 rounded-full {{ $systemHealth['knowledge_base']['servis_durumu'] === 'online' ? 'bg-green-600' : ($systemHealth['knowledge_base']['servis_durumu'] === 'not_configured' ? 'bg-yellow-500' : 'bg-red-600') }} animate-pulse" role="presentation" aria-label="Knowledge base durumu: {{ $systemHealth['knowledge_base']['servis_durumu'] }}"></div>
+                        <div class="absolute inset-0 w-4 h-4 rounded-full {{ $systemHealth['knowledge_base']['servis_durumu'] === 'online' ? 'bg-green-600' : ($systemHealth['knowledge_base']['servis_durumu'] === 'not_configured' ? 'bg-yellow-500' : 'bg-red-600') }} opacity-75 animate-ping"></div>
                     </div>
                 </div>
                 <div class="flex items-center justify-between">
@@ -187,11 +187,11 @@
                                 <div class="flex items-start justify-between">
                                     <div class="flex-1">
                                         <div class="flex items-center gap-2 mb-2">
-                                            <span class="text-xs font-semibold px-2 py-1 rounded {{ $opportunity['score'] >= 90 ? 'bg-yellow-500 text-white' : 'bg-green-500' }}">
+                                            <span class="text-xs font-semibold px-2 py-1 rounded {{ $opportunity['score'] >= 90 ? 'bg-yellow-500 text-white' : 'bg-green-600' }}">
                                                 Skor: {{ $opportunity['score'] }}
                                             </span>
                                             @if($opportunity['score'] >= 90)
-                                                <span class="text-xs font-semibold px-2 py-1 rounded bg-red-500 text-white animate-pulse">
+                                                <span class="text-xs font-semibold px-2 py-1 rounded bg-red-600 text-white animate-pulse">
                                                     ⚠️ ACİL
                                                 </span>
                                             @endif
@@ -313,8 +313,8 @@
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">🔄 Queue Worker</h2>
                     <div class="relative">
-                        <div id="queue-durumu" class="w-4 h-4 rounded-full {{ $queueStatus['servis_durumu'] === 'running' ? 'bg-green-500' : ($queueStatus['servis_durumu'] === 'stopped' ? 'bg-red-500' : 'bg-yellow-500') }} animate-pulse" role="presentation" aria-hidden="true"></div>
-                        <div class="absolute inset-0 w-4 h-4 rounded-full {{ $queueStatus['servis_durumu'] === 'running' ? 'bg-green-500' : ($queueStatus['servis_durumu'] === 'stopped' ? 'bg-red-500' : 'bg-yellow-500') }} opacity-75 animate-ping"></div>
+                        <div id="queue-durumu" class="w-4 h-4 rounded-full {{ $queueStatus['servis_durumu'] === 'running' ? 'bg-green-600' : ($queueStatus['servis_durumu'] === 'stopped' ? 'bg-red-600' : 'bg-yellow-500') }} animate-pulse" role="presentation" aria-hidden="true"></div>
+                        <div class="absolute inset-0 w-4 h-4 rounded-full {{ $queueStatus['servis_durumu'] === 'running' ? 'bg-green-600' : ($queueStatus['servis_durumu'] === 'stopped' ? 'bg-red-600' : 'bg-yellow-500') }} opacity-75 animate-ping"></div>
                     </div>
                 </div>
 
@@ -368,8 +368,8 @@
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">📱 Telegram Bildirimleri</h2>
                     <div class="relative">
-                        <div class="w-4 h-4 rounded-full {{ $telegramStats['is_configured'] ? 'bg-green-500' : 'bg-yellow-500' }} animate-pulse"></div>
-                        <div class="absolute inset-0 w-4 h-4 rounded-full {{ $telegramStats['is_configured'] ? 'bg-green-500' : 'bg-yellow-500' }} opacity-75 animate-ping"></div>
+                        <div class="w-4 h-4 rounded-full {{ $telegramStats['is_configured'] ? 'bg-green-600' : 'bg-yellow-500' }} animate-pulse"></div>
+                        <div class="absolute inset-0 w-4 h-4 rounded-full {{ $telegramStats['is_configured'] ? 'bg-green-600' : 'bg-yellow-500' }} opacity-75 animate-ping"></div>
                     </div>
                 </div>
 
@@ -512,11 +512,11 @@
             if (!element) return;
 
             const durumMap = {
-                'ok': { color: 'bg-green-500', text: 'Online' },
-                'online': { color: 'bg-green-500', text: 'Online' },
-                'offline': { color: 'bg-red-500', text: 'Offline' },
-                'stopped': { color: 'bg-red-500', text: 'Stopped' },
-                'running': { color: 'bg-green-500', text: 'Running' },
+                'ok': { color: 'bg-green-600', text: 'Online' },
+                'online': { color: 'bg-green-600', text: 'Online' },
+                'offline': { color: 'bg-red-600', text: 'Offline' },
+                'stopped': { color: 'bg-red-600', text: 'Stopped' },
+                'running': { color: 'bg-green-600', text: 'Running' },
                 'not_configured': { color: 'bg-yellow-500', text: 'Not Configured' }
             };
 
@@ -574,10 +574,10 @@
 
         function getToastColor(type) {
             const colors = {
-                'success': 'bg-green-500',
-                'error': 'bg-red-500',
+                'success': 'bg-green-600',
+                'error': 'bg-red-600',
                 'warning': 'bg-yellow-500',
-                'info': 'bg-blue-500'
+                'info': 'bg-blue-600'
             };
             return colors[type] || colors['info'];
         }

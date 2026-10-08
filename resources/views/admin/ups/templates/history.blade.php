@@ -15,7 +15,7 @@
             </div>
             @isset($template)
                 <a href="{{ route('admin.ups.templates.edit', ['kategori_id' => $template->kategori_id, 'yayin_tipi_id' => $template->id]) }}"
-                   class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200">
+                   class="px-4 py-2 bg-blue-600 hover:bg-blue-600 text-white rounded-lg transition-all duration-200">
                     ← Düzenlenmeye Dön
                 </a>
             @endisset

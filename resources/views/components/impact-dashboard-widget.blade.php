@@ -120,8 +120,8 @@
                 <template x-for="activity in recentActivities" :key="activity.id">
                     <div class="flex items-center space-x-2 text-xs">
                         <span class="w-2 h-2 rounded-full"
-                            :class="activity.type === 'success' ? 'bg-green-500' : activity.type === 'improvement' ?
-                                'bg-blue-500' : 'bg-yellow-500'"></span>
+                            :class="activity.type === 'success' ? 'bg-green-600' : activity.type === 'improvement' ?
+                                'bg-blue-600' : 'bg-yellow-500'"></span>
                         <span class="text-gray-600 dark:text-gray-400 flex-1" x-text="activity.message"></span>
                         <span class="text-gray-400" x-text="activity.time"></span>
                     </div>
@@ -132,7 +132,7 @@
         <!-- Action Buttons -->
         <div class="grid grid-cols-2 gap-2 border-t border-gray-200 dark:border-slate-800 pt-3 dark:border-slate-700">
             <button @click="generateIdeas()"
-                class="flex items-center justify-center px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded transition-colors duration-200">
+                class="flex items-center justify-center px-3 py-2 bg-blue-600 hover:bg-blue-600 text-white text-xs rounded transition-colors duration-200">
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z">
@@ -141,7 +141,7 @@
                 Ideas
             </button>
             <button @click="runCodeReview()"
-                class="flex items-center justify-center px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white text-xs rounded transition-colors duration-200">
+                class="flex items-center justify-center px-3 py-2 bg-purple-600 hover:bg-purple-600 text-white text-xs rounded transition-colors duration-200">
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>

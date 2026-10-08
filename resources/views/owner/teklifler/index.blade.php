@@ -114,7 +114,7 @@
                                 <td class="whitespace-nowrap px-6 py-4">
                                     <div class="flex items-center">
                                         <div class="h-2 w-24 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700">
-                                            <div class="h-2 rounded-full @if($eslesme->skor > 75) bg-green-500 @elseif($eslesme->skor > 50) bg-yellow-500 @else bg-red-500 @endif" style="width: {{ $eslesme->skor }}%"></div>
+                                            <div class="h-2 rounded-full @if($eslesme->skor > 75) bg-green-600 @elseif($eslesme->skor > 50) bg-yellow-500 @else bg-red-600 @endif" style="width: {{ $eslesme->skor }}%"></div>
                                         </div>
                                         <span class="ml-2 text-sm font-medium text-gray-700 dark:text-slate-300">%{{ $eslesme->skor }}</span>
                                     </div>

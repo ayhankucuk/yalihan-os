@@ -118,7 +118,7 @@
                 <!-- Toplam Talep -->
                 <div class="p-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg shadow-sm dark:shadow-none dark:border-slate-700">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-blue-500 rounded-xl text-white shadow-md dark:shadow-none">
+                        <div class="p-3 bg-blue-600 rounded-xl text-white shadow-md dark:shadow-none">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -139,7 +139,7 @@
                 <!-- Aktif Talep -->
                 <div class="p-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg shadow-sm dark:shadow-none dark:border-slate-700">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-green-500 rounded-xl text-white shadow-md dark:shadow-none">
+                        <div class="p-3 bg-green-600 rounded-xl text-white shadow-md dark:shadow-none">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -181,7 +181,7 @@
                 <!-- Toplam Portföy -->
                 <div class="p-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg shadow-sm dark:shadow-none dark:border-slate-700">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-purple-500 rounded-xl text-white shadow-md dark:shadow-none">
+                        <div class="p-3 bg-purple-600 rounded-xl text-white shadow-md dark:shadow-none">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -321,9 +321,9 @@
                                                         => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
                                                 };
                                                 $dotStyle = match ($currentStatus) {
-                                                    'acil' => 'bg-red-500',
+                                                    'acil' => 'bg-red-600',
                                                     'beklemede' => 'bg-yellow-500',
-                                                    default => 'bg-green-500',
+                                                    default => 'bg-green-600',
                                                 };
                                             @endphp
                                             <span
@@ -780,7 +780,7 @@
                         </div>
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 dark:text-slate-100">Hiç öneri bulunamadı</h3>
                         <p class="text-gray-600 dark:text-gray-400 mb-6">Filtreleri gevşeterek daha fazla sonuç bulabilirsiniz</p>
-                        <button class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-150" onclick="resetOneriFilters()">
+                        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-600 text-white rounded-lg transition-colors duration-150" onclick="resetOneriFilters()">
                             <i class="text-gray-400 text-gray-400-refresh-ccw w-4 h-4 mr-2"></i>
                             Filtreleri Sıfırla
                         </button>
@@ -885,10 +885,10 @@
                 }
 
                 function getScoreColor(score) {
-                    if (score >= 90) return 'bg-green-500';
+                    if (score >= 90) return 'bg-green-600';
                     if (score >= 80) return 'bg-yellow-500';
-                    if (score >= 70) return 'bg-orange-500';
-                    return 'bg-red-500';
+                    if (score >= 70) return 'bg-orange-600';
+                    return 'bg-red-600';
                 }
 
                 function sendToClient(ilanId) {

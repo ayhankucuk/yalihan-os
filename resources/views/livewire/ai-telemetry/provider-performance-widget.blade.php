@@ -45,10 +45,10 @@
                             $width = min(($provider['avg_latency_ms'] / 2000) * 100, 100);
                             $colorClass =
                                 $provider['avg_latency_ms'] < 500
-                                    ? 'bg-green-500'
+                                    ? 'bg-green-600'
                                     : ($provider['avg_latency_ms'] < 1000
                                         ? 'bg-yellow-500'
-                                        : 'bg-red-500');
+                                        : 'bg-red-600');
                         @endphp
                         <div class="{{ $colorClass }} h-2 rounded-full" style="width: {{ $width }}%"></div>
                     </div>

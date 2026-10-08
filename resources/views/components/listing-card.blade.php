@@ -195,15 +195,15 @@
     }
 
     .islem-butonu-goruntule {
-        @apply bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white;
+        @apply bg-blue-600 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white;
     }
 
     .islem-butonu-duzenle {
-        @apply bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-800 text-white;
+        @apply bg-green-600 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-800 text-white;
     }
 
     .islem-butonu-sil {
-        @apply bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-800 text-white;
+        @apply bg-red-600 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-800 text-white;
     }
 
     .durum-etiketi {

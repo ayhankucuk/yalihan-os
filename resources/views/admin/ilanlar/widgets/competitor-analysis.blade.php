@@ -63,11 +63,11 @@
 
                         <div class="text-right">
                             @if($competitor['price_gap'] > 0)
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-red-500 text-white">
+                                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-red-600 text-white">
                                     +{{ number_format(abs($competitor['price_gap_percent']), 1) }}% PAHALISI
                                 </span>
                             @elseif($competitor['price_gap'] < 0)
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-green-500 text-white">
+                                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-green-600 text-white">
                                     {{ number_format(abs($competitor['price_gap_percent']), 1) }}% UCUZUMUZ
                                 </span>
                             @else

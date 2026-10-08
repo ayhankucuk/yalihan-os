@@ -48,7 +48,7 @@
             <div class="space-y-2">
                 <label class="block text-sm font-medium text-transparent">Ara</label>
                 <button type="submit"
-                    class="w-full bg-blue-600 dark:bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-95 transition-all duration-200 font-semibold flex items-center justify-center gap-2 min-h-[48px] touch-manipulation shadow-lg hover:shadow-xl focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                    class="w-full bg-blue-600 dark:bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-95 transition-all duration-200 font-semibold flex items-center justify-center gap-2 min-h-[48px] touch-manipulation shadow-lg hover:shadow-xl focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
                     onclick="performSearch()" aria-label="Emlak ara">
                     <span class="search-icon">🔍</span>
                     <span class="search-text">Ara</span>
@@ -214,12 +214,12 @@
             <div class="flex items-center gap-2">
                 <span class="text-sm text-gray-600 dark:text-slate-200">Görünüm:</span>
                 <button
-                    class="p-2 border border-gray-300 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-gray-700 dark:text-white hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white dark:hover:text-white active:scale-95 transition-all duration-200 dark:text-slate-300"
+                    class="p-2 border border-gray-300 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-gray-700 dark:text-white hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white dark:hover:text-white active:scale-95 transition-all duration-200 dark:text-slate-300"
                     title="Grid" aria-label="Grid görünümü">
                     ⊞
                 </button>
                 <button
-                    class="p-2 border border-gray-300 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-gray-700 dark:text-white hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white dark:hover:text-white active:scale-95 transition-all duration-200 dark:text-slate-300"
+                    class="p-2 border border-gray-300 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-gray-700 dark:text-white hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white dark:hover:text-white active:scale-95 transition-all duration-200 dark:text-slate-300"
                     title="Liste" aria-label="Liste görünümü">
                     ☰
                 </button>

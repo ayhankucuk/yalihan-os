@@ -3,7 +3,7 @@
     <div class="max-w-screen-xl mx-auto px-4 py-3">
         <div class="flex items-center gap-2 mb-2">
             <div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded">
-                <div id="create-progress-bar" class="h-2 bg-green-500 rounded transition-all duration-500"
+                <div id="create-progress-bar" class="h-2 bg-green-600 rounded transition-all duration-500"
                     style="width: 0%"></div>
             </div>
             <span id="create-progress-text"

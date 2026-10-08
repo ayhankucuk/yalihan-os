@@ -38,7 +38,7 @@
 
     <!-- Main FAB Button -->
     <button @click="open = !open"
-            :class="open ? 'rotate-45 bg-gray-900 dark:bg-white text-white dark:text-gray-900' : 'bg-blue-600 dark:bg-blue-500 shadow-blue-500/20 dark:shadow-blue-900/40'"
+            :class="open ? 'rotate-45 bg-gray-900 dark:bg-white text-white dark:text-gray-900' : 'bg-blue-600 dark:bg-blue-600 shadow-blue-500/20 dark:shadow-blue-900/40'"
             class="w-14 h-14 rounded-full shadow-xl dark:shadow-2xl flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 hover:shadow-2xl dark:hover:shadow-3xl">
         <svg class="w-6 h-6 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>

@@ -295,11 +295,11 @@
                                             <span
                                                 @class([
                                                     'h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white dark:ring-slate-800 transition-all duration-200',
-                                                    'bg-green-500' => $change->action === 'create',
-                                                    'bg-blue-500' => $change->action === 'update',
-                                                    'bg-red-500' => $change->action === 'delete',
-                                                    'bg-purple-500' => $change->action === 'assign',
-                                                    'bg-orange-500' => $change->action === 'unassign',
+                                                    'bg-green-600' => $change->action === 'create',
+                                                    'bg-blue-600' => $change->action === 'update',
+                                                    'bg-red-600' => $change->action === 'delete',
+                                                    'bg-purple-600' => $change->action === 'assign',
+                                                    'bg-orange-600' => $change->action === 'unassign',
                                                     'bg-gray-500' => !in_array($change->action, ['create', 'update', 'delete', 'assign', 'unassign']),
                                                 ])>
                                                 @if ($change->action === 'create')

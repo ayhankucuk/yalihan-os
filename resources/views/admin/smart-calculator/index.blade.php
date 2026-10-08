@@ -27,7 +27,7 @@
             <div
                 class="sv-card-padding sv-shadow-md rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 mb-8 dark:border-slate-700">
                 <div class="flex items-center mb-6">
-                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center w-8 h-8 mr-3">
+                    <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center w-8 h-8 mr-3">
                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z">
@@ -39,7 +39,7 @@
                 <!-- Basic Theme - Temel Hesaplamalar -->
                 <div class="subtle-vibrant-blue sv-header rounded-lg sv-shadow-sm sv-card-hover sv-card-padding mb-6">
                     <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-4 flex items-center">
-                        <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center w-5 h-5 mr-2">
+                        <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center w-5 h-5 mr-2">
                             <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z">
@@ -64,7 +64,7 @@
                 <!-- Location Theme - Konum Bazlı Hesaplamalar -->
                 <div class="subtle-vibrant-green sv-header rounded-lg sv-shadow-sm sv-card-hover sv-card-padding mb-6">
                     <h3 class="text-lg font-semibold text-green-800 dark:text-green-200 mb-4 flex items-center">
-                        <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center w-5 h-5 mr-2">
+                        <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center w-5 h-5 mr-2">
                             <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
@@ -91,7 +91,7 @@
                 <!-- Features Theme - Özellik Bazlı Hesaplamalar -->
                 <div class="subtle-vibrant-purple sv-header rounded-lg sv-shadow-sm sv-card-hover sv-card-padding mb-6">
                     <h3 class="text-lg font-semibold text-purple-800 dark:text-purple-200 mb-4 flex items-center">
-                        <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center w-5 h-5 mr-2">
+                        <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center w-5 h-5 mr-2">
                             <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
                                 </path>
@@ -115,7 +115,7 @@
                 <!-- Media Theme - Gelişmiş Hesaplamalar -->
                 <div class="subtle-vibrant-orange sv-header rounded-lg sv-shadow-sm sv-card-hover sv-card-padding mb-6">
                     <h3 class="text-lg font-semibold text-orange-800 dark:text-orange-200 mb-4 flex items-center">
-                        <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center w-5 h-5 mr-2">
+                        <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center w-5 h-5 mr-2">
                             <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -139,7 +139,7 @@
                 <!-- System Theme - Sistem Hesaplamaları -->
                 <div class="subtle-vibrant-gray sv-header rounded-lg sv-shadow-sm sv-card-hover sv-card-padding">
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-200 mb-4 flex items-center">
-                        <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center w-5 h-5 mr-2">
+                        <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center w-5 h-5 mr-2">
                             <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
@@ -170,7 +170,7 @@
             <div x-bind:class="getFormThemeClass(selectedType)"
                 class="sv-header rounded-xl sv-shadow-md sv-card-hover sv-card-padding mb-8">
                 <div class="flex items-center mb-6">
-                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center w-8 h-8 mr-3">
+                    <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center w-8 h-8 mr-3">
                         <i :class="getCalculationIcon(selectedType)" class="w-4 h-4 text-white"></i>
                     </div>
                     <h2 x-bind:class="getFormTitleClass(selectedType)" class="text-xl font-semibold text-gray-800 dark:text-slate-200"

@@ -538,8 +538,8 @@
                     // Get quality badge color
                     getQualityColor(quality) {
                         const colors = {
-                            'verified': 'bg-green-500',
-                            'free_alternative': 'bg-blue-500',
+                            'verified': 'bg-green-600',
+                            'free_alternative': 'bg-blue-600',
                             'test_data': 'bg-yellow-500',
                             'unknown': 'bg-gray-500'
                         };
@@ -556,10 +556,10 @@
                             document.body.appendChild(container);
                         }
                         const colors = {
-                            success: 'bg-green-500',
-                            error: 'bg-red-500',
+                            success: 'bg-green-600',
+                            error: 'bg-red-600',
                             warning: 'bg-yellow-500',
-                            info: 'bg-blue-500'
+                            info: 'bg-blue-600'
                         };
                         const toastEl = document.createElement('div');
                         toastEl.className = (colors[type] || colors.info) +

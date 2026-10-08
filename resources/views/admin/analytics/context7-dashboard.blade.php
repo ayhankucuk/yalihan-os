@@ -210,19 +210,19 @@
                     </h3>
                     <div class="space-y-4">
                         <div class="flex items-center space-x-3">
-                            <div id="mcp-durumu" class="h-3 w-3 animate-pulse rounded-full bg-green-500"></div>
+                            <div id="mcp-durumu" class="h-3 w-3 animate-pulse rounded-full bg-green-600"></div>
                             <span class="text-gray-600 dark:text-slate-200">MCP Server</span>
                         </div>
                         <div class="flex items-center space-x-3">
-                            <div id="git-durumu" class="h-3 w-3 animate-pulse rounded-full bg-green-500"></div>
+                            <div id="git-durumu" class="h-3 w-3 animate-pulse rounded-full bg-green-600"></div>
                             <span class="text-gray-600 dark:text-slate-200">Git Hooks</span>
                         </div>
                         <div class="flex items-center space-x-3">
-                            <div id="context7-durumu" class="h-3 w-3 animate-pulse rounded-full bg-green-500"></div>
+                            <div id="context7-durumu" class="h-3 w-3 animate-pulse rounded-full bg-green-600"></div>
                             <span class="text-gray-600 dark:text-slate-200">Context7 Validator</span>
                         </div>
                         <div class="flex items-center space-x-3">
-                            <div id="bekci-durumu" class="h-3 w-3 animate-pulse rounded-full bg-green-500"></div>
+                            <div id="bekci-durumu" class="h-3 w-3 animate-pulse rounded-full bg-green-600"></div>
                             <span class="text-gray-600 dark:text-slate-200">Yalıhan Bekçi</span>
                         </div>
                         <div class="mt-4 rounded-lg bg-gray-50 p-3 dark:bg-gray-700 dark:bg-slate-900">

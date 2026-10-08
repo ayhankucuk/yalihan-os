@@ -234,7 +234,7 @@
                                             :disabled="isSubmitting" class="peer sr-only">
                                         <div
                                             class="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-gray-100 bg-gray-50 px-4 py-3 text-gray-500 transition-all group-hover:border-gray-200 peer-checked:border-red-400 peer-checked:bg-red-50 peer-checked:text-red-600 dark:border-slate-800 dark:bg-gray-800/50 dark:bg-slate-900 dark:group-hover:border-gray-600 dark:peer-checked:bg-red-900/20">
-                                            <div class="h-2 w-2 rounded-full bg-gray-300 peer-checked:bg-red-500"></div>
+                                            <div class="h-2 w-2 rounded-full bg-gray-300 peer-checked:bg-red-600"></div>
                                             <span class="text-sm font-black">Zorunlu</span>
                                         </div>
                                     </label>
@@ -247,7 +247,7 @@
                                             :disabled="isSubmitting" class="peer sr-only">
                                         <div
                                             class="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-gray-100 bg-gray-50 px-4 py-3 text-gray-500 transition-all group-hover:border-gray-200 peer-checked:border-green-400 peer-checked:bg-green-50 peer-checked:text-green-600 dark:border-slate-800 dark:bg-gray-800/50 dark:bg-slate-900 dark:group-hover:border-gray-600 dark:peer-checked:bg-green-900/20">
-                                            <div class="h-2 w-2 rounded-full bg-gray-300 peer-checked:bg-green-500"></div>
+                                            <div class="h-2 w-2 rounded-full bg-gray-300 peer-checked:bg-green-600"></div>
                                             <span class="text-sm font-black">Görünür</span>
                                         </div>
                                     </label>
@@ -383,10 +383,10 @@
                     <div class="relative overflow-hidden px-6 py-20 text-center">
                         {{-- Decorative background elements --}}
                         <div
-                            class="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-blue-500/5 blur-3xl dark:bg-blue-500/10">
+                            class="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-blue-600/5 blur-3xl dark:bg-blue-600/10">
                         </div>
                         <div
-                            class="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-purple-500/5 blur-3xl dark:bg-purple-500/10">
+                            class="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-purple-600/5 blur-3xl dark:bg-purple-600/10">
                         </div>
 
                         <div class="relative">
@@ -692,9 +692,9 @@
                         // Create notification element
                         const notification = document.createElement('div');
                         notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ${
-                            type === 'success' ? 'bg-green-500 text-white' :
-                            type === 'error' ? 'bg-red-500 text-white' :
-                            'bg-blue-500 text-white'
+                            type === 'success' ? 'bg-green-600 text-white' :
+                            type === 'error' ? 'bg-red-600 text-white' :
+                            'bg-blue-600 text-white'
                         }`;
                         notification.textContent = message;
 

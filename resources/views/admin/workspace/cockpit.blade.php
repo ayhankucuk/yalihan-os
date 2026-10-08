@@ -406,7 +406,7 @@
                                     $colorClass = match(true) {
                                         $currentStep >= 6 => 'bg-emerald-500',
                                         $currentStep >= 4 => 'bg-amber-500',
-                                        $currentStep >= 2 => 'bg-blue-500',
+                                        $currentStep >= 2 => 'bg-blue-600',
                                         default => 'bg-violet-500',
                                     };
                                 }
@@ -793,7 +793,7 @@
                             <span class="text-sm font-black text-slate-700 dark:text-slate-300">{{ $pubScore }}/100</span>
                         </div>
                         <div class="health-bar-track">
-                            <div class="health-bar-fill bg-green-500" style="width: {{ $pubScore }}%"></div>
+                            <div class="health-bar-fill bg-green-600" style="width: {{ $pubScore }}%"></div>
                         </div>
                     </div>
                     <div class="space-y-1.5">
@@ -1078,7 +1078,7 @@
                     <div class="flex items-center gap-3 text-xs">
                         @if($execSummary['running_count'] > 0)
                             <span class="flex items-center gap-1 font-bold text-blue-600 dark:text-blue-400">
-                                <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                                <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
                                 {{ $execSummary['running_count'] }} çalışıyor
                             </span>
                         @endif
@@ -1090,7 +1090,7 @@
                         @endif
                         @if($execSummary['failed_count'] > 0)
                             <span class="flex items-center gap-1 font-bold text-red-600 dark:text-red-400">
-                                <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                <span class="w-2 h-2 rounded-full bg-red-600"></span>
                                 {{ $execSummary['failed_count'] }} başarısız
                             </span>
                         @endif

@@ -82,7 +82,7 @@
 @endphp
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     <div class="stat-card stat-card-blue bg-white dark:bg-slate-800/80 rounded-2xl border border-gray-100 dark:border-slate-700/60 p-5 shadow-sm">
-        <div class="stat-orb bg-indigo-500"></div>
+        <div class="stat-orb bg-indigo-600"></div>
         <div class="flex items-start justify-between">
             <div class="flex-1 min-w-0">
                 <p class="text-xs font-medium text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2">Toplam Görev</p>
@@ -121,7 +121,7 @@
         </div>
     </div>
     <div class="stat-card stat-card-red bg-white dark:bg-slate-800/80 rounded-2xl border border-gray-100 dark:border-slate-700/60 p-5 shadow-sm">
-        <div class="stat-orb bg-red-500"></div>
+        <div class="stat-orb bg-red-600"></div>
         <div class="flex items-start justify-between">
             <div class="flex-1 min-w-0">
                 <p class="text-xs font-medium text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2">Geciken</p>
@@ -188,7 +188,7 @@
             </div>
             <div class="flex items-center gap-3">
                 <div class="flex items-center gap-1.5">
-                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 flex-shrink-0"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-600 flex-shrink-0"></span>
                     <span class="text-xs text-gray-400 dark:text-slate-500">Oluşturulan</span>
                 </div>
                 <div class="flex items-center gap-1.5">

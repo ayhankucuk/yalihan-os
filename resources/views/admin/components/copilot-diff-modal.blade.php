@@ -89,7 +89,7 @@
                     Reddet
                 </button>
                 <button @click="applyAllActions()"
-                    class="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-blue-500/50 dark:bg-blue-500 dark:shadow-blue-600/20">
+                    class="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5 hover:bg-blue-600 hover:shadow-blue-500/50 dark:bg-blue-600 dark:shadow-blue-600/20">
                     Tümünü Uygula
                 </button>
             </div>

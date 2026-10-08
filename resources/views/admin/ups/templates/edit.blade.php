@@ -50,21 +50,21 @@
                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Toplam Özellik</div>
                 <div class="text-3xl font-black text-gray-900 dark:text-white dark:text-slate-100">{{ $stats['total'] }}</div>
                 <div class="w-full h-1 bg-gray-100 dark:bg-gray-700 rounded-full mt-3 overflow-hidden dark:bg-slate-900">
-                    <div class="h-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" style="width: 100%"></div>
+                    <div class="h-full bg-blue-600 shadow-[0_0_8px_rgba(59,130,246,0.5)]" style="width: 100%"></div>
                 </div>
             </div>
             <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm dark:shadow-none">
                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Miras Alınan</div>
                 <div class="text-3xl font-black text-purple-600 dark:text-purple-400">{{ $stats['inherited'] }}</div>
                 <div class="w-full h-1 bg-gray-100 dark:bg-gray-700 rounded-full mt-3 overflow-hidden dark:bg-slate-900">
-                    <div class="h-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]" style="width: {{ $stats['total'] > 0 ? ($stats['inherited'] / $stats['total'] * 100) : 0 }}%"></div>
+                    <div class="h-full bg-purple-600 shadow-[0_0_8px_rgba(168,85,247,0.5)]" style="width: {{ $stats['total'] > 0 ? ($stats['inherited'] / $stats['total'] * 100) : 0 }}%"></div>
                 </div>
             </div>
             <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm dark:shadow-none">
                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Manuel Eklenen</div>
                 <div class="text-3xl font-black text-orange-600 dark:text-orange-400">{{ $stats['manual'] }}</div>
                 <div class="w-full h-1 bg-gray-100 dark:bg-gray-700 rounded-full mt-3 overflow-hidden dark:bg-slate-900">
-                    <div class="h-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]" style="width: {{ $stats['total'] > 0 ? ($stats['manual'] / $stats['total'] * 100) : 0 }}%"></div>
+                    <div class="h-full bg-orange-600 shadow-[0_0_8px_rgba(249,115,22,0.5)]" style="width: {{ $stats['total'] > 0 ? ($stats['manual'] / $stats['total'] * 100) : 0 }}%"></div>
                 </div>
             </div>
             <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm dark:shadow-none">
@@ -80,7 +80,7 @@
         {{-- ✨ PREMIUM SELECTOR CARD --}}
         <div class="relative bg-gradient-to-br from-white via-gray-50 to-blue-50 dark:from-gray-800 dark:via-gray-800 dark:to-indigo-950 rounded-2xl shadow-xl dark:shadow-2xl border border-gray-200 dark:border-slate-800 p-8 mb-8 overflow-hidden transition-all duration-300 dark:border-slate-700">
             {{-- Decorative Background --}}
-            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 dark:bg-blue-400/5 rounded-full blur-3xl -z-0"></div>
+            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600/5 dark:bg-blue-400/5 rounded-full blur-3xl -z-0"></div>
 
             <div class="relative z-10">
                 <form method="GET" class="grid grid-cols-1 lg:grid-cols-2 gap-6 transition-all">
@@ -152,7 +152,7 @@
                         <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden transition-all group/category dark:shadow-none">
                             <div class="px-6 py-4 bg-gray-50/50 dark:bg-gray-900/30 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-2 h-6 bg-blue-500 rounded-full"></div>
+                                    <div class="w-2 h-6 bg-blue-600 rounded-full"></div>
                                     <h3 class="text-sm font-black text-gray-800 dark:text-slate-200 uppercase tracking-widest">{{ $groupName }}</h3>
                                 </div>
                                 <span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-[10px] font-bold rounded dark:bg-slate-900">{{ count($groupAssignments) }} özellik</span>
@@ -207,8 +207,8 @@
                     {{-- ✨ PREMIUM PACK UYGULA SECTION --}}
                     <div class="relative bg-gradient-to-br from-white via-purple-50 to-pink-50 dark:from-gray-800 dark:via-purple-950 dark:to-indigo-950 rounded-2xl shadow-xl dark:shadow-2xl border border-purple-200 dark:border-purple-800 mt-6 p-8 overflow-hidden transition-all duration-300">
                         {{-- Decorative Background --}}
-                        <div class="absolute top-0 right-0 w-40 h-40 bg-purple-500/10 dark:bg-purple-400/10 rounded-full blur-3xl -z-0"></div>
-                        <div class="absolute bottom-0 left-0 w-32 h-32 bg-pink-500/10 dark:bg-pink-400/10 rounded-full blur-3xl -z-0"></div>
+                        <div class="absolute top-0 right-0 w-40 h-40 bg-purple-600/10 dark:bg-purple-400/10 rounded-full blur-3xl -z-0"></div>
+                        <div class="absolute bottom-0 left-0 w-32 h-32 bg-pink-600/10 dark:bg-pink-400/10 rounded-full blur-3xl -z-0"></div>
 
                         <div class="relative z-10">
                             {{-- Header --}}
@@ -378,7 +378,7 @@
                             </div>
                             {{-- Filter Type Chips --}}
                             <div class="flex gap-1.5 flex-wrap mb-3">
-                                <button onclick="filterByType('all')" data-type-filter="all" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500 text-white hover:bg-blue-600 transition-all">Tümü</button>
+                                <button onclick="filterByType('all')" data-type-filter="all" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white hover:bg-blue-600 transition-all">Tümü</button>
                                 <button onclick="filterByType('text')" data-type-filter="text" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-slate-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all dark:text-slate-300">Text</button>
                                 <button onclick="filterByType('number')" data-type-filter="number" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-slate-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all dark:text-slate-300">Number</button>
                                 <button onclick="filterByType('select')" data-type-filter="select" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-slate-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all dark:text-slate-300">Select</button>
@@ -825,11 +825,11 @@
 
                 // Determine styling based on type
                 const bgClass = {
-                    'success': 'bg-green-500',
-                    'error': 'bg-red-500',
+                    'success': 'bg-green-600',
+                    'error': 'bg-red-600',
                     'warning': 'bg-yellow-500',
-                    'info': 'bg-blue-500'
-                }[type] || 'bg-blue-500';
+                    'info': 'bg-blue-600'
+                }[type] || 'bg-blue-600';
 
                 const iconSvg = {
                     'success': '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>',

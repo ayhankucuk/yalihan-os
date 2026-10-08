@@ -343,10 +343,10 @@ function crmAI() {
         showNotification(message, type = 'info') {
             const notification = document.createElement('div');
             notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300 ${
-                type === 'success' ? 'bg-green-500 text-white' :
-                type === 'error' ? 'bg-red-500 text-white' :
+                type === 'success' ? 'bg-green-600 text-white' :
+                type === 'error' ? 'bg-red-600 text-white' :
                 type === 'warning' ? 'bg-yellow-500 text-white' :
-                'bg-blue-500 text-white'
+                'bg-blue-600 text-white'
             }`;
             notification.innerHTML = message;
 

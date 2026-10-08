@@ -96,7 +96,7 @@
                                     <!-- Dot Indicator -->
                                     <div class="absolute left-[19px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full border transition-all duration-200
                                         {{ isset($child['route']) && request()->routeIs($child['route'] . '*')
-                                            ? 'bg-blue-500 border-blue-400 ring-2 ring-blue-500/20'
+                                            ? 'bg-blue-600 border-blue-400 ring-2 ring-blue-500/20'
                                             : 'bg-slate-700 border-slate-600 group-hover:bg-slate-500 group-hover:border-slate-400' }}"></div>
 
                                     <span class="truncate {{ isset($child['route']) && request()->routeIs($child['route'] . '*') ? 'text-blue-100' : '' }}">

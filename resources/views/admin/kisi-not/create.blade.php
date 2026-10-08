@@ -279,8 +279,8 @@
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
             toast.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white z-50 ${
-        type === 'success' ? 'bg-green-500' :
-        type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+        type === 'success' ? 'bg-green-600' :
+        type === 'error' ? 'bg-red-600' : 'bg-blue-600'
     }`;
             toast.textContent = message;
 

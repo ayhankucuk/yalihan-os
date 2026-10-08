@@ -142,7 +142,7 @@
                                         class="relative flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-4 transition-all duration-300 hover:border-blue-200 hover:bg-gray-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-900/30 dark:hover:bg-gray-700">
                                         <div class="flex items-center gap-4">
                                             <div
-                                                class="h-2.5 w-2.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-transform group-hover/item:scale-125 dark:shadow-[0_0_15px_rgba(59,130,246,0.4)]">
+                                                class="h-2.5 w-2.5 rounded-full bg-blue-600 shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-transform group-hover/item:scale-125 dark:shadow-[0_0_15px_rgba(59,130,246,0.4)]">
                                             </div>
                                             <span
                                                 class="text-[15px] font-bold text-gray-700 transition-colors group-hover/item:text-blue-600 dark:text-slate-300 dark:group-hover/item:text-blue-400">

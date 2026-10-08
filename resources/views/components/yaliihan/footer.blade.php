@@ -136,37 +136,37 @@
                         <span class="text-gray-400">Bizi Takip Edin:</span>
                         <div class="flex gap-3">
                             <a href="https://www.facebook.com/yalihanemlak/" target="_blank"
-                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-orange-500"
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-orange-600"
                                 title="Facebook">
                                 📘
                             </a>
                             <a href="https://www.instagram.com/yalihanemlak/" target="_blank"
-                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-orange-500"
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-orange-600"
                                 title="Instagram">
                                 📷
                             </a>
                             <a href="https://twitter.com/yalihanemlak/" target="_blank"
-                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-orange-500"
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-orange-600"
                                 title="Twitter">
                                 🐦
                             </a>
                             <a href="https://wa.me/905332090302" target="_blank"
-                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-orange-500"
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-orange-600"
                                 title="WhatsApp">
                                 💬
                             </a>
                             <a href="https://t.me/ayhankucuk" target="_blank"
-                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-orange-500"
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-orange-600"
                                 title="Telegram">
                                 ✈️
                             </a>
                             <a href="https://vk.com/yalihanemlak" target="_blank"
-                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-orange-500"
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-orange-600"
                                 title="VKontakte">
                                 🔵
                             </a>
                             <a href="#"
-                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-orange-500"
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-orange-600"
                                 title="YouTube">
                                 📺
                             </a>
@@ -192,7 +192,7 @@
 
     <!-- Back to Top Button -->
     <button id="backToTop"
-        class="invisible fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full bg-orange-500 text-white opacity-0 shadow-lg transition-all duration-300 hover:bg-orange-600"
+        class="invisible fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full bg-orange-600 text-white opacity-0 shadow-lg transition-all duration-300 hover:bg-orange-600"
         onclick="scrollToTop()">
         ⬆️
     </button>

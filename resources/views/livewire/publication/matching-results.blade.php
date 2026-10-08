@@ -5,7 +5,7 @@
             @if(!$isAiAnalysisComplete)
                 <span class="ml-3 flex h-3 w-3">
                     <span class="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-blue-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-600"></span>
                 </span>
                 <span class="ml-2 text-xs text-blue-400 font-mono animate-pulse uppercase">AI Inference in Progress...</span>
             @endif

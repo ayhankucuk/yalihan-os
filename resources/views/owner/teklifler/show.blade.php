@@ -48,7 +48,7 @@
                     @if($teklif->teklif_durumu->value === 'beklemede')
                         <form method="POST" action="{{ route('owner.teklifler.accept', $teklif->id) }}" class="inline">
                             @csrf
-                            <button type="submit" class="rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-green-500 hover:shadow-md hover:shadow-green-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">
+                            <button type="submit" class="rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-green-600 hover:shadow-md hover:shadow-green-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">
                                 Kabul Et
                             </button>
                         </form>

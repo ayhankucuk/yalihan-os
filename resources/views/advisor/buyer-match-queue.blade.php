@@ -52,7 +52,7 @@
                 <span class="material-symbols-outlined mr-1.5">local_fire_department</span> Sadece HOT
             </button>
             <button @click="setFilter('HIGH_INTENT')"
-                :class="{ 'bg-orange-500 text-white border-transparent': filter === 'HIGH_INTENT', 'bg-white text-orange-600 dark:text-orange-400 dark:bg-slate-900 border border-orange-200 dark:border-orange-900/50 hover:bg-orange-50 dark:hover:bg-orange-900/20': filter !== 'HIGH_INTENT' }"
+                :class="{ 'bg-orange-600 text-white border-transparent': filter === 'HIGH_INTENT', 'bg-white text-orange-600 dark:text-orange-400 dark:bg-slate-900 border border-orange-200 dark:border-orange-900/50 hover:bg-orange-50 dark:hover:bg-orange-900/20': filter !== 'HIGH_INTENT' }"
                 class="flex items-center rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-colors">
                 <span class="material-symbols-outlined mr-1.5">bolt</span> Yüksek Niyet (Intent)
             </button>
@@ -191,7 +191,7 @@
 
                                 <div class="mt-auto flex flex-col gap-2 border-transparent">
                                     <a :href="'tel:' + match.buyer_phone" x-show="match.buyer_phone"
-                                        class="inline-flex w-full items-center justify-center rounded-lg border border-transparent bg-green-600 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white transition hover:bg-green-500 focus:border-green-700 focus:outline-none focus:ring focus:ring-green-200 active:bg-green-600 disabled:opacity-25 dark:bg-green-700 dark:hover:bg-green-600">
+                                        class="inline-flex w-full items-center justify-center rounded-lg border border-transparent bg-green-600 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white transition hover:bg-green-600 focus:border-green-700 focus:outline-none focus:ring focus:ring-green-200 active:bg-green-600 disabled:opacity-25 dark:bg-green-700 dark:hover:bg-green-600">
                                         <span class="material-symbols-outlined mr-2 border-transparent">call</span> Hemen Ara
                                     </a>
                                     <a :href="'/admin/kisiler/' + match.buyer_id"

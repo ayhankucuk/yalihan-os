@@ -142,7 +142,7 @@
                             <button type="button"
                                     onclick="clearSiteSelection()"
                                     class="flex items-center justify-center w-8 h-8 rounded-lg
-                                           text-red-500 hover:text-white hover:bg-red-500
+                                           text-red-500 hover:text-white hover:bg-red-600
                                            dark:text-red-400 dark:hover:bg-red-600
                                            transition-all duration-200 font-bold">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
