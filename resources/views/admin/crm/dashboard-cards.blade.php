@@ -90,7 +90,7 @@
                             </div>
                         @empty
                             <div class="p-12 text-center">
-                                <i class="fas fa-calendar-times text-5xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                                <x-icon name="calendar" class="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4"/>
                                 <p class="text-gray-500 dark:text-gray-400 text-lg">Henüz aktivite bulunmuyor</p>
                                 <p class="text-gray-400 dark:text-gray-500 text-sm mt-2">İlk aktiviteyi eklemek için müşteri
                                     profili ziyaret edin</p>
@@ -128,7 +128,7 @@
                         <button
                             class="w-full inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all duration-200 touch-target-optimized"
                             onclick="exportData()">
-                            <i class="fas fa-download mr-2"></i>Dışa Aktar
+                            <x-icon name="download" class="w-5 h-5"/>Dışa Aktar
                         </button>
                     </div>
                 </div>

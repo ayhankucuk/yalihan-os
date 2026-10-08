@@ -24,7 +24,7 @@
             </div>
             <div class="flex gap-2">
                 <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
-                    <i class="fas fa-phone mr-2"></i> Ara
+                    <x-icon name="phone" class="w-5 h-5"/> Ara
                 </button>
             </div>
         </div>
@@ -129,13 +129,13 @@
                     <ul class="space-y-3">
                         <li class="flex items-center text-sm">
                             <div class="w-8 h-8 rounded bg-gray-100 dark:bg-slate-900 flex items-center justify-center mr-3 text-gray-500">
-                                <i class="fas fa-phone"></i>
+                                <x-icon name="phone" class="w-5 h-5"/>
                             </div>
                             <span class="text-gray-700 dark:text-slate-200 dark:text-slate-300">{{ $lead->phone ?? '-' }}</span>
                         </li>
                         <li class="flex items-center text-sm">
                             <div class="w-8 h-8 rounded bg-gray-100 dark:bg-slate-900 flex items-center justify-center mr-3 text-gray-500">
-                                <i class="fas fa-envelope"></i>
+                                <x-icon name="mail" class="w-5 h-5"/>
                             </div>
                             <span class="text-gray-700 dark:text-slate-200 dark:text-slate-300">{{ $lead->email ?? '-' }}</span>
                         </li>

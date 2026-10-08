@@ -203,7 +203,7 @@
                                             <div class="flex items-center gap-2">
                                                 <div
                                                     class="w-6 h-6 rounded bg-gray-100 dark:bg-slate-800 flex items-center justify-center dark:bg-slate-900">
-                                                    <i class="fas fa-folder text-slate-400 dark:text-slate-500 text-xs"></i>
+                                                    <x-icon name="folder" class="w-4 h-4 text-slate-400 dark:text-slate-500"/>
                                                 </div>
                                                 <span
                                                     class="text-sm text-slate-700 dark:text-slate-300 font-medium group-hover/row:text-slate-900 dark:group-hover/row:text-white transition-colors truncate max-w-[150px]" title="{{ $row['category_name'] }}">
