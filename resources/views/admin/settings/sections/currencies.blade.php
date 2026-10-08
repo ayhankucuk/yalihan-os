@@ -1,13 +1,16 @@
 {{-- Currencies Management Section --}}
 <div class="space-y-6">
     <div>
-        <h3 class="text-lg font-semibold text-green-600 dark:text-green-400 mb-2">💰 Para Birimi Yönetimi</h3>
+        <h3 class="text-lg font-semibold text-green-600 dark:text-green-400 mb-2">
+            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Para Birimi Yönetimi
+        </h3>
         <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Sistem genelinde kabul edilen para birimlerini yönetin.</p>
     </div>
 
     <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-slate-700">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-800">
-            <thead class="bg-gray-50 dark:bg-slate-900/50">
+            <thead class="bg-gray-50 dark:bg-slate-900">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                         Para Birimi
