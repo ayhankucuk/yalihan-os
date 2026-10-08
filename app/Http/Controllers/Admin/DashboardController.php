@@ -48,6 +48,47 @@ class DashboardController extends AdminController
         }
     }
 
+    /**
+     * Danışman kendi çalışma alanı
+     * Sadece danışmanın kendi verilerini gösterir
+     */
+    public function danismanDashboard()
+    {
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
+        // Kendi istatistikleri
+        $myIlanlar = Ilan::where('tenant_id', $tenantId)
+            ->where('danisman_id', $user->id);
+        $activeIlanlar = (clone $myIlanlar)->where('yayin_durumu', 'yayinda');
+
+        $danismanStats = [
+            'my_ilanlar' => $myIlanlar->count(),
+            'active_ilanlar' => $activeIlanlar->count(),
+            'my_musteriler' => \App\Models\Kisi::where('tenant_id', $tenantId)
+                ->where('danisman_id', $user->id)->count(),
+            'my_talepler' => Talep::where('tenant_id', $tenantId)
+                ->where('danisman_id', $user->id)->count(),
+            'recent_ilanlar' => Ilan::with(['il', 'kategori'])
+                ->where('tenant_id', $tenantId)
+                ->where('danisman_id', $user->id)
+                ->orderByDesc('created_at')
+                ->limit(5)
+                ->get(),
+            'recent_musteriler' => \App\Models\Kisi::with(['iller'])
+                ->where('tenant_id', $tenantId)
+                ->where('danisman_id', $user->id)
+                ->orderByDesc('created_at')
+                ->limit(5)
+                ->get(),
+        ];
+
+        return view('admin.dashboard.danisman', [
+            'danismanStats' => $danismanStats,
+            'user' => $user,
+        ]);
+    }
+
     public function create()
     {
         $widgetTypes = [

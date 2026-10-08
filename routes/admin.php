@@ -1674,6 +1674,11 @@ Route::middleware(['auth'])->prefix('admin/my-wallet')->name('admin.wallet.')->g
 // Context7: Danışmanların kendi profillerini yönetebilmeleri
 // ======================================
 Route::middleware(['auth', 'role:danisman'])->prefix('danisman')->name('danisman.')->group(function () {
+    // Danışman Dashboard
+    Route::get('/panel', [\App\Http\Controllers\Admin\DashboardController::class, 'danismanDashboard'])
+        ->name('panel');
+    
+    // Profil yönetimi
     Route::get('/profil', [\App\Http\Controllers\Danisman\ProfilController::class, 'edit'])
         ->name('profil.edit');
     Route::put('/profil', [\App\Http\Controllers\Danisman\ProfilController::class, 'update'])
