@@ -283,6 +283,8 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
 
         // Analytics (PHASE 6)
         Route::get('/analytics', [\App\Http\Controllers\Admin\PropertyHubController::class, 'analytics'])->name('analytics.index');
+        // Legacy redirect: dashboard_v2 → analytics.index
+        Route::get('/analytics/dashboard', fn() => redirect()->route('admin.analytics.index'))->name('analytics.dashboard_v2');
 
         // Export/Import & Search
         Route::post('/export', [\App\Http\Controllers\Admin\PropertyHubController::class, 'export'])->name('export');
