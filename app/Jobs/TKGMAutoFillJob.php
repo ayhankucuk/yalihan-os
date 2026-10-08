@@ -96,10 +96,11 @@ class TKGMAutoFillJob implements ShouldQueue, \App\Queue\Contracts\TenantAwareJo
             $ada = $this->talep->tkgm_ada ?? null;
             $parsel = $this->talep->tkgm_parsel ?? null;
             $il = $this->talep->il ?? null;
+            $ilce = $this->talep->ilce?->name ?? null;
 
-            if ($ada && $parsel && $il) {
+            if ($ada && $parsel && $il && $ilce) {
                 // TKGM API'ye sor
-                $tkgmData = $tkgmService->getParcelInfo($il, $ada, $parsel);
+                $tkgmData = $tkgmService->queryParcel($il, $ilce, $ada, $parsel);
 
                 if ($tkgmData) {
                     // Talep'i TKGM verilerileri ile güncelle
@@ -124,11 +125,12 @@ class TKGMAutoFillJob implements ShouldQueue, \App\Queue\Contracts\TenantAwareJo
                     ]);
                 }
             } else {
-                Log::warning('TKGMAutoFillJob: Ada/parsel bilgisi eksik', [
+                Log::warning('TKGMAutoFillJob: Ada/parsel/ilce bilgisi eksik', [
                     'talep_id' => $this->talep->id,
                     'ada' => $ada,
                     'parsel' => $parsel,
                     'il' => $il,
+                    'ilce' => $ilce,
                 ]);
             }
         } catch (\Exception $e) {
