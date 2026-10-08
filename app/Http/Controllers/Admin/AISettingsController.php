@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Contracts\Settings\ConfigurationRegistryInterface;
 use App\Contracts\Settings\SettingsAuthorityInterface;
+use App\Enums\AI\ProviderModel;
 use App\Services\Admin\AiLogService;
 use App\Services\AI\AiSettingsCacheService;
 use App\Services\AIService;
@@ -63,12 +64,16 @@ class AISettingsController extends Controller
         $appLocale = $this->config->get('app_locale', 'tr');
         $currencyDefault = $this->config->get('currency_default', 'TRY');
 
+        // Model options — ProviderModel enum'dan dynamic olarak alınır
+        $modelOptions = ProviderModel::optionsByProvider();
+
         return view('admin.ai-settings.index', [
             'currentProvider' => $currentProvider,
             'currentModel' => $currentModel,
             'providerSettings' => $providerSettings,
             'appLocale' => $appLocale,
             'currencyDefault' => $currencyDefault,
+            'modelOptions' => $modelOptions,
         ]);
     }
 
@@ -334,9 +339,16 @@ class AISettingsController extends Controller
             'model' => 'required|string|max:100',
         ]);
 
-        if ($validated['provider'] === 'deepseek') {
-            $request->validate([
-                'model' => ['required', \Illuminate\Validation\Rule::in(\App\Enums\AI\DeepSeekModel::values())],
+        $provider = $validated['provider'];
+        $model = $validated['model'];
+
+        // Validate model against ProviderModel enum
+        $providerModels = ProviderModel::forProvider($provider);
+        $validModels = array_map(fn ($m) => $m->value, $providerModels);
+        
+        if (!empty($validModels) && !in_array($model, $validModels, true)) {
+            return ResponseService::validationError([
+                'model' => ['Geçerli bir model seçin: ' . implode(', ', $validModels)],
             ]);
         }
 

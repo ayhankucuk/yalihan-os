@@ -151,18 +151,12 @@
                             </label>
                             <select id="openai_model" name="openai_model"
                                 class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 dark:text-slate-100">
-                                <option value="gpt-3.5-turbo"
-                                    {{ ($providerSettings['openai']['model'] ?? '') === 'gpt-3.5-turbo' ? 'selected' : '' }}>
-                                    GPT-3.5 Turbo</option>
-                                <option value="gpt-4"
-                                    {{ ($providerSettings['openai']['model'] ?? '') === 'gpt-4' ? 'selected' : '' }}>GPT-4
+                                @foreach($modelOptions['openai'] ?? [] as $model)
+                                <option value="{{ $model['value'] }}"
+                                    {{ ($providerSettings['openai']['model'] ?? '') === $model['value'] ? 'selected' : '' }}>
+                                    {{ $model['label'] }}
                                 </option>
-                                <option value="gpt-4-turbo"
-                                    {{ ($providerSettings['openai']['model'] ?? '') === 'gpt-4-turbo' ? 'selected' : '' }}>
-                                    GPT-4 Turbo</option>
-                                <option value="gpt-4o"
-                                    {{ ($providerSettings['openai']['model'] ?? '') === 'gpt-4o' ? 'selected' : '' }}>
-                                    GPT-4o</option>
+                                @endforeach
                             </select>
                         </div>
                         <div>
@@ -232,15 +226,12 @@
                         </label>
                         <select id="google_model" name="google_model"
                             class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 dark:text-slate-100">
-                            <option value="gemini-pro"
-                                {{ ($providerSettings['google']['model'] ?? '') === 'gemini-pro' ? 'selected' : '' }}>
-                                Gemini Pro</option>
-                            <option value="gemini-pro-vision"
-                                {{ ($providerSettings['google']['model'] ?? '') === 'gemini-pro-vision' ? 'selected' : '' }}>
-                                Gemini Pro Vision</option>
-                            <option value="gemini-2.5-flash"
-                                {{ ($providerSettings['google']['model'] ?? '') === 'gemini-2.5-flash' ? 'selected' : '' }}>
-                                Gemini 2.5 Flash</option>
+                            @foreach($modelOptions['gemini'] ?? [] as $model)
+                            <option value="{{ $model['value'] }}"
+                                {{ ($providerSettings['google']['model'] ?? '') === $model['value'] ? 'selected' : '' }}>
+                                {{ $model['label'] }}
+                            </option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="flex gap-3">
@@ -300,15 +291,12 @@
                         </label>
                         <select id="claude_model" name="claude_model"
                             class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 dark:text-slate-100">
-                            <option value="claude-3-sonnet-20240229"
-                                {{ ($providerSettings['claude']['model'] ?? '') === 'claude-3-sonnet-20240229' ? 'selected' : '' }}>
-                                Claude 3 Sonnet</option>
-                            <option value="claude-3-opus-20240229"
-                                {{ ($providerSettings['claude']['model'] ?? '') === 'claude-3-opus-20240229' ? 'selected' : '' }}>
-                                Claude 3 Opus</option>
-                            <option value="claude-3-haiku-20240307"
-                                {{ ($providerSettings['claude']['model'] ?? '') === 'claude-3-haiku-20240307' ? 'selected' : '' }}>
-                                Claude 3 Haiku</option>
+                            @foreach($modelOptions['claude'] ?? [] as $model)
+                            <option value="{{ $model['value'] }}"
+                                {{ ($providerSettings['claude']['model'] ?? '') === $model['value'] ? 'selected' : '' }}>
+                                {{ $model['label'] }}
+                            </option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="flex gap-3">
@@ -367,12 +355,12 @@
                         </label>
                         <select id="deepseek_model" name="deepseek_model"
                             class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 dark:text-slate-100">
-                            <option value="deepseek-v4-flash"
-                                {{ ($providerSettings['deepseek']['model'] ?? '') === 'deepseek-v4-flash' ? 'selected' : '' }}>
-                                DeepSeek V4 Flash</option>
-                            <option value="deepseek-v4-pro"
-                                {{ ($providerSettings['deepseek']['model'] ?? '') === 'deepseek-v4-pro' ? 'selected' : '' }}>
-                                DeepSeek V4 Pro</option>
+                            @foreach($modelOptions['deepseek'] ?? [] as $model)
+                            <option value="{{ $model['value'] }}"
+                                {{ ($providerSettings['deepseek']['model'] ?? '') === $model['value'] ? 'selected' : '' }}>
+                                {{ $model['label'] }}
+                            </option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="flex gap-3">
@@ -419,12 +407,16 @@
                         <label for="ollama_model" class="block text-sm font-medium text-gray-900 dark:text-white mb-2 dark:text-slate-100">
                             Model
                         </label>
-                        <input type="text" id="ollama_model" name="ollama_model"
-                            value="{{ $providerSettings['ollama']['model'] ?? 'gemma2:2b' }}"
-                            placeholder="gemma2:2b, qwen2.5:latest, llama3.2"
-                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 font-mono text-sm dark:text-slate-100">
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Kullanmak istediğiniz Ollama model adını
-                            girin</p>
+                        <select id="ollama_model" name="ollama_model"
+                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 dark:text-slate-100">
+                            @foreach($modelOptions['ollama'] ?? [] as $model)
+                            <option value="{{ $model['value'] }}"
+                                {{ ($providerSettings['ollama']['model'] ?? '') === $model['value'] ? 'selected' : '' }}>
+                                {{ $model['label'] }}
+                            </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Kullanmak istediğiniz Ollama modelini seçin</p>
                     </div>
                     <div class="flex gap-3">
                         <button type="button" onclick="saveProviderSettings('ollama')"
