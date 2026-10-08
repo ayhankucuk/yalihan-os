@@ -112,5 +112,9 @@ class Kernel extends HttpKernel
         'check.owner'    => \App\Http\Middleware\CheckOwner::class,
         'feature'        => \App\Http\Middleware\EnforceFeatureFlag::class,
         'verify.webhook.tenant' => \App\Http\Middleware\VerifyWebhookTenant::class,
+        // Danışman ownership — ensures danışman can only access their own resources
+        'danisman.ownership' => \App\Http\Middleware\EnsureDanismanOwnership::class,
+        // Subscription gate — ensures tenant has active subscription
+        'subscription' => \App\Http\Middleware\SaaS\SubscriptionMiddleware::class,
     ];
 }

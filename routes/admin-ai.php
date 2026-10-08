@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'admin', 'role:admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'admin', 'role:admin', 'subscription', 'ai.cost.guard'])->prefix('admin')->group(function () {
 
     // Danışman AI Dashboard Routes
     Route::prefix('danisman-ai')->name('admin.danisman-ai.')->group(function () {

@@ -250,26 +250,26 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
             Route::post('/pivot-assignments', [\App\Http\Controllers\Admin\PropertyHubController::class, 'savePivotAssignments'])->name('save-pivot-assignments');
             Route::get('/edit', [\App\Http\Controllers\Admin\TemplateController::class, 'showFromQuery'])->name('edit');
 
-            // Context7: AI Template Generator Routes (Throttled)
-            Route::post('/{templateId}/ai-generate', [\App\Http\Controllers\Admin\AI\PropertyAIController::class, 'generateTemplate'])->name('ai-generate')->middleware('throttle:10,1');
-            Route::post('/ai-suggest', [\App\Http\Controllers\Admin\AI\PropertyAIController::class, 'suggestTemplate'])->name('ai-suggest')->middleware('throttle:10,1');
-            Route::post('/ai-import', [\App\Http\Controllers\Admin\PropertyHubController::class, 'storeTemplateStructure'])->name('ai-import')->middleware('throttle:20,1');
+            // Context7: AI Template Generator Routes (Throttled + Subscription + AI Cost Guard)
+            Route::post('/{templateId}/ai-generate', [\App\Http\Controllers\Admin\AI\PropertyAIController::class, 'generateTemplate'])->name('ai-generate')->middleware('throttle:10,1', 'subscription', 'ai.cost.guard');
+            Route::post('/ai-suggest', [\App\Http\Controllers\Admin\AI\PropertyAIController::class, 'suggestTemplate'])->name('ai-suggest')->middleware('throttle:10,1', 'subscription', 'ai.cost.guard');
+            Route::post('/ai-import', [\App\Http\Controllers\Admin\PropertyHubController::class, 'storeTemplateStructure'])->name('ai-import')->middleware('throttle:20,1', 'subscription', 'ai.cost.guard');
 
-            // Advanced AI Features
-            Route::post('/ai-analyze-gaps', [\App\Http\Controllers\Admin\AI\PropertyAIController::class, 'analyzeGaps'])->name('ai-analyze-gaps')->middleware('throttle:10,1');
-            Route::post('/ai-extract-features', [\App\Http\Controllers\Admin\AI\PropertyAIController::class, 'extractFeatures'])->name('ai-extract-features')->middleware('throttle:10,1');
-            Route::post('/apply-master', [\App\Http\Controllers\Admin\PropertyHubController::class, 'applyMasterTemplate'])->name('apply-master');
+            // Advanced AI Features (Subscription + AI Cost Guard)
+            Route::post('/ai-analyze-gaps', [\App\Http\Controllers\Admin\AI\PropertyAIController::class, 'analyzeGaps'])->name('ai-analyze-gaps')->middleware('throttle:10,1', 'subscription', 'ai.cost.guard');
+            Route::post('/ai-extract-features', [\App\Http\Controllers\Admin\AI\PropertyAIController::class, 'extractFeatures'])->name('ai-extract-features')->middleware('throttle:10,1', 'subscription', 'ai.cost.guard');
+            Route::post('/apply-master', [\App\Http\Controllers\Admin\PropertyHubController::class, 'applyMasterTemplate'])->name('apply-master')->middleware('subscription', 'ai.cost.guard');
 
-            // Template AI Pipeline
-            Route::post('/ai-pipeline/start', [\App\Http\Controllers\Admin\TemplateAiPipelineController::class, 'start'])->name('ai-pipeline.start')->middleware('throttle:10,1');
-            Route::get('/ai-pipeline/{runUuid}/poll', [\App\Http\Controllers\Admin\TemplateAiPipelineController::class, 'poll'])->name('ai-pipeline.poll');
+            // Template AI Pipeline (Subscription + AI Cost Guard)
+            Route::post('/ai-pipeline/start', [\App\Http\Controllers\Admin\TemplateAiPipelineController::class, 'start'])->name('ai-pipeline.start')->middleware('throttle:10,1', 'subscription', 'ai.cost.guard');
+            Route::get('/ai-pipeline/{runUuid}/poll', [\App\Http\Controllers\Admin\TemplateAiPipelineController::class, 'poll'])->name('ai-pipeline.poll')->middleware('subscription', 'ai.cost.guard');
 
-            // Template AI Design ("AI ile Tasarla" wizard)
-            Route::post('/ai-design/start', [\App\Http\Controllers\Admin\TemplateAiDesignController::class, 'start'])->name('ai-design.start')->middleware('throttle:10,1');
-            Route::get('/ai-design/{run}/poll', [\App\Http\Controllers\Admin\TemplateAiDesignController::class, 'poll'])->name('ai-design.poll');
-            Route::post('/ai-design/apply', [\App\Http\Controllers\Admin\TemplateAiDesignController::class, 'apply'])->name('ai-design.apply')->middleware('throttle:10,1');
-            Route::post('/ai-design/{audit}/rollback', [\App\Http\Controllers\Admin\TemplateAiDesignController::class, 'rollback'])->name('ai-design.rollback')->middleware('throttle:5,1');
-            Route::get('/ai-design/history', [\App\Http\Controllers\Admin\TemplateAiDesignController::class, 'history'])->name('ai-design.history');
+            // Template AI Design ("AI ile Tasarla" wizard - Subscription + AI Cost Guard)
+            Route::post('/ai-design/start', [\App\Http\Controllers\Admin\TemplateAiDesignController::class, 'start'])->name('ai-design.start')->middleware('throttle:10,1', 'subscription', 'ai.cost.guard');
+            Route::get('/ai-design/{run}/poll', [\App\Http\Controllers\Admin\TemplateAiDesignController::class, 'poll'])->name('ai-design.poll')->middleware('subscription', 'ai.cost.guard');
+            Route::post('/ai-design/apply', [\App\Http\Controllers\Admin\TemplateAiDesignController::class, 'apply'])->name('ai-design.apply')->middleware('throttle:10,1', 'subscription', 'ai.cost.guard');
+            Route::post('/ai-design/{audit}/rollback', [\App\Http\Controllers\Admin\TemplateAiDesignController::class, 'rollback'])->name('ai-design.rollback')->middleware('throttle:5,1', 'subscription', 'ai.cost.guard');
+            Route::get('/ai-design/history', [\App\Http\Controllers\Admin\TemplateAiDesignController::class, 'history'])->name('ai-design.history')->middleware('subscription', 'ai.cost.guard');
         });
 
         // 🎨 REDIRECT: V2 Legacy Alias → Unified Hub Templates
@@ -287,7 +287,7 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
         Route::get('/analytics/dashboard', fn() => redirect()->route('admin.analytics.index'))->name('analytics.dashboard_v2');
 
         // Export/Import & Search
-        Route::post('/export', [\App\Http\Controllers\Admin\PropertyHubController::class, 'export'])->name('export');
+        Route::post('/export', [\App\Http\Controllers\Admin\PropertyHubController::class, 'export'])->name('export')->middleware('subscription');
         Route::post('/import', [\App\Http\Controllers\Admin\PropertyHubController::class, 'import'])->name('import');
         Route::get('/search', [\App\Http\Controllers\Admin\PropertyHubController::class, 'search'])->name('search');
 
@@ -534,7 +534,7 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
         Route::post('/search', [\App\Http\Controllers\Admin\MyListingsController::class, 'search'])->name('search');
         Route::post('/bulk-action', [\App\Http\Controllers\Admin\MyListingsController::class, 'bulkAction'])->name('bulk.action');
         Route::get('/stats', [\App\Http\Controllers\Admin\MyListingsController::class, 'getStats'])->name('stats');
-        Route::get('/export', [\App\Http\Controllers\Admin\MyListingsController::class, 'export'])->name('export');
+        Route::get('/export', [\App\Http\Controllers\Admin\MyListingsController::class, 'export'])->name('export')->middleware('subscription');
     });
 
     // İlan Yönetimi
@@ -677,7 +677,7 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
         Route::post('/{id}/toggle-inheritance', [\App\Http\Controllers\Admin\IlanKategoriController::class, 'toggleInheritance'])->name('toggle-inheritance'); // Miras Kesici
         Route::post('/{id}/add-feature', [\App\Http\Controllers\Admin\IlanKategoriController::class, 'addFeature'])->name('add-feature'); // Global Havuzdan Ekleme
         Route::get('/stats', [\App\Http\Controllers\Admin\IlanKategoriController::class, 'stats'])->name('stats');
-        Route::get('/export', [\App\Http\Controllers\Admin\IlanKategoriController::class, 'export'])->name('export');
+        Route::get('/export', [\App\Http\Controllers\Admin\IlanKategoriController::class, 'export'])->name('export')->middleware('subscription');
         Route::get('/create', [\App\Http\Controllers\Admin\IlanKategoriController::class, 'create'])->name('create');
         Route::post('/sync-features', [\App\Http\Controllers\Admin\TemplateSyncController::class, 'syncFeatures'])->name('sync-features');
 
@@ -1021,8 +1021,9 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
             return redirect()->route('admin.reports.kisiler');
         })->name('kisiler'); // Backward compatibility alias
         Route::get('/performance', [\App\Http\Controllers\Admin\ReportingController::class, 'performanceReports'])->name('performance');
-        Route::post('/export/excel', [\App\Http\Controllers\Admin\ReportingController::class, 'exportExcel'])->name('export.excel');
-        Route::post('/export/pdf', [\App\Http\Controllers\Admin\ReportingController::class, 'exportPdf'])->name('export.pdf');
+        // Premium Reporting (Subscription required)
+        Route::post('/export/excel', [\App\Http\Controllers\Admin\ReportingController::class, 'exportExcel'])->name('export.excel')->middleware('subscription');
+        Route::post('/export/pdf', [\App\Http\Controllers\Admin\ReportingController::class, 'exportPdf'])->name('export.pdf')->middleware('subscription');
     });
 
     // Finans Yönetimi (Financial Management)
@@ -1314,7 +1315,7 @@ Route::middleware(['web', 'auth', 'verified', 'role:admin', 'sab.write.guard', '
         Route::delete('/{id}', [\App\Http\Controllers\Admin\PageAnalyzerController::class, 'destroy'])->name('destroy');
 
         // Additional routes
-        Route::get('/export/{id?}', [\App\Http\Controllers\Admin\PageAnalyzerController::class, 'export'])->name('export');
+        Route::get('/export/{id?}', [\App\Http\Controllers\Admin\PageAnalyzerController::class, 'export'])->name('export')->middleware('subscription');
         Route::get('/download', [\App\Http\Controllers\Admin\PageAnalyzerController::class, 'download'])->name('download');
         Route::post('/rerun/{id}', [\App\Http\Controllers\Admin\PageAnalyzerController::class, 'rerun'])->name('rerun');
         Route::get('/metrics', [\App\Http\Controllers\Admin\PageAnalyzerController::class, 'metrics'])->name('metrics');
@@ -1333,7 +1334,7 @@ Route::prefix('admin/bulk-kisi')->name('admin.bulk-kisi.')->middleware(['web', '
     Route::get('/edit', [\App\Http\Controllers\Admin\BulkKisiController::class, 'edit'])->name('edit');
     Route::put('/update', [\App\Http\Controllers\Admin\BulkKisiController::class, 'update'])->name('update');
     Route::delete('/destroy', [\App\Http\Controllers\Admin\BulkKisiController::class, 'destroy'])->name('destroy');
-    Route::get('/export', [\App\Http\Controllers\Admin\BulkKisiController::class, 'export'])->name('export');
+    Route::get('/export', [\App\Http\Controllers\Admin\BulkKisiController::class, 'export'])->name('export')->middleware('subscription');
     Route::post('/import', [\App\Http\Controllers\Admin\BulkKisiController::class, 'import'])->name('import');
 });
 
@@ -1382,7 +1383,7 @@ Route::prefix('admin/danisman-ai')->name('admin.danisman-ai.')->middleware(['web
     Route::post('/analyze', [\App\Http\Controllers\Admin\DanismanAIController::class, 'analyze'])->name('analyze');
     Route::post('/suggest', [\App\Http\Controllers\Admin\DanismanAIController::class, 'suggest'])->name('suggest');
     Route::get('/analytics/data', [\App\Http\Controllers\Admin\DanismanAIController::class, 'analytics'])->name('analytics');
-    Route::get('/export/{type}', [\App\Http\Controllers\Admin\DanismanAIController::class, 'export'])->name('export');
+    Route::get('/export/{type}', [\App\Http\Controllers\Admin\DanismanAIController::class, 'export'])->name('export')->middleware('subscription');
     Route::get('/prompt-interface', [\App\Http\Controllers\Admin\DanismanAIController::class, 'promptInterface'])->name('prompt-interface');
 });
 
@@ -1396,7 +1397,7 @@ Route::prefix('admin/kisi-not')->name('admin.kisi-not.')->middleware(['web', 'au
     Route::put('/{id}', [\App\Http\Controllers\Admin\KisiNotController::class, 'update'])->name('update');
     Route::delete('/{id}', [\App\Http\Controllers\Admin\KisiNotController::class, 'destroy'])->name('destroy');
     Route::post('/bulk', [\App\Http\Controllers\Admin\KisiNotController::class, 'bulk'])->name('bulk');
-    Route::get('/export', [\App\Http\Controllers\Admin\KisiNotController::class, 'export'])->name('export');
+    Route::get('/export', [\App\Http\Controllers\Admin\KisiNotController::class, 'export'])->name('export')->middleware('subscription');
     Route::get('/search', [\App\Http\Controllers\Admin\KisiNotController::class, 'search'])->name('search');
 });
 
@@ -1558,7 +1559,7 @@ Route::prefix('admin/ups')->name('admin.ups.')->middleware(['web', 'auth', 'admi
     Route::get('/audit-log', [\App\Http\Controllers\Admin\UPS\AuditLogController::class, 'index'])->name('audit-log');
     Route::get('/audit-log/{auditLog}', [\App\Http\Controllers\Admin\UPS\AuditLogController::class, 'show'])->name('audit-log.show');
     Route::delete('/audit-log/{auditLog}', [\App\Http\Controllers\Admin\UPS\AuditLogController::class, 'destroy'])->name('audit-log.destroy');
-    Route::post('/audit-log/export', [\App\Http\Controllers\Admin\UPS\AuditLogController::class, 'export'])->name('audit-log.export');
+    Route::post('/audit-log/export', [\App\Http\Controllers\Admin\UPS\AuditLogController::class, 'export'])->name('audit-log.export')->middleware('subscription');
     Route::post('/audit-log/cleanup', [\App\Http\Controllers\Admin\UPS\AuditLogController::class, 'cleanup'])->name('audit-log.cleanup');
 
     // ✅ UPS Health Check (Phase S - System Integrity)
@@ -1610,8 +1611,8 @@ Route::prefix('admin/ilanlar/{ilan}/checkout')->name('admin.ilanlar.checkout')->
     Route::post('/{reservation}/payments/{payment}/fail', [\App\Http\Controllers\Admin\CheckoutController::class, 'fail'])->name('.fail');
 });
 
-// 🎯 PHASE 8 - SPRINT 3: Matching Feedback System (UI Learning Loop)
-Route::prefix('/matching/feedback')->name('matching.feedback.')->group(function () {
+// 🎯 PHASE 8 - SPRINT 3: Matching Feedback System (UI Learning Loop) - Subscription required
+Route::prefix('/matching/feedback')->name('matching.feedback.')->middleware('subscription')->group(function () {
     Route::post('/', [\App\Http\Controllers\Admin\MatchingFeedbackController::class, 'store'])->name('store');
     Route::get('/history', [\App\Http\Controllers\Admin\MatchingFeedbackController::class, 'history'])->name('history');
     Route::get('/stats', [\App\Http\Controllers\Admin\MatchingFeedbackController::class, 'stats'])->name('stats');
