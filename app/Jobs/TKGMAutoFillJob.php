@@ -99,29 +99,33 @@ class TKGMAutoFillJob implements ShouldQueue, \App\Queue\Contracts\TenantAwareJo
             $ilce = $this->talep->ilce?->name ?? null;
 
             if ($ada && $parsel && $il && $ilce) {
-                // TKGM API'ye sor
-                $tkgmData = $tkgmService->queryParcel($il, $ilce, $ada, $parsel);
+                // TKGM API'ye sor (4 parametre: il, ilce, ada, parsel)
+                $result = $tkgmService->queryParcel($il, $ilce, $ada, $parsel);
 
-                if ($tkgmData) {
-                    // Talep'i TKGM verilerileri ile güncelle
+                // queryParcel ['success', 'data'] formatında döner
+                if ($result && ($result['success'] ?? false)) {
+                    $data = $result['data'] ?? [];
+
+                    // Talep'i TKGM verileri ile güncelle
                     $this->talep->update([
-                        'tkgm_kaks' => $tkgmData['kaks'] ?? null,
-                        'tkgm_imar_durumu' => $tkgmData['imar_durumu'] ?? null,
-                        'tkgm_tapu_durumu' => $tkgmData['tapu_durumu'] ?? null,
-                        'tkgm_ilk_tescil' => $tkgmData['ilk_tescil'] ?? null,
-                        'tkgm_son_islem_tarihi' => $tkgmData['son_islem'] ?? null,
+                        'tkgm_kaks' => $data['kaks'] ?? null,
+                        'tkgm_imar_durumu' => $data['imar_durumu'] ?? null,
+                        'tkgm_tapu_durumu' => $data['tapu_durumu'] ?? null,
+                        'tkgm_ilk_tescil' => $data['ilk_tescil'] ?? null,
+                        'tkgm_son_islem_tarihi' => $data['son_islem'] ?? null,
                         'tkgm_updated_at' => now(),
                     ]);
 
                     Log::info('TKGMAutoFillJob: Veriler dolduruldu', [
                         'talep_id' => $this->talep->id,
-                        'kaks' => $tkgmData['kaks'] ?? null,
+                        'kaks' => $data['kaks'] ?? null,
                     ]);
                 } else {
                     Log::warning('TKGMAutoFillJob: TKGM API sonuç döndürmedi', [
                         'talep_id' => $this->talep->id,
                         'ada' => $ada,
                         'parsel' => $parsel,
+                        'message' => $result['message'] ?? null,
                     ]);
                 }
             } else {
