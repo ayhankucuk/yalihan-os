@@ -47,6 +47,8 @@ class ActionCenterControllerTest extends TestCase
         $unassigned = Gorev::factory()->create([
             'tenant_id' => $this->tenantId,
             'gorev_durumu' => 'bekliyor',
+            'atanan_user_id' => null,
+            'bitis_tarihi' => now()->addDays(7),
             'source_event' => 'IlanCreated',
         ]);
 
