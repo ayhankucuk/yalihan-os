@@ -48,6 +48,11 @@ class Eslesme extends BaseModel
         return $this->belongsTo(User::class, 'danisman_id');
     }
 
+    public function talep(): BelongsTo
+    {
+        return $this->belongsTo(Talep::class, 'talep_id');
+    }
+
     public function etiketler(): BelongsToMany
     {
         return $this->belongsToMany(Etiket::class, 'eslesme_etiket', 'eslesme_id', 'etiket_id');
