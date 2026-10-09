@@ -95,7 +95,7 @@ class Ilan extends BaseModel
         return $this->brut_m2;
     }
 
-    public function getDansismanIdAttribute()
+    public function getDanismanIdAttribute()
     {
         return $this->user_id;
     }
