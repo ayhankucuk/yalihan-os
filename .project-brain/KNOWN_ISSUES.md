@@ -1,6 +1,11 @@
-## AI_TELEMETRY_ARG_MISMATCH — BLOCKED: Dead Code — 2026-09-22
+## AI_TELEMETRY_ARG_MISMATCH — PARTIALLY FIXED — 2026-09-22
 
-- **[BLOCKED] `DeepSeekCortexProvider::generateText()` — line 78 malformed `logFailure()` unreachable via public API**
+- **[CLOSED] `DeepSeekCortexProvider::generateText()` — argüman uyumsuzluğu düzeltildi**
+  - **Durum**: ✅ Argüman uyumsuzluğu DÜZELTİLDİ
+  - **logFailure() imzası**: `string, string, string, int, array, ?int` — uyumlu
+  - **Dead Code (line 77)**: ⚠️ HÂLÂ unreachable — retry mekanizması değişmedi
+  - **Risk**: Düşük — dead code zarar vermiyor, routine maintenance olarak bırakılabilir
+  - **Evidence**: AiTelemetryService.php:111 — logFailure() imzası doğru
   - **Task ID:** `AI_TELEMETRY_ARG_MISMATCH_REMEDIATION_02`
   - **Finding:** `REPO_VERIFIED` — argument shift at line 78 confirmed via static analysis
   - **Baseline:** `1172824699243659c87977ccca8a9b0c307101fa` (= origin/RC2)
