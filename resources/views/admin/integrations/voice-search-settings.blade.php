@@ -59,7 +59,7 @@
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">Servis
                                         Sağlayıcı</label>
                                     <select name="voice_provider"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:bg-slate-900 dark:text-slate-100">
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                                         <option value="openai_whisper"
                                             {{ $voiceProvider == 'openai_whisper' ? 'selected' : '' }}>
                                             OpenAI Whisper (Önerilen)</option>
@@ -100,7 +100,7 @@
                                     Anahtarı</label>
                                 <input type="text" name="voice_api_key" autocomplete="off"
                                     value="{{ $voiceApiKey ? '••••••••••••••••' : '' }}"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:bg-slate-900 dark:text-slate-100"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                     placeholder="sk-...">
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Seçilen sağlayıcıya ait API
                                     anahtarı. Boş bırakılırsa sistem varsayılanı kullanılır.</p>
@@ -131,13 +131,13 @@
                                         Kayıt Süresi (sn)</label>
                                     <input type="number" name="max_record_time"
                                         value="{{ $voiceMaxRecordTime }}"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:bg-slate-900 dark:text-slate-100">
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                                 </div>
                             </div>
 
                             <div class="flex items-center">
                                 <input type="checkbox" name="auto_submit"
-                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 dark:bg-slate-900"
+                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                                     {{ $voiceAutoSubmit ? 'checked' : '' }}>
                                 <label class="ml-2 text-sm font-medium text-gray-900 dark:text-white dark:text-slate-100">Konuşma bitince
                                     otomatik ara</label>
@@ -152,7 +152,7 @@
                         <h3 class="text-lg font-bold mb-2">Cortex Voice AI</h3>
                         <p class="text-sm text-blue-100 mb-4">Yalıhan Cortex ile entegre sesli komut sistemi, doğal dil
                             işleme (NLP) kullanarak karmaşık emlak aramalarını saniyeler içinde sonuçlandırır.</p>
-                        <div class="flex items-center space-x-2 text-xs bg-white/10 rounded-lg p-3 dark:bg-slate-900/10 dark:bg-slate-800/40">
+                        <div class="flex items-center space-x-2 text-xs bg-white/10 rounded-lg p-3 dark:bg-gray-700/40">
                             <span class="flex-shrink-0 w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
                             <span>Sistem Durumu: Aktif ve Bağlı</span>
                         </div>
