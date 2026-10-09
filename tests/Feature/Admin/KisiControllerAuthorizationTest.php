@@ -129,9 +129,10 @@ class KisiControllerAuthorizationTest extends TestCase
             ->putJson(route('admin.kisiler.update', ['kisiId' => $kisi->id]), [
                 'ad' => 'New Name',
                 'soyad' => 'Test',
+                'telefon' => '5551234567',
                 'kisi_tipi' => 'alici',
                 'aktiflik_durumu' => 1,
-                'crm_surec_asamasi' => 'yeni'
+                'crm_surec_asamasi' => 'sicak'
             ])
             ->assertStatus(404);
 
