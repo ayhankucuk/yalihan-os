@@ -28,6 +28,7 @@ class FinancialLedgerServiceTest extends TestCase
         // Setup test accounts
         $this->cashAccount = tap(new LedgerAccount())->forceFill([
             'id' => 1,
+            'tenant_id' => 1,
             'name' => 'Ana Kasa',
             'tip' => 'asset',
             'currency' => 'TRY',
@@ -35,6 +36,7 @@ class FinancialLedgerServiceTest extends TestCase
 
         $this->depositAccount = tap(new LedgerAccount())->forceFill([
             'id' => 2,
+            'tenant_id' => 1,
             'name' => 'Depozito Yükümlülükleri',
             'tip' => 'liability',
             'currency' => 'TRY',
