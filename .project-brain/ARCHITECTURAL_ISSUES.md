@@ -43,9 +43,9 @@
 | `finance/` vs `finans/` | Aynı içerik farklı isim |
 | `users/` vs `kullanicilar/` | Aynı içerik farklı isim |
 
-### 5. Core/Deprected İşaretli Kod
+### 5. LEGACY/DEPRECATED İşaretli Kod
 
-- 11+ Core Service (aktif kullaniliyor)
+- 11+ LEGACY Service
 - 2 Deprecated Models
 - 20+ TODO/SKIP Test
 
@@ -90,7 +90,7 @@
 | GOD CLASS | 9 | 0 | 0 | 9 |
 | DUPLICATE | 3 | 4 | 3 | 10 |
 | NAMING | 0 | 3 | 1 | 4 |
-| Core | 0 | 2 | 2 | 4 |
+| LEGACY | 0 | 2 | 2 | 4 |
 | EXPLOSION | 2 | 3 | 2 | 7 |
 | **TOPLAM** | **24** | **14** | **12** | **50** |
 

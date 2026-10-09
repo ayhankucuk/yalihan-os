@@ -92,7 +92,7 @@ public function detectBuyerMatches(Ilan $ilan): array
 
 ---
 
-## 3. Core Service Kullanimi
+## 3. LEGACY Service Kullanimi
 
 ### IlanService Kullanimi
 
