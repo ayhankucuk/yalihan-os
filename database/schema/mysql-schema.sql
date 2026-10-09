@@ -2913,7 +2913,7 @@ CREATE TABLE `ledger_balances` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `ledger_balances_account_id_currency_unique` (`account_id`,`currency`),
+  UNIQUE KEY `bt_lb_tenant_account_currency_unique` (`tenant_id`,`account_id`,`currency`),
   CONSTRAINT `ledger_balances_account_id_foreign` FOREIGN KEY (`account_id`) REFERENCES `ledger_accounts` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
