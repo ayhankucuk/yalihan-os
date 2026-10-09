@@ -78,15 +78,14 @@ class IlanControllerAuthorizationTest extends TestCase
     // ─────────────────────────────────────────────────────────────────────────
 
     /** @test */
-    public function show_returns_404_for_cross_tenant_access()
+    public function show_returns_403_for_other_danisman_resource()
     {
         $ilan = $this->makeIlan($this->danisman2);
 
-        // Cross-tenant: danisman1 tries to access danisman2's ilan
-        // Layer 2 (repo scope) returns null → 404 (hides existence)
+        // Same tenant, different owner: 403 (forbidden)
         $this->actingAs($this->danisman1)
             ->get(route('admin.ilanlar.show', $ilan->id))
-            ->assertStatus(404);
+            ->assertStatus(403);
     }
 
     /** @test */
@@ -114,13 +113,13 @@ class IlanControllerAuthorizationTest extends TestCase
     // ─────────────────────────────────────────────────────────────────────────
 
     /** @test */
-    public function edit_returns_404_for_cross_tenant_access()
+    public function edit_returns_403_for_other_danisman_resource()
     {
         $ilan = $this->makeIlan($this->danisman2);
 
         $this->actingAs($this->danisman1)
             ->get(route('admin.ilanlar.edit', $ilan->id))
-            ->assertStatus(404);
+            ->assertStatus(403);
     }
 
     /** @test */
@@ -141,13 +140,13 @@ class IlanControllerAuthorizationTest extends TestCase
     // ─────────────────────────────────────────────────────────────────────────
 
     /** @test */
-    public function destroy_returns_404_for_cross_tenant_resource()
+    public function destroy_returns_403_for_other_danisman_resource()
     {
         $ilan = $this->makeIlan($this->danisman2);
 
         $this->actingAs($this->danisman1)
             ->delete(route('admin.ilanlar.destroy', $ilan->id))
-            ->assertStatus(404);
+            ->assertStatus(403);
 
         // Verify data is untouched
         $this->assertDatabaseHas('ilanlar', ['id' => $ilan->id, 'deleted_at' => null]);
@@ -170,13 +169,13 @@ class IlanControllerAuthorizationTest extends TestCase
     // ─────────────────────────────────────────────────────────────────────────
 
     /** @test */
-    public function owner_private_returns_404_for_cross_tenant_access()
+    public function owner_private_returns_403_for_other_danisman_resource()
     {
         $ilan = $this->makeIlan($this->danisman2);
 
         $this->actingAs($this->danisman1)
             ->post(route('admin.ilanlar.portal-ids', $ilan->id), ['portal_ids' => []])
-            ->assertStatus(404);
+            ->assertStatus(403);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
