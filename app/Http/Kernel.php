@@ -102,10 +102,7 @@ class Kernel extends HttpKernel
         'frontend.api' => \App\Http\Middleware\VerifyFrontendApi::class,
         'ai.cost.guard' => \App\Http\Middleware\AICostGuard::class,
         'sab.write.guard' => \App\Http\Middleware\SAB\GlobalWriteGuard::class,
-        'agent.scope' => \App\Http\Middleware\EnsureAgentScope::class, // legacy — use openclaw.* aliases
-        'openclaw.enabled' => \App\Http\Middleware\EnsureOpenClawEnabled::class,
-        'openclaw.scope' => \App\Http\Middleware\EnsureOpenClawScope::class,
-        'openclaw.boundary' => \App\Http\Middleware\EnforceOpenClawBoundary::class,
+        'agent.scope' => \App\Http\Middleware\EnsureAgentScope::class,
         // SAB Kural #1 — Tenant Isolation HTTP katmanı (Fix: #49, 2026-05-15)
         'tenant.context' => \App\Http\Middleware\SetTenantContext::class,
         // Owner Portal — mülk sahibi erişim kontrolü (Task #14)
