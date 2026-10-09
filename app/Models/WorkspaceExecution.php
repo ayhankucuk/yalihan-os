@@ -49,7 +49,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Carbon\Carbon $updated_at
  * @property \Carbon\Carbon|null $deleted_at
  */
-class WorkspaceExecution extends Model
+class WorkspaceExecution extends BaseModel
 {
     use HasFactory;
     use SoftDeletes;

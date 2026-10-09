@@ -46,7 +46,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
-class GuestMessage extends Model
+class GuestMessage extends BaseModel
 {
     protected $table = 'guest_messages';
 

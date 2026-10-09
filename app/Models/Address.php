@@ -31,7 +31,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read Mahalle|null $mahalle
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Property[] $properties
  */
-class Address extends Model
+class Address extends BaseModel
 {
     use HasFactory;
     use SoftDeletes;

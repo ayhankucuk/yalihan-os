@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property bool $kullanildi
  * @property string|null $kullanilan_ip
  */
-class OwnerLoginToken extends Model
+class OwnerLoginToken extends BaseModel
 {
     protected $table = 'owner_login_tokens';
 

@@ -29,7 +29,7 @@ use Illuminate\Support\Str;
  *
  * @package App\Models
  */
-class PropertyWorkspace extends Model
+class PropertyWorkspace extends BaseModel
 {
     use HasFactory;
     use SoftDeletes;
