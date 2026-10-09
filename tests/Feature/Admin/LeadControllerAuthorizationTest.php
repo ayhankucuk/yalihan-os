@@ -108,11 +108,10 @@ class LeadControllerAuthorizationTest extends TestCase
             'crm_durumu' => Lead::CRM_NEW
         ]);
 
-        // 1. Cross-tenant access: Should be blocked at Layer 2 (Repository Scope) before Layer 1 (Policy)
-        // Hence, returns 404.
+        // Same tenant, different owner: 403 (forbidden)
         $this->actingAs($this->danisman1)
             ->get(route('admin.leads.show', ['lead' => $lead->id]))
-            ->assertStatus(404);
+            ->assertStatus(403);
 
         // 2. Own resource: 200 OK
         $this->withoutExceptionHandling();
