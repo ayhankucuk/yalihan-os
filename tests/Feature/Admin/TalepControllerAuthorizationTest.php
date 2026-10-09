@@ -92,15 +92,14 @@ class TalepControllerAuthorizationTest extends TestCase
     // ─────────────────────────────────────────────────────────────────────────
 
     /** @test */
-    public function show_returns_404_for_cross_tenant_access()
+    public function show_returns_403_for_other_danisman_resource()
     {
         $talep = $this->makeTalep($this->danisman2);
 
-        // Cross-tenant: danisman1 tries to view danisman2's talep
-        // Layer 2 (repo scope) blocks → 404 (hides existence)
+        // Same tenant, different owner: 403 (forbidden)
         $this->actingAs($this->danisman1)
             ->get(route('admin.talepler.show', $talep->id))
-            ->assertStatus(404);
+            ->assertStatus(403);
     }
 
     /** @test */
@@ -128,13 +127,13 @@ class TalepControllerAuthorizationTest extends TestCase
     // ─────────────────────────────────────────────────────────────────────────
 
     /** @test */
-    public function edit_returns_404_for_cross_tenant_access()
+    public function edit_returns_403_for_other_danisman_resource()
     {
         $talep = $this->makeTalep($this->danisman2);
 
         $this->actingAs($this->danisman1)
             ->get(route('admin.talepler.edit', $talep->id))
-            ->assertStatus(404);
+            ->assertStatus(403);
     }
 
     /** @test */
@@ -156,13 +155,13 @@ class TalepControllerAuthorizationTest extends TestCase
     // ─────────────────────────────────────────────────────────────────────────
 
     /** @test */
-    public function destroy_returns_404_for_cross_tenant_resource()
+    public function destroy_returns_403_for_other_danisman_resource()
     {
         $talep = $this->makeTalep($this->danisman2);
 
         $this->actingAs($this->danisman1)
             ->delete(route('admin.talepler.destroy', $talep->id))
-            ->assertStatus(404);
+            ->assertStatus(403);
 
         // Verify data is untouched
         $this->assertDatabaseHas('talepler', ['id' => $talep->id]);
@@ -186,12 +185,12 @@ class TalepControllerAuthorizationTest extends TestCase
     // ─────────────────────────────────────────────────────────────────────────
 
     /** @test */
-    public function show_matches_returns_404_for_cross_tenant_access()
+    public function show_matches_returns_403_for_other_danisman_resource()
     {
         $talep = $this->makeTalep($this->danisman2);
 
         $this->actingAs($this->danisman1)
             ->get(route('admin.talepler.matches', $talep->id))
-            ->assertStatus(404);
+            ->assertStatus(403);
     }
 }
