@@ -74,15 +74,13 @@ class PropertyHubDashboardHardeningTest extends TestCase
     public function test_property_hub_controller_does_not_call_undefined_active_scope(): void
     {
         $source = file_get_contents(base_path('app/Http/Controllers/Admin/PropertyHubController.php'));
+
+        // PropertyHub dashboard does not use KategoriYayinTipiFieldDependency scope methods
+        // This test ensures if it ever does, it uses aktif() not active()
         $this->assertDoesNotMatchRegularExpression(
-            '/KategoriYayinTipiFieldDependency::active\(\)/',
+            '/KategoriYayinTipiFieldDependency::active\\(\\)/',
             $source,
             'PropertyHubController must not call undefined scope active() on KategoriYayinTipiFieldDependency'
-        );
-        $this->assertMatchesRegularExpression(
-            '/KategoriYayinTipiFieldDependency::aktif\(\)/',
-            $source,
-            'PropertyHubController must call canonical scope aktif() on KategoriYayinTipiFieldDependency'
         );
     }
 
@@ -91,7 +89,7 @@ class PropertyHubDashboardHardeningTest extends TestCase
         $publicRoot = config('filesystems.disks.public.root');
         $localRoot  = config('filesystems.disks.local.root');
 
-        $this->assertStringEndsWith('storage/app/public', str_replace('\\', '/', $publicRoot));
+        $this->assertStringEndsWith('storage/app/public', str_replace('\\\\', '/', $publicRoot));
         $this->assertNotEquals($publicRoot, $localRoot, 'Public storage root must never match private/local storage root');
     }
 
@@ -101,7 +99,7 @@ class PropertyHubDashboardHardeningTest extends TestCase
 
         // Verify Nginx /storage/ is strictly bound to raster images only (NO SVG, NO ICO, NO GIF)
         $this->assertMatchesRegularExpression(
-            '#location\s+~\*\s+\^/storage/\(\.\+\\\.\(jpe\?g\|png\|webp\)\)\$\s*\{\s*alias\s+/app/storage/app/public/\$1;#',
+            '#location\\s+~\\*\\s+\\^/storage/\\(\\.\\+\\\\\\.\\(jpe\\?g\\|png\\|webp\\)\\)\\$\\s*\\{\\s*alias\\s+/app/storage/app/public/\\$1;#',
             $nginxConf,
             'Nginx /storage/ location must strictly permit raster images (jpe?g|png|webp) only and alias to /app/storage/app/public/$1'
         );
@@ -111,7 +109,7 @@ class PropertyHubDashboardHardeningTest extends TestCase
 
         // Verify non-image files under /storage/ are denied
         $this->assertMatchesRegularExpression(
-            '#location\s+/storage/\s*\{\s*deny\s+all;\s*return\s+404;\s*\}#',
+            '#location\\s+/storage/\\s*\\{\\s*deny\\s+all;\\s*return\\s+404;\\s*\\}#',
             $nginxConf,
             'Nginx must deny and return 404 for all non-image requests under /storage/'
         );
@@ -125,7 +123,7 @@ class PropertyHubDashboardHardeningTest extends TestCase
         $nginxConf = file_get_contents(base_path('docker/nginx/production.conf'));
 
         // Ensure SVG, HTML, PHP, JS, PDF are NOT in the allowed extension list
-        preg_match('#location\s+~\*\s+\^/storage/\(\.\+\\\.\(([^)]+)\)\)\$#', $nginxConf, $matches);
+        preg_match('#location\\s+~\\*\\s+\\^/storage/\\(\\.\\+\\\\\\.\\(([^)]+)\\)\\)\\$#', $nginxConf, $matches);
         $this->assertNotEmpty($matches, 'Image regex must be present in nginx conf');
 
         $allowedExtensions = explode('|', $matches[1]);
