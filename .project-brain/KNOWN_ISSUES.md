@@ -21,12 +21,11 @@
 ## Bekçi Gate Treshold Tutarsızlığı — 2026-09-12
 
 - **[GATE-THRESHOLD] `bekci:health` gate PASS/FAIL kararı skor eşiğiyle uyumsuz**
-  - `YalihanBekciHealthCommand`: MCP offline iken genel sağlık %59 `NEEDS ATTENTION` ama wrapper `PASS` döndürüyor
-  - `HealthCheckGate::passes()`: skoru 0–100 normalize edip karşılaştırmıyor; sadece `!$mcpOffline` kontrolü var
-  - Bekçi gate %70 hedefi var (bkz. .clinerules §7) ama eşik kontrolü eksik
-  - **Etki**: CI, %59 sağlık skoruyla PASS veriyor — yanlış negatif riski
-  - **Olası çözüm**: `HealthCheckGate::passes()` → `->value('overall_score')` karşılaştırması ekle
-  - **Durum**: AÇIK — ayrı görev
+  - **Durum**: ✅ CLOSED — 2026-10-07'de düzeltildi
+  - **Fix Commit**: `d59abc3b` — Exit code 0/1 based on 70% threshold
+  - **Regression Test**: `SentinelHealthThresholdTest` — 5/5 PASS (TEST_VERIFIED)
+  - **Evidence**: `YalihanBekciHealthCommand.php:319` → `return $overallScore >= 70 ? self::SUCCESS : self::FAILURE;`
+  - **CI Status**: UNKNOWN (runtime doğrulanmadı)
 
 ## Acil — 2026-09-09
 
