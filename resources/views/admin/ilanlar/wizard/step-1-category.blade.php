@@ -52,7 +52,7 @@
             </div>
 
             <div>
-                <label for="yayin_tipi_id" class="wizard-field-label">
+                <label for="junction_id" class="wizard-field-label">
                     Yayın Tipi <span class="text-red-500">*</span>
                 </label>
                 <select name="junction_id" id="junction_id" required disabled

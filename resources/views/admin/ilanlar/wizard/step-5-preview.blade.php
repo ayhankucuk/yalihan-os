@@ -7,16 +7,21 @@
     summary: {
         baslik: 'Başlık Belirtilmedi',
         fiyat: '0',
+        paraBirimi: '₺',
         kategori: 'Kategori Seçilmedi',
         konum: 'Konum Belirtilmedi',
         photoCount: 0,
         ilanSahibi: 'Seçilmedi',
         ilgiliKisi: 'Belirtilmedi',
-        danisman: '{{ auth()->user()->name ?? 'Atılay' }}'
+        danisman: '{{ auth()->user()->name ?? 'Belirtilmedi' }}'
     },
     updateSummary() {
         this.summary.baslik = document.getElementById('baslik')?.value?.trim() || 'Başlık Belirtilmedi';
         this.summary.fiyat = document.getElementById('fiyat_display')?.value || document.getElementById('fiyat')?.value || '0';
+
+        const currencySymbols = { 'TRY': '₺', 'USD': '$', 'EUR': '€', 'GBP': '£' };
+        const currencyCode = document.getElementById('para_birimi')?.value || 'TRY';
+        this.summary.paraBirimi = currencySymbols[currencyCode] || '₺';
 
         const cat = document.getElementById('alt_kategori_id');
         this.summary.kategori = cat?.options[cat.selectedIndex]?.text || 'Kategori Seçilmedi';
@@ -38,7 +43,7 @@
 
         let advVal = document.getElementById('danisman_search')?.value?.trim();
         if (!advVal && window.context7SelectedAdvisor) advVal = window.context7SelectedAdvisor;
-        this.summary.danisman = advVal || '{{ auth()->user()->name ?? 'Atılay' }}';
+        this.summary.danisman = advVal || '{{ auth()->user()->name ?? 'Belirtilmedi' }}';
 
         // Fotoğraf sayısını senkronize et
         const photoInput = document.getElementById('fotograflar');
@@ -97,7 +102,7 @@
                     class="mb-1 block text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-slate-500">Satış
                     Fiyatı</span>
                 <span class="text-xl font-black text-green-600 dark:text-green-400"
-                    x-text="summary.fiyat + ' ₺'"></span>
+                    x-text="summary.fiyat + ' ' + summary.paraBirimi"></span>
             </div>
             <div
                 class="rounded-xl border border-gray-100 bg-white p-4 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
