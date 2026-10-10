@@ -31,7 +31,7 @@ class IlanOzellik extends BaseModel
      */
     public function scopeAktif($query)
     {
-        return $query->where('is_active', \App\Enums\AktiflikDurumu::AKTIF);
+        return $query->where('aktiflik_durumu', \App\Enums\AktiflikDurumu::AKTIF);
     }
 
     /**
