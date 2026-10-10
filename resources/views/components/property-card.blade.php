@@ -10,6 +10,10 @@
         default => '₺',
     };
     $ilceAdi = $ilan?->ilce?->ilce_adi ?? $ilan?->il?->il_adi ?? 'Bodrum';
+
+    // Canonical area fallback: net_m2 -> brut_m2 -> alan_m2
+    $alanDegeri = $ilan?->net_m2 ?? $ilan?->brut_m2 ?? $ilan?->alan_m2;
+    $alanDisplay = ($alanDegeri && $alanDegeri > 0) ? number_format((float) $alanDegeri, 0) : null;
 @endphp
 
 <a href="{{ $ilan ? route('ilanlar.show', $ilan->id) : '#' }}" class="bg-white rounded-xl overflow-hidden shadow-[0_4px_20px_-2px_rgba(10,22,40,0.06)] hover:shadow-[0_12px_32px_-4px_rgba(10,22,40,0.12)] transition-all duration-300 group block border border-[#E8E2D8]">
@@ -58,10 +62,10 @@
                     <span>{{ $ilan->oda_sayisi }} Oda</span>
                 </div>
             @endif
-            @if($ilan?->net_m2)
+            @if($alanDisplay)
                 <div class="flex items-center gap-1">
                     <x-icon name="m2" class="w-3.5 h-3.5 text-[#6B7280]" />
-                    <span>{{ number_format($ilan->net_m2, 0) }} m²</span>
+                    <span>{{ $alanDisplay }} m²</span>
                 </div>
             @endif
             <div class="text-[#0A1628] font-semibold hover:underline flex items-center gap-0.5">
@@ -71,4 +75,3 @@
         </div>
     </div>
 </a>
-
