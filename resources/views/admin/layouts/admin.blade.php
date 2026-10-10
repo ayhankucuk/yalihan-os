@@ -61,6 +61,12 @@
     {{-- 📊 Context7: ApexCharts Analytics Visualization --}}
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.1/dist/apexcharts.min.js" defer></script>
 
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+
     @yield('styles')
     @stack('styles')
 </head>

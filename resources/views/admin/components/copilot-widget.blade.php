@@ -29,7 +29,7 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
         x-transition:leave-end="opacity-0 translate-y-4 scale-95"
-        class="absolute bottom-16 right-0 w-96 rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-800"
+        class="absolute bottom-16 right-0 w-[calc(100vw-3rem)] max-w-sm sm:w-96 rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-800"
         @click.away="open = false">
 
         {{-- Header --}}
