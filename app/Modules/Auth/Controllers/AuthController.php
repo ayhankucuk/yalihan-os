@@ -143,7 +143,7 @@ class AuthController extends BaseController
             $roles = collect([]);
         }
 
-        return view('auth::users.create', compact('roles'));
+        return view('admin.users.create', compact('roles'));
     }
 
     /**
@@ -249,7 +249,7 @@ class AuthController extends BaseController
     {
         $user = User::with('role')->findOrFail($id);
 
-        return view('auth::users.show', compact('user'));
+        return view('admin.users.show', compact('user'));
     }
 
     /**
