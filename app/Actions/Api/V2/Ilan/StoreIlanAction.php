@@ -17,10 +17,13 @@ class StoreIlanAction
     {
         $ilanData = [
             'danisman_id' => auth('sanctum')->id(),
+            'user_id' => auth('sanctum')->id(),
             'baslik' => $data['baslik'],
             'aciklama' => $data['aciklama'],
             'alan_m2' => $data['alan_m2'],
+            'brut_m2' => $data['alan_m2'],
             'birim_fiyat' => $data['birim_fiyat'],
+            'fiyat' => $data['birim_fiyat'],
             'il' => $data['il'],
             'ilce' => $data['ilce'],
             'mahalle' => $data['mahalle'],

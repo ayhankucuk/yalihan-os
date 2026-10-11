@@ -97,7 +97,7 @@ class Ilan extends BaseModel
 
     public function getDanismanIdAttribute()
     {
-        return $this->user_id;
+        return $this->attributes['danisman_id'] ?? $this->user_id;
     }
 
     public function getIlAttribute()

@@ -281,13 +281,13 @@ class IlanCrudService
      */
     private function handlePricing(Ilan $ilan, array $data, bool $isNew): void
     {
-        $hasPrice = array_key_exists('fiyat', $data) || array_key_exists('fiyat_raw', $data);
+        $hasPrice = array_key_exists('fiyat', $data) || array_key_exists('fiyat_raw', $data) || array_key_exists('birim_fiyat', $data);
 
         if (!$isNew && !$hasPrice) {
             return;
         }
 
-        $newPrice = (float)($data['fiyat_raw'] ?? (isset($data['fiyat']) ? str_replace('.', '', $data['fiyat']) : ($isNew ? 0 : $ilan->fiyat)));
+        $newPrice = (float)($data['fiyat_raw'] ?? $data['birim_fiyat'] ?? (isset($data['fiyat']) ? str_replace('.', '', $data['fiyat']) : ($isNew ? 0 : $ilan->fiyat)));
         $currency = $data['para_birimi'] ?? ($isNew ? 'TRY' : ($ilan->para_birimi ?? 'TRY'));
 
         $ilan->fiyat = $newPrice;
@@ -375,9 +375,9 @@ class IlanCrudService
      */
     private function handleCategories(Ilan $ilan, array $data): void
     {
-        $ilan->ana_kategori_id = $data['ana_kategori_id'] ?? null;
-        $ilan->alt_kategori_id = $data['alt_kategori_id'] ?? null;
-        $ilan->yayin_tipi_id = $data['yayin_tipi_id'] ?? null;
+        $ilan->ana_kategori_id = $data['ana_kategori_id'] ?? $ilan->ana_kategori_id ?? null;
+        $ilan->alt_kategori_id = $data['alt_kategori_id'] ?? $ilan->alt_kategori_id ?? null;
+        $ilan->yayin_tipi_id = $data['yayin_tipi_id'] ?? $ilan->yayin_tipi_id ?? null;
     }
 
     /**
@@ -390,12 +390,12 @@ class IlanCrudService
         $ilan->ilce = $data['ilce'] ?? $ilan->ilce ?? null;
         $ilan->mahalle = $data['mahalle'] ?? $ilan->mahalle ?? null;
 
-        $ilan->il_id = $data['il_id'] ?? null;
-        $ilan->ilce_id = $data['ilce_id'] ?? null;
-        $ilan->mahalle_id = $data['mahalle_id'] ?? null;
-        $ilan->lat = $data['lat'] ?? $data['enlem'] ?? null;
-        $ilan->lng = $data['lng'] ?? $data['boylam'] ?? null;
-        $ilan->adres = $data['adres'] ?? $data['adres_detay'] ?? null;
+        $ilan->il_id = $data['il_id'] ?? $ilan->il_id ?? null;
+        $ilan->ilce_id = $data['ilce_id'] ?? $ilan->ilce_id ?? null;
+        $ilan->mahalle_id = $data['mahalle_id'] ?? $ilan->mahalle_id ?? null;
+        $ilan->lat = $data['lat'] ?? $data['enlem'] ?? $ilan->lat ?? null;
+        $ilan->lng = $data['lng'] ?? $data['boylam'] ?? $ilan->lng ?? null;
+        $ilan->adres = $data['adres'] ?? $data['adres_detay'] ?? $ilan->adres ?? null;
 
         // Geometry support (point vs polygon)
         if (!empty($data['boundary_geojson'])) {
