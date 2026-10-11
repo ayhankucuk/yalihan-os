@@ -395,7 +395,98 @@ class YalihanCortex
     }
 
     /**
-     * Özellik adı için kategori önerisi yapar (Banyo, Mutfak, Bahçe vb)
+     * Generate structured title from structured data
+     *
+     * @param array $structuredData Validated structured listing data
+     * @param array $options Generation options (locale, style, etc.)
+     * @return array Response with success, data, provider, metadata
+     */
+    public function generateStructuredTitle(array $structuredData, array $options = []): array
+    {
+        try {
+            $locale = $options['locale'] ?? 'tr-TR';
+            $style = $options['style'] ?? 'professional';
+
+            // Build title from structured data
+            $parts = [];
+
+            if (!empty($structuredData['emlak_tipi'])) {
+                $parts[] = $this->localizeType($structuredData['emlak_tipi'], $locale);
+            }
+
+            if (!empty($structuredData['alan'])) {
+                $parts[] = $structuredData['alan'] . ' m2';
+            }
+
+            if (!empty($structuredData['oda_sayisi'])) {
+                $parts[] = $structuredData['oda_sayisi'];
+            }
+
+            if (!empty($structuredData['ilce']) || !empty($structuredData['il'])) {
+                $location = $structuredData['ilce'] ?? $structuredData['il'];
+                $parts[] = $location;
+            }
+
+            if (!empty($structuredData['tip'])) {
+                $tipLabel = $structuredData['tip'] === 'Satilik' ? 'Satilik' : 'Kiralik';
+                $parts[] = $tipLabel;
+            }
+
+            $title = implode(' | ', $parts);
+
+            if (empty($title)) {
+                return [
+                    'success' => false,
+                    'error' => 'Insufficient structured data to generate title',
+                    'data' => null,
+                    'provider' => 'cortex',
+                    'metadata' => ['fallback' => true],
+                ];
+            }
+
+            return [
+                'success' => true,
+                'data' => [
+                    'title' => $title,
+                    'slug' => \Illuminate\Support\Str::slug($title),
+                    'confidence' => 0.95,
+                ],
+                'provider' => 'cortex',
+                'metadata' => [
+                    'locale' => $locale,
+                    'style' => $style,
+                    'parts_count' => count($parts),
+                ],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => 'Title generation failed: ' . $e->getMessage(),
+                'data' => null,
+                'provider' => 'cortex',
+                'metadata' => ['error' => true],
+            ];
+        }
+    }
+
+    /**
+     * Localize property type to locale
+     */
+    private function localizeType(string $type, string $locale): string
+    {
+        $translations = [
+            'Daire' => ['tr-TR' => 'Daire', 'en-US' => 'Apartment'],
+            'Villa' => ['tr-TR' => 'Villa', 'en-US' => 'Villa'],
+            'Mustakil' => ['tr-TR' => 'Mustakil Ev', 'en-US' => 'Detached House'],
+            'Bungalov' => ['tr-TR' => 'Bungalov', 'en-US' => 'Bungalow'],
+            'Rezidans' => ['tr-TR' => 'Rezidans', 'en-US' => 'Penthouse'],
+        ];
+
+        return $translations[$type][$locale] ?? $type;
+    }
+
+    /**
+     * Ozellik adi icin kategori onERisi yapar (Banyo, Mutfak, Bahce vb)
      *
      * @CortexDecision
      * Verilen özellik adını analiz ederek en uygun FeatureCategory'yi önerir.
