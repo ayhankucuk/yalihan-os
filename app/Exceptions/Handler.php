@@ -2,11 +2,18 @@
 
 namespace App\Exceptions;
 
-use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use App\Exceptions\CrossTenantIdentifierInjectionException;
-use App\Services\Logging\LogService;
+use App\Models\Talep;
 use App\Services\ErrorAutoRepairService;
+use App\Services\Logging\LogService;
+use App\Services\SaaS\TenantContextService;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Storage;
+use Psr\Log\LogLevel;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -14,7 +21,7 @@ class Handler extends ExceptionHandler
     /**
      * A list of exception types with their corresponding custom log levels.
      *
-     * @var array<class-string<\Throwable>, \Psr\Log\LogLevel::*>
+     * @var array<class-string<Throwable>, LogLevel::*>
      */
     protected $levels = [
         //
@@ -23,7 +30,7 @@ class Handler extends ExceptionHandler
     /**
      * A list of the exception types that are not reported.
      *
-     * @var array<int, class-string<\Throwable>>
+     * @var array<int, class-string<Throwable>>
      */
     protected $dontReport = [
         //
@@ -48,7 +55,7 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             // Auto-repair attempt (production mode)
             if (app()->isProduction() || config('governance.auto_repair_enabled', false)) {
-                $repairService = new ErrorAutoRepairService();
+                $repairService = new ErrorAutoRepairService;
                 $repairService->detectAndRepair($e);
             }
 
@@ -62,7 +69,7 @@ class Handler extends ExceptionHandler
 
         // 🛡️ Context7: JSON garanti — Admin API çağrılarında HTML yerine JSON dönüşü
         // AuthenticationException → 401 JSON
-        $this->renderable(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+        $this->renderable(function (AuthenticationException $e, $request) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     'success' => false,
@@ -78,7 +85,7 @@ class Handler extends ExceptionHandler
         });
 
         // AccessDeniedHttpException → 403 JSON
-        $this->renderable(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e, $request) {
+        $this->renderable(function (AccessDeniedHttpException $e, $request) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     'success' => false,
@@ -112,16 +119,40 @@ class Handler extends ExceptionHandler
         // NotFoundHttpException → 403 when it wraps ModelNotFoundException (TenantScope cross-tenant)
         // Laravel converts ModelNotFoundException → NotFoundHttpException in route binding.
         // We check the previous exception to distinguish tenant boundary violations from genuine 404s.
-        $this->renderable(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, $request) {
+        $this->renderable(function (NotFoundHttpException $e, $request) {
             if ($request->expectsJson() || $request->is('api/*') || $request->is('admin/*')) {
                 $previous = $e->getPrevious();
-                if ($previous instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                if ($previous instanceof ModelNotFoundException) {
                     $modelClass = $previous->getModel();
+
+                    // CRM Talep: Tenant boundary concealment requires preserving 404 ModelNotFoundException.
+                    // If the record belongs to another tenant or does not exist, return null to preserve 404 concealment.
+                    if ($modelClass === Talep::class) {
+                        $ids = $previous->getIds();
+                        $id = is_array($ids) ? ($ids[0] ?? null) : $ids;
+                        if ($id) {
+                            $record = Talep::withoutGlobalScopes()->find($id);
+                            $tenantService = app()->bound(TenantContextService::class)
+                                ? app(TenantContextService::class)
+                                : null;
+                            $effectiveTenantId = $tenantService?->hasTenant()
+                                ? $tenantService->getTenant()->id
+                                : auth()->user()?->tenant_id;
+
+                            if (! $record || ($effectiveTenantId && (int) $record->tenant_id !== (int) $effectiveTenantId)) {
+                                return null;
+                            }
+                        } else {
+                            return null;
+                        }
+                    }
+
                     LogService::warning('model_not_found_as_tenant_boundary', [
                         'model' => $modelClass,
                         'ids' => $previous->getIds(),
                         'user_id' => auth()->id(),
                     ]);
+
                     return response()->json([
                         'success' => false,
                         'message' => 'Bu emlak üzerinde işlem yapma yetkiniz bulunmamaktadır.',
@@ -133,12 +164,13 @@ class Handler extends ExceptionHandler
                         ],
                     ], 403);
                 }
+
                 return null;
             }
         });
 
         // TokenMismatchException (CSRF 419) → JSON
-        $this->renderable(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+        $this->renderable(function (TokenMismatchException $e, $request) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     'success' => false,
@@ -176,13 +208,13 @@ class Handler extends ExceptionHandler
             ];
 
             // Hataları JSON olarak kaydet
-            $fileName = 'exceptions/' . date('Y-m-d') . '/' . md5($exception->getMessage() . $exception->getFile() . $exception->getLine()) . '.json';
+            $fileName = 'exceptions/'.date('Y-m-d').'/'.md5($exception->getMessage().$exception->getFile().$exception->getLine()).'.json';
             Storage::put($fileName, json_encode($exceptionData, JSON_PRETTY_PRINT));
 
             // Günlük raporuna ekle
             $this->addToExceptionReport($exceptionData);
         } catch (\Exception $e) {
-            LogService::error('Hata belgeleme sırasında sorun oluştu: ' . $e->getMessage());
+            LogService::error('Hata belgeleme sırasında sorun oluştu: '.$e->getMessage());
         }
     }
 
@@ -191,19 +223,19 @@ class Handler extends ExceptionHandler
      */
     protected function addToExceptionReport(array $exceptionData): void
     {
-        $reportPath = 'reports/exceptions/' . date('Y-m-d') . '.md';
+        $reportPath = 'reports/exceptions/'.date('Y-m-d').'.md';
 
-        $entryContent = '## Hata: ' . date('H:i:s') . "\n" .
-            '- **Mesaj:** ' . $exceptionData['message'] . "\n" .
-            '- **Dosya:** ' . $exceptionData['file'] . ':' . $exceptionData['line'] . "\n" .
-            '- **URL:** ' . $exceptionData['istek_url'] . "\n" .
-            '- **Metot:** ' . $exceptionData['method'] . "\n\n";
+        $entryContent = '## Hata: '.date('H:i:s')."\n".
+            '- **Mesaj:** '.$exceptionData['message']."\n".
+            '- **Dosya:** '.$exceptionData['file'].':'.$exceptionData['line']."\n".
+            '- **URL:** '.$exceptionData['istek_url']."\n".
+            '- **Metot:** '.$exceptionData['method']."\n\n";
 
         if (Storage::exists($reportPath)) {
             Storage::append($reportPath, $entryContent);
         } else {
-            $header = '# Hata Raporu: ' . date('Y-m-d') . "\n\n";
-            Storage::put($reportPath, $header . $entryContent);
+            $header = '# Hata Raporu: '.date('Y-m-d')."\n\n";
+            Storage::put($reportPath, $header.$entryContent);
         }
     }
 }
