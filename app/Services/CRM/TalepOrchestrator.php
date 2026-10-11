@@ -119,7 +119,7 @@ class TalepOrchestrator
 
     private function getKisiler(): Collection
     {
-        return Kisi::select(['id', 'ad', 'soyad', 'telefon', 'email'])
+        return Kisi::select(['id', 'ad', 'soyad', 'telefon', 'eposta'])
             ->orderBy('ad')
             ->get();
     }
