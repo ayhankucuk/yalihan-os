@@ -276,6 +276,12 @@ class User extends Authenticatable
      */
     public function hasRole($roles, ?string $guard = null): bool
     {
+        if ($roles instanceof \Illuminate\Support\Collection) {
+            $roles = $roles->all();
+        } elseif ($roles instanceof \BackedEnum) {
+            $roles = $roles->value;
+        }
+
         // Normalize: string → array
         $roleNames = is_array($roles) ? $roles : [$roles];
 
@@ -297,7 +303,7 @@ class User extends Authenticatable
         if ($this->role) {
             $legacyRoleName = $this->role->name;
             foreach ($roleNames as $role) {
-                $checkName = is_string($role) ? $role : ($role->name ?? null);
+                $checkName = is_string($role) ? $role : ($role instanceof \Spatie\Permission\Contracts\Role || is_object($role) ? ($role->name ?? null) : null);
                 if ($checkName && $legacyRoleName === $checkName) {
                     return true;
                 }
