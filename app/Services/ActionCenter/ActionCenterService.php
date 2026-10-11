@@ -502,7 +502,9 @@ class ActionCenterService
             $query->where('oncelik', $filters['oncelik']);
         }
 
-        if (isset($filters['assigned_to'])) {
+        if (!empty($filters['unassigned']) || (array_key_exists('assigned_to', $filters) && $filters['assigned_to'] === null)) {
+            $query->whereNull('atanan_user_id');
+        } elseif (isset($filters['assigned_to'])) {
             $query->where('atanan_user_id', $filters['assigned_to']);
         }
 

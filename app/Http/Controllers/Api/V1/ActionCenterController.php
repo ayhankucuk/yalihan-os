@@ -51,6 +51,7 @@ class ActionCenterController extends Controller
         // Unassigned tasks for this tenant
         $unassigned = $this->actionCenter->getActionQueue($tenantId, [
             'durum' => 'bekliyor',
+            'unassigned' => true,
         ]);
 
         return response()->json([
